@@ -51,21 +51,26 @@
     <DefineConstants>TRACE;__GTK__</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="GtkSharp" Version="3.24.24.95" />
+    <PackageReference Include="GtkSharp4" Version="$(GtkSharp4Version)" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\ionicons.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <!--
+    GTK4 port: the gallery consumes the backend through in-tree ProjectReferences rather than the
+    Net4x.*.Gtk3.* packages. This guarantees it runs against the current GTK4 source (the shipping
+    GtkSharp4-backed packages still pack on a normal build and are the deployment path) and sidesteps
+    the "same version, changed content" NuGet-cache trap while the port is in flux. Maps.GTK draws its
+    own Cairo slippy map (netstandard2.0, GtkSharp 4), no GMap.NET.
+  -->
   <ItemGroup>
-    <PackageReference Version="5.0.0.*" Include="Net4x.Xamarin.Forms.Gtk3.Controls.GTK" />
-    <PackageReference Version="5.0.0.*" Include="Net4x.Xamarin.Forms.Gtk3.Core" />
-    <PackageReference Version="5.0.0.*" Include="Net4x.Xamarin.Forms.Gtk3.Maps.Base" />
-    <!-- Back in as of M6 §9.3: Xamarin.Forms.Maps.GTK is netstandard2.0 / GtkSharp 3 and draws
-         its own Cairo slippy map, with no GMap.NET or GTK#2 left. -->
-    <PackageReference Version="5.0.0.*" Include="Net4x.Xamarin.Forms.Gtk3.Maps.GTK" />
-    <PackageReference Version="5.0.0.*" Include="Net4x.Xamarin.Forms.Gtk3.Platform.GTK" />
+    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj" />
+    <ProjectReference Include="..\Xamarin.Forms.Controls\Xamarin.Forms.Controls.GTK.csproj" />
+    <ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.Base.csproj" />
+    <ProjectReference Include="..\Xamarin.Forms.Maps.GTK\Xamarin.Forms.Maps.GTK.csproj" />
+    <ProjectReference Include="..\Xamarin.Forms.Platform.GTK\Xamarin.Forms.Platform.GTK.csproj" />
   </ItemGroup>
   <!--
     Gallery images, HTML and CSS. These used to be <Content Include="..\Xamarin.Forms.ControlGallery.iOS\...">

@@ -18,7 +18,7 @@ namespace Xamarin.Forms.ControlGallery.GTK
 			yield return (() => new BasicOpenGLGallery(), "Basic OpenGL Gallery - Legacy");
 			yield return (() => new AdvancedOpenGLGallery(), "Advanced OpenGL Gallery - Legacy");
 #else
-			return null;
+			yield break;
 #endif
 		}
 	}

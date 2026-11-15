@@ -15,7 +15,13 @@ namespace Xamarin.Forms.Platform.GTK
 
 		protected override void Dispose(bool disposing)
 		{
-			if (Control != null)
+			// Only tear the native control down on a deterministic Dispose, never from the GC
+			// finalizer (disposing == false). Under GtkSharp 4 Gtk.Widget.Destroy() walks to the
+			// parent and reconstructs its managed wrapper; on the finalizer thread that both
+			// touches GTK off the UI thread and throws MissingIntPtrCtorException for a managed
+			// renderer subclass. GObject's own toggle-ref drop during finalization releases the
+			// native widget without our help.
+			if (disposing && Control != null)
 			{
 				Control.Destroy();
 				Control = null;
