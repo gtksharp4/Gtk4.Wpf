@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 	public class PropertyMappingTests : GtkTestBase
 	{
 		[Fact]
-		public void EntryMapsTextPlaceholderAndPassword()
+		public void EntryMapsTextPlaceholderAndPassword() => Run(() =>
 		{
 			var entry = new Entry { Text = "hi", Placeholder = "type here" };
 
@@ -36,10 +36,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				Assert.Equal("other", native.PlaceholderText);
 				Assert.False(native.Entry.Visibility, "IsPassword must hide the glyphs");
 			}
-		}
+		});
 
 		[Fact]
-		public void EntryTextChangesFlowBackFromTheNativeControl()
+		public void EntryTextChangesFlowBackFromTheNativeControl() => Run(() =>
 		{
 			var entry = new Entry { Text = "start" };
 
@@ -53,10 +53,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				Assert.True(entry.Text == "typed by the user",
 					"native edits must reach the Forms element, or two-way bindings never update");
 			}
-		}
+		});
 
 		[Fact]
-		public void LabelMapsText()
+		public void LabelMapsText() => Run(() =>
 		{
 			var label = new Label { Text = "before" };
 
@@ -70,7 +70,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 				Assert.Equal("after", native.Text);
 			}
-		}
+		});
 
 		/// <summary>
 		/// Regression guard for the double-escaping bug in the plan's "Label double-escaping"
@@ -80,7 +80,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// &lt;b&gt; as real markup and throw on a bare ampersand.
 		/// </summary>
 		[Fact]
-		public void LabelTextIsEscapedExactlyOnce()
+		public void LabelTextIsEscapedExactlyOnce() => Run(() =>
 		{
 			var label = new Label { Text = "He said \"hi\" & <b>x</b> 5 > 3" };
 
@@ -92,10 +92,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 					"Gtk.Label.Text reports the rendered text; entity names here mean double " +
 					$"escaping. Got: {native.Text}");
 			}
-		}
+		});
 
 		[Fact]
-		public void SwitchMapsIsToggledBothWays()
+		public void SwitchMapsIsToggledBothWays() => Run(() =>
 		{
 			var sw = new Switch { IsToggled = false };
 
@@ -112,10 +112,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				host.Pump();
 				Assert.False(sw.IsToggled, "native -> Forms");
 			}
-		}
+		});
 
 		[Fact]
-		public void ProgressBarMapsProgressToFraction()
+		public void ProgressBarMapsProgressToFraction() => Run(() =>
 		{
 			var bar = new ProgressBar { Progress = 0.25 };
 
@@ -129,10 +129,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 				Assert.Equal(0.75, native.Fraction, 3);
 			}
-		}
+		});
 
 		[Fact]
-		public void SliderMapsValueAndRange()
+		public void SliderMapsValueAndRange() => Run(() =>
 		{
 			var slider = new Slider { Minimum = 0, Maximum = 100, Value = 10 };
 
@@ -149,10 +149,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 				Assert.Equal(60, native.Value, 3);
 			}
-		}
+		});
 
 		[Fact]
-		public void StepperMapsValue()
+		public void StepperMapsValue() => Run(() =>
 		{
 			var stepper = new Stepper { Minimum = 0, Maximum = 10, Increment = 2, Value = 4 };
 
@@ -166,7 +166,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 				Assert.Equal(8, native.Value, 3);
 			}
-		}
+		});
 
 		/// <summary>
 		/// Both halves of this caught the same real defect. <c>gtk_text_buffer_set_text</c> deletes
@@ -175,7 +175,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// so a programmatic set left the control empty and any binding observed a spurious "".
 		/// </summary>
 		[Fact]
-		public void EditorMapsText()
+		public void EditorMapsText() => Run(() =>
 		{
 			var editor = new Editor { Text = "line one" };
 
@@ -200,10 +200,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 					"a binding on Editor.Text saw a spurious empty value: " +
 					$"[{string.Join(", ", observed.Select(v => $"\"{v}\""))}]");
 			}
-		}
+		});
 
 		[Fact]
-		public void EditorTextChangesFlowBackFromTheNativeControl()
+		public void EditorTextChangesFlowBackFromTheNativeControl() => Run(() =>
 		{
 			var editor = new Editor { Text = "start" };
 
@@ -215,10 +215,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 				Assert.Equal("typed by the user", editor.Text);
 			}
-		}
+		});
 
 		[Fact]
-		public void SearchBarMapsTextAndPlaceholder()
+		public void SearchBarMapsTextAndPlaceholder() => Run(() =>
 		{
 			var search = new SearchBar { Text = "query", Placeholder = "search me" };
 
@@ -233,10 +233,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 				Assert.Equal("another", native.SearchText);
 			}
-		}
+		});
 
 		[Fact]
-		public void ButtonMapsText()
+		public void ButtonMapsText() => Run(() =>
 		{
 			var button = new Button { Text = "Tap me" };
 
@@ -250,7 +250,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 				Assert.Equal("Tapped", native.LabelWidget.Text);
 			}
-		}
+		});
 
 		/// <summary>
 		/// The same double-escaping bug the plan records against <c>LabelRenderer</c>, on the
@@ -260,7 +260,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// &amp; into &amp;amp; on screen.
 		/// </summary>
 		[Fact]
-		public void ButtonTextIsEscapedExactlyOnce()
+		public void ButtonTextIsEscapedExactlyOnce() => Run(() =>
 		{
 			var button = new Button { Text = "Save & Close" };
 
@@ -268,10 +268,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 			{
 				Assert.Equal("Save & Close", host.Control<Controls.ImageButton>().LabelWidget.Text);
 			}
-		}
+		});
 
 		[Fact]
-		public void ButtonClickedIsRaisedFromTheNativeClick()
+		public void ButtonClickedIsRaisedFromTheNativeClick() => Run(() =>
 		{
 			var button = new Button { Text = "Go" };
 			var clicked = false;
@@ -287,10 +287,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 				Assert.True(clicked, "the native click must reach Button.Clicked");
 			}
-		}
+		});
 
 		[Fact]
-		public void PickerMapsItemsAndSelection()
+		public void PickerMapsItemsAndSelection() => Run(() =>
 		{
 			var picker = new Picker();
 			picker.Items.Add("alpha");
@@ -313,9 +313,9 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 				Assert.Equal(0, native.Active);
 			}
-		}
+		});
 		[Fact]
-		public void EditorEnforcesMaxLength()
+		public void EditorEnforcesMaxLength() => Run(() =>
 		{
 			// MaxLength was wired up but enforced nothing: the insert-text handler assigned
 			// args.RetVal, which GtkTextBuffer ignores because that signal returns void, and
@@ -332,10 +332,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				Assert.Equal(5, native.TextView.Buffer.CharCount);
 				Assert.Equal("01234", native.TextView.Buffer.Text);
 			}
-		}
+		});
 
 		[Fact]
-		public void EditorWithoutMaxLengthKeepsItsText()
+		public void EditorWithoutMaxLengthKeepsItsText() => Run(() =>
 		{
 			// Guards the other half: the backing field defaults to 0, so a truncating
 			// implementation that ran before the renderer pushed MaxLength down would empty
@@ -351,7 +351,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 				Assert.Equal("the quick brown fox", native.TextView.Buffer.Text);
 			}
-		}
+		});
 
 	}
 }
