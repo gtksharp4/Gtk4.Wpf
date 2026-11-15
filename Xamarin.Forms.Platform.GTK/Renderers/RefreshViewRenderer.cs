@@ -58,8 +58,10 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				Control.Add(_spinnerHost);
 				_spinnerPlaced = true;
 
-				_dragGesture = new Gtk.GestureDrag(Control);
-				_dragGesture.DragEnd += OnDragEnd;
+				// GTK4: GestureDrag constructor takes no widget; attach via AddController.
+				_dragGesture = new Gtk.GestureDrag();
+				Control.AddController(_dragGesture);
+				_dragGesture.DragEnded += OnDragEnd;
 			}
 
 			UpdateIsRefreshing();
@@ -101,7 +103,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			{
 				if (_dragGesture != null)
 				{
-					_dragGesture.DragEnd -= OnDragEnd;
+					_dragGesture.DragEnded -= OnDragEnd;
 					_dragGesture.Dispose();
 					_dragGesture = null;
 				}
@@ -138,7 +140,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				_spinner.Show();
 				_spinnerHost.Show();
 				_spinner.Start();
-				_spinnerHost.Window?.Raise();
+				// GTK4: EventBox has no GdkWindow; stacking is managed by the render tree.
 			}
 			else
 			{
@@ -158,7 +160,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				_spinner.SetForegroundColor(RefreshView.RefreshColor.ToGtkColor());
 		}
 
-		void OnDragEnd(object o, Gtk.DragEndArgs args)
+		void OnDragEnd(object o, Gtk.DragEndedArgs args)
 		{
 			if (RefreshView == null || RefreshView.IsRefreshing || !RefreshView.IsEnabled)
 				return;

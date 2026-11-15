@@ -63,10 +63,12 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 				Control.Add(_itemsHost);
 
-				_dragGesture = new Gtk.GestureDrag(Control);
-				_dragGesture.DragBegin += OnDragBegin;
+				// GTK4: GestureDrag constructor takes no widget; attach via AddController.
+				_dragGesture = new Gtk.GestureDrag();
+				Control.AddController(_dragGesture);
+				_dragGesture.DragStarted += OnDragBegin;
 				_dragGesture.DragUpdate += OnDragUpdate;
-				_dragGesture.DragEnd += OnDragEnd;
+				_dragGesture.DragEnded += OnDragEnd;
 			}
 
 			if (e.NewElement is SwipeView swipeView)
@@ -103,9 +105,9 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 				if (_dragGesture != null)
 				{
-					_dragGesture.DragBegin -= OnDragBegin;
+					_dragGesture.DragStarted -= OnDragBegin;
 					_dragGesture.DragUpdate -= OnDragUpdate;
-					_dragGesture.DragEnd -= OnDragEnd;
+					_dragGesture.DragEnded -= OnDragEnd;
 					_dragGesture.Dispose();
 					_dragGesture = null;
 				}
@@ -119,7 +121,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 		// ---- gesture ---------------------------------------------------------------------
 
-		void OnDragBegin(object o, Gtk.DragBeginArgs args)
+		void OnDragBegin(object o, Gtk.DragStartedArgs args)
 		{
 			_swipeStartedSent = false;
 		}
@@ -157,7 +159,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			Controller?.SendSwipeChanging(new SwipeChangingEventArgs(_activeDirection, _currentOffset));
 		}
 
-		void OnDragEnd(object o, Gtk.DragEndArgs args)
+		void OnDragEnd(object o, Gtk.DragEndedArgs args)
 		{
 			if (!_swipeStartedSent)
 				return;
@@ -350,7 +352,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			// already-visible Gtk.Fixed child can leave the old allocation in place.
 			_itemsHost.MoveTo(hostX, hostY);
 			_itemsHost.Show();
-			_itemsHost.Window?.Raise();
+			// GTK4: EventBox has no GdkWindow; stacking is managed by the render tree.
 		}
 
 		void OpenSwipe()
