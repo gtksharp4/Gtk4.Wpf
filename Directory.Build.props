@@ -155,8 +155,8 @@
     is no longer produced from this solution.
   -->
     <PropertyGroup>
-        <Authors>Microsoft</Authors>
-        <Copyright>Microsoft</Copyright>
+        <Authors>Microsoft, Piero Viano</Authors>
+        <Copyright>Microsoft, Piero Viano</Copyright>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <PackageProjectUrl>https://github.com/pieroviano/Xamarin.Forms</PackageProjectUrl>
         <PackageIcon>xamarin_128x128.png</PackageIcon>
