@@ -14,16 +14,16 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 	public class PlatformServiceTests : GtkTestBase
 	{
 		[Fact]
-		public void RuntimePlatformIsGtk()
+		public void RuntimePlatformIsGtk() => Run(() =>
 		{
 			Assert.Equal(Device.GTK, Device.RuntimePlatform);
-		}
+		});
 
 		[Fact]
-		public void IdiomIsDesktop()
+		public void IdiomIsDesktop() => Run(() =>
 		{
 			Assert.Equal(TargetIdiom.Desktop, Device.Idiom);
-		}
+		});
 
 		/// <summary>
 		/// M4 replaced a hardcoded 800x600 stub with the real screen. The stub is what let the
@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// about split mode only once a real screen size arrived.
 		/// </summary>
 		[Fact]
-		public void DeviceInfoReportsARealScreen()
+		public void DeviceInfoReportsARealScreen() => Run(() =>
 		{
 			var scaled = Device.Info.ScaledScreenSize;
 			var pixels = Device.Info.PixelScreenSize;
@@ -46,10 +46,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 			// pixels = scaled * scale. The old stub could not satisfy this.
 			Assert.Equal(scaled.Width * Device.Info.ScalingFactor, pixels.Width, 0);
 			Assert.Equal(scaled.Height * Device.Info.ScalingFactor, pixels.Height, 0);
-		}
+		});
 
 		[Fact]
-		public void NamedSizesAreOrdered()
+		public void NamedSizesAreOrdered() => Run(() =>
 		{
 			var micro = Device.GetNamedSize(NamedSize.Micro, typeof(Label));
 			var small = Device.GetNamedSize(NamedSize.Small, typeof(Label));
@@ -60,7 +60,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 			Assert.True(small > micro, $"small {small} <= micro {micro}");
 			Assert.True(medium > small, $"medium {medium} <= small {small}");
 			Assert.True(large > medium, $"large {large} <= medium {medium}");
-		}
+		});
 
 		/// <summary>
 		/// The GTK implementation, driven by the two settings it actually reads.
@@ -79,7 +79,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// fixture, so they go back exactly as they were even when an assertion fails.</para>
 		/// </remarks>
 		[Fact]
-		public void RequestedThemeFollowsTheGtkSettings()
+		public void RequestedThemeFollowsTheGtkSettings() => Run(() =>
 		{
 			var settings = Gtk.Settings.Default;
 
@@ -109,14 +109,14 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				settings.ThemeName = themeName;
 				settings.ApplicationPreferDarkTheme = preferDark;
 			}
-		}
+		});
 
 		/// <summary>
 		/// Isolated storage on Linux, verified as a round-trip rather than by "it did not throw" -
 		/// the plan records this being checked at runtime for M4 (§7.5).
 		/// </summary>
 		[Fact]
-		public void IsolatedStorageRoundTrips()
+		public void IsolatedStorageRoundTrips() => Run(() =>
 		{
 			var store = Device.PlatformServices.GetUserStoreForApplication();
 			var name = $"gtk-unit-tests-{Guid.NewGuid():N}.txt";
@@ -136,14 +136,14 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 			{
 				Assert.Equal(Payload, reader.ReadToEnd());
 			}
-		}
+		});
 
 		/// <summary>
 		/// The ticker is what drives every Forms animation, including the flyout slide. A ticker
 		/// that never fires makes animations silently instant.
 		/// </summary>
 		[Fact]
-		public void TickerFires()
+		public void TickerFires() => Run(() =>
 		{
 			var fired = false;
 			var deadline = DateTime.UtcNow.AddSeconds(5);
@@ -158,7 +158,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				GtkTestHost.Pump(null, 1);
 
 			Assert.True(fired, "Device.StartTimer never fired within 5s");
-		}
+		});
 
 		/// <summary>
 		/// M4 changed <c>IsInvokeRequired</c> from a <c>Thread.IsBackground</c> guess to a
@@ -166,7 +166,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// actually run - inline if no invoke is required, off the GTK idle queue if one is.
 		/// </summary>
 		[Fact]
-		public void BeginInvokeOnMainThreadRunsTheAction()
+		public void BeginInvokeOnMainThreadRunsTheAction() => Run(() =>
 		{
 			var ran = false;
 
@@ -174,16 +174,16 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 			GtkTestHost.Pump(null, 3);
 
 			Assert.True(ran, "Device.BeginInvokeOnMainThread never ran the action");
-		}
+		});
 
 		[Fact]
-		public void GetHashIsStable()
+		public void GetHashIsStable() => Run(() =>
 		{
 			var services = Device.PlatformServices;
 
 			Assert.Equal(services.GetHash("xamarin"), services.GetHash("xamarin"));
 			Assert.NotEqual(services.GetHash("xamarin"), services.GetHash("forms"));
-		}
+		});
 
 		/// <summary>
 		/// <c>GtkSerializer</c> is registered through <c>DependencyService</c>; the plan notes it
@@ -191,10 +191,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// <c>BinaryFormatter</c> (which .NET 10 removes outright).
 		/// </summary>
 		[Fact]
-		public void SerializerIsResolvable()
+		public void SerializerIsResolvable() => Run(() =>
 		{
 			Assert.True(DependencyService.Get<IDeserializer>() != null,
 				"no IDeserializer registered for GTK");
-		}
+		});
 	}
 }
