@@ -412,21 +412,11 @@ namespace Xamarin.Forms.Platform.GTK
 			if (view == null)
 				return;
 
-			int numClicks = 0;
-			switch (args.Event.Type)
-			{
-				case Gdk.EventType.ThreeButtonPress:
-					numClicks = 3;
-					break;
-				case Gdk.EventType.TwoButtonPress:
-					numClicks = 2;
-					break;
-				case Gdk.EventType.ButtonPress:
-					numClicks = 1;
-					break;
-				default:
-					return;
-			}
+			// GTK4: TwoButtonPress/ThreeButtonPress are gone; NPress carries the click count.
+			int numClicks = args.Event.NPress;
+
+			if (numClicks < 1 || numClicks > 3)
+				return;
 
 			// Taps or Clicks
 			if (button == 1)

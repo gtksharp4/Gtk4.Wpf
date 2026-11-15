@@ -445,11 +445,12 @@ namespace Xamarin.Forms.Platform.GTK
 			if (control == null)
 				return;
 
+			// GTK4: IsFocus is read-only; GrabFocus() is the focus request API.
 			if (args.Focus)
-				args.Result = control.IsFocus = true;
+				args.Result = control.GrabFocus();
 			else
 			{
-				control.IsFocus = false;
+				// GTK4 provides no programmatic "unfocus" on a widget.
 				args.Result = true;
 			}
 		}

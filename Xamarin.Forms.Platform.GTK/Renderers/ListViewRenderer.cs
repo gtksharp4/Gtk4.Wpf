@@ -268,8 +268,8 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 					Platform.SetRenderer(headerView, _headerRenderer);
 
 					var window = FormsWindow.MainWindow;
-					int winWidth, winHeight;
-					window.GetSize(out winWidth, out winHeight);
+					// GTK4: GetSize(out,out) is gone; DefaultWidth/DefaultHeight replace it.
+					int winWidth = window.DefaultWidth;
 
 					HeaderMeasure(headerView, winWidth);
 
@@ -336,8 +336,8 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 					Platform.SetRenderer(footerView, _footerRenderer);
 
 					var window = FormsWindow.MainWindow;
-					int winWidth, winHeight;
-					window.GetSize(out winWidth, out winHeight);
+					// GTK4: GetSize(out,out) is gone; DefaultWidth/DefaultHeight replace it.
+					int winWidth = window.DefaultWidth;
 
 					FooterMeasure(footerView, winWidth);
 
