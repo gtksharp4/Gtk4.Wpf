@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 	public class LifecycleTests : GtkTestBase
 	{
 		[Fact]
-		public void RenderersCanBeCreatedAndDestroyedRepeatedly()
+		public void RenderersCanBeCreatedAndDestroyedRepeatedly() => Run(() =>
 		{
 			for (int i = 0; i < 20; i++)
 			{
@@ -23,10 +23,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 					Assert.NotNull(host.Renderer);
 				}
 			}
-		}
+		});
 
 		[Fact]
-		public void PagesCanBeLoadedAndTornDownRepeatedly()
+		public void PagesCanBeLoadedAndTornDownRepeatedly() => Run(() =>
 		{
 			for (int i = 0; i < 5; i++)
 			{
@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 					Assert.NotNull(Platform.GetRenderer(page));
 				}
 			}
-		}
+		});
 
 		/// <summary>
 		/// <c>Platform.DisposeModelAndChildrenRenderers</c> is what navigation runs when a page
@@ -56,7 +56,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// <c>IsPlatformEnabled</c> and the next navigation renders against a destroyed widget.
 		/// </summary>
 		[Fact]
-		public void DisposingAPageClearsItsChildrenRenderers()
+		public void DisposingAPageClearsItsChildrenRenderers() => Run(() =>
 		{
 			var label = new Label { Text = "child" };
 			var page = new ContentPage { Content = new StackLayout { Children = { label } } };
@@ -77,10 +77,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 			}
 
 			GtkTestHost.Pump(null, 3);
-		}
+		});
 
 		[Fact]
-		public void DestroyingARendererDoesNotThrowOnSubsequentPumps()
+		public void DestroyingARendererDoesNotThrowOnSubsequentPumps() => Run(() =>
 		{
 			var views = new List<View>
 			{
@@ -111,6 +111,6 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				Assert.True(exception == null,
 					$"{view.GetType().Name} threw during create/destroy: {exception}");
 			}
-		}
+		});
 	}
 }
