@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Threading;
 using Gtk;
@@ -7,11 +7,12 @@ namespace Xamarin.Forms.Platform.GTK
 {
 	public class FormsWindow : Window
 	{
-		private Application _application;
-		private Gdk.Size _lastSize;
+		Application _application;
+		Gdk.Size _lastSize;
 
+		// GTK4: Window(WindowType.Toplevel) → Window() — toplevel is the only kind.
 		public FormsWindow()
-			: base(WindowType.Toplevel)
+			: base()
 		{
 			SetDefaultSize(800, 600);
 			SetSizeRequest(400, 400);
@@ -22,7 +23,10 @@ namespace Xamarin.Forms.Platform.GTK
 			if (SynchronizationContext.Current == null)
 				SynchronizationContext.SetSynchronizationContext(new GtkSynchronizationContext());
 
-			WindowStateEvent += OnWindowStateEvent;
+			// GTK4: WindowStateEvent / window-state-event signal is gone.
+			// Iconify (minimise) state is not directly observable via notify:: in GTK4;
+			// SendSleep/SendResume are skipped in this pass.
+			// TODO GTK4: use GdkToplevel state notifications if iconify tracking is needed.
 		}
 
 		public static int MainThreadID { get; set; }
@@ -55,8 +59,10 @@ namespace Xamarin.Forms.Platform.GTK
 			if (string.IsNullOrEmpty(icon))
 				return;
 
-			var appliccationIconPixbuf = new Gdk.Pixbuf(icon);
-			Icon = appliccationIconPixbuf;
+			// GTK4: Window.Icon (Gdk.Pixbuf) is removed; use Window.IconName (XDG theme name).
+			// If the caller passes a file path the name lookup will fail silently, which is
+			// preferable to crashing. TODO GTK4: expose a separate API if file-path icons are needed.
+			IconName = icon;
 		}
 
 		// GTK4: delete-event is gone; close-request replaces it. Return true to veto the close.
@@ -67,7 +73,7 @@ namespace Xamarin.Forms.Platform.GTK
 			return true;
 		}
 
-		private void ApplicationOnPropertyChanged(object sender, PropertyChangedEventArgs args)
+		void ApplicationOnPropertyChanged(object sender, PropertyChangedEventArgs args)
 		{
 			if (args.PropertyName == nameof(Xamarin.Forms.Application.MainPage))
 			{
@@ -90,7 +96,7 @@ namespace Xamarin.Forms.Platform.GTK
 			}
 		}
 
-		private void UpdateMainPage()
+		void UpdateMainPage()
 		{
 			if (_application.MainPage == null)
 				return;
@@ -111,7 +117,7 @@ namespace Xamarin.Forms.Platform.GTK
 			Child.ShowAll();
 		}
 
-		private void RemoveChildIfExists()
+		void RemoveChildIfExists()
 		{
 			foreach (var child in Children)
 			{
@@ -124,24 +130,10 @@ namespace Xamarin.Forms.Platform.GTK
 			}
 		}
 
-		private void OnWindowStateEvent(object o, WindowStateEventArgs args)
-		{
-			if (args.Event.ChangedMask == Gdk.WindowState.Iconified)
-			{
-				var windowState = args.Event.NewWindowState;
-
-				if (windowState == Gdk.WindowState.Iconified)
-					_application.SendSleep();
-				else
-					_application.SendResume();
-			}
-		}
-
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing && _application != null)
 			{
-				WindowStateEvent -= OnWindowStateEvent;
 				_application.PropertyChanged -= ApplicationOnPropertyChanged;
 			}
 
