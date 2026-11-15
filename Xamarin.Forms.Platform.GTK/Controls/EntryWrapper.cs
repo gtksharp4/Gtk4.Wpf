@@ -131,9 +131,9 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			ShowPlaceholderIfNeeded();
 		}
 
-		protected override void OnFocusGrabbed()
+		protected override bool OnGrabFocus()
 		{
-			_entry?.GrabFocus();
+			return _entry != null && _entry.GrabFocus();
 		}
 
 		private void ShowPlaceholderIfNeeded()
