@@ -63,8 +63,10 @@ jobs:
     name: macos
     runs-on: macos-latest
     timeout-minutes: 45
-    # Gates on the renderer tests by request; they are expected to be fragile under headless Quartz
-    # (GTK 4 on macOS needs thread 0). See scripts/ci/test-macos.sh for the full rationale.
+    # Runs the platform-independent Core and XAML suites. The real-GTK-4 renderer suite is NOT run
+    # on macOS: GTK 4's Quartz backend must run on thread 0, which the dotnet test host owns, so it
+    # cannot work via `dotnet test` without a thread-0 runner. See scripts/ci/test-macos.sh. The
+    # renderer suite gates on Windows and Linux.
     steps:
       - uses: actions/checkout@v4
         with:
