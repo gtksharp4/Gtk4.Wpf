@@ -49,7 +49,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		static Gtk.Label ShownLabel(string text = Sample)
 		{
 			var label = new Gtk.Label(text);
-			label.Show();
+			// GTK 4: gtk_widget_show is deprecated (binding: GtkSharp/Generated/Gtk/Widget.cs:3396
+			// [Obsolete]). The GTK 4 replacement is setting Visible = true directly
+			// (gtk_widget_set_visible), which is what the compat ShowAll() already does.
+			label.Visible = true;
 
 			return label;
 		}
@@ -62,8 +65,15 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 		static int LayoutWidth(Gtk.Entry entry)
 		{
-			entry.Layout.GetPixelSize(out int width, out _);
-			return width;
+			// GTK 4: gtk_entry_get_layout was removed (the entry's internal GtkText no longer
+			// exposes its Pango.Layout). Use GetPreferredWidth to measure the entry's natural width,
+			// which changes with the applied Pango attribute list (the mechanism SetFont uses).
+			// Visible = true is required: Measure() short-circuits to 0/0 for a non-visible widget,
+			// same as the ShownLabel precondition documented above.
+			// Binding ref: GtkSharp/Compat/Widget.Compat.cs:459 (GetPreferredWidth over Measure).
+			entry.Visible = true;
+			entry.GetPreferredWidth(out _, out int natural);
+			return natural;
 		}
 
 		/// <summary>

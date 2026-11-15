@@ -9,12 +9,32 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 	/// Coverage target 3 of plan §10.2, and the regression net for M3's root causes. Every one of
 	/// those bugs was silent: <c>Element.Bounds</c> was correct, every size request was correct,
 	/// and the pixels were wrong, because geometry was pushed to GTK from inside a size-allocate
-	/// and GTK3 discards resizes queued there. So these assertions are deliberately on
-	/// <c>Widget.Allocation</c> - the thing that was wrong - and never on Forms bounds alone,
-	/// which would have passed throughout the entire M3 outage.
+	/// and GTK3 discarded resizes queued there. So these assertions are deliberately on
+	/// the native allocated dimensions and positions - the thing that was wrong - and never on
+	/// Forms bounds alone, which would have passed throughout the entire M3 outage.
 	/// </summary>
 	public class LayoutTests : GtkTestBase
 	{
+		/// <summary>
+		/// Returns the widget's (0,0) position in the coordinate space of <paramref name="root"/>.
+		/// GTK 4 tracks widget position via transforms rather than the deprecated
+		/// <c>gtk_widget_get_allocation</c> X/Y fields (which always return 0,0 for non-toplevels).
+		/// <c>ComputePoint</c> is the GTK 4 replacement for <c>gtk_widget_translate_coordinates</c>
+		/// (which is also deprecated in GTK 4).
+		/// </summary>
+		/// <remarks>
+		/// Binding ref: GtkSharp/Generated/Gtk/Widget.cs line 2483 (ComputePoint),
+		/// superseding line 3426 (TranslateCoordinates, [Obsolete]).
+		/// </remarks>
+		static (int x, int y) PositionIn(Gtk.Widget widget, Gtk.Widget root)
+		{
+			var origin = new Graphene.Point();
+			origin.Init(0f, 0f);
+			if (!widget.ComputePoint(root, origin, out var result))
+				return (0, 0);
+			return ((int)result.X, (int)result.Y);
+		}
+
 		[Fact]
 		public void PageFillsTheWindow()
 		{
@@ -31,7 +51,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				var renderer = Platform.GetRenderer(page);
 				var widget = (Gtk.Widget)renderer;
 
-				Assert.True(widget.Allocation.Width > 1,
+				Assert.True(widget.Width > 1,
 					$"the page widget is still at GTK's unallocated sentinel: {GtkTestHost.Describe(widget)}");
 			}
 		}
@@ -59,9 +79,12 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 			using (var host = GtkTestHost.HostPage(page))
 			{
-				var ys = new[] { first, second, third }
+				var widgets = new[] { first, second, third }
 					.Select(b => (Gtk.Widget)Platform.GetRenderer(b))
-					.Select(w => w.Allocation.Y)
+					.ToArray();
+
+				var ys = widgets
+					.Select(w => PositionIn(w, host.Window).y)
 					.ToArray();
 
 				Assert.True(ys.Distinct().Count() == 3,
@@ -87,11 +110,13 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				var widget = (Gtk.Widget)Platform.GetRenderer(box);
 
 				// One pixel of slack: Forms works in doubles, GTK in ints.
-				Assert.True(Math.Abs(widget.Allocation.Width - (int)box.Width) <= 1,
-					$"native width {widget.Allocation.Width} disagrees with Forms {(int)box.Width} - " +
+				// GTK 4: use Widget.Width/Height (gtk_widget_get_width/height) - the proper
+				// allocated-size API; gtk_widget_get_allocation is deprecated in GTK 4.
+				Assert.True(Math.Abs(widget.Width - (int)box.Width) <= 1,
+					$"native width {widget.Width} disagrees with Forms {(int)box.Width} - " +
 					"geometry did not reach GTK");
-				Assert.True(Math.Abs(widget.Allocation.Height - (int)box.Height) <= 1,
-					$"native height {widget.Allocation.Height} disagrees with Forms {(int)box.Height}");
+				Assert.True(Math.Abs(widget.Height - (int)box.Height) <= 1,
+					$"native height {widget.Height} disagrees with Forms {(int)box.Height}");
 			}
 		}
 
@@ -122,14 +147,21 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 			using (var host = GtkTestHost.HostPage(new ContentPage { Content = grid }))
 			{
-				var tl = ((Gtk.Widget)Platform.GetRenderer(topLeft)).Allocation;
-				var tr = ((Gtk.Widget)Platform.GetRenderer(topRight)).Allocation;
-				var bl = ((Gtk.Widget)Platform.GetRenderer(bottomLeft)).Allocation;
+				// GTK 4: positions come from TranslateCoordinates, not from the deprecated
+				// Allocation.X/Y (which always returns 0,0 for non-toplevel widgets in GTK 4,
+				// since position is now carried by a transform the parent supplies).
+				var tlPos = PositionIn((Gtk.Widget)Platform.GetRenderer(topLeft), host.Window);
+				var trPos = PositionIn((Gtk.Widget)Platform.GetRenderer(topRight), host.Window);
+				var blPos = PositionIn((Gtk.Widget)Platform.GetRenderer(bottomLeft), host.Window);
 
-				Assert.True(tr.X > tl.X, $"column 1 (x={tr.X}) must sit right of column 0 (x={tl.X})");
-				Assert.True(bl.Y > tl.Y, $"row 1 (y={bl.Y}) must sit below row 0 (y={tl.Y})");
-				Assert.True(Math.Abs(tr.Y - tl.Y) <= 1, $"same row, same y: {tr.Y} vs {tl.Y}");
-				Assert.True(Math.Abs(bl.X - tl.X) <= 1, $"same column, same x: {bl.X} vs {tl.X}");
+				Assert.True(trPos.x > tlPos.x,
+					$"column 1 (x={trPos.x}) must sit right of column 0 (x={tlPos.x})");
+				Assert.True(blPos.y > tlPos.y,
+					$"row 1 (y={blPos.y}) must sit below row 0 (y={tlPos.y})");
+				Assert.True(Math.Abs(trPos.y - tlPos.y) <= 1,
+					$"same row, same y: {trPos.y} vs {tlPos.y}");
+				Assert.True(Math.Abs(blPos.x - tlPos.x) <= 1,
+					$"same column, same x: {blPos.x} vs {tlPos.x}");
 			}
 		}
 
@@ -165,8 +197,9 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 			{
 				var widget = (Gtk.Widget)Platform.GetRenderer(leaf);
 
-				Assert.True(widget.Allocation.Width > 100,
-					$"leaf allocated {widget.Allocation.Width}px wide inside a 600px window - " +
+				// GTK 4: Widget.Width is the proper allocated-width API.
+				Assert.True(widget.Width > 100,
+					$"leaf allocated {widget.Width}px wide inside a 600px window - " +
 					"it is still at its natural size, i.e. geometry stopped propagating");
 			}
 		}
@@ -314,18 +347,25 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				{
 					var widget = (Gtk.Widget)Platform.GetRenderer(child);
 
-					Assert.True(Math.Abs(widget.Allocation.Width - (int)child.Width) <= 2,
+					// GTK 4: Widget.Width/Height are the proper allocated-size getters.
+					Assert.True(Math.Abs(widget.Width - (int)child.Width) <= 2,
 						$"{child.GetType().Name}: Forms width {child.Width:0}, " +
-						$"request {widget.WidthRequest}, allocation {widget.Allocation.Width}");
+						$"request {widget.WidthRequest}, allocation {widget.Width}");
 
-					Assert.True(Math.Abs(widget.Allocation.Height - (int)child.Height) <= 2,
+					Assert.True(Math.Abs(widget.Height - (int)child.Height) <= 2,
 						$"{child.GetType().Name}: Forms height {child.Height:0}, " +
-						$"request {widget.HeightRequest}, allocation {widget.Allocation.Height}");
+						$"request {widget.HeightRequest}, allocation {widget.Height}");
 				}
 
 				// And the symptom itself: the three must not paint over one another.
+				// GTK 4: positions from TranslateCoordinates; Width/Height for sizes.
 				var rects = children
-					.Select(c => ((Gtk.Widget)Platform.GetRenderer(c)).Allocation)
+					.Select(c =>
+					{
+						var w = (Gtk.Widget)Platform.GetRenderer(c);
+						var (px, py) = PositionIn(w, host.Window);
+						return new Gdk.Rectangle(px, py, w.Width, w.Height);
+					})
 					.OrderBy(r => r.Y)
 					.ToList();
 
@@ -346,24 +386,14 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 			using (var host = GtkTestHost.HostPage(page, 400, 300))
 			{
-				var before = ((Gtk.Widget)Platform.GetRenderer(box)).Allocation.Width;
+				// GTK 4: Widget.Width is the proper allocated-width getter.
+				var before = ((Gtk.Widget)Platform.GetRenderer(box)).Width;
 
-				host.Window.Resize(900, 600);
-
-				// MEASURED: Gtk.Window.Resize only REQUESTS a size from the window manager. Under
-				// Xvfb, where this suite was written, there is no window manager to disagree and
-				// the request lands within a pump or two. On the Win32 GDK backend in a
-				// non-interactive session it is never serviced at all - the toplevel still
-				// reports AllocatedWidth == 400 after five seconds of pumping - so the assertion
-				// below used to read 400 -> 400 and fail for a reason that has nothing to do with
-				// Forms layout.
-				//
-				// So drive the allocation directly, which is what PageHost already does for the
-				// INITIAL size and what Pump does on every round. What this test is actually
-				// guarding is that a size-allocate on the toplevel propagates through
-				// FormsWindow -> the page renderer -> StackLayout -> the BoxView; whether a given
-				// platform's window manager honours a resize request is not Forms' behaviour and
-				// not what the M3 regression was about.
+				// MEASURED: Gtk.Window.Resize only REQUESTS a size from the window manager and was
+				// removed in GTK 4. The allocation is driven directly below, which is what PageHost
+				// already does for the INITIAL size. What this test guards is that a size-allocate
+				// on the toplevel propagates through FormsWindow -> page renderer -> StackLayout ->
+				// BoxView; whether a window manager honours a resize request is not Forms' behaviour.
 				host.Window.SizeAllocate(new Gdk.Rectangle(0, 0, 900, 600));
 				Platform.GetRenderer(page)?.SetElementSize(new Size(900, 600));
 
@@ -371,7 +401,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				GtkTestHost.PumpUntil(
 					() =>
 					{
-						after = ((Gtk.Widget)Platform.GetRenderer(box)).Allocation.Width;
+						after = ((Gtk.Widget)Platform.GetRenderer(box)).Width;
 						return after > before;
 					},
 					host.Window);
