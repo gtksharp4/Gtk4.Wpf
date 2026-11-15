@@ -173,4 +173,12 @@
     <!-- This target is replaced by GitInfo when restored. Allows Version.targets to rely on it before restore. -->
     <Target Name="GitVersion" />
     <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="Environment.Build.props" />
+
+    <!-- macOS only: the netstandard2.0 library projects add an explicit NETStandard.Library
+         PackageReference (the GitHub macOS-arm64 runner stopped handing the implicit
+         NETStandard.Library.Ref to the compiler, failing every netstandard2.0 compile with CS0518).
+         NETSDK1023 ("explicit reference not recommended") is expected under that workaround. -->
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+        <NoWarn>$(NoWarn);NETSDK1023</NoWarn>
+    </PropertyGroup>
 </Project>

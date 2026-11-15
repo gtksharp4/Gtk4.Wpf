@@ -30,4 +30,12 @@
         <Content Include="README.md" Link="README.md" Pack="true" PackagePath="\README.md" />
         <Content Include="$(SolutionDir)License.txt" Link="License.txt" Pack="true" PackagePath="\License.txt" Condition="Exists('$(SolutionDir)License.txt')" />
     </ItemGroup>
+  <!-- macOS CI: the GitHub macOS-arm64 runner fails netstandard2.0 compiles with CS0518 because the
+       SDK's implicit NETStandard.Library.Ref is not resolved. Reference it explicitly so the
+       netstandard facade is supplied from the package. In-project rather than Directory.Build.targets
+       because on that runner the shared import is evaluated inconsistently and skips most projects; a
+       project-file PackageReference is always in the restore graph. No-op on Windows/Linux. -->
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <PackageReference Include="NETStandard.Library" Version="2.0.3" PrivateAssets="all" />
+  </ItemGroup>
 </Project>
