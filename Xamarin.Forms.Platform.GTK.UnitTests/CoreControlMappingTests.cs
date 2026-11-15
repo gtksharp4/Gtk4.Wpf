@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		// rather than sleeping, and fails on the timeout instead of on a null reference.
 
 		[Fact]
-		public void ImageLoadsItsSourceAndFollowsAChange()
+		public void ImageLoadsItsSourceAndFollowsAChange() => Run(() =>
 		{
 			var small = WriteTempPng(24, 16, 0xFF0000FF);
 			var large = WriteTempPng(48, 32, 0x00FF00FF);
@@ -63,10 +63,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				Delete(small);
 				Delete(large);
 			}
-		}
+		});
 
 		[Fact]
-		public void ImageMapsAspectAtCreationAndOnChange()
+		public void ImageMapsAspectAtCreationAndOnChange() => Run(() =>
 		{
 			var image = new Image { Aspect = Aspect.AspectFill };
 
@@ -84,7 +84,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				host.Pump();
 				Assert.Equal(Controls.ImageAspect.AspectFit, native.Aspect);
 			}
-		}
+		});
 
 		// ---- BoxView -------------------------------------------------------------------
 		//
@@ -94,7 +94,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		// painted pixels - the same ground truth the M3 smoke scripts use.
 
 		[Fact]
-		public void BoxViewPaintsItsColourAndRepaintsOnChange()
+		public void BoxViewPaintsItsColourAndRepaintsOnChange() => Run(() =>
 		{
 			var box = new BoxView { Color = Color.Red, WidthRequest = 120, HeightRequest = 80 };
 
@@ -126,12 +126,12 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 					$"Color Red -> Blue painted rgb({blue.R},{blue.G},{blue.B}); " +
 					"OnElementPropertyChanged is not repainting");
 			}
-		}
+		});
 
 		// ---- DatePicker ----------------------------------------------------------------
 
 		[Fact]
-		public void DatePickerMapsDateBoundsAndFormat()
+		public void DatePickerMapsDateBoundsAndFormat() => Run(() =>
 		{
 			var picker = new DatePicker
 			{
@@ -157,10 +157,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				Assert.Equal(new DateTime(2020, 9, 3), native.CurrentDate.Date);
 				Assert.Equal("dd/MM/yyyy", native.DateFormat);
 			}
-		}
+		});
 
 		[Fact]
-		public void DatePickerDateChangesFlowBackFromTheNativeControl()
+		public void DatePickerDateChangesFlowBackFromTheNativeControl() => Run(() =>
 		{
 			var picker = new DatePicker { Date = new DateTime(2020, 5, 17) };
 
@@ -171,12 +171,12 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 				Assert.Equal(new DateTime(2022, 2, 22), picker.Date.Date);
 			}
-		}
+		});
 
 		// ---- TimePicker ----------------------------------------------------------------
 
 		[Fact]
-		public void TimePickerMapsTimeAndFormat()
+		public void TimePickerMapsTimeAndFormat() => Run(() =>
 		{
 			var picker = new TimePicker
 			{
@@ -198,10 +198,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				Assert.Equal(new TimeSpan(7, 5, 0), native.CurrentTime);
 				Assert.Equal("hh:mm tt", native.TimeFormat);
 			}
-		}
+		});
 
 		[Fact]
-		public void TimePickerSelectionReachesTheElement()
+		public void TimePickerSelectionReachesTheElement() => Run(() =>
 		{
 			// The OTHER direction. TimePickerMapsTimeAndFormat above only covers Time flowing
 			// INTO the native control, which is why this went unnoticed: the renderer pushed
@@ -221,7 +221,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 				Assert.Equal(new TimeSpan(14, 30, 0), picker.Time);
 			}
-		}
+		});
 
 		/// <summary>
 		/// Regression guard for a real defect found while writing this suite:
@@ -238,7 +238,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// only observable that moves.
 		/// </summary>
 		[Fact]
-		public void DisposingATimePickerRendererUnsubscribesFromTheNativeControl()
+		public void DisposingATimePickerRendererUnsubscribesFromTheNativeControl() => Run(() =>
 		{
 			var picker = new TimePicker { Time = new TimeSpan(9, 0, 0) };
 			var renderer = Platform.CreateRenderer(picker);
@@ -256,7 +256,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 			Assert.True(after < before,
 				$"disposing the renderer left {after} GotFocus handlers where there were {before} " +
 				"before - Dispose is subscribing (+=) instead of unsubscribing (-=)");
-		}
+		});
 
 		// ---- helpers -------------------------------------------------------------------
 
