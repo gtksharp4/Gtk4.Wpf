@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -22,15 +22,20 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 		static readonly BindableProperty AppearedInProperty =
 			BindableProperty.CreateAttached("AppearedIn", typeof(CellBase), typeof(Cell), null);
 
-		private Cell _cell;
-		private int _desiredHeight;
-		private IList<MenuItem> _contextActions;
+		Cell _cell;
+		int _desiredHeight;
+		IList<MenuItem> _contextActions;
 
 		public Action<object, PropertyChangedEventArgs> PropertyChanged;
 
 		protected CellBase()
 		{
 			ButtonReleaseEvent += OnClick;
+
+			// GTK4 removed the parent-set vfunc; the notify::parent GObject property notification
+			// fires on every parent change and is the idiomatic replacement.
+			// (GLib.Object.AddNotification — GLibSharp/Object.cs:877)
+			AddNotification("parent", OnParentNotify);
 		}
 
 		public Cell Cell
@@ -106,35 +111,40 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 			HeightRequest = DesiredHeight;
 		}
 
-		protected override void OnParentSet(Gtk.Widget previousParent)
+		// Replaces the removed OnParentSet(Widget) vfunc (GTK4 removed ::parent-set).
+		// Being unparented is the only notice this widget gets that the list threw it away:
+		// Controls/ListView.ClearList and Controls/TableView.RefreshSource simply Remove() their
+		// children, nobody clears Cell first. Without this a row dropped from the ItemsSource
+		// would never disappear at all. Re-parenting is the symmetric case, and claiming is a
+		// no-op unless the slot is free, so the usual pack-after-create order stays silent.
+		void OnParentNotify(object o, GLib.NotifyArgs args)
 		{
-			base.OnParentSet(previousParent);
-
 			if (_cell == null)
 				return;
 
-			// Being unparented is the only notice this widget gets that the list threw it away:
-			// Controls/ListView.ClearList and Controls/TableView.RefreshSource simply Remove() their
-			// children, nobody clears Cell first. Without this a row dropped from the ItemsSource
-			// would never disappear at all. Re-parenting is the symmetric case, and claiming is a
-			// no-op unless the slot is free, so the usual pack-after-create order stays silent.
 			if (Parent == null)
 				ReleaseAppearance(_cell);
 			else
 				ClaimAppearance(_cell);
 		}
 
-		protected override void OnDestroyed()
+		// GTK4 removed the ::destroy signal and the OnDestroyed() vfunc; Dispose(bool) is the
+		// correct teardown point. (Widget.Compat.cs:445-452 documents the deliberate omission.)
+		// Covers a widget destroyed while unparented, which OnParentNotify never hears about.
+		// The two are idempotent between them: whichever runs first releases, the other sees that
+		// this widget no longer owns the slot and does nothing.
+		protected override void Dispose(bool disposing)
 		{
-			base.OnDestroyed();
+			if (disposing)
+			{
+				RemoveNotification("parent", OnParentNotify);
+				ButtonReleaseEvent -= OnClick;
 
-			ButtonReleaseEvent -= OnClick;
+				if (_cell != null)
+					ReleaseAppearance(_cell);
+			}
 
-			// Covers a widget destroyed while unparented, which OnParentSet never hears about. The
-			// two are idempotent between them: whichever runs first releases, the other sees that
-			// this widget no longer owns the slot and does nothing.
-			if (_cell != null)
-				ReleaseAppearance(_cell);
+			base.Dispose(disposing);
 		}
 
 		protected virtual void UpdateCell()
@@ -171,59 +181,46 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 			Device.BeginInvokeOnMainThread(cell.SendDisappearing);
 		}
 
-		private void OnClick(object o, ButtonReleaseEventArgs args)
+		void OnClick(object o, ButtonReleaseEventArgs args)
 		{
 			if (args.Event.Button != 3)  // Right button
-			{
 				return;
-			}
 
 			if (_contextActions.Any())
-			{
 				OpenContextMenu();
-			}
 		}
 
-		private void OpenContextMenu()
+		// GTK4 removed Gtk.Menu / Gtk.MenuItem. Replace with a Gtk.PopoverMenu backed by a
+		// GLib.Menu model (GioSharp/Generated/GLib/Menu.cs) and a GLib.SimpleActionGroup
+		// (GioSharp/Generated/GLib/SimpleActionGroup.cs) inserted on this widget so the popover
+		// can resolve its "ctx.<n>" detailed-action strings.
+		// (Gtk.PopoverMenu ctor: GtkSharp/Generated/Gtk/PopoverMenu.cs:25
+		//  Gtk.Widget.InsertActionGroup: GtkSharp/Generated/Gtk/Widget.cs:3114
+		//  Gtk.Widget.Parent setter: GtkSharp/Generated/Gtk/Widget.cs:504)
+		void OpenContextMenu()
 		{
-			var menu = new Gtk.Menu();
+			var gMenu = new GLib.Menu();
+			var actionGroup = new GLib.SimpleActionGroup();
+			var actions = Cell.ContextActions;
 
-			SetupMenuItems(menu);
-			menu.ShowAll();
-			menu.Popup();
-		}
-
-		private void SetupMenuItems(Gtk.Menu menu)
-		{
-			foreach (MenuItem item in Cell.ContextActions)
+			for (var i = 0; i < actions.Count; i++)
 			{
-				// GTK3 deprecates Gtk.ImageMenuItem and its Image property: a menu item is now a
-				// plain MenuItem whose child is whatever box of widgets you want. Build that box
-				// up front so the async icon load only has to fill in the Pixbuf.
-				var menuItem = new Gtk.MenuItem();
-				var menuItemImage = new Gtk.Image();
-				var menuItemBox = new Gtk.Box(Gtk.Orientation.Horizontal, 6);
-
-				menuItemBox.PackStart(menuItemImage, false, false, 0);
-				menuItemBox.PackStart(new Gtk.Label(item.Text) { Xalign = 0 }, true, true, 0);
-				menuItem.Add(menuItemBox);
-
-				_ = item.ApplyNativeImageAsync(MenuItem.IconImageSourceProperty, icon =>
-				{
-					if (icon != null)
-					{
-						menuItemImage.Pixbuf = icon;
-						menuItemImage.Show();
-					}
-				});
-
-				menuItem.ButtonPressEvent += (sender, args) =>
-				{
-					((IMenuItemController)item).Activate();
-				};
-
-				menu.Add(menuItem);
+				var item = actions[i];
+				var actionName = "item" + i;
+				var action = new GLib.SimpleAction(actionName, null);
+				var capturedItem = item;
+				action.Activated += (s, e) => ((IMenuItemController)capturedItem).Activate();
+				actionGroup.AddAction(action);
+				gMenu.Append(item.Text ?? string.Empty, "ctx." + actionName);
 			}
+
+			InsertActionGroup("ctx", actionGroup);
+
+			var popover = new Gtk.PopoverMenu(gMenu);
+			popover.Parent = this;
+			popover.HasArrow = false;
+			popover.Autohide = true;
+			popover.Popup();
 		}
 	}
 }
