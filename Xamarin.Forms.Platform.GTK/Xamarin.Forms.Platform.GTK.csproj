@@ -148,12 +148,4 @@
     <Target Name="_XFAssertPackageVersionCarriesCommit" BeforeTargets="GenerateNuspec" DependsOnTargets="SetVersions">
         <Error Condition="'$(PackageVersion)' == '$(VersionPrefix).$(VersionSuffix)'" Text="PackageVersion is '$(PackageVersion)', i.e. $(VersionPrefix).$(VersionSuffix) with the +sha build metadata Version.targets appends stripped off. Something overwrote it after SetVersions ran, so this pack would produce a $(PackageId) package that cannot be traced to a commit - every build of this branch on the same day would claim the same identity." />
     </Target>
-  <!-- macOS CI: the GitHub macOS-arm64 runner fails netstandard2.0 compiles with CS0518 because the
-       SDK's implicit NETStandard.Library.Ref is not resolved. Reference it explicitly so the
-       netstandard facade is supplied from the package. In-project rather than Directory.Build.targets
-       because on that runner the shared import is evaluated inconsistently and skips most projects; a
-       project-file PackageReference is always in the restore graph. No-op on Windows/Linux. -->
-  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
-    <PackageReference Include="NETStandard.Library" Version="2.0.3" PrivateAssets="all" />
-  </ItemGroup>
 </Project>
