@@ -45,7 +45,7 @@
           prerelease "5.0.0-0", and record that as this project's version in project.assets.json.
         -->
         <Version>$(VersionPrefix).$(VersionSuffix)</Version>
-        <PackageId>Net4x.Xamarin.Forms.Gtk4.Platform.GTK</PackageId>
+        <PackageId>Extension.Xamarin.Forms.Gtk4.Platform.GTK</PackageId>
         <Description>GTK4 backend for Xamarin.Forms, built on GtkSharp 4 (GTK 4.22).</Description>
         <IsPackable>true</IsPackable>
         <TargetFramework>netstandard2.0</TargetFramework>

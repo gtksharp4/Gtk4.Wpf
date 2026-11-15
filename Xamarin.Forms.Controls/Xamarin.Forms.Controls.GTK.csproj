@@ -8,7 +8,7 @@
         <IsPackable>true</IsPackable>
         <TargetFramework>netstandard2.0</TargetFramework>
         <XFDisableTargetsValidation>True</XFDisableTargetsValidation>
-        <PackageId>Net4x.Xamarin.Forms.Gtk3.Controls.GTK</PackageId>
+        <PackageId>Extension.Xamarin.Forms.Gtk3.Controls.GTK</PackageId>
         <!-- The project file is named for the GTK leg, but the assembly identity must stay
              Xamarin.Forms.Controls: 14 XAML files say assembly=Xamarin.Forms.Controls, and
              Xamarin.Forms.Core's AssemblyInfo.cs grants InternalsVisibleTo under that name. -->

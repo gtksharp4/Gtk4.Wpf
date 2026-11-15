@@ -5,7 +5,7 @@
         <PackageOutputPath>$(XFPackageOutputPath)</PackageOutputPath>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <Version>$(VersionPrefix).$(VersionSuffix)</Version>
-        <PackageId>Net4x.Xamarin.Forms.Gtk4.Maps.GTK</PackageId>
+        <PackageId>Extension.Xamarin.Forms.Gtk4.Maps.GTK</PackageId>
         <Description>GTK4 map renderer for Xamarin.Forms.Maps, drawn with Cairo over OpenStreetMap-compatible tiles.</Description>
         <IsPackable>true</IsPackable>
         <TargetFramework>netstandard2.0</TargetFramework>
