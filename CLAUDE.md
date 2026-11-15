@@ -15,8 +15,21 @@ Tizen, MacOS and DualScreen projects, the Cake build, the Azure pipelines and th
 from history entirely, which emptied the prune commit and dropped it — the record is
 `docs/plans/history-purge-deleted-files.md` on the `gtk4` branch. What remains is a shared portable
 UI abstraction
-(`Xamarin.Forms.Core`) mapped onto native GTK 3 widgets by the renderers in
+(`Xamarin.Forms.Core`) mapped onto native **GTK 4** widgets by the renderers in
 `Xamarin.Forms.Platform.GTK`.
+
+**The backend binds GtkSharp 4 (GTK 4.22), not GtkSharp 3.** `Platform.GTK` and `Maps.GTK`
+reference the `GtkSharp4` package (`Directory.Build.props` `$(GtkSharp4Version)`, floated `4.22.4.*`)
+restored from the `Local` feed (`nuget.config` → `Packages`, a symlink to a shared feed), and the
+assemblies/packages carry the **Gtk4** name (`Xamarin.Forms.Platform.Gtk4`,
+`Net4x.Xamarin.Forms.Gtk4.Platform.GTK`). The GtkSharp4 fork keeps assembly name `GtkSharp.dll` and
+`namespace Gtk` but exposes the GTK 4 API, with a GTK3→GTK4 compat layer under its
+`Source/Libs/GtkSharp/Compat/`. Many GTK3 APIs survive there as **`[Obsolete]`** shims
+(`Widget.Allocation`, `StyleContext`, `CssProvider.LoadFromData`, `Gtk.ListStore`, `MessageDialog`,
+`ComboBox`…); because `TreatWarningsAsErrors` is on, `Platform.GTK`/`Maps.GTK`/the gallery demote
+`CS0612;CS0618` via `WarningsNotAsErrors` while the backend is still migrating off those shims — only
+genuine GTK4 *removals* are hard errors. Removing that line is the signal the idiomatic rewrite is
+complete.
 
 Empty directories such as `Xamarin.Forms.Platform.Android/` may still exist in a working tree as
 local `bin`/`obj` residue from before the prune. They contain no tracked files — ignore them, or
@@ -29,12 +42,12 @@ Plain `dotnet` / MSBuild. There is no Cake build and no `build.cmd` — those we
 `MSBuild.Sdk.Extras` 3.0.44.
 
 ```powershell
-dotnet build Xamarin.Forms.Gtk.sln                 # whole solution
+dotnet build Xamarin.Forms.Gtk4.sln                 # whole solution
 dotnet build Xamarin.Forms.Platform.GTK/Xamarin.Forms.Platform.GTK.csproj
-dotnet build Xamarin.Forms.Gtk.sln -c Release      # note the Release caveat below
+dotnet build Xamarin.Forms.Gtk4.sln -c Release      # note the Release caveat below
 ```
 
-`Xamarin.Forms.Gtk.sln` is the only solution in the tree.
+`Xamarin.Forms.Gtk4.sln` is the only solution in the tree.
 
 **`Xamarin.Forms.Build.Tasks` must be built before anything else that consumes XAML.** It supplies
 the XAML MSBuild tasks; `Directory.Build.props` points `_XFBuildTasksLocation` at
@@ -69,12 +82,12 @@ Three suites, all **xUnit v3 on `net10.0`**, all run with `dotnet test`:
 
 | Project | Tests | Notes |
 |---|---|---|
-| `Xamarin.Forms.Core.UnitTests` | 4848 | platform-independent Core |
-| `Xamarin.Forms.Xaml.UnitTests` | 1046 | XAML loader + XamlC compiler |
-| `Xamarin.Forms.Platform.GTK.UnitTests` | 169 | **real GTK widgets** |
+| `Xamarin.Forms.Core.UnitTests` | ~4856 | platform-independent Core |
+| `Xamarin.Forms.Xaml.UnitTests` | ~1029 | XAML loader + XamlC compiler (14 `MSBuildTests(sdkStyle:True)` fail locally on a pre-existing relative-`Packages`-feed / `NU1301` issue, unrelated to the GTK backend) |
+| `Xamarin.Forms.Platform.GTK.UnitTests` | ~191 (+3 skip) | **real GTK 4 widgets** |
 
 ```powershell
-dotnet test Xamarin.Forms.Gtk.sln                          # everything
+dotnet test Xamarin.Forms.Gtk4.sln                          # everything
 dotnet test Xamarin.Forms.Core.UnitTests --no-build
 dotnet test Xamarin.Forms.Core.UnitTests --filter FullyQualifiedName~BindingUnitTests
 ```
@@ -108,17 +121,28 @@ XAML compiler tests invoke `XamlCTask` in-process through
 
 ### GTK renderer tests
 
-`Xamarin.Forms.Platform.GTK.UnitTests` drives **real GTK 3 widgets** and runs on both OSes:
+`Xamarin.Forms.Platform.GTK.UnitTests` drives **real GTK 4 widgets** and runs on both OSes:
 
 - **Windows** — works directly against the GDK Win32 backend; no `DISPLAY`, no Xvfb.
 - **Linux** — needs an X server: `xvfb-run -a --server-args="-screen 0 1280x1024x24" dotnet test …`
   with `GDK_BACKEND=x11`. The default 640x480 would clamp the 800x600 test windows.
 
+**GTK 4 must be initialised on an STA thread on Windows** (its Win32 GDK backend calls
+`OleInitialize`, which fails on the MTA pool thread xUnit runs tests on — `Gdk-ERROR: OleInitialize
+failed`, and the whole run hangs). `GtkFixture` owns one STA (on Windows) background thread that runs
+`Gtk.Application.Init(); Forms.Init();` and a work queue; **every test body must run on it** by
+deriving from `GtkTestBase` and wrapping the body in `Run(() => { … })` / `Run<T>(() => …)`. Test
+parallelisation stays disabled.
+
 `GtkTestHost` is the harness. Read its comments before adding a test — they record measured
 behaviour, not theory. In particular: pump with `GtkTestHost.Pump`/`PumpUntil` rather than
-assuming a relayout happened; never write an `async` test method (a `GtkSynchronizationContext` is
-installed on the test thread and every continuation deadlocks — use `GtkTestHost.Await`); and
-never `Destroy()` a test window (GtkSharp's finalizer aborts the run — `Retire` hides and holds).
+assuming a relayout happened (`Pump`'s `ForceAllocate` allocates at least the widget's measured
+minimum — GTK 4 *refuses* an allocation smaller than that and drops the layout pass); never write an
+`async` test method (a `GtkSynchronizationContext` is installed and every continuation deadlocks —
+use `GtkTestHost.Await`); and never `Destroy()` a test window (GtkSharp's finalizer aborts the run —
+`Retire` hides and holds). Renderers must likewise only tear native widgets down on a deterministic
+`Dispose` (`disposing == true`), never from the GC finalizer — `Gtk.Widget.Destroy()` on the
+finalizer thread throws `MissingIntPtrCtorException`.
 
 **`Gtk.Window.Resize()` is only a request to the window manager.** Under Xvfb it is serviced
 immediately; on Win32 in a non-interactive session it is never serviced at all. Drive
