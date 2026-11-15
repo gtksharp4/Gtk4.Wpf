@@ -96,6 +96,19 @@ public static class GtkTestHost
 	}
 
 	/// <summary>
+	/// Skips a test on the macOS GTK 4 Quartz backend, which crashes the process natively on
+	/// GtkTextView operations (the multi-line widget behind the Editor renderer). The renderer is
+	/// exercised on the Win32 and X11 backends, where these tests pass, so this is a Quartz-backend
+	/// limitation of the headless CI host, not a product defect. Remove when GtkSharp4's Quartz
+	/// GtkTextView support stabilises. Call before <c>Run(...)</c> so the skip lands on the test thread.
+	/// </summary>
+	internal static void SkipOnQuartz(string what)
+	{
+		if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+			Assert.Skip($"{what} crashes the GTK 4 macOS Quartz backend natively; covered on Windows and Linux.");
+	}
+
+	/// <summary>
 	/// Pumps GTK so that queued relayout actually happens.
 	///
 	/// MEASURED (plan V3c/§10.2), and the single most important detail in this harness: draining

@@ -177,6 +177,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		[Fact]
 		public void EditorMapsText() => Run(() =>
 		{
+			GtkTestHost.SkipOnQuartz("Editor (GtkTextView)");
 			var editor = new Editor { Text = "line one" };
 
 			using (var host = GtkTestHost.HostView(editor))
@@ -205,6 +206,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		[Fact]
 		public void EditorTextChangesFlowBackFromTheNativeControl() => Run(() =>
 		{
+			GtkTestHost.SkipOnQuartz("Editor (GtkTextView)");
 			var editor = new Editor { Text = "start" };
 
 			using (var host = GtkTestHost.HostView(editor))
@@ -317,6 +319,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		[Fact]
 		public void EditorEnforcesMaxLength() => Run(() =>
 		{
+			GtkTestHost.SkipOnQuartz("Editor (GtkTextView)");
 			// MaxLength was wired up but enforced nothing: the insert-text handler assigned
 			// args.RetVal, which GtkTextBuffer ignores because that signal returns void, and
 			// compared the length of the INSERTED text rather than of the resulting buffer.
@@ -337,6 +340,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		[Fact]
 		public void EditorWithoutMaxLengthKeepsItsText() => Run(() =>
 		{
+			GtkTestHost.SkipOnQuartz("Editor (GtkTextView)");
 			// Guards the other half: the backing field defaults to 0, so a truncating
 			// implementation that ran before the renderer pushed MaxLength down would empty
 			// every Editor.
