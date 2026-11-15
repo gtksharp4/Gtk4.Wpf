@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		const int OpacityPrecision = 2;
 
 		[Fact]
-		public void OpacityIsAppliedToTheContainerAtCreation()
+		public void OpacityIsAppliedToTheContainerAtCreation() => Run(() =>
 		{
 			var box = new BoxView { Color = Color.Red, Opacity = 0.25 };
 
@@ -37,10 +37,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 				Assert.Equal(0.25, widget.Opacity, OpacityPrecision);
 			}
-		}
+		});
 
 		[Fact]
-		public void OpacityIsAppliedToTheContainerOnChange()
+		public void OpacityIsAppliedToTheContainerOnChange() => Run(() =>
 		{
 			// The half that actually catches regressions: a renderer that maps only in
 			// OnElementChanged looks right in a screenshot of the initial state and is broken
@@ -63,12 +63,12 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 				Assert.Equal(1.0, widget.Opacity, OpacityPrecision);
 			}
-		}
+		});
 
 		[Theory]
 		[InlineData(2.0, 1.0)]
 		[InlineData(-1.0, 0.0)]
-		public void OpacityIsClampedToTheRangeGtkAccepts(double set, double expected)
+		public void OpacityIsClampedToTheRangeGtkAccepts(double set, double expected) => Run(() =>
 		{
 			// Forms does not validate Opacity, and gtk_widget_set_opacity documents 0..1.
 			var box = new BoxView { Color = Color.Red };
@@ -82,7 +82,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 				Assert.Equal(expected, widget.Opacity, OpacityPrecision);
 			}
-		}
+		});
 
 		[Fact]
 		public void InputTransparentDoesNotTouchTheSharedParentGdkWindow()
@@ -119,7 +119,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// revert half is what stops the fix being "detach the handler and never re-attach it".</para>
 		/// </remarks>
 		[Fact]
-		public void InputTransparentSuppressesTapsAndRevertingRestoresThem()
+		public void InputTransparentSuppressesTapsAndRevertingRestoresThem() => Run(() =>
 		{
 			var box = new BoxView { Color = Color.Red, WidthRequest = 100, HeightRequest = 100 };
 
@@ -163,6 +163,6 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				// The PassThrough guard in GTK3 is covered structurally in GTK4: there are no
 				// per-widget GdkWindows to set pass-through on. See the skipped test above.
 			}
-		}
+		});
 	}
 }

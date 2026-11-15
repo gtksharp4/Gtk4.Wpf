@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 		[Theory]
 		[MemberData(nameof(ExportedHandlers))]
-		public void ExportedHandlerIsResolvable(Type handledType, Type expectedHandler)
+		public void ExportedHandlerIsResolvable(Type handledType, Type expectedHandler) => Run(() =>
 		{
 			var resolved = Registrar.Registered.GetHandlerType(handledType);
 
@@ -57,7 +57,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 			Assert.True(resolved == expectedHandler,
 				$"{handledType.Name} resolved to {resolved.Name}, not {expectedHandler.Name}.");
-		}
+		});
 
 		/// <summary>
 		/// The registrar answers for subclasses too, which is how a plain
@@ -71,10 +71,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		[InlineData(typeof(Grid), typeof(LayoutRenderer))]
 		[InlineData(typeof(AbsoluteLayout), typeof(LayoutRenderer))]
 		[InlineData(typeof(ContentView), typeof(LayoutRenderer))]
-		public void SubclassesInheritTheirBaseRenderer(Type viewType, Type expectedHandler)
+		public void SubclassesInheritTheirBaseRenderer(Type viewType, Type expectedHandler) => Run(() =>
 		{
 			Assert.Equal(expectedHandler, Registrar.Registered.GetHandlerType(viewType));
-		}
+		});
 
 		/// <summary>
 		/// The gallery's own start-up assertion (<c>CoreRootPage.ValidateRegistrar</c>) is that no
@@ -86,7 +86,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// </summary>
 		[Theory]
 		[MemberData(nameof(RenderableControls))]
-		public void ControlDoesNotFallBackToDefaultRenderer(Type viewType)
+		public void ControlDoesNotFallBackToDefaultRenderer(Type viewType) => Run(() =>
 		{
 			var resolved = Registrar.Registered.GetHandlerType(viewType);
 
@@ -96,7 +96,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 			Assert.True(resolved.Assembly == typeof(LabelRenderer).Assembly,
 				$"{viewType.Name} resolved to {resolved.FullName}, which is not a GTK renderer.");
-		}
+		});
 
 		public static IEnumerable<object[]> RenderableControls()
 		{
@@ -157,30 +157,30 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// <c>[assembly: ExportFont]</c> in a consuming app silently does nothing.
 		/// </summary>
 		[Fact]
-		public void EmbeddedFontLoaderIsRegistered()
+		public void EmbeddedFontLoaderIsRegistered() => Run(() =>
 		{
 			Assert.Equal(typeof(GtkEmbeddedFontLoader),
 				Registrar.Registered.GetHandlerType(typeof(EmbeddedFont)));
-		}
+		});
 
 		[Fact]
-		public void CellRenderersAreRegistered()
+		public void CellRenderersAreRegistered() => Run(() =>
 		{
 			Assert.Equal(typeof(TextCellRenderer), Registrar.Registered.GetHandlerType(typeof(TextCell)));
 			Assert.Equal(typeof(ImageCellRenderer), Registrar.Registered.GetHandlerType(typeof(ImageCell)));
 			Assert.Equal(typeof(EntryCellRenderer), Registrar.Registered.GetHandlerType(typeof(EntryCell)));
 			Assert.Equal(typeof(SwitchCellRenderer), Registrar.Registered.GetHandlerType(typeof(SwitchCell)));
 			Assert.Equal(typeof(ViewCellRenderer), Registrar.Registered.GetHandlerType(typeof(ViewCell)));
-		}
+		});
 
 		[Fact]
-		public void ImageSourceHandlersAreRegistered()
+		public void ImageSourceHandlersAreRegistered() => Run(() =>
 		{
 			Assert.Equal(typeof(FileImageSourceHandler), Registrar.Registered.GetHandlerType(typeof(FileImageSource)));
 			Assert.Equal(typeof(StreamImagesourceHandler), Registrar.Registered.GetHandlerType(typeof(StreamImageSource)));
 			Assert.Equal(typeof(UriImageSourceHandler), Registrar.Registered.GetHandlerType(typeof(UriImageSource)));
 			Assert.Equal(typeof(FontImageSourceHandler), Registrar.Registered.GetHandlerType(typeof(FontImageSource)));
-		}
+		});
 
 		/// <summary>
 		/// Guards the count as well as the contents: a renderer silently dropped from
@@ -188,7 +188,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// same file. Only a total tells you something went missing.
 		/// </summary>
 		[Fact]
-		public void TheExpectedNumberOfHandlersIsExported()
+		public void TheExpectedNumberOfHandlersIsExported() => Run(() =>
 		{
 			var exported = typeof(LabelRenderer).Assembly
 				.GetCustomAttributes<HandlerAttribute>()
@@ -198,7 +198,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				$"The GTK backend exports 44 renderers + 6 cells + 4 image-source handlers = 54; " +
 				$"this assembly exports {exported}. If you added or removed one deliberately, " +
 				"update this number.");
-		}
+		});
 
 		// HandlerAttribute.TargetType / .HandlerType are internal to Xamarin.Forms.Core, so this
 		// assembly cannot see them without an InternalsVisibleTo in Core; reflect rather than
