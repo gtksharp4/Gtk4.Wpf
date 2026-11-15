@@ -22,8 +22,15 @@ GTK_PREFIX="$(brew --prefix)"
 export DYLD_FALLBACK_LIBRARY_PATH="$GTK_PREFIX/lib:${DYLD_FALLBACK_LIBRARY_PATH:-}"
 pkg-config --modversion gtk4 2>/dev/null || true
 
-echo "== build (Debug; GeneratePackageOnBuild off - CI tests, it does not pack) =="
-dotnet build Xamarin.Forms.Gtk4.sln -c Debug -p:GeneratePackageOnBuild=false
+echo "== restore =="
+dotnet restore Xamarin.Forms.Gtk4.sln
+
+# Build serially (-maxcpucount:1). The macOS runner intermittently fails the parallel solution build
+# with CS0518 "Predefined type 'System.Object' is not defined" in a netstandard2.0 project - a race
+# in MSBuild's parallel reference-assembly resolution that does not occur on the Windows or Linux
+# runners. A single-node build is deterministic here and the solution is small.
+echo "== build (Debug, serial; GeneratePackageOnBuild off - CI tests, it does not pack) =="
+dotnet build Xamarin.Forms.Gtk4.sln -c Debug -p:GeneratePackageOnBuild=false --no-restore -maxcpucount:1
 
 echo "== Core unit tests =="
 dotnet test Xamarin.Forms.Core.UnitTests -c Debug --no-build --logger trx
