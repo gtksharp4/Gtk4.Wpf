@@ -101,8 +101,8 @@ public static class GtkTestHost
 	}
 
 	static string NoNativeRuntime(string detail) =>
-		"The native GTK 3 runtime is not available, so there are no widgets to test: " + detail +
-		". On Linux install libgtk-3-0; on Windows these tests need a GTK 3 runtime on PATH " +
+		"The native GTK 4 runtime is not available, so there are no widgets to test: " + detail +
+		". On Linux install libgtk-4-1; on Windows these tests need a GTK 4 runtime on PATH " +
 		"(the GtkSharp package ships managed bindings only).";
 
 	/// <summary>
@@ -140,8 +140,9 @@ public static class GtkTestHost
 
 			if (toplevel != null)
 			{
+				// GTK4: AllocatedWidth/AllocatedHeight are obsolete; use Width/Height.
 				toplevel.SizeAllocate(new Gdk.Rectangle(
-					0, 0, toplevel.AllocatedWidth, toplevel.AllocatedHeight));
+					0, 0, toplevel.Width, toplevel.Height));
 			}
 
 			while (GLib.MainContext.Iteration(false))
@@ -245,7 +246,8 @@ public static class GtkTestHost
 		if (window == null)
 			return;
 
-		window.Hide();
+		// GTK4: Hide() is obsolete; use Visible = false.
+		window.Visible = false;
 		Pump(null, 2);
 
 		s_retired.Add(window);
@@ -298,59 +300,76 @@ public static class GtkTestHost
 	}
 
 	/// <summary>
-	/// Delivers a synthetic button press to <paramref name="widget"/>, as gtk_widget_event would.
+	/// Delivers a synthetic button press to <paramref name="widget"/>.
 	/// </summary>
 	/// <remarks>
-	/// <c>GLib.Signal.Emit(w, "clicked")</c> - what this suite uses for Button and ImageButton -
-	/// cannot stand in for this: <c>button-press-event</c> carries a <c>Gdk.EventButton</c>
-	/// argument, and its handlers read the button number and the press type off it. So the event
-	/// has to be built.
+	/// GTK4 removed native event injection entirely: there is no gtk_widget_event, no GdkWindow
+	/// per widget, and no public GdkEvent constructor. The GTK4 compat layer delivers
+	/// button-press-event through a GtkGestureClick controller whose pressed signal populates a
+	/// managed <c>ButtonPressEventArgs</c> and fires <c>Widget.ButtonPressEvent</c>. That managed
+	/// event is what renderer code hooks, so raising it directly produces the same call path a real
+	/// click would take through the compat shim — with the button number intact.
 	///
-	/// <para>It needs a real, viewable GdkWindow. gtk_widget_event drops a button event whose
-	/// window is null or unmapped (event_window_is_still_viewable) and returns WITHOUT emitting
-	/// the signal, which a test then reads as "the handler was never attached" - the opposite
-	/// conclusion. The widget's own window is borrowed for that reason; for a windowless widget
-	/// (<see cref="Xamarin.Forms.Platform.GTK.GtkFormsContainer"/> is a no-window
-	/// <c>Gtk.EventBox</c>) that is the parent's, which is exactly what a real press would carry.</para>
+	/// <para>The guard is now <c>IsRealized</c> rather than "has a GdkWindow": in GTK4 all widgets
+	/// are windowless; realization is still the signal that the widget is ready to receive
+	/// input.</para>
 	///
-	/// <para>Deliberately not freed: gdk_event_free unrefs event-&gt;any.window, and that window is
-	/// borrowed from a live widget. One leaked event per press is the cheaper half of the trade.</para>
+	/// <para><c>Widget.ButtonPressEvent</c> uses a custom event accessor whose backing delegate is
+	/// private. Reflection is the only way to invoke it from outside the class — the alternative
+	/// of wiring up the native GtkGestureClick::pressed signal to a fake event sequence is
+	/// disproportionately complex and equally internal. This is a test-only harness path, not
+	/// production code.</para>
 	/// </remarks>
 	public static void PressButton(Gtk.Widget widget, uint button = 1)
 	{
-		if (widget == null || widget.Window == null)
+		if (widget == null || !widget.IsRealized)
 			throw new InvalidOperationException(
-				$"the widget is not realized, so it has no window to press: {Describe(widget)}");
+				$"the widget is not realized, so it cannot be pressed: {Describe(widget)}");
 
-		Gdk.Event evnt = Gdk.EventHelper.New(Gdk.EventType.ButtonPress);
-		var press = new Gdk.EventButton(evnt.Handle);
+		var args = new Gtk.ButtonPressEventArgs
+		{
+			Event = new Gdk.EventButton
+			{
+				Type = Gdk.EventType.ButtonPress,
+				Button = button,
+			}
+		};
 
-		press.Window = widget.Window;
-		press.Button = button;
+		// ButtonPressEvent has custom add/remove accessors; the backing delegate is private.
+		// Reflection is a last resort (see CLAUDE.md) but is the least-invasive option here:
+		// it invokes the same path a real GestureClick::pressed would take through the compat shim.
+		var field = typeof(Gtk.Widget).GetField(
+			"_buttonPressEvent",
+			System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
 
-		widget.ProcessEvent(evnt);
+		var handler = field?.GetValue(widget) as Gtk.ButtonPressEventHandler;
+		handler?.Invoke(widget, args);
 	}
 
 	/// <summary>
 	/// True when GTK never gave the widget a real allocation. GTK3's sentinel for
 	/// "not allocated yet" is (-1, -1, 1, 1), and every M3 layout bug in this backend showed up
 	/// as exactly this while the widget still reported <c>Visible == true</c>.
+	///
+	/// GTK4: <c>Widget.Allocation</c> is obsolete. Use <c>Widget.Width</c>/<c>Widget.Height</c>
+	/// instead; they report the last allocated size (0 before allocation, so the unallocated
+	/// sentinel is a size of 0 or 1 in GTK4 rather than the GTK3 (-1,-1,1,1)).
 	/// </summary>
 	public static bool IsUnallocated(Gtk.Widget widget) =>
-		widget == null || (widget.Allocation.Width <= 1 && widget.Allocation.Height <= 1);
+		widget == null || (widget.Width <= 1 && widget.Height <= 1);
 
 	public static string Describe(Gtk.Widget widget) =>
 		widget == null
 			? "<null>"
-			: $"{widget.GetType().Name}[{widget.Allocation.X},{widget.Allocation.Y} " +
-			  $"{widget.Allocation.Width}x{widget.Allocation.Height} visible={widget.Visible}]";
+			: $"{widget.GetType().Name}[{widget.Width}x{widget.Height} visible={widget.Visible}]";
 
 	public sealed class ViewHost<TView> : IDisposable where TView : View
 	{
 		public ViewHost(TView view, int width, int height)
 		{
 			View = view;
-			Window = new Gtk.Window(Gtk.WindowType.Toplevel);
+			// GTK4: WindowType enum is gone; Window() creates a toplevel by default.
+			Window = new Gtk.Window();
 			Window.SetDefaultSize(width, height);
 
 			Renderer = Platform.CreateRenderer(view);
@@ -401,9 +420,12 @@ public static class GtkTestHost
 			Window.LoadApplication(_app);
 			Window.ShowAll();
 
-			// Under Xvfb no window manager ever configures the window, so OnConfigureEvent -
-			// which is what normally tells Forms how big the page is - may never fire.
-			Window.Resize(width, height);
+			// GTK4: Window.Resize() is gone (it was a WM request anyway, and unreliable under
+			// Xvfb). Force the allocation directly instead, which is what the harness comment
+			// always recommended for headless runs. SetDefaultSize sets the preferred size so the
+			// window manager (if any) knows what we want; SizeAllocate commits it now.
+			Window.SetDefaultSize(width, height);
+			Window.SizeAllocate(new Gdk.Rectangle(0, 0, width, height));
 			Platform.GetRenderer(page)?.SetElementSize(new Size(width, height));
 
 			GtkTestHost.Pump(Window);
