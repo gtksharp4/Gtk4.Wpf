@@ -14,15 +14,8 @@ set -euo pipefail
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
-# GitInfo (which computes the assembly/package version) shells out to git. On the macOS runner the
-# Homebrew git trips its "dubious ownership" guard for the workspace and every git command exits 128,
-# so every Git* property comes back empty and the generated AssemblyFileVersion is "..." - CS7035,
-# escalated to an error by TreatWarningsAsErrors. actions/checkout's safe.directory entry is scoped to
-# its own git calls, not GitInfo's subprocess, so register it in the global config GitInfo will read.
-# Harmless on a correctly-owned checkout (Windows/Linux never hit the guard).
-git config --global --add safe.directory "$(pwd)" || true
-git config --global --add safe.directory '*' || true
-
+# The macOS runner's git cannot resolve the branch for GitInfo, so the assembly version falls back to
+# $(VersionPrefix) in Version.targets - see the comment there. No git configuration is needed here.
 echo "== build (Debug; GeneratePackageOnBuild off) =="
 dotnet build Xamarin.Forms.Gtk4.sln -c Debug -p:GeneratePackageOnBuild=false
 

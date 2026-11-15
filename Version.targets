@@ -86,6 +86,18 @@
       <PackageVersion Condition="$(IsAzurePipelines) and '$(GitBaseVersion)' == '4.4.0'">$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch).$(BUILDVERSION44)$(GitSemVerDashLabel)$(VersionMetadataPlusLabel)</PackageVersion>
     </PropertyGroup>
 
+    <!--
+      Guarantee a valid version even when GitInfo returns nothing. On the GitHub macOS runner its git
+      cannot resolve the branch, so every Git* property (GitBaseVersion*, GitCommits) comes back empty,
+      $(Version) collapses to ".." and the generated AssemblyFileVersion becomes "..." - CS7035, which
+      TreatWarningsAsErrors turns into a build failure. Fall back to $(VersionPrefix) (5.0.0 from
+      GitInfo.txt, resolved independently of git - Directory.Build.props) and zero commits. No-op
+      wherever GitInfo populates the version (Windows/Linux).
+    -->
+    <PropertyGroup>
+      <GitCommits Condition="'$(GitCommits)' == ''">0</GitCommits>
+      <Version Condition="'$(GitBaseVersionMajor)' == ''">$(VersionPrefix)</Version>
+    </PropertyGroup>
     <PropertyGroup>
       <InformationalVersion>$(PackageVersion)</InformationalVersion>
       <FileVersion>$(Version).$(GitCommits)</FileVersion>
