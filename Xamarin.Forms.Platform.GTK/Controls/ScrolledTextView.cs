@@ -94,9 +94,9 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 				TextView.Buffer.Text = TextView.Buffer.Text.Substring(0, maxLength);
 		}
 
-		protected override void OnFocusGrabbed()
+		protected override bool OnGrabFocus()
 		{
-			TextView?.GrabFocus();
+			return TextView != null && TextView.GrabFocus();
 		}
 
 		Gdk.Rectangle _lastAllocation = Gdk.Rectangle.Zero;
