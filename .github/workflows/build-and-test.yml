@@ -63,18 +63,11 @@ jobs:
     name: macos
     runs-on: macos-latest
     timeout-minutes: 45
-    # NON-GATING (continue-on-error): the macOS job runs all three suites, and the real-GTK-4 renderer
-    # suite runs through a thread-0 runner (GTK 4's Quartz backend requires thread 0, which
-    # `dotnet test` owns; the test assembly is executed directly and its custom entry point owns
-    # thread 0 - see scripts/ci/test-macos.sh). It is informational for now because the GitHub macOS
-    # (arm64) runner currently fails every netstandard2.0 compile with CS0518 "Predefined type
-    # 'System.Object' is not defined" - the SDK's implicit NETStandard.Library.Ref is not handed to
-    # the compiler. The same build was green on an earlier runner image and it fails on both 10.0.100
-    # and 10.0.404, so it is a runner regression, not this repo's code or SDK choice; it could not be
-    # worked around from CI (explicit NETStandard.Library ref, serial build, SDK pin all tried). The
-    # thread-0 runner itself is validated on Windows. Remove continue-on-error to re-gate once the
-    # runner image recovers; Windows and Linux already gate with the full renderer suite.
-    continue-on-error: true
+    # Gates (like Windows and Linux). Runs all three suites per project (not via the solution: the
+    # GitHub macOS-arm64 runner drops the netstandard2.0 reference in a solution build - see
+    # scripts/ci/test-macos.sh). The real-GTK-4 renderer suite runs through a thread-0 runner (GTK 4's
+    # Quartz backend requires thread 0, which `dotnet test` owns; the test assembly is executed
+    # directly and its custom entry point owns thread 0).
     steps:
       - uses: actions/checkout@v4
         with:
