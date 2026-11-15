@@ -35,46 +35,22 @@ public static class GtkTestHost
 	/// </summary>
 	const string RequiredVariable = "XF_GTK_REQUIRE_NATIVE";
 
-	static bool s_initialized;
-	static string s_unavailable;
-	static readonly object s_gate = new object();
-
+	/// <summary>
+	/// Brings up the single GTK thread (via <see cref="Xamarin.Forms.Platform.GTK.UnitTests.GtkFixture"/>)
+	/// and either returns - GTK is running on that thread - or skips, so an environment that cannot host
+	/// GTK reports as such rather than as a wall of identical failures. Called from
+	/// <see cref="GtkTestBase"/>'s constructor, which xUnit runs before every test.
+	///
+	/// <para>The actual <c>Gtk.Application.Init(); Forms.Init();</c> no longer runs here: under GTK4 it
+	/// MUST run on a dedicated STA thread on Windows (OleInitialize), so the fixture owns it. This
+	/// method only surfaces the fixture's verdict per-test.</para>
+	/// </summary>
 	public static void EnsureInitialized()
 	{
-		lock (s_gate)
-		{
-			if (s_initialized)
-				return;
+		var reason = Xamarin.Forms.Platform.GTK.UnitTests.GtkFixture.Instance.UnavailableReason;
 
-			// Already ruled the environment out once - don't pay for 169 more DllNotFoundExceptions.
-			if (s_unavailable != null)
-				Unavailable(s_unavailable);
-
-			var reason = DisplayUnavailableReason();
-
-			if (reason == null)
-			{
-				try
-				{
-					Gtk.Application.Init();
-					Forms.Init();
-
-					s_initialized = true;
-					return;
-				}
-				catch (DllNotFoundException e)
-				{
-					reason = NoNativeRuntime(e.Message);
-				}
-				catch (TypeInitializationException e) when (e.InnerException is DllNotFoundException inner)
-				{
-					reason = NoNativeRuntime(inner.Message);
-				}
-			}
-
-			s_unavailable = reason;
+		if (reason != null)
 			Unavailable(reason);
-		}
 	}
 
 	/// <summary>
@@ -86,7 +62,7 @@ public static class GtkTestHost
 	/// the honest test on Windows is whether the native runtime loads, which is left to
 	/// <see cref="Gtk.Application.Init"/> to answer.
 	/// </remarks>
-	static string DisplayUnavailableReason()
+	internal static string DisplayUnavailableReason()
 	{
 		if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 			return null;
@@ -100,7 +76,7 @@ public static class GtkTestHost
 			"run them as `xvfb-run -a dotnet test Xamarin.Forms.Platform.GTK.UnitTests`.";
 	}
 
-	static string NoNativeRuntime(string detail) =>
+	internal static string NoNativeRuntime(string detail) =>
 		"The native GTK 4 runtime is not available, so there are no widgets to test: " + detail +
 		". On Linux install libgtk-4-1; on Windows these tests need a GTK 4 runtime on PATH " +
 		"(the GtkSharp package ships managed bindings only).";
@@ -155,6 +131,18 @@ public static class GtkTestHost
 	{
 		while (Gtk.Application.EventsPending())
 			Gtk.Application.RunIteration();
+	}
+
+	/// <summary>
+	/// Drains pending main-loop work without blocking, after each test body, so a failure in layout,
+	/// a draw function or an idle callback a test queued is attributed to that test rather than to
+	/// whichever runs next. Bounded, so a test that queues work forever fails by timing out instead of
+	/// wedging the GTK thread. Called by <see cref="Xamarin.Forms.Platform.GTK.UnitTests.GtkFixture"/>.
+	/// </summary>
+	internal static void PumpPending()
+	{
+		for (int i = 0; i < 200 && Gtk.Application.EventsPending(); i++)
+			Gtk.Application.RunIteration(false);
 	}
 
 	/// <summary>
@@ -445,10 +433,38 @@ public static class GtkTestHost
 }
 
 /// <summary>
-/// Base class for every fixture here. Its constructor runs the GTK/Forms bootstrap, which xUnit
-/// guarantees happens before each test method.
+/// Base class for every fixture here. Its constructor brings up the single GTK thread (skipping the
+/// test if the environment cannot host GTK), and <see cref="Run(System.Action)"/> marshals a test body
+/// onto that thread.
 /// </summary>
+/// <remarks>
+/// GTK4 forces this: <c>gtk_init</c> must run on a dedicated STA thread on Windows (OleInitialize) and
+/// every subsequent GTK call must stay on that same thread. So a test body may no longer run inline on
+/// the xUnit runner thread - it is wrapped in <c>Run(() =&gt; { ... })</c>, which hands it to the GTK
+/// thread and rethrows whatever it throws (asserts included) on the runner thread.
+///
+/// <para>Pattern for every test in this assembly:</para>
+/// <code>
+/// [Fact]
+/// public void Foo() => Run(() =&gt; { /* body, Asserts, GtkTestHost.* calls */ });
+///
+/// [Theory]
+/// [InlineData(1)]
+/// public void Bar(int x) => Run(() =&gt; { /* body using x */ });
+///
+/// // when the body produces a value the assertion needs:
+/// var widget = Run(() =&gt; (Gtk.Widget)host.Renderer);
+/// </code>
+/// </remarks>
 public abstract class GtkTestBase
 {
 	protected GtkTestBase() => GtkTestHost.EnsureInitialized();
+
+	/// <summary>Runs a test body on the GTK thread, rethrowing anything it throws.</summary>
+	protected void Run(System.Action body) =>
+		Xamarin.Forms.Platform.GTK.UnitTests.GtkFixture.Instance.Invoke(body);
+
+	/// <summary>Runs a test body on the GTK thread and returns its value.</summary>
+	protected T Run<T>(System.Func<T> body) =>
+		Xamarin.Forms.Platform.GTK.UnitTests.GtkFixture.Instance.Invoke(body);
 }
