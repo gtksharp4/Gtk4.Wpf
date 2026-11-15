@@ -138,13 +138,18 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 		private void ShowPlaceholderIfNeeded()
 		{
+			// GTK4: Widget.Window (the GdkWindow getter) is removed; there are no per-widget
+			// surfaces and Raise() does not exist. Visibility is managed through the widget
+			// tree instead.
 			if (string.IsNullOrEmpty(_entry.Text) && !string.IsNullOrEmpty(_placeholder.Text))
 			{
-				_placeholderContainer.Window?.Raise();
+				_placeholderContainer.Visible = true;
+				_entry.Visible = false;
 			}
 			else
 			{
-				_entry.Window?.Raise();
+				_entry.Visible = true;
+				_placeholderContainer.Visible = false;
 			}
 		}
 
@@ -153,8 +158,9 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			if (Sensitive)
 			{
 				_entry.Sensitive = true;
-				_entry.HasFocus = true;
-				_entry.Window?.Raise();
+				// GTK4: HasFocus is read-only; use GrabFocus() to request focus.
+				// Widget.Window?.Raise() is removed (no per-widget GdkWindows in GTK4).
+				_entry.GrabFocus();
 			}
 		}
 
