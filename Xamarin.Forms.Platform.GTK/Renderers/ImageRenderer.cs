@@ -295,7 +295,36 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 					Pango.CairoHelper.ShowLayout(cr, layout);
 
 					surface.Flush();
-					pixbuf = new Pixbuf(surface, 0, 0, size, size);
+
+					// GTK4: Gdk.CairoHelper.SetSourcePixbuf and
+					// Pixbuf(Cairo.ImageSurface, x, y, w, h) are gone.
+					// Extract ARGB32 pixel data and convert Cairo BGRA (little-endian) → GdkPixbuf RGBA.
+					// Pixbuf.cs:208 — Pixbuf(byte[], bool hasAlpha, int bps, int width, int height, int rowstride)
+					{
+						IntPtr dataPtr = surface.DataPtr;
+						int stride = surface.Stride;
+						byte[] rgba = new byte[size * size * 4];
+						int dst = 0;
+
+						for (int row = 0; row < size; row++)
+						{
+							IntPtr rowPtr = IntPtr.Add(dataPtr, row * stride);
+							for (int col = 0; col < size; col++)
+							{
+								IntPtr px = IntPtr.Add(rowPtr, col * 4);
+								byte b = System.Runtime.InteropServices.Marshal.ReadByte(px, 0);
+								byte g = System.Runtime.InteropServices.Marshal.ReadByte(px, 1);
+								byte r = System.Runtime.InteropServices.Marshal.ReadByte(px, 2);
+								byte a = System.Runtime.InteropServices.Marshal.ReadByte(px, 3);
+								rgba[dst++] = r;
+								rgba[dst++] = g;
+								rgba[dst++] = b;
+								rgba[dst++] = a;
+							}
+						}
+
+						pixbuf = new Pixbuf(rgba, true, 8, size, size, size * 4);
+					}
 				}
 			});
 

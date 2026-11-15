@@ -182,7 +182,9 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			var metrics = textView.PangoContext.GetMetrics(font, Language.Default);
 			var pangoUnits = (metrics.Ascent + metrics.Descent) / Pango.Scale.PangoScale;
 
-			var resolution = textView.Screen.Resolution;
+			// GTK4: GdkScreen (and its Resolution property) is removed. Fall back to 96 DPI,
+			// the CSS standard that GTK4 itself uses when no Xsettings override is present.
+			const double resolution = 96.0;
 			var minHeight = (int)(pangoUnits * (resolution / 72.0));
 
 			if (textView.HeightRequest < minHeight)

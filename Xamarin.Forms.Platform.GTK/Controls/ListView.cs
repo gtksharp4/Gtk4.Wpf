@@ -351,7 +351,10 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 				{
 					Text = "Refresh"
 				});
-			_refreshButton.ImageWidget.Stock = Stock.Refresh;
+			// GTK4: Gtk.Stock removed. Use an icon-name image instead.
+			// Generated/Gtk/Image.cs:78 — Image.NewFromIconName(string)
+			var refreshIcon = Gtk.Image.NewFromIconName("view-refresh-symbolic");
+			_refreshButton.ImageWidget.Pixbuf = refreshIcon.Pixbuf;
 			_refreshButton.SetImagePosition(PositionType.Left);
 			_refreshButton.Clicked += (sender, args) =>
 			{

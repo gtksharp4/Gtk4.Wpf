@@ -221,35 +221,43 @@ namespace Xamarin.Forms.Platform.GTK
 				toolBarItem.PropertyChanged += OnToolbarItemPropertyChanged;
 			}
 
-			var secondaryToolBarItems = toolBarItems.Where(t => t.Order == ToolbarItemOrder.Secondary);
+			var secondaryToolBarItems = toolBarItems.Where(t => t.Order == ToolbarItemOrder.Secondary).ToList();
 
 			if (secondaryToolBarItems.Any())
 			{
 				ToolButton secondaryButton = ToolButtonHelper.CreateToolButtonFromIconName("list-add-symbolic");
 				_toolbarSection.PackStart(secondaryButton, false, false, 0);
 
-				Gtk.Menu menu = new Gtk.Menu();
-				foreach (var secondaryToolBarItem in secondaryToolBarItems)
+				// GTK4: Gtk.Menu/Gtk.MenuItem removed.
+				// Build a GLib.Menu model and show it in a Gtk.PopoverMenu parented to the button.
+				// GLib.Menu.Append: GioSharp/Generated/GLib/Menu.cs
+				// Gtk.PopoverMenu ctor: GtkSharp/Generated/Gtk/PopoverMenu.cs
+				var gMenu = new GLib.Menu();
+				var actionGroup = new GLib.SimpleActionGroup();
+				secondaryButton.InsertActionGroup("tbi", actionGroup);
+
+				for (int i = 0; i < secondaryToolBarItems.Count; i++)
 				{
-					Gtk.MenuItem menuItem = new Gtk.MenuItem(secondaryToolBarItem.Text)
-					{
-						Sensitive = secondaryToolBarItem.IsEnabled
-					};
-					menu.Add(menuItem);
+					var item = secondaryToolBarItems[i];
+					var actionName = "item" + i;
+					var capturedItem = item;
+					var action = new GLib.SimpleAction(actionName, null) { Enabled = item.IsEnabled };
+					action.Activated += (s, e) => ((IMenuItemController)capturedItem).Activate();
+					actionGroup.AddAction(action);
+					gMenu.Append(item.Text ?? string.Empty, "tbi." + actionName);
 
-					menuItem.ButtonPressEvent += (sender, args) =>
-					{
-						((IMenuItemController)secondaryToolBarItem).Activate();
-					};
-
-					secondaryToolBarItem.PropertyChanged -= OnToolbarItemPropertyChanged;
-					secondaryToolBarItem.PropertyChanged += OnToolbarItemPropertyChanged;
+					item.PropertyChanged -= OnToolbarItemPropertyChanged;
+					item.PropertyChanged += OnToolbarItemPropertyChanged;
 				}
+
+				var popoverMenu = new Gtk.PopoverMenu(gMenu);
+				popoverMenu.Parent = secondaryButton;
+				popoverMenu.HasArrow = false;
+				popoverMenu.Autohide = true;
 
 				secondaryButton.Clicked += (sender, args) =>
 				{
-					menu.ShowAll();
-					menu.Popup();
+					popoverMenu.Popup();
 				};
 			}
 
@@ -419,11 +427,15 @@ namespace Xamarin.Forms.Platform.GTK
 
 		static class ToolButtonHelper
 		{
-			// Was ToolButton(stockId). GTK3 deprecates the stock-id constructor along with the
-			// stock system itself, so the icon comes from the icon theme by name instead.
+			// Was ToolButton(stockId). GTK3 deprecated stocks; GTK4 removes IconSize.SmallToolbar
+			// (only Inherit=0, Normal=1, Large=2 remain — Generated/Gtk/IconSize.cs:17).
+			// Image(string iconName, IconSize) constructor is also gone; use NewFromIconName.
+			// Generated/Gtk/Image.cs:78 — Image.NewFromIconName(string icon_name)
 			public static ToolButton CreateToolButtonFromIconName(string iconName)
 			{
-				ToolButton button = new ToolButton(new Gtk.Image(iconName, IconSize.SmallToolbar), null);
+				var image = Gtk.Image.NewFromIconName(iconName);
+				image.IconSize = IconSize.Normal;
+				ToolButton button = new ToolButton(image, null);
 				ApplyDefaultDimensions(button);
 
 				return button;
