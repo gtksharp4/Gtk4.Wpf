@@ -246,6 +246,21 @@ namespace Xamarin.Forms.Platform.GTK.Extensions
 
 				case Gtk.Label label:
 					label.Attributes = attributes;
+					// MEASURED (GTK 4): gtk_label_set_attributes recalculates the cached Pango layout
+					// when the list *changes* - bold -> normal re-measures correctly - but setting it
+					// back to NULL does not. A label taken bold then cleared keeps the bold width
+					// (24pt bold 407px stayed 407px after Attributes = null), because NULL takes a
+					// short-circuit that skips gtk_label_recalculate. Nothing else invalidates it:
+					// QueueResize, an empty AttrList and re-setting identical text all left 407 (the
+					// text setter is itself guarded against an unchanged string). Only a genuine text
+					// change forces the recalc, so round-trip the text through a sentinel when clearing.
+					// This is synchronous and precedes any draw, so no flicker is observable.
+					if (attributes == null)
+					{
+						var text = label.LabelProp;
+						label.LabelProp = text + " ";
+						label.LabelProp = text;
+					}
 					break;
 				case Gtk.Entry entry:
 					entry.Attributes = attributes;

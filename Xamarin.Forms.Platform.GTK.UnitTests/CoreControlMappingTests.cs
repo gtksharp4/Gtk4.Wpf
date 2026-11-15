@@ -112,7 +112,12 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 				host.Pump(10);
 
-				var red = PixelAt(host.Window, widget.Allocation.X + 10, widget.Allocation.Y + 10);
+				// GTK4: the capture is a full-window texture, so probe at the BoxView's position
+				// relative to the WINDOW, not to its parent - a single child is centred, so the two
+				// differ (see WindowRelativeTopLeft).
+				var (originX, originY) = GtkTestHost.WindowRelativeTopLeft(widget, host.Window);
+
+				var red = PixelAt(host.Window, originX + 10, originY + 10);
 
 				Assert.True(red.R > 200 && red.G < 60 && red.B < 60,
 					$"a red BoxView painted rgb({red.R},{red.G},{red.B}) at its top-left corner");
@@ -120,7 +125,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				box.Color = Color.Blue;
 				host.Pump(10);
 
-				var blue = PixelAt(host.Window, widget.Allocation.X + 10, widget.Allocation.Y + 10);
+				var blue = PixelAt(host.Window, originX + 10, originY + 10);
 
 				Assert.True(blue.B > 200 && blue.R < 60 && blue.G < 60,
 					$"Color Red -> Blue painted rgb({blue.R},{blue.G},{blue.B}); " +
@@ -293,35 +298,77 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		// assert on would silently be wrong. These are the pixbuf's own bytes, unscaled.
 		static (byte R, byte G, byte B) PixelAt(Gtk.Window window, int x, int y)
 		{
-			// GTK4: Gdk.Window is gone. Capture pixels through Gtk.WidgetPaintable, which
-			// freezes the last rendered frame of the widget. The frame clock (not the event queue)
-			// runs the draw pass; pumping first gives it a chance to commit the repaint.
-			// ProcessUpdates had the same purpose in GTK3 - it flushed the damage-region queue
-			// so the screenshot returned the CURRENT frame rather than the previous one.
+			var image = RenderToTexture(window);
+
+			int w = image.Width;
+			int h = image.Height;
+
+			Assert.True(x >= 0 && y >= 0 && x < w && y < h,
+				$"({x},{y}) is outside the {w}x{h} window");
+
+			// R8g8b8 is 3 bytes per pixel, no alpha, matching the byte offsets the callers use.
+			// Gdk.TextureDownloader.DownloadInto writes one row every `stride` bytes.
+			using (var downloader = new Gdk.TextureDownloader(image))
+			{
+				downloader.Format = Gdk.MemoryFormat.R8g8b8;
+				ulong stride = (ulong)(w * 3);
+				var bytes = new byte[stride * (ulong)h];
+				downloader.DownloadInto(bytes, stride);
+				var offset = (ulong)y * stride + (ulong)x * 3;
+				return (bytes[offset], bytes[offset + 1], bytes[offset + 2]);
+			}
+		}
+
+		/// <summary>
+		/// Renders <paramref name="window"/> to an off-screen <see cref="Gdk.Texture"/> and returns it.
+		/// </summary>
+		/// <remarks>
+		/// GTK4: Gdk.Window is gone, and <see cref="Gtk.WidgetPaintable.CurrentImage"/> is null until
+		/// the widget's frame clock has ticked at least once. Under the headless forced-allocate path
+		/// this backend's tests use the window is never presented, so its frame clock never ticks:
+		/// CurrentImage stays null, and a WidgetPaintable only ever re-emits the last frame the clock
+		/// produced - which here is none - so snapshotting it yields an empty render node too.
+		///
+		/// Driving a real paint instead of waiting for a frame: <c>gtk_widget_snapshot_child</c>
+		/// (exposed as <see cref="Gtk.Widget.SnapshotChild"/>) runs the child's snapshot vfunc
+		/// synchronously - it is the same entry point the frame clock would drive, but called by hand
+		/// and independent of it. Recording the toplevel's child into a <see cref="Gtk.Snapshot"/>
+		/// gives a <see cref="Gsk.RenderNode"/>, and a software <see cref="Gsk.CairoRenderer"/> (no
+		/// GPU, no presented surface) turns that node into a texture. Pumping first lets any queued
+		/// relayout settle so the snapshot reflects the current colour rather than the previous one.
+		/// </remarks>
+		static Gdk.Texture RenderToTexture(Gtk.Window window)
+		{
 			GtkTestHost.Pump(window, 2);
 
-			using (var paintable = new Gtk.WidgetPaintable(window))
+			int w = window.Width;
+			int h = window.Height;
+
+			Assert.True(w > 0 && h > 0,
+				$"the window has no allocation to render: {w}x{h}");
+
+			var child = window.Child;
+			Assert.True(child != null, "the window has no child to snapshot");
+
+			var snapshot = new Gtk.Snapshot();
+			window.SnapshotChild(child, snapshot);
+			var node = snapshot.FreeToNode();
+
+			Assert.True(node != null,
+				$"the toplevel child painted nothing: {GtkTestHost.Describe(child)}");
+
+			var renderer = new Gsk.CairoRenderer();
+			try
 			{
-				var image = paintable.CurrentImage as Gdk.Texture;
-				Assert.NotNull(image);
+				Assert.True(renderer.RealizeForDisplay(window.Display),
+					"the Cairo renderer could not realize for the window's display");
 
-				int w = image.Width;
-				int h = image.Height;
-
-				Assert.True(x >= 0 && y >= 0 && x < w && y < h,
-					$"({x},{y}) is outside the {w}x{h} window");
-
-				// R8g8b8 is 3 bytes per pixel, no alpha, matching the byte offsets the callers use.
-				// Gdk.TextureDownloader.DownloadInto writes one row every `stride` bytes.
-				using (var downloader = new Gdk.TextureDownloader(image))
-				{
-					downloader.Format = Gdk.MemoryFormat.R8g8b8;
-					ulong stride = (ulong)(w * 3);
-					var bytes = new byte[stride * (ulong)h];
-					downloader.DownloadInto(bytes, stride);
-					var offset = (ulong)y * stride + (ulong)x * 3;
-					return (bytes[offset], bytes[offset + 1], bytes[offset + 2]);
-				}
+				var viewport = Graphene.Rect.Alloc().Init(0, 0, w, h);
+				return renderer.RenderTexture(node, viewport);
+			}
+			finally
+			{
+				renderer.Unrealize();
 			}
 		}
 

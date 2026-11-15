@@ -360,6 +360,11 @@ public static class GtkTestHost
 			{
 				Type = Gdk.EventType.ButtonPress,
 				Button = button,
+				// A real GtkGestureClick::pressed carries the click count (OnCompatPressed copies it
+				// from PressedArgs.NPress); for a single click GTK reports 1. VisualElementTracker's
+				// handler drops anything with NPress < 1, so a synthetic press that leaves it at the
+				// default 0 is silently discarded and raises no tap. Match the single-click count.
+				NPress = 1,
 			}
 		};
 
@@ -385,6 +390,28 @@ public static class GtkTestHost
 	/// </summary>
 	public static bool IsUnallocated(Gtk.Widget widget) =>
 		widget == null || (widget.Width <= 1 && widget.Height <= 1);
+
+	/// <summary>
+	/// The top-left of <paramref name="widget"/> in <paramref name="window"/>'s coordinates, which is
+	/// the space a full-window pixel capture is in.
+	/// </summary>
+	/// <remarks>
+	/// GTK4: <c>Widget.Allocation.X/Y</c> is the position inside the widget's PARENT, not inside the
+	/// toplevel. When the toplevel centres or offsets its child - a single child in a larger window
+	/// gets centred - the two differ, and probing at the parent-relative point lands in empty space
+	/// (a red BoxView at window-y 39 read as black at y 10). <c>gtk_widget_compute_bounds</c> (exposed
+	/// as <see cref="Gtk.Widget.ComputeBounds"/>) translates the widget's bounds into any ancestor's
+	/// coordinate space; against the toplevel that is exactly where the capture painted it.
+	/// </remarks>
+	public static (int X, int Y) WindowRelativeTopLeft(Gtk.Widget widget, Gtk.Window window)
+	{
+		if (widget.ComputeBounds(window, out var bounds))
+			return ((int)bounds.X, (int)bounds.Y);
+
+		// ComputeBounds fails only when the widgets share no ancestor; fall back to the
+		// parent-relative allocation so the caller still gets a usable point.
+		return (widget.Allocation.X, widget.Allocation.Y);
+	}
 
 	public static string Describe(Gtk.Widget widget) =>
 		widget == null
