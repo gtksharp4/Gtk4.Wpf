@@ -47,8 +47,8 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 		public Gtk.Image ImageWidget => _image;
 
-		// Hides Gtk.Button.ImageSpacing (GTK3); this is the Forms spacing, in pixels.
-		public new uint ImageSpacing
+		// GTK4 removed Gtk.Button.ImageSpacing; this is the Forms spacing, in pixels.
+		public uint ImageSpacing
 		{
 			get
 			{

@@ -8,6 +8,9 @@ using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.GTK.Cells;
 using Xamarin.Forms.Platform.GTK.Extensions;
 
+// Gtk.ListStore is [Obsolete] in GTK4 but has no tree-model replacement yet.
+#pragma warning disable CS0612
+
 namespace Xamarin.Forms.Platform.GTK.Controls
 {
 	public class ItemTappedEventArgs : EventArgs
@@ -78,7 +81,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 	{
 		public State LoadState;
 		public uint LoadId;
-		public ListStore ListStore;
+		public Gtk.ListStore ListStore;
 		public int NumItems;
 		public int NumLoaded;
 		public List Items;
@@ -104,7 +107,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 		private bool _isPullToRequestEnabled;
 		private bool _refreshing;
 		private IdleData _data;
-		private ListStore _store = null;
+		private Gtk.ListStore _store = null;
 		private List _items;
 		private CellBase _selectedCell;
 		private Gdk.Color _selectionColor;
@@ -536,7 +539,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 		private void PopulateData(List items)
 		{
-			_store = new ListStore(typeof(CellBase));
+			_store = new Gtk.ListStore(typeof(CellBase));
 
 			foreach (var cell in _cells)
 			{
