@@ -63,6 +63,15 @@
         -->
         <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
         <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+        <!--
+          GTK4 port bootstrap: the GtkSharp4 fork keeps many GTK3 APIs as [Obsolete] compat shims
+          (Widget.Allocation/AllocatedWidth, StyleContext, CssProvider.LoadFromData, Gtk.ListStore,
+          MessageDialog, ComboBox...). With TreatWarningsAsErrors every such use is a hard error,
+          which would block the build on deprecations rather than on the real GTK4 removals. Demote
+          the two obsolete diagnostics to warnings while the backend is ported; the idiomatic
+          rewrite that retires these shims removes this line. Genuine removals stay errors.
+        -->
+        <WarningsNotAsErrors>$(WarningsNotAsErrors);CS0612;CS0618</WarningsNotAsErrors>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="GtkSharp4" Version="$(GtkSharp4Version)" />

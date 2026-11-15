@@ -22,6 +22,8 @@
         -->
         <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
         <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+        <!-- GTK4 port bootstrap: see the same note in Xamarin.Forms.Platform.GTK.csproj. -->
+        <WarningsNotAsErrors>$(WarningsNotAsErrors);CS0612;CS0618</WarningsNotAsErrors>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Net4x.NuGetUtility" Version="$(NuGetUtilityVersion)" PrivateAssets="All" Condition="'$(OS)' == 'Windows_NT'" />
