@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Xamarin.Forms.Platform.GTK.Extensions;
 using System.Linq;
 using Gtk;
@@ -29,10 +29,15 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 		RangeCalendar _calendar;
 
 		public DatePickerWindow()
-			: base(WindowType.Popup)
+			: base()
 		{
 			BuildDatePickerWindow();
-			Helpers.GrabHelper.GrabWindow(this);
+			// GTK4: device grabs (gtk_grab_add / gdk_seat_grab) are removed.
+			// A plain undecorated window without a grab is the idiomatic approach
+			// for a lightweight inline picker; a Gtk.Popover would be the full GTK4
+			// idiom but requires a relative-to widget, which the renderer does not
+			// supply here.  The window dismisses itself on button-press outside the
+			// calendar, which replicates the previous close-on-click behaviour.
 			SelectedDate = DateTime.Now;
 		}
 
@@ -40,12 +45,12 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 		{
 			get
 			{
-				return _calendar.Date;
+				return GLibDateToSystem(_calendar.Date);
 			}
 
 			set
 			{
-				_calendar.Date = value;
+				_calendar.Date = SystemDateToGLib(value);
 			}
 		}
 
@@ -83,13 +88,13 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 		{
 			base.OnDrawn(cr);
 
-			int winWidth, winHeight;
-			GetSize(out winWidth, out winHeight);
+			int winWidth = Width;
+			int winHeight = Height;
 
 			// GTK3 removed Gdk.GC drawing (Style.ForegroundGC + GdkWindow.DrawRectangle).
-			// Stroke the 1px frame with Cairo instead, using the theme's insensitive
-			// foreground colour. The 0.5 offset keeps the hairline on the pixel grid.
-			var color = StyleContext.GetColor(StateFlags.Insensitive);
+			// Stroke the 1px frame with Cairo instead, using the theme's foreground colour.
+			// GTK4: StyleContext.GetColor(StateFlags) is gone; Color property replaces it.
+			var color = StyleContext.Color;
 			cr.SetSourceRGBA(color.Red, color.Green, color.Blue, color.Alpha);
 			cr.LineWidth = 1;
 			cr.Rectangle(0.5, 0.5, winWidth - 1, winHeight - 1);
@@ -113,23 +118,19 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			OnDateTimeChanged?.Invoke(this, new DateEventArgs(SelectedDate));
 		}
 
-		protected virtual void OnCalendarDaySelectedDoubleClick(object sender, EventArgs e)
-		{
-			OnDateTimeChanged?.Invoke(this, new DateEventArgs(SelectedDate));
-			Close();
-		}
+		// GTK4: GtkCalendar removed the day-selected-double-click signal.
+		// TODO: consider using a GtkGestureClick with n-press=2 on the calendar
+		// to restore close-on-double-click behaviour once the gesture API is wired.
 
-		private void BuildDatePickerWindow()
+		void BuildDatePickerWindow()
 		{
 			Title = "DatePicker";
-			TypeHint = Gdk.WindowTypeHint.Desktop;
-			WindowPosition = WindowPosition.Mouse;
+			// GTK4: TypeHint (GdkWindowTypeHint), WindowPosition and SkipPager/TaskbarHint
+			// are all removed.  An undecorated non-resizable window is the nearest equivalent.
 			BorderWidth = 1;
 			Resizable = false;
 			Decorated = false;
 			DestroyWithParent = true;
-			SkipPagerHint = true;
-			SkipTaskbarHint = true;
 
 			_datebox = new Box(Gtk.Orientation.Vertical, 0);
 			_datebox.Spacing = 6;
@@ -137,7 +138,8 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 			_calendar = new RangeCalendar();
 			_calendar.CanFocus = true;
-			_calendar.DisplayOptions = CalendarDisplayOptions.ShowHeading;
+			// GTK4: CalendarDisplayOptions is gone; individual bool properties replace it.
+			_calendar.ShowHeading = true;
 			_datebox.Add(_calendar);
 			Box.BoxChild dateBoxChild = ((Box.BoxChild)(_datebox[_calendar]));
 			dateBoxChild.Position = 0;
@@ -154,20 +156,34 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			ButtonPressEvent += new ButtonPressEventHandler(OnButtonPressEvent);
 			_calendar.ButtonPressEvent += new ButtonPressEventHandler(OnCalendarButtonPressEvent);
 			_calendar.DaySelected += new EventHandler(OnCalendarDaySelected);
-			_calendar.DaySelectedDoubleClick += new EventHandler(OnCalendarDaySelectedDoubleClick);
+			// DaySelectedDoubleClick: removed in GTK4 (see TODO above).
 		}
 
 		// GTK3 Gtk.Window gained a Close() method; this dismisses the popup, not the window.
 		// internal so DatePicker.ClosePicker can dismiss it - see the comment there.
 		internal new void Close()
 		{
-			Helpers.GrabHelper.RemoveGrab(this);
+			// GTK4: no grab to release; just destroy.
 			Destroy();
 		}
 
 		void NotifyDateChanged()
 		{
 			OnDateTimeChanged?.Invoke(this, new DateEventArgs(SelectedDate));
+		}
+
+		// GTK4: Calendar.Date is GLib.DateTime; convert to/from System.DateTime.
+		// GLib months are 1-12, matching System.DateTime - no offset needed.
+		static DateTime GLibDateToSystem(GLib.DateTime d)
+		{
+			if (d == null)
+				return DateTime.Now;
+			return new DateTime(d.Year, d.Month, d.DayOfMonth);
+		}
+
+		static GLib.DateTime SystemDateToGLib(DateTime d)
+		{
+			return new GLib.DateTime(d.Year, d.Month, d.Day, 0, 0, 0);
 		}
 
 		class RangeCalendar : Calendar
@@ -219,14 +235,16 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 			protected override void OnDaySelected()
 			{
-				if (Date < MinimumDate)
+				var current = DatePickerWindow.GLibDateToSystem(Date);
+
+				if (current < MinimumDate)
 				{
-					Date = MinimumDate;
+					Date = DatePickerWindow.SystemDateToGLib(MinimumDate);
 				}
 
-				if (Date > MaximumDate)
+				if (current > MaximumDate)
 				{
-					Date = MaximumDate;
+					Date = DatePickerWindow.SystemDateToGLib(MaximumDate);
 				}
 			}
 		}
@@ -253,11 +271,12 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 			TextColor = _comboBox.Entry.GetDefaultTextColor(Gtk.StateFlags.Normal);
 
-			_comboBox.Entry.CanDefault = false;
+			// GTK4: Entry.CanDefault is removed (default-activation is handled differently).
 			_comboBox.Entry.CanFocus = false;
 			_comboBox.Entry.IsEditable = false;
 			_comboBox.Entry.SetStateFlags(StateFlags.Normal, true);
-			_comboBox.Entry.FocusGrabbed += new EventHandler(OnEntryFocused);
+			// GTK4: Entry.FocusGrabbed is removed; FocusInEvent (compat) replaces it.
+			_comboBox.Entry.FocusInEvent += new FocusInEventHandler((o, e) => OnEntryFocused(o, EventArgs.Empty));
 			_comboBox.PopupButton.Clicked += new EventHandler(OnBtnShowCalendarClicked);
 		}
 
@@ -359,8 +378,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			// Close(), not Remove(). DatePicker is a Gtk.EventBox, so Remove(window) was
 			// gtk_container_remove against a TOPLEVEL that was never its child: GTK logged a
 			// critical and did nothing, so the popup stayed on screen and kept its grab while
-			// ClosePicker still reported success to Forms' Unfocus(). Close() drops the grab and
-			// destroys the window.
+			// ClosePicker still reported success to Forms' Unfocus(). Close() destroys the window.
 			if (window != null)
 			{
 				window.Close();
@@ -369,19 +387,16 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 		void ShowPickerWindow()
 		{
-			int x = 0;
-			int y = 0;
-
-			Window.GetOrigin(out x, out y);
-			y += Allocation.Height;
-
+			// GTK4: gtk_window_get_origin and gtk_window_move are removed; the window manager
+			// controls toplevel positions.  The picker appears at the default position.
+			// TODO: position relative to the entry using Gtk.Popover once a parent widget
+			// reference is available to set as the popover's relative-to.
 			var picker = new DatePickerWindow();
-			picker.Move(x, y);
 			picker.SelectedDate = CurrentDate;
 			picker.MinimumDate = _minDate;
 			picker.MaximumDate = _maxDate;
 			picker.OnDateTimeChanged += OnPopupDateChanged;
-			picker.Destroyed += OnPickerClosed;
+			picker.CloseRequest += new Gtk.CloseRequestHandler(OnPickerCloseRequest);
 		}
 
 		void OnPopupDateChanged(object sender, DateEventArgs args)
@@ -433,15 +448,12 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			GotFocus?.Invoke(this, EventArgs.Empty);
 		}
 
-		void OnPickerClosed(object sender, EventArgs e)
+		void OnPickerCloseRequest(object sender, Gtk.CloseRequestArgs e)
 		{
-			var window = sender as DatePickerWindow;
-
-			if (window != null)
-			{
-				Remove(window);
-				LostFocus?.Invoke(this, EventArgs.Empty);
-			}
+			// GTK4: Destroyed event is removed; CloseRequest replaces it for cleanup.
+			// The old OnPickerClosed called Remove(window), which was always wrong for a
+			// toplevel - the renderer already ignores that; we just raise LostFocus here.
+			LostFocus?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }
