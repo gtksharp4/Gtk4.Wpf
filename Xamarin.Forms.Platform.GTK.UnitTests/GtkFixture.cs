@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 		public static GtkFixture Instance => s_instance.Value;
 
-		readonly BlockingCollection<Action> _queue = new BlockingCollection<Action>();
+		readonly BlockingCollection<Action> _queue;
 		readonly Thread _thread;
 
 		/// <summary>Why GTK could not be brought up here, or null if it is running.</summary>
@@ -46,9 +46,41 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 			if (reason != null)
 			{
+				_queue = new BlockingCollection<Action>();
 				UnavailableReason = reason;
 				return;
 			}
+
+			if (GtkThreadBridge.Queue != null)
+			{
+				// A thread-0 runner (macOS, where GTK 4's Quartz backend must run on the process's
+				// first thread) owns the GTK thread. Initialise GTK + Forms on it through the shared
+				// queue - the runner's RunLoop services this and every later test body - and start no
+				// background thread of our own.
+				_queue = GtkThreadBridge.Queue;
+
+				Marshal(() =>
+				{
+					try
+					{
+						Gtk.Application.Init();
+						Xamarin.Forms.Forms.Init();
+					}
+					catch (DllNotFoundException e)
+					{
+						reason = GtkTestHost.NoNativeRuntime(e.Message);
+					}
+					catch (TypeInitializationException e) when (e.InnerException is DllNotFoundException inner)
+					{
+						reason = GtkTestHost.NoNativeRuntime(inner.Message);
+					}
+				});
+
+				UnavailableReason = reason;
+				return;
+			}
+
+			_queue = new BlockingCollection<Action>();
 
 			var ready = new ManualResetEventSlim();
 
