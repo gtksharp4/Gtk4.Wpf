@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		// ---- CheckBox --------------------------------------------------------------------
 
 		[Fact]
-		public void CheckBoxMapsIsCheckedBothWays()
+		public void CheckBoxMapsIsCheckedBothWays() => Run(() =>
 		{
 			var checkbox = new CheckBox { IsChecked = true };
 
@@ -47,10 +47,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				host.Pump();
 				Assert.True(checkbox.IsChecked, "native -> Forms");
 			}
-		}
+		});
 
 		[Fact]
-		public void CheckBoxIsAllocatedInsideALayout()
+		public void CheckBoxIsAllocatedInsideALayout() => Run(() =>
 		{
 			var checkbox = new CheckBox { IsChecked = true, HorizontalOptions = LayoutOptions.Start };
 
@@ -63,12 +63,12 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 				AssertAgreesWithForms(checkbox, widget);
 			}
-		}
+		});
 
 		// ---- ImageButton -----------------------------------------------------------------
 
 		[Fact]
-		public void ImageButtonUsesItsOwnRendererAndIsAllocated()
+		public void ImageButtonUsesItsOwnRendererAndIsAllocated() => Run(() =>
 		{
 			var button = new FormsImageButton { HeightRequest = 48, WidthRequest = 64 };
 
@@ -90,10 +90,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				var native = GtkTestHost.Find<GtkImageButton>(widget).FirstOrDefault();
 				Assert.True(native != null, "no native ImageButton control under the renderer");
 			}
-		}
+		});
 
 		[Fact]
-		public void ImageButtonClickedIsRaisedFromTheNativeClick()
+		public void ImageButtonClickedIsRaisedFromTheNativeClick() => Run(() =>
 		{
 			var button = new FormsImageButton();
 			var clicked = 0;
@@ -109,12 +109,12 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				Assert.True(clicked == 1,
 					$"the native click must reach ImageButton.Clicked (raised {clicked} times)");
 			}
-		}
+		});
 
 		// ---- Line (Shapes) ---------------------------------------------------------------
 
 		[Fact]
-		public void LineIsAllocatedToItsFormsBounds()
+		public void LineIsAllocatedToItsFormsBounds() => Run(() =>
 		{
 			var line = new LineShape
 			{
@@ -150,7 +150,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				Assert.True(GtkTestHost.Find<LineView>(widget).Count == 1,
 					"the renderer did not create exactly one native LineView");
 			}
-		}
+		});
 
 		/// <summary>
 		/// The end point has to actually move, and there is nothing to read it back from:
@@ -160,7 +160,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// exactly the regression that would otherwise land silently.
 		/// </summary>
 		[Fact]
-		public void LineGeometryChangesAreAcceptedAfterAllocation()
+		public void LineGeometryChangesAreAcceptedAfterAllocation() => Run(() =>
 		{
 			var line = new LineShape
 			{
@@ -202,12 +202,12 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 					$"Line width changed from {beforeWidth} to {widget.Width} " +
 					"for a change that only moves the end point");
 			}
-		}
+		});
 
 		// ---- RefreshView -----------------------------------------------------------------
 
 		[Fact]
-		public void RefreshViewLaysOutItsContent()
+		public void RefreshViewLaysOutItsContent() => Run(() =>
 		{
 			var content = new BoxView { Color = Color.Teal };
 			var refreshView = new RefreshView
@@ -226,7 +226,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 					$"RefreshView content allocated {widget.Width}px wide inside a " +
 					"600px page - the RefreshView is not laying its content out");
 			}
-		}
+		});
 
 		/// <summary>
 		/// The spinner is the whole reason RefreshView needed a screenshot: it reported
@@ -237,7 +237,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// not merely that the spinner is "visible".
 		/// </summary>
 		[Fact]
-		public void RefreshViewSpinnerIsShownHiddenAndOwnsItsWindow()
+		public void RefreshViewSpinnerIsShownHiddenAndOwnsItsWindow() => Run(() =>
 		{
 			var refreshView = new RefreshView
 			{
@@ -274,7 +274,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 				Assert.False(spinnerHost.Visible, "IsRefreshing = false did not hide the spinner");
 			}
-		}
+		});
 
 		// ---- IndicatorView ---------------------------------------------------------------
 		//
@@ -301,7 +301,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 			count <= 0 ? 0 : (int)Math.Ceiling(count * size + (count - 1) * DotSpacing);
 
 		[Fact]
-		public void IndicatorViewSizeRequestTracksTheDotCount()
+		public void IndicatorViewSizeRequestTracksTheDotCount() => Run(() =>
 		{
 			var indicator = new IndicatorView
 			{
@@ -341,10 +341,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 					$"Count 3 -> 7 should re-request {ExpectedDotWidth(7, 10)}px, got {wider}; " +
 					"OnElementPropertyChanged is not re-measuring");
 			}
-		}
+		});
 
 		[Fact]
-		public void IndicatorViewMaximumVisibleCapsTheDotCount()
+		public void IndicatorViewMaximumVisibleCapsTheDotCount() => Run(() =>
 		{
 			var indicator = new IndicatorView
 			{
@@ -367,10 +367,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 					$"control asked for {width}px, and all 20 dots would be " +
 					$"{ExpectedDotWidth(20, 10)}px");
 			}
-		}
+		});
 
 		[Fact]
-		public void IndicatorViewHideSingleSuppressesTheOnlyDot()
+		public void IndicatorViewHideSingleSuppressesTheOnlyDot() => Run(() =>
 		{
 			var indicator = new IndicatorView
 			{
@@ -413,7 +413,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				Assert.True(four == ExpectedDotWidth(4, 10),
 					$"Count = 4 should request {ExpectedDotWidth(4, 10)}px, got {four}px");
 			}
-		}
+		});
 
 		// ---- SwipeView -------------------------------------------------------------------
 
@@ -423,7 +423,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// so this covers the geometry without synthesising X events.
 		/// </summary>
 		[Fact]
-		public void SwipeViewOpenRevealsItsItemsAtTheExpectedExtent()
+		public void SwipeViewOpenRevealsItsItemsAtTheExpectedExtent() => Run(() =>
 		{
 			var swipeView = new SwipeView
 			{
@@ -477,10 +477,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 				Assert.False(itemsHost.Visible, "Close() did not hide the swipe items host");
 			}
-		}
+		});
 
 		[Fact]
-		public void SwipeViewThresholdSetsTheRevealedExtent()
+		public void SwipeViewThresholdSetsTheRevealedExtent() => Run(() =>
 		{
 			var swipeView = new SwipeView
 			{
@@ -518,7 +518,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 					$"LeftItems must sit against the left edge: items at x={itemsLeftRect.X}, " +
 					$"content left edge at x=0");
 			}
-		}
+		});
 
 		// ---- CarouselView ----------------------------------------------------------------
 
@@ -529,7 +529,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// the very call under test, so reading them back proves nothing.
 		/// </summary>
 		[Fact]
-		public void CarouselViewLaysOutTheCurrentItemAtFullSize()
+		public void CarouselViewLaysOutTheCurrentItemAtFullSize() => Run(() =>
 		{
 			var carousel = new CarouselView
 			{
@@ -555,10 +555,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 					$"the carousel item is {label.Width}px wide inside a 600px page - " +
 					"the renderer did not run view.Layout() on it");
 			}
-		}
+		});
 
 		[Fact]
-		public void CarouselViewPositionSwapsTheRenderedItem()
+		public void CarouselViewPositionSwapsTheRenderedItem() => Run(() =>
 		{
 			var carousel = new CarouselView
 			{
@@ -591,10 +591,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 				Assert.Equal("item 3", carousel.CurrentItem);
 			}
-		}
+		});
 
 		[Fact]
-		public void CarouselViewFollowsItsObservableSource()
+		public void CarouselViewFollowsItsObservableSource() => Run(() =>
 		{
 			var source = new ObservableCollection<string> { "item 1" };
 
@@ -619,12 +619,12 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 					"an item appended to the ObservableCollection never rendered: " +
 					Describe(GtkTestHost.Find<Gtk.Label>(renderer)));
 			}
-		}
+		});
 
 		// ---- CollectionView --------------------------------------------------------------
 
 		[Fact]
-		public void CollectionViewAllocatesItemsAtDistinctPositions()
+		public void CollectionViewAllocatesItemsAtDistinctPositions() => Run(() =>
 		{
 			var collectionView = new CollectionView
 			{
@@ -660,10 +660,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 					$"a linear item is {labels[0].Width}px wide inside a 600px page - " +
 					"it was never given the viewport width");
 			}
-		}
+		});
 
 		[Fact]
-		public void CollectionViewGridLayoutPlacesItemsInColumns()
+		public void CollectionViewGridLayoutPlacesItemsInColumns() => Run(() =>
 		{
 			var collectionView = new CollectionView
 			{
@@ -706,7 +706,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 					$"a 2-column item is {first.Width}px wide inside a 600px page - " +
 					"the grid is laying out as a single column");
 			}
-		}
+		});
 
 		/// <summary>
 		/// Selection is asserted on the native rows, and both ways round.
@@ -722,7 +722,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// depends on, has no Core involvement whatsoever.
 		/// </remarks>
 		[Fact]
-		public void CollectionViewSelectionReachesTheNativeRowsAndComesBack()
+		public void CollectionViewSelectionReachesTheNativeRowsAndComesBack() => Run(() =>
 		{
 			var items = Enumerable.Range(1, 4).Select(i => $"item {i}").ToList();
 
@@ -764,10 +764,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 				AssertOnlySelectedRow(renderer, items, 0, "a native button press on \"item 1\"");
 			}
-		}
+		});
 
 		[Fact]
-		public void CollectionViewFollowsItsObservableSource()
+		public void CollectionViewFollowsItsObservableSource() => Run(() =>
 		{
 			var source = new ObservableCollection<string>(
 				Enumerable.Range(1, 3).Select(i => $"item {i}"));
@@ -802,7 +802,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 					"M3 root cause 4, on CollectionView this time: " +
 					GtkTestHost.Describe(Root(appended)));
 			}
-		}
+		});
 
 		// ---- helpers ---------------------------------------------------------------------
 
