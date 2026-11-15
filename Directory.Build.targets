@@ -18,4 +18,20 @@
   <ItemGroup Condition="'$(NuGetUtility)' == 'true'">
     <None Remove="$(SolutionDir)README.md" />
   </ItemGroup>
+
+  <!--
+    macOS CI only (scripts/ci/test-macos.sh sets XFPinNetStandardRef). The GitHub macOS runner
+    regressed to failing netstandard2.0 compiles with CS0518 "Predefined type 'System.Object' is not
+    defined": the SDK's implicit NETStandard.Library.Ref targeting pack is not resolved and csc is
+    handed no references (the same build was green on an earlier runner image). Referencing the
+    metapackage supplies the netstandard facade from the package instead.
+
+    In .targets, NOT .props: $(TargetFramework) is not yet set when Directory.Build.props is
+    evaluated (see the NuGetUtility note above), so the same ItemGroup in .props matched only the
+    projects whose evaluation happened to have it set. Here it is reliably set for every project.
+    Scoped by property so the Windows and Linux jobs are untouched.
+  -->
+  <ItemGroup Condition="'$(XFPinNetStandardRef)' == 'true' AND '$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="NETStandard.Library" Version="2.0.3" PrivateAssets="all" />
+  </ItemGroup>
  </Project>
