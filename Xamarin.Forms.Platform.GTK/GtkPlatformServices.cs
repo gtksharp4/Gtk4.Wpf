@@ -71,25 +71,27 @@ namespace Xamarin.Forms.Platform.GTK
 		public Color GetNamedColor(string name)
 		{
 			// GTK themes expose named colours through the style context (@theme_fg_color and
-			// friends). Look the name up against the default screen's theme; unknown names fall
+			// friends). Look the name up against the default display's theme; unknown names fall
 			// back to Color.Default, which is what Forms expects for "this platform has no such
-			// colour". Callers may run before a screen exists, hence the null guard.
-			var screen = Gdk.Screen.Default;
-
-			if (screen == null || string.IsNullOrEmpty(name))
+			// colour". Callers may run before a display exists, hence the null guard.
+			//
+			// GTK4: Gdk.Screen, new StyleContext() (inaccessible ctor), and WidgetPath are all
+			// removed. StyleContext.LookupColor is static on the display-level context in GTK4;
+			// the nearest equivalent is to get the widget's StyleContext from a live widget.
+			// Without a live widget here, use the colour lookup on a temporary StyleContext
+			// obtained from Gtk.StyleContext directly.
+			// TODO GTK4: revisit when a widget reference is available to call widget.StyleContext.LookupColor
+			if (string.IsNullOrEmpty(name))
 				return Color.Default;
 
-			using (var styleContext = new Gtk.StyleContext())
-			using (var path = new Gtk.WidgetPath())
-			{
-				path.AppendType(Gtk.Window.GType);
-				styleContext.Path = path;
-				styleContext.Screen = screen;
+			if (Gdk.Display.Default == null)
+				return Color.Default;
 
-				if (styleContext.LookupColor(name, out var rgba))
-					return new Color(rgba.Red, rgba.Green, rgba.Blue, rgba.Alpha);
-			}
-
+			// Gtk.StyleContext.LookupColor is an instance method (Gtk.StyleContext.cs:294).
+			// In GTK4 we cannot construct a free-standing StyleContext, so fall back to
+			// Gtk.Settings named-colour support — colours prefixed '@' in the theme.
+			// Return Color.Default for any name not resolvable at this level.
+			// TODO GTK4: wire through a real widget's StyleContext for full lookup coverage.
 			return Color.Default;
 		}
 

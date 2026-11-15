@@ -117,7 +117,7 @@ namespace Xamarin.Forms.Platform.GTK.Extensions
 				return;
 
 			var provider = new CssProvider();
-			provider.LoadFromData(css.ToString());
+			provider.LoadFromString(css.ToString());
 			widget.StyleContext.AddProvider(provider, StyleProviderPriority.Application);
 			style.Provider = provider;
 		}
@@ -260,22 +260,24 @@ namespace Xamarin.Forms.Platform.GTK.Extensions
 		// ---- theme-default readers (replacing Gtk.Style.* arrays) ----------------------
 
 		/// <summary>
-		/// Replaces <c>Style.Backgrounds[(int)state]</c>. Reads the CSS property directly:
-		/// gtk_style_context_get_background_color is deprecated, while the generic property
-		/// getter is not, and both return the same "background-color" value.
+		/// Replaces <c>Style.Backgrounds[(int)state]</c>.
+		/// GTK4 removed gtk_style_context_get_property and the state argument from GetColor;
+		/// background-color is not directly exposed, so approximate with the foreground colour.
 		/// </summary>
+		// TODO GTK4: migrate off StyleContext to AddCssClass+per-widget CssProvider
 		public static Gdk.Color GetDefaultBackgroundColor(this Widget widget, StateFlags state = StateFlags.Normal)
 		{
 			if (widget == null)
 				return new Gdk.Color(0, 0, 0);
 
-			using (var value = widget.StyleContext.GetProperty("background-color", state))
-				return ((Gdk.RGBA)value.Val).ToGdkColor();
+			// GTK4: no get_background_color / no get_property(state) — use foreground as fallback.
+			return widget.StyleContext.Color.ToGdkColor();
 		}
 
 		/// <summary>Replaces <c>Style.Foregrounds[(int)state]</c>.</summary>
+		// TODO GTK4: migrate off StyleContext to AddCssClass+per-widget CssProvider
 		public static Gdk.Color GetDefaultForegroundColor(this Widget widget, StateFlags state = StateFlags.Normal) =>
-			widget == null ? new Gdk.Color(0, 0, 0) : widget.StyleContext.GetColor(state).ToGdkColor();
+			widget == null ? new Gdk.Color(0, 0, 0) : widget.StyleContext.Color.ToGdkColor();
 
 		/// <summary>
 		/// Replaces <c>Style.BaseColors[(int)state]</c>. GTK3 has no separate "base" colour,
@@ -289,16 +291,21 @@ namespace Xamarin.Forms.Platform.GTK.Extensions
 			widget.GetDefaultForegroundColor(state);
 
 		/// <summary>
-		/// Replaces <c>Style.FontDescription</c>. As above, the generic property getter stands in
-		/// for the deprecated gtk_style_context_get_font.
+		/// Replaces <c>Style.FontDescription</c>.
+		/// GTK4 removed gtk_style_context_get_property; fall back to Gtk.Settings.Default.GtkFontName.
 		/// </summary>
+		// TODO GTK4: migrate off StyleContext to AddCssClass+per-widget CssProvider
 		public static Pango.FontDescription GetDefaultFont(this Widget widget, StateFlags state = StateFlags.Normal)
 		{
 			if (widget == null)
 				return null;
 
-			using (var value = widget.StyleContext.GetProperty("font", state))
-				return value.Val as Pango.FontDescription;
+			// GTK4: no get_property(state) — parse the font name from Gtk.Settings.
+			var fontName = Gtk.Settings.Default?.GtkFontName;
+
+			return string.IsNullOrEmpty(fontName)
+				? null
+				: Pango.FontDescription.FromString(fontName);
 		}
 
 		// ---- conversions ---------------------------------------------------------------
@@ -318,10 +325,11 @@ namespace Xamarin.Forms.Platform.GTK.Extensions
 
 		public static Gdk.RGBA ToRgba(this Gdk.Color color) => new Gdk.RGBA
 		{
-			Red = color.Red / 65535.0,
-			Green = color.Green / 65535.0,
-			Blue = color.Blue / 65535.0,
-			Alpha = 1.0
+			// GTK4: RGBA fields are float, not double.
+			Red = color.Red / 65535.0f,
+			Green = color.Green / 65535.0f,
+			Blue = color.Blue / 65535.0f,
+			Alpha = 1.0f
 		};
 	}
 }

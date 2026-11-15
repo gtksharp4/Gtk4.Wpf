@@ -18,14 +18,13 @@ namespace Xamarin.Forms.Platform.GTK
 		{
 			CurrentOrientation = GetOrientation();
 
-			var screen = Gdk.Screen.Default;
+			// GTK4: Gdk.Screen is removed; use Gdk.Display.Default.
+			// Monitor-list changes fire GLib.IListModel.ItemsChanged on Display.Monitors.
+			var display = Gdk.Display.Default;
 
-			if (screen != null)
+			if (display != null)
 			{
-				// Re-read on monitor changes (resolution switch, monitor plugged in) so a rotated
-				// or resized screen updates Forms instead of keeping the start-up value forever.
-				screen.SizeChanged += (o, args) => CurrentOrientation = GetOrientation();
-				screen.MonitorsChanged += (o, args) => CurrentOrientation = GetOrientation();
+				display.Monitors.ItemsChanged += (o, args) => CurrentOrientation = GetOrientation();
 			}
 		}
 
@@ -68,9 +67,15 @@ namespace Xamarin.Forms.Platform.GTK
 			if (display == null)
 				return null;
 
-			// GetMonitor(0) covers displays that report no primary monitor, which is the normal
-			// case under Xvfb and some Wayland compositors.
-			return display.PrimaryMonitor ?? display.GetMonitor(0);
+			// GTK4: PrimaryMonitor and GetMonitor(n) are removed.
+			// Display.Monitors is a GLib.IListModel; item 0 covers displays that report
+			// no primary monitor (normal under Xvfb and some Wayland compositors).
+			var monitors = display.Monitors;
+
+			if (monitors == null || monitors.NItems == 0)
+				return null;
+
+			return monitors.GetObject(0) as Gdk.Monitor;
 		}
 
 		static Gdk.Rectangle GetPrimaryMonitorGeometry()
