@@ -87,27 +87,17 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		[Fact]
 		public void InputTransparentDoesNotTouchTheSharedParentGdkWindow()
 		{
-			// REGRESSION GUARD, and the reason InputTransparent is not implemented via
-			// Gdk.Window.PassThrough even though that is the API whose name matches Forms' semantics.
-			// GtkFormsContainer is a Gtk.EventBox with VisibleWindow = false, so it owns no GdkWindow
-			// and gtk_widget_get_window returns the PARENT's - shared with every other element on the
-			// page. Setting pass-through there would disable input for all of them, so one
-			// InputTransparent overlay would silently make the whole page unclickable.
-			var box = new BoxView { Color = Color.Red, InputTransparent = true };
-
-			using (var host = GtkTestHost.HostView(box))
-			{
-				var widget = (Gtk.Widget)host.Renderer;
-
-				// Precondition. If this ever becomes true the container owns its own window and
-				// PassThrough becomes the correct implementation - revisit UpdateInputTransparent.
-				Assert.False(widget.HasWindow,
-					"precondition: GtkFormsContainer is expected to be a windowless EventBox");
-
-				Assert.NotNull(widget.Window);
-				Assert.False(widget.Window.PassThrough,
-					"pass-through must never be set on the window shared with the rest of the page");
-			}
+			// GTK4: GdkWindow is gone. There are no per-widget GdkWindows in GTK4 - every widget
+			// renders onto the toplevel's GdkSurface via the render tree. The properties this test
+			// was guarding (Widget.HasWindow, Gdk.Window.PassThrough) do not exist in GTK4.
+			// The hazard the test protected against - setting PassThrough on a shared GdkWindow
+			// and silently disabling input for the whole page - cannot arise when there are no
+			// per-widget windows. UpdateInputTransparent works via ButtonPressEvent attach/detach,
+			// which InputTransparentSuppressesTapsAndRevertingRestoresThem covers behaviourally.
+			Assert.Skip(
+				"GTK4 has no per-widget GdkWindows: Widget.HasWindow and Gdk.Window.PassThrough " +
+				"do not exist. The guarded hazard cannot occur; behavioural coverage is in " +
+				"InputTransparentSuppressesTapsAndRevertingRestoresThem.");
 		}
 
 		/// <summary>
@@ -115,13 +105,14 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// taps, and must start again when it is reverted.
 		/// </summary>
 		/// <remarks>
-		/// What this replaced asserted <c>widget.Window.PassThrough == false</c> before and after
-		/// the toggle. Nothing in this backend ever writes that property - <see
+		/// What this replaced (GTK3) asserted <c>widget.Window.PassThrough == false</c> before and
+		/// after the toggle. Nothing in this backend ever writes that property - <see
 		/// cref="Xamarin.Forms.Platform.GTK.VisualElementTracker{TElement,TNativeElement}"/>
 		/// implements InputTransparent by attaching or detaching the container's ButtonPressEvent
 		/// handler - so both assertions held whether or not UpdateInputTransparent had a body at
 		/// all. That is precisely the blindness the class remarks above say these tests exist to
-		/// end, reproduced.
+		/// end, reproduced. In GTK4, Widget.Window and Gdk.Window.PassThrough are gone; the tap
+		/// count is the only surviving observable.
 		///
 		/// <para>The baseline press is not ceremony. Without it, an element that never responded to
 		/// taps in the first place would satisfy the "no tap while transparent" half, and the
@@ -168,10 +159,9 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 					$"reverting InputTransparent left the element deaf (total {taps}) - the handler " +
 					"was detached and never re-attached");
 
-				// And none of that went through the shared GdkWindow: see the test above for why
-				// that would take the whole page down with it.
-				Assert.False(widget.Window.PassThrough,
-					"pass-through must never be set on the window shared with the rest of the page");
+				// GTK4: Widget.Window (Gdk.Window) and Gdk.Window.PassThrough do not exist.
+				// The PassThrough guard in GTK3 is covered structurally in GTK4: there are no
+				// per-widget GdkWindows to set pass-through on. See the skipped test above.
 			}
 		}
 	}

@@ -293,25 +293,36 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		// assert on would silently be wrong. These are the pixbuf's own bytes, unscaled.
 		static (byte R, byte G, byte B) PixelAt(Gtk.Window window, int x, int y)
 		{
-			// Flush queued redraws before photographing, for the same reason GtkTestHost.Pump
-			// forces a SizeAllocate: pumping the event queue does not run them. QueueDraw - which
-			// is all Controls.BoxView.UpdateColor does, correctly - only marks the region dirty and
-			// leaves the actual expose to the frame clock, which does not tick on demand headlessly.
-			// Without this the screenshot returns the PREVIOUS frame, so a repaint assertion reads
-			// the colour it was meant to prove had changed.
-			window.Window.ProcessUpdates(true);
+			// GTK4: Gdk.Window is gone. Capture pixels through Gtk.WidgetPaintable, which
+			// freezes the last rendered frame of the widget. The frame clock (not the event queue)
+			// runs the draw pass; pumping first gives it a chance to commit the repaint.
+			// ProcessUpdates had the same purpose in GTK3 - it flushed the damage-region queue
+			// so the screenshot returned the CURRENT frame rather than the previous one.
+			GtkTestHost.Pump(window, 2);
 
-			var shot = new Gdk.Pixbuf(window.Window, 0, 0, window.AllocatedWidth, window.AllocatedHeight);
+			using (var paintable = new Gtk.WidgetPaintable(window))
+			{
+				var image = paintable.CurrentImage as Gdk.Texture;
+				Assert.NotNull(image);
 
-			Assert.True(x >= 0 && y >= 0 && x < shot.Width && y < shot.Height,
-				$"({x},{y}) is outside the {shot.Width}x{shot.Height} window");
+				int w = image.Width;
+				int h = image.Height;
 
-			var bytes = new byte[shot.Height * shot.Rowstride];
-			System.Runtime.InteropServices.Marshal.Copy(shot.Pixels, bytes, 0, bytes.Length);
+				Assert.True(x >= 0 && y >= 0 && x < w && y < h,
+					$"({x},{y}) is outside the {w}x{h} window");
 
-			var offset = (y * shot.Rowstride) + (x * shot.NChannels);
-
-			return (bytes[offset], bytes[offset + 1], bytes[offset + 2]);
+				// R8g8b8 is 3 bytes per pixel, no alpha, matching the byte offsets the callers use.
+				// Gdk.TextureDownloader.DownloadInto writes one row every `stride` bytes.
+				using (var downloader = new Gdk.TextureDownloader(image))
+				{
+					downloader.Format = Gdk.MemoryFormat.R8g8b8;
+					ulong stride = (ulong)(w * 3);
+					var bytes = new byte[stride * (ulong)h];
+					downloader.DownloadInto(bytes, stride);
+					var offset = (ulong)y * stride + (ulong)x * 3;
+					return (bytes[offset], bytes[offset + 1], bytes[offset + 2]);
+				}
+			}
 		}
 
 		static string WriteTempPng(int width, int height, uint rgba)
