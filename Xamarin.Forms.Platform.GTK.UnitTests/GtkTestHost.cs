@@ -117,14 +117,46 @@ public static class GtkTestHost
 			if (toplevel != null)
 			{
 				// GTK4: AllocatedWidth/AllocatedHeight are obsolete; use Width/Height.
-				toplevel.SizeAllocate(new Gdk.Rectangle(
-					0, 0, toplevel.Width, toplevel.Height));
+				ForceAllocate(toplevel, toplevel.Width, toplevel.Height);
 			}
 
 			while (GLib.MainContext.Iteration(false))
 			{
 			}
 		}
+	}
+
+	/// <summary>
+	/// Commits an allocation on <paramref name="toplevel"/> of at least the size the caller asked
+	/// for, never smaller than GTK's measured minimum for the window.
+	/// </summary>
+	/// <remarks>
+	/// MEASURED (GTK4): <c>gtk_widget_size_allocate</c> REFUSES an allocation smaller than the
+	/// widget's measured minimum and leaves the subtree unallocated, logging
+	/// <c>Gtk-CRITICAL: Allocation height too small. Tried to allocate 500x400, but ... needs at
+	/// least 500x439</c>. GTK3 tolerated the under-allocation and clipped; GTK4 does not, so the
+	/// forced SizeAllocate the headless harness depends on (the frame clock does not tick under a
+	/// forced size, so an explicit allocation is the only thing that commits geometry) is dropped
+	/// on the floor and every descendant renderer is never built - which is why GetRenderer then
+	/// returns null and the control "resolves to nothing".
+	///
+	/// So clamp the requested size up to the measured minimum. This honours the test's requested
+	/// geometry whenever the content fits and only grows the window when the content genuinely does
+	/// not - it does not mask a renderer that reports a wrong minimum, it just stops GTK4 from
+	/// discarding the whole layout pass when the window is a few pixels short of its chrome.
+	/// </remarks>
+	public static void ForceAllocate(Gtk.Window toplevel, int width, int height)
+	{
+		if (toplevel == null)
+			return;
+
+		toplevel.Measure(Gtk.Orientation.Horizontal, -1, out int minWidth, out _, out _, out _);
+		toplevel.Measure(Gtk.Orientation.Vertical, -1, out int minHeight, out _, out _, out _);
+
+		int w = Math.Max(width, minWidth);
+		int h = Math.Max(height, minHeight);
+
+		toplevel.SizeAllocate(new Gdk.Rectangle(0, 0, w, h));
 	}
 
 	static void Drain()
@@ -265,6 +297,17 @@ public static class GtkTestHost
 	}
 
 	/// <summary>Depth-first search of a native widget tree.</summary>
+	/// <remarks>
+	/// GTK4: walk the real widget tree with <c>FirstChild</c>/<c>NextSibling</c>, not the compat
+	/// <c>Gtk.Container.Children</c> list. The compat layer only tracks children added through its
+	/// own <c>Add()</c>/<c>Put()</c> in a managed <c>_placements</c> list, and only on the handful
+	/// of types that subclass the compat <c>Gtk.Container</c>. Renderers that parent through native
+	/// GTK4 APIs (a <c>ScrolledWindow</c> over a <c>Viewport</c> over a <c>Box</c>, as
+	/// CollectionView/CarouselView do) put their subtree entirely outside that list, and a
+	/// <c>ScrolledWindow</c> is not even a <c>Gtk.Container</c> in GTK4 - so the old walk returned
+	/// nothing for them ("built no Gtk.ScrolledWindow", "0 of 6 items were realized"). The native
+	/// child links are the single source of truth for every widget type.
+	/// </remarks>
 	public static List<T> Find<T>(Gtk.Widget root) where T : Gtk.Widget
 	{
 		var found = new List<T>();
@@ -274,11 +317,8 @@ public static class GtkTestHost
 			if (w is T t)
 				found.Add(t);
 
-			if (w is Gtk.Container c)
-			{
-				foreach (var child in c.Children)
-					Walk(child);
-			}
+			for (var child = w.FirstChild; child != null; child = child.NextSibling)
+				Walk(child);
 		}
 
 		if (root != null)
@@ -411,9 +451,10 @@ public static class GtkTestHost
 			// GTK4: Window.Resize() is gone (it was a WM request anyway, and unreliable under
 			// Xvfb). Force the allocation directly instead, which is what the harness comment
 			// always recommended for headless runs. SetDefaultSize sets the preferred size so the
-			// window manager (if any) knows what we want; SizeAllocate commits it now.
+			// window manager (if any) knows what we want; ForceAllocate commits it now, clamped up
+			// to GTK4's measured minimum so the allocation is not refused (see ForceAllocate).
 			Window.SetDefaultSize(width, height);
-			Window.SizeAllocate(new Gdk.Rectangle(0, 0, width, height));
+			GtkTestHost.ForceAllocate(Window, width, height);
 			Platform.GetRenderer(page)?.SetElementSize(new Size(width, height));
 
 			GtkTestHost.Pump(Window);

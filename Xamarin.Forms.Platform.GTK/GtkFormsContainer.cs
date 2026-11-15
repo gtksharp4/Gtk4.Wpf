@@ -33,6 +33,22 @@ namespace Xamarin.Forms.Platform.GTK
 			BackgroundColor = color;
 		}
 
+		// GTK4: the "show" vfunc (Widget.OnShown) is dead - a widget is visible from birth and
+		// ShowAll() only sets Visible = true, so it never fires. Every renderer's OnShown override
+		// (PageRenderer builds its child renderers there, AbstractPageRenderer sends Appearing,
+		// VisualElementRenderer syncs visibility) therefore never ran, leaving the whole Forms
+		// content subtree unrendered - GetRenderer(child) came back null and the control "resolved
+		// to nothing". The GTK4 lifecycle hook that still fires is "map" (OnMapped), raised when
+		// the widget becomes mapped. Forward it to OnShown so the GTK3 lifecycle is preserved.
+		// Idempotent downstream: PageRenderer.Load guards on _packager, the page renderers guard on
+		// _appeared, and VisualElementRenderer.OnShown only re-syncs visibility, so a remap is safe.
+		protected override void OnMapped()
+		{
+			base.OnMapped();
+
+			OnShown();
+		}
+
 		/// <summary>
 		/// Subclasses can override this method to draw custom content over the background.
 		/// </summary>
