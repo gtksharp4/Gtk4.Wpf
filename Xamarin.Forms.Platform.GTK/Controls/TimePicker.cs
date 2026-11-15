@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Xamarin.Forms.Platform.GTK.Extensions;
 using System.Linq;
 
@@ -6,7 +6,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 {
 	public class TimeEventArgs : EventArgs
 	{
-		private TimeSpan _time;
+		TimeSpan _time;
 
 		public TimeSpan Time
 		{
@@ -24,19 +24,20 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 	public class TimePickerWindow : Gtk.Window
 	{
-		private Gtk.Box _timeBox;
-		private Gtk.Label _labelHour;
-		private Gtk.SpinButton _txtHour;
-		private Gtk.Label _labelMin;
-		private Gtk.SpinButton _txtMin;
-		private Gtk.Label _labelSec;
-		private Gtk.SpinButton _txtSec;
+		Gtk.Box _timeBox;
+		Gtk.Label _labelHour;
+		Gtk.SpinButton _txtHour;
+		Gtk.Label _labelMin;
+		Gtk.SpinButton _txtMin;
+		Gtk.Label _labelSec;
+		Gtk.SpinButton _txtSec;
 
 		public TimePickerWindow()
-			: base(Gtk.WindowType.Popup)
+			: base()
 		{
 			BuildTimePickerWindow();
-			Helpers.GrabHelper.GrabWindow(this);
+			// GTK4: device grabs (gtk_grab_add / gdk_seat_grab) are removed.
+			// See the equivalent note in DatePickerWindow.
 
 			RefreshTime();
 		}
@@ -64,13 +65,13 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 		{
 			base.OnDrawn(cr);
 
-			int winWidth, winHeight;
-			GetSize(out winWidth, out winHeight);
+			int winWidth = Width;
+			int winHeight = Height;
 
 			// GTK3 removed Gdk.GC drawing (Style.ForegroundGC + GdkWindow.DrawRectangle).
-			// Stroke the 1px frame with Cairo instead, using the theme's insensitive
-			// foreground colour. The 0.5 offset keeps the hairline on the pixel grid.
-			var color = StyleContext.GetColor(Gtk.StateFlags.Insensitive);
+			// Stroke the 1px frame with Cairo instead, using the theme's foreground colour.
+			// GTK4: StyleContext.GetColor(StateFlags) is gone; Color property replaces it.
+			var color = StyleContext.Color;
 			cr.SetSourceRGBA(color.Red, color.Green, color.Blue, color.Alpha);
 			cr.LineWidth = 1;
 			cr.Rectangle(0.5, 0.5, winWidth - 1, winHeight - 1);
@@ -84,17 +85,15 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			Close();
 		}
 
-		private void BuildTimePickerWindow()
+		void BuildTimePickerWindow()
 		{
 			Title = "TimePicker";
-			TypeHint = Gdk.WindowTypeHint.Normal;
-			WindowPosition = Gtk.WindowPosition.None;
+			// GTK4: TypeHint (GdkWindowTypeHint), WindowPosition and SkipPager/TaskbarHint
+			// are all removed.  An undecorated non-resizable window is the nearest equivalent.
 			BorderWidth = 1;
 			Resizable = false;
 			Decorated = false;
 			DestroyWithParent = true;
-			SkipPagerHint = true;
-			SkipTaskbarHint = true;
 
 			_timeBox = new Gtk.Box(Gtk.Orientation.Horizontal, 0);
 			_timeBox.Spacing = 6;
@@ -184,11 +183,11 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 		// internal so TimePicker.ClosePicker can dismiss it - see the comment there.
 		internal new void Close()
 		{
-			Helpers.GrabHelper.RemoveGrab(this);
+			// GTK4: no grab to release; just destroy.
 			Destroy();
 		}
 
-		private void RefreshTime()
+		void RefreshTime()
 		{
 			OnTimeChanged?.Invoke(this, new TimeEventArgs(CurrentTime));
 		}
@@ -235,12 +234,12 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 	public class TimePicker : GtkFormsContainer
 	{
-		private const string DefaultTimeFormat = @"hh\:mm\:ss";
+		const string DefaultTimeFormat = @"hh\:mm\:ss";
 
-		private CustomComboBox _comboBox;
-		private Gdk.Color _color;
-		private TimeSpan _currentTime;
-		private string _timeFormat;
+		CustomComboBox _comboBox;
+		Gdk.Color _color;
+		TimeSpan _currentTime;
+		string _timeFormat;
 
 		public event EventHandler TimeChanged;
 		public event EventHandler GotFocus;
@@ -332,28 +331,25 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			ShowTimePickerWindow();
 		}
 
-		private void ShowTimePickerWindow()
+		void ShowTimePickerWindow()
 		{
-			int x = 0;
-			int y = 0;
-
-			Window.GetOrigin(out x, out y);
-			y += Allocation.Height;
-
+			// GTK4: gtk_window_get_origin and gtk_window_move are removed; the window manager
+			// controls toplevel positions.  The picker appears at the default position.
+			// TODO: position relative to the entry using Gtk.Popover once a parent widget
+			// reference is available to set as the popover's relative-to.
 			var picker = new TimePickerWindow();
-			picker.Move(x, y);
 			picker.CurrentTime = CurrentTime;
 			picker.OnTimeChanged += OnPopupTimeChanged;
-			picker.Destroyed += OnPickerClosed;
+			picker.CloseRequest += new Gtk.CloseRequestHandler(OnPickerCloseRequest);
 			GotFocus?.Invoke(this, EventArgs.Empty);
 		}
 
-		private void OnPopupTimeChanged(object sender, TimeEventArgs args)
+		void OnPopupTimeChanged(object sender, TimeEventArgs args)
 		{
 			CurrentTime = args.Time;
 		}
 
-		private void BuildTimePicker()
+		void BuildTimePicker()
 		{
 			_comboBox = new CustomComboBox();
 			Add(_comboBox);
@@ -366,22 +362,19 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			Show();
 		}
 
-		private void UpdateEntryText()
+		void UpdateEntryText()
 		{
 			_comboBox.Entry.Text = string.IsNullOrEmpty(_timeFormat)
 				? _currentTime.ToString(DefaultTimeFormat)
 				: DateTime.Today.Date.Add(_currentTime).ToString(_timeFormat);
 		}
 
-		private void OnPickerClosed(object sender, EventArgs e)
+		void OnPickerCloseRequest(object sender, Gtk.CloseRequestArgs e)
 		{
-			var window = sender as TimePickerWindow;
-
-			if (window != null)
-			{
-				Remove(window);
-				LostFocus?.Invoke(this, EventArgs.Empty);
-			}
+			// GTK4: Destroyed event is removed; CloseRequest replaces it for cleanup.
+			// The old OnPickerClosed called Remove(window), which was always wrong for a
+			// toplevel - the renderer already ignores that; we just raise LostFocus here.
+			LostFocus?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }
