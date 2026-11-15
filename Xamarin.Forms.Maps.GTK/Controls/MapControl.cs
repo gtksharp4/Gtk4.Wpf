@@ -49,11 +49,18 @@ namespace Xamarin.Forms.Maps.GTK.Controls
 
 		public MapControl()
 		{
+			// GTK4: AddEvents is a no-op shim (Widget.Compat.cs). Input arrives through the
+			// compat events on Widget, which create controllers lazily on first subscription.
 			AddEvents((int)(Gdk.EventMask.ButtonPressMask
 				| Gdk.EventMask.ButtonReleaseMask
 				| Gdk.EventMask.PointerMotionMask
 				| Gdk.EventMask.ScrollMask
 				| Gdk.EventMask.SmoothScrollMask));
+
+			ButtonPressEvent += OnButtonPressEvent;
+			ButtonReleaseEvent += OnButtonReleaseEvent;
+			MotionNotifyEvent += OnMotionNotifyEvent;
+			ScrollEvent += OnScrollEvent;
 
 			CanFocus = true;
 		}
@@ -223,11 +230,13 @@ namespace Xamarin.Forms.Maps.GTK.Controls
 			});
 		}
 
-		protected override void OnDestroyed()
+		// GTK4: ::destroy signal removed; set the guard from Dispose so idle callbacks
+		// that survived a widget teardown do not dereference a freed native handle.
+		protected override void Dispose(bool disposing)
 		{
 			_destroyed = true;
 
-			base.OnDestroyed();
+			base.Dispose(disposing);
 		}
 
 		protected override void OnSizeAllocated(Gdk.Rectangle allocation)
@@ -592,7 +601,8 @@ namespace Xamarin.Forms.Maps.GTK.Controls
 		{
 			if (color.IsDefault)
 			{
-				var themeColor = StyleContext.GetColor(Gtk.StateFlags.Normal);
+				// GTK4: GetColor(StateFlags) removed; StyleContext.Color is the replacement.
+				var themeColor = StyleContext.Color;
 				cr.SetSourceRGBA(themeColor.Red, themeColor.Green, themeColor.Blue, themeColor.Alpha);
 
 				return;
@@ -644,9 +654,13 @@ namespace Xamarin.Forms.Maps.GTK.Controls
 			return null;
 		}
 
-		protected override bool OnButtonPressEvent(Gdk.EventButton evnt)
+		// GTK4: vfunc override removed; subscribed as ButtonPressEvent in the constructor.
+		// EventType.TwoButtonPress is gone; NPress == 2 carries the double-click count.
+		void OnButtonPressEvent(object o, Gtk.ButtonPressEventArgs args)
 		{
-			if (evnt.Type == Gdk.EventType.ButtonPress && evnt.Button == 1)
+			var evnt = args.Event;
+
+			if (evnt.NPress == 1 && evnt.Button == 1)
 			{
 				_dragging = true;
 				_dragMoved = false;
@@ -656,19 +670,21 @@ namespace Xamarin.Forms.Maps.GTK.Controls
 				if (CanFocus && !HasFocus)
 					GrabFocus();
 			}
-			else if (evnt.Type == Gdk.EventType.TwoButtonPress && evnt.Button == 1 && _zoomEnabled)
+			else if (evnt.NPress == 2 && evnt.Button == 1 && _zoomEnabled)
 			{
 				ZoomAt(1, evnt.X, evnt.Y);
 			}
 
-			return true;
+			args.RetVal = true;
 		}
 
-		protected override bool OnMotionNotifyEvent(Gdk.EventMotion evnt)
+		// GTK4: vfunc override removed; subscribed as MotionNotifyEvent in the constructor.
+		void OnMotionNotifyEvent(object o, Gtk.MotionNotifyEventArgs args)
 		{
 			if (!_dragging)
-				return base.OnMotionNotifyEvent(evnt);
+				return;
 
+			var evnt = args.Event;
 			var deltaX = evnt.X - _dragLastX;
 			var deltaY = evnt.Y - _dragLastY;
 
@@ -681,21 +697,26 @@ namespace Xamarin.Forms.Maps.GTK.Controls
 			if (_panEnabled)
 				PanByPixels(-deltaX, -deltaY);
 
-			return true;
+			args.RetVal = true;
 		}
 
-		protected override bool OnButtonReleaseEvent(Gdk.EventButton evnt)
+		// GTK4: vfunc override removed; subscribed as ButtonReleaseEvent in the constructor.
+		void OnButtonReleaseEvent(object o, Gtk.ButtonReleaseEventArgs args)
 		{
+			var evnt = args.Event;
+
 			if (evnt.Button != 1)
-				return base.OnButtonReleaseEvent(evnt);
+				return;
 
 			var wasDrag = _dragMoved;
 
 			_dragging = false;
 			_dragMoved = false;
 
+			args.RetVal = true;
+
 			if (wasDrag)
-				return true;
+				return;
 
 			var pin = PinAt(evnt.X, evnt.Y);
 
@@ -703,15 +724,15 @@ namespace Xamarin.Forms.Maps.GTK.Controls
 				PinClicked?.Invoke(this, new MapPinEventArgs(pin));
 			else
 				MapClicked?.Invoke(this, new MapPositionEventArgs(PositionFromPixel(evnt.X, evnt.Y)));
-
-			return true;
 		}
 
-		protected override bool OnScrollEvent(Gdk.EventScroll evnt)
+		// GTK4: vfunc override removed; subscribed as ScrollEvent in the constructor.
+		void OnScrollEvent(object o, Gtk.ScrollEventArgs args)
 		{
 			if (!_zoomEnabled)
-				return base.OnScrollEvent(evnt);
+				return;
 
+			var evnt = args.Event;
 			var steps = 0;
 
 			switch (evnt.Direction)
@@ -731,11 +752,14 @@ namespace Xamarin.Forms.Maps.GTK.Controls
 			}
 
 			if (steps == 0)
-				return true;
+			{
+				args.RetVal = true;
+				return;
+			}
 
 			ZoomAt(steps, evnt.X, evnt.Y);
 
-			return true;
+			args.RetVal = true;
 		}
 
 		/// <summary>Zooms while keeping the geographic point under the cursor fixed.</summary>
