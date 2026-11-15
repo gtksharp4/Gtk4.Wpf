@@ -288,8 +288,18 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		static void WaitFor<TView>(GtkTestHost.ViewHost<TView> host, Func<bool> condition, string because)
 			where TView : View
 		{
-			for (int i = 0; i < 100 && !condition(); i++)
+			// A real-time deadline, not a fixed pump count: an async image load (ImageControl loads
+			// the file off the main thread and applies the result through a GLib.Idle callback) needs
+			// wall-clock time to complete, and 100 back-to-back pumps elapse in a few milliseconds -
+			// fast enough to win the race on a quiet dev box and lose it on a loaded CI runner. Sleep
+			// between pumps so the background load can finish, and pump so its idle callback runs.
+			var deadline = DateTime.UtcNow.AddSeconds(10);
+
+			while (!condition() && DateTime.UtcNow < deadline)
+			{
 				host.Pump(2);
+				System.Threading.Thread.Sleep(10);
+			}
 
 			Assert.True(condition(), because);
 		}
