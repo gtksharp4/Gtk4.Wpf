@@ -60,7 +60,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		}
 
 		[Fact]
-		public void ScrolledReportsOffsetsDeltasAndTheVisibleItemRange()
+		public void ScrolledReportsOffsetsDeltasAndTheVisibleItemRange() => Run(() =>
 		{
 			var collectionView = new CollectionView
 			{
@@ -109,10 +109,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 					$"scrolling back up must report a negative delta: {back.VerticalDelta}");
 				Assert.Equal(0, back.FirstVisibleItemIndex);
 			}
-		}
+		});
 
 		[Fact]
-		public void RemainingItemsThresholdFiresOnceAtTheTailRatherThanPerScrollStep()
+		public void RemainingItemsThresholdFiresOnceAtTheTailRatherThanPerScrollStep() => Run(() =>
 		{
 			var collectionView = new CollectionView
 			{
@@ -150,10 +150,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				Assert.True(fired == 1,
 					$"further scrolling at the tail re-raised it: {fired} times in total");
 			}
-		}
+		});
 
 		[Fact]
-		public void RemainingItemsThresholdFiresAgainOnceTheSourceHasGrown()
+		public void RemainingItemsThresholdFiresAgainOnceTheSourceHasGrown() => Run(() =>
 		{
 			var source = new ObservableCollection<string>(
 				Enumerable.Range(1, 40).Select(i => $"item {i}"));
@@ -193,10 +193,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				Assert.True(fired == 2,
 					$"reaching the NEW tail must raise it again: fired {fired} times in total");
 			}
-		}
+		});
 
 		[Fact]
-		public void RemainingItemsThresholdOfMinusOneNeverFires()
+		public void RemainingItemsThresholdOfMinusOneNeverFires() => Run(() =>
 		{
 			var collectionView = new CollectionView
 			{
@@ -219,7 +219,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 				Assert.True(fired == 0, $"a threshold of -1 fired {fired} times");
 			}
-		}
+		});
 
 		/// <summary>
 		/// The first page of an incrementally-loaded list is usually short enough to fit the screen,
@@ -227,7 +227,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// loads its first page and stops for ever.
 		/// </summary>
 		[Fact]
-		public void AListShortEnoughToFitReachesTheThresholdWithoutScrolling()
+		public void AListShortEnoughToFitReachesTheThresholdWithoutScrolling() => Run(() =>
 		{
 			var collectionView = new CollectionView
 			{
@@ -246,10 +246,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				Assert.True(fired == 1,
 					$"a 3-item list under a threshold of 5 must raise the event once on load, not {fired}");
 			}
-		}
+		});
 
 		[Fact]
-		public void KeepScrollOffsetLeavesTheOffsetWhereItIsWhenItemsAreInsertedAbove()
+		public void KeepScrollOffsetLeavesTheOffsetWhereItIsWhenItemsAreInsertedAbove() => Run(() =>
 		{
 			var source = new ObservableCollection<string>(
 				Enumerable.Range(1, 60).Select(i => $"item {i}"));
@@ -277,14 +277,14 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 					"KeepScrollOffset must leave the numeric offset alone: " +
 					$"{before} -> {scrolled.Vadjustment.Value}");
 			}
-		}
+		});
 
 		/// <summary>
 		/// The default mode, and the interesting one: inserting above the viewport must move the
 		/// offset by the inserted extent, so the item the user was looking at stays put.
 		/// </summary>
 		[Fact]
-		public void KeepItemsInViewHoldsTheTopItemStillWhenItemsAreInsertedAbove()
+		public void KeepItemsInViewHoldsTheTopItemStillWhenItemsAreInsertedAbove() => Run(() =>
 		{
 			var source = new ObservableCollection<string>(
 				Enumerable.Range(1, 60).Select(i => $"item {i}"));
@@ -325,10 +325,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 					$"the top item moved: was item index {topItemBefore}, now {firstVisible} " +
 					"(one insertion above it should leave the same *item* on screen)");
 			}
-		}
+		});
 
 		[Fact]
-		public void KeepLastItemInViewScrollsToTheNewTail()
+		public void KeepLastItemInViewScrollsToTheNewTail() => Run(() =>
 		{
 			var source = new ObservableCollection<string>(
 				Enumerable.Range(1, 30).Select(i => $"item {i}"));
@@ -359,6 +359,6 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				Assert.True(lastVisible == source.Count - 1,
 					$"the new last item ({source.Count - 1}) is not the last visible one ({lastVisible})");
 			}
-		}
+		});
 	}
 }
