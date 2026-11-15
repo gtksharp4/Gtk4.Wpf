@@ -61,13 +61,17 @@ jobs:
 
   macos:
     name: macos
-    runs-on: macos-latest
+    # macos-13 (Intel x64), NOT macos-latest (arm64): the arm64 runner's .NET SDK drops the
+    # netstandard2.0 reference and every such compile fails with CS0518 "Predefined type
+    # 'System.Object' is not defined", for both a solution and a per-project build and on every SDK
+    # tried - an arm64-runner regression unworkable-around from CI. The x64 runner resolves it
+    # normally. GTK 4 (Homebrew), the Quartz backend and the thread-0 runner all work on Intel too.
+    runs-on: macos-13
     timeout-minutes: 45
-    # Gates (like Windows and Linux). Runs all three suites per project (not via the solution: the
-    # GitHub macOS-arm64 runner drops the netstandard2.0 reference in a solution build - see
-    # scripts/ci/test-macos.sh). The real-GTK-4 renderer suite runs through a thread-0 runner (GTK 4's
-    # Quartz backend requires thread 0, which `dotnet test` owns; the test assembly is executed
-    # directly and its custom entry point owns thread 0).
+    # Gates (like Windows and Linux). Runs all three suites per project. The real-GTK-4 renderer suite
+    # runs through a thread-0 runner (GTK 4's Quartz backend requires thread 0, which `dotnet test`
+    # owns; the test assembly is executed directly and its custom entry point owns thread 0 - see
+    # scripts/ci/test-macos.sh).
     steps:
       - uses: actions/checkout@v4
         with:
