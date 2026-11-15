@@ -299,7 +299,12 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 			using (var host = GtkTestHost.HostView(picker))
 			{
+				// TODO GTK4: PickerRenderer still uses Gtk.ComboBox (deprecated in GTK 4; full
+				// migration to Gtk.DropDown is tracked separately). CS0612 suppressed here to
+				// match the pragma already wrapping PickerRenderer.cs.
+#pragma warning disable CS0612
 				var native = host.Control<Gtk.ComboBox>();
+#pragma warning restore CS0612
 
 				Assert.Equal(1, native.Active);
 
