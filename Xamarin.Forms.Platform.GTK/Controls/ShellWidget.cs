@@ -124,9 +124,16 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 		readonly Gtk.Box _toolbarItemsBox;
 		readonly EventBox _overflowBox;
 		readonly Gtk.Label _overflowLabel;
-		readonly Gtk.Menu _overflowMenu;
+		// GTK4 removed Gtk.Menu / Gtk.MenuItem. The overflow menu is now a Gtk.PopoverMenu backed
+		// by a GLib.Menu model, rebuilt on each SetToolbarItems call.
+		// (Gtk.PopoverMenu ctor: GtkSharp/Generated/Gtk/PopoverMenu.cs:25
+		//  GLib.Menu.Append: GioSharp/Generated/GLib/Menu.cs:38
+		//  Gtk.Widget.InsertActionGroup: GtkSharp/Generated/Gtk/Widget.cs:3114)
+		Gtk.PopoverMenu _overflowMenu;
+		GLib.SimpleActionGroup _overflowActionGroup = new GLib.SimpleActionGroup();
 		readonly List<ToolbarEntry> _toolbarEntries = new List<ToolbarEntry>();
-		readonly Dictionary<Gtk.MenuItem, int> _overflowEntries = new Dictionary<Gtk.MenuItem, int>();
+		// Maps overflow action index (0-based within secondary items) → toolbar-item index.
+		readonly List<int> _overflowIndices = new List<int>();
 
 		readonly ShellTabBar _sectionTabs;
 		readonly ShellTabBar _contentTabs;
@@ -233,7 +240,8 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			_overflowBox.Add(_overflowLabel);
 			_overflowBox.ButtonPressEvent += OnOverflowPressed;
 
-			_overflowMenu = new Gtk.Menu();
+			// _overflowMenu is built lazily in RebuildOverflowMenu() so the popover can be parented
+			// after this widget is fully constructed.
 
 			// NoShowAll on the wrapper, so a nav bar ShowAll() cannot resurrect a toolbar that has no
 			// entries; the entries themselves are shown through _toolbarItemsBox.
@@ -413,8 +421,8 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 		/// <summary>The "⋮" button that pops the secondary toolbar entries.</summary>
 		public EventBox ToolbarOverflow => _overflowBox;
 
-		/// <summary>The menu the secondary toolbar entries live in.</summary>
-		public Gtk.Menu ToolbarOverflowMenu => _overflowMenu;
+		/// <summary>The popover the secondary toolbar entries live in.</summary>
+		public Gtk.PopoverMenu ToolbarOverflowMenu => _overflowMenu;
 
 		/// <summary>The tab strip over the current <c>ShellItem</c>'s <c>ShellSection</c>s.</summary>
 		public ShellTabBar SectionTabs => _sectionTabs;
@@ -670,15 +678,21 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			}
 
 			_toolbarEntries.Clear();
+			_overflowIndices.Clear();
 
-			foreach (var pair in _overflowEntries)
+			// Tear down any existing popover and action group; rebuild below.
+			if (_overflowMenu != null)
 			{
-				pair.Key.Activated -= OnOverflowItemActivated;
-				_overflowMenu.Remove(pair.Key);
-				pair.Key.Destroy();
+				_overflowMenu.Popdown();
+				_overflowMenu.Unparent();
+				_overflowMenu.Dispose();
+				_overflowMenu = null;
 			}
 
-			_overflowEntries.Clear();
+			_overflowActionGroup = new GLib.SimpleActionGroup();
+			InsertActionGroup("ovf", _overflowActionGroup);
+
+			var gMenu = new GLib.Menu();
 
 			if (items != null)
 			{
@@ -691,11 +705,16 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 					if (item.IsSecondary)
 					{
-						var menuItem = new Gtk.MenuItem(item.Text ?? string.Empty) { Sensitive = item.IsEnabled };
-
-						menuItem.Activated += OnOverflowItemActivated;
-						_overflowMenu.Add(menuItem);
-						_overflowEntries[menuItem] = i;
+						// Each secondary entry becomes a GLib.Menu item with a "ovf.item<n>" action,
+						// where n is the index into _overflowIndices (not the toolbar-items index i).
+						var actionIndex = _overflowIndices.Count;
+						var actionName = "item" + actionIndex;
+						var capturedI = i;
+						var action = new GLib.SimpleAction(actionName, null) { Enabled = item.IsEnabled };
+						action.Activated += (s, e) => OnOverflowActionActivated(capturedI);
+						_overflowActionGroup.AddAction(action);
+						gMenu.Append(item.Text ?? string.Empty, "ovf." + actionName);
+						_overflowIndices.Add(i);
 
 						continue;
 					}
@@ -719,10 +738,13 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 				}
 			}
 
-			// Show the menu ITEMS, never the Gtk.Menu itself - gtk_widget_show on a GtkMenu maps
-			// its toplevel, i.e. it pops the menu open. The menu is shown in the popup handler.
-			foreach (var child in _overflowMenu.Children)
-				child.ShowAll();
+			if (_overflowIndices.Count > 0)
+			{
+				_overflowMenu = new Gtk.PopoverMenu(gMenu);
+				_overflowMenu.Parent = _overflowBox;
+				_overflowMenu.HasArrow = false;
+				_overflowMenu.Autohide = true;
+			}
 
 			RefreshToolbar();
 		}
@@ -731,7 +753,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 		{
 			_toolbarItemsBox.ShowAll();
 
-			if (_overflowEntries.Count > 0)
+			if (_overflowIndices.Count > 0)
 			{
 				_overflowLabel.Show();
 				_overflowBox.Show();
@@ -741,7 +763,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 				_overflowBox.Hide();
 			}
 
-			if (_toolbarEntries.Count > 0 || _overflowEntries.Count > 0)
+			if (_toolbarEntries.Count > 0 || _overflowIndices.Count > 0)
 				_toolbarBox.Show();
 			else
 				_toolbarBox.Hide();
@@ -769,33 +791,13 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			}
 		}
 
-		/// <summary>
-		/// Reports the size the renderer asked for as both the minimum and the natural size.
-		/// </summary>
-		/// <remarks>
-		/// This widget lives inside <c>Controls.Page</c>'s <see cref="Gtk.Fixed"/>, and a Fixed
-		/// allocates each child its <b>natural</b> size. In Locked mode the content stack carries a
-		/// 300px start margin, which pushed the natural width to window+300 - and the Fixed duly
-		/// allocated that, so the right 300px of every page hung off the window (measured: an 820px
-		/// window allocating the stack 820px starting at x=300). The renderer always gives this
-		/// widget an explicit request equal to the page area, so honour it and let the box
-		/// distribute what is actually there.
-		/// </remarks>
-		protected override void OnGetPreferredWidth(out int minimum_width, out int natural_width)
-		{
-			base.OnGetPreferredWidth(out minimum_width, out natural_width);
-
-			if (WidthRequest > 0)
-				minimum_width = natural_width = WidthRequest;
-		}
-
-		protected override void OnGetPreferredHeight(out int minimum_height, out int natural_height)
-		{
-			base.OnGetPreferredHeight(out minimum_height, out natural_height);
-
-			if (HeightRequest > 0)
-				minimum_height = natural_height = HeightRequest;
-		}
+		// OnGetPreferredWidth / OnGetPreferredHeight are NOT overridden here. ShellWidget derives
+		// from Gtk.Box, and in GTK4 a Box's measure vfunc is answered by its GtkBoxLayout — an
+		// OnMeasure override on a Box subclass is never called (see Drawing.Compat.cs:27-30 and
+		// Container.cs note). The sizing goal (honour WidthRequest/HeightRequest set by the
+		// renderer) is already achieved by the standard GTK4 widget machinery: when WidthRequest
+		// or HeightRequest is set, gtk_widget_measure clips the minimum to the request, so no
+		// override is needed and the removed CS0115 vfuncs were dead code.
 
 		protected override void OnSizeAllocated(Gdk.Rectangle allocation)
 		{
@@ -868,8 +870,14 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 				foreach (var entry in _toolbarEntries)
 					entry.Host.ButtonPressEvent -= OnToolbarItemPressed;
 
-				foreach (var pair in _overflowEntries)
-					pair.Key.Activated -= OnOverflowItemActivated;
+				// Overflow actions are anonymous lambdas held by the SimpleActionGroup; disposing
+				// the popover and clearing the group is sufficient.
+				if (_overflowMenu != null)
+				{
+					_overflowMenu.Unparent();
+					_overflowMenu.Dispose();
+					_overflowMenu = null;
+				}
 
 				foreach (var row in _suggestionRows)
 				{
@@ -900,20 +908,18 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			}
 		}
 
-		void OnOverflowItemActivated(object sender, EventArgs e)
+		void OnOverflowActionActivated(int toolbarIndex)
 		{
-			if (sender is Gtk.MenuItem menuItem && _overflowEntries.TryGetValue(menuItem, out var index))
-				ToolbarItemActivated?.Invoke(this, new ShellToolbarItemActivatedEventArgs(index));
+			ToolbarItemActivated?.Invoke(this, new ShellToolbarItemActivatedEventArgs(toolbarIndex));
 		}
 
 		void OnOverflowPressed(object o, ButtonPressEventArgs args)
 		{
 			args.RetVal = true;
 
-			if (_overflowEntries.Count == 0)
+			if (_overflowIndices.Count == 0 || _overflowMenu == null)
 				return;
 
-			_overflowMenu.ShowAll();
 			_overflowMenu.Popup();
 		}
 
