@@ -63,7 +63,9 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			_button.CanFocus = true;
 			// GTK3 deprecates Gtk.Arrow; the themed "pan-down" icon is the replacement it
 			// recommends, and it follows the icon theme instead of drawing a fixed glyph.
-			_arrow = new Gtk.Image("pan-down-symbolic", Gtk.IconSize.Button);
+			// GTK4: new Gtk.Image(iconName, IconSize) is gone; use NewFromIconName.
+			// IconSize.Button is gone; Normal is the GTK4 equivalent.
+			_arrow = Gtk.Image.NewFromIconName("pan-down-symbolic");
 			_button.Add(_arrow);
 			PackEnd(_button, false, false, 0);
 		}

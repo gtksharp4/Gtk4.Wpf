@@ -198,8 +198,9 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			if (Sensitive)
 			{
 				TextView.Sensitive = true;
-				TextView.HasFocus = true;
-				TextView.Window?.Raise();
+				// GTK4: HasFocus is read-only; use GrabFocus() to request focus.
+				// Widget.Window?.Raise() is removed (no per-widget GdkWindows in GTK4).
+				TextView.GrabFocus();
 			}
 		}
 	}
