@@ -1,13 +1,10 @@
 #!/usr/bin/env bash
 # CI (macOS): build the GTK 4 backend and run all three unit-test suites.
 #
-# RestoreUseStaticGraphEvaluation=false is the load-bearing flag. On the GitHub macOS-arm64 runner
-# the default static-graph restore drops the netstandard2.0 reference for most projects, so the
-# compiler gets no references and every such compile fails with CS0518 "Predefined type 'System.Object'
-# is not defined" (the implicit NETStandard.Library.Ref is not resolved on this runner, so each csproj
-# adds an explicit macOS-only NETStandard.Library PackageReference - but static-graph restore does not
-# pick it up for every project). The legacy evaluation applies it to all of them. Windows and Linux
-# are unaffected either way.
+# The netstandard2.0 CS0518 failures unique to the GitHub macOS-arm64 runner (its netstandard2.0
+# targeting pack resolves to nothing) are handled in the library csproj files: on macOS they disable
+# the implicit framework reference and reference netstandard.dll explicitly from the NETStandard.Library
+# package. The build command here is therefore identical to Windows/Linux - no extra restore flags.
 #
 # The real-GTK-4 renderer suite runs through a thread-0 runner (GTK 4's Quartz backend requires thread
 # 0, which `dotnet test` owns): the test assembly is executed directly and its custom entry point
@@ -17,9 +14,8 @@ set -euo pipefail
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
-echo "== build (Debug; legacy restore evaluation; GeneratePackageOnBuild off) =="
-dotnet build Xamarin.Forms.Gtk4.sln -c Debug \
-	-p:GeneratePackageOnBuild=false -p:RestoreUseStaticGraphEvaluation=false
+echo "== build (Debug; GeneratePackageOnBuild off) =="
+dotnet build Xamarin.Forms.Gtk4.sln -c Debug -p:GeneratePackageOnBuild=false
 
 echo "== Core unit tests =="
 dotnet test Xamarin.Forms.Core.UnitTests -c Debug --no-build --logger trx

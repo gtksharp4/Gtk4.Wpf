@@ -63,12 +63,11 @@ jobs:
     name: macos
     runs-on: macos-latest
     timeout-minutes: 45
-    # Gates (like Windows and Linux). The arm64 runner's default static-graph restore drops the
-    # netstandard2.0 reference (CS0518); scripts/ci/test-macos.sh builds with
-    # RestoreUseStaticGraphEvaluation=false so the legacy evaluation applies it to every project.
-    # The real-GTK-4 renderer suite runs through a thread-0 runner (GTK 4's Quartz backend requires
-    # thread 0, which `dotnet test` owns; the test assembly is executed directly and its custom entry
-    # point owns thread 0).
+    # Gates (like Windows and Linux). The arm64 runner's empty netstandard2.0 targeting pack (CS0518)
+    # is handled in the library csproj files (implicit framework reference off, netstandard.dll
+    # referenced explicitly from the package). The real-GTK-4 renderer suite runs through a thread-0
+    # runner (GTK 4's Quartz backend requires thread 0, which `dotnet test` owns; the test assembly is
+    # executed directly and its custom entry point owns thread 0).
     steps:
       - uses: actions/checkout@v4
         with:
