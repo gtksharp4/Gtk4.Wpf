@@ -1,0 +1,82 @@
+name: Build and test
+
+# Builds the GTK 4 backend and runs all three unit-test suites (Core, XAML, and the real-GTK-widget
+# renderer suite) on Windows, Linux and macOS. Per-OS logic lives in scripts/ci/. The GTK 4 runtime
+# is obtained per OS: gvsbuild (Windows, via GtkSharp4.targets during the build), apt libgtk-4-1
+# (Linux), Homebrew (macOS). GtkSharp4 itself is restored from the committed vendored feed in
+# build/gtksharp4-packages/ (the binding is a fork, not on nuget.org). This supersedes the old
+# linux-gtk.yml.
+on:
+  push:
+    branches: [5.0.0]
+  pull_request:
+    branches: [5.0.0]
+  workflow_dispatch:
+
+jobs:
+  windows:
+    name: windows
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # GitInfo derives the package version from history; a shallow clone makes it guess and the
+          # build emits MSB3073 "could not retrieve first commit" noise.
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          # 10.0.x is what everything targets; 8.0.x carries the .NET 8 runtime Net4x.NuGetUtility's
+          # Windows-only MSBuild tasks need (several csproj files reference it under '$(OS)' ==
+          # 'Windows_NT').
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - run: pwsh scripts/ci/test-windows.ps1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-windows
+          path: '**/*.trx'
+
+  linux:
+    name: linux
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - run: bash scripts/ci/test-linux.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-linux
+          path: '**/*.trx'
+
+  macos:
+    name: macos
+    runs-on: macos-latest
+    timeout-minutes: 45
+    # Gates on the renderer tests by request; they are expected to be fragile under headless Quartz
+    # (GTK 4 on macOS needs thread 0). See scripts/ci/test-macos.sh for the full rationale.
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - run: bash scripts/ci/test-macos.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-macos
+          path: '**/*.trx'

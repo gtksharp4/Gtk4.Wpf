@@ -63,6 +63,9 @@ AndroidNative/gradlew
 AndroidNative/gradlew.bat
 !EmbeddingTestBeds/Embedding.iOS/*.designer.cs
 *.nupkg
+# ...except the vendored GtkSharp4 wrapper packages, a committed local feed for CI and fresh
+# clones (the GTK 4 binding is not on nuget.org). See NuGet.config and build/gtksharp4-packages/.
+!build/gtksharp4-packages/*.nupkg
 *.pdb
 # temporary vim files
 *.swp
