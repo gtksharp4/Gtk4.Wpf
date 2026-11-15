@@ -104,6 +104,14 @@
     <GtkSharp3VersionBuildSuffix Condition="'$(GtkSharp3VersionBuildSuffix)' == ''">95</GtkSharp3VersionBuildSuffix>
 
     <!--
+      GTK 4 port: the backend now binds the GtkSharp4 fork (GTK 4.22), restored from the Local
+      feed (nuget.config "Local" -> Packages, a symlink to the shared C:\Temp\gtkwindowsforms\Packages).
+      The version is date-derived (VersionPrefix.yyDDD); re-pin this when GtkSharp4 is rebuilt, or
+      float it. GtkSharp3Version above is retained only so the removed-tooling guard interpolates.
+    -->
+    <GtkSharp4Version Condition="'$(GtkSharp4Version)' == ''">4.22.4.*</GtkSharp4Version>
+
+    <!--
       Net4x.NuGetUtility is Windows-only: its targets shell out to native-windows\NuGetUtility.exe.
       Every project that uses it therefore guards all three touch points - the two
       NuGet.Utility.props/.targets imports and the PackageReference - with

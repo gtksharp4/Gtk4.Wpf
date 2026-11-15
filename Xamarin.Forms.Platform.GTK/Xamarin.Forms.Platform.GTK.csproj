@@ -45,13 +45,13 @@
           prerelease "5.0.0-0", and record that as this project's version in project.assets.json.
         -->
         <Version>$(VersionPrefix).$(VersionSuffix)</Version>
-        <PackageId>Net4x.Xamarin.Forms.Gtk3.Platform.GTK</PackageId>
-        <Description>GTK3 backend for Xamarin.Forms, built on GtkSharp 3.</Description>
+        <PackageId>Net4x.Xamarin.Forms.Gtk4.Platform.GTK</PackageId>
+        <Description>GTK4 backend for Xamarin.Forms, built on GtkSharp 4 (GTK 4.22).</Description>
         <IsPackable>true</IsPackable>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <AssemblyName>Xamarin.Forms.Platform.Gtk3</AssemblyName>
+        <AssemblyName>Xamarin.Forms.Platform.Gtk4</AssemblyName>
         <RootNamespace>Xamarin.Forms.Platform.GTK</RootNamespace>
-        <Description>GTK3 Backend for Xamarin.Forms</Description>
+        <Description>GTK4 Backend for Xamarin.Forms</Description>
         <LangVersion>latest</LangVersion>
         <!--
           TRUE, so the SDK emits AssemblyVersion/FileVersion/InformationalVersion from the
@@ -65,7 +65,7 @@
         <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="GtkSharp" Version="$(GtkSharp3Version).$(GtkSharp3VersionBuildSuffix)" />
+        <PackageReference Include="GtkSharp4" Version="$(GtkSharp4Version)" />
     </ItemGroup>
     <!--
     Nothing is quarantined any more (plan M6 is complete for the renderer surface):
