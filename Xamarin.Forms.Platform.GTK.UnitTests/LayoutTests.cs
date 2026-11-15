@@ -36,7 +36,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		}
 
 		[Fact]
-		public void PageFillsTheWindow()
+		public void PageFillsTheWindow() => Run(() =>
 		{
 			var page = new ContentPage
 			{
@@ -54,7 +54,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				Assert.True(widget.Width > 1,
 					$"the page widget is still at GTK's unallocated sentinel: {GtkTestHost.Describe(widget)}");
 			}
-		}
+		});
 
 		/// <summary>
 		/// The M3 headline: a StackLayout's children must be allocated at distinct positions.
@@ -62,7 +62,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// while Forms' own bounds were perfect.
 		/// </summary>
 		[Fact]
-		public void StackLayoutChildrenAreAllocatedAtDistinctPositions()
+		public void StackLayoutChildrenAreAllocatedAtDistinctPositions() => Run(() =>
 		{
 			var first = new BoxView { Color = Color.Red, HeightRequest = 40 };
 			var second = new BoxView { Color = Color.Green, HeightRequest = 40 };
@@ -93,10 +93,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				Assert.True(ys[0] < ys[1], $"y = [{string.Join(", ", ys)}] is not in order");
 				Assert.True(ys[1] < ys[2], $"y = [{string.Join(", ", ys)}] is not in order");
 			}
-		}
+		});
 
 		[Fact]
-		public void StackLayoutChildAllocationsAgreeWithFormsBounds()
+		public void StackLayoutChildAllocationsAgreeWithFormsBounds() => Run(() =>
 		{
 			var box = new BoxView { Color = Color.Red, HeightRequest = 50 };
 
@@ -118,10 +118,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				Assert.True(Math.Abs(widget.Height - (int)box.Height) <= 1,
 					$"native height {widget.Height} disagrees with Forms {(int)box.Height}");
 			}
-		}
+		});
 
 		[Fact]
-		public void GridPlacesChildrenInTheirCells()
+		public void GridPlacesChildrenInTheirCells() => Run(() =>
 		{
 			var topLeft = new BoxView { Color = Color.Red };
 			var topRight = new BoxView { Color = Color.Green };
@@ -163,7 +163,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				Assert.True(Math.Abs(blPos.x - tlPos.x) <= 1,
 					$"same column, same x: {blPos.x} vs {tlPos.x}");
 			}
-		}
+		});
 
 		/// <summary>
 		/// Nested layouts are where M3 root cause 1 actually bit: a Forms layout pass does not
@@ -171,7 +171,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// natural size forever.
 		/// </summary>
 		[Fact]
-		public void NestedLayoutsPropagateGeometryToTheDeepestChild()
+		public void NestedLayoutsPropagateGeometryToTheDeepestChild() => Run(() =>
 		{
 			var leaf = new BoxView { Color = Color.Purple };
 
@@ -202,7 +202,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 					$"leaf allocated {widget.Width}px wide inside a 600px window - " +
 					"it is still at its natural size, i.e. geometry stopped propagating");
 			}
-		}
+		});
 
 		/// <summary>
 		/// M3 root cause 4: rows appended after the first allocation were never allocated at all
@@ -210,7 +210,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// the visible casualty, so it is the shape asserted here.
 		/// </summary>
 		[Fact]
-		public void ListViewRowsAddedAfterTheFirstAllocationAreStillAllocated()
+		public void ListViewRowsAddedAfterTheFirstAllocationAreStillAllocated() => Run(() =>
 		{
 			var items = Enumerable.Range(1, 8).Select(i => $"row {i}").ToList();
 
@@ -265,7 +265,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				Assert.True(unallocated.Count == 0,
 					$"rows left at GTK's unallocated sentinel: {string.Join(", ", unallocated)}");
 			}
-		}
+		});
 
 		/// <summary>
 		/// The M3 residual, reduced to a unit test: the ControlGallery's CoreRootPage
@@ -379,7 +379,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		}
 
 		[Fact]
-		public void ResizingTheWindowRelaysTheContent()
+		public void ResizingTheWindowRelaysTheContent() => Run(() =>
 		{
 			var box = new BoxView { Color = Color.Red };
 			var page = new ContentPage { Content = new StackLayout { Children = { box } } };
@@ -409,6 +409,6 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				Assert.True(after > before,
 					$"content did not follow the window: {before}px -> {after}px");
 			}
-		}
+		});
 	}
 }

@@ -81,7 +81,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// kept the bold width (201 → 236 → 236); it must now return (215 → 253 → 215).
 		/// </summary>
 		[Fact]
-		public void LabelFontWeightRoundTripRestoresTheNaturalWidth()
+		public void LabelFontWeightRoundTripRestoresTheNaturalWidth() => Run(() =>
 		{
 			var label = ShownLabel();
 
@@ -99,7 +99,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 			Assert.True(back == normal,
 				"a label taken bold and back must return to its normal width - staying at the bold " +
 				$"width is the stale cached layout of plan §8.3.1: {normal} -> {bold} -> {back}");
-		}
+		});
 
 		/// <summary>
 		/// Size is the other half: a shrinking font must shrink the request, which is the direction
@@ -107,7 +107,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// plausible on screen.
 		/// </summary>
 		[Fact]
-		public void LabelFontSizeChangeIsReflectedInTheNaturalWidth()
+		public void LabelFontSizeChangeIsReflectedInTheNaturalWidth() => Run(() =>
 		{
 			var label = ShownLabel();
 
@@ -123,10 +123,10 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 			Assert.True(large > small, $"22pt must measure wider than 9pt: {small} vs {large}");
 			Assert.True(back == small,
 				$"shrinking the font must shrink the request back: {small} -> {large} -> {back}");
-		}
+		});
 
 		[Fact]
-		public void EntryFontWeightRoundTripRestoresTheTextLayout()
+		public void EntryFontWeightRoundTripRestoresTheTextLayout() => Run(() =>
 		{
 			var entry = new Gtk.Entry { Text = Sample };
 
@@ -143,14 +143,14 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				$"the entry's own Pango layout must widen under bold: normal={normal} bold={bold}");
 			Assert.True(back == normal,
 				$"and must come back: {normal} -> {bold} -> {back}");
-		}
+		});
 
 		/// <summary>
 		/// Clearing the font must clear the attribute list too, or the next theme change is
 		/// overridden by a font nobody asked for any more.
 		/// </summary>
 		[Fact]
-		public void ClearingTheFontRemovesTheAttributes()
+		public void ClearingTheFontRemovesTheAttributes() => Run(() =>
 		{
 			var label = ShownLabel();
 			int themeWidth = NaturalWidth(label);
@@ -166,7 +166,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				$"24pt bold must be wider than the theme font: theme={themeWidth} styled={styled}");
 			Assert.True(NaturalWidth(label) == themeWidth,
 				$"clearing must return the label to the theme font's width: {NaturalWidth(label)} != {themeWidth}");
-		}
+		});
 
 		/// <summary>
 		/// A label whose text came from <c>GenerateMarkupText</c> carries its font *inside* the
@@ -175,7 +175,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// markup path instead and only invalidates the layout.
 		/// </summary>
 		[Fact]
-		public void MarkupAttributesSurviveAFontChange()
+		public void MarkupAttributesSurviveAFontChange() => Run(() =>
 		{
 			var plain = ShownLabel();
 			plain.Markup = "plain text";
@@ -196,7 +196,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 			Assert.True(NaturalWidth(marked) > NaturalWidth(plain),
 				"a font applied through SetFont must not flatten the label's own markup: " +
 				$"plain={NaturalWidth(plain)} bold-markup={NaturalWidth(marked)}");
-		}
+		});
 
 		/// <summary>
 		/// The fail-first evidence, as a standing test: the CSS half of <c>SetFont</c> on its own
@@ -204,7 +204,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// braces - they are the entire mechanism. Delete them and this suite goes red.
 		/// </summary>
 		[Fact]
-		public void CssAloneDoesNotMoveALabelsMeasurement()
+		public void CssAloneDoesNotMoveALabelsMeasurement() => Run(() =>
 		{
 			var viaCss = ShownLabel();
 			int cssBefore = NaturalWidth(viaCss);
@@ -224,7 +224,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 			Assert.True(fontAfter > fontBefore,
 				"and SetFont, which adds the Pango attribute, must move it: " +
 				$"{fontBefore} -> {fontAfter}");
-		}
+		});
 
 		/// <summary>
 		/// End to end through the renderer, which is the surface an app actually touches: a
@@ -232,7 +232,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// binding - after the element has been laid out.
 		/// </summary>
 		[Fact]
-		public void FormsEntryFontAttributesChangeAtRuntime()
+		public void FormsEntryFontAttributesChangeAtRuntime() => Run(() =>
 		{
 			var entry = new Entry { Text = Sample, FontSize = 14 };
 
@@ -255,7 +255,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				Assert.True(back == normal,
 					$"and clearing it must undo that: {normal} -> {bold} -> {back}");
 			}
-		}
+		});
 
 		/// <summary>
 		/// The same for <see cref="Label"/>, which reaches its font through markup rather than
@@ -264,7 +264,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// of silently reintroducing §8.3.1 on the most common control in the framework.
 		/// </summary>
 		[Fact]
-		public void FormsLabelFontAttributesChangeAtRuntime()
+		public void FormsLabelFontAttributesChangeAtRuntime() => Run(() =>
 		{
 			var label = new Label { Text = Sample, FontSize = 14 };
 
@@ -287,6 +287,6 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				Assert.True(back == normal,
 					$"and clearing it must undo that: {normal} -> {bold} -> {back}");
 			}
-		}
+		});
 	}
 }
