@@ -228,9 +228,8 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 				ConnectSignals();
 
-				// The native child is destroyed with the container; drop the pointer before
-				// anything can dereference it.
-				Destroyed += (sender, args) => _webView = IntPtr.Zero;
+				// GTK4: Widget.Destroyed event removed. The pointer is cleared in
+				// Dispose(bool) below, which the GLib.Object finaliser chain calls.
 			}
 			else
 			{

@@ -1053,7 +1053,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			{
 				_suggestionsScroller.ShowAll();
 				_suggestionsWrapper.Show();
-				_suggestionsWrapper.Window?.Raise();
+				// GTK4: Widget.Window (GdkWindow) removed; Raise() has no equivalent here.
 			}
 			else
 			{
@@ -1111,7 +1111,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 				// with the plain Show(), which does not consult the flag.
 				_flyoutBox.ShowAll();
 				_flyoutWrapper.Show();
-				_flyoutWrapper.Window?.Raise();
+				// GTK4: Widget.Window (GdkWindow) removed; Raise() has no equivalent here.
 			}
 			else
 			{

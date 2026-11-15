@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Platform.GTK.Helpers
 			SetButtonText(arguments.Accept, ButtonsType.Ok, messageDialog);
 			SetButtonText(arguments.Cancel, ButtonsType.Cancel, messageDialog);
 
-			ResponseType result = (ResponseType)messageDialog.Run();
+			ResponseType result = RunDialog(messageDialog);
 
 			if (result == ResponseType.Ok)
 			{
@@ -52,18 +52,47 @@ namespace Xamarin.Forms.Platform.GTK.Helpers
 			SetDestructionButton(arguments.Destruction, messageDialog);
 			AddExtraButtons(arguments, messageDialog);
 
-			int result = messageDialog.Run();
+			ResponseType result = RunDialog(messageDialog);
 
-			if ((ResponseType)result == ResponseType.Cancel)
+			if (result == ResponseType.Cancel)
 			{
 				arguments.SetResult(arguments.Cancel);
 			}
-			else if ((ResponseType)result == ResponseType.Reject)
+			else if (result == ResponseType.Reject)
 			{
 				arguments.SetResult(arguments.Destruction);
 			}
 
 			messageDialog.Destroy();
+		}
+
+		/// <summary>
+		/// Runs <paramref name="dialog"/> synchronously by spinning a local GLib.MainLoop.
+		/// </summary>
+		/// <remarks>
+		/// GTK4 removed the nested-event-loop gtk_dialog_run (MessageDialog.Run()).
+		/// The replacement is to subscribe the Response signal, present the dialog, and run
+		/// a local GLib.MainLoop — quitting it when the signal fires — which is exactly what
+		/// gtk_dialog_run did internally (Application.cs:108 uses the same pattern).
+		/// TODO GTK4: replace with Gtk.AlertDialog.Choose / ChooseFinish once callers are async.
+		/// </remarks>
+		static ResponseType RunDialog(MessageDialog dialog)
+		{
+			var result = ResponseType.None;
+			var loop = new GLib.MainLoop();
+
+			dialog.Response += (o, args) =>
+			{
+				result = args.ResponseId;
+
+				if (loop.IsRunning)
+					loop.Quit();
+			};
+
+			dialog.Present();
+			loop.Run();
+
+			return result;
 		}
 
 		static void SetDialogTitle(string title, MessageDialog messageDialog)
@@ -85,8 +114,9 @@ namespace Xamarin.Forms.Platform.GTK.Helpers
 					break;
 			}
 
+			// GTK4: GtkHButtonBox is gone; buttons live in a plain Box inside ContentArea.
 			var buttonsBox = messageDialog.GetDescendants()
-				.OfType<HButtonBox>()
+				.OfType<Box>()
 				.FirstOrDefault();
 
 			if (buttonsBox == null)

@@ -245,7 +245,9 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 		protected virtual void ConfigurePageRenderer()
 		{
-			Container.IsFocus = true;
+			// GTK4: Widget.IsFocus is read-only (it reflects keyboard focus state).
+			// GrabFocus() is the write side — it requests focus for the widget.
+			Container.GrabFocus();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

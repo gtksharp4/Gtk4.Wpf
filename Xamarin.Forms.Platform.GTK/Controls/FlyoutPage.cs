@@ -394,7 +394,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 				// itself explicitly and ShowAll the contents through the revealer.
 				_flyoutRevealer.ShowAll();
 				_flyoutContainerWrapper.Show();
-				_flyoutContainerWrapper.Window?.Raise();
+				// GTK4: Widget.Window (GdkWindow) removed; Raise() has no equivalent here.
 			}
 
 			if (slide)
@@ -437,8 +437,11 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			if (_lastAllocation.Height > 1)
 				height = _lastAllocation.Height;
 
-			var x = (int)ChildGetProperty(_flyoutContainerWrapper, "x").Val;
-			var y = (int)ChildGetProperty(_flyoutContainerWrapper, "y").Val;
+			// GTK4: child properties removed; use gtk_fixed_get_child_position.
+			// Generated/Gtk/Fixed.cs:118 — GetChildPosition(Widget, out double x, out double y)
+			GetChildPosition(_flyoutContainerWrapper, out double childX, out double childY);
+			var x = (int)childX;
+			var y = (int)childY;
 
 			_flyoutContainerWrapper.SizeAllocate(new Gdk.Rectangle(
 				Allocation.X + x, Allocation.Y + y, Math.Max(1, width), Math.Max(1, height)));

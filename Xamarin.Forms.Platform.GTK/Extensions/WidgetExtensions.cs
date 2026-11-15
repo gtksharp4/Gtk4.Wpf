@@ -70,15 +70,11 @@ namespace Xamarin.Forms.Platform.GTK.Extensions
 
 		static void GetContainerChildXY(Fixed parent, Widget child, out int x, out int y)
 		{
-			using (GLib.Value val = parent.ChildGetProperty(child, "x"))
-			{
-				x = (int)val;
-			}
-
-			using (GLib.Value val = parent.ChildGetProperty(child, "y"))
-			{
-				y = (int)val;
-			}
+			// GTK4: child properties removed; use gtk_fixed_get_child_position instead.
+			// Fixed.cs:118 — GetChildPosition(Widget, out double x, out double y)
+			parent.GetChildPosition(child, out double dx, out double dy);
+			x = (int)dx;
+			y = (int)dy;
 		}
 
 		public static void SetSize(this Widget self, double width, double height)

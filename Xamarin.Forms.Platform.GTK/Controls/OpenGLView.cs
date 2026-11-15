@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 				// Set before realization: the context is created with these attributes.
 				HasDepthBuffer = true,
 				HasStencilBuffer = false,
-				HasAlpha = false,
+				// GTK4: GLArea.HasAlpha removed (alpha support is automatic via the GL context).
 				// We decide when a frame is produced: either the Forms render loop (a frame-clock
 				// tick callback) or an explicit Display() call. Without AutoRender the last frame is
 				// simply re-composited when the widget is redrawn, which is exactly what we want.
