@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// allocation correct, is asserted unconditionally below.
 		/// </summary>
 		[Fact]
-		public void OnlyTheForcedSizeAllocateCommitsANewAllocation()
+		public void OnlyTheForcedSizeAllocateCommitsANewAllocation() => Run(() =>
 		{
 			var box = new BoxView { Color = Color.Red };
 			var page = new ContentPage { Content = new StackLayout { Children = { box } } };
@@ -73,7 +73,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 					$"the forced SizeAllocate did not commit the resize ({before}px -> {forced}px); " +
 					"every layout assertion in this suite is then reading stale rectangles");
 			}
-		}
+		});
 
 		/// <summary>
 		/// The harness must be able to FAIL on a wrong number, not merely on an exception, and this
@@ -90,7 +90,7 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 		/// particular run.
 		/// </summary>
 		[Fact]
-		public void AllocationsAreRealNumbersAndNotTheBrokenM3Ones()
+		public void AllocationsAreRealNumbersAndNotTheBrokenM3Ones() => Run(() =>
 		{
 			var topLeft = new BoxView { Color = Color.Red };
 			var topRight = new BoxView { Color = Color.Green };
@@ -123,6 +123,6 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 				Assert.True(tl.Width >= 360 && tr.Width >= 360,
 					$"each star column should be about half the window: {tl.Width}px / {tr.Width}px");
 			}
-		}
+		});
 	}
 }
