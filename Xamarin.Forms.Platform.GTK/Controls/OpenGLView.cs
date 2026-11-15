@@ -232,13 +232,8 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			return true;
 		}
 
-		protected override void OnDestroyed()
-		{
-			Teardown();
-
-			base.OnDestroyed();
-		}
-
+		// GTK4: ::destroy signal removed; OnDestroyed() vfunc gone. Teardown is handled
+		// entirely by Dispose(bool) below, which the GLib.Object finaliser chain calls.
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)

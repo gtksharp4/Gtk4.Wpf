@@ -59,13 +59,9 @@ namespace Xamarin.Forms.Platform.GTK
 			Icon = appliccationIconPixbuf;
 		}
 
-		// GtkSharp 3: GLib.Object.Dispose() is no longer virtual - the disposal hook is
-		// Dispose(bool) (overridden below), which the base Dispose() calls for us.
-
-		protected override bool OnDeleteEvent(Gdk.Event evnt)
+		// GTK4: delete-event is gone; close-request replaces it. Return true to veto the close.
+		protected override bool OnCloseRequest()
 		{
-			base.OnDeleteEvent(evnt);
-
 			Gtk.Application.Quit();
 
 			return true;
@@ -79,18 +75,19 @@ namespace Xamarin.Forms.Platform.GTK
 			}
 		}
 
-		protected override bool OnConfigureEvent(Gdk.EventConfigure evnt)
+		// GTK4: configure-event is gone; use the OnSizeAllocated compat vfunc (Drawing.Compat.cs).
+		protected override void OnSizeAllocated(Gdk.Rectangle allocation)
 		{
-			Gdk.Size newSize = new Gdk.Size(evnt.Width, evnt.Height);
+			base.OnSizeAllocated(allocation);
+
+			Gdk.Size newSize = new Gdk.Size(allocation.Width, allocation.Height);
 
 			if (_lastSize != newSize)
 			{
 				_lastSize = newSize;
-				var pageRenderer = Platform.GetRenderer(_application.MainPage);
+				var pageRenderer = Platform.GetRenderer(_application?.MainPage);
 				pageRenderer?.SetElementSize(new Size(newSize.Width, newSize.Height));
 			}
-
-			return base.OnConfigureEvent(evnt);
 		}
 
 		private void UpdateMainPage()

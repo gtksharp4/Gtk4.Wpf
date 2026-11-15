@@ -62,6 +62,10 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 					NavigationController.InsertPageBeforeRequested -= OnInsertPageBeforeRequested;
 				}
 
+				// GTK4: ::destroy removed; hide toolbar here instead of in OnDestroyed.
+				if (_appeared && _toolbarTracker != null)
+					_toolbarTracker.TryHide(Page);
+
 				_toolbarTracker = null;
 
 				if (_currentPage != null)
@@ -91,18 +95,8 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			base.OnShown();
 		}
 
-		protected override void OnDestroyed()
-		{
-			if (!_appeared)
-				return;
-
-			_toolbarTracker.TryHide(Page);
-			_appeared = false;
-
-			PageController?.SendDisappearing();
-
-			base.OnDestroyed();
-		}
+		// GTK4: ::destroy removed; toolbar hide and SendDisappearing moved to Dispose(bool).
+		// AbstractPageRenderer.Destroy() calls Dispose(true) and sets _appeared = false.
 
 		protected override void OnSizeAllocated(Gdk.Rectangle allocation)
 		{
