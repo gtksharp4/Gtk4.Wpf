@@ -173,4 +173,20 @@
     <!-- This target is replaced by GitInfo when restored. Allows Version.targets to rely on it before restore. -->
     <Target Name="GitVersion" />
     <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="Environment.Build.props" />
+
+    <!--
+      macOS CI only (scripts/ci/test-macos.sh sets XFPinNetStandardRef). The GitHub macOS runner
+      regressed to failing netstandard2.0 compiles with CS0518 "Predefined type 'System.Object' is
+      not defined": the SDK's implicit NETStandard.Library.Ref targeting pack is not resolved and csc
+      is handed no references (the same build was green on an earlier runner image). Referencing the
+      metapackage supplies the netstandard facade from the package instead. Scoped by property so the
+      Windows and Linux jobs, which resolve the targeting pack correctly, are untouched; NETSDK1023
+      ("explicit reference not recommended") is expected under this workaround and demoted.
+    -->
+    <PropertyGroup Condition="'$(XFPinNetStandardRef)' == 'true'">
+        <NoWarn>$(NoWarn);NETSDK1023</NoWarn>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(XFPinNetStandardRef)' == 'true' AND '$(TargetFramework)' == 'netstandard2.0'">
+        <PackageReference Include="NETStandard.Library" Version="2.0.3" PrivateAssets="all" />
+    </ItemGroup>
 </Project>

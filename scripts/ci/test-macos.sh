@@ -19,7 +19,7 @@ echo "== build (Debug; GeneratePackageOnBuild off - CI tests, it does not pack) 
 # 'System.Object' is not defined" in a netstandard2.0 project - the shared VBCSCompiler server
 # serving a compilation without its framework reference, a known macOS/Linux CI flake. One csc per
 # project (no shared server) is deterministic; the solution is small, so the cost is negligible.
-dotnet build Xamarin.Forms.Gtk4.sln -c Debug -p:GeneratePackageOnBuild=false -p:UseSharedCompilation=false
+dotnet build Xamarin.Forms.Gtk4.sln -c Debug -p:GeneratePackageOnBuild=false -p:UseSharedCompilation=false -p:XFPinNetStandardRef=true
 
 echo "== Core unit tests =="
 dotnet test Xamarin.Forms.Core.UnitTests -c Debug --no-build --logger trx
