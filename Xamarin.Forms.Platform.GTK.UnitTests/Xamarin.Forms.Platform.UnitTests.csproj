@@ -21,6 +21,12 @@
       see the comment on GtkTestHost.Await.
     -->
     <NoWarn>$(NoWarn);xUnit1031</NoWarn>
+    <!--
+      GTK4 port: GtkSharp4 marks many GTK3 compat shims [Obsolete] (CS0612/CS0618) but keeps
+      them functional. With TreatWarningsAsErrors every such call is a hard error; allow them
+      here the same way Xamarin.Forms.Platform.GTK.csproj does.
+    -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);CS0612;CS0618</WarningsNotAsErrors>
   </PropertyGroup>
 
   <ItemGroup>

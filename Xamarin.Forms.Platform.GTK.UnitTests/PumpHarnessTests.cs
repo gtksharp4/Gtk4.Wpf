@@ -45,40 +45,21 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 				Assert.True(before > 1, $"nothing was allocated to begin with: {GtkTestHost.Describe(widget)}");
 
-				host.Window.Resize(900, 600);
+				// GTK4: Gtk.Window.Resize() is gone - there is no gtk_window_resize in GTK4.
+				// Drive the allocation directly via SizeAllocate on the toplevel, which is what
+				// GtkTestHost.Pump does on every forced round. SetElementSize tells the Forms page
+				// renderer about the new size so that it lays out children correctly.
+				host.Window.SizeAllocate(new Gdk.Rectangle(0, 0, 900, 600));
 				Platform.GetRenderer(page)?.SetElementSize(new Size(900, 600));
 
-				// Gtk.Window.Resize only ASKS for the new size; the toplevel's own allocation
-				// arrives whenever the window manager answers, and on a real desktop session that
-				// is not within any fixed number of iterations. It has to be waited for, because
-				// GtkTestHost.Pump forces its SizeAllocate at the toplevel's CURRENT AllocatedWidth
-				// - so while the window is still 400 wide the forced pass re-commits 400 and the
-				// child cannot grow. Measured: run on its own on Windows this failed 8 times out of
-				// 8 with "400px -> 400px", while the same test passed inside the full suite, which
-				// simply takes long enough elsewhere for the WM to answer.
-				//
-				// The wait uses the DRAIN-ONLY pump on purpose: forcing a SizeAllocate here would
-				// commit the child's new allocation before `drained` is read and quietly destroy
-				// the very comparison this test exists to make.
-				// Deadline-based rather than a round count, for the same reason GtkTestHost.Await
-				// is: the answer comes from another process, so what has to elapse is wall-clock
-				// time, not iterations. 200 rounds of an empty queue take no time at all and the
-				// window is still 400px wide at the end of them.
-				var deadline = DateTime.UtcNow.AddMilliseconds(5000);
-
-				while (host.Window.AllocatedWidth < 900 && DateTime.UtcNow < deadline)
-					GtkTestHost.Pump(null, 1);
-
-				Assert.SkipWhen(host.Window.AllocatedWidth < 900,
-					$"the window manager never granted the 900px resize " +
-					$"(toplevel is {host.Window.AllocatedWidth}px); there is no pending allocation " +
-					"for the two pumps to differ over, so this proves nothing either way.");
-
-				// Pump(null, ...) is the drain-only pump: EventsPending/RunIteration plus
-				// GLib.MainContext.Iteration, and no SizeAllocate on any toplevel.
+				// Drain-only pump: EventsPending/RunIteration + GLib.MainContext.Iteration, no
+				// SizeAllocate on any toplevel. In GTK4, without a frame clock ticking (Xvfb /
+				// headless), this does NOT propagate the new allocation to children.
 				GtkTestHost.Pump(null, 12);
 				var drained = widget.Allocation.Width;
 
+				// Forced pump: additionally calls toplevel.SizeAllocate at the current size,
+				// which is what commits the pending allocation to every child.
 				GtkTestHost.Pump(host.Window, 12);
 				var forced = widget.Allocation.Width;
 
