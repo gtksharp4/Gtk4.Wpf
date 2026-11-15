@@ -152,13 +152,15 @@
        every compile fails with CS0518 "System.Object is not defined", and the SDK suppresses the
        NETStandard.Library package's own build targets (it treats the package as implicit). Disable the
        implicit framework reference and reference netstandard.dll explicitly from the restored package -
-       a user Reference the SDK does not strip. netstandard.dll is the whole netstandard2.0 ref surface.
-       No-op on Windows/Linux. -->
+       a user Reference the SDK does not strip. Reference the complete facade set (what the targeting
+       pack ships), so netstandard.dll supplies the surface and the package's System.* facades dedupe
+       any legacy facade a NuGet dependency drags in (e.g. Controls.GTK -> System.Threading.Thread,
+       which would otherwise collide: CS0433). No-op on Windows/Linux. -->
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
   <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
     <PackageReference Include="NETStandard.Library" Version="2.0.3" GeneratePathProperty="true" PrivateAssets="all" ExcludeAssets="build;buildTransitive" />
-    <Reference Include="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.dll" Private="false" />
+    <Reference Include="$(PkgNETStandard_Library)/build/netstandard2.0/ref/*.dll" Private="false" />
   </ItemGroup>
 </Project>
