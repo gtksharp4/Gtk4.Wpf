@@ -148,11 +148,15 @@
     <Target Name="_XFAssertPackageVersionCarriesCommit" BeforeTargets="GenerateNuspec" DependsOnTargets="SetVersions">
         <Error Condition="'$(PackageVersion)' == '$(VersionPrefix).$(VersionSuffix)'" Text="PackageVersion is '$(PackageVersion)', i.e. $(VersionPrefix).$(VersionSuffix) with the +sha build metadata Version.targets appends stripped off. Something overwrote it after SetVersions ran, so this pack would produce a $(PackageId) package that cannot be traced to a commit - every build of this branch on the same day would claim the same identity." />
     </Target>
-  <!-- macOS CI: the GitHub macOS-arm64 runner fails netstandard2.0 compiles with CS0518 because the
-       SDK's implicit NETStandard.Library.Ref is not resolved. Reference it explicitly so the
-       netstandard facade is supplied from the package. In-project rather than Directory.Build.targets
-       because on that runner the shared import is evaluated inconsistently and skips most projects; a
-       project-file PackageReference is always in the restore graph. No-op on Windows/Linux. -->
+  <!-- macOS CI: the GitHub macOS-arm64 runner's netstandard2.0 targeting pack resolves to nothing and
+       overrides any package refs, failing every compile with CS0518 "System.Object is not defined".
+       DisableImplicitFrameworkReferences drops that targeting-pack path; the NETStandard.Library
+       package then supplies netstandard.dll itself. In-project (not Directory.Build.props) because the
+       property must be set before the SDK adds the implicit reference, and the net10.0 test projects
+       must keep theirs. No-op on Windows/Linux. -->
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+  </PropertyGroup>
   <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
     <PackageReference Include="NETStandard.Library" Version="2.0.3" PrivateAssets="all" />
   </ItemGroup>
