@@ -47,16 +47,17 @@
         <Content Include="README.md" Link="README.md" Pack="true" PackagePath="\README.md" />
         <Content Include="$(SolutionDir)License.txt" Link="License.txt" Pack="true" PackagePath="\License.txt" Condition="Exists('$(SolutionDir)License.txt')" />
     </ItemGroup>
-  <!-- macOS CI: the GitHub macOS-arm64 runner's netstandard2.0 targeting pack resolves to nothing and
-       overrides any package refs, failing every compile with CS0518 "System.Object is not defined".
-       DisableImplicitFrameworkReferences drops that targeting-pack path; the NETStandard.Library
-       package then supplies netstandard.dll itself. In-project (not Directory.Build.props) because the
-       property must be set before the SDK adds the implicit reference, and the net10.0 test projects
-       must keep theirs. No-op on Windows/Linux. -->
+  <!-- macOS CI: the GitHub macOS-arm64 runner's netstandard2.0 targeting pack resolves to nothing, so
+       every compile fails with CS0518 "System.Object is not defined", and the SDK suppresses the
+       NETStandard.Library package's own build targets (it treats the package as implicit). Disable the
+       implicit framework reference and reference netstandard.dll explicitly from the restored package -
+       a user Reference the SDK does not strip. netstandard.dll is the whole netstandard2.0 ref surface.
+       No-op on Windows/Linux. -->
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
   <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
-    <PackageReference Include="NETStandard.Library" Version="2.0.3" PrivateAssets="all" />
+    <PackageReference Include="NETStandard.Library" Version="2.0.3" GeneratePathProperty="true" PrivateAssets="all" ExcludeAssets="build;buildTransitive" />
+    <Reference Include="$(PkgNETStandard_Library)/build/netstandard2.0/ref/netstandard.dll" Private="false" />
   </ItemGroup>
 </Project>
