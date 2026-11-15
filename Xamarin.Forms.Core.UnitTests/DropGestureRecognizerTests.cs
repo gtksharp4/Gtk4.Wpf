@@ -14,10 +14,15 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			Device.PlatformServices = new MockPlatformServices();
 
-			// GetStringValue/TrySetValue round-trip through the current culture, and the
-			// DatePicker test case below is written in en-US. BaseTestFixture.TearDown restores
-			// whatever the machine's culture was.
-			System.Threading.Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+			// GetStringValue/TrySetValue round-trip through the current culture, and the DatePicker
+			// test case below is written in en-US. Newer ICU (ubuntu-24.04, macOS runners) formats
+			// the en-US AM/PM separator as a narrow no-break space (U+202F) where older ICU
+			// (windows-latest) used a regular space, so the round-trip would not match there. Use a
+			// copy of en-US with an explicit regular-space long-time pattern, stable across platforms.
+			// BaseTestFixture.TearDown restores the culture.
+			var enUs = (CultureInfo)CultureInfo.GetCultureInfo("en-US").Clone();
+			enUs.DateTimeFormat.LongTimePattern = "h:mm:ss tt";
+			System.Threading.Thread.CurrentThread.CurrentCulture = enUs;
 		}
 
 		public override void Dispose()
