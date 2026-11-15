@@ -1,4 +1,4 @@
 <Solution>
   <Folder Name="/Tests/" />
-  <Project Path="Xamarin.Forms.ControlGallery.GTK/Xamarin.Forms.Gtk3.ControlGallery.GTK.csproj" />
+  <Project Path="Xamarin.Forms.ControlGallery.GTK/Xamarin.Forms.Gtk4.ControlGallery.GTK.csproj" />
 </Solution>

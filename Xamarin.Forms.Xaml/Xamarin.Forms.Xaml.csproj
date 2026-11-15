@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="$(NuGetPackageRoot)net4x.nugetutility/$(NuGetUtilityVersion)/build/NuGet.Utility.props" Condition="'$(OS)' == 'Windows_NT' AND Exists('$(NuGetPackageRoot)net4x.nugetutility/$(NuGetUtilityVersion)/build/NuGet.Utility.props')" />
     <PropertyGroup>
         <PackageOutputPath>$(XFPackageOutputPath)</PackageOutputPath>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <Version>$(VersionPrefix).$(VersionSuffix)</Version>
-        <PackageId>Extension.Xamarin.Forms.Gtk3.Xaml</PackageId>
+        <PackageId>Extension.Xamarin.Forms.Gtk4.Xaml</PackageId>
         <Description>XAML loader and markup support for Xamarin.Forms.</Description>
         <IsPackable>true</IsPackable>
         <TargetFramework>netstandard2.0</TargetFramework>
@@ -28,5 +27,4 @@
         <Content Include="README.md" Link="README.md" Pack="true" PackagePath="\README.md" />
         <Content Include="$(SolutionDir)License.txt" Link="License.txt" Pack="true" PackagePath="\License.txt" Condition="Exists('$(SolutionDir)License.txt')" />
     </ItemGroup>
-    <Import Project="$(NuGetPackageRoot)net4x.nugetutility/$(NuGetUtilityVersion)/build/NuGet.Utility.targets" Condition="'$(OS)' == 'Windows_NT' AND Exists('$(NuGetPackageRoot)net4x.nugetutility/$(NuGetUtilityVersion)/build/NuGet.Utility.targets')" />
 </Project>

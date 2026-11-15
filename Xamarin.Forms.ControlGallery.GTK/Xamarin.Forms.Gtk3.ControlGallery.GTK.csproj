@@ -3,7 +3,7 @@
     <!-- Sample/support project: not shipped as a package. -->
     <IsPackable>false</IsPackable>
     <!-- The .csproj file name carries the Gtk3 flavour; the app's assembly identity does not. -->
-    <AssemblyName>Xamarin.Forms.Gtk3.ControlGallery.GTK</AssemblyName>
+    <AssemblyName>Xamarin.Forms.Gtk4.ControlGallery.GTK</AssemblyName>
     <RootNamespace>Xamarin.Forms.ControlGallery.GTK</RootNamespace>
 
     <ProjectGuid>{03A51E5B-0A1E-41F0-AAE3-4B19406F7340}</ProjectGuid>
@@ -60,7 +60,7 @@
   </ItemGroup>
   <!--
     GTK4 port: the gallery consumes the backend through in-tree ProjectReferences rather than the
-    Net4x.*.Gtk3.* packages. This guarantees it runs against the current GTK4 source (the shipping
+    Net4x.*.Gtk4.* packages. This guarantees it runs against the current GTK4 source (the shipping
     GtkSharp4-backed packages still pack on a normal build and are the deployment path) and sidesteps
     the "same version, changed content" NuGet-cache trap while the port is in flux. Maps.GTK draws its
     own Cairo slippy map (netstandard2.0, GtkSharp 4), no GMap.NET.

@@ -1,26 +1,22 @@
 <Project>
     <PropertyGroup>
         <NuGetPackageRoot Condition="'$(NuGetPackageRoot)'=='' and '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))'=='true'">$(USERPROFILE)\.nuget\packages\</NuGetPackageRoot>
-        <NuGetPackageRoot Condition="'$(NuGetPackageRoot)'=='' and '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))'!='true'">~/.nuget/packages/</NuGetPackageRoot>
+        <NuGetPackageRoot Condition="'$(NuGetPackageRoot)'=='' and '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))'!='true'">$(HOME)/.nuget/packages/</NuGetPackageRoot>
         <VersionBuildSuffix Condition="'$(Configuration)'!='Release'">*</VersionBuildSuffix>
         <VersionBuildSuffix Condition="'$(Configuration)'=='Release'">*</VersionBuildSuffix>
         <DirectoryNuGet Condition="'$(DirectoryNuGet)'==''">true</DirectoryNuGet>
-        <NuGetPackageRoot Condition="'$(NuGetPackageRoot)'=='' and '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))'=='true'">$(USERPROFILE)\.nuget\packages\</NuGetPackageRoot>
-        <NuGetPackageRoot Condition="'$(NuGetPackageRoot)'=='' and '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))'!='true'">~/.nuget/packages/</NuGetPackageRoot>
-        <VersionBuildSuffix Condition="'$(Configuration)'!='Release'">*</VersionBuildSuffix>
-        <VersionBuildSuffix Condition="'$(Configuration)'=='Release'">*</VersionBuildSuffix>
-        <VersionBuildSuffix Condition="'$(VersionBuildSuffix)'==''">*</VersionBuildSuffix>
-        <VersionBuildSuffix Condition="'$(VersionBuildSuffix)'==''">*</VersionBuildSuffix>
-        <NuGetUtilityVersion Condition="'$(NuGetUtilityVersion)'==''">1.0.16</NuGetUtilityVersion>
-        <NuGetPackageRoot Condition="'$(NuGetPackageRoot)'=='' and '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))'=='true'">$(USERPROFILE)\.nuget\packages\</NuGetPackageRoot>
-        <VersionBuildSuffix Condition="'$(VersionBuildSuffix)'==''">*</VersionBuildSuffix>
+        <NuGetUtilityVersion Condition="'$(NuGetUtilityVersion)'==''">1.0.17</NuGetUtilityVersion>
         <GtkSharp3VersionBuildSuffix>95</GtkSharp3VersionBuildSuffix>
+        <NuGetPackageRoot Condition="'$(NuGetPackageRoot)'==''">$(USERPROFILE)\.nuget\packages\</NuGetPackageRoot>
+        <VersionBuildSuffix Condition="'$(VersionBuildSuffix)'==''">*</VersionBuildSuffix>
         <GtkSharp3Version>3.24.24</GtkSharp3Version>
         <GtkSharpVersion>4.22.4</GtkSharpVersion>
         <InputBoxLibraryVersion>2.0.0</InputBoxLibraryVersion>
-        <Net4xXUnit2Version>1.0.0</Net4xXUnit2Version>
-        
+        <Net4xXUnit2Version>3.1.5</Net4xXUnit2Version>
         <ObfuscarVersion>2.2.37</ObfuscarVersion>
-        <XamarinFormsGtk3Version>5.0.0</XamarinFormsGtk3Version>
+        <XamarinFormsGtk4Version>5.0.0</XamarinFormsGtk4Version>
+    </PropertyGroup>
+    <PropertyGroup>
+        <MinimalDirectoryNuGetProps Condition="'$(MinimalDirectoryNuGetProps)'==''">true</MinimalDirectoryNuGetProps>
     </PropertyGroup>
 </Project>

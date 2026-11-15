@@ -64,7 +64,7 @@ public static class GtkTestHost
 	/// </remarks>
 	internal static string DisplayUnavailableReason()
 	{
-		if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+		if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
 			return null;
 
 		// Wayland sessions have no DISPLAY either unless Xwayland is up.
