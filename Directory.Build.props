@@ -173,4 +173,10 @@
     <!-- This target is replaced by GitInfo when restored. Allows Version.targets to rely on it before restore. -->
     <Target Name="GitVersion" />
     <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="Environment.Build.props" />
+
+    <!-- macOS only: NETSDK1023 ("explicit NETStandard.Library reference not recommended") is expected
+         under the netstandard-ref workaround in Directory.Build.targets; demote it there. -->
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+        <NoWarn>$(NoWarn);NETSDK1023</NoWarn>
+    </PropertyGroup>
 </Project>

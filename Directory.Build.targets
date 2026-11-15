@@ -18,4 +18,20 @@
   <ItemGroup Condition="'$(NuGetUtility)' == 'true'">
     <None Remove="$(SolutionDir)README.md" />
   </ItemGroup>
+
+  <!--
+    macOS only. The GitHub macOS (arm64) runner regressed to failing netstandard2.0 compiles with
+    CS0518 "Predefined type 'System.Object' is not defined": the SDK's implicit NETStandard.Library.Ref
+    is not handed to the compiler and csc gets no references (the same build was green on an earlier
+    runner image; it fails on both 10.0.100 and 10.0.404, so it is the runner, not the SDK version).
+    Referencing the metapackage supplies the netstandard facade from the package instead.
+
+    Gated on $([MSBuild]::IsOSPlatform('OSX')) - an intrinsic evaluated per project - NOT on a global
+    property: a property passed with -p does not reliably reach projects built as ProjectReferences
+    here, which is why the property-gated version missed Platform.Base. Windows and Linux never match.
+    In .targets so $(TargetFramework) is set (see the NuGetUtility note above).
+  -->
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX')) And '$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="NETStandard.Library" Version="2.0.3" PrivateAssets="all" />
+  </ItemGroup>
  </Project>
