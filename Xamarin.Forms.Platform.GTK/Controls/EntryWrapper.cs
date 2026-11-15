@@ -1,37 +1,33 @@
-﻿using System;
 using Xamarin.Forms.Platform.GTK.Extensions;
 using Gtk;
 using Pango;
 
 namespace Xamarin.Forms.Platform.GTK.Controls
 {
-	// Created a custom control to allow combining Gtk.Entry and Gtk.Label to have placeholder text.
+	// Wraps a Gtk.Entry so the renderers keep a stable surface.
+	//
+	// GTK4 rewrite: the GTK3 version stacked a Gtk.Label over the Gtk.Entry in a single Grid cell
+	// and toggled each one's Visible from the entry's Changed/FocusOut signals to fake placeholder
+	// text. Under GTK4 that scheme deadlocks: setting a child's Visible from inside the entry's
+	// Changed signal re-enters GTK's measure/allocate pass on two widgets stacked in the same
+	// homogeneous Grid cell - together with the deferred SetSizeRequest this wrapper used to queue -
+	// and the relayout never reaches a fixed point, so the whole GTK thread wedges
+	// (PropertyMappingTests.EntryMapsTextPlaceholderAndPassword / SearchBarMapsTextAndPlaceholder).
+	//
+	// GTK4's Gtk.Entry has native placeholder text (gtk_entry_set_placeholder_text): the entry draws
+	// the placeholder itself while empty, with no overlay widget and no signal-driven visibility
+	// toggling. So the wrapper is now just the entry, and PlaceholderText maps straight to it.
 	public class EntryWrapper : EventBox
 	{
-		private Gtk.Grid _table;
 		private Gtk.Entry _entry;
-		private Gtk.Label _placeholder;
-		private EventBox _placeholderContainer;
 
 		public EntryWrapper()
 		{
-			_table = new Gtk.Grid { RowHomogeneous = true, ColumnHomogeneous = true };
 			_entry = new Gtk.Entry();
-			_entry.FocusOutEvent += EntryFocusedOut;
-			_entry.Changed += EntryChanged;
-			_placeholder = new Gtk.Label();
-
-			_placeholderContainer = new EventBox();
-			_placeholderContainer.BorderWidth = 2;
-			_placeholderContainer.Add(_placeholder);
-			_placeholderContainer.ButtonPressEvent += PlaceHolderContainerPressed;
 
 			SetBackgroundColor(_entry.GetDefaultBaseColor(Gtk.StateFlags.Normal));
 
-			Add(_table);
-
-			_table.Attach(_entry, 0, 0, 1, 1);
-			_table.Attach(_placeholderContainer, 0, 0, 1, 1);
+			Add(_entry);
 		}
 
 		public Gtk.Entry Entry => _entry;
@@ -40,11 +36,11 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 		{
 			get
 			{
-				return _placeholder.Text;
+				return _entry.PlaceholderText ?? string.Empty;
 			}
 			set
 			{
-				_placeholder.Text = value ?? string.Empty;
+				_entry.PlaceholderText = value ?? string.Empty;
 			}
 		}
 
@@ -52,7 +48,6 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 		{
 			StyleExtensions.SetBackgroundColor(this, color);
 			_entry.SetBaseColor(color);
-			_placeholderContainer.SetBackgroundColor(color, StateType.Normal);
 		}
 
 		public void SetTextColor(Gdk.Color color)
@@ -62,20 +57,19 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 		public void SetPlaceholderTextColor(Gdk.Color color)
 		{
-			_placeholder.SetForegroundColor(color, StateType.Normal);
+			// GTK4 draws the native placeholder in the theme's dimmed colour; there is no dedicated
+			// API for it, so push it as CSS on the entry's internal placeholder node.
+			_entry.SetStyleProperty("color", color.ToCss(), "text > placeholder");
 		}
 
 		public void SetAlignment(float aligmentValue)
 		{
 			_entry.Alignment = aligmentValue;
-			_placeholder.Xalign = aligmentValue;
-			_placeholder.Yalign = 0.5f;
 		}
 
 		public void SetFont(FontDescription fontDescription)
 		{
 			_entry.SetFont(fontDescription);
-			_placeholder.SetFont(fontDescription);
 		}
 
 		public void SetMaxLength(int maxLength)
@@ -83,95 +77,9 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			_entry.MaxLength = maxLength;
 		}
 
-		Gdk.Rectangle _lastAllocation = Gdk.Rectangle.Zero;
-		bool _entryResizeQueued;
-
-		/// <summary>
-		/// Keeps the entry filling the wrapper, so the placeholder label stacked on top of it in
-		/// the same grid cell covers exactly the same area.
-		/// </summary>
-		/// <remarks>
-		/// The size request is deferred to idle, never applied inline. SetSizeRequest calls
-		/// gtk_widget_queue_resize, and doing that from inside a size-allocate handler is invalid
-		/// in GTK3: the resize is not merely lost, the alloc-needed flag is left standing on this
-		/// widget's ancestors and gtk_widget_queue_resize_internal bails out at the first ancestor
-		/// that already carries it - so every later resize raised anywhere in that subtree was
-		/// swallowed too. Same treatment as Controls.Page.OnContentContainerWrapperSizeAllocated.
-		///
-		/// ShowPlaceholderIfNeeded stays inline: it only raises a GdkWindow, it queues no resize.
-		/// </remarks>
-		protected override void OnSizeAllocated(Gdk.Rectangle allocation)
-		{
-			base.OnSizeAllocated(allocation);
-
-			if (_lastAllocation != allocation)
-			{
-				_lastAllocation = allocation;
-
-				if (!_entryResizeQueued)
-				{
-					_entryResizeQueued = true;
-
-					GLib.Idle.Add(() =>
-					{
-						// A pending idle can outlive the entry; a destroyed or disposed GtkSharp
-						// wrapper is left holding a null handle, so check that too and not only
-						// the field. _lastAllocation is read here, not captured, so an allocation
-						// that arrived while this was queued still lands.
-						_entryResizeQueued = false;
-
-						if (_entry != null && _entry.Handle != IntPtr.Zero)
-							_entry.SetSizeRequest(_lastAllocation.Width, _lastAllocation.Height);
-
-						return false;
-					});
-				}
-			}
-
-			ShowPlaceholderIfNeeded();
-		}
-
 		protected override bool OnGrabFocus()
 		{
 			return _entry != null && _entry.GrabFocus();
-		}
-
-		private void ShowPlaceholderIfNeeded()
-		{
-			// GTK4: Widget.Window (the GdkWindow getter) is removed; there are no per-widget
-			// surfaces and Raise() does not exist. Visibility is managed through the widget
-			// tree instead.
-			if (string.IsNullOrEmpty(_entry.Text) && !string.IsNullOrEmpty(_placeholder.Text))
-			{
-				_placeholderContainer.Visible = true;
-				_entry.Visible = false;
-			}
-			else
-			{
-				_entry.Visible = true;
-				_placeholderContainer.Visible = false;
-			}
-		}
-
-		private void PlaceHolderContainerPressed(object o, ButtonPressEventArgs args)
-		{
-			if (Sensitive)
-			{
-				_entry.Sensitive = true;
-				// GTK4: HasFocus is read-only; use GrabFocus() to request focus.
-				// Widget.Window?.Raise() is removed (no per-widget GdkWindows in GTK4).
-				_entry.GrabFocus();
-			}
-		}
-
-		private void EntryFocusedOut(object o, FocusOutEventArgs args)
-		{
-			ShowPlaceholderIfNeeded();
-		}
-
-		private void EntryChanged(object sender, EventArgs e)
-		{
-			ShowPlaceholderIfNeeded();
 		}
 	}
 }

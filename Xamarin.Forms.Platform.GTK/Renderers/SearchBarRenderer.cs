@@ -7,6 +7,12 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 {
 	public class SearchBarRenderer : ViewRenderer<SearchBar, SearchEntry>
 	{
+		// Same re-entrant set_Text spin the EntryRenderer guards against: SearchEntry.SearchText goes
+		// through Gtk.Entry.Text, whose delete-then-insert raises Changed with a momentary "". Writing
+		// that back into SearchBar.Text re-dispatches UpdateText and re-enters set_Text on the inner
+		// GtkText mid-edit, which busy-loops under GTK4. Suppress the write-back while we drive it.
+		private bool _settingText;
+
 		protected override void OnElementChanged(ElementChangedEventArgs<SearchBar> e)
 		{
 			if (e.NewElement != null)
@@ -91,7 +97,19 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 		void UpdateText()
 		{
-			Control.SearchText = Element.UpdateFormsText(Element.Text, Element.TextTransform);
+			var text = Element.UpdateFormsText(Element.Text, Element.TextTransform);
+			if (Control.SearchText == text)
+				return;
+
+			_settingText = true;
+			try
+			{
+				Control.SearchText = text;
+			}
+			finally
+			{
+				_settingText = false;
+			}
 		}
 
 		private void UpdatePlaceholder()
@@ -127,6 +145,11 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 		private void SearchTextChanged(object sender, EventArgs e)
 		{
+			// Ignore the intermediate Changed our own UpdateText raises; writing the momentary ""
+			// back would re-enter set_Text and spin - see _settingText.
+			if (_settingText)
+				return;
+
 			ElementController.SetValueFromRenderer(SearchBar.TextProperty, Control.SearchText);
 		}
 

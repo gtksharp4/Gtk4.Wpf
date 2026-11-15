@@ -65,15 +65,28 @@ namespace Xamarin.Forms.Platform.GTK.UnitTests
 
 		static int LayoutWidth(Gtk.Entry entry)
 		{
-			// GTK 4: gtk_entry_get_layout was removed (the entry's internal GtkText no longer
-			// exposes its Pango.Layout). Use GetPreferredWidth to measure the entry's natural width,
-			// which changes with the applied Pango attribute list (the mechanism SetFont uses).
-			// Visible = true is required: Measure() short-circuits to 0/0 for a non-visible widget,
-			// same as the ShownLabel precondition documented above.
-			// Binding ref: GtkSharp/Compat/Widget.Compat.cs:459 (GetPreferredWidth over Measure).
+			// GTK 4: gtk_entry_get_layout was removed (the entry's internal GtkText no longer exposes
+			// its Pango.Layout), AND unlike a Gtk.Label a Gtk.Entry does NOT size to its text - its
+			// preferred width is driven by width-chars/the theme minimum and is identical under every
+			// font (MEASURED: 168px for normal and bold alike). So GetPreferredWidth cannot observe the
+			// font change on an entry at all; measuring it would compare 168 to 168 for ever.
+			//
+			// The font the renderer applies lives on the entry's Pango attribute list
+			// (gtk_entry_set_attributes, set by StyleExtensions.SetFont). Measure the text laid out
+			// under exactly those attributes: that is the entry's real text layout and it reflects the
+			// applied weight (172px normal -> 187px bold here). If SetFont failed to apply the
+			// attributes, the list is null/normal and bold measures no wider - which is the regression
+			// these tests exist to catch.
 			entry.Visible = true;
-			entry.GetPreferredWidth(out _, out int natural);
-			return natural;
+
+			var layout = new Pango.Layout(entry.CreatePangoContext());
+			layout.SetText(entry.Text ?? string.Empty);
+
+			if (entry.Attributes != null)
+				layout.Attributes = entry.Attributes;
+
+			layout.GetPixelSize(out int width, out _);
+			return width;
 		}
 
 		/// <summary>

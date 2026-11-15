@@ -11,13 +11,23 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 	{
 		private bool _disposed;
 
+		// Guards against the re-entrant set_Text spin. gtk_editable_set_text deletes the old text
+		// and inserts the new one, raising Changed on each step - so a programmatic UpdateText fires
+		// Changed with a momentarily-empty buffer. OnChanged pushing that "" back into Element.Text
+		// re-dispatches UpdateText, which calls set_Text again while the native GtkText is still mid
+		// delete/insert; under GTK4 that re-entrant edit (its placeholder/layout update in particular)
+		// busy-loops and wedges the GTK thread. Same defect the Editor renderer guards against; here
+		// we suppress the write-back for the duration of our own set_Text.
+		private bool _settingText;
+
 		IEntryController EntryController => Element;
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Entry> e)
 		{
 			if (Control == null)
 			{
-				// Custom control. The control is composed of a Gtk.Entry and a Gtk.Label to allow to display Placeholder.
+				// Custom control wrapping a Gtk.Entry. Placeholder is the entry's native
+				// gtk_entry_set_placeholder_text under GTK4 (no overlay label).
 				var wrapper = new EntryWrapper();
 				SetNativeControl(wrapper);
 
@@ -103,7 +113,17 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 		{
 			var text = Element.UpdateFormsText(Element.Text, Element.TextTransform);
 			if (Control.Entry.Text != text)
-				Control.Entry.Text = text;
+			{
+				_settingText = true;
+				try
+				{
+					Control.Entry.Text = text;
+				}
+				finally
+				{
+					_settingText = false;
+				}
+			}
 		}
 
 		private void UpdateColor()
@@ -138,6 +158,11 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 		private void OnChanged(object sender, System.EventArgs e)
 		{
+			// Ignore the intermediate Changed events our own UpdateText raises (delete-then-insert).
+			// Writing the momentary "" back would re-enter set_Text and spin - see _settingText.
+			if (_settingText)
+				return;
+
 			ElementController.SetValueFromRenderer(Entry.TextProperty, Control.Entry.Text);
 		}
 
