@@ -1,10 +1,14 @@
-﻿using System.Linq;
+using System.Linq;
 using Gtk;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.GTK.Extensions;
 
 namespace Xamarin.Forms.Platform.GTK.Helpers
 {
+	// TODO GTK4: migrate to Gtk.AlertDialog (async Choose/ChooseFinish).
+	// Callers in Platform.cs use synchronous Action<> lambdas; a full rewrite
+	// would require making those async, which is out of scope for this compile pass.
+#pragma warning disable CS0612
 	internal static class DialogHelper
 	{
 		public static void ShowAlert(PlatformRenderer platformRender, AlertArguments arguments)
@@ -62,12 +66,12 @@ namespace Xamarin.Forms.Platform.GTK.Helpers
 			messageDialog.Destroy();
 		}
 
-		private static void SetDialogTitle(string title, MessageDialog messageDialog)
+		static void SetDialogTitle(string title, MessageDialog messageDialog)
 		{
 			messageDialog.Title = title ?? string.Empty;
 		}
 
-		private static void SetButtonText(string text, ButtonsType type, MessageDialog messageDialog)
+		static void SetButtonText(string text, ButtonsType type, MessageDialog messageDialog)
 		{
 			string gtkLabel = string.Empty;
 
@@ -105,7 +109,7 @@ namespace Xamarin.Forms.Platform.GTK.Helpers
 			}
 		}
 
-		private static void SetDestructionButton(string destruction, MessageDialog messageDialog)
+		static void SetDestructionButton(string destruction, MessageDialog messageDialog)
 		{
 			if (!string.IsNullOrEmpty(destruction))
 			{
@@ -119,11 +123,11 @@ namespace Xamarin.Forms.Platform.GTK.Helpers
 			}
 		}
 
-		private static void AddExtraButtons(ActionSheetArguments arguments, MessageDialog messageDialog)
+		static void AddExtraButtons(ActionSheetArguments arguments, MessageDialog messageDialog)
 		{
 			var vbox = messageDialog.ContentArea;
 
-			// As we are not showing any message in this dialog, we just 
+			// As we are not showing any message in this dialog, we just
 			// hide default container and avoid it from using space
 			vbox.Children[0].Hide();
 
@@ -145,7 +149,7 @@ namespace Xamarin.Forms.Platform.GTK.Helpers
 			}
 		}
 
-		private static ButtonsType GetAlertButtons(AlertArguments arguments)
+		static ButtonsType GetAlertButtons(AlertArguments arguments)
 		{
 			bool hasAccept = !string.IsNullOrEmpty(arguments.Accept);
 			bool hasCancel = !string.IsNullOrEmpty(arguments.Cancel);
@@ -168,4 +172,5 @@ namespace Xamarin.Forms.Platform.GTK.Helpers
 			return type;
 		}
 	}
+#pragma warning restore CS0612
 }
