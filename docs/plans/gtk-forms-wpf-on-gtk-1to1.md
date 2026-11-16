@@ -196,22 +196,39 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `BasedOn` cycle guard + `ReadLocalValue`-based implicit-style guard. **304 tests total** across the
   four suites (35 WindowsBase + 213 PresentationFramework + 40 MarkupCompiler + 16 ProjectConverter),
   all pass; `Gtk.Forms.WpfSample` (unmodified WPF) still compiles through the compiler.
-- **Round 3 track B — commands + input (DONE).** `System.Windows.Input.ICommand` (BCL; no duplicate),
-  `RoutedCommand`/`RoutedUICommand`, `CommandBinding`/`CommandBindingCollection`,
-  `CommandManager` (`RequerySuggested`/`InvalidateRequerySuggested`, tree-walking `Execute`/`CanExecute`),
-  `ICommandSource`, `CommandSourceHelper` (shared subscribe/unsubscribe), `UIElement.CommandBindings`
-  partial, `Button.Command`/`CommandParameter`/`CommandTarget` partial (sensitivity tracks `CanExecute`),
-  `MenuItem` (`Header`/`Command`/`Click`; backed by `Gtk.Button`), `InputGesture`/`KeyGesture`/`MouseGesture`
-  + `KeyBinding`/`MouseBinding` + `UIElement.InputBindings` with `InvokeInputBinding` dispatch entry point.
-  **21 new tests** (18 pure + 3 GTK smoke): **234 PresentationFramework tests** (233 pass; 1 pre-existing
-  `Style_Apply_sets_property_via_name` failure). GTK-widget choice for `MenuItem`: `Gtk.Button`
-  (functional; `Gtk.PopoverMenu` wiring is a later phase).
+- **Round 3 — triggers + commands/input (DONE).**
+  - *Track A — triggers*: `TriggerBase`/`Trigger` (property), `DataTrigger` (binding+INPC), `MultiTrigger`
+    (`Condition` set), `EventTrigger` (+`TriggerAction`/`SetPropertyAction`); `Style.Triggers` and
+    element-level `FrameworkElement.Triggers`; a **trigger-value precedence layer** above style, below
+    local (full order: local > trigger > style > inherited > default), with per-DP contributor stacking
+    so sibling triggers on one property don't stomp each other, and un-apply on `Style` change/null.
+    Compiler parses `<Style.Triggers>` (all four trigger kinds) → construction + `Triggers.Add`.
+  - *Track B — commands/input*: `System.Windows.Input.ICommand` (BCL; no duplicate),
+    `RoutedCommand`/`RoutedUICommand`, `CommandBinding`, `CommandManager` (**weak** `RequerySuggested`,
+    `InvalidateRequerySuggested`, tree-walking `Execute`/`CanExecute` over `LogicalParent`),
+    `ICommandSource`/`CommandSourceHelper`, `UIElement.CommandBindings`, `Button.Command`/`CommandParameter`
+    (sensitivity tracks `CanExecute`; deterministic `Dispose` unsubscribes), `MenuItem` (backed by
+    `Gtk.Button`), `InputGesture`/`KeyGesture`/`MouseGesture` + `KeyBinding`/`MouseBinding` +
+    `UIElement.InputBindings` with an `InvokeInputBinding` dispatch entry point.
+- **Round 3 review (Opus) + fixes — DONE.** Review found 2 Critical + High/Medium defects; all fixed with
+  pins: multi-trigger same-DP corruption (per-contributor trigger stack, re-resolve on un-apply);
+  **strong-ref command leak** (`RequerySuggested` now a weak handler list, pruned on raise) + dead
+  `DisposeCommandSource` now wired into `Button`/`MenuItem` `Dispose`; style/trigger layer writes now
+  **coerced**; `DataTrigger` restricts to single-segment paths with an explicit contract (throws on nested);
+  `SetPropertyAction` writes the trigger layer not a permanent local; command routing walks `LogicalParent`.
+  Plus a crash fix found in re-verification: `CommandManager.CanExecute`/`Execute` **infinitely recursed**
+  for a `RoutedCommand` with no binding and a null target (unconditional `command.CanExecute` fallback) —
+  now a RoutedCommand with no matching binding is simply non-executable (WPF semantics). **368 tests total**
+  (40 WindowsBase + 265 PresentationFramework + 47 MarkupCompiler + 16 ProjectConverter), all pass, PF full
+  run completes with no stack overflow; `Gtk.Forms.WpfSample` (unmodified WPF) still compiles.
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
   full attribute type-converter resolution (typed `Setter.Value`/resource values); `BindingExpression`
   live object; `Converter={StaticResource}`; true `{DynamicResource}` change-tracking; XAML
   `<ControlTemplate>`/`<DataTemplate>`/inline-`<ListBoxItem>` parsing in the compiler (runtime exists);
   GTK key-event wiring for `InputBindings` (programmatic `InvokeInputBinding` dispatch exists);
-  `Gtk.PopoverMenu` integration for `MenuItem`.
+  `Gtk.PopoverMenu` integration for `MenuItem`; element-level `FrameworkElement.Triggers` auto-attach on
+  load (runtime exists, compiler emits `Style.Triggers` only); nested-path `DataTrigger` bindings;
+  `EventTrigger` storyboards/animations.
 
 ## Phased roadmap (after Phase 0 proves the spine)
 

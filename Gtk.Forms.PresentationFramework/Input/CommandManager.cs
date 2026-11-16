@@ -120,7 +120,10 @@ namespace System.Windows.Input
 				binding.InvokeCanExecute(target!, args);
 				return args.CanExecute;
 			}
-			// Fallback: delegate to the command's own implementation.
+			// A RoutedCommand with no matching binding is not executable (WPF semantics).
+			// Delegating to its own CanExecute would re-enter this method → infinite recursion.
+			if (command is RoutedCommand) return false;
+			// Fallback: delegate to a non-routed command's own implementation.
 			return command.CanExecute(parameter);
 		}
 
@@ -140,7 +143,10 @@ namespace System.Windows.Input
 				binding.InvokeExecuted(target!, args);
 				return;
 			}
-			// Fallback: execute directly.
+			// A RoutedCommand with no matching binding is a no-op (WPF semantics).
+			// Delegating to its own Execute would re-enter this method → infinite recursion.
+			if (command is RoutedCommand) return;
+			// Fallback: execute a non-routed command directly.
 			command.Execute(parameter);
 		}
 

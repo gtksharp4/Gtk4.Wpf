@@ -58,6 +58,19 @@ namespace Gtk.Forms.PresentationFramework.Tests
 		}
 
 		[Fact]
+		public void RoutedCommand_with_no_binding_is_not_executable_and_does_not_recurse()
+		{
+			// Regression: CommandManager fell back to command.CanExecute(parameter) for a
+			// RoutedCommand with no CommandBinding and a null target, re-entering itself
+			// → infinite recursion / stack overflow. A RoutedCommand with no matching
+			// binding must report CanExecute=false and Execute must be a no-op.
+			var cmd = new RoutedCommand("E7NoBinding", typeof(CommandRoutingLogicalParentTests));
+
+			Assert.False(cmd.CanExecute(null));          // null target, no binding
+			cmd.Execute(null);                            // must not throw / overflow
+		}
+
+		[Fact]
 		public void KeyBinding_with_RoutedCommand_executes_via_ancestor_CommandBinding()
 		{
 			bool executed = false;
