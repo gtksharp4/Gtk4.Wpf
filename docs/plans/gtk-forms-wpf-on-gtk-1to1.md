@@ -152,9 +152,15 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   (drop-in), and `Gtk.Forms.WpfSample` (unmodified WPF, compiles through the compiler). ~104 tests;
   blocking checks B1–B4 pass. Reviewed (no foundational defect); inheritance-on-reparent, leaks and
   compile-compat fixed.
-- **Carry-over into Phase 1** (Phase-0 `TODO (Phase 1)` markers): two-way binding; `{Binding …, Mode=…,
-  Converter=…}` argument parsing; attribute-driven `[XmlnsDefinition]` resolution (replace the built-in
-  xmlns map); full attribute type-converter resolution in the compiler.
+- **Phase 1 — DONE.** Full two-way binding (`TwoWay`, `OneTime`, `OneWayToSource`);
+  `ConvertBack` on write-back; `ElementName` resolution; reentrancy guard. New partial
+  `FrameworkElement.Binding.cs` routes DP changes into `TargetChangeTracker`; `BindingExpressionBase`
+  stub added. `XamlCodeGenerator` upgraded: full WPF binding syntax (`{Binding Path=X, Mode=TwoWay,
+  ElementName=e}`, positional path, empty `{Binding}`, Converter emits TODO). ~40 PF tests,
+  ~28 compiler tests.
+- **Carry-over into Phase 2**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in
+  xmlns map); full attribute type-converter resolution in the compiler; `BindingExpression` live object;
+  `Converter={StaticResource …}` in the compiler.
 
 ## Phased roadmap (after Phase 0 proves the spine)
 
