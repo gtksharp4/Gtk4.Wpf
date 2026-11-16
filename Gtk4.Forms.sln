@@ -76,6 +76,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk.Forms.ProjectConverter.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk.Forms.Base", "Gtk.Forms.Base\Gtk.Forms.Base.csproj", "{AED658D7-9E85-4E55-9564-A66395C5B02D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk.Forms.WpfSample", "Gtk.Forms.WpfSample\Gtk.Forms.WpfSample.csproj", "{A5724D86-3A93-46E1-8257-4D72FD5C5F16}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -398,6 +400,18 @@ Global
 		{AED658D7-9E85-4E55-9564-A66395C5B02D}.Release|x64.Build.0 = Release|Any CPU
 		{AED658D7-9E85-4E55-9564-A66395C5B02D}.Release|x86.ActiveCfg = Release|Any CPU
 		{AED658D7-9E85-4E55-9564-A66395C5B02D}.Release|x86.Build.0 = Release|Any CPU
+		{A5724D86-3A93-46E1-8257-4D72FD5C5F16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5724D86-3A93-46E1-8257-4D72FD5C5F16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5724D86-3A93-46E1-8257-4D72FD5C5F16}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A5724D86-3A93-46E1-8257-4D72FD5C5F16}.Debug|x64.Build.0 = Debug|Any CPU
+		{A5724D86-3A93-46E1-8257-4D72FD5C5F16}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A5724D86-3A93-46E1-8257-4D72FD5C5F16}.Debug|x86.Build.0 = Debug|Any CPU
+		{A5724D86-3A93-46E1-8257-4D72FD5C5F16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5724D86-3A93-46E1-8257-4D72FD5C5F16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5724D86-3A93-46E1-8257-4D72FD5C5F16}.Release|x64.ActiveCfg = Release|Any CPU
+		{A5724D86-3A93-46E1-8257-4D72FD5C5F16}.Release|x64.Build.0 = Release|Any CPU
+		{A5724D86-3A93-46E1-8257-4D72FD5C5F16}.Release|x86.ActiveCfg = Release|Any CPU
+		{A5724D86-3A93-46E1-8257-4D72FD5C5F16}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

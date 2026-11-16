@@ -27,7 +27,7 @@
 		  that in project.assets.json — breaking the version the meta-package advertises to consumers.
 		-->
 		<Version>$(VersionPrefix).$(VersionSuffix)</Version>
-		<TargetFramework>netstandard2.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<IsPackable>true</IsPackable>
 		<!--
 		  This project ships no compiled code — only NuGet dependencies, build wiring and content.
@@ -71,10 +71,11 @@
 	<ItemGroup>
 		<!--
 		  Empty placeholder: this package ships no assembly of its own (IncludeBuildOutput=false), but
-		  it declares netstandard2.0 dependencies. NuGet's NU5128 requires a lib/ folder matching the
-		  dependency group's TFM; the canonical "_._" marker satisfies it without shipping a real lib.
+		  it declares net10.0 dependencies (PresentationFramework needs GtkSharp4, so the stack is
+		  net10.0). NuGet's NU5128 requires a lib/ folder matching the dependency group's TFM; the
+		  canonical "_._" marker satisfies it without shipping a real lib.
 		-->
-		<None Include="_._" Pack="true" PackagePath="\lib\netstandard2.0\_._" />
+		<None Include="_._" Pack="true" PackagePath="\lib\net10.0\_._" />
 		<None Include="Gtk.Forms.Base.props"   Pack="true" PackagePath="\build\;\buildTransitive\" />
 		<None Include="Gtk.Forms.Base.targets" Pack="true" PackagePath="\build\;\buildTransitive\" />
 		<!--

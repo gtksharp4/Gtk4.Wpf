@@ -192,9 +192,21 @@ namespace Gtk.Forms.MarkupCompiler
 				}
 				else
 				{
-					w.Line($"this.{propName} = \"{EscapeString(val)}\";");
+					w.Line($"this.{propName} = {ValueExpression(propName, val)};");
 				}
 			}
+		}
+
+		/// <summary>
+		/// The C# expression for a plain (non-binding) attribute value. Phase 0 emits a string literal
+		/// except for the few known typed WPF properties (Application.StartupUri is a System.Uri); later
+		/// phases resolve the target property type (and its type converter) from the referenced assemblies.
+		/// </summary>
+		static string ValueExpression(string propName, string val)
+		{
+			if (propName == "StartupUri")
+				return $"new System.Uri(\"{EscapeString(val)}\", System.UriKind.RelativeOrAbsolute)";
+			return $"\"{EscapeString(val)}\"";
 		}
 
 		/// <summary>
@@ -235,7 +247,7 @@ namespace Gtk.Forms.MarkupCompiler
 					if (IsBindingExpression(val, out string bindingPath))
 						w.Line($"{varName}.SetBinding({fqType}.{propName}Property, new System.Windows.Data.Binding(\"{bindingPath}\"));");
 					else
-						w.Line($"{varName}.{propName} = \"{EscapeString(val)}\";");
+						w.Line($"{varName}.{propName} = {ValueExpression(propName, val)};");
 				}
 
 				// Recurse into grandchildren

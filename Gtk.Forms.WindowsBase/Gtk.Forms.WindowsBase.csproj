@@ -12,7 +12,11 @@
     <RootNamespace>System.Windows</RootNamespace>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <IsPackable>false</IsPackable>
+    <!-- Packable (a consumer restores it transitively via Gtk.Forms.Base). The stable 4-part Version
+         keeps the Base package's dependency on it stable rather than prerelease (NU5104). -->
+    <IsPackable>true</IsPackable>
+    <Version>$(VersionPrefix).$(VersionSuffix)</Version>
+    <PackageOutputPath>$(XFPackageOutputPath)</PackageOutputPath>
     <!-- Suppress CS0436: type conflicts with imported type (expected when building in-tree with
          System.Windows.* namespaces that may partially shadow BCL types on some TFMs). -->
     <NoWarn>$(NoWarn);CS0436</NoWarn>
