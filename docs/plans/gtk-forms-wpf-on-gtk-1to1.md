@@ -697,6 +697,18 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
 - **Round 11 totals (both tracks merged): 1180 tests** (60 WindowsBase + 935 PresentationFramework +
   169 MarkupCompiler + 16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample`
   (unmodified WPF) still compiles.
+- **Round 11 review (Opus) + fixes — DONE.** 2 High correctness bugs in the new layout contract (hidden by
+  constant-size test children) + 2 medium WPF-fidelity gaps, implemented faithfully (not just documented):
+  **W1** `Measure`/`Arrange` now re-run when the constraint/rect changes even if not dirty (WPF
+  `previousAvailableSize` semantics) — Grid's resolved-cell second measure pass was a silent no-op;
+  **W2** `DesiredSize` is clamped by Min/Max only, not by `availableSize` (content may exceed its slot —
+  a 500-tall StackPanel in a 200 slot now reports 500); **W3** Grid star distribution is **iterative** —
+  a star hitting its `Min`/`MaxWidth` fixes at the bound and the surplus redistributes among remaining stars
+  (1*+1* in 100 with col0 Max=20 → 20/80); **W4** spanning children grow the `Auto` tracks in their span;
+  **W5** `RichTextBox.cs` split into `RichTextBox.cs` + `RichTextBox.Buffer.cs` (≤200 lines); **W6** the
+  managed-layout-vs-live-GTK gap documented on `UIElement.UpdateLayout` + carry-over. **Round 11 totals:
+  1187 tests** (60 WindowsBase + 942 PresentationFramework + 169 MarkupCompiler + 16 ProjectConverter),
+  all pass timeboxed; `Gtk.Forms.WpfSample` (unmodified WPF) still compiles.
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
   true `{DynamicResource}` change-tracking; GTK key-event wiring for `InputBindings`;
   `Gtk.PopoverMenu` integration for `MenuItem`; element-level `FrameworkElement.Triggers` auto-attach on
