@@ -26,6 +26,13 @@ namespace Gtk.Forms.MarkupCompiler
 			{ "Application",        "System.Windows.Application" },
 			{ "ResourceDictionary", "System.Windows.ResourceDictionary" },
 			{ "Style",              "System.Windows.Style" },
+			// Triggers
+			{ "Trigger",            "System.Windows.Trigger" },
+			{ "DataTrigger",        "System.Windows.DataTrigger" },
+			{ "MultiTrigger",       "System.Windows.MultiTrigger" },
+			{ "EventTrigger",       "System.Windows.EventTrigger" },
+			{ "Setter",             "System.Windows.Setter" },
+			{ "Condition",          "System.Windows.Condition" },
 
 			// System.Windows.Controls
 			{ "Grid",           "System.Windows.Controls.Grid" },

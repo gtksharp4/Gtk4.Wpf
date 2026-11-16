@@ -18,13 +18,18 @@ namespace System.Windows
 		{
 			if (d is FrameworkElement fe)
 			{
-				// D6: un-apply old style before applying new one.
-				if (e.OldValue is Style)
+				// D6+D8: un-apply old style setters + detach its triggers before applying new one.
+				if (e.OldValue is Style oldStyle)
 				{
+					oldStyle.DetachTriggers(fe);
 					var snapshot = fe.SnapshotStyleValues();
 					fe.ClearStyleValues(snapshot);
 				}
-				(e.NewValue as Style)?.Apply(fe);
+				if (e.NewValue is Style newStyle)
+				{
+					newStyle.Apply(fe);
+					newStyle.AttachTriggers(fe);
+				}
 			}
 		}
 

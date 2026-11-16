@@ -7,7 +7,7 @@ namespace System.Windows
 	/// WPF-compatible style: <see cref="TargetType"/>, <see cref="Setters"/>,
 	/// <see cref="BasedOn"/> chain, and implicit-style registration by type.
 	/// </summary>
-	public class Style
+	public partial class Style
 	{
 		/// <summary>The type this style targets.</summary>
 		public Type? TargetType { get; set; }
@@ -65,6 +65,14 @@ namespace System.Windows
 
 		/// <summary>Applies this setter into the style-value layer of <paramref name="target"/> (D6).</summary>
 		internal abstract void ApplyToStyleLayer(DependencyObject target);
+
+		/// <summary>
+		/// D8: Applies this setter into the trigger-value layer of <paramref name="target"/>,
+		/// recording the DP in <paramref name="applied"/> for later un-apply.
+		/// </summary>
+		internal abstract void ApplyToTriggerLayer(
+			DependencyObject target,
+			System.Collections.Generic.Dictionary<DependencyProperty, object?> applied);
 	}
 
 	/// <summary>
@@ -111,6 +119,20 @@ namespace System.Windows
 				dp = DependencyProperty.FindByName(PropertyName, target.GetType());
 			if (dp != null)
 				target.SetStyleValue(dp, Value);
+		}
+
+		/// <inheritdoc/>
+		internal override void ApplyToTriggerLayer(
+			DependencyObject target,
+			System.Collections.Generic.Dictionary<DependencyProperty, object?> applied)
+		{
+			var dp = Property;
+			if (dp == null && PropertyName != null)
+				dp = DependencyProperty.FindByName(PropertyName, target.GetType());
+			if (dp == null) return;
+			// Record effective value before applying so un-apply can fire the right delta.
+			applied[dp] = target.GetValue(dp);
+			target.SetTriggerValue(dp, Value);
 		}
 	}
 }

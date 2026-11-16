@@ -1,0 +1,52 @@
+using System.Collections.Generic;
+
+namespace System.Windows
+{
+	/// <summary>
+	/// Abstract base for all trigger types (<see cref="Trigger"/>, <see cref="DataTrigger"/>,
+	/// <see cref="MultiTrigger"/>, <see cref="EventTrigger"/>).
+	/// </summary>
+	public abstract class TriggerBase
+	{
+		/// <summary>
+		/// Subscribes this trigger to the given <paramref name="target"/>.
+		/// Called when a <see cref="Style"/> is applied or when the element is loaded.
+		/// </summary>
+		internal abstract void Attach(FrameworkElement target);
+
+		/// <summary>
+		/// Removes subscriptions and un-applies any active setters on <paramref name="target"/>.
+		/// Called when a <see cref="Style"/> is replaced/nulled or the element is unloaded.
+		/// </summary>
+		internal abstract void Detach(FrameworkElement target);
+	}
+
+	/// <summary>Collection of <see cref="TriggerBase"/> items.</summary>
+	public class TriggerCollection : List<TriggerBase> { }
+
+	/// <summary>
+	/// A single property=value setter used inside a <see cref="Trigger"/>,
+	/// <see cref="DataTrigger"/>, or <see cref="MultiTrigger"/>.
+	/// Reuses <see cref="Setter"/> (resolved DP or name) for consistency.
+	/// </summary>
+	public class Condition
+	{
+		/// <summary>The dependency property to compare.</summary>
+		public DependencyProperty? Property { get; set; }
+
+		/// <summary>String property name, resolved at attach time when <see cref="Property"/> is null.</summary>
+		public string? PropertyName { get; set; }
+
+		/// <summary>The value to match (string or typed).</summary>
+		public object? Value { get; set; }
+
+		/// <summary>Resolves the DP, consulting <paramref name="targetType"/> for name resolution.</summary>
+		internal DependencyProperty? Resolve(Type targetType)
+		{
+			if (Property != null) return Property;
+			if (PropertyName != null)
+				return DependencyProperty.FindByName(PropertyName, targetType);
+			return null;
+		}
+	}
+}
