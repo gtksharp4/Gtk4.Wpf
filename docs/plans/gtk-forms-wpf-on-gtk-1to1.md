@@ -321,7 +321,9 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
     for direct unit testing (XML parsers normalize whitespace in attribute values before the generator
     sees them, making XAML-round-trip tests impossible).
   - **+18 PF tests** (3 Slider, 10 TabControl, 5 GTK smoke); **+8 MarkupCompiler tests**
-    (12 attached-prop / escape). Round 5 totals: **558 PF + 68 MarkupCompiler**.
+    (12 attached-prop / escape). **Round 5 totals: 682 tests** (40 WindowsBase + 558 PresentationFramework
+    + 68 MarkupCompiler + 16 ProjectConverter), all pass timeboxed with no hang/crash;
+    `Gtk.Forms.WpfSample` (unmodified WPF) still compiles.
 - **Carry-over (Round 5 Opus review — not addressed this round)**: compiler DP-vs-CLR resolution is a
   name heuristic (`IsKnownDp`: "is it in `System.Windows.*` and not on the CLR-only exclusion list?").
   Should be replaced with real assembly symbol resolution — load the referenced assemblies, reflect
