@@ -141,6 +141,12 @@ Packages are on NuGet under the `Gtk4.` prefix — `Gtk4.Forms.Core`,
 `Gtk4.Forms.Xaml`, `Gtk4.Forms.Platform.Gtk`, `Gtk4.Forms.Maps.Gtk`,
 `Gtk4.Forms.Build.Tasks`. The Gtk package pulls in Core and depends on `GtkSharp` 4.
 
+**The native GTK 4 runtime ships with the package — there is nothing to install.** The `GtkSharp`
+4 packages are published on nuget.org (built from the GtkSharp4 fork) and carry the native GTK 4
+libraries for every supported OS as runtime assets, so `dotnet restore` alone leaves a Windows,
+Linux or macOS machine ready to run. No `gvsbuild`, no `apt install libgtk-4-*`, no
+`brew install gtk4`: the old "install the GTK runtime separately" step is gone on all three OSes.
+
 **Threading, because Gtk is not thread-safe.** Everything that touches a widget must run on the
 thread that called `Forms.Init()` — the thread running the Gtk main loop. From anywhere else, use
 `Device.BeginInvokeOnMainThread`.
@@ -212,10 +218,11 @@ reasoning would have produced:
   `Window.SizeAllocate(...)` directly.
 
 There is also a nice guard against green-by-absence. An unusable environment normally *skips* the
-Gtk tests, which is right on a developer laptop with no Gtk runtime — but in CI, where Gtk is
-supposed to exist, a skip would silently turn the suite green. So an environment variable,
-`XF_Gtk_REQUIRE_NATIVE`, converts "no display" or "no native Gtk" from a skip into a hard failure.
-CI sets it.
+Gtk tests, which is right on a headless box with no display — but in CI, where the suite is
+supposed to run for real, a skip would silently turn it green. So an environment variable,
+`XF_Gtk_REQUIRE_NATIVE`, converts "no display" into a hard failure. CI sets it. (The native GTK
+runtime is no longer a skip reason at all: it restores with the GtkSharp 4 package, so it is always
+present.)
 
 ## Build and CI
 
@@ -237,8 +244,11 @@ Two build-wide settings shape day-to-day work:
 - **`UseOSSpecificOutputPaths=true`** redirects output to `bin-wsl/` / `obj-wsl/`, so a Windows
   build and a WSL build of the same working tree do not fight over `obj/`.
 
-CI is a single GitHub Actions workflow on Ubuntu that installs Gtk 3, WebKitGtk 4.1, Mesa and
-Xvfb, builds the solution, and runs all three suites. It builds **Debug, and that is forced rather
+CI is a single GitHub Actions workflow that builds the solution and runs all three suites on
+**Windows, Linux and macOS**. The native GTK 4 runtime is no longer a CI setup step — it restores
+with the GtkSharp 4 package on every OS — so the only OS-level provisioning left is a virtual
+display (Xvfb) on headless Linux, plus the optional WebKitGtk and Mesa that the WebView and OpenGL
+renderers degrade gracefully without. It builds **Debug, and that is forced rather
 than preferred**: upstream wraps `[assembly: InternalsVisibleTo("Xamarin.Forms.Xaml.UnitTests")]`
 in `#if DEBUG`, so a Release build of the XAML test project fails with `error CS0122:
 'XamlCAssemblyResolver' is inaccessible due to its protection level`. The fork's fix was to change
