@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="$(NuGetPackageRoot)net4x.nugetutility/$(NuGetUtilityVersion)/build/NuGet.Utility.props" Condition="Exists('$(NuGetPackageRoot)net4x.nugetutility/$(NuGetUtilityVersion)/build/NuGet.Utility.props')" />
+    
     <PropertyGroup>
         <PackageOutputPath>$(XFPackageOutputPath)</PackageOutputPath>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -205,9 +205,6 @@
         </CreateItem>
         <Copy SourceFiles="@(ConfigFile)" DestinationFiles="controlgallery.config" Condition="!Exists('controlgallery.config')" />
     </Target>
-    <ItemGroup>
-        <PackageReference Include="Net4x.NuGetUtility" Version="$(NuGetUtilityVersion)" PrivateAssets="All" Condition="'$(OS)' == 'Windows_NT'" />
-    </ItemGroup>
     <PropertyGroup>
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
@@ -232,5 +229,5 @@
     <ItemGroup>
         <Reference Include="$(PkgNETStandard_Library)/build/netstandard2.0/ref/*.dll" Private="false" Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
     </ItemGroup>
-    <Import Project="$(NuGetPackageRoot)net4x.nugetutility/$(NuGetUtilityVersion)/build/NuGet.Utility.targets" Condition="Exists('$(NuGetPackageRoot)net4x.nugetutility/$(NuGetUtilityVersion)/build/NuGet.Utility.targets')" />
+    
 </Project>

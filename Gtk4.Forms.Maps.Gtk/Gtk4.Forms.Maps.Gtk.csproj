@@ -27,7 +27,6 @@
         <WarningsNotAsErrors>$(WarningsNotAsErrors);CS0612;CS0618</WarningsNotAsErrors>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Net4x.NuGetUtility" Version="$(NuGetUtilityVersion)" PrivateAssets="All" Condition="'$(OS)' == 'Windows_NT'" />
         <!--
           Pinned explicitly, to the same version as Xamarin.Forms.Platform.Gtk. See the comment
           there: the Net4x.NuGetUtility tooling has property-ised this reference before and broken

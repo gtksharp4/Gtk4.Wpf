@@ -20,9 +20,6 @@
     <ItemGroup>
         <ProjectReference Include="..\Gtk4.Forms.Core\Gtk4.Forms.Core.csproj" />
     </ItemGroup>
-    <ItemGroup>
-        <PackageReference Include="Net4x.NuGetUtility" Version="$(NuGetUtilityVersion)" PrivateAssets="All" Condition="'$(OS)' == 'Windows_NT'" />
-    </ItemGroup>
     <PropertyGroup>
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>

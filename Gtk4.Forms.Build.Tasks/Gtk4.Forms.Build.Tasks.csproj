@@ -155,9 +155,6 @@
     copy is REPORTED: it used to be ContinueOnError with no message, so a locked destination
     silently left a stale task in place - which is how an XamlCTask crash appeared earlier.
   -->
-    <ItemGroup>
-        <PackageReference Include="Net4x.NuGetUtility" Version="$(NuGetUtilityVersion)" PrivateAssets="All" Condition="'$(OS)' == 'Windows_NT'" />
-    </ItemGroup>
     <Target Name="_PublishBuildTasks" AfterTargets="Build" Condition="'$(TargetPath)' != ''">
         <PropertyGroup>
             <!--

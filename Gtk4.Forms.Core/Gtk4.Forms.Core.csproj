@@ -26,9 +26,6 @@
 		System.Dynamic.Runtime / System.ValueTuple 4.x package references.
 	-->
     <ItemGroup>
-        <PackageReference Include="Net4x.NuGetUtility" Version="$(NuGetUtilityVersion)" PrivateAssets="All" Condition="'$(OS)' == 'Windows_NT'" />
-    </ItemGroup>
-    <ItemGroup>
         <Folder Include="Xaml\Diagnostics\" />
     </ItemGroup>
     <PropertyGroup>

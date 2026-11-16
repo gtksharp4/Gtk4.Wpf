@@ -7,9 +7,6 @@
         <IsPackable>true</IsPackable>
         <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>
-    <ItemGroup>
-        <PackageReference Include="Net4x.NuGetUtility" Version="$(NuGetUtilityVersion)" PrivateAssets="All" Condition="'$(OS)' == 'Windows_NT'" />
-    </ItemGroup>
     <PropertyGroup>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
