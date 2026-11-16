@@ -1,0 +1,204 @@
+# Plan — `Gtk.Forms`: run **unmodified WPF** on the Gtk4.Forms GTK engine (aim 1:1)
+
+**Goal.** An existing WPF application — its `System.Windows.*` code, its WPF XAML (the
+`…/winfx/2006/xaml/presentation` namespace), its `App.xaml`/`Window.xaml` — compiles and runs on
+**Windows, Linux and macOS** against a GTK-backed compatibility layer, with **no namespace changes
+and no XAML edits**. The WinForms analogue (`Gtk.Windows.Forms` in `C:\Temp\GtkWindowsForms`) proves
+the pattern for an API that has no XAML; this adds the hard part WPF has and WinForms does not — the
+XAML stack, the property system, templates, triggers and the binding engine.
+
+## Decisions (answered — do not re-ask)
+
+| Topic | Decision |
+|---|---|
+| Fidelity target | **Aim for true 1:1 WPF** (the north star; delivered in phases — see below) |
+| XAML → objects | **Build-time markup compiler** (like WPF's `PresentationBuildTasks`), not runtime loading |
+| Rendering substrate | **Hybrid** — reuse Gtk4.Forms GTK plumbing + control mappings; implement WPF-faithful layout/templating on GtkSharp 4 where the Forms model cannot express it |
+| Location | **This repo** (the Xamarin.Forms→GTK fork), next to the engine it depends on |
+| Delivery | A one-package drop-in, **`Gtk.Forms.Base`**, reusing the `Gtk4.Forms.Base` pattern just built |
+
+## Reality check — 1:1 is a program, not a task
+
+WPF is ~3 assemblies and thousands of public types (the full property system, routed events, the
+logical+visual trees, `Measure`/`Arrange`, templating, triggers, the binding engine, the control
+library, media/geometry). Avalonia is the closest existing "WPF-on-everything" and it **deliberately
+is not 1:1** because exact parity is enormous. "Aim for 1:1" here means: **the public surface and
+semantics are the target, and the work is sequenced so real apps run early and parity grows by
+demand.** Nothing below is a weekend; the plan's job is to make the first vertical slice small,
+provable, and architecturally load-bearing so the rest is fill-in, not rework.
+
+## The key enabler — why "no XAML / no namespace changes" is possible
+
+1. **Reimplement WPF types in their real namespaces.** `System.Windows.Window`, `System.Windows.Controls.Grid`,
+   `System.Windows.Controls.TextBlock`, `System.Windows.DependencyObject`, … live in a compat assembly
+   set. A recompile of the WPF app binds `using System.Windows;` to our assemblies (the project drops
+   `<UseWPF>`, so the real WPF framework reference — Windows-only anyway — is gone and cannot clash).
+2. **Claim the WPF xmlns.** `[assembly: System.Windows.Markup.XmlnsDefinition("http://schemas.microsoft.com/winfx/2006/xaml/presentation", "System.Windows.Controls")]`
+   (and for `System.Windows`, `System.Windows.Shapes`, `System.Windows.Data`, …). The markup compiler
+   resolves the unchanged presentation-namespace XAML to our types through exactly this attribute —
+   the same mechanism `Gtk4.Forms.Xaml` already uses for its own xmlns
+   (`Gtk4.Forms.Xaml/Properties/AssemblyInfo.cs:10`).
+3. **Compile the XAML, don't translate it.** A build task consumes the `Page`/`ApplicationDefinition`
+   build items and emits `InitializeComponent` + field wiring, exactly as WPF's markup compiler does —
+   so the `.xaml` and the `x:Class` code-behind are untouched.
+
+## Architecture
+
+### A. Assembly & namespace layering (mirror WPF's three layers)
+
+Own assembly names, **real `System.Windows.*` namespaces**. Mirroring WPF's split keeps the layering
+honest and the dependency graph acyclic:
+
+| Our assembly (package `Gtk.Forms`) | Mirrors | Holds (namespaces) |
+|---|---|---|
+| `Gtk.Forms.WindowsBase` | `WindowsBase.dll` | `System.Windows` base (`DependencyObject`, `DependencyProperty`, `PropertyMetadata`, `Freezable`, `DispatcherObject`), `System.Windows.Threading` (`Dispatcher`), `System.Windows.Markup` base, primitives (`Point`/`Rect`/`Size`/`Thickness`/`Duration`) |
+| `Gtk.Forms.PresentationCore` | `PresentationCore.dll` | `System.Windows` (`UIElement`, `FrameworkPropertyMetadata`, `RoutedEvent`, input), `System.Windows.Media` (`Brush`, `Pen`, `Geometry`, `Color`, `Visual`), `System.Windows.Input` |
+| `Gtk.Forms.PresentationFramework` | `PresentationFramework.dll` | `System.Windows` (`FrameworkElement`, `Window`, `Application`, `Style`, `ResourceDictionary`), `System.Windows.Controls`, `System.Windows.Controls.Primitives`, `System.Windows.Data` (`Binding`), `System.Windows.Shapes`, `System.Windows.Documents` |
+| `Gtk.Forms.MarkupCompiler` | `PresentationBuildTasks.dll` | The build task + `Gtk.Forms.props/.targets` (packed, consumer-imported) |
+
+Carrying our own assembly names avoids an identity clash with the real WPF assemblies if a developer
+builds on Windows; the `System.Windows.*` namespaces are what the app actually binds to.
+
+### B. The property & event system (`Gtk.Forms.WindowsBase`)
+
+The backbone — every WPF semantic rests on it, so it is Phase-0 work and must be faithful:
+`DependencyObject` + `DependencyProperty` (registration, attached properties, value precedence,
+`PropertyMetadata` with coercion + change callbacks, **property-value inheritance** down the tree),
+`RoutedEvent` (tunnel/bubble) and `Dispatcher` (marshal to the GTK main thread — bridge to
+`Device.BeginInvokeOnMainThread`/the GTK main loop). This is a from-scratch reimplementation; it does
+**not** reuse Gtk4.Forms' `BindableProperty` (different precedence/inheritance rules), though that code
+is a useful reference for the mechanics.
+
+### C. The build-time markup compiler (`Gtk.Forms.MarkupCompiler`) — **fork, don't reinvent**
+
+Fork `Gtk4.Forms.Build.Tasks` and retarget it to the WPF dialect. The whole shape transfers:
+
+| Reuse from `Gtk4.Forms.Build.Tasks` | Role | Retarget to |
+|---|---|---|
+| `XamlGTask.cs:10` (+ `XamlGenerator.cs`) | Generate `InitializeComponent` + `x:Name`/`FindName` partial | WPF: `x:Class`, `x:Name` fields, `Application`/`Window` roots, `[STAThread] Main` from `ApplicationDefinition` |
+| `XamlCTask.cs:17` + the `*Visitor.cs` tree (`CreateObjectVisitor`, `SetPropertiesVisitor`, `ExpandMarkupsVisitor`, `SetNamescopesAndRegisterNamesVisitor`) | Walk the XAML node tree, emit IL (Mono.Cecil) | Resolve `presentation` xmlns via `XmlnsDefinition`; emit `DependencyProperty.SetValue`/setters; WPF markup extensions (`{Binding}`, `{StaticResource}`, `{x:Type}`, `{TemplateBinding}`) |
+| `ErrorMessages.resx` / `BuildException` | MSBuild-surfaced XAML errors | same |
+
+It is **System.Xaml-free** (parses XAML via `XmlReader`, emits via Cecil) — important, because
+`System.Xaml.dll` ships only in the Windows Desktop pack and is **absent on Linux/macOS**. The task
+hooks `Page`/`ApplicationDefinition`/`Resource` build actions so an unmodified WPF `.csproj` layout
+compiles.
+
+### D. The rendering bridge (hybrid) — WPF visual tree → GTK
+
+Two tiers, chosen per element:
+
+- **Tier 1 — map onto Gtk4.Forms.** Where a WPF control has a faithful Forms equivalent
+  (`TextBlock`→`Label`, `Button`→`Button`, `TextBox`→`Entry`, `Grid`→`Grid`), render it by delegating
+  to the existing `Gtk4.Forms.Platform.Gtk` renderer for the mapped Forms element. Reuses `FormsWindow.cs`
+  as the top-level `Window` host and `Platform.cs` for renderer creation/layout.
+- **Tier 2 — WPF-faithful on GtkSharp 4.** Where the Forms model can't express WPF semantics
+  (two-pass `Measure`/`Arrange` with `DesiredSize`, `ControlTemplate`/`DataTemplate`, `Panel`s like
+  `DockPanel`/`Canvas` with attached layout props, triggers, visual brushes), implement the element
+  directly on a GtkSharp 4 widget with a WPF layout system, hosted in the same GTK window. `UIElement`
+  owns a backing `Gtk.Widget`; a custom `Gtk.Widget` measures/arranges children per WPF rules.
+
+The seam is `UIElement.OnRender`/`MeasureCore`/`ArrangeCore` → a GTK widget. Tier 1 is how apps run
+early; Tier 2 is where parity is won.
+
+### E. Binding, resources, styles, templates, triggers (`PresentationFramework`)
+
+Reimplement per WPF semantics: the `Binding` engine (`Path`, `Mode`, `Converter`, `RelativeSource`,
+`ElementName`, `UpdateSourceTrigger`, `INotifyPropertyChanged`/`DependencyProperty` sources),
+`ResourceDictionary` with `{StaticResource}`/`{DynamicResource}` + merged dictionaries, `Style`
+(setters/triggers, `BasedOn`, implicit by `TargetType`), `ControlTemplate`/`DataTemplate`,
+`Trigger`/`DataTrigger`/`MultiTrigger`/`EventTrigger`. Gtk4.Forms has analogues to study but different
+semantics; this is new code.
+
+### F. Drop-in delivery (`Gtk.Forms.Base`)
+
+Reuse the pattern shipped in `Gtk4.Forms.Base` (see `Gtk4.Forms.Base/` + `Gtk4.Forms.ProjectConverter/`):
+one `PackageReference` that (1) rewrites the consumer `.csproj` — strip `<UseWPF>`/`net*-windows`,
+set `OutputType=Exe`/`net10.0`, reference the `Gtk.Forms.*` assemblies + markup compiler — and (2)
+needs no injected `Main` (WPF's `Main` comes from the compiled `ApplicationDefinition`, which the
+markup compiler emits). The converter's `CsprojConverter` gains WPF rules alongside its existing ones.
+
+## Reuse map (concrete anchors in this repo)
+
+| Need | Reuse | Anchor |
+|---|---|---|
+| Markup compiler (codegen) | `XamlGTask` + `XamlGenerator` | `Gtk4.Forms.Build.Tasks/XamlGTask.cs:10` |
+| Markup compiler (IL) | `XamlCTask` + `*Visitor.cs` + Mono.Cecil | `Gtk4.Forms.Build.Tasks/XamlCTask.cs:17` |
+| xmlns→CLR resolution | `[assembly: XmlnsDefinition]` | `Gtk4.Forms.Xaml/Properties/AssemblyInfo.cs:10` |
+| GTK window host | `FormsWindow` | `Gtk4.Forms.Platform.Gtk/FormsWindow.cs` |
+| Renderer creation / layout pass | `Platform` | `Gtk4.Forms.Platform.Gtk/Platform.cs` |
+| GTK 4 binding + native runtime | `GtkSharp4` (nuget.org, carries the runtime) | `Directory.Build.props` `$(GtkSharp4Version)` |
+| One-package drop-in | `Gtk4.Forms.Base` + `ProjectConverter` | `Gtk4.Forms.Base/`, `Gtk4.Forms.ProjectConverter/CsprojConverter.cs` |
+
+## ⛔ Blocking verifications — Phase 0 vertical slice (build before committing to the program)
+
+Prove the architecture end-to-end on the smallest real thing. Until these pass, do not build out the
+control library.
+
+| # | Prove | Pass criterion |
+|---|---|---|
+| B1 | `[assembly: XmlnsDefinition]` + the forked compiler resolves **unmodified** presentation-namespace XAML to our `System.Windows.Controls.*` types | A `<Window><Grid><TextBlock Text="hi"/></Grid></Window>` (verbatim WPF XAML, WPF `x:Class` code-behind) compiles with our markup task — `InitializeComponent` generated, no XAML edits |
+| B2 | `DependencyObject`/`DependencyProperty` carries a bound value with inheritance + change notification | A `{Binding}` on `TextBlock.Text` to an `INotifyPropertyChanged` VM updates the widget |
+| B3 | The hybrid bridge paints on GTK via the engine | That window shows a GTK label reading "hi" on Windows **and** headless Linux (Xvfb) |
+| B4 | The drop-in works | A stock WPF project + `<PackageReference Include="Gtk.Forms.Base">` builds to a cross-platform exe (two-build conversion) and runs |
+
+Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (minimal) + `Window`/`Grid`/`TextBlock`/`Button` on Tier 1 + a one-way `Binding` + `Gtk.Forms.Base`. One window, one binding, running on two OSes.
+
+## Progress (living)
+
+- **Phase 0 — DONE.** `Gtk.Forms.WindowsBase` (property/event system), `Gtk.Forms.MarkupCompiler`
+  (build-time compiler), `Gtk.Forms.PresentationFramework` (`UIElement`→`Window`/`Grid`/`StackPanel`/
+  `TextBlock`/`Button` + one-way binding on GtkSharp 4), `Gtk.Forms.ProjectConverter` + `Gtk.Forms.Base`
+  (drop-in), and `Gtk.Forms.WpfSample` (unmodified WPF, compiles through the compiler). ~104 tests;
+  blocking checks B1–B4 pass. Reviewed (no foundational defect); inheritance-on-reparent, leaks and
+  compile-compat fixed.
+- **Carry-over into Phase 1** (Phase-0 `TODO (Phase 1)` markers): two-way binding; `{Binding …, Mode=…,
+  Converter=…}` argument parsing; attribute-driven `[XmlnsDefinition]` resolution (replace the built-in
+  xmlns map); full attribute type-converter resolution in the compiler.
+
+## Phased roadmap (after Phase 0 proves the spine)
+
+1. **Core controls, layout, binding.** `StackPanel`/`DockPanel`/`Canvas`/`WrapPanel` with WPF
+   `Measure`/`Arrange` (Tier 2), `TextBox`/`CheckBox`/`RadioButton`/`ComboBox`/`Image`/`Border`,
+   two-way binding + converters, `ResourceDictionary` + `StaticResource`, `Style`+`Setter`.
+2. **Templating & triggers.** `ControlTemplate`/`DataTemplate`, `ItemsControl`/`ListBox`/`ListView`,
+   `Trigger`/`DataTrigger`/`EventTrigger`, implicit styles.
+3. **Navigation, windows, dialogs, commands.** `NavigationWindow`/`Page`/`Frame`, `Window` chrome +
+   `ShowDialog`, `ICommand`/`RoutedCommand`, `MenuItem`/`ToolBar`.
+4. **Media & shapes & text.** `System.Windows.Shapes`, `Brush`/`Geometry`/`Transform`, `FlowDocument`
+   subset, `RichTextBox` (hard).
+5. **Long tail to 1:1.** The rest of the control set and the WPF features catalogued as app demand
+   surfaces; `MultiBinding`, `VisualStateManager`, animation/storyboards, 3D (likely never).
+
+Each phase ships a growing **WPF-sample gallery** (ported real WPF XAML, unmodified) that is the
+regression suite.
+
+## Verification
+
+- **Compat gallery**: a project of *unmodified* WPF `.xaml` pages, one per feature, built with the
+  markup compiler and run on Windows + Xvfb Linux + macOS, asserted via the GTK renderer-test harness
+  (`Gtk4.Forms.Platform.Gtk.UnitTests` is the model).
+- **Property-system unit tests** (pure): `DependencyProperty` precedence, inheritance, coercion,
+  routed-event tunnel/bubble — fail-before/pass-after, no GTK needed.
+- **Markup-compiler unit tests**: given WPF XAML in, assert the generated `InitializeComponent`/IL
+  (mirror how `Gtk4.Forms.Xaml.UnitTests` drives `XamlCTask` in-process via `MockCompiler`).
+- **Drop-in e2e**: a stock WPF repo + `Gtk.Forms.Base` → cross-platform exe, no source edits.
+
+## Risks
+
+| Risk | Note / mitigation |
+|---|---|
+| **Scope — this is Avalonia-scale** | Phase 0 de-risks the architecture cheaply; everything after is incremental and demand-driven. Be explicit that "1:1" is a direction, not a date. |
+| `DependencyProperty`/visual-tree semantics are subtle | Faithful property system is Phase-0, tested in isolation before anything renders. |
+| WPF markup extensions + `System.Xaml` divergence | Compiler is `System.Xaml`-free (Cecil + `XmlReader`), so no Windows-only `System.Xaml` dependency; extension set grows per phase. |
+| Tier-1/Tier-2 seam leaks | Keep `UIElement`→`Gtk.Widget` the single boundary; a control can move Tier 1→2 without API change. |
+| `ControlTemplate`/triggers/`RichTextBox` | The genuinely hard long tail — scheduled late, flagged as "redesign, not 1:1" if a feature proves intractable on GTK. |
+| Fights the active packaging refactor | New `Gtk.Forms.*` projects are additive (own dirs); touch shared `Directory.Build.*` minimally. |
+
+## Recommendation
+
+Approve **Phase 0 only** first: the `WindowsBase` property-system subset + the forked markup compiler
+(minimal) + four controls on Tier 1 + one binding + `Gtk.Forms.Base`, proving **B1–B4**. That slice
+is small, fully testable, and settles every architectural unknown (xmlns binding, the compiler fork,
+the hybrid bridge, the drop-in). Only after it runs a real one-window WPF app unmodified on two OSes
+is it worth committing to the multi-phase build toward 1:1.
