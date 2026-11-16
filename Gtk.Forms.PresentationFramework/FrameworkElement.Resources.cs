@@ -94,8 +94,11 @@ namespace System.Windows
 
 		/// <summary>
 		/// Looks up an implicit style keyed by <c>GetType()</c> in the resource tree
-		/// and applies it when no explicit <see cref="Style"/> is set.
+		/// and applies it when no explicit <see cref="Style"/> is set.  When no
+		/// implicit style is found, falls back to the theme-dictionary default style
+		/// via <see cref="ApplyDefaultStyle"/>.
 		/// Call from <c>InitializeComponent</c> or after the element is added to the tree.
+		/// Order: explicit Style > implicit TargetType style > theme/default style.
 		/// </summary>
 		internal void ApplyImplicitStyle()
 		{
@@ -103,7 +106,12 @@ namespace System.Windows
 			if (!ReferenceEquals(ReadLocalValue(StyleProperty), DependencyProperty.UnsetValue))
 				return;
 			if (TryFindResourceCore(GetType(), out var res) && res is Style s)
+			{
 				Style = s;
+				return;
+			}
+			// No implicit style — fall back to theme default style (lowest precedence).
+			ApplyDefaultStyle();
 		}
 	}
 }

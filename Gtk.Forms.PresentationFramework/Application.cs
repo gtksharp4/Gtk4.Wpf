@@ -24,10 +24,14 @@ namespace System.Windows
 		/// </summary>
 		public static Application? Current { get; private set; }
 
-		/// <summary>Initialises the application and sets <see cref="Current"/>.</summary>
+		/// <summary>
+		/// Initialises the application, sets <see cref="Current"/>, and seeds the
+		/// theme dictionary with built-in default styles via <see cref="Themes.Generic"/>.
+		/// </summary>
 		public Application()
 		{
 			Current = this;
+			Themes.Generic.Register();
 		}
 
 		// ─────────────────────────────────────────────────────────────────────────
