@@ -18,7 +18,28 @@ namespace System.Windows
 		/// <summary>
 		/// The backing GTK widget for this element. Created lazily on first access.
 		/// </summary>
-		public Gtk.Widget Widget => _widget ??= CreateWidget();
+		public Gtk.Widget Widget
+		{
+			get
+			{
+				if (_widget != null) return _widget;
+				_widget = CreateWidget();
+				OnWidgetCreated(_widget);
+				return _widget;
+			}
+		}
+
+		/// <summary>
+		/// Returns <c>true</c> when <see cref="Widget"/> has been materialised.
+		/// Safe to call without forcing widget creation.
+		/// </summary>
+		protected internal bool IsWidgetCreated => _widget != null;
+
+		/// <summary>
+		/// Called once immediately after <see cref="Widget"/> is first created.
+		/// Override to apply deferred state (e.g. <c>TooltipText</c>) to the new widget.
+		/// </summary>
+		protected virtual void OnWidgetCreated(Gtk.Widget widget) { }
 
 		// ── Measure / Arrange (Phase-0 stubs — GTK drives its own layout) ───────────
 

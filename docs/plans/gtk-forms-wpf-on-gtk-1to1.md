@@ -324,6 +324,32 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
     (12 attached-prop / escape). **Round 5 totals: 682 tests** (40 WindowsBase + 558 PresentationFramework
     + 68 MarkupCompiler + 16 ProjectConverter), all pass timeboxed with no hang/crash;
     `Gtk.Forms.WpfSample` (unmodified WPF) still compiles.
+- **Round 6 Track B — hierarchical & popup controls (DONE).** Runtime only; no compiler changes.
+  - `HeaderedItemsControl : ItemsControl` base class (`Header` DP; base for `ToolBar`/`TreeViewItem`).
+  - `MenuItem` extended: `Items` (sub-menu list; parent items backed by `Gtk.MenuButton`+`Gtk.Popover`,
+    leaf items by `Gtk.Button`), `IsCheckable`/`IsChecked` (toggle, `Checked` event), `InputGestureText`.
+  - `Menu : ItemsControl` — horizontal `Gtk.Box` of top-level `MenuItem`s.
+  - `ContextMenu : ItemsControl` — `Gtk.Popover`+vertical `Gtk.Box`; `IsOpen` (two-way, widget-creation-
+    gated), `Placement`; `FrameworkElement.ContextMenu` attached/instance DP.
+  - `ToolTip`/`ToolTipService` — `FrameworkElement.ToolTipProperty` attached DP (deferred to widget
+    creation via `UIElement.OnWidgetCreated` hook); `ToolTipService` static accessor. `UIElement` gains
+    `IsWidgetCreated` and `OnWidgetCreated(Gtk.Widget)` virtual hook.
+  - `ToolBar : HeaderedItemsControl` — horizontal `Gtk.Box`.
+  - `TreeViewItem : HeaderedItemsControl` — `Gtk.Expander`+vertical `Gtk.Box` children; `IsExpanded`
+    two-way (`AddNotification("expanded",…)`), `IsSelected` (DP, `Selected`/`Unselected` events).
+  - `TreeView : ItemsControl` — vertical `Gtk.Box` of `TreeViewItem`s; `SelectedItem` (two-way,
+    deselects previous), `SelectedItemChanged`; wires `TreeViewItem.Selected` to sync.
+  - `Popup (System.Windows.Controls.Primitives)` — `Gtk.Popover`; `IsOpen` (two-way, widget-creation-
+    gated), `Child`, `PlacementTarget`, `StaysOpen` (→ `Autohide`).
+  - **Existing `IsWidgetCreated` in `ContentControl`/`ContentPresenter`/`Panel`** shadowed with `new`
+    to suppress CS0108 (pre-existing pattern; equivalent to base).
+  - **GTK-widget choices + limitations**: `Menu` uses `Gtk.Box` not `Gtk.PopoverMenuBar` (requires
+    `Gio.Menu` model — deferred); `ContextMenu` uses plain `Gtk.Popover` not `Gtk.PopoverMenu`
+    (keyboard nav/accelerators deferred); `TreeView` uses nested `Gtk.Expander`/`Gtk.Box` not
+    `Gtk.TreeView`/`Gtk.ListView`+`Gtk.TreeExpander` (requires `Gio.ListModel` tree model — deferred).
+    `ToolBar` uses `Gtk.Box` not `Gtk.ActionBar` (start/center/end sections deferred).
+  - **67 new tests** (44 pure DP + 23 GTK smoke). **Round 6 totals: 749** (625 PresentationFramework +
+    68 MarkupCompiler + 40 WindowsBase + 16 ProjectConverter); all pass, no hang/crash on Windows.
 - **Carry-over (Round 5 Opus review — not addressed this round)**: compiler DP-vs-CLR resolution is a
   name heuristic (`IsKnownDp`: "is it in `System.Windows.*` and not on the CLR-only exclusion list?").
   Should be replaced with real assembly symbol resolution — load the referenced assemblies, reflect
