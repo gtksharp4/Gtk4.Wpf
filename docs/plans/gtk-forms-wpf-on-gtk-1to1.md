@@ -558,6 +558,18 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
 - **Round 9 totals (both tracks merged): 1008 tests** (40 WindowsBase + 820 PresentationFramework +
   132 MarkupCompiler + 16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample`
   (unmodified WPF) still compiles.
+- **Round 9 review (Opus) + fixes — DONE.** 2 High + Mediums (regressions the CollectionView wiring and
+  string-target storyboards introduced), all fixed with pins on the real runtime path: **U1** `ListBox`/
+  `TabControl` **preserve selection** across INCC collection changes (Add/Remove/filter/sort no longer silently
+  clear the selection; only a genuinely-removed selected item clears); **U2** a real `UIElement.Opacity` DP is
+  registered (→ `Gtk.Widget.Opacity`) so string-`TargetProperty` storyboards actually animate (was a silent
+  no-op — `FindByName("Opacity")` returned null); `Storyboard.Begin` now **throws** a clear diagnostic on an
+  unresolvable target property; **U3** parenthesized/dotted `TargetProperty` (`(UIElement.Opacity)`) normalized;
+  **U4** a plain two-way binding does **zero** validation work (was allocating + writing `Validation.Errors`/
+  `HasError` every write-back); **U5** `ListCollectionView` keeps null items (WPF parity); **U6**
+  `CollectionViewSource` instance `SortDescriptions`/`GroupDescriptions` forwarded into its `View`; **U7** nits.
+  **Round 9 totals: 1024 tests** (40 WindowsBase + 836 PresentationFramework + 132 MarkupCompiler +
+  16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample` (unmodified WPF) compiles.
 - **Carry-over (Round 5 Opus review — not addressed this round)**: compiler DP-vs-CLR resolution is a
   name heuristic (`IsKnownDp`: "is it in `System.Windows.*` and not on the CLR-only exclusion list?").
   Should be replaced with real assembly symbol resolution — load the referenced assemblies, reflect
