@@ -152,15 +152,21 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   (drop-in), and `Gtk.Forms.WpfSample` (unmodified WPF, compiles through the compiler). ~104 tests;
   blocking checks B1–B4 pass. Reviewed (no foundational defect); inheritance-on-reparent, leaks and
   compile-compat fixed.
-- **Phase 1 — DONE.** Full two-way binding (`TwoWay`, `OneTime`, `OneWayToSource`);
-  `ConvertBack` on write-back; `ElementName` resolution; reentrancy guard. New partial
-  `FrameworkElement.Binding.cs` routes DP changes into `TargetChangeTracker`; `BindingExpressionBase`
-  stub added. `XamlCodeGenerator` upgraded: full WPF binding syntax (`{Binding Path=X, Mode=TwoWay,
-  ElementName=e}`, positional path, empty `{Binding}`, Converter emits TODO). ~40 PF tests,
-  ~28 compiler tests.
-- **Carry-over into Phase 2**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in
-  xmlns map); full attribute type-converter resolution in the compiler; `BindingExpression` live object;
-  `Converter={StaticResource …}` in the compiler.
+- **Phase 1 Round 1 — DONE** (binding + controls + layout; **203 tests total**, sample still compiles):
+  - *Two-way binding*: `TwoWay`/`OneTime`/`OneWayToSource`, `ConvertBack`, `ElementName`, reentrancy
+    guard (`FrameworkElement.Binding.cs` + `TargetChangeTracker`); compiler `{Binding Path=X, Mode=…,
+    ElementName=…}` syntax.
+  - *Controls*: `TextBox`/`CheckBox`/`RadioButton`/`ComboBox`/`Image`/`Border`/`Label` on real GtkSharp 4
+    widgets (`Gtk.Entry`/`Gtk.CheckButton`/`Gtk.DropDown`/`Gtk.Image`/`Gtk.Frame`), two-way where WPF is.
+  - *Layout*: `DockPanel`/`Canvas`/`WrapPanel` + attached props (`DockPanel.Dock`, `Canvas.Left/Top`);
+    `Grid` row/col `Definitions` + `Grid.Row/Column` attached props; `GridLength`/`GridUnitType`.
+    GTK-backing approximations noted (Star/Auto sizing, dock geometry) — faithful `Measure`/`Arrange`
+    is a later refinement.
+- **Phase 1 Round 2 — pending**: `ResourceDictionary` (tree + merged + `Application.Resources`),
+  `Style`/`Setter`/`BasedOn`/implicit, `{StaticResource}`/`{DynamicResource}` + `<X.Resources>` in the
+  compiler; plus the carry-overs below.
+- **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
+  full attribute type-converter resolution; `BindingExpression` live object; `Converter={StaticResource}`.
 
 ## Phased roadmap (after Phase 0 proves the spine)
 
