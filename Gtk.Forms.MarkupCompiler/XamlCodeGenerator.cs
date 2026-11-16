@@ -189,7 +189,12 @@ namespace Gtk.Forms.MarkupCompiler
 				string propName = attr.Name.LocalName;
 				string val = attr.Value;
 
-				if (IsBindingExpression(val, out string bindingInit))
+				if (IsTemplateBindingExpression(val, out string tbBindingInit))
+				{
+					string fqType = string.IsNullOrEmpty(rootFqType) ? "this" : rootFqType;
+					w.Line($"this.SetBinding({fqType}.{propName}Property, {tbBindingInit});");
+				}
+				else if (IsBindingExpression(val, out string bindingInit))
 				{
 					string fqType = string.IsNullOrEmpty(rootFqType) ? "this" : rootFqType;
 					w.Line($"this.SetBinding({fqType}.{propName}Property, {bindingInit});");
@@ -416,7 +421,9 @@ namespace Gtk.Forms.MarkupCompiler
 					continue;
 				}
 
-				if (IsBindingExpression(val, out string bindingInit))
+				if (IsTemplateBindingExpression(val, out string tbBindingInit))
+					w.Line($"{varName}.SetBinding({fqType}.{propName}Property, {tbBindingInit});");
+				else if (IsBindingExpression(val, out string bindingInit))
 					w.Line($"{varName}.SetBinding({fqType}.{propName}Property, {bindingInit});");
 				else if (IsStaticOrDynamicResource(val, out string resourceKey))
 				{

@@ -351,6 +351,35 @@ namespace Gtk.Forms.MarkupCompiler
 		}
 
 		/// <summary>
+		/// Returns <c>true</c> when <paramref name="value"/> is a
+		/// <c>{TemplateBinding Property}</c> markup extension.
+		/// Sets <paramref name="bindingInit"/> to a C# <see cref="System.Windows.Data.Binding"/>
+		/// expression that binds in one-way mode against
+		/// <see cref="System.Windows.Data.RelativeSource.TemplatedParent"/>.
+		/// </summary>
+		internal static bool IsTemplateBindingExpression(string value, out string bindingInit)
+		{
+			bindingInit = null;
+			if (value == null) return false;
+			string trimmed = value.Trim();
+			if (!trimmed.StartsWith("{TemplateBinding", StringComparison.Ordinal)) return false;
+			if (!trimmed.EndsWith("}")) return false;
+
+			// Extract the property name (the positional argument after {TemplateBinding).
+			string inner = trimmed
+				.Substring("{TemplateBinding".Length, trimmed.Length - "{TemplateBinding".Length - 1)
+				.Trim();
+
+			if (string.IsNullOrEmpty(inner)) return false;
+
+			// {TemplateBinding Prop} → new Binding("Prop") { RelativeSource = RS.TemplatedParent, Mode = OneWay }
+			bindingInit = "new System.Windows.Data.Binding(\"" + EscapeString(inner) + "\") { "
+				+ "RelativeSource = System.Windows.Data.RelativeSource.TemplatedParent, "
+				+ "Mode = System.Windows.Data.BindingMode.OneWay }";
+			return true;
+		}
+
+		/// <summary>
 		/// Splits binding arguments on commas, respecting nested braces.
 		/// e.g. <c>Path=X, Mode=TwoWay, Converter={StaticResource c}</c>
 		/// produces three tokens.

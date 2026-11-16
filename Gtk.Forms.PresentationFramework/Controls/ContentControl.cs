@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Markup;
 
 namespace System.Windows.Controls
@@ -84,5 +86,9 @@ namespace System.Windows.Controls
 			_box.Add(_label);
 			return _box;
 		}
+
+		/// <inheritdoc/>
+		internal override IEnumerable<UIElement> VisualChildren =>
+			Content is UIElement child ? new[] { child } : Enumerable.Empty<UIElement>();
 	}
 }
