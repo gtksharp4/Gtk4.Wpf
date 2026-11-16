@@ -278,6 +278,18 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   scRGB). **Round 4 totals: 556 tests** (40 WindowsBase + 453 PresentationFramework + 47 MarkupCompiler +
   16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample` (unmodified WPF) still
   compiles.
+- **Round 5 Track B — common WPF controls (DONE).** `HeaderedContentControl` (base for `Expander`/`GroupBox`/`TabItem`);
+  `ScrollViewer` (`Gtk.ScrolledWindow`, `HorizontalScrollBarVisibility`/`VerticalScrollBarVisibility` → `PolicyType`);
+  `TabControl`/`TabItem` (`Gtk.Notebook`; `SelectedIndex`/`SelectedItem`/`SelectionChanged`, two-way with reentrancy guard);
+  `Expander` (`Gtk.Expander`; `IsExpanded` two-way via `AddNotification("expanded",…)`, `Expanded`/`Collapsed` events);
+  `GroupBox` (`Gtk.Frame` with label-widget header); `Slider` (`Gtk.Scale`; `Minimum`/`Maximum`/`Value` clamped via
+  `CoerceValueCallback` lambda, `Orientation`, `ValueChanged`, two-way); `ProgressBar` (`Gtk.ProgressBar`;
+  `Minimum`/`Maximum`/`Value` as fraction, `IsIndeterminate` → `Pulse`); `Separator` (`Gtk.Separator`, `Orientation`);
+  `ToggleButton` (`Gtk.ToggleButton`; `IsChecked` two-way, `Checked`/`Unchecked`; derives from `ContentControl`
+  — no `ButtonBase` in this phase). **66 new tests** (40 pure DP + 26 GTK smoke). **Round 5 totals: 519
+  PresentationFramework** (622 total across all suites); all pass, no hang/crash on Windows.
+  *GTK note*: `Gtk.ScrolledWindow.Child` wraps the content in a `Gtk.Viewport` automatically — tests assert
+  `viewport.Child` not `sw.Child` directly.
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
   full attribute type-converter resolution (typed `Setter.Value`/resource values); `BindingExpression`
   live object; `Converter={StaticResource}`; true `{DynamicResource}` change-tracking; XAML
