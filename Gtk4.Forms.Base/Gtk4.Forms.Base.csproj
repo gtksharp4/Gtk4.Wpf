@@ -51,10 +51,14 @@
 		  bin/$(Configuration)/net8.0/ before this project packs (the None glob below needs it).
 		  ReferenceOutputAssembly=false keeps its assembly out of our compile; PrivateAssets=all
 		  keeps it out of the nuspec dependency list — consumers do not need it at restore time,
-		  only at build time via the packed tools/.
+		  only at build time via the packed tools/. SkipGetTargetFrameworkProperties=true suppresses
+		  the cross-TFM compatibility check: this netstandard2.0 project only needs the net8.0 tool to
+		  BUILD first, it never references its output, so the normal "net8.0 cannot be referenced by
+		  netstandard2.0" error must not apply.
 		-->
 		<ProjectReference Include="..\Gtk4.Forms.ProjectConverter\Gtk4.Forms.ProjectConverter.csproj"
 		                  ReferenceOutputAssembly="false"
+		                  SkipGetTargetFrameworkProperties="true"
 		                  PrivateAssets="all" />
 	</ItemGroup>
 
