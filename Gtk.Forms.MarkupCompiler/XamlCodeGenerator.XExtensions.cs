@@ -32,8 +32,17 @@ namespace Gtk.Forms.MarkupCompiler
 		/// Returns <c>true</c> when <paramref name="value"/> is <c>{x:Type LocalName}</c>
 		/// or <c>{x:Type prefix:LocalName}</c>.
 		/// Sets <paramref name="typeofExpr"/> to <c>typeof(global::Ns.Type)</c>.
+		/// <paramref name="prefixMap"/> maps xmlns prefixes to CLR namespaces
+		/// (<c>clr-namespace:MyApp</c> form); may be <c>null</c>.
 		/// </summary>
-		internal static bool IsXType(string value, out string typeofExpr)
+		/// <exception cref="XamlCodeGeneratorException">
+		/// Thrown when the type cannot be resolved via either the prefix map or
+		/// <see cref="WpfXmlnsMap"/>.
+		/// </exception>
+		internal static bool IsXType(
+			string value,
+			out string typeofExpr,
+			IReadOnlyDictionary<string, string> prefixMap = null)
 		{
 			typeofExpr = null;
 			if (value == null) return false;
@@ -47,11 +56,12 @@ namespace Gtk.Forms.MarkupCompiler
 
 			if (string.IsNullOrEmpty(inner)) return false;
 
-			// Strip optional prefix ("ns:Button" → "Button")
+			// Separate optional prefix from local name ("ns:Button" → prefix="ns", local="Button").
 			int colon = inner.IndexOf(':');
+			string prefix = colon >= 0 ? inner.Substring(0, colon).Trim() : string.Empty;
 			string localName = colon >= 0 ? inner.Substring(colon + 1).Trim() : inner;
 
-			string fqType = WpfXmlnsMap.Resolve(localName) ?? localName;
+			string fqType = ResolveXType(prefix, localName, prefixMap, errorOnUnresolvableBare: true);
 			typeofExpr = $"typeof(global::{fqType})";
 			return true;
 		}
@@ -62,8 +72,16 @@ namespace Gtk.Forms.MarkupCompiler
 		/// Returns <c>true</c> when <paramref name="value"/> is
 		/// <c>{x:Static prefix:Type.Member}</c> or <c>{x:Static Type.Member}</c>.
 		/// Sets <paramref name="staticExpr"/> to <c>global::Ns.Type.Member</c>.
+		/// <paramref name="prefixMap"/> maps xmlns prefixes to CLR namespaces; may be <c>null</c>.
 		/// </summary>
-		internal static bool IsXStatic(string value, out string staticExpr)
+		/// <exception cref="XamlCodeGeneratorException">
+		/// Thrown when the type cannot be resolved via either the prefix map or
+		/// <see cref="WpfXmlnsMap"/>.
+		/// </exception>
+		internal static bool IsXStatic(
+			string value,
+			out string staticExpr,
+			IReadOnlyDictionary<string, string> prefixMap = null)
 		{
 			staticExpr = null;
 			if (value == null) return false;
@@ -77,22 +95,73 @@ namespace Gtk.Forms.MarkupCompiler
 
 			if (string.IsNullOrEmpty(inner)) return false;
 
-			// Strip optional xmlns prefix ("local:Foo.Bar" → "Foo.Bar")
+			// Separate optional xmlns prefix ("local:Foo.Bar" → prefix="local", rest="Foo.Bar").
 			int colon = inner.IndexOf(':');
+			string prefix = colon >= 0 ? inner.Substring(0, colon).Trim() : string.Empty;
 			string qualified = colon >= 0 ? inner.Substring(colon + 1).Trim() : inner;
 
-			// Must contain at least one dot (Type.Member)
+			// Must contain at least one dot (Type.Member).
 			int dot = qualified.LastIndexOf('.');
 			if (dot <= 0) return false;
 
 			string typePart = qualified.Substring(0, dot);
 			string member = qualified.Substring(dot + 1);
 
-			// Resolve type part against the xmlns map; fall back to as-is.
-			string fqType = WpfXmlnsMap.Resolve(typePart) ?? typePart;
-
+			string fqType = ResolveXType(prefix, typePart, prefixMap);
 			staticExpr = $"global::{fqType}.{member}";
 			return true;
+		}
+
+		// ── Shared type resolution ────────────────────────────────────────────────
+
+		/// <summary>
+		/// Resolves a type name from an x: extension, given an optional xmlns prefix and local name.
+		/// Resolution order:
+		/// 1. If <paramref name="prefix"/> maps to a <c>clr-namespace:</c> entry in
+		///    <paramref name="prefixMap"/>, prepend that CLR namespace.
+		/// 2. Otherwise, try <see cref="WpfXmlnsMap.Resolve"/> (presentation-namespace map).
+		/// 3. If a prefix is present, <paramref name="prefixMap"/> was supplied (namespace context
+		///    is available), and the prefix is still not resolved, raise
+		///    <see cref="XamlCodeGeneratorException"/>.
+		/// 4. When <paramref name="errorOnUnresolvableBare"/> is true, no prefix, namespace context
+		///    supplied, bare name (no dots), and not in any map → raise
+		///    <see cref="XamlCodeGeneratorException"/> (V3: only for x:Type, not x:Static).
+		/// 5. Otherwise return the local name as-is (global namespace fallback or no-context mode).
+		/// </summary>
+		static string ResolveXType(
+			string prefix,
+			string localName,
+			IReadOnlyDictionary<string, string> prefixMap,
+			bool errorOnUnresolvableBare = false)
+		{
+			// 1. User-defined clr-namespace prefix.
+			if (!string.IsNullOrEmpty(prefix) && prefixMap != null)
+			{
+				string clrNs;
+				if (prefixMap.TryGetValue(prefix, out clrNs) &&
+					!string.IsNullOrEmpty(clrNs))
+					return clrNs + "." + localName;
+			}
+
+			// 2. Built-in WPF presentation map (handles "Button" → "System.Windows.Controls.Button").
+			string mapped = WpfXmlnsMap.Resolve(localName);
+			if (mapped != null) return mapped;
+
+			// 3. Prefix present, namespace context supplied, but prefix not found → diagnostic.
+			if (!string.IsNullOrEmpty(prefix) && prefixMap != null)
+				throw new XamlCodeGeneratorException(
+					$"Cannot resolve x: type '{prefix}:{localName}': " +
+					$"xmlns prefix '{prefix}' is not declared or does not map to a CLR namespace.");
+
+			// 4. V3: x:Type only — bare name, namespace context available, not in any map → diagnostic.
+			if (errorOnUnresolvableBare &&
+				string.IsNullOrEmpty(prefix) && prefixMap != null && localName.IndexOf('.') < 0)
+				throw new XamlCodeGeneratorException(
+					$"Cannot resolve x: type '{localName}': not in the WPF presentation namespace. " +
+					$"Add an xmlns:prefix declaration mapping to the type's CLR namespace.");
+
+			// 5. Fallback: return as-is (prefix stripped; no namespace context, or FQ name with dots).
+			return localName;
 		}
 
 		// ── x:Array (element form) ───────────────────────────────────────────────

@@ -11,6 +11,11 @@ namespace Gtk.Forms.MarkupCompiler
 	/// <c>DependencyProperty</c> (a public static field named <c>&lt;Prop&gt;Property</c>
 	/// whose type name contains "DependencyProperty") or a plain CLR property.
 	/// <para>
+	/// Assemblies are loaded via <c>Assembly.Load(File.ReadAllBytes(path))</c> so that
+	/// the files are read and immediately released — no file locks are held after the
+	/// constructor returns.
+	/// </para>
+	/// <para>
 	/// When <paramref name="referencePaths"/> is empty the resolver immediately falls back
 	/// to the name heuristic so existing unit tests (which supply no references) keep passing.
 	/// </para>
@@ -24,6 +29,12 @@ namespace Gtk.Forms.MarkupCompiler
 		readonly List<Assembly> _loaded = new List<Assembly>();
 		readonly bool _hasReferences;
 
+		// simple-name → Assembly lookup for the AssemblyResolve handler.
+		readonly Dictionary<string, Assembly> _byName =
+			new Dictionary<string, Assembly>(StringComparer.OrdinalIgnoreCase);
+
+		ResolveEventHandler _resolveHandler;
+
 		internal DpSymbolResolver(IReadOnlyList<string> referencePaths)
 		{
 			if (referencePaths == null || referencePaths.Count == 0)
@@ -33,17 +44,41 @@ namespace Gtk.Forms.MarkupCompiler
 			}
 
 			_hasReferences = true;
+
+			// Load ALL reference paths up-front with ReadAllBytes so that the
+			// source files are closed immediately (no lock is held after the ctor).
 			foreach (string path in referencePaths)
 			{
 				if (!File.Exists(path)) continue;
 				try
 				{
-					// Load via LoadFrom so the assembly resolves its own dependencies.
-					Assembly asm = Assembly.LoadFrom(path);
+					byte[] bytes = File.ReadAllBytes(path);
+					Assembly asm = Assembly.Load(bytes);
 					_loaded.Add(asm);
+					// Register under the simple name so the resolve handler can serve it.
+					string simpleName = asm.GetName().Name ?? string.Empty;
+					if (!_byName.ContainsKey(simpleName))
+						_byName[simpleName] = asm;
 				}
 				catch { /* skip unloadable (native, strong-name mismatch, etc.) */ }
 			}
+
+			// AppDomain.CurrentDomain.AssemblyResolve is used (not AssemblyLoadContext.Default.Resolving)
+			// because the task targets netstandard2.0, where AssemblyLoadContext is not available on all
+			// host runtimes (older MSBuild nodes). AppDomain.AssemblyResolve is universally available.
+			_resolveHandler = OnAssemblyResolve;
+			AppDomain.CurrentDomain.AssemblyResolve += _resolveHandler;
+		}
+
+		Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+		{
+			// args.Name is the full AssemblyName string; extract the simple name.
+			string fullName = args.Name ?? string.Empty;
+			int comma = fullName.IndexOf(',');
+			string simpleName = comma >= 0 ? fullName.Substring(0, comma).Trim() : fullName.Trim();
+			Assembly result;
+			_byName.TryGetValue(simpleName, out result);
+			return result;
 		}
 
 		/// <summary>
@@ -60,31 +95,67 @@ namespace Gtk.Forms.MarkupCompiler
 				ResolveIsDP(key.Item1, key.Item2));
 		}
 
+		/// <summary>
+		/// Returns the CLR <see cref="Type"/> of <paramref name="propName"/> on
+		/// <paramref name="typeFullName"/>, or <c>null</c> when the type cannot be found
+		/// or the property does not exist.
+		/// </summary>
+		internal Type GetPropertyType(string typeFullName, string propName)
+		{
+			if (!_hasReferences) return null;
+			try
+			{
+				Type owner = FindType(typeFullName);
+				if (owner == null) return null;
+				// Walk up the hierarchy in case the property is declared on a base type.
+				Type current = owner;
+				while (current != null)
+				{
+					PropertyInfo pi = current.GetProperty(
+						propName,
+						BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+					if (pi != null) return pi.PropertyType;
+					try { current = current.BaseType; }
+					catch { break; }
+				}
+				return null;
+			}
+			catch { return null; }
+		}
+
 		bool ResolveIsDP(string typeFullName, string propName)
 		{
-			string fieldName = propName + "Property";
-
-			Type type = FindType(typeFullName);
-			if (type == null)
-				return FallbackHeuristic(typeFullName, propName);
-
-			// Walk the inheritance chain (handles inherited DPs declared on a base type).
-			Type current = type;
-			while (current != null)
+			try
 			{
-				FieldInfo field = current.GetField(
-					fieldName,
-					BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly);
+				string fieldName = propName + "Property";
 
-				if (field != null && IsDependencyPropertyType(field.FieldType))
-					return true;
+				Type type = FindType(typeFullName);
+				if (type == null)
+					return FallbackHeuristic(typeFullName, propName);
 
-				try { current = current.BaseType; }
-				catch { break; }
+				// Walk the inheritance chain (handles inherited DPs declared on a base type).
+				Type current = type;
+				while (current != null)
+				{
+					FieldInfo field = current.GetField(
+						fieldName,
+						BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly);
+
+					if (field != null && IsDependencyPropertyType(field.FieldType))
+						return true;
+
+					try { current = current.BaseType; }
+					catch { break; }
+				}
+
+				// Not a DP field → CLR property.
+				return false;
 			}
-
-			// Not a DP field → CLR property.
-			return false;
+			catch
+			{
+				// Never let a load/resolution failure abort the compile — fall back.
+				return FallbackHeuristic(typeFullName, propName);
+			}
 		}
 
 		/// <summary>
@@ -125,7 +196,19 @@ namespace Gtk.Forms.MarkupCompiler
 				fqType.StartsWith("System.Windows", StringComparison.Ordinal);
 		}
 
-		/// <summary>No unmanaged resources; just clears the loaded-assembly list.</summary>
-		public void Dispose() => _loaded.Clear();
+		/// <summary>
+		/// Removes the <see cref="AppDomain.AssemblyResolve"/> handler and clears the
+		/// loaded-assembly list. No unmanaged resources are held.
+		/// </summary>
+		public void Dispose()
+		{
+			if (_resolveHandler != null)
+			{
+				AppDomain.CurrentDomain.AssemblyResolve -= _resolveHandler;
+				_resolveHandler = null;
+			}
+			_loaded.Clear();
+			_byName.Clear();
+		}
 	}
 }

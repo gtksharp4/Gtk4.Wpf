@@ -22,15 +22,17 @@ namespace System.Windows.Documents
 		/// <inheritdoc/>
 		internal override void AppendMarkup(System.Text.StringBuilder sb)
 		{
-			bool hasFg = Foreground is SolidColorBrush scb;
+			bool hasFg = Foreground is SolidColorBrush;
 			bool hasBold = FontWeight.HasValue && FontWeight.Value == FontWeights.Bold;
 			bool hasItalic = FontStyle.HasValue && FontStyle.Value == FontStyles.Italic;
+			string? weightSpan = GetPangoWeightSpan(FontWeight);
 
 			if (hasFg)
 			{
 				var color = ((SolidColorBrush)Foreground!).Color;
 				sb.Append($"<span foreground=\"#{color.R:X2}{color.G:X2}{color.B:X2}\">");
 			}
+			if (weightSpan != null) sb.Append(weightSpan);
 			if (hasBold) sb.Append("<b>");
 			if (hasItalic) sb.Append("<i>");
 
@@ -38,7 +40,34 @@ namespace System.Windows.Documents
 
 			if (hasItalic) sb.Append("</i>");
 			if (hasBold) sb.Append("</b>");
+			if (weightSpan != null) sb.Append("</span>");
 			if (hasFg) sb.Append("</span>");
+		}
+
+		/// <summary>
+		/// Returns a Pango <c>&lt;span weight='…'&gt;</c> open tag for non-Normal, non-Bold weights,
+		/// or <c>null</c> when no weight span is needed (Normal/Bold/unset).
+		/// Bold (700) is handled by the <c>&lt;b&gt;</c> path; Normal (400) emits nothing.
+		/// </summary>
+		static string? GetPangoWeightSpan(FontWeight? fontWeight)
+		{
+			if (!fontWeight.HasValue) return null;
+			int w = fontWeight.Value.Weight;
+			// Bold handled by <b> tag; Normal needs no markup.
+			if (w == 700 || w == 400) return null;
+			// Map to Pango named weights where available; fall back to numeric.
+			string pangoWeight = w switch
+			{
+				100 => "ultralight",
+				200 => "ultralight",
+				300 => "light",
+				500 => "medium",
+				600 => "semibold",
+				800 => "ultrabold",
+				900 => "heavy",
+				_ => w.ToString()
+			};
+			return $"<span weight='{pangoWeight}'>";
 		}
 	}
 

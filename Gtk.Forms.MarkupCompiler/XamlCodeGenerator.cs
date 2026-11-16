@@ -61,6 +61,7 @@ namespace Gtk.Forms.MarkupCompiler
 			}
 
 			XNamespace xNs = GetXNamespace(root);
+			_prefixMap = CollectXmlnsPrefixMap(root);
 			XAttribute classAttr = root.Attribute(xNs + "Class");
 			if (classAttr == null)
 			{
@@ -143,7 +144,41 @@ namespace Gtk.Forms.MarkupCompiler
 
 		int _counter;
 
+		// xmlns prefix→CLR namespace map, populated per-Generate call.
+		Dictionary<string, string> _prefixMap = new Dictionary<string, string>(StringComparer.Ordinal);
+
 		// ------------------------------------------------------------------ helpers
+
+		/// <summary>
+		/// Collects <c>xmlns:prefix="clr-namespace:Foo[;assembly=Bar]"</c> declarations
+		/// from <paramref name="root"/> into a prefix→CLR-namespace dictionary.
+		/// Only <c>clr-namespace:</c> URIs are stored; WPF presentation/x: namespaces are skipped.
+		/// </summary>
+		static Dictionary<string, string> CollectXmlnsPrefixMap(XElement root)
+		{
+			var map = new Dictionary<string, string>(StringComparer.Ordinal);
+			foreach (XAttribute a in root.Attributes())
+			{
+				if (!a.IsNamespaceDeclaration) continue;
+				// Namespace-declaration attributes have a.Name.LocalName == "prefix"
+				// (or "xmlns" for the default namespace).
+				string prefix = a.Name.LocalName;
+				if (prefix == "xmlns") continue; // default namespace — no prefix
+
+				string uri = a.Value ?? string.Empty;
+				if (!uri.StartsWith("clr-namespace:", StringComparison.Ordinal)) continue;
+
+				// Parse "clr-namespace:MyApp;assembly=MyApp" → "MyApp"
+				string clrPart = uri.Substring("clr-namespace:".Length);
+				int semi = clrPart.IndexOf(';');
+				if (semi >= 0) clrPart = clrPart.Substring(0, semi);
+				clrPart = clrPart.Trim();
+
+				if (!string.IsNullOrEmpty(clrPart) && !map.ContainsKey(prefix))
+					map[prefix] = clrPart;
+			}
+			return map;
+		}
 
 		static XNamespace GetXNamespace(XElement root)
 		{
@@ -231,16 +266,16 @@ namespace Gtk.Forms.MarkupCompiler
 					if (!string.IsNullOrEmpty(rootFqType) && IsKnownDp(rootFqType, propName))
 						w.Line($"this.SetValue({rootFqType}.{propName}Property, null);");
 					else
-						w.Line($"this.{propName} = null;");
+						w.Line($"this.{propName} = {NullExprForClrProp(rootFqType, propName)};");
 				}
-				else if (IsXType(val, out string typeofExpr))
+				else if (IsXType(val, out string typeofExpr, _prefixMap))
 				{
 					if (!string.IsNullOrEmpty(rootFqType) && IsKnownDp(rootFqType, propName))
 						w.Line($"this.SetValue({rootFqType}.{propName}Property, {typeofExpr});");
 					else
 						w.Line($"this.{propName} = {typeofExpr};");
 				}
-				else if (IsXStatic(val, out string staticExpr))
+				else if (IsXStatic(val, out string staticExpr, _prefixMap))
 				{
 					if (!string.IsNullOrEmpty(rootFqType) && IsKnownDp(rootFqType, propName))
 						w.Line($"this.SetValue({rootFqType}.{propName}Property, {staticExpr});");
@@ -303,6 +338,23 @@ namespace Gtk.Forms.MarkupCompiler
 				return "false";
 
 			return $"\"{EscapeString(val)}\"";
+		}
+
+		/// <summary>
+		/// Returns the C# expression for <c>{x:Null}</c> on a plain CLR property.
+		/// When the resolver can determine that <paramref name="propName"/> on
+		/// <paramref name="ownerFqType"/> is a non-nullable value type, emits
+		/// <c>default(T)</c>; otherwise emits <c>null</c>.
+		/// </summary>
+		string NullExprForClrProp(string ownerFqType, string propName)
+		{
+			if (!string.IsNullOrEmpty(ownerFqType))
+			{
+				Type propType = _resolver.GetPropertyType(ownerFqType, propName);
+				if (propType != null && propType.IsValueType && Nullable.GetUnderlyingType(propType) == null)
+					return $"default({propType.FullName})";
+			}
+			return "null";
 		}
 
 		/// <summary>
@@ -483,16 +535,16 @@ namespace Gtk.Forms.MarkupCompiler
 					if (IsKnownDp(fqType, propName))
 						w.Line($"{varName}.SetValue({fqType}.{propName}Property, null);");
 					else
-						w.Line($"{varName}.{propName} = null;");
+						w.Line($"{varName}.{propName} = {NullExprForClrProp(fqType, propName)};");
 				}
-				else if (IsXType(val, out string typeofExpr))
+				else if (IsXType(val, out string typeofExpr, _prefixMap))
 				{
 					if (IsKnownDp(fqType, propName))
 						w.Line($"{varName}.SetValue({fqType}.{propName}Property, {typeofExpr});");
 					else
 						w.Line($"{varName}.{propName} = {typeofExpr};");
 				}
-				else if (IsXStatic(val, out string staticExpr))
+				else if (IsXStatic(val, out string staticExpr, _prefixMap))
 				{
 					if (IsKnownDp(fqType, propName))
 						w.Line($"{varName}.SetValue({fqType}.{propName}Property, {staticExpr});");
