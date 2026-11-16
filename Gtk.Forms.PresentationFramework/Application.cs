@@ -16,6 +16,22 @@ namespace System.Windows
 	{
 		GLib.MainLoop? _loop;
 
+		// ── Current ──────────────────────────────────────────────────────────────
+
+		/// <summary>
+		/// The running <see cref="Application"/> instance. Set in the constructor;
+		/// available for resource lookup from anywhere in the tree.
+		/// </summary>
+		public static Application? Current { get; private set; }
+
+		/// <summary>Initialises the application and sets <see cref="Current"/>.</summary>
+		public Application()
+		{
+			Current = this;
+		}
+
+		// ─────────────────────────────────────────────────────────────────────────
+
 		/// <summary>The main window shown when <see cref="Run()"/> is called.</summary>
 		public Window? MainWindow { get; set; }
 

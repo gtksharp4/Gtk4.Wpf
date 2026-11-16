@@ -91,6 +91,8 @@ namespace Gtk.Forms.MarkupCompiler
 			w.Line("if (_contentLoaded) return;");
 			w.Line("_contentLoaded = true;");
 
+			// Emit root resources BEFORE attributes/children so {StaticResource} resolves.
+			EmitResources(w, root, xNs, "this", ref _counter);
 			EmitRootAttributes(w, root, xNs);
 			EmitChildren(w, root, xNs, "this", ref _counter);
 
@@ -190,6 +192,17 @@ namespace Gtk.Forms.MarkupCompiler
 					string fqType = ResolveType(root) ?? "this";
 					w.Line($"this.SetBinding({fqType}.{propName}Property, {bindingInit});");
 				}
+				else if (IsStaticOrDynamicResource(val, out string resourceKey))
+				{
+					// Style="{StaticResource k}" special-case; generic for other props.
+					if (propName == "Style")
+						w.Line($"this.Style = (System.Windows.Style)this.FindResource(\"{EscapeString(resourceKey)}\");");
+					else
+					{
+						string fqType = ResolveType(root) ?? "this";
+						w.Line($"this.SetValue({fqType}.{propName}Property, this.FindResource(\"{EscapeString(resourceKey)}\"));");
+					}
+				}
 				else
 				{
 					w.Line($"this.{propName} = {ValueExpression(propName, val)};");
@@ -248,6 +261,8 @@ namespace Gtk.Forms.MarkupCompiler
 
 		/// <summary>
 		/// Recursively emits construction + wiring for direct children of <paramref name="parentVar"/>.
+		/// Property-element children (<c>Type.Property</c> local names) are skipped — resources
+		/// are handled by <see cref="EmitResources"/> before the element tree.
 		/// </summary>
 		void EmitChildren(
 			IndentedWriter w,
@@ -260,16 +275,27 @@ namespace Gtk.Forms.MarkupCompiler
 
 			foreach (XElement child in parent.Elements())
 			{
+				// Skip property-element syntax (e.g. <Window.Resources>).
+				if (child.Name.LocalName.IndexOf('.') >= 0) continue;
+
 				string fqType = ResolveType(child);
 				if (fqType == null) continue;
 
 				string varName = $"__e{counter++}";
+
+				// Emit resources on this element BEFORE constructing its children so
+				// {StaticResource} lookups on children resolve correctly.
+				// Resources are injected into a local ResourceDictionary expression below.
+
 				w.Line($"var {varName} = new {fqType}();");
 
 				// x:Name / Name field assignment
 				string xName = (string)(child.Attribute(xNs + "Name") ?? child.Attribute("Name"));
 				if (xName != null)
 					w.Line($"this.{xName} = {varName};");
+
+				// Emit <X.Resources> children first (before attr assignments that may reference them).
+				EmitResources(w, child, xNs, varName, ref counter);
 
 				// Attribute properties
 				foreach (XAttribute attr in child.Attributes())
@@ -283,6 +309,13 @@ namespace Gtk.Forms.MarkupCompiler
 
 					if (IsBindingExpression(val, out string bindingInit))
 						w.Line($"{varName}.SetBinding({fqType}.{propName}Property, {bindingInit});");
+					else if (IsStaticOrDynamicResource(val, out string resourceKey))
+					{
+						if (propName == "Style")
+							w.Line($"{varName}.Style = (System.Windows.Style){varName}.FindResource(\"{EscapeString(resourceKey)}\");");
+						else
+							w.Line($"{varName}.SetValue({fqType}.{propName}Property, {varName}.FindResource(\"{EscapeString(resourceKey)}\"));");
+					}
 					else
 						w.Line($"{varName}.{propName} = {ValueExpression(propName, val)};");
 				}
@@ -296,6 +329,149 @@ namespace Gtk.Forms.MarkupCompiler
 				else
 					w.Line($"{parentVar}.Content = {varName};");
 			}
+		}
+
+		/// <summary>
+		/// Emits code to populate <paramref name="ownerVar"/>.Resources from a
+		/// <c>&lt;Owner.Resources&gt;</c> property element (if present on <paramref name="element"/>).
+		/// Supports <c>&lt;Style x:Key="k" TargetType="T"&gt;&lt;Setter…/&gt;&lt;/Style&gt;</c>
+		/// and simple keyed values.
+		/// </summary>
+		void EmitResources(
+			IndentedWriter w,
+			XElement element,
+			XNamespace xNs,
+			string ownerVar,
+			ref int counter)
+		{
+			string localName = element.Name.LocalName;
+
+			// Find <LocalName.Resources> property element.
+			XElement resPropEl = null;
+			foreach (XElement ch in element.Elements())
+			{
+				if (ch.Name.LocalName == localName + ".Resources")
+				{ resPropEl = ch; break; }
+			}
+			if (resPropEl == null) return;
+
+			// The direct child may be a <ResourceDictionary> wrapper or the items directly.
+			// Collect the actual resource items.
+			System.Collections.Generic.IEnumerable<XElement> items;
+			XElement rdWrapper = null;
+			foreach (XElement ch in resPropEl.Elements())
+			{
+				if (ch.Name.LocalName == "ResourceDictionary"
+					&& ch.Name.NamespaceName == WpfXmlnsMap.PresentationNs)
+				{ rdWrapper = ch; break; }
+			}
+			items = rdWrapper != null ? rdWrapper.Elements() : resPropEl.Elements();
+
+			foreach (XElement item in items)
+			{
+				string key = (string)item.Attribute(xNs + "Key");
+				if (item.Name.LocalName == "Style"
+					&& item.Name.NamespaceName == WpfXmlnsMap.PresentationNs)
+				{
+					EmitStyleResource(w, item, xNs, ownerVar, key, ref counter);
+				}
+				else if (key != null)
+				{
+					// Simple keyed value — emit as string for now; type-converter is later.
+					string escapedKey = EscapeString(key);
+					string escapedVal = EscapeString(item.Value.Trim());
+					w.Line($"{ownerVar}.Resources[\"{escapedKey}\"] = \"{escapedVal}\";");
+				}
+			}
+		}
+
+		/// <summary>
+		/// Emits code that constructs a <see cref="System.Windows.Style"/> from a
+		/// <c>&lt;Style x:Key="k" TargetType="T"&gt;</c> element and assigns it to
+		/// <c><paramref name="ownerVar"/>.Resources["k"]</c>.
+		/// </summary>
+		void EmitStyleResource(
+			IndentedWriter w,
+			XElement styleEl,
+			XNamespace xNs,
+			string ownerVar,
+			string key,
+			ref int counter)
+		{
+			string styleVar = $"__style{counter++}";
+
+			// TargetType attribute.
+			string targetTypeAttr = (string)styleEl.Attribute("TargetType");
+			string targetTypeExpr = targetTypeAttr != null
+				? $"typeof({ResolveTargetType(targetTypeAttr)})"
+				: "null";
+
+			// BasedOn="{StaticResource k}" attribute.
+			string basedOnAttr = (string)styleEl.Attribute("BasedOn");
+			string basedOnKey = null;
+			if (basedOnAttr != null && IsStaticOrDynamicResource(basedOnAttr, out string bk))
+				basedOnKey = bk;
+
+			w.Line($"var {styleVar} = new System.Windows.Style({targetTypeExpr});");
+			if (basedOnKey != null)
+				w.Line($"{styleVar}.BasedOn = (System.Windows.Style){ownerVar}.FindResource(\"{EscapeString(basedOnKey)}\");");
+
+			// Setter children.
+			foreach (XElement ch in styleEl.Elements())
+			{
+				if (ch.Name.LocalName != "Setter") continue;
+				string propAttr = (string)ch.Attribute("Property");
+				string valAttr = (string)ch.Attribute("Value");
+				if (propAttr == null) continue;
+				// Value kept as string — type-converter resolution is a later phase (TODO).
+				string escapedProp = EscapeString(propAttr);
+				string valExpr = valAttr != null
+					? $"\"{EscapeString(valAttr)}\""
+					: "null";
+				w.Line($"{styleVar}.Setters.Add(new System.Windows.Setter {{ PropertyName = \"{escapedProp}\", Value = {valExpr} }});");
+			}
+
+			if (key != null)
+				w.Line($"{ownerVar}.Resources[\"{EscapeString(key)}\"] = {styleVar};");
+		}
+
+		/// <summary>
+		/// Resolves a <c>TargetType</c> attribute value ("Button", "ctrl:Button") to a
+		/// fully-qualified CLR type name, using the built-in presentation-namespace map.
+		/// Falls back to the raw value when the local name is not in the map.
+		/// </summary>
+		static string ResolveTargetType(string targetType)
+		{
+			// Strip optional namespace prefix (e.g. "ctrl:Button" → "Button").
+			int colon = targetType.IndexOf(':');
+			string localName = colon >= 0 ? targetType.Substring(colon + 1) : targetType;
+			string resolved = WpfXmlnsMap.Resolve(localName);
+			return resolved ?? localName;
+		}
+
+		/// <summary>
+		/// Returns <c>true</c> when <paramref name="value"/> is a
+		/// <c>{StaticResource key}</c> or <c>{DynamicResource key}</c> markup extension.
+		/// Sets <paramref name="resourceKey"/> to the key string.
+		/// <para>
+		/// DynamicResource is resolved like StaticResource at load time (Phase-0 pragmatic
+		/// approach — TODO: true dynamic tracking with change notifications is a later phase).
+		/// </para>
+		/// </summary>
+		static bool IsStaticOrDynamicResource(string value, out string resourceKey)
+		{
+			resourceKey = null;
+			if (value == null) return false;
+			string trimmed = value.Trim();
+			string prefix = null;
+			if (trimmed.StartsWith("{StaticResource", StringComparison.Ordinal))
+				prefix = "{StaticResource";
+			else if (trimmed.StartsWith("{DynamicResource", StringComparison.Ordinal))
+				prefix = "{DynamicResource";
+			if (prefix == null) return false;
+			if (!trimmed.EndsWith("}")) return false;
+			resourceKey = trimmed.Substring(prefix.Length).TrimEnd('}').Trim();
+			return !string.IsNullOrEmpty(resourceKey);
 		}
 
 		/// <summary>

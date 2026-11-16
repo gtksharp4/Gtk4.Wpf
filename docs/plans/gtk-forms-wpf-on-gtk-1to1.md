@@ -162,9 +162,24 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
     `Grid` row/col `Definitions` + `Grid.Row/Column` attached props; `GridLength`/`GridUnitType`.
     GTK-backing approximations noted (Star/Auto sizing, dock geometry) — faithful `Measure`/`Arrange`
     is a later refinement.
-- **Phase 1 Round 2 — pending**: `ResourceDictionary` (tree + merged + `Application.Resources`),
-  `Style`/`Setter`/`BasedOn`/implicit, `{StaticResource}`/`{DynamicResource}` + `<X.Resources>` in the
-  compiler; plus the carry-overs below.
+- **Phase 1 Round 2 — DONE** (resources + styles; **234 tests total**, sample still compiles):
+  - *ResourceDictionary*: real `IDictionary<object,object>`, `MergedDictionaries` (last-wins),
+    `TryGetValue`/`ContainsKey` check own then merged.
+  - *Resource lookup*: `FrameworkElement.FindResource`/`TryFindResource` walk the logical parent
+    chain (`InheritanceParent`) then `Application.Current.Resources`; `FindResource` throws when
+    absent; new partial `FrameworkElement.Resources.cs`.
+  - *Style*: `SetterBaseCollection`/`SetterBase`/`Setter` (DP or string `PropertyName`; `Value` kept
+    as `string` — type-converter is later TODO); `BasedOn` chain applied outermost-first; `StyleProperty`
+    DP on `FrameworkElement` applies on set; `ApplyImplicitStyle()` looks up a resource keyed by
+    `GetType()`.
+  - *Application.Current*: static property set in the ctor; accessible for resource lookup.
+  - *Compiler*: `<X.Resources>` property-element parsed (optional `<ResourceDictionary>` wrapper);
+    `<Style x:Key TargetType><Setter…/></Style>` → `new Style(typeof(…))` + `Setters.Add` + `Resources["k"]`
+    emitted BEFORE the element tree; `{StaticResource k}` / `{DynamicResource k}` on any attribute →
+    `FindResource("k")` call (`Style` attr → cast + `.Style =`; other attrs → `.SetValue`);
+    `BasedOn="{StaticResource k}"` → `.BasedOn` assignment; `WpfXmlnsMap` expanded with
+    all Phase-1 controls.
+  - *WindowsBase*: `DependencyProperty.FindByName(name, ownerType)` added for string-name setter resolution.
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
   full attribute type-converter resolution; `BindingExpression` live object; `Converter={StaticResource}`.
 

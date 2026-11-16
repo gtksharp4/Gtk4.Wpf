@@ -152,6 +152,27 @@ namespace System.Windows
 				return new List<DependencyProperty>(_inheritingRegistry);
 		}
 
+		/// <summary>
+		/// Finds a registered <see cref="DependencyProperty"/> by <paramref name="name"/>
+		/// for <paramref name="ownerType"/> (walks up the inheritance chain).
+		/// Returns <c>null</c> when no match is found.
+		/// </summary>
+		public static DependencyProperty? FindByName(string name, Type ownerType)
+		{
+			if (name == null) throw new ArgumentNullException(nameof(name));
+			if (ownerType == null) throw new ArgumentNullException(nameof(ownerType));
+			lock (_registryLock)
+			{
+				Type? t = ownerType;
+				while (t != null)
+				{
+					if (_registry.TryGetValue((name, t), out var dp)) return dp;
+					t = t.BaseType;
+				}
+			}
+			return null;
+		}
+
 		/// <summary>Returns the default default value for a type (0, false, null, etc.).</summary>
 		static object? GetDefaultDefault(Type t)
 		{
