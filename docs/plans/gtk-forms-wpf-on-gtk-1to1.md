@@ -406,9 +406,20 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
     (binding/resource helpers) to stay ≤200 lines per file.
   - **+16 PF tests** (`AdvancedBindingTests`); **+12 MarkupCompiler tests**
     (`XamlCodeGeneratorBindingR7Tests` + updated `Converter_StaticResource` test in Phase1Tests).
-  - **Round 7 totals: 815 tests** (40 WindowsBase + 658 PresentationFramework + 101 MarkupCompiler +
-    16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample` (unmodified WPF)
-    still compiles.
+  - **+16 PF + 12 MarkupCompiler tests.**
+- **Round 7 Track B — remaining common controls (DONE).** Runtime only; no compiler changes.
+  `PasswordBox` (`Gtk.PasswordEntry`; `Password` CLR prop + `PasswordChanged`), `RepeatButton`
+  (`Gtk.Button` + timer, repeats `Click`), `Thumb` (`Gtk.GestureDrag`; `DragStarted`/`DragDelta`/
+  `DragCompleted`), `GridSplitter` (`Gtk.GestureDrag`), `Viewbox` (`Gtk.AspectFrame`; `Child`/`Stretch`),
+  `UniformGrid : Panel` (`Gtk.Grid`; `Rows`/`Columns` auto-computed via `ComputeGrid`), `Calendar`
+  (`Gtk.Calendar`; `SelectedDate` two-way, `SelectedDatesChanged`), `DatePicker` (`Gtk.Entry`+`Gtk.MenuButton`
+  →`Gtk.Calendar` popover; `SelectedDate`/`Text`), `StatusBar : ItemsControl` (`Gtk.Box`), and a
+  **functional-minimal `DataGrid`** (`Gtk.ScrolledWindow`+`Gtk.Grid` of labels; `ItemsSource`, explicit
+  `Columns`/`DataGridTextColumn`, `AutoGenerateColumns` by reflection, `SelectedItem` — no editing/sorting/
+  virtualization yet). **+65 tests** (42 pure DP + 23 GTK smoke).
+- **Round 7 totals: 880 tests** (40 WindowsBase + 723 PresentationFramework + 101 MarkupCompiler +
+  16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample` (unmodified WPF)
+  still compiles.
 - **Carry-over (Round 5 Opus review — not addressed this round)**: compiler DP-vs-CLR resolution is a
   name heuristic (`IsKnownDp`: "is it in `System.Windows.*` and not on the CLR-only exclusion list?").
   Should be replaced with real assembly symbol resolution — load the referenced assemblies, reflect
