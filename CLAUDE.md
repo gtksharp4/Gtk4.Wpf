@@ -213,7 +213,7 @@ build target cannot retarget the build in progress — the first build rewrites,
 `SkipGtkConvert`/`SkipGtkHost` opt out. Still open: `Gtk4.Forms.Build.Tasks` must expose its XAML
 targets via `buildTransitive/` for a fully hands-off XAML consumer.
 
-**WPF-on-GTK compatibility layer (`Gtk.Forms.*`, Phase 0).** A separate, in-progress effort to run an
+**WPF-on-GTK compatibility layer (`Gtk.Forms.*`, Phase 1).** A separate, in-progress effort to run an
 **unmodified WPF** app (its `System.Windows.*` code and WPF XAML) on the GTK engine — no namespace or
 XAML changes. The types are reimplemented in the real `System.Windows.*` namespaces (projects named
 `Gtk.Forms.*`, own assembly names): `Gtk.Forms.WindowsBase` (the `DependencyObject`/`DependencyProperty`
@@ -224,10 +224,22 @@ property + routed-event system, pure netstandard2.0), `Gtk.Forms.PresentationFra
 makes the WPF xmlns resolve to our types). `Gtk.Forms.Base` is the one-package drop-in (+ a WPF
 `Gtk.Forms.ProjectConverter`: strip `UseWPF`, `net*-windows`→`net10.0`, `OutputType=Exe`).
 `Gtk.Forms.WpfSample` is an unmodified-WPF app that compiles through the compiler as the end-to-end
-proof. **This is Phase 0 of an aim-for-1:1 program** (full WPF is Avalonia-scale); the four suites
-(`Gtk.Forms.*.Tests`, ~104 tests) + the sample prove the vertical slice. Two-way binding, templates,
-triggers, the full control set and attribute-driven `XmlnsDefinition` resolution are later phases
-(marked `TODO (Phase 1)` in-code).
+proof. **Phase 0** proved the architecture (four controls, one-way binding, ~104 tests). **Phase 1**
+adds the core WPF control set under `Gtk.Forms.PresentationFramework/Controls/`:
+
+| Control | GTK backing | Notes |
+|---|---|---|
+| `TextBox` | `Gtk.Entry` | Two-way: GTK edits write back via `Changed` event |
+| `CheckBox` | `Gtk.CheckButton` | `IsChecked` (bool?); `Checked`/`Unchecked` events; two-way |
+| `RadioButton` | `Gtk.CheckButton` | `IsChecked`, `GroupName`; grouped via `CheckButton.Group` property |
+| `ComboBox` | `Gtk.DropDown` + `Gtk.StringList` | GTK4-native (not deprecated `ComboBoxText`); `ItemsSource`, `SelectedIndex`, `SelectedItem`, `SelectionChanged` |
+| `Image` | `Gtk.Image` | `System.Windows.Media.ImageSource` (Phase-1 file-path stub in `Media/ImageSource.cs`) |
+| `Border` | `Gtk.Frame` | `[ContentProperty("Child")]`; `BorderThickness`/`Padding` stored (CSS application Phase-2) |
+| `Label` | `Gtk.Box`+`Gtk.Label` | Thin `ContentControl` subclass; string content displayed in `Gtk.Label` |
+
+GTK4 widget choice note: `Gtk.DropDown` is used for `ComboBox` over the deprecated `Gtk.ComboBoxText`
+(the latter is a GTK3 compat shim, `[Obsolete]` in GtkSharp4). `Gtk.CheckButton.Group` is a property
+setter in GtkSharp4 (not a `SetGroup()` method). Test count: 80 (48 new: 24 pure DP + 24 GTK smoke).
 
 ## Coding style
 
