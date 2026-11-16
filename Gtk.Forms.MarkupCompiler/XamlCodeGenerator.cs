@@ -62,6 +62,7 @@ namespace Gtk.Forms.MarkupCompiler
 
 			XNamespace xNs = GetXNamespace(root);
 			_prefixMap = CollectXmlnsPrefixMap(root);
+			_ignorableNamespaces = CollectIgnorableNamespaces(root);
 			XAttribute classAttr = root.Attribute(xNs + "Class");
 			if (classAttr == null)
 			{
@@ -146,6 +147,12 @@ namespace Gtk.Forms.MarkupCompiler
 
 		// xmlns prefix→CLR namespace map, populated per-Generate call.
 		Dictionary<string, string> _prefixMap = new Dictionary<string, string>(StringComparer.Ordinal);
+
+		// Namespace URIs whose attributes/elements are stripped at compile time: the
+		// markup-compatibility namespace itself plus every prefix listed in mc:Ignorable
+		// (e.g. the d: design namespace). Populated per-document in Generate.
+		HashSet<string> _ignorableNamespaces =
+			new HashSet<string>(StringComparer.Ordinal) { WpfXmlnsMap.McNs };
 
 		// ------------------------------------------------------------------ helpers
 
@@ -236,9 +243,16 @@ namespace Gtk.Forms.MarkupCompiler
 			{
 				if (attr.IsNamespaceDeclaration) continue;
 				if (attr.Name.Namespace == xNs) continue; // x:Class etc.
+				if (IsIgnorableAttribute(attr)) continue;  // mc:Ignorable, d: design attrs
 
 				string propName = attr.Name.LocalName;
 				string val = attr.Value;
+
+				if (IsKnownEvent(rootFqType, propName))
+				{
+					w.Line($"this.{propName} += this.{val};");
+					continue;
+				}
 
 				if (IsTemplateBindingExpression(val, out string tbBindingInit))
 				{
@@ -422,6 +436,43 @@ namespace Gtk.Forms.MarkupCompiler
 		}
 
 		/// <summary>
+		/// Returns whether <paramref name="propName"/> is a CLR event on <paramref name="fqType"/>,
+		/// so a XAML <c>Event="Handler"</c> attribute is wired with <c>+= this.Handler</c> instead
+		/// of being emitted as a property assignment.
+		/// </summary>
+		bool IsKnownEvent(string fqType, string propName)
+		{
+			if (string.IsNullOrEmpty(fqType)) return false;
+			return _resolver.IsEvent(fqType, propName);
+		}
+
+		/// <summary>
+		/// Collects the namespace URIs to strip at compile time: the markup-compatibility
+		/// namespace, plus every prefix listed in the root's <c>mc:Ignorable</c> (resolved to its
+		/// declared URI, e.g. the <c>d:</c> Blend design namespace).
+		/// </summary>
+		static HashSet<string> CollectIgnorableNamespaces(XElement root)
+		{
+			var set = new HashSet<string>(StringComparer.Ordinal) { WpfXmlnsMap.McNs };
+
+			string ignorable = (string)root.Attribute(XNamespace.Get(WpfXmlnsMap.McNs) + "Ignorable");
+			if (!string.IsNullOrWhiteSpace(ignorable))
+			{
+				foreach (string prefix in ignorable.Split(
+					new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+				{
+					XNamespace ns = root.GetNamespaceOfPrefix(prefix);
+					if (ns != null) set.Add(ns.NamespaceName);
+				}
+			}
+			return set;
+		}
+
+		/// <summary>True when the attribute belongs to a compile-time-ignored namespace.</summary>
+		bool IsIgnorableAttribute(XAttribute attr) =>
+			_ignorableNamespaces.Contains(attr.Name.Namespace.NamespaceName);
+
+		/// <summary>
 		/// Recursively emits construction + wiring for direct children of <paramref name="parentVar"/>.
 		/// Regular children are constructed and attached; property-element children whose property
 		/// is a known template property (<c>Template</c>, <c>ItemTemplate</c>, <c>ContentTemplate</c>)
@@ -499,6 +550,7 @@ namespace Gtk.Forms.MarkupCompiler
 			{
 				if (attr.IsNamespaceDeclaration) continue;
 				if (attr.Name.Namespace == xNs) continue;
+				if (IsIgnorableAttribute(attr)) continue;  // mc:Ignorable, d: design attrs
 				if (attr.Name.LocalName == "Name") continue;
 
 				string propName = attr.Name.LocalName;
@@ -516,6 +568,13 @@ namespace Gtk.Forms.MarkupCompiler
 					w.Line($"{ownerFqType}.Set{attachedProp}({varName}, " +
 						$"({castType})System.Windows.Markup.XamlValueConverter.Convert(" +
 						$"typeof({ownerFqType}), {ownerFqType}.{attachedProp}Property, \"{EscapeString(val)}\"));");
+					continue;
+				}
+
+				// CLR event: Click="Handler" → element.Click += this.Handler;
+				if (IsKnownEvent(fqType, propName))
+				{
+					w.Line($"{varName}.{propName} += this.{val};");
 					continue;
 				}
 

@@ -123,6 +123,67 @@ namespace Gtk.Forms.MarkupCompiler
 			catch { return null; }
 		}
 
+		// (typeFullName, memberName) → true = CLR event.
+		readonly ConcurrentDictionary<(string, string), bool> _eventCache =
+			new ConcurrentDictionary<(string, string), bool>();
+
+		/// <summary>
+		/// Returns <c>true</c> when <paramref name="typeFullName"/>.<paramref name="memberName"/>
+		/// is a public CLR event (checked on the declaring type and all its base types), so a XAML
+		/// <c>Click="Handler"</c> attribute compiles to <c>+= Handler</c> rather than an assignment.
+		/// Falls back to a common-event-name heuristic when no references were supplied.
+		/// </summary>
+		internal bool IsEvent(string typeFullName, string memberName)
+		{
+			if (!_hasReferences)
+				return FallbackEventHeuristic(memberName);
+
+			return _eventCache.GetOrAdd((typeFullName, memberName), key =>
+				ResolveIsEvent(key.Item1, key.Item2));
+		}
+
+		bool ResolveIsEvent(string typeFullName, string memberName)
+		{
+			try
+			{
+				Type type = FindType(typeFullName);
+				if (type == null)
+					return FallbackEventHeuristic(memberName);
+
+				Type current = type;
+				while (current != null)
+				{
+					EventInfo ev = current.GetEvent(
+						memberName,
+						BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+					if (ev != null) return true;
+
+					try { current = current.BaseType; }
+					catch { break; }
+				}
+				return false;
+			}
+			catch
+			{
+				return FallbackEventHeuristic(memberName);
+			}
+		}
+
+		// Common WPF routed/CLR event names, used only when no reference assemblies were supplied
+		// (e.g. in unit tests). In a real build the reflection path above is authoritative.
+		static readonly HashSet<string> _commonEventNames =
+			new HashSet<string>(StringComparer.Ordinal)
+			{
+				"Click", "Checked", "Unchecked", "Loaded", "Unloaded", "Initialized",
+				"SelectionChanged", "TextChanged", "ValueChanged", "Closed", "Closing",
+				"GotFocus", "LostFocus", "KeyDown", "KeyUp",
+				"MouseDown", "MouseUp", "MouseEnter", "MouseLeave", "MouseMove",
+				"MouseLeftButtonDown", "MouseLeftButtonUp", "MouseDoubleClick",
+			};
+
+		internal static bool FallbackEventHeuristic(string memberName) =>
+			memberName != null && _commonEventNames.Contains(memberName);
+
 		bool ResolveIsDP(string typeFullName, string propName)
 		{
 			try

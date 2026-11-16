@@ -19,6 +19,12 @@ namespace Gtk.Forms.MarkupCompiler
 		/// <summary>Alternate XAML 2006 language namespace URI.</summary>
 		internal const string XNs2006 = "http://schemas.microsoft.com/winfx/2006/xaml";
 
+		/// <summary>
+		/// Markup-compatibility namespace URI (mc: prefix). Carries <c>mc:Ignorable</c>, whose
+		/// listed prefixes (e.g. the <c>d:</c> design namespace) are stripped at compile time.
+		/// </summary>
+		internal const string McNs = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+
 		static readonly Dictionary<string, string> _map = new Dictionary<string, string>
 		{
 			// System.Windows
