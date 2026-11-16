@@ -43,6 +43,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{2EBC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk4.Forms.ControlGallery", "Gtk4.Forms.ControlGallery\Gtk4.Forms.ControlGallery.csproj", "{03A51E5B-0A1E-41F0-AAE3-4B19406F7340}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{E761DD6D-09AC-4023-A4AC-49B259D26206}"
+	ProjectSection(SolutionItems) = preProject
+		docs\article-gtk4-forms-gtk.md = docs\article-gtk4-forms-gtk.md
+		docs\article-wpf-to-gtk4-forms.md = docs\article-wpf-to-gtk4-forms.md
+		docs\code-review.md = docs\code-review.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -223,6 +230,6 @@ Global
 		SolutionGuid = {F96F981E-4986-4435-A59E-5A4E4F806746}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{5a1a318e-90af-4b26-acaf-a124287bd221}*SharedItemsImports = 5
+		Gtk4.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{5a1a318e-90af-4b26-acaf-a124287bd221}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

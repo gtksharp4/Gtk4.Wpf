@@ -526,7 +526,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
-		const string BuildTasksPackageId = "Net4x.Xamarin.Forms.Build.Tasks";
+		const string BuildTasksPackageId = "Gtk4.Xamarin.Forms.Build.Tasks";
 
 		/// <summary>
 		/// The one thing every other test in this class cannot see: whether the PACKAGE works.

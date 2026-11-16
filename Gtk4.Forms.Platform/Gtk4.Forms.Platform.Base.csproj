@@ -23,7 +23,7 @@
     </ItemGroup>
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'"></PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'"></PropertyGroup>
-  <!-- macOS CI: the GitHub macOS-arm64 runner's netstandard2.0 targeting pack resolves to nothing, so
+    <!-- macOS CI: the GitHub macOS-arm64 runner's netstandard2.0 targeting pack resolves to nothing, so
        every compile fails with CS0518 "System.Object is not defined", and the SDK suppresses the
        NETStandard.Library package's own build targets (it treats the package as implicit). Disable the
        implicit framework reference and reference netstandard.dll explicitly from the restored package -
@@ -31,11 +31,13 @@
        pack ships), so netstandard.dll supplies the surface and the package's System.* facades dedupe
        any legacy facade a NuGet dependency drags in (e.g. Controls.Gtk -> System.Threading.Thread,
        which would otherwise collide: CS0433). No-op on Windows/Linux. -->
-  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-  </PropertyGroup>
-  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
-    <PackageReference Include="NETStandard.Library" Version="2.0.3" GeneratePathProperty="true" PrivateAssets="all" ExcludeAssets="build;buildTransitive" />
-    <Reference Include="$(PkgNETStandard_Library)/build/netstandard2.0/ref/*.dll" Private="false" />
-  </ItemGroup>
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+        <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="NETStandard.Library" Version="2.0.3" GeneratePathProperty="true" PrivateAssets="all" ExcludeAssets="build;buildTransitive" Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+    </ItemGroup>
+    <ItemGroup>
+        <Reference Include="$(PkgNETStandard_Library)/build/netstandard2.0/ref/*.dll" Private="false" Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+    </ItemGroup>
 </Project>

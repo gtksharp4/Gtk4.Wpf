@@ -11,7 +11,7 @@
         * NuGet.Utility.targets' PrepareGenerateNuspecPack runs BeforeTargets="GenerateNuspec",
           i.e. after Version.targets' SetVersions, and overwrote PackageVersion with
           $(VersionPrefix).$(VersionSuffix). Every nupkg packed on Windows was therefore stamped
-          5.0.0 whatever the commit - see Packages\Net4x.Xamarin.Forms.Platform.Gtk.5.0.0.nupkg -
+          5.0.0 whatever the commit - see Packages\Gtk4.Xamarin.Forms.Platform.Gtk.5.0.0.nupkg -
           while the same commit packed on CI as 5.0.1055+1055-sha.<sha>. Two different commits
           produced the same package identity, and the GitInfo/Version.targets machinery was dead
           weight on the only host that publishes.

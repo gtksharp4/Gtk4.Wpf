@@ -60,7 +60,7 @@
   </ItemGroup>
   <!--
     GTK4 port: the gallery consumes the backend through in-tree ProjectReferences rather than the
-    Net4x.*.Gtk4.* packages. This guarantees it runs against the current GTK4 source (the shipping
+    Gtk4.* packages. This guarantees it runs against the current GTK4 source (the shipping
     GtkSharp4-backed packages still pack on a normal build and are the deployment path) and sidesteps
     the "same version, changed content" NuGet-cache trap while the port is in flux. Maps.Gtk draws its
     own Cairo slippy map (netstandard2.0, GtkSharp 4), no GMap.NET.
