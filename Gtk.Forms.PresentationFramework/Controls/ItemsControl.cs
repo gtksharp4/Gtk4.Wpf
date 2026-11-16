@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Windows.Data;
 
 namespace System.Windows.Controls
 {
@@ -76,6 +77,7 @@ namespace System.Windows.Controls
 		// ── INCC subscription ────────────────────────────────────────────────────
 
 		INotifyCollectionChanged? _incc;
+		ICollectionView? _collectionView;
 
 		void OnItemsSourceChanged(IEnumerable? oldSource, IEnumerable? newSource)
 		{
@@ -84,10 +86,13 @@ namespace System.Windows.Controls
 				_incc.CollectionChanged -= OnCollectionChanged;
 				_incc = null;
 			}
+			_collectionView = null;
 
-			if (newSource is INotifyCollectionChanged incc)
+			if (newSource != null)
 			{
-				_incc = incc;
+				// Wrap the source in a default CollectionView (honours filter/sort/group).
+				_collectionView = CollectionViewSource.GetDefaultView(newSource);
+				_incc = _collectionView;
 				_incc.CollectionChanged += OnCollectionChanged;
 			}
 
@@ -98,6 +103,12 @@ namespace System.Windows.Controls
 		{
 			RebuildItems();
 		}
+
+		/// <summary>
+		/// Returns the effective item sequence: the <see cref="ICollectionView"/> when available,
+		/// otherwise the raw <see cref="ItemsSource"/>.
+		/// </summary>
+		IEnumerable EffectiveItems => (IEnumerable?)_collectionView ?? ItemsSource ?? Array.Empty<object>();
 
 		// ── Item generation hooks (overridden by ListBox) ────────────────────────
 
@@ -158,7 +169,7 @@ namespace System.Windows.Controls
 		{
 			Items.Clear();
 			if (ItemsSource != null)
-				foreach (var item in ItemsSource)
+				foreach (var item in EffectiveItems)
 					Items.Add(item);
 
 			OnItemsRebuilt();
