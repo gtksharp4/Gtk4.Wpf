@@ -78,7 +78,7 @@ namespace System.Windows.Data
 			if (string.IsNullOrEmpty(path)) return source;
 
 			var current = source;
-			foreach (var segment in path.Split('.'))
+			foreach (var segment in path?.Split('.') ?? [])
 			{
 				if (current == null) return null;
 				var prop = current.GetType().GetProperty(
