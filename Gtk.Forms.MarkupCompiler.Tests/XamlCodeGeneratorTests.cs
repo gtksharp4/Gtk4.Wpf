@@ -152,14 +152,73 @@ namespace Gtk.Forms.MarkupCompiler.Tests
 
 			Assert.Equal("MyApp.App", className);
 			Assert.Contains("public partial class App {", code);
-			// StartupUri is a root attribute
-			Assert.Contains(@"this.StartupUri = ""MainWindow.xaml"";", code);
+			// StartupUri is emitted as System.Uri (not a plain string).
+			Assert.Contains(
+				@"this.StartupUri = new System.Uri(""MainWindow.xaml"", System.UriKind.RelativeOrAbsolute);",
+				code);
 			// [STAThread] Main
 			Assert.Contains("[System.STAThread]", code);
 			Assert.Contains("static void Main() {", code);
 			Assert.Contains("var app = new App();", code);
 			Assert.Contains("app.InitializeComponent();", code);
 			Assert.Contains("app.Run();", code);
+		}
+
+		// ------------------------------------------------------------------ #7 typed-literal tests
+
+		[Fact]
+		public void Attribute_enum_emits_enum_member()
+		{
+			// Orientation="Horizontal" on a StackPanel child should become
+			// System.Windows.Controls.Orientation.Horizontal, not a string literal.
+			string xaml = Window(@"<StackPanel Orientation=""Horizontal"" />");
+			string code = _gen.Generate(xaml, out _);
+			Assert.Contains("System.Windows.Controls.Orientation.Horizontal", code);
+			Assert.DoesNotContain(@"""Horizontal""", code);
+		}
+
+		[Fact]
+		public void Attribute_integer_emits_numeric_literal()
+		{
+			string xaml = Window(@"<StackPanel><TextBlock FontSize=""14"" /></StackPanel>");
+			string code = _gen.Generate(xaml, out _);
+			Assert.Contains(".FontSize = 14;", code);
+			Assert.DoesNotContain(@"""14""", code);
+		}
+
+		[Fact]
+		public void Attribute_double_emits_numeric_literal()
+		{
+			string xaml = Window(@"<StackPanel><TextBlock Width=""1.5"" /></StackPanel>");
+			string code = _gen.Generate(xaml, out _);
+			Assert.Contains(".Width = 1.5;", code);
+			Assert.DoesNotContain(@"""1.5""", code);
+		}
+
+		[Fact]
+		public void Attribute_bool_true_emits_bool_literal()
+		{
+			string xaml = Window(@"<StackPanel><Button IsEnabled=""true"" /></StackPanel>");
+			string code = _gen.Generate(xaml, out _);
+			Assert.Contains(".IsEnabled = true;", code);
+			Assert.DoesNotContain(@"""true""", code);
+		}
+
+		[Fact]
+		public void Attribute_bool_false_emits_bool_literal()
+		{
+			string xaml = Window(@"<StackPanel><Button IsEnabled=""False"" /></StackPanel>");
+			string code = _gen.Generate(xaml, out _);
+			Assert.Contains(".IsEnabled = false;", code);
+			Assert.DoesNotContain(@"""False""", code);
+		}
+
+		[Fact]
+		public void Attribute_string_still_emits_string_literal()
+		{
+			string xaml = Window(attrs: @"Title=""My Window""");
+			string code = _gen.Generate(xaml, out _);
+			Assert.Contains(@"this.Title = ""My Window"";", code);
 		}
 
 		[Fact]

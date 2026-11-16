@@ -20,6 +20,8 @@ namespace System.Windows
 		// Key: (name, ownerType)
 		static readonly Dictionary<(string, Type), DependencyProperty> _registry =
 			new Dictionary<(string, Type), DependencyProperty>();
+		// Inheriting DPs only — consulted when InheritanceParent changes.
+		static readonly List<DependencyProperty> _inheritingRegistry = new List<DependencyProperty>();
 		static readonly object _registryLock = new object();
 
 		// ── Instance state ───────────────────────────────────────────────────────────
@@ -133,8 +135,21 @@ namespace System.Windows
 						$"DependencyProperty '{name}' is already registered on '{ownerType.FullName}'.");
 				var dp = new DependencyProperty(name, propertyType, ownerType, metadata, isAttached);
 				_registry[key] = dp;
+				if (metadata is FrameworkPropertyMetadata fmeta && fmeta.Inherits)
+					_inheritingRegistry.Add(dp);
 				return dp;
 			}
+		}
+
+		/// <summary>
+		/// Returns a snapshot of all registered inheriting dependency properties.
+		/// Called by <see cref="DependencyObjectInheritance"/> when the inheritance parent
+		/// of an element changes.
+		/// </summary>
+		internal static IReadOnlyList<DependencyProperty> GetInheritingProperties()
+		{
+			lock (_registryLock)
+				return new List<DependencyProperty>(_inheritingRegistry);
 		}
 
 		/// <summary>Returns the default default value for a type (0, false, null, etc.).</summary>

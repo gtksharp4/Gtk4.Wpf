@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace System.Windows
 {
@@ -11,11 +12,19 @@ namespace System.Windows
 	/// </summary>
 	public static class RoutedEventHost
 	{
-		// Per-object handler list: routedEvent → list of (handler, handledEventsToo)
-		static readonly Dictionary<DependencyObject, Dictionary<RoutedEvent, List<(Delegate handler, bool handledEventsToo)>>>
-			_handlers = new Dictionary<DependencyObject, Dictionary<RoutedEvent, List<(Delegate, bool)>>>(
-				ReferenceEqualityComparer.Instance);
+		// Per-object handler list: routedEvent → list of (handler, handledEventsToo).
+		// ConditionalWeakTable holds the element weakly so entries are collected with the element.
+		static readonly ConditionalWeakTable<DependencyObject, HandlerMap>
+			_handlers = new ConditionalWeakTable<DependencyObject, HandlerMap>();
 		static readonly object _lock = new object();
+
+		/// <summary>Per-element map from RoutedEvent to its handler list.</summary>
+		sealed class HandlerMap
+		{
+			internal readonly Dictionary<RoutedEvent, List<(Delegate handler, bool handledEventsToo)>>
+				ByEvent = new Dictionary<RoutedEvent, List<(Delegate, bool)>>(
+					ReferenceEqualityComparer2.Instance);
+		}
 
 		/// <summary>
 		/// Adds a routed-event handler to <paramref name="element"/>.
@@ -39,16 +48,11 @@ namespace System.Windows
 
 			lock (_lock)
 			{
-				if (!_handlers.TryGetValue(element, out var byEvent))
-				{
-					byEvent = new Dictionary<RoutedEvent, List<(Delegate, bool)>>(
-						ReferenceEqualityComparer2.Instance);
-					_handlers[element] = byEvent;
-				}
-				if (!byEvent.TryGetValue(routedEvent, out var list))
+				var map = _handlers.GetOrCreateValue(element);
+				if (!map.ByEvent.TryGetValue(routedEvent, out var list))
 				{
 					list = new List<(Delegate, bool)>();
-					byEvent[routedEvent] = list;
+					map.ByEvent[routedEvent] = list;
 				}
 				list.Add((handler, handledEventsToo));
 			}
@@ -66,8 +70,8 @@ namespace System.Windows
 
 			lock (_lock)
 			{
-				if (!_handlers.TryGetValue(element, out var byEvent)) return;
-				if (!byEvent.TryGetValue(routedEvent, out var list)) return;
+				if (!_handlers.TryGetValue(element, out var map)) return;
+				if (!map.ByEvent.TryGetValue(routedEvent, out var list)) return;
 				for (int i = list.Count - 1; i >= 0; i--)
 					if (list[i].handler == handler) { list.RemoveAt(i); break; }
 			}
@@ -138,8 +142,8 @@ namespace System.Windows
 			List<(Delegate handler, bool handledEventsToo)>? list;
 			lock (_lock)
 			{
-				if (!_handlers.TryGetValue(element, out var byEvent)) return;
-				if (!byEvent.TryGetValue(e.RoutedEvent, out var raw)) return;
+				if (!_handlers.TryGetValue(element, out var map)) return;
+				if (!map.ByEvent.TryGetValue(e.RoutedEvent, out var raw)) return;
 				list = new List<(Delegate, bool)>(raw); // snapshot
 			}
 			foreach (var (handler, handledEventsToo) in list)

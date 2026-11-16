@@ -104,5 +104,32 @@ namespace Gtk.Forms.PresentationFramework.Tests
 
 			Assert.Equal("after", label.Text);
 		});
+
+		/// <summary>#5: Content set before Show() must not throw a double-add.</summary>
+		[Fact]
+		public void Window_Show_with_Content_set_first_does_not_throw() => Run(() =>
+		{
+			var win = new WpfWindow { Title = "DoubleParentTest" };
+			var grid = new WpfGrid();
+			win.Content = grid; // Content set BEFORE Show() — parenting via OnPropertyChanged
+
+			// Show() must not add the widget a second time (GTK throws on double-add).
+			var ex = Record.Exception(() => win.Show());
+
+			Assert.Null(ex);
+		});
+
+		/// <summary>#5: Content set after Show() must not throw a double-add.</summary>
+		[Fact]
+		public void Window_Show_then_set_Content_does_not_throw() => Run(() =>
+		{
+			var win = new WpfWindow { Title = "DoubleParentTest2" };
+			win.Show(); // widget exists, no content yet
+
+			var grid = new WpfGrid();
+			var ex = Record.Exception(() => win.Content = grid);
+
+			Assert.Null(ex);
+		});
 	}
 }

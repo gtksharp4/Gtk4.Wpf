@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace System.Windows
 {
@@ -7,15 +8,23 @@ namespace System.Windows
 	/// downward through the logical tree.
 	/// </summary>
 	/// <remarks>
-	/// Phase-0 implementation: a simple <see cref="WeakReference"/> list per parent object.
-	/// Children register themselves when they set <see cref="DependencyObject.InheritanceParent"/>.
+	/// Uses <see cref="ConditionalWeakTable{TKey,TValue}"/> so entries are collected
+	/// when the parent <see cref="DependencyObject"/> is GC'd (no memory leak).
 	/// </remarks>
 	internal static class DependencyObjectInheritance
 	{
 		// Parent → weak list of children.
-		static readonly Dictionary<DependencyObject, List<WeakReference>> _children =
-			new Dictionary<DependencyObject, List<WeakReference>>(ReferenceEqualityComparer.Instance);
+		// ConditionalWeakTable holds the parent weakly; the value (ChildList) is
+		// collected together with the parent.
+		static readonly ConditionalWeakTable<DependencyObject, ChildList> _children =
+			new ConditionalWeakTable<DependencyObject, ChildList>();
 		static readonly object _lock = new object();
+
+		/// <summary>Mutable weak-reference list of children, one per parent.</summary>
+		sealed class ChildList
+		{
+			internal readonly List<WeakReference> Items = new List<WeakReference>();
+		}
 
 		// ── Registration ─────────────────────────────────────────────────────────────
 
@@ -24,12 +33,8 @@ namespace System.Windows
 		{
 			lock (_lock)
 			{
-				if (!_children.TryGetValue(parent, out var list))
-				{
-					list = new List<WeakReference>();
-					_children[parent] = list;
-				}
-				list.Add(new WeakReference(child));
+				var list = _children.GetOrCreateValue(parent);
+				list.Items.Add(new WeakReference(child));
 			}
 		}
 
@@ -39,32 +44,19 @@ namespace System.Windows
 			lock (_lock)
 			{
 				if (!_children.TryGetValue(parent, out var list)) return;
-				for (int i = list.Count - 1; i >= 0; i--)
+				for (int i = list.Items.Count - 1; i >= 0; i--)
 				{
-					var t = list[i].Target as DependencyObject;
+					var t = list.Items[i].Target as DependencyObject;
 					if (t == null || ReferenceEquals(t, child))
-						list.RemoveAt(i);
+						list.Items.RemoveAt(i);
 				}
 			}
 		}
 
 		// ── Called by DependencyObject.InheritanceParent setter ──────────────────────
-
-		/// <summary>
-		/// Called when a <see cref="DependencyObject"/> changes its
-		/// <see cref="DependencyObject.InheritanceParent"/>. Re-evaluates every inheriting
-		/// property with no local value.
-		/// </summary>
-		internal static void NotifyInheritedPropertiesChanged(DependencyObject child)
-		{
-			// We cannot enumerate all registered properties efficiently in Phase 0 without
-			// iterating the entire registry.  Instead we rely on each property that IS
-			// inherited having its value change propagated via PropagateInheritedValue.
-			// This method just ensures the child-tracking bookkeeping is correct so future
-			// changes from the new parent flow correctly.
-			// (Full re-evaluation on parent change would require a full property walk —
-			//  left as a Phase-1 enhancement.)
-		}
+		// The per-parent-change walk is now inlined in DependencyObject.InheritanceParent
+		// (it must snapshot effective values *before* the parent field is updated).
+		// Track() below handles bookkeeping only.
 
 		/// <summary>
 		/// Registers a parent→child edge when <paramref name="child"/> adopts
@@ -96,14 +88,14 @@ namespace System.Windows
 			object? oldValue,
 			object? newValue)
 		{
-			List<WeakReference>? list;
+			List<WeakReference>? snapshot;
 			lock (_lock)
 			{
-				if (!_children.TryGetValue(source, out list)) return;
-				list = new List<WeakReference>(list); // snapshot so callbacks may mutate
+				if (!_children.TryGetValue(source, out var list)) return;
+				snapshot = new List<WeakReference>(list.Items); // snapshot so callbacks may mutate
 			}
 
-			foreach (var wr in list)
+			foreach (var wr in snapshot)
 			{
 				if (wr.Target is DependencyObject child)
 					child.NotifyInheritedValueChanged(dp, oldValue, newValue);

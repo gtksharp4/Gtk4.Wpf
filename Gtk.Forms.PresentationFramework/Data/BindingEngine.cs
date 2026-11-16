@@ -47,6 +47,8 @@ namespace System.Windows.Data
 		/// Re-evaluates all bindings whose source was the inherited DataContext.
 		/// Called when DataContext changes.
 		/// </summary>
+		// TODO (Phase 1): skip records whose source is an explicit Binding.Source or
+		// ElementName — they don't depend on DataContext and needn't be refreshed here.
 		internal static void RefreshBindings(FrameworkElement target)
 		{
 			if (!_bindings.TryGetValue(target, out var list)) return;

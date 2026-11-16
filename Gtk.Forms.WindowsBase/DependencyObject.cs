@@ -19,7 +19,8 @@ namespace System.Windows
 
 		/// <summary>
 		/// Parent in the logical/visual tree, used to walk inherited property values.
-		/// Setting this re-evaluates every inheriting property that has no local value.
+		/// Setting this re-evaluates every inheriting property that has no local value
+		/// and fires change notifications / propagates to descendants for those that changed.
 		/// </summary>
 		internal DependencyObject? InheritanceParent
 		{
@@ -28,9 +29,28 @@ namespace System.Windows
 			{
 				if (ReferenceEquals(_inheritanceParent, value)) return;
 				var old = _inheritanceParent;
+
+				// Snapshot effective values before the parent changes (while the old parent
+				// is still reachable) so we can compute accurate before/after deltas.
+				var inheriting = DependencyProperty.GetInheritingProperties();
+				var oldValues = new object?[inheriting.Count];
+				for (int i = 0; i < inheriting.Count; i++)
+					oldValues[i] = _localValues.ContainsKey(inheriting[i])
+						? DependencyProperty.UnsetValue  // has local value — won't be touched
+						: ResolveEffectiveValue(inheriting[i]);
+
 				_inheritanceParent = value;
 				DependencyObjectInheritance.Track(this, old, value);
-				DependencyObjectInheritance.NotifyInheritedPropertiesChanged(this);
+
+				// Fire change notifications for each inheriting DP whose effective value changed.
+				for (int i = 0; i < inheriting.Count; i++)
+				{
+					if (ReferenceEquals(oldValues[i], DependencyProperty.UnsetValue)) continue; // local value
+
+					var newVal = ResolveEffectiveValue(inheriting[i]);
+					if (!Equals(oldValues[i], newVal))
+						NotifyInheritedValueChanged(inheriting[i], oldValues[i], newVal);
+				}
 			}
 		}
 

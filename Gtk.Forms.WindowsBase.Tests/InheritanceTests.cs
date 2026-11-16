@@ -42,6 +42,61 @@ namespace Gtk.Forms.WindowsBase.Tests
 
 	public class InheritanceTests
 	{
+		// ── #3: values flow into subtrees attached AFTER the value is set ────────────
+
+		[Fact]
+		public void Child_attached_after_value_set_sees_inherited_value()
+		{
+			var parent = new TreeNode();
+			parent.SetValue(TreeNode.FontSizeProp, 24.0);
+
+			// Attach AFTER value is set.
+			var child = new TreeNode { Parent = parent };
+
+			Assert.Equal(24.0, child.GetValue(TreeNode.FontSizeProp));
+		}
+
+		[Fact]
+		public void Grandchild_attached_after_value_set_sees_inherited_value()
+		{
+			var root = new TreeNode();
+			root.SetValue(TreeNode.FontSizeProp, 32.0);
+
+			var middle = new TreeNode { Parent = root };
+			var leaf = new TreeNode { Parent = middle };
+
+			Assert.Equal(32.0, leaf.GetValue(TreeNode.FontSizeProp));
+		}
+
+		[Fact]
+		public void Child_attached_after_value_set_fires_callback()
+		{
+			var parent = new TreeNode();
+			parent.SetValue(TreeNode.ThemeProp, "dark");
+
+			// Attaching fires a change from default (null) → "dark".
+			var child = new TreeNode { Parent = parent };
+
+			Assert.Single(child.ThemeChanges);
+			Assert.Equal((null, (object?)"dark"), child.ThemeChanges[0]);
+		}
+
+		[Fact]
+		public void Child_local_value_not_overwritten_when_attached_after_value_set()
+		{
+			var parent = new TreeNode();
+			parent.SetValue(TreeNode.FontSizeProp, 24.0);
+
+			var child = new TreeNode();
+			child.SetValue(TreeNode.FontSizeProp, 10.0);
+			child.Parent = parent;
+
+			// Local value must win; no spurious notification.
+			Assert.Equal(10.0, child.GetValue(TreeNode.FontSizeProp));
+		}
+
+		// ── existing tests ────────────────────────────────────────────────────────────
+
 		[Fact]
 		public void Child_with_no_local_value_sees_parent_value()
 		{

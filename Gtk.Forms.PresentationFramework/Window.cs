@@ -54,8 +54,14 @@ namespace System.Windows
 		{
 			var win = (Gtk.Window)Widget;
 
-			if (Content is UIElement contentElement)
+			// Guard against double-add: OnPropertyChanged already parents the content widget
+			// when Content is set after the window exists. Only add it here if it has not yet
+			// been added (i.e. Content was set before Show() materialised the backing window).
+			if (Content is UIElement contentElement
+				&& !ReferenceEquals(win.Child, contentElement.Widget))
+			{
 				win.Add(contentElement.Widget);
+			}
 
 			win.ShowAll();
 		}

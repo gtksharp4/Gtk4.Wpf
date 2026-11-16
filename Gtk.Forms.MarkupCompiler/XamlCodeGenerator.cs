@@ -197,15 +197,52 @@ namespace Gtk.Forms.MarkupCompiler
 			}
 		}
 
+		// Known enum properties and their CLR type (Phase-0 explicit list).
+		// TODO (Phase 1): resolve enum type from the target property's type via referenced assemblies.
+		static readonly Dictionary<string, string> _knownEnumProperties = new Dictionary<string, string>(
+			StringComparer.Ordinal)
+		{
+			{ "Orientation", "System.Windows.Controls.Orientation" },
+		};
+
 		/// <summary>
-		/// The C# expression for a plain (non-binding) attribute value. Phase 0 emits a string literal
-		/// except for the few known typed WPF properties (Application.StartupUri is a System.Uri); later
-		/// phases resolve the target property type (and its type converter) from the referenced assemblies.
+		/// The C# expression for a plain (non-binding) attribute value.
+		/// <para>
+		/// Phase-0 pragmatic rules (no full type-converter resolution):
+		/// <list type="bullet">
+		/// <item><c>StartupUri</c> → <c>new System.Uri(...)</c></item>
+		/// <item>Known enum property → <c>EnumType.Member</c></item>
+		/// <item>Integer literal → numeric literal</item>
+		/// <item>Floating-point literal → numeric literal</item>
+		/// <item><c>true</c>/<c>false</c> (case-insensitive) → bool literal</item>
+		/// <item>Otherwise → string literal</item>
+		/// </list>
+		/// TODO (Phase 1): resolve the target property type and its type converter from
+		/// the referenced assemblies instead of this hard-coded table.
+		/// </para>
 		/// </summary>
 		static string ValueExpression(string propName, string val)
 		{
 			if (propName == "StartupUri")
 				return $"new System.Uri(\"{EscapeString(val)}\", System.UriKind.RelativeOrAbsolute)";
+
+			if (_knownEnumProperties.TryGetValue(propName, out var enumType))
+				return $"{enumType}.{val}";
+
+			if (long.TryParse(val, System.Globalization.NumberStyles.Integer,
+				System.Globalization.CultureInfo.InvariantCulture, out _))
+				return val;
+
+			if (double.TryParse(val, System.Globalization.NumberStyles.Float,
+				System.Globalization.CultureInfo.InvariantCulture, out _)
+				&& val.Contains("."))
+				return val;
+
+			if (string.Equals(val, "true", StringComparison.OrdinalIgnoreCase))
+				return "true";
+			if (string.Equals(val, "false", StringComparison.OrdinalIgnoreCase))
+				return "false";
+
 			return $"\"{EscapeString(val)}\"";
 		}
 
@@ -277,11 +314,16 @@ namespace Gtk.Forms.MarkupCompiler
 				return true;
 			}
 
-			// Handle "Path=X" or positional path
-			if (inner.StartsWith("Path=", StringComparison.Ordinal))
-				path = inner.Substring("Path=".Length).Trim();
+			// TODO (Phase 1): parse comma-separated named arguments (e.g. {Binding X, Mode=TwoWay})
+			// and populate the Binding properties accordingly. Currently only the path/Path= prefix
+			// is extracted; additional named args are silently ignored.
+
+			// Handle "Path=X" or positional path; stop at the first comma.
+			string firstArg = inner.Split(',')[0].Trim();
+			if (firstArg.StartsWith("Path=", StringComparison.Ordinal))
+				path = firstArg.Substring("Path=".Length).Trim();
 			else
-				path = inner;
+				path = firstArg;
 
 			return true;
 		}
