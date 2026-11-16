@@ -1,0 +1,119 @@
+namespace System.Windows.Controls
+{
+	/// <summary>
+	/// Displays a piece of content inside a <see cref="ControlTemplate"/> or other
+	/// container. Resolution order:
+	/// <list type="number">
+	///   <item><see cref="Content"/> is a <see cref="UIElement"/> — hosted directly.</item>
+	///   <item><see cref="ContentTemplate"/> is set — its visual tree wraps the item.</item>
+	///   <item>Otherwise <see cref="Content"/> is shown as a string in a <see cref="Gtk.Label"/>.</item>
+	/// </list>
+	/// Backed by a single-child <see cref="Gtk.Box"/> container.
+	/// </summary>
+	public class ContentPresenter : FrameworkElement
+	{
+		// ── Content DP ───────────────────────────────────────────────────────────
+
+		/// <summary>The content to present.</summary>
+		public static readonly DependencyProperty ContentProperty =
+			DependencyProperty.Register(
+				nameof(Content),
+				typeof(object),
+				typeof(ContentPresenter),
+				new PropertyMetadata(null, OnContentChanged));
+
+		static void OnContentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		{
+			((ContentPresenter)d).RefreshContent();
+		}
+
+		/// <summary>Gets or sets the content.</summary>
+		public object? Content
+		{
+			get => GetValue(ContentProperty);
+			set => SetValue(ContentProperty, value);
+		}
+
+		// ── ContentTemplate DP ───────────────────────────────────────────────────
+
+		/// <summary>The template used to present a non-UIElement content item.</summary>
+		public static readonly DependencyProperty ContentTemplateProperty =
+			DependencyProperty.Register(
+				nameof(ContentTemplate),
+				typeof(DataTemplate),
+				typeof(ContentPresenter),
+				new PropertyMetadata(null, OnContentTemplateChanged));
+
+		static void OnContentTemplateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		{
+			((ContentPresenter)d).RefreshContent();
+		}
+
+		/// <summary>Gets or sets the content template.</summary>
+		public DataTemplate? ContentTemplate
+		{
+			get => (DataTemplate?)GetValue(ContentTemplateProperty);
+			set => SetValue(ContentTemplateProperty, value);
+		}
+
+		// ── GTK backing ──────────────────────────────────────────────────────────
+
+		Gtk.Box? _box;
+		// Tracks the widget currently hosted in _box so we can swap it.
+		Gtk.Widget? _hostedWidget;
+
+		bool IsWidgetCreated => _box != null;
+
+		/// <inheritdoc/>
+		protected override Gtk.Widget CreateWidget()
+		{
+			_box = new Gtk.Box(Gtk.Orientation.Vertical, 0);
+			ApplyContent();
+			return _box;
+		}
+
+		void RefreshContent()
+		{
+			if (!IsWidgetCreated) return;
+			ApplyContent();
+		}
+
+		void ApplyContent()
+		{
+			// Remove previous hosted widget.
+			if (_hostedWidget != null)
+			{
+				_box!.Remove(_hostedWidget);
+				_hostedWidget = null;
+			}
+
+			var content = Content;
+
+			// 1. Direct UIElement.
+			if (content is UIElement element)
+			{
+				_hostedWidget = element.Widget;
+				_box!.Add(_hostedWidget);
+				return;
+			}
+
+			// 2. DataTemplate.
+			if (ContentTemplate != null && ContentTemplate.HasContent)
+			{
+				var visual = ContentTemplate.CreateVisualTreeForItem(content);
+				if (visual != null)
+				{
+					_hostedWidget = visual.Widget;
+					_box!.Add(_hostedWidget);
+					return;
+				}
+			}
+
+			// 3. String / ToString fallback.
+			var text = content?.ToString() ?? string.Empty;
+			var label = new Gtk.Label(text);
+			_hostedWidget = label;
+			_box!.Add(_hostedWidget);
+		}
+	}
+}

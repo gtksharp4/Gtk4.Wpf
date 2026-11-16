@@ -5,7 +5,7 @@ namespace System.Windows.Controls
 	/// and font properties (Phase-1); in Phase 0 it is a thin pass-through to
 	/// <see cref="FrameworkElement"/>.
 	/// </summary>
-	public abstract class Control : FrameworkElement
+	public abstract partial class Control : FrameworkElement
 	{
 	}
 }
