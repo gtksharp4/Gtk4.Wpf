@@ -87,6 +87,45 @@ namespace Gtk.Forms.PresentationFramework.Tests.Controls
 			Assert.True(fired);
 		}
 
+		// ── M1: Unchecked event fires on false→true→false cycle ──────────────────
+
+		[Fact]
+		public void MenuItem_Unchecked_fires_on_false_toggle_exactly_once()
+		{
+			// Start unchecked, click to check (fires Checked), click again to uncheck (fires Unchecked).
+			var mi = new WpfMenuItem { IsCheckable = true };
+			int uncheckedCount = 0;
+			mi.Unchecked += (s, e) => { uncheckedCount++; };
+			mi.InvokeClick_ForTest(); // false → true (Checked fires, not Unchecked)
+			mi.InvokeClick_ForTest(); // true → false (Unchecked fires)
+			Assert.Equal(1, uncheckedCount);
+		}
+
+		[Fact]
+		public void MenuItem_Checked_fires_only_on_false_to_true()
+		{
+			var mi = new WpfMenuItem { IsCheckable = true };
+			int checkedCount = 0;
+			mi.Checked += (s, e) => { checkedCount++; };
+			mi.InvokeClick_ForTest(); // false → true: fires
+			mi.InvokeClick_ForTest(); // true → false: Unchecked fires, not Checked
+			Assert.Equal(1, checkedCount);
+		}
+
+		[Fact]
+		public void MenuItem_Unchecked_not_Checked_when_toggling_to_false()
+		{
+			var mi = new WpfMenuItem { IsCheckable = true };
+			mi.InvokeClick_ForTest(); // now true
+			bool checkedFired = false;
+			bool uncheckedFired = false;
+			mi.Checked += (s, e) => { checkedFired = true; };
+			mi.Unchecked += (s, e) => { uncheckedFired = true; };
+			mi.InvokeClick_ForTest(); // true → false
+			Assert.False(checkedFired);
+			Assert.True(uncheckedFired);
+		}
+
 		[Fact]
 		public void MenuItem_InputGestureText_roundtrip()
 		{

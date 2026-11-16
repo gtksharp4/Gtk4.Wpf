@@ -33,7 +33,7 @@ namespace System.Windows
 		/// Returns <c>true</c> when <see cref="Widget"/> has been materialised.
 		/// Safe to call without forcing widget creation.
 		/// </summary>
-		protected internal bool IsWidgetCreated => _widget != null;
+		internal virtual bool IsWidgetCreated => _widget != null;
 
 		/// <summary>
 		/// Called once immediately after <see cref="Widget"/> is first created.

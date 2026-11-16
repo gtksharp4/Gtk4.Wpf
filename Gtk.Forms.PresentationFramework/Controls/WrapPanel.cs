@@ -41,7 +41,7 @@ namespace System.Windows.Controls
 			new Dictionary<UIElement, Gtk.FlowBoxChild>();
 
 		/// <inheritdoc/>
-		protected override bool IsWidgetCreated => _flow != null;
+		internal override bool IsWidgetCreated => _flow != null;
 
 		/// <inheritdoc/>
 		protected override Gtk.Widget CreateWidget()

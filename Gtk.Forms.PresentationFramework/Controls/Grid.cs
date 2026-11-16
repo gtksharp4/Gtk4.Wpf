@@ -69,7 +69,7 @@ namespace System.Windows.Controls
 		Gtk.Grid? _grid;
 
 		/// <inheritdoc/>
-		protected override bool IsWidgetCreated => _grid != null;
+		internal override bool IsWidgetCreated => _grid != null;
 
 		/// <inheritdoc/>
 		protected override Gtk.Widget CreateWidget()

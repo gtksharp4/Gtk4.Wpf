@@ -108,6 +108,24 @@ namespace Gtk.Forms.PresentationFramework.Tests.Controls
 			Assert.True(dt.HasContent);
 		}
 
+		// ── L1: DataTemplate.HasContent via FrameworkTemplate base reference ─────
+
+		[Fact]
+		public void DataTemplate_HasContent_via_base_reference_true_when_ItemFactory_set()
+		{
+			// L1: HasContent must be virtual/override so a FrameworkTemplate-typed reference
+			// sees DataTemplate's value (ItemFactory != null || Factory != null).
+			FrameworkTemplate ft = new WpfDataTemplate { ItemFactory = _ => new WpfTextBlock() };
+			Assert.True(ft.HasContent);
+		}
+
+		[Fact]
+		public void DataTemplate_HasContent_via_base_reference_false_when_no_factory()
+		{
+			FrameworkTemplate ft = new WpfDataTemplate();
+			Assert.False(ft.HasContent);
+		}
+
 		// ── ContentPresenter ─────────────────────────────────────────────────────
 
 		[Fact]
@@ -315,6 +333,18 @@ namespace Gtk.Forms.PresentationFramework.Tests.Controls
 			lv.SelectionChanged += (s, e) => { fired = true; };
 			lv.SelectedItem = "b";
 			Assert.True(fired);
+		}
+
+		// ── L2: UIElement.IsWidgetCreated consistency via base reference ─────────
+
+		[Fact]
+		public void ContentControl_IsWidgetCreated_false_before_Widget_access()
+		{
+			// Before Widget is accessed, both base and derived views must agree: false.
+			var cc = new WpfButton();
+			UIElement ue = cc;
+			Assert.False(cc.IsWidgetCreated);
+			Assert.False(ue.IsWidgetCreated);
 		}
 	}
 }

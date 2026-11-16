@@ -60,7 +60,7 @@ namespace System.Windows.Controls
 		Gtk.Fixed? _fixed;
 
 		/// <inheritdoc/>
-		protected override bool IsWidgetCreated => _fixed != null;
+		internal override bool IsWidgetCreated => _fixed != null;
 
 		/// <inheritdoc/>
 		protected override Gtk.Widget CreateWidget()

@@ -62,7 +62,7 @@ namespace System.Windows.Controls
 		// Tracks the widget currently hosted in _box so we can swap it.
 		Gtk.Widget? _hostedWidget;
 
-		new bool IsWidgetCreated => _box != null;
+		internal override bool IsWidgetCreated => _box != null;
 
 		/// <inheritdoc/>
 		protected override Gtk.Widget CreateWidget()

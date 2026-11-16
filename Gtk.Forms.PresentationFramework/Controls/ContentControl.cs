@@ -56,7 +56,7 @@ namespace System.Windows.Controls
 		}
 
 		/// <summary>True when <see cref="Widget"/> has been materialised (GTK objects are live).</summary>
-		protected new bool IsWidgetCreated => _box != null;
+		internal override bool IsWidgetCreated => _box != null;
 
 		// ── GTK backing ─────────────────────────────────────────────────────────
 

@@ -456,6 +456,11 @@ namespace Gtk.Forms.MarkupCompiler
 
 			string propName = localName.Substring(dot + 1);
 
+			// Resources blocks are owned by EmitResources; skip here to avoid
+			// a bogus {owner}.Resources = {tmplVar} assignment (CS0200) and
+			// re-emitting only the first template child.
+			if (propName == "Resources") return;
+
 			// Template and ContentTemplate property elements contain a ControlTemplate child.
 			// ItemTemplate property elements contain a DataTemplate child.
 			foreach (XElement child in propEl.Elements())

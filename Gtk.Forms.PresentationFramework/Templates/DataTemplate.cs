@@ -31,6 +31,6 @@ namespace System.Windows.Controls
 		}
 
 		/// <inheritdoc/>
-		public new bool HasContent => ItemFactory != null || Factory != null;
+		public override bool HasContent => ItemFactory != null || Factory != null;
 	}
 }

@@ -24,6 +24,6 @@ namespace System.Windows
 		/// <summary>
 		/// Returns <c>true</c> when the template has a factory and can produce a tree.
 		/// </summary>
-		public bool HasContent => Factory != null;
+		public virtual bool HasContent => Factory != null;
 	}
 }

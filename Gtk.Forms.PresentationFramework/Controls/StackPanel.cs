@@ -29,7 +29,7 @@ namespace System.Windows.Controls
 		Gtk.Box? _box;
 
 		/// <inheritdoc/>
-		protected override bool IsWidgetCreated => _box != null;
+		internal override bool IsWidgetCreated => _box != null;
 
 		/// <inheritdoc/>
 		protected override Gtk.Widget CreateWidget()

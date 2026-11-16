@@ -338,5 +338,48 @@ namespace Gtk.Forms.MarkupCompiler.Tests
 			Assert.Contains("new System.Windows.Style(", code);
 			Assert.Contains(@"this.Resources[""s""]", code);
 		}
+
+		// ── H1 regression: two keyed templates in Resources ───────────────────────
+
+		[Fact]
+		public void Keyed_ControlTemplate_resource_no_Resources_assignment()
+		{
+			// H1: EmitPropertyElement must not emit {owner}.Resources = {tmplVar}
+			string xaml = Window(@"
+<Window.Resources>
+  <ControlTemplate x:Key=""t"" TargetType=""Button"">
+    <Border />
+  </ControlTemplate>
+</Window.Resources>
+<Button />");
+			string code = _gen.Generate(xaml, out _);
+
+			// Resources is get-only — no assignment must appear.
+			Assert.DoesNotContain(".Resources = ", code);
+		}
+
+		[Fact]
+		public void Two_keyed_templates_in_Resources_both_emitted_no_assignment()
+		{
+			// H1: a Window.Resources with two keyed templates must emit both
+			// and must not emit any .Resources = assignment.
+			string xaml = Window(@"
+<Window.Resources>
+  <ControlTemplate x:Key=""a"" TargetType=""Button"">
+    <Border />
+  </ControlTemplate>
+  <DataTemplate x:Key=""b"">
+    <TextBlock />
+  </DataTemplate>
+</Window.Resources>
+<Button />");
+			string code = _gen.Generate(xaml, out _);
+
+			// Both keys must be present.
+			Assert.Contains(@"Resources[""a""]", code);
+			Assert.Contains(@"Resources[""b""]", code);
+			// No bogus assignment to get-only Resources property.
+			Assert.DoesNotContain(".Resources = ", code);
+		}
 	}
 }

@@ -9,14 +9,14 @@ namespace System.Windows.Controls
 	/// <see cref="Gtk.MenuButton"/> + <see cref="Gtk.Popover"/> for items with sub-items
 	/// (<c>Gtk.PopoverMenu</c> integration is a future phase).
 	/// Implements <see cref="ICommandSource"/>; activating fires <see cref="Click"/> and
-	/// invokes <see cref="Command"/>.
+	/// invokes <see cref="Command"/>. Command members live in <c>MenuItem.Commanding.cs</c>.
 	/// </summary>
 	/// <remarks>
 	/// GTK-widget choice: leaf items use <c>Gtk.Button</c>; parent items use
 	/// <c>Gtk.MenuButton</c> that opens a <c>Gtk.Popover</c> containing child buttons.
 	/// A full <c>Gtk.PopoverMenu</c> menu-model integration is deferred.
 	/// </remarks>
-	public class MenuItem : FrameworkElement, ICommandSource, IDisposable
+	public partial class MenuItem : FrameworkElement, ICommandSource, IDisposable
 	{
 		// ── Header DP ─────────────────────────────────────────────────────────────
 
@@ -65,9 +65,11 @@ namespace System.Windows.Controls
 		static void OnIsCheckedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
 			var mi = (MenuItem)d;
-			if (mi._updating) return;
-			// Reflect on the GTK check button when present (future: Gtk.CheckButton in popover).
-			mi.Checked?.Invoke(mi, EventArgs.Empty);
+			bool nowChecked = e.NewValue is true;
+			if (nowChecked)
+				mi.Checked?.Invoke(mi, EventArgs.Empty);
+			else
+				mi.Unchecked?.Invoke(mi, EventArgs.Empty);
 		}
 
 		/// <summary>Gets or sets the checked state.</summary>
@@ -79,6 +81,9 @@ namespace System.Windows.Controls
 
 		/// <summary>Raised when <see cref="IsChecked"/> becomes <c>true</c>.</summary>
 		public event EventHandler? Checked;
+
+		/// <summary>Raised when <see cref="IsChecked"/> becomes <c>false</c>.</summary>
+		public event EventHandler? Unchecked;
 
 		// ── InputGestureText DP ───────────────────────────────────────────────────
 
@@ -99,50 +104,6 @@ namespace System.Windows.Controls
 		/// <summary>Child menu items. When non-empty the item shows a sub-menu popover.</summary>
 		public IList<MenuItem> Items { get; } = new List<MenuItem>();
 
-		// ── Command DPs ────────────────────────────────────────────────────────────
-
-		/// <summary>The command invoked when this item is activated.</summary>
-		public static readonly DependencyProperty CommandProperty =
-			DependencyProperty.Register(nameof(Command), typeof(ICommand), typeof(MenuItem),
-				new PropertyMetadata(null, OnCommandChanged));
-
-		/// <summary>Parameter forwarded to <see cref="ICommand.Execute"/>.</summary>
-		public static readonly DependencyProperty CommandParameterProperty =
-			DependencyProperty.Register(nameof(CommandParameter), typeof(object), typeof(MenuItem),
-				new PropertyMetadata(null));
-
-		/// <summary>Optional explicit routing target.</summary>
-		public static readonly DependencyProperty CommandTargetProperty =
-			DependencyProperty.Register(nameof(CommandTarget), typeof(UIElement), typeof(MenuItem),
-				new PropertyMetadata(null));
-
-		static void OnCommandChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			var mi = (MenuItem)d;
-			mi.CommandHelper.OnCommandChanged(e.OldValue as ICommand, e.NewValue as ICommand);
-		}
-
-		/// <inheritdoc cref="ICommandSource.Command"/>
-		public ICommand? Command
-		{
-			get => (ICommand?)GetValue(CommandProperty);
-			set => SetValue(CommandProperty, value);
-		}
-
-		/// <inheritdoc cref="ICommandSource.CommandParameter"/>
-		public object? CommandParameter
-		{
-			get => GetValue(CommandParameterProperty);
-			set => SetValue(CommandParameterProperty, value);
-		}
-
-		/// <inheritdoc cref="ICommandSource.CommandTarget"/>
-		public UIElement? CommandTarget
-		{
-			get => (UIElement?)GetValue(CommandTargetProperty);
-			set => SetValue(CommandTargetProperty, value);
-		}
-
 		// ── Click event ───────────────────────────────────────────────────────────
 
 		/// <summary>Raised when the item is activated (clicked).</summary>
@@ -152,7 +113,6 @@ namespace System.Windows.Controls
 
 		Gtk.Button? _gtkButton;
 		Gtk.MenuButton? _gtkMenuButton;
-		bool _updating;
 
 		/// <inheritdoc/>
 		protected override Gtk.Widget CreateWidget()
@@ -184,37 +144,12 @@ namespace System.Windows.Controls
 		{
 			if (IsCheckable)
 			{
-				_updating = true;
-				try { SetValue(IsCheckedProperty, !IsChecked); }
-				finally { _updating = false; }
-				Checked?.Invoke(this, EventArgs.Empty);
+				// Toggle; OnIsCheckedChanged raises Checked or Unchecked.
+				SetValue(IsCheckedProperty, !IsChecked);
 			}
 			Click?.Invoke(this, EventArgs.Empty);
 			if (CommandHelper.QueryCanExecute())
 				CommandHelper.InvokeCommand();
-		}
-
-		// ── Command helper ────────────────────────────────────────────────────────
-
-		CommandSourceHelper? _commandHelper;
-		CommandSourceHelper CommandHelper => _commandHelper ??= new CommandSourceHelper(this, RefreshEnabled);
-
-		void RefreshEnabled()
-		{
-			var canRun = CommandHelper.QueryCanExecute();
-			if (_gtkButton != null) _gtkButton.Sensitive = canRun;
-			if (_gtkMenuButton != null) _gtkMenuButton.Sensitive = canRun;
-		}
-
-		bool _disposed;
-
-		/// <summary>Disposes: unsubscribes from command's CanExecuteChanged.</summary>
-		public void Dispose()
-		{
-			if (_disposed) return;
-			_disposed = true;
-			_commandHelper?.Dispose();
-			_commandHelper = null;
 		}
 	}
 }

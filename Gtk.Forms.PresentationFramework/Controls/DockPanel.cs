@@ -78,7 +78,7 @@ namespace System.Windows.Controls
 		Gtk.Box? _fillSlot;
 
 		/// <inheritdoc/>
-		protected override bool IsWidgetCreated => _outerBox != null;
+		internal override bool IsWidgetCreated => _outerBox != null;
 
 		/// <inheritdoc/>
 		protected override Gtk.Widget CreateWidget()
