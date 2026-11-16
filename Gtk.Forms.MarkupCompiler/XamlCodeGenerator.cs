@@ -562,6 +562,12 @@ namespace Gtk.Forms.MarkupCompiler
 					EmitDataTemplateInline(w, item, xNs, tmplVar, ref counter);
 					w.Line($"{ownerVar}.Resources[\"{EscapeString(key)}\"] = {tmplVar};");
 				}
+				else if (item.Name.LocalName == "Storyboard"
+					&& item.Name.NamespaceName == WpfXmlnsMap.PresentationNs
+					&& key != null)
+				{
+					EmitStoryboardResource(w, item, xNs, ownerVar, key, ref counter);
+				}
 				else if (key != null)
 				{
 					// Simple keyed value — emit as string for now; type-converter is later.
@@ -743,7 +749,7 @@ namespace Gtk.Forms.MarkupCompiler
 						EmitMultiTrigger(w, ch, xNs, trigVar, styleVar, ref counter);
 						break;
 					case "EventTrigger":
-						EmitEventTrigger(w, ch, trigVar, styleVar, ref counter);
+						EmitEventTrigger(w, ch, xNs, trigVar, styleVar, ref counter);
 						break;
 				}
 			}
@@ -819,24 +825,12 @@ namespace Gtk.Forms.MarkupCompiler
 		void EmitEventTrigger(
 			IndentedWriter w,
 			XElement el,
+			XNamespace xNs,
 			string trigVar,
 			string styleVar,
 			ref int counter)
 		{
-			string reAttr = (string)el.Attribute("RoutedEvent") ?? string.Empty;
-			// RoutedEvent="TypeName.EventName" — emit a lookup; resolution is runtime.
-			// Split on '.' to separate owner type from event name.
-			string reExpr = "null";
-			int dot = reAttr.LastIndexOf('.');
-			if (dot > 0)
-			{
-				string ownerName = reAttr.Substring(0, dot);
-				string evName = reAttr.Substring(dot + 1);
-				string fqOwner = WpfXmlnsMap.Resolve(ownerName) ?? ownerName;
-				reExpr = $"System.Windows.EventManager.GetRoutedEvent(typeof({fqOwner}), \"{EscapeString(evName)}\")";
-			}
-			w.Line($"var {trigVar} = new System.Windows.EventTrigger {{ RoutedEvent = {reExpr} }};");
-			w.Line($"{styleVar}.Triggers.Add({trigVar});");
+			EmitEventTriggerFull(w, el, xNs, trigVar, styleVar, true, ref counter);
 		}
 
 		/// <summary>

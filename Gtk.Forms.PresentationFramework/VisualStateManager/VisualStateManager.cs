@@ -92,6 +92,9 @@ namespace System.Windows
 				// Raise CurrentStateChanging with the OLD CurrentState still set.
 				group.RaiseChanging(control, state);
 
+				// Stop any running storyboard from the previous state.
+				group.CurrentState?.Storyboard?.Stop();
+
 				// Revert the previous state's setters before applying the new ones.
 				// This prevents properties set by a state from "leaking" after leaving it.
 				RevertSetters(control, group.CurrentState, state);
@@ -99,7 +102,9 @@ namespace System.Windows
 				// Apply the new state's setters.
 				ApplySetters(control, state);
 
-				// Future-round seam: apply state.Storyboard here when animation is wired.
+				// Start the new state's storyboard (if any).
+				if (state.Storyboard != null && useTransitions)
+					state.Storyboard.Begin(control);
 
 				// Capture the old state, update CurrentState, then raise Changed with correct args.
 				var old = group.CurrentState;

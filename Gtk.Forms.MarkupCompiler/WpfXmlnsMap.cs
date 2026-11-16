@@ -38,6 +38,13 @@ namespace Gtk.Forms.MarkupCompiler
 			{ "ControlTemplate",    "System.Windows.Controls.ControlTemplate" },
 			{ "DataTemplate",       "System.Windows.Controls.DataTemplate" },
 
+			// Animation
+			{ "Storyboard",         "System.Windows.Media.Animation.Storyboard" },
+			{ "DoubleAnimation",    "System.Windows.Media.Animation.DoubleAnimation" },
+			{ "ColorAnimation",     "System.Windows.Media.Animation.ColorAnimation" },
+			{ "ThicknessAnimation", "System.Windows.Media.Animation.ThicknessAnimation" },
+			{ "BeginStoryboard",    "System.Windows.BeginStoryboard" },
+
 			// System.Windows.Controls
 			{ "Grid",             "System.Windows.Controls.Grid" },
 			{ "StackPanel",       "System.Windows.Controls.StackPanel" },
