@@ -46,7 +46,17 @@ namespace System.Windows
 			var opacity = (double)(GetValue(OpacityProperty) ?? 1.0);
 			if (opacity != 1.0)
 				widget.Opacity = opacity;
+
+			// Hook: attach GTK input controllers (focus, key, mouse, motion).
+			// Implemented in UIElement.GtkInput.cs as a partial method call.
+			AttachInputControllersOnCreated(widget);
 		}
+
+		/// <summary>
+		/// Called from <see cref="OnWidgetCreated"/> to attach GTK input controllers.
+		/// Implemented in <c>UIElement.GtkInput.cs</c>.
+		/// </summary>
+		partial void AttachInputControllersOnCreated(Gtk.Widget widget);
 
 		// ── Opacity ──────────────────────────────────────────────────────────────────
 

@@ -709,8 +709,57 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   managed-layout-vs-live-GTK gap documented on `UIElement.UpdateLayout` + carry-over. **Round 11 totals:
   1187 tests** (60 WindowsBase + 942 PresentationFramework + 169 MarkupCompiler + 16 ProjectConverter),
   all pass timeboxed; `Gtk.Forms.WpfSample` (unmodified WPF) still compiles.
+- **Round 12 Track A — input system + TextBox completeness (DONE).** No compiler changes.
+  - **`UIElement` focus + input** (`UIElement.Input.cs` new partial):
+    `Focusable`/`IsFocused` (read-only) DPs; `IsKeyboardFocused` alias; `Focus()` (→ `GrabFocus` when
+    realised, deferred flag otherwise); `GotFocus`/`LostFocus` bubble events;
+    full keyboard routed events (`PreviewKeyDown`/`KeyDown`, `PreviewKeyUp`/`KeyUp`, tunnel+bubble);
+    full mouse routed events (`PreviewMouseDown`/`MouseDown`, `PreviewMouseUp`/`MouseUp`,
+    `MouseMove`, `MouseEnter`/`MouseLeave`); `PreviewTextInput`/`TextInput`.
+    Event arg types: `KeyEventArgs` (`Key`, `KeyStates`, `Modifiers`, `SystemKey`),
+    `MouseEventArgs`/`MouseButtonEventArgs` (`GetPosition`, `ChangedButton`, `ClickCount`),
+    `TextCompositionEventArgs` (`Text`); delegate types `KeyEventHandler` / `MouseEventHandler` /
+    `MouseButtonEventHandler` / `TextCompositionEventHandler`. `IInputElement` interface.
+    Internal raise seam `RaiseKeyDownForTest(Key, ModifierKeys)` / `RaiseKeyUpForTest` for pure tests.
+    `InvokeInputBinding` wired into `RaiseKeyDown` so `KeyBinding` Ctrl+S dispatches on key events.
+  - **GTK wiring** (`UIElement.GtkInput.cs` new partial): `partial void AttachInputControllersOnCreated`
+    called from `UIElement.cs OnWidgetCreated`; wires `Gtk.EventControllerFocus` (Enter/Leave →
+    `GotFocus`/`LostFocus` + `IsFocused`), `Gtk.EventControllerKey` (`Gtk.KeyPressedArgs` →
+    `PreviewKeyDown`/`KeyDown` + `TextInput`; `Gtk.KeyReleasedArgs` → `PreviewKeyUp`/`KeyUp`),
+    `Gtk.GestureClick` (`Gtk.PressedArgs`/`ReleasedArgs` → `MouseDown`/`MouseUp`),
+    `Gtk.EventControllerMotion` (`Gtk.MotionArgs`/`EnterArgs`/`Leave` → `MouseMove`/`Enter`/`Leave`).
+    **GDK→Key map** (`GdkKeyMap.cs`): `FromKeyval(uint)` covers A-Z, 0-9, function keys, numpad,
+    special/navigation keys; `FromGdkModifier(Gdk.ModifierType)` → `ModifierKeys` bitmask.
+  - **Statics**: `Keyboard` (`Modifiers`, `IsKeyDown`, `Focus`, `FocusedElement`, internal
+    `SetFocused`/`ClearFocused`/`SetKeyDown`/`SetKeyUp`); `Mouse` (`LeftButton`/`RightButton`,
+    `GetPosition`, `_lastPosition`); `FocusManager` (`FocusedElementProperty` attached DP,
+    `GetFocusedElement`/`SetFocusedElement`).
+  - **`TextBox` completeness** (`TextBox.cs` pure model, `TextBox.Widget.cs` GTK backing):
+    `AcceptsReturn` (single-line = `Gtk.Entry`; multiline = `Gtk.TextView`+`Gtk.ScrolledWindow`),
+    `TextWrapping` (→ `Gtk.WrapMode`), `SelectionStart`/`SelectionLength`/`SelectedText`,
+    `CaretIndex`, `MaxLength` (→ `Entry.MaxLength`), `IsReadOnly` (→ `Entry.IsEditable`/`TextView.Editable`),
+    `SelectionChanged` event, `Select`/`SelectAll`/`Clear`. Original `Text` two-way binding preserved.
+  - **36 new tests** (978 PF total; +36):
+    - `InputRoutedEventTests` (16 pure): `KeyDown` bubble child→parent; `PreviewKeyDown` tunnel
+      parent→child before `KeyDown`; `Handled=true` stops bubble; PreviewKeyDown Handled stops KeyDown;
+      `Focus()`/`IsFocused` managed state; `GotFocus`/`LostFocus`; `Keyboard.Modifiers` updated by seam;
+      `Keyboard.IsKeyDown` during handler; `Keyboard.FocusedElement`; `FocusManager.GetFocusedElement`;
+      `KeyBinding` Ctrl+S invokes command; `KeyBinding` wrong modifier skipped.
+    - `TextBoxPureTests` (16 pure): selection round-trips, `SelectedText` get/set, `Select`/`SelectAll`,
+      `SelectionChanged` fires, `CaretIndex` round-trip + clears selection, `MaxLength` default/round-trip,
+      `TextChanged` fires + carries source, `Clear` empties, `AcceptsReturn`/`IsReadOnly` defaults.
+    - `InputGtkSmokeTests` (5 GTK): `KeyDown` fires on realised element (seam); `Focus()` sets `IsFocused`;
+      single-line widget is `Gtk.Entry`; multiline widget is `Gtk.ScrolledWindow`; multiline child is `Gtk.TextView`.
+  - **GTK note**: `Gtk.EventControllerFocus.Enter/Leave` have `System.EventHandler` signatures (no args);
+    `Gtk.EventControllerKey` uses `Gtk.KeyPressedArgs`/`KeyReleasedArgs` (not nested sub-types); `Gtk.GestureClick`
+    uses `Gtk.PressedArgs`/`ReleasedArgs`; `Gtk.EventControllerMotion` uses `Gtk.MotionArgs`/`EnterArgs`/no-arg Leave.
+  - **Carry-over**: `Mouse.GetPosition(relativeTo)` returns last tracked position (relativeTo ignored; correct
+    relative positioning requires a Gdk.Device query on the GTK thread — deferred); `TextBox.MaxLength` in
+    multiline (`Gtk.TextView`) mode is not enforced at the widget level (buffer-change guard deferred).
+- **Round 12 totals: 1223 tests** (60 WindowsBase + 978 PresentationFramework + 169 MarkupCompiler +
+  16 ProjectConverter), all pass timeboxed; `Gtk.Forms.WpfSample` (unmodified WPF) still compiles.
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
-  true `{DynamicResource}` change-tracking; GTK key-event wiring for `InputBindings`;
+  true `{DynamicResource}` change-tracking;
   `Gtk.PopoverMenu` integration for `MenuItem`; element-level `FrameworkElement.Triggers` auto-attach on
   load (runtime exists, compiler emits `Style.Triggers` only); nested-path `DataTrigger` bindings;
   `Popup`/`ContextMenu` replay of an `IsOpen=true` set before the backing widget exists (currently dropped);
