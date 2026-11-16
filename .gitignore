@@ -24,6 +24,7 @@ docs/*.xml
 *project.lock.json
 !*ControlResources*.designer.cs
 !*Resources.Designer.cs
+!*ErrorMessages.Designer.cs
 !Xamarin.Forms.VSTemplate/**/*.designer.cs
 !NuGet.exe
 *test-results*
