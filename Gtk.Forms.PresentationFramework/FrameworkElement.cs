@@ -7,7 +7,7 @@ namespace System.Windows
 	/// Extends <see cref="UIElement"/> with WPF framework-level features: Name,
 	/// DataContext, Resources, Width/Height, Margin, and data binding.
 	/// </summary>
-	public abstract class FrameworkElement : UIElement
+	public abstract partial class FrameworkElement : UIElement
 	{
 		// ── Name ──────────────────────────────────────────────────────────────────
 

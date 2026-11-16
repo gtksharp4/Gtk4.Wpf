@@ -185,10 +185,10 @@ namespace Gtk.Forms.MarkupCompiler
 				string propName = attr.Name.LocalName;
 				string val = attr.Value;
 
-				if (IsBindingExpression(val, out string bindingPath))
+				if (IsBindingExpression(val, out string bindingInit))
 				{
 					string fqType = ResolveType(root) ?? "this";
-					w.Line($"this.SetBinding({fqType}.{propName}Property, new System.Windows.Data.Binding(\"{bindingPath}\"));");
+					w.Line($"this.SetBinding({fqType}.{propName}Property, {bindingInit});");
 				}
 				else
 				{
@@ -281,8 +281,8 @@ namespace Gtk.Forms.MarkupCompiler
 					string propName = attr.Name.LocalName;
 					string val = attr.Value;
 
-					if (IsBindingExpression(val, out string bindingPath))
-						w.Line($"{varName}.SetBinding({fqType}.{propName}Property, new System.Windows.Data.Binding(\"{bindingPath}\"));");
+					if (IsBindingExpression(val, out string bindingInit))
+						w.Line($"{varName}.SetBinding({fqType}.{propName}Property, {bindingInit});");
 					else
 						w.Line($"{varName}.{propName} = {ValueExpression(propName, val)};");
 				}
@@ -298,34 +298,113 @@ namespace Gtk.Forms.MarkupCompiler
 			}
 		}
 
-		static bool IsBindingExpression(string value, out string path)
+		/// <summary>
+		/// Returns true when <paramref name="value"/> is a <c>{Binding ...}</c> markup
+		/// extension and sets <paramref name="bindingInit"/> to the C# object-initializer
+		/// expression for the resulting <see cref="System.Windows.Data.Binding"/>.
+		/// Handles: empty path, positional path, Path=, Mode=, ElementName=, Converter=
+		/// (Converter via StaticResource emits a TODO comment and is otherwise skipped).
+		/// </summary>
+		static bool IsBindingExpression(string value, out string bindingInit)
 		{
-			path = null;
+			bindingInit = null;
 			if (value == null) return false;
 			string trimmed = value.Trim();
 			if (!trimmed.StartsWith("{Binding", StringComparison.Ordinal)) return false;
 			if (!trimmed.EndsWith("}")) return false;
 
-			// {Binding} or {Binding Path} or {Binding Path=X}
 			string inner = trimmed.Substring("{Binding".Length).TrimEnd('}').Trim();
+
+			// {Binding} — empty path, binds to DataContext.
 			if (string.IsNullOrEmpty(inner))
 			{
-				path = string.Empty;
+				bindingInit = "new System.Windows.Data.Binding()";
 				return true;
 			}
 
-			// TODO (Phase 1): parse comma-separated named arguments (e.g. {Binding X, Mode=TwoWay})
-			// and populate the Binding properties accordingly. Currently only the path/Path= prefix
-			// is extracted; additional named args are silently ignored.
+			var args = SplitBindingArgs(inner);
 
-			// Handle "Path=X" or positional path; stop at the first comma.
-			string firstArg = inner.Split(',')[0].Trim();
-			if (firstArg.StartsWith("Path=", StringComparison.Ordinal))
-				path = firstArg.Substring("Path=".Length).Trim();
+			string path = null;
+			string mode = null;
+			string elementName = null;
+			bool hasConverter = false;
+
+			bool firstPositional = true;
+			foreach (string arg in args)
+			{
+				string a = arg.Trim();
+				if (a.StartsWith("Path=", StringComparison.Ordinal))
+					path = a.Substring("Path=".Length).Trim();
+				else if (a.StartsWith("Mode=", StringComparison.Ordinal))
+					mode = a.Substring("Mode=".Length).Trim();
+				else if (a.StartsWith("ElementName=", StringComparison.Ordinal))
+					elementName = a.Substring("ElementName=".Length).Trim();
+				else if (a.StartsWith("Converter=", StringComparison.Ordinal))
+					hasConverter = true;
+				else if (firstPositional && !a.Contains("="))
+					path = a; // positional path
+				firstPositional = false;
+			}
+
+			var sb = new System.Text.StringBuilder();
+			if (path != null)
+				sb.Append($"new System.Windows.Data.Binding(\"{EscapeString(path)}\")");
 			else
-				path = firstArg;
+				sb.Append("new System.Windows.Data.Binding()");
 
+			bool hasInit = mode != null || elementName != null || hasConverter;
+			if (hasInit)
+			{
+				sb.Append(" { ");
+				bool comma = false;
+				if (mode != null)
+				{
+					sb.Append($"Mode = System.Windows.Data.BindingMode.{mode}");
+					comma = true;
+				}
+				if (elementName != null)
+				{
+					if (comma) sb.Append(", ");
+					sb.Append($"ElementName = \"{EscapeString(elementName)}\"");
+					comma = true;
+				}
+				if (hasConverter)
+				{
+					if (comma) sb.Append(", ");
+					// TODO: resolve Converter={StaticResource ...} once resource round is done.
+					sb.Append("/* Converter = TODO(StaticResource) */");
+				}
+				sb.Append(" }");
+			}
+
+			bindingInit = sb.ToString();
 			return true;
+		}
+
+		/// <summary>
+		/// Splits binding arguments on commas, respecting nested braces.
+		/// e.g. <c>Path=X, Mode=TwoWay, Converter={StaticResource c}</c>
+		/// produces three tokens.
+		/// </summary>
+		static System.Collections.Generic.List<string> SplitBindingArgs(string inner)
+		{
+			var result = new System.Collections.Generic.List<string>();
+			int depth = 0;
+			int start = 0;
+			for (int i = 0; i < inner.Length; i++)
+			{
+				char c = inner[i];
+				if (c == '{') depth++;
+				else if (c == '}') depth--;
+				else if (c == ',' && depth == 0)
+				{
+					result.Add(inner.Substring(start, i - start));
+					start = i + 1;
+				}
+			}
+			if (start < inner.Length)
+				result.Add(inner.Substring(start));
+			return result;
 		}
 
 		static string EscapeString(string s) => s.Replace("\\", "\\\\").Replace("\"", "\\\"");
