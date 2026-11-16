@@ -180,7 +180,7 @@ namespace System.Windows.Controls
 	}
 
 	/// <summary>Event data for <see cref="ComboBox.SelectionChanged"/>.</summary>
-	public sealed class SelectionChangedEventArgs : EventArgs
+	public sealed partial class SelectionChangedEventArgs : EventArgs
 	{
 		/// <summary>The combo box whose selection changed.</summary>
 		public ComboBox Source { get; }

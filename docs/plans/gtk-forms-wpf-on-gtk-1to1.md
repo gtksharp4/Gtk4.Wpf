@@ -162,6 +162,21 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
     `Grid` row/col `Definitions` + `Grid.Row/Column` attached props; `GridLength`/`GridUnitType`.
     GTK-backing approximations noted (Star/Auto sizing, dock geometry) — faithful `Measure`/`Arrange`
     is a later refinement.
+- **Phase 2 Kickoff — DONE** (templating + items controls; **232 tests total**, all pass):
+  - `FrameworkTemplate` (abstract) + `ControlTemplate` (`TargetType`, `Factory`) + `DataTemplate`
+    (`ItemFactory`) in `Gtk.Forms.PresentationFramework/Templates/`.
+  - `ContentPresenter` — hosts `UIElement` directly, applies `DataTemplate`, or falls back to
+    string label; backed by `Gtk.Box`.
+  - `ItemsControl` — `ItemsSource` (IEnumerable, INCC-reactive), `ItemTemplate`, `Items` snapshot;
+    packed in a vertical `Gtk.Box`; extensible via `CreateItemsWidget`/`AddItemWidget`/`RemoveItemWidget`.
+  - `ListBox` — single-selection, `SelectedItem`/`SelectedIndex` (bidirectional, pure + GTK),
+    `SelectionChanged`; backed by `Gtk.ListBox` + `Gtk.ListBoxRow` containers per item.
+  - `ListView` — thin `ListBox` subclass; column/view support is a later phase.
+  - `Control.Template.cs` — `Template` DP added to `Control` as a partial file; `OnTemplateChanged`
+    builds the visual tree; `ApplyTemplateRoot` is a virtual hook for concrete controls.
+  - `SelectionChangedEventArgs` extended via partial to add an `object`-source constructor for
+    non-`ComboBox` selection controls.
+  - 48 new tests: 34 pure DP + 14 GTK smoke (all native, none skipped on Windows).
 - **Phase 1 Round 2 — pending**: `ResourceDictionary` (tree + merged + `Application.Resources`),
   `Style`/`Setter`/`BasedOn`/implicit, `{StaticResource}`/`{DynamicResource}` + `<X.Resources>` in the
   compiler; plus the carry-overs below.
