@@ -22,14 +22,25 @@ namespace Gtk.Forms.MarkupCompiler
 		static readonly Dictionary<string, string> _map = new Dictionary<string, string>
 		{
 			// System.Windows
-			{ "Window",         "System.Windows.Window" },
-			{ "Application",    "System.Windows.Application" },
+			{ "Window",             "System.Windows.Window" },
+			{ "Application",        "System.Windows.Application" },
+			{ "ResourceDictionary", "System.Windows.ResourceDictionary" },
+			{ "Style",              "System.Windows.Style" },
 
 			// System.Windows.Controls
 			{ "Grid",           "System.Windows.Controls.Grid" },
 			{ "StackPanel",     "System.Windows.Controls.StackPanel" },
+			{ "DockPanel",      "System.Windows.Controls.DockPanel" },
+			{ "WrapPanel",      "System.Windows.Controls.WrapPanel" },
+			{ "Canvas",         "System.Windows.Controls.Canvas" },
 			{ "TextBlock",      "System.Windows.Controls.TextBlock" },
+			{ "TextBox",        "System.Windows.Controls.TextBox" },
 			{ "Button",         "System.Windows.Controls.Button" },
+			{ "CheckBox",       "System.Windows.Controls.CheckBox" },
+			{ "RadioButton",    "System.Windows.Controls.RadioButton" },
+			{ "ComboBox",       "System.Windows.Controls.ComboBox" },
+			{ "Image",          "System.Windows.Controls.Image" },
+			{ "Label",          "System.Windows.Controls.Label" },
 			{ "Border",         "System.Windows.Controls.Border" },
 			{ "ContentControl", "System.Windows.Controls.ContentControl" },
 		};
@@ -50,7 +61,11 @@ namespace Gtk.Forms.MarkupCompiler
 		/// </summary>
 		internal static bool HasChildren(string localName)
 		{
-			return localName == "Grid" || localName == "StackPanel";
+			return localName == "Grid"
+				|| localName == "StackPanel"
+				|| localName == "DockPanel"
+				|| localName == "WrapPanel"
+				|| localName == "Canvas";
 		}
 	}
 }
