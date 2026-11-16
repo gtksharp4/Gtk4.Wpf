@@ -101,7 +101,17 @@ namespace Xamarin.Forms.Platform.GTK
 				return Instantiate(attr.ApplicationType);
 
 			// 2. Scan for concrete Application subclasses with a public parameterless ctor.
-			var candidates = entry.GetTypes()
+			IEnumerable<Type> allTypes;
+			try
+			{
+				allTypes = entry.GetTypes();
+			}
+			catch (ReflectionTypeLoadException ex)
+			{
+				allTypes = ex.Types.Where(t => t != null)!;
+			}
+
+			var candidates = allTypes
 				.Where(t =>
 					!t.IsAbstract &&
 					typeof(Application).IsAssignableFrom(t) &&
@@ -118,10 +128,10 @@ namespace Xamarin.Forms.Platform.GTK
 			if (candidates.Count == 1)
 				return Instantiate(candidates[0]);
 
-			// 3. Prefer the type named "App".
-			var byName = candidates.FirstOrDefault(t => t.Name == "App");
-			if (byName != null)
-				return Instantiate(byName);
+			// 3. Prefer the type named "App", but only when exactly one candidate has that name.
+			var byName = candidates.Where(t => t.Name == "App").ToList();
+			if (byName.Count == 1)
+				return Instantiate(byName[0]);
 
 			var names = string.Join(", ", candidates.Select(t => t.FullName));
 			throw new InvalidOperationException(

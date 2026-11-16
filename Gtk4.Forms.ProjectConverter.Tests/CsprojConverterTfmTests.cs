@@ -20,7 +20,7 @@ public class CsprojConverterTfmTests
 		var result = CsprojConverter.Transform(input, out var changed);
 
 		Assert.True(changed);
-		Assert.Contains("<TargetFramework>net8.0</TargetFramework>", result);
+		Assert.Contains("<TargetFramework>net10.0</TargetFramework>", result);
 	}
 
 	[Fact]
@@ -30,7 +30,7 @@ public class CsprojConverterTfmTests
 		var result = CsprojConverter.Transform(input, out var changed);
 
 		Assert.True(changed);
-		Assert.Contains("<TargetFramework>net8.0</TargetFramework>", result);
+		Assert.Contains("<TargetFramework>net10.0</TargetFramework>", result);
 	}
 
 	[Fact]
@@ -40,7 +40,7 @@ public class CsprojConverterTfmTests
 		var result = CsprojConverter.Transform(input, out var changed);
 
 		Assert.True(changed);
-		Assert.Contains("<TargetFramework>net8.0</TargetFramework>", result);
+		Assert.Contains("<TargetFramework>net10.0</TargetFramework>", result);
 	}
 
 	[Fact]
@@ -50,7 +50,7 @@ public class CsprojConverterTfmTests
 		var result = CsprojConverter.Transform(input, out var changed);
 
 		Assert.True(changed);
-		Assert.Contains("<TargetFramework>net8.0</TargetFramework>", result);
+		Assert.Contains("<TargetFramework>net10.0</TargetFramework>", result);
 	}
 
 	[Fact]
@@ -70,7 +70,7 @@ public class CsprojConverterTfmTests
 		var result = CsprojConverter.Transform(input, out var changed);
 
 		Assert.True(changed);
-		Assert.Contains("<TargetFramework>net8.0</TargetFramework>", result);
+		Assert.Contains("<TargetFramework>net10.0</TargetFramework>", result);
 	}
 
 	// ── legacy moniker replacement ─────────────────────────────────────────────
@@ -140,12 +140,12 @@ public class CsprojConverterTfmTests
 	[Fact]
 	public void SameBaseCollapsesDedupe()
 	{
-		// net8.0-android;net8.0-ios → both strip to net8.0 → dedupe → singular <TargetFramework>net8.0
+		// net8.0-android;net8.0-ios → both strip to net8.0 → dedupe to net8.0 → collapse to net10.0
 		var input = Wrap("<TargetFrameworks>net8.0-android;net8.0-ios</TargetFrameworks>");
 		var result = CsprojConverter.Transform(input, out var changed);
 
 		Assert.True(changed);
-		Assert.Contains("<TargetFramework>net8.0</TargetFramework>", result);
+		Assert.Contains("<TargetFramework>net10.0</TargetFramework>", result);
 		Assert.DoesNotContain("<TargetFrameworks>", result);
 	}
 
@@ -168,7 +168,7 @@ public class CsprojConverterTfmTests
 		var result = CsprojConverter.Transform(input, out var changed);
 
 		Assert.True(changed);
-		Assert.Contains("<TargetFramework>net8.0</TargetFramework>", result);
+		Assert.Contains("<TargetFramework>net10.0</TargetFramework>", result);
 		Assert.DoesNotContain("<TargetFrameworks>", result);
 	}
 

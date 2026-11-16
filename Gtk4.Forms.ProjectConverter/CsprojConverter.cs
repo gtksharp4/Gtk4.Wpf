@@ -30,20 +30,17 @@ internal static class CsprojConverter
 		@"^(?:uap10\.0.*|monoandroid.*|xamarin\.ios.*|xamarinios.*|tizen.*|netstandard2\.\d|portable.*)$",
 		RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-	// A whole PackageReference line for Xamarin.Forms official packages (self-closed or with body).
+	// A whole PackageReference line for Xamarin.Forms official packages (self-closed).
+	// Include may appear after other attributes (e.g. Version="5.0" Include="Xamarin.Forms" />).
 	// Matches the entire line including leading indent and trailing newline.
+	// The Include value must end with a closing quote boundary — Xamarin.Forms.FooBar must NOT match.
 	static readonly Regex _xamarinFormsRef = new(
-		@"[^\S\r\n]*<PackageReference\s+Include=""Xamarin\.Forms(?:\.Maps|\.Visual\.Material|\.Platform\.[^""]*)?""[^>]*/>[^\S\r\n]*(\r?\n)?",
+		@"[^\S\r\n]*<PackageReference\b[^>]*\bInclude=""Xamarin\.Forms(?:\.Maps|\.Visual\.Material|\.Platform\.[^""]*)?""[^>]*/>[^\S\r\n]*(\r?\n)?",
 		RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
 	// Bodied PackageReference (Include on its own line, closed by </PackageReference>).
 	static readonly Regex _xamarinFormsRefBodyed = new(
-		@"[^\S\r\n]*<PackageReference\s+Include=""Xamarin\.Forms(?:\.Maps|\.Visual\.Material|\.Platform\.[^""]*)?""[^>]*>[\s\S]*?</PackageReference>[^\S\r\n]*(\r?\n)?",
-		RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-	// <OutputType>Library</OutputType> (or absent — handled separately).
-	static readonly Regex _outputTypeLibrary = new(
-		@"<OutputType>\s*Library\s*</OutputType>",
+		@"[^\S\r\n]*<PackageReference\b[^>]*\bInclude=""Xamarin\.Forms(?:\.Maps|\.Visual\.Material|\.Platform\.[^""]*)?""[^>]*>[\s\S]*?</PackageReference>[^\S\r\n]*(\r?\n)?",
 		RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
 	// Any existing <OutputType>...</OutputType>.
@@ -117,15 +114,15 @@ internal static class CsprojConverter
 				.Distinct(StringComparer.OrdinalIgnoreCase)
 				.ToList();
 
-			// Collapse multiple TFMs (or any surviving non-net10 mix) to a single net10.0.
-			var single = tfms.Count == 1 ? tfms[0] : "net10.0";
-
-			// No change needed: value already exactly the target.
-			if (string.Equals(raw.Trim(), single, StringComparison.OrdinalIgnoreCase)
+			// Any result that is not exactly net10.0 (single or multiple) collapses to net10.0.
+			// Idempotency: <TargetFramework>net10.0</TargetFramework> with no suffix → no change.
+			if (tfms.Count == 1
+				&& string.Equals(tfms[0], "net10.0", StringComparison.OrdinalIgnoreCase)
+				&& string.Equals(raw.Trim(), "net10.0", StringComparison.OrdinalIgnoreCase)
 				&& match.Groups[1].Value.Equals("TargetFramework", StringComparison.OrdinalIgnoreCase))
 				return match.Value;
 
-			return $"<TargetFramework>{single}</TargetFramework>";
+			return "<TargetFramework>net10.0</TargetFramework>";
 		});
 	}
 
@@ -176,17 +173,25 @@ internal static class CsprojConverter
 				count: 1);
 		}
 
-		// OutputType exists but is not Exe: replace it.
+		// OutputType exists but is not Exe: replace ONLY the first occurrence
+		// (a project may have Debug/Release PropertyGroups each with <OutputType>).
 		if (!hasExe)
-			content = _outputTypeAny.Replace(content, _exeOutputType);
+		{
+			var firstMatch = _outputTypeAny.Match(content);
+			content = content.Substring(0, firstMatch.Index)
+				+ _exeOutputType
+				+ content.Substring(firstMatch.Index + firstMatch.Length);
+		}
 
-		// StartupObject absent or wrong: remove stale one, then append after OutputType.
+		// StartupObject absent or wrong: remove every stale one, then append after the
+		// FIRST <OutputType>Exe</OutputType> (which is now guaranteed to exist — count: 1).
 		if (!hasStartup)
 		{
 			content = _startupObjectAny.Replace(content, string.Empty);
 			content = _outputTypeExe.Replace(
 				content,
-				$"{_exeOutputType}\n    {_startupObject}");
+				$"{_exeOutputType}\n    {_startupObject}",
+				count: 1);
 		}
 
 		return content;
