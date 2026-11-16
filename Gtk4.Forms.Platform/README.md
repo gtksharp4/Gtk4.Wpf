@@ -1,11 +1,11 @@
-# Net4x.Xamarin.Forms.Platform
+# Gtk4.Forms.Platform.Base
 
 The `Xamarin.Forms.Platform` facade. This package exists so that
-[`Net4x.Xamarin.Forms.Core`](https://www.nuget.org/packages/Net4x.Xamarin.Forms.Core) has
+[`Gtk4.Forms.Core`](https://www.nuget.org/packages/Gtk4.Forms.Core) has
 something to compile against; you never reference it directly.
 
 ```
-dotnet add package Net4x.Xamarin.Forms.Platform
+dotnet add package Gtk4.Forms.Platform.Base
 ```
 
 ## Why it is empty
@@ -23,6 +23,6 @@ every renderer explicitly with `[assembly: ExportRenderer]` and leaves this faca
 ## About this fork
 
 Maintenance fork of the `5.0.0` branch of [xamarin/Xamarin.Forms](https://github.com/pieroviano/Xamarin.Forms),
-published under the `Net4x.` package prefix. Upstream Xamarin.Forms reached end of support on
+published under the `Gtk4.` package prefix. Upstream Xamarin.Forms reached end of support on
 **May 1, 2024** and was succeeded by [.NET MAUI](https://github.com/dotnet/maui); new
 applications should target .NET MAUI instead.

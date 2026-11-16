@@ -14,19 +14,26 @@ Tizen, MacOS and DualScreen projects, the Cake build, the Azure pipelines and th
 `Xamarin.Forms.sln`. No commit is cited here because none survives: those files were later purged
 from history entirely, which emptied the prune commit and dropped it — the record is
 `docs/plans/history-purge-deleted-files.md` on the `gtk4` branch. What remains is a shared portable
-UI abstraction
-(`Xamarin.Forms.Core`) mapped onto native **GTK 4** widgets by the renderers in
-`Xamarin.Forms.Platform.GTK`.
+UI abstraction (`Gtk4.Forms.Core`) mapped onto native **GTK 4** widgets by the renderers in
+`Gtk4.Forms.Platform.Gtk`.
 
-**The backend binds GtkSharp 4 (GTK 4.22), not GtkSharp 3.** `Platform.GTK` and `Maps.GTK`
+**Naming after the rename.** The directories, project files, the solution (`Gtk4.Forms.sln`) and the
+NuGet package ids were renamed `Xamarin.Forms.*` → `Gtk4.Forms.*`, but the **assembly names and code
+namespaces are deliberately kept as `Xamarin.Forms.*`** (binding compat; the `InternalsVisibleTo`
+wiring and string-based renderer resolution key off them). So a project lives in
+`Gtk4.Forms.Platform.Gtk/` yet still compiles to `Xamarin.Forms.Platform.Gtk4.dll` with
+`namespace Xamarin.Forms.Platform.GTK`. Paths, commands and project names below use the `Gtk4.Forms.*`
+names; assembly names, namespaces and `InternalsVisibleTo` strings stay `Xamarin.Forms.*`.
+
+**The backend binds GtkSharp 4 (GTK 4.22), not GtkSharp 3.** `Platform.Gtk` and `Maps.Gtk`
 reference the `GtkSharp4` package (`Directory.Build.props` `$(GtkSharp4Version)`, floated `4.22.4.*`)
 restored from the `Local` feed (`nuget.config` → `Packages`, a symlink to a shared feed), and the
-assemblies/packages carry the **Gtk4** name (`Xamarin.Forms.Platform.Gtk4`,
-`Net4x.Xamarin.Forms.Gtk4.Platform.GTK`). The GtkSharp4 fork keeps assembly name `GtkSharp.dll` and
+renderer carries the **Gtk4** name — assembly `Xamarin.Forms.Platform.Gtk4`, NuGet package
+`Gtk4.Forms.Platform.Gtk`. The GtkSharp4 fork keeps assembly name `GtkSharp.dll` and
 `namespace Gtk` but exposes the GTK 4 API, with a GTK3→GTK4 compat layer under its
 `Source/Libs/GtkSharp/Compat/`. Many GTK3 APIs survive there as **`[Obsolete]`** shims
 (`Widget.Allocation`, `StyleContext`, `CssProvider.LoadFromData`, `Gtk.ListStore`, `MessageDialog`,
-`ComboBox`…); because `TreatWarningsAsErrors` is on, `Platform.GTK`/`Maps.GTK`/the gallery demote
+`ComboBox`…); because `TreatWarningsAsErrors` is on, `Platform.Gtk`/`Maps.Gtk`/the gallery demote
 `CS0612;CS0618` via `WarningsNotAsErrors` while the backend is still migrating off those shims — only
 genuine GTK4 *removals* are hard errors. Removing that line is the signal the idiomatic rewrite is
 complete.
@@ -42,23 +49,23 @@ Plain `dotnet` / MSBuild. There is no Cake build and no `build.cmd` — those we
 `MSBuild.Sdk.Extras` 3.0.44.
 
 ```powershell
-dotnet build Xamarin.Forms.Gtk4.sln                 # whole solution
-dotnet build Xamarin.Forms.Platform.GTK/Xamarin.Forms.Platform.GTK.csproj
-dotnet build Xamarin.Forms.Gtk4.sln -c Release      # note the Release caveat below
+dotnet build Gtk4.Forms.sln                 # whole solution
+dotnet build Gtk4.Forms.Platform.Gtk/Gtk4.Forms.Platform.Gtk.csproj
+dotnet build Gtk4.Forms.sln -c Release      # note the Release caveat below
 ```
 
-`Xamarin.Forms.Gtk4.sln` is the only solution in the tree.
+`Gtk4.Forms.sln` is the only solution in the tree.
 
-**`Xamarin.Forms.Build.Tasks` must be built before anything else that consumes XAML.** It supplies
+**`Gtk4.Forms.Build.Tasks` must be built before anything else that consumes XAML.** It supplies
 the XAML MSBuild tasks; `Directory.Build.props` points `_XFBuildTasksLocation` at
 `artifacts/build-tasks/netstandard2.0/` (or `artifacts/build-tasks-unix/netstandard2.0/` when
 `UseOSSpecificOutputPaths` is set). After a clean or a `bin`/`obj` wipe, build that project first.
 Building the solution handles the ordering for you.
 
-**Release builds.** It used to not: `Xamarin.Forms.Xaml.UnitTests` failed with
+**Release builds.** It used to not: `Gtk4.Forms.Xaml.UnitTests` failed with
 `error CS0122: 'XamlCAssemblyResolver' is inaccessible due to its protection level`, because
 upstream wrapped `[assembly: InternalsVisibleTo("Xamarin.Forms.Xaml.UnitTests")]` in `#if DEBUG`.
-`Xamarin.Forms.Build.Tasks/Properties/AssemblyInfo.cs` now guards it with `#if !SIGNED_ASSEMBLY`
+`Gtk4.Forms.Build.Tasks/Properties/AssemblyInfo.cs` now guards it with `#if !SIGNED_ASSEMBLY`
 instead, so the test assembly keeps its access in every unsigned configuration. CI still builds
 Debug, but Release is no longer expected to fail.
 
@@ -73,7 +80,7 @@ Build-wide settings live in `Directory.Build.props` / `Environment.Build.props`:
 - `ANDROID_RENDERERS` and `AndroidTargetFrameworks` are still declared in
   `Environment.Build.props` but are vestigial — no Android project remains.
 
-All library projects (`Core`, `Xaml`, `Platform.GTK`, `Build.Tasks`, `Maps`, `Maps.GTK`) target a
+All library projects (`Core`, `Xaml`, `Platform.Gtk`, `Build.Tasks`, `Maps`, `Maps.Gtk`) target a
 single TFM, `netstandard2.0`. The three test projects target `net10.0`.
 
 ## Tests
@@ -82,14 +89,14 @@ Three suites, all **xUnit v3 on `net10.0`**, all run with `dotnet test`:
 
 | Project | Tests | Notes |
 |---|---|---|
-| `Xamarin.Forms.Core.UnitTests` | ~4856 | platform-independent Core |
-| `Xamarin.Forms.Xaml.UnitTests` | ~1029 | XAML loader + XamlC compiler (14 `MSBuildTests(sdkStyle:True)` fail locally on a pre-existing relative-`Packages`-feed / `NU1301` issue, unrelated to the GTK backend) |
-| `Xamarin.Forms.Platform.GTK.UnitTests` | ~191 (+3 skip) | **real GTK 4 widgets** |
+| `Gtk4.Forms.Core.UnitTests` | ~4856 | platform-independent Core |
+| `Gtk4.Forms.Xaml.UnitTests` | ~1029 | XAML loader + XamlC compiler (14 `MSBuildTests(sdkStyle:True)` fail locally on a pre-existing relative-`Packages`-feed / `NU1301` issue, unrelated to the GTK backend) |
+| `Gtk4.Forms.Platform.Gtk.UnitTests` | ~191 (+3 skip) | **real GTK 4 widgets** |
 
 ```powershell
-dotnet test Xamarin.Forms.Gtk4.sln                          # everything
-dotnet test Xamarin.Forms.Core.UnitTests --no-build
-dotnet test Xamarin.Forms.Core.UnitTests --filter FullyQualifiedName~BindingUnitTests
+dotnet test Gtk4.Forms.sln                          # everything
+dotnet test Gtk4.Forms.Core.UnitTests --no-build
+dotnet test Gtk4.Forms.Core.UnitTests --filter FullyQualifiedName~BindingUnitTests
 ```
 
 These were converted from NUnit 3. When touching a converted test, be aware of the traps the
@@ -111,17 +118,17 @@ it hangs indefinitely. Do not remove it. `Xaml.UnitTests` additionally applies a
 `[EnsurePlatformServices]` hook, because many of its fixtures never set `Device.PlatformServices`
 themselves and previously passed only by accident of ordering.
 
-`Xamarin.Forms.Core.UnitTests` and `Xamarin.Forms.Xaml.UnitTests` are **SDK-style with default
+`Gtk4.Forms.Core.UnitTests` and `Gtk4.Forms.Xaml.UnitTests` are **SDK-style with default
 globbing** (`EnableDefaultCompileItems=true`) — a new test file is picked up automatically. (The
 legacy explicit-`<Compile Include>` form, where new files were silently ignored, is gone.) Core
 unit tests derive from `BaseTestFixture` and rely on `MockPlatformServices`/`MockDispatcher`,
 shared into the XAML tests via linked `<Compile Include="..\Gtk4.Forms.Core.UnitTests\...">`.
 XAML compiler tests invoke `XamlCTask` in-process through
-`Xamarin.Forms.Xaml.UnitTests/MockCompiler.cs`.
+`Gtk4.Forms.Xaml.UnitTests/MockCompiler.cs`.
 
 ### GTK renderer tests
 
-`Xamarin.Forms.Platform.GTK.UnitTests` drives **real GTK 4 widgets** and runs on both OSes:
+`Gtk4.Forms.Platform.Gtk.UnitTests` drives **real GTK 4 widgets** and runs on both OSes:
 
 - **Windows** — works directly against the GDK Win32 backend; no `DISPLAY`, no Xvfb.
 - **Linux** — needs an X server: `xvfb-run -a --server-args="-screen 0 1280x1024x24" dotnet test …`
@@ -152,43 +159,45 @@ The two OSes do not agree on everything. Known open difference:
 `CoreControlMappingTests.BoxViewPaintsItsColourAndRepaintsOnChange` passes on Windows and fails
 under Xvfb ("a red BoxView painted rgb(0,0,0)"). Verify both sides before calling the suite green.
 
-CI is `.github/workflows/linux-gtk.yml` (Ubuntu, Debug). All three suites gate it.
+CI is `.github/workflows/build-and-test.yml` (Windows, Linux and macOS). All three suites gate it on
+every OS; per-OS logic lives in `scripts/ci/test-{windows,linux,macos}`.
 
 ## Architecture
 
-**`Xamarin.Forms.Core`** (netstandard2.0) holds everything platform-independent:
+**`Gtk4.Forms.Core`** (netstandard2.0, assembly `Xamarin.Forms.Core`) holds everything platform-independent:
 `BindableObject`/`BindableProperty` (the property system backing bindings, styles, triggers), the
 `Element` → `VisualElement` → `View`/`Page`/`Layout` tree, layout and measurement, `Shell`,
 `ResourceDictionary`/`Style`/CSS `StyleSheets`, `MessagingCenter`, `DependencyService`, animation,
 and `PlatformConfiguration/<Platform>Specific`.
 
-**Renderer resolution.** `Xamarin.Forms.Internals.Registrar<T>` (`Xamarin.Forms.Core/Registrar.cs`)
+**Renderer resolution.** `Xamarin.Forms.Internals.Registrar<T>` (`Gtk4.Forms.Core/Registrar.cs`)
 maps a Forms type → renderer type, keyed additionally by *Visual* and a priority. It is populated
-during `Forms.Init()` (`Xamarin.Forms.Platform.GTK/Forms.cs`), which scans assemblies for
+during `Forms.Init()` (`Gtk4.Forms.Platform.Gtk/Forms.cs`), which scans assemblies for
 `[assembly: ExportRenderer(typeof(Control), typeof(ControlRenderer))]`, `ExportCell`,
 `ExportImageSourceHandler` and `ExportEffect`.
 
 **Default renderers** are *not* declared with `ExportRenderer`. They come from
 `[RenderWith(typeof(XRenderer))]` markers on internal placeholder classes in
-**`Stubs/Xamarin.Forms.Platform.cs`**, compiled into a platform-flavoured
-`Xamarin.Forms.Platform.dll` (`Xamarin.Forms.Platform/Xamarin.Forms.Platform.csproj` is the
+**`Gtk4.Forms.Platform/Xamarin.Forms.Platform.cs`**, compiled into a platform-flavoured
+`Xamarin.Forms.Platform.dll` (`Gtk4.Forms.Platform/Gtk4.Forms.Platform.Base.csproj` is the
 netstandard facade Core references). Adding a control with a default renderer means editing
-`Stubs/Xamarin.Forms.Platform.cs` as well as the GTK renderer.
+`Gtk4.Forms.Platform/Xamarin.Forms.Platform.cs` as well as the GTK renderer.
 
-**`Xamarin.Forms.Platform.GTK`** implements `IVisualElementRenderer` per control plus the platform
+**`Gtk4.Forms.Platform.Gtk`** implements `IVisualElementRenderer` per control plus the platform
 services (`IPlatformServices`, ticker, image sources). `FormsWindow` hosts an `Application`;
 `Platform.cs` owns renderer creation and the layout pass.
 
-**XAML** is two layers. `Xamarin.Forms.Xaml` is the runtime loader/parser (`LoadFromXaml`, markup
-extensions, type converters). `Xamarin.Forms.Build.Tasks` is the build-time half: `XamlGTask`
+**XAML** is two layers. `Gtk4.Forms.Xaml` is the runtime loader/parser (`LoadFromXaml`, markup
+extensions, type converters). `Gtk4.Forms.Build.Tasks` is the build-time half: `XamlGTask`
 generates the `InitializeComponent` + `x:Name` partial class, and `XamlCTask` (Mono.Cecil) compiles
 XAML into IL — the `*Visitor.cs` files walk the XAML node tree emitting IL. XAML errors surface as
 MSBuild errors via `BuildException`/`ErrorMessages.resx`.
 
-Other pieces: `Xamarin.Forms.Maps` + `Xamarin.Forms.Maps.GTK`, `Xamarin.Forms.CustomAttributes`
-(test attributes such as `[Issue]`, `[Preserve]`), and `Xamarin.Forms.Controls` +
-`Xamarin.Forms.ControlGallery.GTK` (the sample/QA app). `Xamarin.Forms.Controls` imports the 1369
-upstream issue repros from `Xamarin.Forms.Controls.Issues/…Shared.projitems`, so they compile into
+Other pieces: `Gtk4.Forms.Maps` + `Gtk4.Forms.Maps.Gtk`, `Gtk4.Forms.CustomAttributes`
+(test attributes such as `[Issue]`, `[Preserve]`), and `Gtk4.Forms.Controls` +
+`Gtk4.Forms.ControlGallery` (the sample/QA app). `Gtk4.Forms.Controls` imports the 1369
+upstream issue repros from `Gtk4.Forms.Controls.Issues/Xamarin.Forms.Controls.Issues.Shared.projitems`
+(the shared-project folder itself keeps its `Xamarin.Forms.*` name), so they compile into
 the gallery even though the per-platform UITest runners were pruned.
 
 ## Coding style

@@ -1,13 +1,13 @@
-# Net4x.Xamarin.Forms.Platform.GTK
+# Gtk4.Forms.Platform.Gtk
 
-The GTK3 backend for Xamarin.Forms — renderers that map the Forms visual tree onto native GTK
-widgets, built on [GtkSharp 3](https://www.nuget.org/packages/GtkSharp).
+The GTK backend for Xamarin.Forms — renderers that map the Forms visual tree onto native GTK
+widgets, built on [GtkSharp 4](https://www.nuget.org/packages/GtkSharp).
 
 ```
-dotnet add package Net4x.Xamarin.Forms.Platform.GTK
+dotnet add package Gtk4.Forms.Platform.Gtk
 ```
 
-This is the package a GTK desktop app references; it pulls in `Net4x.Xamarin.Forms.Core`.
+This is the package a GTK desktop app references; it pulls in `Gtk4.Forms.Core`.
 
 ## Getting started
 
@@ -75,7 +75,7 @@ dependency `OpenGLView` used to carry: it now runs on `Gtk.GLArea`, which is par
 `Xamarin.Forms.Maps` **is** supported on GTK, in a separate package:
 
 ```
-dotnet add package Net4x.Xamarin.Forms.Maps.GTK
+dotnet add package Gtk4.Forms.Maps.Gtk
 ```
 
 It draws its own Web-Mercator slippy map with Cairo over OpenStreetMap-compatible raster tiles, so
@@ -88,11 +88,11 @@ point it at your own tile server before shipping.
 
 ## Dependencies
 
-`Net4x.Xamarin.Forms.Core` and `GtkSharp` 3.24.24.95.
+`Gtk4.Forms.Core` and `GtkSharp` 3.24.24.95.
 
 ## About this fork
 
 Maintenance fork of the `5.0.0` branch of [xamarin/Xamarin.Forms](https://github.com/pieroviano/Xamarin.Forms),
-published under the `Net4x.` package prefix. Upstream Xamarin.Forms reached end of support on
+published under the `Gtk4.` package prefix. Upstream Xamarin.Forms reached end of support on
 **May 1, 2024** and was succeeded by [.NET MAUI](https://github.com/dotnet/maui); note that
 .NET MAUI has no GTK backend, which is why this one is still maintained here.

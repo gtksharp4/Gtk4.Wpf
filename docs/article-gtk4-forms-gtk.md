@@ -14,7 +14,7 @@ to go.
 
 This article walks through a maintenance fork that was built to close exactly that gap: the
 `5.0.0` branch of Gtk4.Forms, **pruned down to the Gtk leg only**, retargeted at the modern
-.NET SDK, converted to xUnit v3, given a real CI pipeline, and published under the `Net4x.`
+.NET SDK, converted to xUnit v3, given a real CI pipeline, and published under the `Gtk4.`
 package prefix. It is an interesting codebase to study whether or not you ever intend to ship a
 Gtk app, because it is a concrete example of what it takes to keep a large, abandoned UI
 framework structurally healthy rather than merely compiling.
@@ -23,7 +23,7 @@ framework structurally healthy rather than merely compiling.
 
 The first substantive change was deletion. A single commit removed the Android, iOS, UAP, WPF,
 Tizen, macOS and DualScreen projects, the Cake build, the Azure Pipelines definitions and the
-original `Gtk4.Forms.sln`.
+original `Xamarin.Forms.sln`.
 
 That sounds destructive, and it is worth being clear about why it is the correct move for a fork
 with one maintainer and one target. Upstream Gtk4.Forms is a multi-platform monolith: the
@@ -68,8 +68,8 @@ four attributes:
 There is a subtlety that trips people up when they extend the framework rather than an app.
 **Default renderers are not declared with `ExportRenderer` at all.** They come from
 `[RenderWith(typeof(XRenderer))]` markers on internal placeholder classes in
-`Stubs/Gtk4.Forms.Platform.cs`, compiled into a platform-flavoured
-`Gtk4.Forms.Platform.dll` that Core references through a `netstandard` facade. Adding a new
+`Stubs/Xamarin.Forms.Platform.cs`, compiled into a platform-flavoured
+`Xamarin.Forms.Platform.dll` that Core references through a `netstandard` facade. Adding a new
 control with a default renderer therefore means editing *two* places: the stub file and the Gtk
 renderer itself.
 
@@ -108,8 +108,8 @@ hosts the `Application`, and the Gtk main loop runs:
 
 ```csharp
 using Gtk;
-using Gtk4.Forms;
-using Gtk4.Forms.Platform.Gtk;
+using Xamarin.Forms;
+using Xamarin.Forms.Platform.GTK;
 
 [STAThread]
 static void Main(string[] args)
@@ -133,13 +133,13 @@ assemblies — `Registrar` can only scan what has been loaded, and merely refere
 not enough to force a load:
 
 ```csharp
-Forms.Init(new[] { typeof(Gtk4.Forms.Maps.Gtk.MapRenderer).Assembly });
-Gtk4.Forms.Maps.Gtk.FormsMaps.Init();
+Forms.Init(new[] { typeof(Xamarin.Forms.Maps.GTK.MapRenderer).Assembly });
+Xamarin.Forms.Maps.GTK.FormsMaps.Init();
 ```
 
-Packages are on NuGet under the `Net4x.` prefix — `Net4x.Gtk4.Forms.Core`,
-`Net4x.Gtk4.Forms.Xaml`, `Net4x.Gtk4.Forms.Platform.Gtk`, `Net4x.Gtk4.Forms.Maps.Gtk`,
-`Net4x.Gtk4.Forms.Build.Tasks`. The Gtk package pulls in Core and depends on `GtkSharp` 3.
+Packages are on NuGet under the `Gtk4.` prefix — `Gtk4.Forms.Core`,
+`Gtk4.Forms.Xaml`, `Gtk4.Forms.Platform.Gtk`, `Gtk4.Forms.Maps.Gtk`,
+`Gtk4.Forms.Build.Tasks`. The Gtk package pulls in Core and depends on `GtkSharp` 4.
 
 **Threading, because Gtk is not thread-safe.** Everything that touches a widget must run on the
 thread that called `Forms.Init()` — the thread running the Gtk main loop. From anywhere else, use
@@ -222,8 +222,8 @@ CI sets it.
 The build is plain `dotnet` / MSBuild — no Cake, no `build.cmd`:
 
 ```powershell
-dotnet build Gtk4.Forms.Gtk.sln
-dotnet test  Gtk4.Forms.Gtk.sln
+dotnet build Gtk4.Forms.sln
+dotnet test  Gtk4.Forms.sln
 ```
 
 One ordering constraint: **`Gtk4.Forms.Build.Tasks` must be built before anything that consumes
@@ -239,7 +239,7 @@ Two build-wide settings shape day-to-day work:
 
 CI is a single GitHub Actions workflow on Ubuntu that installs Gtk 3, WebKitGtk 4.1, Mesa and
 Xvfb, builds the solution, and runs all three suites. It builds **Debug, and that is forced rather
-than preferred**: upstream wraps `[assembly: InternalsVisibleTo("Gtk4.Forms.Xaml.UnitTests")]`
+than preferred**: upstream wraps `[assembly: InternalsVisibleTo("Xamarin.Forms.Xaml.UnitTests")]`
 in `#if DEBUG`, so a Release build of the XAML test project fails with `error CS0122:
 'XamlCAssemblyResolver' is inaccessible due to its protection level`. The fork's fix was to change
 the guard to `#if !SIGNED_ASSEMBLY`, so the test assembly keeps its access in every unsigned
@@ -299,7 +299,7 @@ They are what the difference between "still compiles" and "still maintained" act
 .NET MAUI succeeded Gtk4.Forms everywhere except Gtk. This fork keeps that one leg alive: the
 Gtk4.Forms `5.0.0` Core and XAML stack, mapped onto native Gtk 3 widgets through GtkSharp,
 building on the .NET 10 SDK, tested by three xUnit v3 suites — one of which drives real Gtk
-windows on both Windows and headless Linux — and shipped as `Net4x.`-prefixed NuGet packages.
+windows on both Windows and headless Linux — and shipped as `Gtk4.`-prefixed NuGet packages.
 
 Whether you need a Linux desktop target for an existing Forms application or you are simply
 curious what disciplined maintenance of an end-of-life framework looks like in practice, the
@@ -307,7 +307,7 @@ codebase answers both questions.
 
 ---
 
-*Repository: [github.com/pieroviano/Gtk4.Forms](https://github.com/pieroviano/Gtk4.Forms),
-branch `5.0.0`. Original project: [xamarin/Gtk4.Forms](https://github.com/pieroviano/Gtk4.Forms)
+*Repository: [github.com/pieroviano/Xamarin.Forms](https://github.com/pieroviano/Xamarin.Forms),
+branch `5.0.0`. Original project: [xamarin/Xamarin.Forms](https://github.com/xamarin/Xamarin.Forms)
 (MIT). For new cross-platform work, see [.NET MAUI](https://github.com/dotnet/maui) and the
 [official upgrade guidance](https://learn.microsoft.com/dotnet/maui/migration).*

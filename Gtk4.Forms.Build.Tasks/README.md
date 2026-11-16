@@ -1,10 +1,10 @@
-# Net4x.Xamarin.Forms.Build.Tasks
+# Gtk4.Forms.Build.Tasks
 
 The build-time half of Xamarin.Forms XAML: MSBuild tasks and targets that generate the
 code-behind partial class and compile XAML into IL.
 
 ```
-dotnet add package Net4x.Xamarin.Forms.Build.Tasks
+dotnet add package Gtk4.Forms.Build.Tasks
 ```
 
 This is an MSBuild task package, not a library — it ships no `lib/` folder and adds no
@@ -25,7 +25,7 @@ XAML files are picked up automatically in SDK-style projects (`**\*.xaml` become
 with source positions rather than runtime exceptions.
 
 Whether a page is compiled or parsed at runtime is chosen per assembly or per type with
-`[XamlCompilation(XamlCompilationOptions.Compile)]`, from `Net4x.Xamarin.Forms.Xaml`.
+`[XamlCompilation(XamlCompilationOptions.Compile)]`, from `Gtk4.Forms.Xaml`.
 
 ## Properties
 
@@ -44,8 +44,8 @@ Importing the targets twice is reported as error `XF001`.
 
 ```
 build/
-  Net4x.Xamarin.Forms.Build.Tasks.props     NuGet auto-import entry point
-  Net4x.Xamarin.Forms.Build.Tasks.targets   NuGet auto-import entry point
+  Gtk4.Forms.Build.Tasks.props     NuGet auto-import entry point
+  Gtk4.Forms.Build.Tasks.targets   NuGet auto-import entry point
   Xamarin.Forms.props / .targets            the actual logic
   Xamarin.Forms.DefaultItems.props/.targets XAML/CSS default globs
   Xamarin.Forms.Debug.targets               opt-in debug XAML compilation
@@ -59,6 +59,6 @@ import them directly keep working.
 ## About this fork
 
 Maintenance fork of the `5.0.0` branch of [xamarin/Xamarin.Forms](https://github.com/pieroviano/Xamarin.Forms),
-published under the `Net4x.` package prefix. Upstream Xamarin.Forms reached end of support on
+published under the `Gtk4.` package prefix. Upstream Xamarin.Forms reached end of support on
 **May 1, 2024** and was succeeded by [.NET MAUI](https://github.com/dotnet/maui); new
 applications should target .NET MAUI instead.

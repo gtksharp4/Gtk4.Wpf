@@ -1,9 +1,9 @@
-# Net4x.Xamarin.Forms.Maps.GTK
+# Gtk4.Forms.Maps.Gtk
 
-`Xamarin.Forms.Maps` support for the GTK3 backend.
+`Xamarin.Forms.Maps` support for the GTK backend.
 
 ```
-dotnet add package Net4x.Xamarin.Forms.Maps.GTK
+dotnet add package Gtk4.Forms.Maps.Gtk
 ```
 
 ## How it works

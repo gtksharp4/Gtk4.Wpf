@@ -1,9 +1,9 @@
-# Net4x.Xamarin.Forms.Maps
+# Gtk4.Forms.Maps.Base
 
 The platform-independent `Map` control for Xamarin.Forms.
 
 ```
-dotnet add package Net4x.Xamarin.Forms.Maps
+dotnet add package Gtk4.Forms.Maps.Base
 ```
 
 ## What is in it
@@ -21,18 +21,18 @@ This package draws nothing on its own. It needs a matching per-platform maps ren
 `FormsMaps.Init(...)` must be called after `Forms.Init()` — and, on most platforms, a maps API
 key configured in the host app.
 
-> **This fork does not currently ship a maps backend.** `Xamarin.Forms.Maps.GTK` is still on
-> GTK# 2 and is not part of `Xamarin.Forms.Gtk.sln`, so `Map` has no GTK3 renderer yet. The
-> package is published because `Net4x.Xamarin.Forms.Maps` remains the reference other code
+> **This fork does not currently ship a maps backend.** `Gtk4.Forms.Maps.Gtk` is still on
+> GTK# 2 and is not part of `Gtk4.Forms.sln`, so `Map` has no GTK3 renderer yet. The
+> package is published because `Gtk4.Forms.Maps.Base` remains the reference other code
 > compiles against.
 
 ## Dependencies
 
-`Net4x.Xamarin.Forms.Core`.
+`Gtk4.Forms.Core`.
 
 ## About this fork
 
 Maintenance fork of the `5.0.0` branch of [xamarin/Xamarin.Forms](https://github.com/pieroviano/Xamarin.Forms),
-published under the `Net4x.` package prefix. Upstream Xamarin.Forms reached end of support on
+published under the `Gtk4.` package prefix. Upstream Xamarin.Forms reached end of support on
 **May 1, 2024** and was succeeded by [.NET MAUI](https://github.com/dotnet/maui); new
 applications should target .NET MAUI instead.

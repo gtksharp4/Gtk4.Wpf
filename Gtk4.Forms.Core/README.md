@@ -1,14 +1,14 @@
-# Net4x.Xamarin.Forms.Core
+# Gtk4.Forms.Core
 
 The platform-independent half of Xamarin.Forms — the shared UI abstraction that per-platform
 renderers map onto native controls at runtime.
 
 ```
-dotnet add package Net4x.Xamarin.Forms.Core
+dotnet add package Gtk4.Forms.Core
 ```
 
 You normally do not reference this package directly: a backend package such as
-[`Net4x.Xamarin.Forms.Platform.GTK`](https://www.nuget.org/packages/Net4x.Xamarin.Forms.Platform.GTK)
+[`Gtk4.Forms.Platform.Gtk`](https://www.nuget.org/packages/Gtk4.Forms.Platform.Gtk)
 brings it in.
 
 ## What is in it
@@ -32,11 +32,11 @@ specific platform:
 
 | Package | Purpose |
 | --- | --- |
-| `Net4x.Xamarin.Forms.Platform` | Facade this package references; the real assembly is supplied per platform |
-| `Net4x.Xamarin.Forms.Xaml` | Runtime XAML loader and markup extensions |
-| `Net4x.Xamarin.Forms.Build.Tasks` | Build-time XAML code generation and IL compilation |
-| `Net4x.Xamarin.Forms.Maps` | `Map` control abstraction |
-| `Net4x.Xamarin.Forms.Platform.GTK` | GTK3 backend |
+| `Gtk4.Forms.Platform.Base` | Facade this package references; the real assembly is supplied per platform |
+| `Gtk4.Forms.Xaml` | Runtime XAML loader and markup extensions |
+| `Gtk4.Forms.Build.Tasks` | Build-time XAML code generation and IL compilation |
+| `Gtk4.Forms.Maps.Base` | `Map` control abstraction |
+| `Gtk4.Forms.Platform.Gtk` | GTK backend |
 
 `AssemblyVersion` is deliberately frozen at `2.0.0.0` for binding compatibility; the package
 version is the one that moves.
@@ -44,6 +44,6 @@ version is the one that moves.
 ## About this fork
 
 Maintenance fork of the `5.0.0` branch of [xamarin/Xamarin.Forms](https://github.com/pieroviano/Xamarin.Forms),
-published under the `Net4x.` package prefix. Upstream Xamarin.Forms reached end of support on
+published under the `Gtk4.` package prefix. Upstream Xamarin.Forms reached end of support on
 **May 1, 2024** and was succeeded by [.NET MAUI](https://github.com/dotnet/maui); new
 applications should target .NET MAUI instead.

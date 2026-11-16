@@ -1,10 +1,10 @@
-# Net4x.Xamarin.Forms.Xaml
+# Gtk4.Forms.Xaml
 
 The runtime XAML layer for Xamarin.Forms: it turns the XAML embedded in your assembly into a
 live object graph.
 
 ```
-dotnet add package Net4x.Xamarin.Forms.Xaml
+dotnet add package Gtk4.Forms.Xaml
 ```
 
 ## What is in it
@@ -22,17 +22,17 @@ dotnet add package Net4x.Xamarin.Forms.Xaml
 ## The other half
 
 XAML is two layers. This package is the runtime one; the build-time one lives in
-[`Net4x.Xamarin.Forms.Build.Tasks`](https://www.nuget.org/packages/Net4x.Xamarin.Forms.Build.Tasks),
+[`Gtk4.Forms.Build.Tasks`](https://www.nuget.org/packages/Gtk4.Forms.Build.Tasks),
 which generates the `InitializeComponent` + `x:Name` partial class (`XamlGTask`) and can compile
 XAML straight to IL (`XamlCTask`). Reference both if your project contains `.xaml` files.
 
 ## Dependencies
 
-`Net4x.Xamarin.Forms.Core`.
+`Gtk4.Forms.Core`.
 
 ## About this fork
 
 Maintenance fork of the `5.0.0` branch of [xamarin/Xamarin.Forms](https://github.com/pieroviano/Xamarin.Forms),
-published under the `Net4x.` package prefix. Upstream Xamarin.Forms reached end of support on
+published under the `Gtk4.` package prefix. Upstream Xamarin.Forms reached end of support on
 **May 1, 2024** and was succeeded by [.NET MAUI](https://github.com/dotnet/maui); new
 applications should target .NET MAUI instead.
