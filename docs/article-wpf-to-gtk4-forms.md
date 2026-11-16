@@ -37,37 +37,14 @@ forms-over-data LOB app the port is routine.
 
 Pin it in `global.json` if you want reproducibility (`rollForward: latestFeature`).
 
-### 2. Native GTK 4 runtime (per OS)
+### 2. Native GTK 4 runtime
 
-Gtk4.Forms binds **GtkSharp 4 (GTK 4.22)**. GtkSharp is only the managed binding — the native
-GTK 4 libraries must be present on every machine the app runs on.
-
-| OS | Install |
-| --- | --- |
-| **Windows** | Ship the GTK 4 runtime DLLs alongside the app (GtkSharp 4 resolves them from the app directory / `PATH`), or install the MSYS2 `mingw-w64-x86_64-gtk4` package. No `DISPLAY`, no X server — GTK uses the Win32 GDK backend directly. |
-| **Linux** | `sudo apt install libgtk-4-1` (Debian/Ubuntu) or `sudo dnf install gtk4` (Fedora). A display server (X11 or Wayland) must be available; headless CI needs `xvfb-run`. |
-| **macOS** | `brew install gtk4`. GTK renders through the Quartz GDK backend. |
-
-### 3. The GtkSharp4 package feed (important)
-
-The `GtkSharp4` binding is a **hard fork and is not published on nuget.org.** The Gtk4.Forms
-packages depend on it, so a plain `dotnet restore` against nuget.org alone will fail to resolve
-`GtkSharp4`. You must add the feed that supplies it — the vendored `nupkg` set shipped in this
-repository under `build/gtksharp4-packages/`, or your own private feed mirroring it.
-
-Add it to your app's `nuget.config`:
-
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-  <packageSources>
-    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" protocolVersion="3" />
-    <!-- Points at the committed GtkSharp4 wrapper nupkgs (copy them into your repo,
-         or host them on a private feed). -->
-    <add key="GtkSharp4Vendored" value="build/gtksharp4-packages" />
-  </packageSources>
-</configuration>
-```
+Gtk4.Forms binds **GtkSharp 4 (GTK 4.22)**, published on nuget.org — and the `GtkSharp4` package
+carries the native GTK 4 runtime for Windows, Linux and macOS as package assets. So there is
+**nothing to install and no special feed to add**: a plain `dotnet restore` pulls the managed binding
+and its native libraries together, and the same build runs on all three OSes. A Linux box still needs
+a display server (X11/Wayland, or `xvfb-run` for headless CI); macOS renders through the Quartz GDK
+backend.
 
 ## The project file
 
@@ -106,6 +83,16 @@ Keep your `.xaml` files as `<Page>` build items — `Gtk4.Forms.Build.Tasks` (pu
 by the packages) runs `XamlGTask`/`XamlCTask` to generate `InitializeComponent` and compile the
 markup, exactly like WPF's XAML build tasks. SDK-style default globbing already includes `.xaml`;
 no explicit `<Compile>` entries are needed.
+
+**Shortcut — `Gtk4.Forms.Base`.** Instead of hand-writing the three package references above *and*
+the entry point in Step 4, you can add the single meta-package `Gtk4.Forms.Base`. At build time it
+rewrites the `.csproj` (sets `OutputType=Exe` / `TargetFramework=net10.0`, strips any leftover
+`Xamarin.Forms`/`net*-windows` bits, and pulls in Core, Xaml, Platform.Gtk and the build tasks) and
+injects the GTK `Main` for you, so the manual project file and the Step 4 bootstrap become optional.
+Because an MSBuild target cannot retarget the build already running, the **first** build after adding
+the package rewrites the project and the **second** is the clean one (the rewrite is idempotent;
+`SkipGtkConvert`/`SkipGtkHost` opt out). The manual versions below remain worth reading as a precise
+description of what the package does.
 
 ## Conceptual mapping
 
@@ -216,7 +203,8 @@ constructor after `InitializeComponent()`.
 
 This is the part with no WPF equivalent. WPF generates `Main` for you from `App.xaml`. Here you
 write it: initialise GTK, initialise Forms, host the `Application` in a `FormsWindow`, run the
-GTK main loop.
+GTK main loop. (If you took the `Gtk4.Forms.Base` shortcut above, you can skip this section entirely
+— the package injects an equivalent `Main` that reflects out your `Application` subclass and runs it.)
 
 ```csharp
 using System;
@@ -335,15 +323,13 @@ dotnet run   --project MyApp.csproj
 
 ### Windows
 
-- Install or ship the GTK 4 native runtime (MSYS2 `mingw-w64-x86_64-gtk4`, or bundle the DLLs
-  next to the exe so GtkSharp 4 finds them on `PATH`).
+- Nothing to install — the native GTK 4 runtime restores with the `GtkSharp4` package.
 - No `DISPLAY`, no X server — the Win32 GDK backend is used directly.
-- `dotnet run` just works once the native DLLs resolve.
+- `dotnet run` just works.
 
 ### Linux
 
 ```bash
-sudo apt install libgtk-4-1          # Debian/Ubuntu  (or: sudo dnf install gtk4)
 dotnet run --project MyApp.csproj
 ```
 
@@ -360,10 +346,10 @@ dotnet run --project MyApp.csproj
 ### macOS
 
 ```bash
-brew install gtk4
 dotnet run --project MyApp.csproj
 ```
 
+- Nothing to install — the native GTK 4 runtime restores with the `GtkSharp4` package.
 - GTK renders through the Quartz GDK backend; no XQuartz required for GTK 4.
 - On Apple Silicon, make sure the GTK 4 arch matches the .NET runtime arch (both arm64, or both
   x64 under Rosetta) or the native load fails.
@@ -400,14 +386,19 @@ problems surface early rather than all at once.
 ## Summary
 
 1. New SDK-style project: `OutputType=Exe`, `TargetFramework=net10.0` (OS-neutral).
-2. Reference `Gtk4.Forms.Core` + `Gtk4.Forms.Xaml` + `Gtk4.Forms.Platform.Gtk`, and add the
-   GtkSharp4 feed (not on nuget.org).
+2. Reference `Gtk4.Forms.Core` + `Gtk4.Forms.Xaml` + `Gtk4.Forms.Platform.Gtk` from nuget.org (the
+   `GtkSharp4` dependency, and its native runtime, come along automatically).
 3. Rewrite each `Window` as a `ContentPage`; swap the default `xmlns` to the Forms namespace and
    translate the controls.
 4. `DataContext` → `BindingContext`; drop `Path=`; keep commands, converters and view models.
 5. Write the `Main` bootstrap: `GtkThemes.Init()` → `Gtk.Application.Init()` → `Forms.Init()` →
    `FormsWindow.LoadApplication(new App())` → `Gtk.Application.Run()`, on an `[STAThread]`.
-6. Install the native GTK 4 runtime on each target OS and run the **same** build everywhere.
+6. Run the **same** build everywhere — the native GTK 4 runtime ships with the package, so there is
+   nothing to install per OS (Linux still needs a display: X11/Wayland or `xvfb-run`).
+
+Steps 1, 2 and 5 can be collapsed into a single `PackageReference` to **`Gtk4.Forms.Base`**, which
+rewrites the project and injects the `Main` for you (see the shortcut under *The project file*); the
+XAML translation in steps 3–4 is the part that stays manual.
 
 The reward is a WPF-shaped codebase — XAML, bindings, styles, MVVM — that is no longer tied to
 Windows.
