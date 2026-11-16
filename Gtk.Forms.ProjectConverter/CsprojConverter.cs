@@ -5,10 +5,11 @@ namespace Gtk.Forms.ProjectConverter;
 
 /// <summary>
 /// Converts a consumer WPF project to build on the Gtk.Forms compatibility layer: collapses
-/// Windows-platform TFMs to <c>net10.0</c>, removes <c>&lt;UseWPF&gt;</c> and
-/// <c>&lt;UseWindowsForms&gt;</c> (Windows-only SDK opt-ins), and ensures
-/// <c>OutputType=Exe</c> (WPF's entry point comes from the compiled
-/// <c>ApplicationDefinition</c>).
+/// Windows-platform TFMs to <c>net10.0</c> and removes <c>&lt;UseWPF&gt;</c> and
+/// <c>&lt;UseWindowsForms&gt;</c> (Windows-only SDK opt-ins).
+/// <para><c>OutputType</c> is left untouched — a WPF app keeps its <c>WinExe</c>. The entry
+/// point comes from the compiled <c>ApplicationDefinition</c>, which works for any executable
+/// output type, so there is no reason to downgrade <c>WinExe</c> to <c>Exe</c>.</para>
 /// </summary>
 /// <remarks>
 /// All edits are textual and minimal; unrelated content is left byte-for-byte unchanged.
@@ -41,23 +42,6 @@ internal static class CsprojConverter
 		@"[^\S\r\n]*<UseWindowsForms>[^<]*</UseWindowsForms>[^\S\r\n]*(\r?\n)?",
 		RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-	// Any existing <OutputType>...</OutputType>.
-	static readonly Regex _outputTypeAny = new(
-		@"<OutputType>[^<]*</OutputType>",
-		RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-	// <OutputType>Exe</OutputType> already present (exact value, with optional whitespace).
-	static readonly Regex _outputTypeExe = new(
-		@"<OutputType>\s*Exe\s*</OutputType>",
-		RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-	// First </PropertyGroup> close — insertion point for OutputType when absent.
-	static readonly Regex _firstPropertyGroupClose = new(
-		@"</PropertyGroup>",
-		RegexOptions.Compiled);
-
-	const string _exeOutputType = "<OutputType>Exe</OutputType>";
-
 	/// <summary>
 	/// Applies all conversion rules to project-file text and reports whether anything changed.
 	/// </summary>
@@ -72,7 +56,6 @@ internal static class CsprojConverter
 
 		result = ApplyTfmCollapse(result);
 		result = StripWpfOptIns(result);
-		result = ApplyOutputType(result);
 
 		changed = !string.Equals(result, content, StringComparison.Ordinal);
 		return result;
@@ -137,32 +120,5 @@ internal static class CsprojConverter
 		content = _useWpf.Replace(content, string.Empty);
 		content = _useWindowsForms.Replace(content, string.Empty);
 		return content;
-	}
-
-	static string ApplyOutputType(string content)
-	{
-		var hasExe = _outputTypeExe.IsMatch(content);
-
-		// Already correct — touch nothing.
-		if (hasExe)
-			return content;
-
-		var hasAny = _outputTypeAny.IsMatch(content);
-
-		// No OutputType at all: insert before first </PropertyGroup>.
-		if (!hasAny)
-		{
-			return _firstPropertyGroupClose.Replace(
-				content,
-				$"  {_exeOutputType}\n  </PropertyGroup>",
-				count: 1);
-		}
-
-		// OutputType exists but is not Exe: replace ONLY the first occurrence
-		// (a project may have Debug/Release PropertyGroups each with <OutputType>).
-		var firstMatch = _outputTypeAny.Match(content);
-		return content.Substring(0, firstMatch.Index)
-			+ _exeOutputType
-			+ content.Substring(firstMatch.Index + firstMatch.Length);
 	}
 }

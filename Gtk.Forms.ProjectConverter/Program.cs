@@ -5,7 +5,9 @@ static class Program
 {
 	/// <summary>
 	/// <para>Usage: <c>dotnet Gtk.Forms.ProjectConverter.dll --convert-project &lt;path.csproj&gt;</c></para>
-	/// Returns 0 on success, 1 on bad/missing arguments.
+	/// Exit codes: <c>0</c> nothing to do (already converted), <c>10</c> the project was just
+	/// converted (the caller's current build was evaluated as WPF and must be re-run),
+	/// <c>1</c> bad/missing arguments.
 	/// </summary>
 	static int Main(string[] args)
 	{
@@ -28,7 +30,9 @@ static class Program
 			Console.WriteLine(converted
 				? $"Converted: {projectPath}"
 				: $"Already converted: {projectPath}");
-			return 0;
+			// 10 tells Base.targets this build's project was just rewritten and must be re-run;
+			// 0 means it was already converted so the current build can proceed.
+			return converted ? 10 : 0;
 		}
 
 		Console.Error.WriteLine("Usage: Gtk.Forms.ProjectConverter --convert-project <path.csproj>");

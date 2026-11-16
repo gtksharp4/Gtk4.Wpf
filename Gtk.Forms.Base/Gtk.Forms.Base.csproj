@@ -11,9 +11,9 @@
 	       transitively — build/ assets do not flow past the direct consumer.
 	    3. Pack the Gtk.Forms.ProjectConverter tool DLL into tools/ so Base.targets can
 	       invoke it via `dotnet <dll>` (RID-agnostic, no instance guard) to rewrite the
-	       consumer .csproj (strip UseWPF/UseWindowsForms, collapse TFM, set OutputType=Exe).
-	       No injected Main is needed: WPF's entry point comes from the ApplicationDefinition
-	       compiled by the MarkupCompiler.
+	       consumer .csproj (strip UseWPF/UseWindowsForms, collapse TFM; OutputType is left as-is,
+	       so a WPF app keeps its WinExe). No injected Main is needed: WPF's entry point comes
+	       from the ApplicationDefinition compiled by the MarkupCompiler.
 	-->
 	<PropertyGroup>
 		<PackageId>Gtk.Forms.Base</PackageId>
