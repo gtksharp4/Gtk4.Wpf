@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Reflection;
 
 namespace System.Windows.Controls
 {
@@ -20,9 +19,10 @@ namespace System.Windows.Controls
 	/// </para>
 	/// GTK4 backing: a <see cref="Gtk.ScrolledWindow"/> wrapping a <see cref="Gtk.Grid"/>
 	/// of <see cref="Gtk.Label"/> cells. Each row is marked with a
-	/// <see cref="Gtk.GestureClick"/> for selection.
+	/// <see cref="Gtk.GestureClick"/> for selection. Column generation split into
+	/// <c>DataGrid.Columns.cs</c>.
 	/// </summary>
-	public class DataGrid : Control
+	public partial class DataGrid : Control
 	{
 		// ── ItemsSource DP ────────────────────────────────────────────────────────
 
@@ -35,7 +35,11 @@ namespace System.Windows.Controls
 				new PropertyMetadata(null, OnItemsSourceChanged));
 
 		static void OnItemsSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-			=> ((DataGrid)d).Rebuild();
+		{
+			var dg = (DataGrid)d;
+			dg.SubscribeCollectionChanged(e.NewValue as IEnumerable);
+			dg.Rebuild();
+		}
 
 		/// <summary>Gets or sets the items source.</summary>
 		public IEnumerable? ItemsSource
@@ -96,10 +100,14 @@ namespace System.Windows.Controls
 
 		// ── GTK backing ──────────────────────────────────────────────────────────
 
-		Gtk.ScrolledWindow? _scroll;
-		Gtk.Grid? _grid;
-		readonly List<object?> _rows = new List<object?>();
+		internal Gtk.ScrolledWindow? _scroll;
+		internal Gtk.Grid? _grid;
+		internal readonly List<object?> _rows = new List<object?>();
 		bool _updating;
+
+		// INPC subscription for the current ItemsSource (R8).
+		System.Collections.Specialized.NotifyCollectionChangedEventHandler? _collectionChangedHandler;
+		IEnumerable? _prevItemsSource;
 
 		/// <summary>Snapshot of items (populated when <see cref="ItemsSource"/> is set).</summary>
 		public IReadOnlyList<object?> Items => _rows;
@@ -117,82 +125,17 @@ namespace System.Windows.Controls
 			return _scroll;
 		}
 
-		IReadOnlyList<DataGridColumn> GetEffectiveColumns()
+		void SubscribeCollectionChanged(IEnumerable? source)
 		{
-			if (Columns.Count > 0) return Columns;
-			if (!AutoGenerateColumns) return Array.Empty<DataGridColumn>();
-
-			// Reflect public readable properties of first item.
-			object? first = null;
-			if (ItemsSource != null)
-				foreach (var item in ItemsSource) { first = item; break; }
-
-			if (first == null) return Array.Empty<DataGridColumn>();
-
-			var cols = new List<DataGridColumn>();
-			foreach (var prop in first.GetType().GetProperties(
-				BindingFlags.Public | BindingFlags.Instance))
+			if (_collectionChangedHandler != null
+				&& _prevItemsSource is System.Collections.Specialized.INotifyCollectionChanged old)
+				old.CollectionChanged -= _collectionChangedHandler;
+			_collectionChangedHandler = null;
+			_prevItemsSource = source;
+			if (source is System.Collections.Specialized.INotifyCollectionChanged incc)
 			{
-				if (!prop.CanRead) continue;
-				cols.Add(new DataGridTextColumn
-				{
-					Header = prop.Name,
-					Binding = new Windows.Data.Binding(prop.Name),
-				});
-			}
-			return cols;
-		}
-
-		void Rebuild()
-		{
-			_rows.Clear();
-			if (ItemsSource != null)
-				foreach (var item in ItemsSource)
-					_rows.Add(item);
-
-			if (_grid == null) return;
-
-			// Detach all children from the grid.
-			var toRemove = new List<Gtk.Widget>();
-			for (var child = _grid.FirstChild; child != null; child = child.NextSibling)
-				toRemove.Add(child);
-			foreach (var w in toRemove)
-				_grid.Remove(w);
-
-			var cols = GetEffectiveColumns();
-			if (cols.Count == 0) return;
-
-			// Header row.
-			for (int c = 0; c < cols.Count; c++)
-			{
-				var hdr = new Gtk.Label(cols[c].Header?.ToString() ?? string.Empty);
-				hdr.Hexpand = true;
-				hdr.AddCssClass("datagrid-header");
-				_grid.Attach(hdr, c, 0, 1, 1);
-			}
-
-			// Data rows.
-			int row = 1;
-			foreach (var item in _rows)
-			{
-				for (int c = 0; c < cols.Count; c++)
-				{
-					var cell = new Gtk.Label(cols[c].GetCellText(item));
-					cell.Hexpand = true;
-					cell.Xalign = 0.0f;
-					cell.AddCssClass("datagrid-cell");
-					_grid.Attach(cell, c, row, 1, 1);
-				}
-				// Row click for selection — attach gesture to first cell.
-				var firstCell = _grid.GetChildAt(0, row);
-				if (firstCell != null)
-				{
-					var capturedItem = item;
-					var click = new Gtk.GestureClick();
-					click.Pressed += (s, e) => SelectRow(capturedItem);
-					firstCell.AddController(click);
-				}
-				row++;
+				_collectionChangedHandler = (s, e) => Rebuild();
+				incc.CollectionChanged += _collectionChangedHandler;
 			}
 		}
 

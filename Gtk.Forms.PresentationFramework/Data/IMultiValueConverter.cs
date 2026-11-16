@@ -19,7 +19,7 @@ namespace System.Windows.Data
 
 		/// <summary>
 		/// Converts a target value back to source values (for TwoWay bindings).
-		/// Return <see cref="Binding.DoNothing"/> or an array of
+		/// Return <see cref="Binding.DoNothing"/> or an array containing
 		/// <see cref="DependencyProperty.UnsetValue"/> for unimplemented conversions.
 		/// </summary>
 		object?[]? ConvertBack(object? value, Type[] targetTypes, object? parameter, CultureInfo culture);

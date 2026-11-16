@@ -34,12 +34,16 @@ namespace System.Windows.Data
 		{
 			var list = _bindings.GetOrCreateValue(target);
 
+			// Clear any existing simple-binding record for this DP.
 			int idx = list.FindIndex(r => r.TargetProperty == dp);
 			if (idx >= 0)
 			{
 				list[idx].Deactivate();
 				list.RemoveAt(idx);
 			}
+
+			// Also clear any existing multi-binding record for this DP (R2: cross-engine leak).
+			MultiBindingEngine.ClearForDp(target, dp);
 
 			// Remove old expression entry.
 			var exprMap = _expressions.GetOrCreateValue(target);
@@ -188,20 +192,8 @@ namespace System.Windows.Data
 				}
 
 				var source = ResolveSource(target);
-
-				bool canResolve = source != null
-					|| (!UsesDataContext)
-					|| target.DataContext != null;
-
-				if (!canResolve)
-				{
-					// Source unresolvable — apply FallbackValue.
-					ApplyFallback(target);
-				}
-				else
-				{
-					PushToTarget(target, source);
-				}
+				// PushToTarget handles FallbackValue / TargetNullValue internally (R5).
+				PushToTarget(target, source);
 
 				if (mode == BindingMode.OneTime) return;
 
@@ -243,8 +235,30 @@ namespace System.Windows.Data
 			void ApplyFallback(FrameworkElement target)
 			{
 				var fb = _binding.FallbackValue;
-				if (!ReferenceEquals(fb, DependencyProperty.UnsetValue))
-					target.SetValue(_dp, fb);
+				if (ReferenceEquals(fb, DependencyProperty.UnsetValue)) return;
+				// R4: convert string FallbackValue to target DP type when needed.
+				fb = CoerceToTargetType(fb);
+				target.SetValue(_dp, fb);
+			}
+
+			void ApplyTargetNullValue(FrameworkElement target)
+			{
+				var tnv = _binding.TargetNullValue;
+				if (tnv == null) return;
+				// R4: convert string TargetNullValue to target DP type when needed.
+				tnv = CoerceToTargetType(tnv);
+				target.SetValue(_dp, tnv);
+			}
+
+			/// <summary>
+			/// If <paramref name="value"/> is a string but the target DP type is not string,
+			/// converts it via <see cref="System.Windows.Markup.XamlValueConverter"/> (R4).
+			/// </summary>
+			object? CoerceToTargetType(object? value)
+			{
+				if (value is string s && _dp.PropertyType != typeof(string))
+					return System.Windows.Markup.XamlValueConverter.Convert(null!, _dp, s);
+				return value;
 			}
 
 			internal void PushToTargetPublic(FrameworkElement target) => PushToTarget(target, ResolveSource(target));
@@ -254,23 +268,32 @@ namespace System.Windows.Data
 				_pushing = true;
 				try
 				{
+					// R5: FallbackValue applies when the path is unresolvable:
+					// either source is null (no DataContext, no explicit source), OR
+					// source is non-null but the path itself doesn't resolve.
 					var rawValue = ResolvePath(source, _binding.Path);
 
-					// FallbackValue when path resolves to null and no source.
-					if (rawValue == null && source == null)
+					bool pathUnresolvable = rawValue == null
+						&& (source == null || PathIsUnresolvable(source));
+
+					if (pathUnresolvable)
 					{
 						ApplyFallback(target);
 						return;
 					}
 
 					object? value = rawValue;
+					// Converter runs before TargetNullValue (R5).
 					if (_binding.Converter != null)
 						value = _binding.Converter.Convert(rawValue, _dp.PropertyType,
 							_binding.ConverterParameter, CultureInfo.CurrentCulture);
 
-					// TargetNullValue.
+					// R5: TargetNullValue applied when resolved+converted value is null.
 					if (value == null && _binding.TargetNullValue != null)
-						value = _binding.TargetNullValue;
+					{
+						ApplyTargetNullValue(target);
+						return;
+					}
 
 					// StringFormat.
 					value = ApplyStringFormat(_binding.StringFormat, value);
@@ -281,6 +304,27 @@ namespace System.Windows.Data
 				{
 					_pushing = false;
 				}
+			}
+
+			/// <summary>
+			/// Returns <c>true</c> when <paramref name="source"/> is non-null but the binding
+			/// path does not resolve on it (the path segment is missing or null-traversal
+			/// short-circuits). This distinguishes a legitimately null value from a bad path.
+			/// </summary>
+			bool PathIsUnresolvable(object source)
+			{
+				if (string.IsNullOrEmpty(_binding.Path)) return false;
+				// Walk the path; if any segment's property is not found the path is unresolvable.
+				var current = (object?)source;
+				foreach (var segment in _binding.Path!.Split('.'))
+				{
+					if (current == null) return true;
+					var prop = current.GetType().GetProperty(
+						segment, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+					if (prop == null) return true;
+					current = prop.GetValue(current);
+				}
+				return false;
 			}
 
 			internal void WriteBackPublic(FrameworkElement target) => WriteBack(target);

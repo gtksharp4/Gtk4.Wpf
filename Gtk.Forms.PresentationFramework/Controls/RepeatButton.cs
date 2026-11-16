@@ -113,6 +113,10 @@ namespace System.Windows.Controls.Primitives
 
 		void OnGtkPressed(object o, Gtk.PressedArgs e)
 		{
+			// Dispose any stale timer from a previous press that was never released.
+			_timer?.Dispose();
+			_timer = null;
+
 			_pressed = true;
 			FireClick(); // immediate first fire
 			_timer = new System.Threading.Timer(_ =>
@@ -131,7 +135,7 @@ namespace System.Windows.Controls.Primitives
 
 		void FireClick()
 		{
-			var args = new RoutedEventArgs(null!) { Source = this };
+			var args = new RoutedEventArgs { Source = this };
 			Click?.Invoke(this, args);
 			var cmd = Command;
 			var param = CommandParameter;
@@ -149,6 +153,31 @@ namespace System.Windows.Controls.Primitives
 
 		/// <inheritdoc/>
 		public void Dispose()
+		{
+			// Stop repeat firing immediately; guard the idle callbacks.
+			_pressed = false;
+			_timer?.Dispose();
+			_timer = null;
+		}
+
+		// ── Test helpers (InternalsVisibleTo) ────────────────────────────────────
+
+		/// <summary>Drives the press state machine without a GTK gesture object (for unit tests).</summary>
+		internal void SimulatePressForTest()
+		{
+			_timer?.Dispose();
+			_timer = null;
+			_pressed = true;
+			FireClick();
+			_timer = new System.Threading.Timer(_ =>
+			{
+				if (!_pressed) return;
+				GLib.Idle.Add(() => { if (_pressed) FireClick(); return false; });
+			}, null, Delay, Interval);
+		}
+
+		/// <summary>Drives the release state machine without a GTK gesture object (for unit tests).</summary>
+		internal void SimulateReleaseForTest()
 		{
 			_pressed = false;
 			_timer?.Dispose();

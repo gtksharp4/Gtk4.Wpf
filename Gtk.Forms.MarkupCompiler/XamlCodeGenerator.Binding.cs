@@ -302,6 +302,10 @@ namespace Gtk.Forms.MarkupCompiler
 				string childPath = (string)child.Attribute("Path");
 				string childMode = (string)child.Attribute("Mode");
 				string childEn = (string)child.Attribute("ElementName");
+				string childConvAttr = (string)child.Attribute("Converter");
+				string childConvKey = childConvAttr != null
+					? ParseConverterArg(childConvAttr) : null;
+				string childSf = (string)child.Attribute("StringFormat");
 
 				string childBindingInit;
 				if (childPath != null)
@@ -310,7 +314,8 @@ namespace Gtk.Forms.MarkupCompiler
 				else
 					childBindingInit = "new System.Windows.Data.Binding()";
 
-				bool hasInit = childMode != null || childEn != null;
+				bool hasInit = childMode != null || childEn != null
+					|| childConvKey != null || childSf != null;
 				if (hasInit)
 				{
 					childBindingInit += " { ";
@@ -324,6 +329,19 @@ namespace Gtk.Forms.MarkupCompiler
 					{
 						if (comma) childBindingInit += ", ";
 						childBindingInit += "ElementName = \"" + EscapeString(childEn) + "\"";
+						comma = true;
+					}
+					if (childConvKey != null)
+					{
+						if (comma) childBindingInit += ", ";
+						childBindingInit += "Converter = (System.Windows.Data.IValueConverter)this.FindResource(\""
+							+ EscapeString(childConvKey) + "\")";
+						comma = true;
+					}
+					if (childSf != null)
+					{
+						if (comma) childBindingInit += ", ";
+						childBindingInit += "StringFormat = \"" + EscapeString(childSf) + "\"";
 					}
 					childBindingInit += " }";
 				}

@@ -111,26 +111,35 @@ namespace System.Windows.Controls.Primitives
 		/// <inheritdoc/>
 		protected override void RemoveChildWidget(UIElement child)
 		{
-			if (_grid != null)
+			if (_grid != null && _attached.Remove(child))
 				_grid.Remove(child.Widget);
 			RebuildLayout();
 		}
+
+		// Tracks which children are currently attached to the Gtk.Grid.
+		readonly System.Collections.Generic.HashSet<UIElement> _attached =
+			new System.Collections.Generic.HashSet<UIElement>();
 
 		void RebuildLayout()
 		{
 			if (_grid == null) return;
 
-			// Detach all children.
-			foreach (var child in Children)
+			// Detach only previously-attached children to avoid GTK warnings on unattached widgets.
+			foreach (var child in _attached)
 				_grid.Remove(child.Widget);
+			_attached.Clear();
 
 			var (rows, cols) = ComputeGrid(Rows, Columns, Children.Count);
+			int capacity = rows * cols;
 
 			for (int i = 0; i < Children.Count; i++)
 			{
+				// R7: clamp to available grid cells — overflow children are skipped.
+				if (i >= capacity) break;
 				int col = i % cols;
 				int row = i / cols;
 				_grid.Attach(Children[i].Widget, col, row, 1, 1);
+				_attached.Add(Children[i]);
 			}
 		}
 	}

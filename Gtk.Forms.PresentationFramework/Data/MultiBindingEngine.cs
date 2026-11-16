@@ -40,6 +40,30 @@ namespace System.Windows.Data
 			return expr;
 		}
 
+		/// <summary>
+		/// Removes and deactivates any existing multi-binding record for <paramref name="dp"/>
+		/// on <paramref name="target"/>. Called by <see cref="BindingEngine.SetBinding"/> before
+		/// installing a simple <see cref="Binding"/> over a prior <see cref="MultiBinding"/>.
+		/// </summary>
+		internal static void ClearForDp(FrameworkElement target, DependencyProperty dp)
+		{
+			if (!_records.TryGetValue(target, out var list)) return;
+			int idx = list.FindIndex(r => r.TargetProperty == dp);
+			if (idx >= 0)
+			{
+				list[idx].Deactivate();
+				list.RemoveAt(idx);
+			}
+		}
+
+		/// <summary>Re-evaluates all multi-binding records on <paramref name="target"/> that use the DataContext.</summary>
+		internal static void RefreshDataContextBindings(FrameworkElement target)
+		{
+			if (!_records.TryGetValue(target, out var list)) return;
+			foreach (var r in list)
+				r.RefreshIfUsesDataContext(target);
+		}
+
 		/// <summary>Re-evaluates the multi-binding for <paramref name="dp"/> on target.</summary>
 		internal static void Refresh(FrameworkElement target, DependencyProperty dp)
 		{
@@ -79,12 +103,36 @@ namespace System.Windows.Data
 			internal void Activate()
 			{
 				if (!_targetRef.TryGetTarget(out var target)) return;
+				// R6: TwoWay MultiBinding is not supported.
+				if (_mb.Mode == BindingMode.TwoWay)
+					throw new NotSupportedException(
+						"MultiBinding does not support Mode=TwoWay. " +
+						"Implement IMultiValueConverter.ConvertBack manually and use OneWayToSource, " +
+						"or use separate one-way Bindings.");
 				Detach();
 				SubscribeSources(target);
 				Push(target);
 			}
 
 			internal void Deactivate() => Detach();
+
+			/// <summary>
+			/// Re-subscribes sources and re-pushes if any child binding uses DataContext.
+			/// Called when the target's DataContext changes (R3).
+			/// </summary>
+			internal void RefreshIfUsesDataContext(FrameworkElement target)
+			{
+				bool any = false;
+				foreach (var b in _mb.Bindings)
+				{
+					if (b.Source == null && b.ElementName == null && b.RelativeSource == null)
+					{ any = true; break; }
+				}
+				if (!any) return;
+				Detach();
+				SubscribeSources(target);
+				Push(target);
+			}
 
 			internal void Push(FrameworkElement target)
 			{

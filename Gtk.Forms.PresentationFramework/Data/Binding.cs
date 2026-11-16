@@ -8,6 +8,19 @@ namespace System.Windows.Data
 	/// </summary>
 	public class Binding : BindingBase
 	{
+		/// <summary>
+		/// Sentinel returned from <see cref="IValueConverter.ConvertBack"/> (or
+		/// <see cref="IMultiValueConverter.ConvertBack"/>) to indicate that no value should be
+		/// written back to the source — equivalent to WPF's <c>Binding.DoNothing</c>.
+		/// </summary>
+		public static readonly object DoNothing = new DoNothingSentinel();
+
+		sealed class DoNothingSentinel
+		{
+			public override string ToString() => "{Binding.DoNothing}";
+		}
+
+
 		/// <summary>Creates a binding with an empty path (binds to the source object itself).</summary>
 		public Binding() { }
 

@@ -39,6 +39,7 @@ namespace System.Windows
 		protected virtual void OnDataContextChanged(object? oldValue, object? newValue)
 		{
 			BindingEngine.RefreshBindings(this);
+			MultiBindingEngine.RefreshDataContextBindings(this);
 		}
 
 		/// <summary>Gets or sets the data context.</summary>
