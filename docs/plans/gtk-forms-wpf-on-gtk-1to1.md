@@ -756,8 +756,21 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   - **Carry-over**: `Mouse.GetPosition(relativeTo)` returns last tracked position (relativeTo ignored; correct
     relative positioning requires a Gdk.Device query on the GTK thread — deferred); `TextBox.MaxLength` in
     multiline (`Gtk.TextView`) mode is not enforced at the widget level (buffer-change guard deferred).
-- **Round 12 totals: 1223 tests** (60 WindowsBase + 978 PresentationFramework + 169 MarkupCompiler +
-  16 ProjectConverter), all pass timeboxed; `Gtk.Forms.WpfSample` (unmodified WPF) still compiles.
+- **Round 12 Track B — default control templates + theming (DONE).** Runtime only; no compiler changes.
+  - `FrameworkElement.DefaultStyleKeyProperty` (protected DP a control sets to `typeof(itself)` in its static
+    ctor) + `OverridesDefaultStyle`; `ApplyDefaultStyle()` resolves the lowest-precedence style.
+  - `Themes/ThemeManager` — a `Type`-keyed default-`Style` registry; `FindDefaultStyle` walks base types so a
+    subclass inherits its base's default style unless it registers its own key.
+  - `Themes/Generic.cs` — the code-side `generic.xaml`: seeds default `Style`s for `Button` (with a default
+    `ControlTemplate` = `Border`→`ContentPresenter`), `CheckBox`, `RadioButton`, `Label`, `Border`; registered
+    from `Application`'s ctor. (XAML `generic.xaml` compilation is a later round.)
+  - Precedence wired into the existing style path: **explicit `Style` > implicit `TargetType` style > theme
+    default** (`ApplyImplicitStyle` falls through to `ApplyDefaultStyle`); `OverridesDefaultStyle` skips the theme.
+  - `Media/SystemColors` — `ControlBrush`/`WindowBrush`/`HighlightBrush`/`ControlTextBrush` (fixed values; GTK
+    theme query deferred); `Control.Padding`/`HorizontalContentAlignment`/`VerticalContentAlignment` DPs.
+  - **+19 tests** (8 precedence + 11 Generic/SystemColors).
+- **Round 12 totals (both tracks merged): 1242 tests** (60 WindowsBase + 997 PresentationFramework +
+  169 MarkupCompiler + 16 ProjectConverter), all pass timeboxed; `Gtk.Forms.WpfSample` (unmodified WPF) compiles.
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
   true `{DynamicResource}` change-tracking;
   `Gtk.PopoverMenu` integration for `MenuItem`; element-level `FrameworkElement.Triggers` auto-attach on
