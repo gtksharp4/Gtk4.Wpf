@@ -1,6 +1,4 @@
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Controls;
 using Xunit;
 using WpfWindow = System.Windows.Window;
@@ -11,13 +9,17 @@ namespace Gtk.Forms.PresentationFramework.Tests
 	/// Tests for <see cref="WpfWindow.ShowDialog"/> and <see cref="WpfWindow.Close(bool?)"/>.
 	/// </summary>
 	/// <remarks>
-	/// ShowDialog runs a nested GLib.MainLoop. In a GTK test environment we can call
-	/// <see cref="WpfWindow.Close(bool?)"/> from a background thread to unblock it.
-	/// Tests that do NOT need a real GLib loop are marked as pure and don't use GTK.
-	/// GTK-loop tests run via Run(…) on the GTK thread and schedule Close on a threadpool thread.
+	/// ShowDialog pumps the GTK main loop on the GTK thread until Close(...) flags it closed.
+	/// GTK is single-threaded, so Close must run on the GTK thread: these tests schedule it via
+	/// a same-thread <c>GLib.Timeout</c>, which dispatches inside ShowDialog's pump. (Calling
+	/// Close from a foreign threadpool thread would crash the native GTK layer.)
 	/// </remarks>
 	public class WindowDialogTests : WpfGtkTestBase
 	{
+		/// <summary>Schedules <paramref name="close"/> on the GTK thread after a short delay.</summary>
+		static void ScheduleClose(Action close) =>
+			GLib.Timeout.Add(10, () => { close(); return false; });
+
 		// ── Pure: DialogResult starts null ────────────────────────────────────────
 
 		[Fact]
@@ -33,16 +35,10 @@ namespace Gtk.Forms.PresentationFramework.Tests
 		public void ShowDialog_returns_true_when_Close_true() => Run(() =>
 		{
 			var win = new WpfWindow { Title = "ModalTest" };
-			bool? result = null;
 
-			// Schedule Close from a background thread after a short delay.
-			Task.Run(() =>
-			{
-				Thread.Sleep(50);
-				win.Close(true);
-			});
+			ScheduleClose(() => win.Close(true));
 
-			result = win.ShowDialog();
+			var result = win.ShowDialog();
 			Assert.True(result);
 		});
 
@@ -51,11 +47,7 @@ namespace Gtk.Forms.PresentationFramework.Tests
 		{
 			var win = new WpfWindow { Title = "ModalFalse" };
 
-			Task.Run(() =>
-			{
-				Thread.Sleep(50);
-				win.Close(false);
-			});
+			ScheduleClose(() => win.Close(false));
 
 			var result = win.ShowDialog();
 			Assert.False(result);
@@ -66,11 +58,7 @@ namespace Gtk.Forms.PresentationFramework.Tests
 		{
 			var win = new WpfWindow { Title = "ModalNull" };
 
-			Task.Run(() =>
-			{
-				Thread.Sleep(50);
-				win.Close(null);
-			});
+			ScheduleClose(() => win.Close(null));
 
 			var result = win.ShowDialog();
 			Assert.Null(result);
@@ -93,11 +81,7 @@ namespace Gtk.Forms.PresentationFramework.Tests
 		{
 			var win = new WpfWindow();
 
-			Task.Run(() =>
-			{
-				Thread.Sleep(50);
-				win.Close(false);
-			});
+			ScheduleClose(() => win.Close(false));
 
 			win.ShowDialog();
 			Assert.False(win.DialogResult);

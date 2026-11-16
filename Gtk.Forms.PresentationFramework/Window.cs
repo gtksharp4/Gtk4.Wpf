@@ -56,7 +56,7 @@ namespace System.Windows
 		// ── GTK backing ──────────────────────────────────────────────────────────
 
 		Gtk.Window? _window;
-		GLib.MainLoop? _dialogLoop;
+		bool _dialogClosed;
 
 		/// <inheritdoc/>
 		protected override Gtk.Widget CreateWidget()
@@ -93,14 +93,18 @@ namespace System.Windows
 		/// called and returns <see cref="DialogResult"/>.
 		/// </summary>
 		/// <remarks>
-		/// A real nested <see cref="GLib.MainLoop"/> runs in an interactive session; in a
-		/// non-interactive harness call <see cref="Close(bool?)"/> from another thread to
-		/// unblock. GTK 4 removed <c>gtk_dialog_run</c>; this pattern is the documented
-		/// replacement (spin a MainLoop, quit it on response).
+		/// GTK 4 removed <c>gtk_dialog_run</c>. This pumps the GTK main loop on the
+		/// <b>current (GTK) thread</b> until <see cref="Close(bool?)"/> sets the closed flag,
+		/// rather than running a nested blocking <see cref="GLib.MainLoop"/>: a blocking loop
+		/// would freeze the single GTK thread so the same-thread response (a button handler,
+		/// a timeout) could never run. <see cref="Close(bool?)"/> must be invoked on the GTK
+		/// thread (GTK is not thread-safe) — e.g. from a widget event handler or a
+		/// <c>GLib.Timeout</c>/<c>GLib.Idle</c> callback, which dispatch inside this pump.
 		/// </remarks>
 		public bool? ShowDialog()
 		{
 			DialogResult = null;
+			_dialogClosed = false;
 
 			var gtkWin = (Gtk.Window)Widget;
 			gtkWin.Modal = true;
@@ -110,22 +114,23 @@ namespace System.Windows
 
 			Show();
 
-			_dialogLoop = new GLib.MainLoop();
-			_dialogLoop.Run();
-			_dialogLoop = null;
+			// Pump until Close(...) flags the dialog closed. RunIteration(true) blocks for the
+			// next event and dispatches it (including the close handler), keeping the thread live.
+			while (!_dialogClosed)
+				Gtk.Application.RunIteration(true);
 
 			return DialogResult;
 		}
 
 		/// <summary>
 		/// Closes the window and unblocks <see cref="ShowDialog"/> with
-		/// <paramref name="dialogResult"/>.
+		/// <paramref name="dialogResult"/>. Must be called on the GTK thread.
 		/// </summary>
 		public void Close(bool? dialogResult)
 		{
 			DialogResult = dialogResult;
+			_dialogClosed = true;
 			((Gtk.Window)Widget).Hide();
-			_dialogLoop?.Quit();
 		}
 
 		/// <inheritdoc/>

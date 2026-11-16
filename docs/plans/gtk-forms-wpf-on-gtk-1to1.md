@@ -262,6 +262,13 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
     affected test files, matching the pattern already used in `GtkSmokeTests.cs`.
   - New tests: 10 `NavigationJournalTests` + 13 `NavigationServiceTests` + 7 `NavigationWindowTests`
     + 7 `FrameGtkSmokeTests` + 22 `MessageBoxTests` (button mapping) + 6 `WindowDialogTests`.
+  - *Fix applied during integration*: `Window.ShowDialog()` originally ran a **blocking** nested
+    `GLib.MainLoop` and `WindowDialogTests` quit it from a `Task.Run` thread — calling GTK off the single
+    GTK thread **segfaulted the test host** (and would deadlock the harness regardless). `ShowDialog` now
+    **pumps** `Gtk.Application.RunIteration(true)` on the GTK thread until `Close(bool?)` sets a flag, and
+    the tests schedule `Close` via a same-thread `GLib.Timeout`. GTK must only be touched on its own thread.
+- **Round 4 totals: 504 tests** (40 WindowsBase + 401 PresentationFramework + 47 MarkupCompiler +
+  16 ProjectConverter), all pass with no hang/crash; `Gtk.Forms.WpfSample` (unmodified WPF) still compiles.
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
   full attribute type-converter resolution (typed `Setter.Value`/resource values); `BindingExpression`
   live object; `Converter={StaticResource}`; true `{DynamicResource}` change-tracking; XAML
