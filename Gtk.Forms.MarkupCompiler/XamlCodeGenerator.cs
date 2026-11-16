@@ -419,20 +419,148 @@ namespace Gtk.Forms.MarkupCompiler
 			// Setter children.
 			foreach (XElement ch in styleEl.Elements())
 			{
-				if (ch.Name.LocalName != "Setter") continue;
-				string propAttr = (string)ch.Attribute("Property");
-				string valAttr = (string)ch.Attribute("Value");
-				if (propAttr == null) continue;
-				// Value kept as string — type-converter resolution is a later phase (TODO).
-				string escapedProp = EscapeString(propAttr);
-				string valExpr = valAttr != null
-					? $"\"{EscapeString(valAttr)}\""
-					: "null";
-				w.Line($"{styleVar}.Setters.Add(new System.Windows.Setter {{ PropertyName = \"{escapedProp}\", Value = {valExpr} }});");
+				if (ch.Name.LocalName == "Setter")
+				{
+					string propAttr = (string)ch.Attribute("Property");
+					string valAttr = (string)ch.Attribute("Value");
+					if (propAttr == null) continue;
+					string escapedProp = EscapeString(propAttr);
+					string valExpr = valAttr != null
+						? $"\"{EscapeString(valAttr)}\""
+						: "null";
+					w.Line($"{styleVar}.Setters.Add(new System.Windows.Setter {{ PropertyName = \"{escapedProp}\", Value = {valExpr} }});");
+				}
+				else if (ch.Name.LocalName == "Style.Triggers")
+				{
+					EmitStyleTriggers(w, ch, xNs, styleVar, ref counter);
+				}
 			}
 
 			if (key != null)
 				w.Line($"{ownerVar}.Resources[\"{EscapeString(key)}\"] = {styleVar};");
+		}
+
+		/// <summary>
+		/// Emits code for all trigger elements inside a <c>&lt;Style.Triggers&gt;</c>
+		/// property element, calling <c>styleVar.Triggers.Add(…)</c> for each.
+		/// Handles: Trigger, DataTrigger, MultiTrigger, EventTrigger.
+		/// </summary>
+		void EmitStyleTriggers(
+			IndentedWriter w,
+			XElement triggersEl,
+			XNamespace xNs,
+			string styleVar,
+			ref int counter)
+		{
+			foreach (XElement ch in triggersEl.Elements())
+			{
+				string trigVar = $"__t{counter++}";
+				switch (ch.Name.LocalName)
+				{
+					case "Trigger":
+						EmitPropertyTrigger(w, ch, trigVar, styleVar);
+						break;
+					case "DataTrigger":
+						EmitDataTrigger(w, ch, trigVar, styleVar);
+						break;
+					case "MultiTrigger":
+						EmitMultiTrigger(w, ch, xNs, trigVar, styleVar, ref counter);
+						break;
+					case "EventTrigger":
+						EmitEventTrigger(w, ch, trigVar, styleVar, ref counter);
+						break;
+				}
+			}
+		}
+
+		void EmitPropertyTrigger(IndentedWriter w, XElement el, string trigVar, string styleVar)
+		{
+			string propAttr = (string)el.Attribute("Property") ?? string.Empty;
+			string valAttr = (string)el.Attribute("Value") ?? string.Empty;
+			w.Line($"var {trigVar} = new System.Windows.Trigger {{ PropertyName = \"{EscapeString(propAttr)}\", Value = \"{EscapeString(valAttr)}\" }};");
+			foreach (XElement setter in el.Elements())
+			{
+				if (setter.Name.LocalName != "Setter") continue;
+				string p = (string)setter.Attribute("Property") ?? string.Empty;
+				string v = (string)setter.Attribute("Value");
+				string vExpr = v != null ? $"\"{EscapeString(v)}\"" : "null";
+				w.Line($"{trigVar}.Setters.Add(new System.Windows.Setter {{ PropertyName = \"{EscapeString(p)}\", Value = {vExpr} }});");
+			}
+			w.Line($"{styleVar}.Triggers.Add({trigVar});");
+		}
+
+		void EmitDataTrigger(IndentedWriter w, XElement el, string trigVar, string styleVar)
+		{
+			string bindingAttr = (string)el.Attribute("Binding") ?? string.Empty;
+			string valAttr = (string)el.Attribute("Value") ?? string.Empty;
+			string bindingExpr = "null";
+			if (IsBindingExpression(bindingAttr, out string bInit))
+				bindingExpr = bInit;
+			w.Line($"var {trigVar} = new System.Windows.DataTrigger {{ Binding = {bindingExpr}, Value = \"{EscapeString(valAttr)}\" }};");
+			foreach (XElement setter in el.Elements())
+			{
+				if (setter.Name.LocalName != "Setter") continue;
+				string p = (string)setter.Attribute("Property") ?? string.Empty;
+				string v = (string)setter.Attribute("Value");
+				string vExpr = v != null ? $"\"{EscapeString(v)}\"" : "null";
+				w.Line($"{trigVar}.Setters.Add(new System.Windows.Setter {{ PropertyName = \"{EscapeString(p)}\", Value = {vExpr} }});");
+			}
+			w.Line($"{styleVar}.Triggers.Add({trigVar});");
+		}
+
+		void EmitMultiTrigger(
+			IndentedWriter w,
+			XElement el,
+			XNamespace xNs,
+			string trigVar,
+			string styleVar,
+			ref int counter)
+		{
+			w.Line($"var {trigVar} = new System.Windows.MultiTrigger();");
+			foreach (XElement child in el.Elements())
+			{
+				if (child.Name.LocalName == "MultiTrigger.Conditions")
+				{
+					foreach (XElement cond in child.Elements())
+					{
+						if (cond.Name.LocalName != "Condition") continue;
+						string p = (string)cond.Attribute("Property") ?? string.Empty;
+						string v = (string)cond.Attribute("Value") ?? string.Empty;
+						w.Line($"{trigVar}.Conditions.Add(new System.Windows.Condition {{ PropertyName = \"{EscapeString(p)}\", Value = \"{EscapeString(v)}\" }});");
+					}
+				}
+				else if (child.Name.LocalName == "Setter")
+				{
+					string p = (string)child.Attribute("Property") ?? string.Empty;
+					string v = (string)child.Attribute("Value");
+					string vExpr = v != null ? $"\"{EscapeString(v)}\"" : "null";
+					w.Line($"{trigVar}.Setters.Add(new System.Windows.Setter {{ PropertyName = \"{EscapeString(p)}\", Value = {vExpr} }});");
+				}
+			}
+			w.Line($"{styleVar}.Triggers.Add({trigVar});");
+		}
+
+		void EmitEventTrigger(
+			IndentedWriter w,
+			XElement el,
+			string trigVar,
+			string styleVar,
+			ref int counter)
+		{
+			string reAttr = (string)el.Attribute("RoutedEvent") ?? string.Empty;
+			// RoutedEvent="TypeName.EventName" — emit a lookup; resolution is runtime.
+			// Split on '.' to separate owner type from event name.
+			string reExpr = "null";
+			int dot = reAttr.LastIndexOf('.');
+			if (dot > 0)
+			{
+				string ownerName = reAttr.Substring(0, dot);
+				string evName = reAttr.Substring(dot + 1);
+				string fqOwner = WpfXmlnsMap.Resolve(ownerName) ?? ownerName;
+				reExpr = $"System.Windows.EventManager.GetRoutedEvent(typeof({fqOwner}), \"{EscapeString(evName)}\")";
+			}
+			w.Line($"var {trigVar} = new System.Windows.EventTrigger {{ RoutedEvent = {reExpr} }};");
+			w.Line($"{styleVar}.Triggers.Add({trigVar});");
 		}
 
 		/// <summary>

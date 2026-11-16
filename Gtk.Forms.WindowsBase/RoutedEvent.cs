@@ -83,5 +83,25 @@ namespace System.Windows
 				return re;
 			}
 		}
+
+		/// <summary>
+		/// Returns the routed event registered as <paramref name="name"/> on
+		/// <paramref name="ownerType"/> (walks the inheritance chain), or <c>null</c>
+		/// when not found. Used by compiler-generated code for EventTrigger lookup.
+		/// </summary>
+		public static RoutedEvent? GetRoutedEvent(Type ownerType, string name)
+		{
+			if (ownerType == null || name == null) return null;
+			lock (_lock)
+			{
+				Type? t = ownerType;
+				while (t != null)
+				{
+					if (_registry.TryGetValue((name, t), out var re)) return re;
+					t = t.BaseType;
+				}
+			}
+			return null;
+		}
 	}
 }
