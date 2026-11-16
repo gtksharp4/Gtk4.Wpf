@@ -85,8 +85,9 @@ namespace System.Windows
 	/// at apply time) may be set; <see cref="Property"/> takes precedence.
 	/// </para>
 	/// <para>
-	/// <see cref="Value"/> is kept as an <c>object?</c>; typed value-converter resolution
-	/// is a later phase (TODO: type-converter round).
+	/// When <see cref="Value"/> is a <c>string</c> and the target DP has a non-string
+	/// <c>PropertyType</c>, the value is converted via
+	/// <see cref="System.Windows.Markup.XamlValueConverter.Convert"/> before being applied.
 	/// </para>
 	/// </summary>
 	public class Setter : SetterBase
@@ -100,8 +101,20 @@ namespace System.Windows
 		/// </summary>
 		public string? PropertyName { get; set; }
 
-		/// <summary>The value to assign.</summary>
+		/// <summary>The value to assign. A string is type-converted on apply.</summary>
 		public object? Value { get; set; }
+
+		/// <summary>
+		/// Resolves <paramref name="rawValue"/> to the target type of <paramref name="dp"/>.
+		/// Returns <paramref name="rawValue"/> unchanged when it is not a string or the DP
+		/// type is <c>string</c>.
+		/// </summary>
+		static object? CoerceValue(DependencyProperty dp, object? rawValue)
+		{
+			if (rawValue is string s && dp.PropertyType != typeof(string))
+				return System.Windows.Markup.XamlValueConverter.Convert(dp.OwnerType, dp, s);
+			return rawValue;
+		}
 
 		/// <inheritdoc/>
 		internal override void Apply(DependencyObject target)
@@ -110,7 +123,7 @@ namespace System.Windows
 			if (dp == null && PropertyName != null)
 				dp = DependencyProperty.FindByName(PropertyName, target.GetType());
 			if (dp != null)
-				target.SetValue(dp, Value);
+				target.SetValue(dp, CoerceValue(dp, Value));
 		}
 
 		/// <inheritdoc/>
@@ -120,7 +133,7 @@ namespace System.Windows
 			if (dp == null && PropertyName != null)
 				dp = DependencyProperty.FindByName(PropertyName, target.GetType());
 			if (dp != null)
-				target.SetStyleValue(dp, Value);
+				target.SetStyleValue(dp, CoerceValue(dp, Value));
 		}
 
 		/// <inheritdoc/>
@@ -134,7 +147,7 @@ namespace System.Windows
 				dp = DependencyProperty.FindByName(PropertyName, target.GetType());
 			if (dp == null) return;
 			appliedDps.Add(dp);
-			target.SetTriggerValue(dp, contributor, Value);
+			target.SetTriggerValue(dp, contributor, CoerceValue(dp, Value));
 		}
 	}
 }
