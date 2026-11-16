@@ -367,9 +367,16 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   - **+19 MarkupCompiler tests** (`XamlCodeGeneratorTemplateTests`): inline `<Button.Template>` / keyed
     `<ControlTemplate x:Key>` / `<DataTemplate>` as `ItemTemplate` / `{Binding}` inside template / `{StaticResource}` on `Template`.
   - **+11 PF pure tests** (`TemplatingXamlDpTests`): `ContentControl.ContentTemplateProperty`, `ControlTemplate` factory, `DataTemplate` factory with `DataContext` wiring, keyed resource resolution.
-- **Round 6 totals (both tracks merged): 779 tests** (40 WindowsBase + 636 PresentationFramework +
-  87 MarkupCompiler + 16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample`
-  (unmodified WPF) still compiles.
+- **Round 6 review (Opus) + fixes — DONE.** Review found 1 Critical (masked by Contains-only tests) + fixes:
+  keyed `<ControlTemplate>`/`<DataTemplate>` in a `.Resources` block was processed twice, emitting an
+  uncompilable `this.Resources = …` and dropping sibling templates — `EmitPropertyElement` now returns for
+  the `Resources` property-element (owned solely by `EmitResources`); pinned by tests asserting both keyed
+  entries present and **no** `Resources =` assignment. Also: `MenuItem` now raises `Checked` only on
+  false→true and `Unchecked` on true→false (added `Unchecked`); `MenuItem` split into `MenuItem.cs` +
+  `MenuItem.Commanding.cs` (≤200 lines); `FrameworkTemplate.HasContent` and `UIElement.IsWidgetCreated`
+  converted from `new`-shadows to `virtual`/`override` so a base-typed reference sees the correct value.
+  **Round 6 totals: 787 tests** (40 WindowsBase + 642 PresentationFramework + 89 MarkupCompiler +
+  16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample` (unmodified WPF) compiles.
 - **Carry-over (Round 5 Opus review — not addressed this round)**: compiler DP-vs-CLR resolution is a
   name heuristic (`IsKnownDp`: "is it in `System.Windows.*` and not on the CLR-only exclusion list?").
   Should be replaced with real assembly symbol resolution — load the referenced assemblies, reflect
@@ -380,7 +387,10 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   GTK key-event wiring for `InputBindings` (programmatic `InvokeInputBinding` dispatch exists);
   `Gtk.PopoverMenu` integration for `MenuItem`; element-level `FrameworkElement.Triggers` auto-attach on
   load (runtime exists, compiler emits `Style.Triggers` only); nested-path `DataTrigger` bindings;
-  `EventTrigger` storyboards/animations; `TemplateBinding` markup extension inside `ControlTemplate`.
+  `EventTrigger` storyboards/animations; `TemplateBinding` markup extension inside `ControlTemplate`;
+  `Popup`/`ContextMenu` replay of an `IsOpen=true` set before the backing widget exists (currently dropped);
+  GTK4-native backings deferred for the Round-6 controls (`Gio.Menu`/`Gtk.PopoverMenuBar` for `Menu`,
+  `Gtk.ListView`+`TreeExpander` for `TreeView`, `Gtk.ActionBar` for `ToolBar`).
 
 ## Phased roadmap (after Phase 0 proves the spine)
 
