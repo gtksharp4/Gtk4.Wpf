@@ -477,9 +477,18 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
     `GetVisualStateGroups`/`SetVisualStateGroups` attached-property pattern (dictionary, not DP).
   - **+20 PF tests** (`TemplatedParentTests` — 8 tests; `VisualStateManagerTests` — 12 tests);
     **+13 MarkupCompiler tests** (`XamlCodeGeneratorTemplateBindingTests`).
-- **Round 8 totals (both tracks merged): 947 tests** (40 WindowsBase + 774 PresentationFramework +
-  117 MarkupCompiler + 16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample`
-  (unmodified WPF) still compiles.
+- **Round 8 review (Opus) + fixes — DONE.** Review found 1 Critical + 2 High + Mediums, all fixed with
+  pins driving the real paths the tests bypassed: **T1** `{TemplateBinding}` now resolves on the real
+  compiler path — the factory activated template bindings against a still-null `TemplatedParent`, so
+  `Control.OnTemplateChanged` now calls `BindingEngine.RefreshTemplatedParentBindings` after stamping the
+  subtree (the whole feature was silently inert before); **T2** `VisualStateManager`'s state registry is a
+  `ConditionalWeakTable` (was a leaking static `Dictionary<Control,…>`); **T3** `AnimationScheduler` guards
+  that `GLib.Timeout` registration runs on the GTK thread (off-thread `Storyboard.Begin` now throws instead
+  of corrupting GLib); **T4** `VisualState` setters revert on state exit; **T5** `CurrentStateChanged.OldState`
+  reports the previous state; **T6** `Duration.Automatic` resolves to 1 s (a `DoubleAnimation` with no explicit
+  Duration now animates); **T7** `{TemplateBinding Prop, …}` uses only the property path + stale doc fixed.
+  **Round 8 totals: 961 tests** (40 WindowsBase + 786 PresentationFramework + 119 MarkupCompiler +
+  16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample` (unmodified WPF) compiles.
 - **Carry-over (Round 5 Opus review — not addressed this round)**: compiler DP-vs-CLR resolution is a
   name heuristic (`IsKnownDp`: "is it in `System.Windows.*` and not on the CLR-only exclusion list?").
   Should be replaced with real assembly symbol resolution — load the referenced assemblies, reflect
