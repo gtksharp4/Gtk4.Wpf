@@ -30,7 +30,7 @@ namespace System.Windows
 
 			// E5: nested path segments are not yet supported — explicit contract violation.
 			var path = Binding.Path;
-			if (!string.IsNullOrEmpty(path) && path!.Contains('.'))
+			if (!string.IsNullOrEmpty(path) && path!.Contains(".", StringComparison.Ordinal))
 				throw new NotSupportedException(
 					$"DataTrigger: nested binding paths ('{path}') are not yet supported. " +
 					"Use a single-segment path.");

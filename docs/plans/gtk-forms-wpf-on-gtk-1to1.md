@@ -417,9 +417,21 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   **functional-minimal `DataGrid`** (`Gtk.ScrolledWindow`+`Gtk.Grid` of labels; `ItemsSource`, explicit
   `Columns`/`DataGridTextColumn`, `AutoGenerateColumns` by reflection, `SelectedItem` — no editing/sorting/
   virtualization yet). **+65 tests** (42 pure DP + 23 GTK smoke).
-- **Round 7 totals: 880 tests** (40 WindowsBase + 723 PresentationFramework + 101 MarkupCompiler +
-  16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample` (unmodified WPF)
-  still compiles.
+- **Round 7 review (Opus) + fixes — DONE.** Review found 1 Critical + 3 High + Mediums, all fixed with
+  pins (the defects lived in paths the tests missed — binding-kind swap, DataContext-after-binding,
+  RepeatButton press, non-string FallbackValue): **R1** `RepeatButton`'s threadpool `Timer` now disposed on
+  teardown + before re-press (was a latent native crash surviving widget teardown); **R2** `SetBinding`
+  clears ANY prior binding (simple or multi) on the DP before installing (was leaking the old INPC handler,
+  fighting the new binding); **R3** `MultiBinding` re-subscribes on a `DataContext` set after the binding;
+  **R4** `FallbackValue`/`TargetNullValue` string values now converted to the target DP type via
+  `XamlValueConverter` (were breaking non-string DPs); **R5** Fallback applies on unresolvable path (even
+  non-null source), converter runs before `TargetNullValue`; **R6** `MultiBinding Mode=TwoWay` throws
+  `NotSupportedException` (was silently one-way); **R7** `UniformGrid` only detaches attached children +
+  clamps overflow; **R8** `DataGrid` observes `INotifyCollectionChanged` (split into `DataGrid.cs` +
+  `DataGrid.Columns.cs`, ≤200 lines); **R9** MultiBinding child `<Binding>` emits `Converter`/`StringFormat`,
+  `Binding.DoNothing` sentinel added. **Round 7 totals: 901 tests** (40 WindowsBase + 741 PresentationFramework
+  + 104 MarkupCompiler + 16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample`
+  (unmodified WPF) still compiles.
 - **Carry-over (Round 5 Opus review — not addressed this round)**: compiler DP-vs-CLR resolution is a
   name heuristic (`IsKnownDp`: "is it in `System.Windows.*` and not on the CLR-only exclusion list?").
   Should be replaced with real assembly symbol resolution — load the referenced assemblies, reflect
