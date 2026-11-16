@@ -177,11 +177,29 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   - `SelectionChangedEventArgs` extended via partial to add an `object`-source constructor for
     non-`ComboBox` selection controls.
   - 48 new tests: 34 pure DP + 14 GTK smoke (all native, none skipped on Windows).
-- **Phase 1 Round 2 — pending**: `ResourceDictionary` (tree + merged + `Application.Resources`),
-  `Style`/`Setter`/`BasedOn`/implicit, `{StaticResource}`/`{DynamicResource}` + `<X.Resources>` in the
-  compiler; plus the carry-overs below.
+- **Phase 1 Round 2 — DONE** (resources + styles, runtime + compiler):
+  - `ResourceDictionary` (own keys → `MergedDictionaries` in reverse/last-wins order), lookup walking
+    the **logical-parent** chain then `Application.Current.Resources`; `FindResource`/`TryFindResource`.
+  - `Style`/`Setter`/`SetterBase`/`BasedOn` (outermost-first, cycle-guarded) + implicit styles keyed by
+    `TargetType`; style setters write a dedicated **style-value precedence layer** (below local, above
+    inherited) and are **un-applied** when `Style` is replaced or set null.
+  - Compiler: `<X.Resources>`/`<ResourceDictionary>` → `Style` construction + `Resources["k"]=…` emitted
+    before the element tree; `{StaticResource}`/`{DynamicResource}` on any attribute and on `Style=`
+    emit `FindResource` calls. (`{DynamicResource}` resolves at load for now; `Setter.Value` stays a
+    string pending typed type-converter resolution — tracked as carry-over.)
+- **Round 2 review (Opus) + fixes — DONE.** Independent review found 7 real defects the passing tests
+  missed; all fixed with fail-before/pass-after pins: resource walk now follows `LogicalParent`
+  (set by `ItemsControl`/`ContentPresenter` on hosted children) not only `InheritanceParent`;
+  stored-`null` resources no longer read as absent; `SelectionChangedEventArgs.Source` retyped `object`
+  (was a null `ComboBox` cast); `ListBox.SelectionChanged` fires exactly once per transition;
+  programmatic `SelectedItem` syncs the GTK row; style precedence below local with un-apply on change;
+  `BasedOn` cycle guard + `ReadLocalValue`-based implicit-style guard. **304 tests total** across the
+  four suites (35 WindowsBase + 213 PresentationFramework + 40 MarkupCompiler + 16 ProjectConverter),
+  all pass; `Gtk.Forms.WpfSample` (unmodified WPF) still compiles through the compiler.
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
-  full attribute type-converter resolution; `BindingExpression` live object; `Converter={StaticResource}`.
+  full attribute type-converter resolution (typed `Setter.Value`/resource values); `BindingExpression`
+  live object; `Converter={StaticResource}`; true `{DynamicResource}` change-tracking; XAML
+  `<ControlTemplate>`/`<DataTemplate>`/inline-`<ListBoxItem>` parsing in the compiler (runtime exists).
 
 ## Phased roadmap (after Phase 0 proves the spine)
 
