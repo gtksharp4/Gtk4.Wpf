@@ -705,8 +705,9 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   GTK4-native backings deferred for the Round-6 controls (`Gio.Menu`/`Gtk.PopoverMenuBar` for `Menu`,
   `Gtk.ListView`+`TreeExpander` for `TreeView`, `Gtk.ActionBar` for `ToolBar`);
   `VisualStateManager.VisualStateGroups` XAML compilation (VSM groups and states still set in code-behind only);
-  GTK fixed-layout wiring (replace Box/Grid native backing with `Gtk.Fixed` + SizeAllocate driven by
-  the computed ArrangeRects — deferred until the managed math is verified stable).
+  wire computed arrange rects onto a `Gtk.Fixed` so managed layout drives live GTK positioning
+  (replace Box/Grid native backing with `Gtk.Fixed` + SizeAllocate driven by the computed
+  ArrangeRects — deferred until the managed math is verified stable).
 
 ## Phased roadmap (after Phase 0 proves the spine)
 
