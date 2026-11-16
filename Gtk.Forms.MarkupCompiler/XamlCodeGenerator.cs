@@ -264,6 +264,35 @@ namespace Gtk.Forms.MarkupCompiler
 		}
 
 		/// <summary>
+		/// Returns the C# cast-type name for the value parameter of an attached-property setter.
+		/// Used when emitting <c>OwnerType.SetProp(el, (type)convert(...))</c>.
+		/// Falls back to <c>object</c> for unknown combinations.
+		/// </summary>
+		static string ResolveAttachedPropType(string ownerFqType, string propName)
+		{
+			// Grid attached props: Row, Column, RowSpan, ColumnSpan are int.
+			if (ownerFqType == "System.Windows.Controls.Grid")
+			{
+				if (propName == "Row" || propName == "Column" ||
+					propName == "RowSpan" || propName == "ColumnSpan")
+					return "int";
+			}
+			// Canvas attached props: Left, Top, Right, Bottom are double.
+			if (ownerFqType == "System.Windows.Controls.Canvas")
+			{
+				if (propName == "Left" || propName == "Top" ||
+					propName == "Right" || propName == "Bottom")
+					return "double";
+			}
+			// DockPanel attached prop: Dock is System.Windows.Controls.Dock enum.
+			if (ownerFqType == "System.Windows.Controls.DockPanel" && propName == "Dock")
+				return "System.Windows.Controls.Dock";
+			// Unknown: use object (a cast to object is a no-op; the setter will fail at runtime
+			// if the type doesn't match, but code will compile).
+			return "object";
+		}
+
+		/// <summary>
 		/// Returns <c>true</c> for property names that are known WPF DependencyProperties
 		/// on the given owner type (and therefore warrant the XamlValueConverter path).
 		/// Properties like <c>Title</c>, <c>Content</c> that are plain CLR properties
@@ -346,6 +375,22 @@ namespace Gtk.Forms.MarkupCompiler
 
 					string propName = attr.Name.LocalName;
 					string val = attr.Value;
+
+					// Attached-property syntax: "Owner.Prop" (e.g. Grid.Row, Canvas.Left).
+					int dotPos = propName.IndexOf('.');
+					if (dotPos > 0)
+					{
+						string ownerLocalName = propName.Substring(0, dotPos);
+						string attachedProp = propName.Substring(dotPos + 1);
+						string ownerFqType = WpfXmlnsMap.Resolve(ownerLocalName) ?? ownerLocalName;
+						// Emit: OwnerType.SetProp(element, (castType)XamlValueConverter.Convert(...))
+						// XamlValueConverter.Convert returns object; cast to the DP's value type.
+						string castType = ResolveAttachedPropType(ownerFqType, attachedProp);
+						w.Line($"{ownerFqType}.Set{attachedProp}({varName}, " +
+							$"({castType})System.Windows.Markup.XamlValueConverter.Convert(" +
+							$"typeof({ownerFqType}), {ownerFqType}.{attachedProp}Property, \"{EscapeString(val)}\"));");
+						continue;
+					}
 
 					if (IsBindingExpression(val, out string bindingInit))
 						w.Line($"{varName}.SetBinding({fqType}.{propName}Property, {bindingInit});");
@@ -756,7 +801,16 @@ namespace Gtk.Forms.MarkupCompiler
 			return result;
 		}
 
-		static string EscapeString(string s) => s.Replace("\\", "\\\\").Replace("\"", "\\\"");
+		/// <summary>
+		/// Escapes a raw string value so it can be emitted as a C# string literal.
+		/// Handles backslash, double-quote, and control characters (\r, \n, \t).
+		/// </summary>
+		internal static string EscapeString(string s) =>
+			s.Replace("\\", "\\\\")
+			 .Replace("\"", "\\\"")
+			 .Replace("\r", "\\r")
+			 .Replace("\n", "\\n")
+			 .Replace("\t", "\\t");
 	}
 
 	/// <summary>Exception thrown when XAML code generation fails.</summary>

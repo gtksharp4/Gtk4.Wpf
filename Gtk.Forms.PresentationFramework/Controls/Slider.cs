@@ -72,8 +72,9 @@ namespace System.Windows.Controls
 				if (s._scale.Value != v)
 					s._scale.Value = v;
 			}
-			if (!s._updating)
-				s.ValueChanged?.Invoke(s, EventArgs.Empty);
+			// Raise for every real value change — including GTK-origin changes.
+			// _updating only guards the GTK↔DP write loop (see OnGtkValueChanged).
+			s.ValueChanged?.Invoke(s, EventArgs.Empty);
 		}
 
 		/// <summary>Gets or sets the current value.</summary>

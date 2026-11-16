@@ -307,6 +307,26 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
     direct-assignment path. `{Binding}`, `{StaticResource}` still take their own paths (unchanged).
   - Compiler emits `XamlValueConverter.Convert(...)` for plain DP attributes; CLR-only props keep direct
     assignment; `{Binding}`/`{StaticResource}` unchanged. (+29 PF, +8 MarkupCompiler tests.)
+- **Round 5 defect fixes (Opus review G1–G4, DONE).**
+  - **G1** (`Slider.ValueChanged` silent on GTK drag): `OnValueChanged` now raises `ValueChanged`
+    unconditionally; `_updating` guards only the GTK↔DP write loop, not the event.
+  - **G2** (`TabControl.SelectionChanged` fires twice): all three entry points (`SelectedIndex`,
+    `SelectedItem`, GTK page switch) now raise `SelectionChanged` exactly once via a single-choke-point
+    `_updating` guard; `OnSelectedIndexChanged` promoted to full coordinator.
+  - **G3** (attached-property attributes emit invalid C#): `EmitChildren` now detects `Owner.Prop`
+    dotted attr names and emits `OwnerType.SetProp(el, (castType)XamlValueConverter.Convert(...))`;
+    runtime form is the static setter (`Grid.SetRow`, `Canvas.SetLeft`, `DockPanel.SetDock`).
+    `InternalsVisibleTo` added to `Gtk.Forms.MarkupCompiler.csproj`.
+  - **G4** (`EscapeString` omits `\n`/`\r`/`\t`): all three added. `EscapeString` made `internal`
+    for direct unit testing (XML parsers normalize whitespace in attribute values before the generator
+    sees them, making XAML-round-trip tests impossible).
+  - **+18 PF tests** (3 Slider, 10 TabControl, 5 GTK smoke); **+8 MarkupCompiler tests**
+    (12 attached-prop / escape). Round 5 totals: **558 PF + 68 MarkupCompiler**.
+- **Carry-over (Round 5 Opus review — not addressed this round)**: compiler DP-vs-CLR resolution is a
+  name heuristic (`IsKnownDp`: "is it in `System.Windows.*` and not on the CLR-only exclusion list?").
+  Should be replaced with real assembly symbol resolution — load the referenced assemblies, reflect
+  the declared `<Name>Property` fields, and distinguish DP from CLR at the type level. Filed for a
+  future MarkupCompiler phase.
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
   `BindingExpression` live object; `Converter={StaticResource}`; true `{DynamicResource}` change-tracking;
   XAML `<ControlTemplate>`/`<DataTemplate>`/inline-`<ListBoxItem>` parsing in the compiler (runtime exists);

@@ -24,7 +24,26 @@ namespace System.Windows.Controls
 
 		static void OnSelectedIndexChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
-			((TabControl)d).ApplySelectedIndex((int?)e.NewValue ?? -1);
+			var tc = (TabControl)d;
+			int idx = (int?)e.NewValue ?? -1;
+			if (tc._updating)
+			{
+				// Re-entrant (from OnSelectedItemChanged or OnGtkSwitchPage): just sync notebook.
+				tc.ApplySelectedIndexDirect(idx);
+				return;
+			}
+			tc._updating = true;
+			try
+			{
+				tc.ApplySelectedIndexDirect(idx);
+				var oldItem = tc.SelectedItem;
+				var newItem = idx >= 0 && idx < tc.Items.Count ? tc.Items[idx] : null;
+				if (!ReferenceEquals(oldItem, newItem))
+					tc.SetValue(SelectedItemProperty, newItem);
+				tc.SelectionChanged?.Invoke(tc,
+					new SelectionChangedEventArgs(tc, oldItem, newItem));
+			}
+			finally { tc._updating = false; }
 		}
 
 		/// <summary>Gets or sets the selected tab index.</summary>
@@ -48,12 +67,19 @@ namespace System.Windows.Controls
 		{
 			var tc = (TabControl)d;
 			if (tc._updating) return;
-			var idx = e.NewValue == null ? -1 : tc.Items.IndexOf(e.NewValue);
-			if (idx >= 0 && tc.SelectedIndex != idx)
-				tc.SetValue(SelectedIndexProperty, idx);
-			// Fire SelectionChanged when set programmatically (no GTK switch-page).
-			tc.SelectionChanged?.Invoke(tc,
-				new SelectionChangedEventArgs(tc, e.OldValue, e.NewValue));
+			tc._updating = true;
+			try
+			{
+				var idx = e.NewValue == null ? -1 : tc.Items.IndexOf(e.NewValue);
+				if (idx >= 0 && tc.SelectedIndex != idx)
+					tc.SetValue(SelectedIndexProperty, idx);
+				// Apply to notebook directly; GTK SwitchPage re-entry is blocked by _updating.
+				tc.ApplySelectedIndexDirect(idx < 0 ? -1 : idx);
+				// Single raise for programmatic path.
+				tc.SelectionChanged?.Invoke(tc,
+					new SelectionChangedEventArgs(tc, e.OldValue, e.NewValue));
+			}
+			finally { tc._updating = false; }
 		}
 
 		/// <summary>Gets or sets the selected tab item.</summary>
@@ -107,9 +133,8 @@ namespace System.Windows.Controls
 			_tabItems.Clear();
 		}
 
-		void ApplySelectedIndex(int idx)
+		void ApplySelectedIndexDirect(int idx)
 		{
-			if (_updating) return;
 			if (_notebook == null) return;
 			if (idx >= 0 && idx < Items.Count && _notebook.CurrentPage != idx)
 				_notebook.CurrentPage = idx;

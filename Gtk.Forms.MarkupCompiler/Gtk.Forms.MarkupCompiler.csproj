@@ -17,6 +17,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Gtk.Forms.MarkupCompiler.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Same versions as Gtk4.Forms.Build.Tasks.csproj. -->
     <PackageReference Include="Microsoft.Build.Framework"
                       Version="17.14.28"
