@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace System.Windows
 {
@@ -156,14 +157,31 @@ namespace System.Windows
 		/// Finds a registered <see cref="DependencyProperty"/> by <paramref name="name"/>
 		/// for <paramref name="ownerType"/> (walks up the inheritance chain).
 		/// Returns <c>null</c> when no match is found.
+		/// <para>
+		/// For types with static field initializers but no explicit static constructor
+		/// (<c>beforefieldinit</c>), the CLR may defer type initialization until a static
+		/// member is first accessed. Because DP registration happens in those initializers,
+		/// this method explicitly runs the class constructor for each type in the chain so
+		/// that all DPs are registered before the lookup proceeds.
+		/// </para>
 		/// </summary>
 		public static DependencyProperty? FindByName(string name, Type ownerType)
 		{
 			if (name == null) throw new ArgumentNullException(nameof(name));
 			if (ownerType == null) throw new ArgumentNullException(nameof(ownerType));
+
+			// Ensure each type in the chain has its static initializer (and DP registrations)
+			// done before we search. This is a no-op for already-initialized types.
+			Type? t = ownerType;
+			while (t != null && t != typeof(object))
+			{
+				System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(t.TypeHandle);
+				t = t.BaseType;
+			}
+
 			lock (_registryLock)
 			{
-				Type? t = ownerType;
+				t = ownerType;
 				while (t != null)
 				{
 					if (_registry.TryGetValue((name, t), out var dp)) return dp;
