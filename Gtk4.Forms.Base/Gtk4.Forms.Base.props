@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <!-- Opt-outs: set either to 'true' to skip the automatic csproj rewrite or the injected Main. -->
+    <SkipGtkConvert Condition="'$(SkipGtkConvert)'==''">false</SkipGtkConvert>
+    <SkipGtkHost    Condition="'$(SkipGtkHost)'==''">false</SkipGtkHost>
+  </PropertyGroup>
+  <!--
+    Add the generated GTK entry point to the consumer's compile unless they have opted out
+    (SkipGtkHost=true) — typically because they ship their own Main or already have a GtkHost call.
+    The path is relative to this .props file's directory; the Link metadata controls the logical
+    name the file appears under in Solution Explorer / build diagnostics.
+  -->
+  <ItemGroup Condition="'$(SkipGtkHost)' != 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)../content/GtkEntryPoint.g.cs"
+             Link="GtkEntryPoint.g.cs" />
+  </ItemGroup>
+</Project>
