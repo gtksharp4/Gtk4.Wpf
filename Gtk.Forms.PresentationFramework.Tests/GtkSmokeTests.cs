@@ -30,10 +30,10 @@ namespace Gtk.Forms.PresentationFramework.Tests
 		});
 
 		[Fact]
-		public void Grid_Widget_is_GtkBox() => Run(() =>
+		public void Grid_Widget_is_GtkGrid() => Run(() =>
 		{
 			var grid = new WpfGrid();
-			Assert.IsType<Gtk.Box>(grid.Widget);
+			Assert.IsType<Gtk.Grid>(grid.Widget);
 		});
 
 		[Fact]
@@ -68,12 +68,12 @@ namespace Gtk.Forms.PresentationFramework.Tests
 			win.Content = grid;
 
 			var gtkWin = (Gtk.Window)win.Widget;
-			var gtkGrid = (Gtk.Box)grid.Widget;
+			var gtkGrid = (Gtk.Grid)grid.Widget;
 			var label = (Gtk.Label)tb.Widget;
 
 			Assert.Equal("hi", label.Text);
 			Assert.IsType<Gtk.Window>(gtkWin);
-			Assert.IsType<Gtk.Box>(gtkGrid);
+			Assert.IsType<Gtk.Grid>(gtkGrid);
 			Assert.IsType<Gtk.Label>(label);
 		});
 
