@@ -267,8 +267,17 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
     GTK thread **segfaulted the test host** (and would deadlock the harness regardless). `ShowDialog` now
     **pumps** `Gtk.Application.RunIteration(true)` on the GTK thread until `Close(bool?)` sets a flag, and
     the tests schedule `Close` via a same-thread `GLib.Timeout`. GTK must only be touched on its own thread.
-- **Round 4 totals: 504 tests** (40 WindowsBase + 401 PresentationFramework + 47 MarkupCompiler +
-  16 ProjectConverter), all pass with no hang/crash; `Gtk.Forms.WpfSample` (unmodified WPF) still compiles.
+- **Round 4 review (Opus) + fixes — DONE.** Review found 2 Critical latent host-hangs + High/Medium defects;
+  all fixed with pins: `Window.Close()` (no-arg) and a window-manager/`CloseRequest` close now set the
+  closed flag so `ShowDialog` can't spin forever; the default `GtkMessageBoxPresenter` switched from a
+  blocking nested `GLib.MainLoop` to the same-thread `RunIteration` pump; **MessageBox button→result
+  mapping made total** (distinct per-button response id → label → `ResultFromLabel`; previously every click
+  returned the default); rounded `Rectangle`/`RectangleGeometry` corners use `rx` horizontally and `ry`
+  vertically (were both `ry`); `GoBack`/`GoForward` now raise the `Navigating`/`NavigationStopped` pipeline
+  with `NavigationMode` and honour `Cancel`; `Color.Sc*` documented as normalized bytes (not linear-light
+  scRGB). **Round 4 totals: 556 tests** (40 WindowsBase + 453 PresentationFramework + 47 MarkupCompiler +
+  16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample` (unmodified WPF) still
+  compiles.
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
   full attribute type-converter resolution (typed `Setter.Value`/resource values); `BindingExpression`
   live object; `Converter={StaticResource}`; true `{DynamicResource}` change-tracking; XAML
