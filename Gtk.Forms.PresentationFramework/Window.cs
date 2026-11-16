@@ -1,3 +1,5 @@
+using System;
+using System.Threading;
 using System.Windows.Controls;
 
 namespace System.Windows
@@ -5,6 +7,8 @@ namespace System.Windows
 	/// <summary>
 	/// Top-level window backed by a <see cref="Gtk.Window"/>. Hosts a single
 	/// <see cref="ContentControl.Content"/> element and displays a title bar.
+	/// Supports modal dialog semantics via <see cref="ShowDialog"/> and
+	/// <see cref="Close(bool?)"/>.
 	/// </summary>
 	/// <remarks>
 	/// Phase-0: uses a bare <see cref="Gtk.Window"/>. Phase-1 refinement will swap this
@@ -38,9 +42,21 @@ namespace System.Windows
 			set => SetValue(TitleProperty, value);
 		}
 
+		// ── Owner / DialogResult ──────────────────────────────────────────────────
+
+		/// <summary>The owner window; modal dialogs are transient for it.</summary>
+		public Window? Owner { get; set; }
+
+		/// <summary>
+		/// The dialog result set by <see cref="Close(bool?)"/>; <c>null</c> when the
+		/// window was closed without setting an explicit result.
+		/// </summary>
+		public bool? DialogResult { get; private set; }
+
 		// ── GTK backing ──────────────────────────────────────────────────────────
 
 		Gtk.Window? _window;
+		GLib.MainLoop? _dialogLoop;
 
 		/// <inheritdoc/>
 		protected override Gtk.Widget CreateWidget()
@@ -70,6 +86,46 @@ namespace System.Windows
 		public void Close()
 		{
 			((Gtk.Window)Widget).Hide();
+		}
+
+		/// <summary>
+		/// Opens this window as a modal dialog. Blocks until <see cref="Close(bool?)"/> is
+		/// called and returns <see cref="DialogResult"/>.
+		/// </summary>
+		/// <remarks>
+		/// A real nested <see cref="GLib.MainLoop"/> runs in an interactive session; in a
+		/// non-interactive harness call <see cref="Close(bool?)"/> from another thread to
+		/// unblock. GTK 4 removed <c>gtk_dialog_run</c>; this pattern is the documented
+		/// replacement (spin a MainLoop, quit it on response).
+		/// </remarks>
+		public bool? ShowDialog()
+		{
+			DialogResult = null;
+
+			var gtkWin = (Gtk.Window)Widget;
+			gtkWin.Modal = true;
+
+			if (Owner != null)
+				gtkWin.TransientFor = (Gtk.Window)Owner.Widget;
+
+			Show();
+
+			_dialogLoop = new GLib.MainLoop();
+			_dialogLoop.Run();
+			_dialogLoop = null;
+
+			return DialogResult;
+		}
+
+		/// <summary>
+		/// Closes the window and unblocks <see cref="ShowDialog"/> with
+		/// <paramref name="dialogResult"/>.
+		/// </summary>
+		public void Close(bool? dialogResult)
+		{
+			DialogResult = dialogResult;
+			((Gtk.Window)Widget).Hide();
+			_dialogLoop?.Quit();
 		}
 
 		/// <inheritdoc/>
