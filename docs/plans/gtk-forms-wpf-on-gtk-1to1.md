@@ -771,6 +771,19 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   - **+19 tests** (8 precedence + 11 Generic/SystemColors).
 - **Round 12 totals (both tracks merged): 1242 tests** (60 WindowsBase + 997 PresentationFramework +
   169 MarkupCompiler + 16 ProjectConverter), all pass timeboxed; `Gtk.Forms.WpfSample` (unmodified WPF) compiles.
+- **Round 12 review (Opus) + fixes — DONE.** 2 Critical + Highs, all fixed with pins driving the real path:
+  **X1** the theme/default-style mechanism was **inert** (nothing called it) — `Control`'s ctor now applies the
+  default style and `Button`/`CheckBox`/`RadioButton`/`Label` set `DefaultStyleKey` via `OverrideMetadata`
+  (default-style setters land below local values); **X2** the GTK input-translation layer (`GdkKeyMap`) had
+  **zero coverage** — added 11 pure keyval/modifier-mapping tests + a seam smoke test; **X3** `Focus()` now
+  clears the previously-focused element (single source of truth, raises its `LostFocus`); **X4** removed the
+  inert/empty default `Button` `ControlTemplate` (template-over-native-widget is a later round); **X5** multiline
+  `TextBox` attaches input/focus controllers to the inner `Gtk.TextView` (via a `FocusWidget` hook), not the
+  `ScrolledWindow`; **X6** TextBox selection model fixed (`MaxLength` truncates, `SelectionStart` re-clamps
+  `SelectionLength`, `SelectedText` setter leaves a consistent caret); **X7** oversized files split to ≤200 lines.
+  Full-suite total now **1289 tests** (60 WindowsBase + 1041 PresentationFramework + 173 MarkupCompiler +
+  15 ProjectConverter — the tree also compiles concurrent imaging/markup-NuGet work landed in `7a0e25e1`),
+  all pass timeboxed; `Gtk.Forms.WpfSample` (unmodified WPF) still compiles.
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
   true `{DynamicResource}` change-tracking;
   `Gtk.PopoverMenu` integration for `MenuItem`; element-level `FrameworkElement.Triggers` auto-attach on
