@@ -1,0 +1,21 @@
+<Project>
+  <!--
+    One-time, idempotent csproj conversion target.
+
+    BeforeBuild is the earliest reliably-imported consumer hook: a package's build/*.targets is
+    only imported after the first restore completes (via nuget.g.targets), so a Restore hook
+    never fires on the very first add. BeforeBuild fires on the first real build.
+
+    The converter rewrites the consumer .csproj in place (TFM collapse to net10.0, strip official
+    Xamarin.Forms* refs, set OutputType=Exe + StartupObject) so the second build is clean. The
+    target is idempotent: if the project is already converted, the tool prints "Already converted:"
+    and exits 0 without touching the file.
+
+    dotnet <dll> is RID-agnostic; convert mode runs no instance guard, so it cannot deadlock on
+    the build's own dotnet nodes. No '--' inside XML comments (MSB4025).
+  -->
+  <Target Name="GtkConvertProject" BeforeTargets="BeforeBuild"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(SkipGtkConvert)' != 'true'">
+    <Exec Command='dotnet "$(MSBuildThisFileDirectory)../tools/Gtk4.Forms.ProjectConverter.dll" --convert-project "$(MSBuildProjectFullPath)"' />
+  </Target>
+</Project>
