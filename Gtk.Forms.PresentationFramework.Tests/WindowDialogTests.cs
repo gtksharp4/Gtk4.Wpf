@@ -86,5 +86,53 @@ namespace Gtk.Forms.PresentationFramework.Tests
 			win.ShowDialog();
 			Assert.False(win.DialogResult);
 		});
+
+		// ── F1: no-arg Close() unblocks ShowDialog, DialogResult stays null ──────
+
+		[Fact]
+		public void ShowDialog_unblocks_when_noarg_Close() => Run(() =>
+		{
+			var win = new WpfWindow { Title = "NoArgClose" };
+
+			// Schedule the WPF-idiomatic Close() — no explicit DialogResult.
+			// A timeout of 50 ms is enough; if Close() doesn't set _dialogClosed the
+			// test hangs and the suite timeout (180 s) triggers a failure.
+			GLib.Timeout.Add(50, () => { win.Close(); return false; });
+
+			var result = win.ShowDialog();
+			Assert.Null(result); // DialogResult untouched
+		});
+
+		[Fact]
+		public void NoArgClose_leaves_DialogResult_null() => Run(() =>
+		{
+			var win = new WpfWindow { Title = "NoArgClose2" };
+
+			GLib.Timeout.Add(50, () => { win.Close(); return false; });
+
+			win.ShowDialog();
+			Assert.Null(win.DialogResult);
+		});
+
+		// ── F2: window-manager close path sets _dialogClosed (pure flag test) ────
+
+		/// <summary>
+		/// Pure test: calling the same code path the CloseRequest handler invokes
+		/// (<c>Close()</c> with no arg) sets the flag that unblocks ShowDialog, and
+		/// leaves DialogResult null. The GTK signal itself cannot be raised deterministically
+		/// in a headless test; this asserts the observable state the handler produces.
+		/// Coverage limit: the actual GTK CloseRequest signal subscription is not invoked here.
+		/// </summary>
+		[Fact]
+		public void CloseRequest_code_path_sets_closed_flag() => Run(() =>
+		{
+			var win = new WpfWindow { Title = "CloseReqPath" };
+
+			// Simulate what the CloseRequest handler does: call Close() with no arg.
+			GLib.Timeout.Add(50, () => { win.Close(); return false; });
+
+			var result = win.ShowDialog();
+			Assert.Null(result);
+		});
 	}
 }

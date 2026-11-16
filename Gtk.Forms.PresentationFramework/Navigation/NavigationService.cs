@@ -73,27 +73,35 @@ namespace System.Windows.Navigation
 			return NavigateCore(resolved, uri);
 		}
 
-		/// <summary>Go back to the previous journal entry.</summary>
-		/// <exception cref="InvalidOperationException">If <see cref="CanGoBack"/> is false.</exception>
+		/// <summary>
+		/// Go back to the previous journal entry.
+		/// Raises <see cref="Navigating"/> (with <see cref="NavigationMode.Back"/>) before
+		/// moving the cursor; if the handler sets <c>Cancel</c> the cursor is not moved.
+		/// Does nothing (no exception) when <see cref="CanGoBack"/> is false.
+		/// </summary>
 		public void GoBack()
 		{
-			var prev = _journal.GoBack();
-			CommitContent(prev, null);
+			if (!CanGoBack) return;
+			JournalNavigate(NavigationMode.Back, () => _journal.GoBack());
 		}
 
-		/// <summary>Go forward to the next journal entry.</summary>
-		/// <exception cref="InvalidOperationException">If <see cref="CanGoForward"/> is false.</exception>
+		/// <summary>
+		/// Go forward to the next journal entry.
+		/// Raises <see cref="Navigating"/> (with <see cref="NavigationMode.Forward"/>) before
+		/// moving the cursor; if the handler sets <c>Cancel</c> the cursor is not moved.
+		/// Does nothing (no exception) when <see cref="CanGoForward"/> is false.
+		/// </summary>
 		public void GoForward()
 		{
-			var next = _journal.GoForward();
-			CommitContent(next, null);
+			if (!CanGoForward) return;
+			JournalNavigate(NavigationMode.Forward, () => _journal.GoForward());
 		}
 
 		// ── Internal helpers ──────────────────────────────────────────────────────
 
 		bool NavigateCore(object? content, Uri? uri)
 		{
-			var cancelling = new NavigatingCancelEventArgs(content, uri);
+			var cancelling = new NavigatingCancelEventArgs(content, uri, NavigationMode.New);
 			Navigating?.Invoke(this, cancelling);
 			if (cancelling.Cancel)
 			{
@@ -104,6 +112,27 @@ namespace System.Windows.Navigation
 			_journal.Push(content);
 			CommitContent(content, uri);
 			return true;
+		}
+
+		/// <summary>
+		/// Raises Navigating with the given <paramref name="mode"/> before moving the
+		/// journal cursor via <paramref name="advance"/>. Honors Cancel: if the handler
+		/// cancels, the cursor is not moved.
+		/// </summary>
+		void JournalNavigate(NavigationMode mode, Func<object?> advance)
+		{
+			// Peek at the target content (the entry we'd move to) for the event args.
+			// We pass null content for the peek — WPF does the same for back/forward.
+			var cancelling = new NavigatingCancelEventArgs(null, null, mode);
+			Navigating?.Invoke(this, cancelling);
+			if (cancelling.Cancel)
+			{
+				NavigationStopped?.Invoke(this, cancelling);
+				return;
+			}
+
+			var content = advance();
+			CommitContent(content, null);
 		}
 
 		void CommitContent(object? content, Uri? uri)

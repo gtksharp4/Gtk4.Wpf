@@ -142,5 +142,133 @@ namespace Gtk.Forms.PresentationFramework.Tests
 			svc.Navigate(uri);
 			Assert.Null(svc.Content);
 		}
+
+		// ── F6: GoBack/GoForward raise Navigating then Navigated ─────────────────
+
+		[Fact]
+		public void GoBack_raises_Navigating_with_Back_mode()
+		{
+			var svc = new NavigationService();
+			svc.Navigate("page1");
+			svc.Navigate("page2");
+
+			NavigationMode? capturedMode = null;
+			svc.Navigating += (_, e) => capturedMode = e.NavigationMode;
+
+			svc.GoBack();
+
+			Assert.Equal(NavigationMode.Back, capturedMode);
+		}
+
+		[Fact]
+		public void GoForward_raises_Navigating_with_Forward_mode()
+		{
+			var svc = new NavigationService();
+			svc.Navigate("page1");
+			svc.Navigate("page2");
+			svc.GoBack();
+
+			NavigationMode? capturedMode = null;
+			svc.Navigating += (_, e) => capturedMode = e.NavigationMode;
+
+			svc.GoForward();
+
+			Assert.Equal(NavigationMode.Forward, capturedMode);
+		}
+
+		[Fact]
+		public void GoBack_raises_Navigated_after_move()
+		{
+			var svc = new NavigationService();
+			svc.Navigate("page1");
+			svc.Navigate("page2");
+
+			object? navigatedTo = null;
+			svc.Navigated += (_, e) => navigatedTo = e.Content;
+
+			svc.GoBack();
+
+			Assert.Equal("page1", navigatedTo);
+		}
+
+		[Fact]
+		public void GoBack_cancel_aborts_move_cursor_unchanged()
+		{
+			var svc = new NavigationService();
+			svc.Navigate("page1");
+			svc.Navigate("page2");
+
+			svc.Navigating += (_, e) =>
+			{
+				if (e.NavigationMode == NavigationMode.Back) e.Cancel = true;
+			};
+
+			svc.GoBack();
+
+			// cursor must stay at page2
+			Assert.Equal("page2", svc.Content);
+		}
+
+		[Fact]
+		public void GoBack_cancel_does_not_change_CanGoBack()
+		{
+			var svc = new NavigationService();
+			svc.Navigate("page1");
+			svc.Navigate("page2");
+
+			svc.Navigating += (_, e) =>
+			{
+				if (e.NavigationMode == NavigationMode.Back) e.Cancel = true;
+			};
+
+			svc.GoBack();
+
+			Assert.True(svc.CanGoBack);
+		}
+
+		[Fact]
+		public void GoBack_cancel_raises_NavigationStopped()
+		{
+			var svc = new NavigationService();
+			svc.Navigate("page1");
+			svc.Navigate("page2");
+
+			svc.Navigating += (_, e) =>
+			{
+				if (e.NavigationMode == NavigationMode.Back) e.Cancel = true;
+			};
+
+			bool stopped = false;
+			svc.NavigationStopped += (_, _) => stopped = true;
+
+			svc.GoBack();
+
+			Assert.True(stopped);
+		}
+
+		[Fact]
+		public void GoBack_when_CanGoBack_false_does_nothing()
+		{
+			var svc = new NavigationService();
+			svc.Navigate("page1");
+
+			bool navigatingFired = false;
+			svc.Navigating += (_, _) => navigatingFired = true;
+
+			svc.GoBack(); // should be a no-op, not throw
+
+			Assert.False(navigatingFired);
+			Assert.Equal("page1", svc.Content);
+		}
+
+		[Fact]
+		public void Navigate_raises_Navigating_with_New_mode()
+		{
+			var svc = new NavigationService();
+			NavigationMode? capturedMode = null;
+			svc.Navigating += (_, e) => capturedMode = e.NavigationMode;
+			svc.Navigate("page");
+			Assert.Equal(NavigationMode.New, capturedMode);
+		}
 	}
 }

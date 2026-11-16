@@ -63,17 +63,9 @@ namespace System.Windows.Media
 				cr.Rectangle(x, y, w, h);
 				return;
 			}
-			// rounded rectangle via arcs
-			cr.MoveTo(x + rx, y);
-			cr.LineTo(x + w - rx, y);
-			cr.Arc(x + w - rx, y + ry, ry, -Math.PI / 2, 0);
-			cr.LineTo(x + w, y + h - ry);
-			cr.Arc(x + w - rx, y + h - ry, ry, 0, Math.PI / 2);
-			cr.LineTo(x + rx, y + h);
-			cr.Arc(x + rx, y + h - ry, ry, Math.PI / 2, Math.PI);
-			cr.LineTo(x, y + ry);
-			cr.Arc(x + rx, y + ry, ry, Math.PI, Math.PI * 3 / 2);
-			cr.ClosePath();
+			// Rounded rectangle: use the same elliptic-arc helper as Rectangle.BuildRoundedRectPath
+			// so each corner uses rx horizontally and ry vertically.
+			System.Windows.Shapes.Rectangle.BuildRoundedRectPath(cr, x, y, w, h, rx, ry);
 		}
 	}
 

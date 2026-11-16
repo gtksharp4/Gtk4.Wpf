@@ -103,8 +103,6 @@ namespace System.Windows.Shapes
 		{
 			cr.Save();
 
-			// Apply RenderTransform if present (future hook; not wired to a DP yet).
-
 			BuildShapePath(cr, width, height);
 
 			var fill = Fill;

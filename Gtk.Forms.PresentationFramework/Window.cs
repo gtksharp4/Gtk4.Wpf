@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using System.Windows.Controls;
 
 namespace System.Windows
@@ -62,6 +61,9 @@ namespace System.Windows
 		protected override Gtk.Widget CreateWidget()
 		{
 			_window = new Gtk.Window { Title = Title };
+			// F2: wire window-manager close (title-bar X button) to Close(null) so
+			// ShowDialog unblocks when the user dismisses the window.
+			_window.CloseRequest += OnCloseRequest;
 			return _window;
 		}
 
@@ -82,24 +84,26 @@ namespace System.Windows
 			win.ShowAll();
 		}
 
-		/// <summary>Closes and hides the window.</summary>
-		public void Close()
-		{
-			((Gtk.Window)Widget).Hide();
-		}
+		/// <summary>
+		/// Closes the window, leaving <see cref="DialogResult"/> unchanged (null if never
+		/// explicitly set). Unblocks any pending <see cref="ShowDialog"/> call.
+		/// This is the WPF-idiomatic close path (e.g. a Cancel button with no explicit result).
+		/// </summary>
+		public void Close() => CloseCore(keepResult: true);
 
 		/// <summary>
-		/// Opens this window as a modal dialog. Blocks until <see cref="Close(bool?)"/> is
-		/// called and returns <see cref="DialogResult"/>.
+		/// Opens this window as a modal dialog. Blocks until <see cref="Close()"/> or
+		/// <see cref="Close(bool?)"/> is called, or the window manager closes the window,
+		/// then returns <see cref="DialogResult"/>.
 		/// </summary>
 		/// <remarks>
 		/// GTK 4 removed <c>gtk_dialog_run</c>. This pumps the GTK main loop on the
-		/// <b>current (GTK) thread</b> until <see cref="Close(bool?)"/> sets the closed flag,
-		/// rather than running a nested blocking <see cref="GLib.MainLoop"/>: a blocking loop
-		/// would freeze the single GTK thread so the same-thread response (a button handler,
-		/// a timeout) could never run. <see cref="Close(bool?)"/> must be invoked on the GTK
-		/// thread (GTK is not thread-safe) — e.g. from a widget event handler or a
-		/// <c>GLib.Timeout</c>/<c>GLib.Idle</c> callback, which dispatch inside this pump.
+		/// <b>current (GTK) thread</b> until a close path sets the closed flag, rather than
+		/// running a nested blocking <see cref="GLib.MainLoop"/>: a blocking loop would freeze
+		/// the single GTK thread so the same-thread response (a button handler, a timeout)
+		/// could never run. All close paths must be invoked on the GTK thread (GTK is not
+		/// thread-safe) — e.g. from a widget event handler or a <c>GLib.Timeout</c>/
+		/// <c>GLib.Idle</c> callback, which dispatch inside this pump.
 		/// </remarks>
 		public bool? ShowDialog()
 		{
@@ -114,7 +118,7 @@ namespace System.Windows
 
 			Show();
 
-			// Pump until Close(...) flags the dialog closed. RunIteration(true) blocks for the
+			// Pump until a close path sets _dialogClosed. RunIteration(true) blocks for the
 			// next event and dispatches it (including the close handler), keeping the thread live.
 			while (!_dialogClosed)
 				Gtk.Application.RunIteration(true);
@@ -129,8 +133,31 @@ namespace System.Windows
 		public void Close(bool? dialogResult)
 		{
 			DialogResult = dialogResult;
+			CloseCore(keepResult: true);
+		}
+
+		// ── Internal helpers ──────────────────────────────────────────────────────
+
+		/// <summary>
+		/// Common close implementation. Sets the flag and hides the backing window.
+		/// <paramref name="keepResult"/> is always true from public callers — the parameter
+		/// exists so the window-manager handler can be routed here without resetting DialogResult.
+		/// </summary>
+		void CloseCore(bool keepResult)
+		{
+			_ = keepResult; // reserved for future use
 			_dialogClosed = true;
 			((Gtk.Window)Widget).Hide();
+		}
+
+		/// <summary>
+		/// Handles the GTK close-request signal (window-manager X button / Alt+F4).
+		/// Sets the closed flag so <see cref="ShowDialog"/> unblocks with
+		/// <see cref="DialogResult"/> = null (no explicit result set by the app).
+		/// </summary>
+		void OnCloseRequest(object sender, Gtk.CloseRequestArgs e)
+		{
+			CloseCore(keepResult: true);
 		}
 
 		/// <inheritdoc/>

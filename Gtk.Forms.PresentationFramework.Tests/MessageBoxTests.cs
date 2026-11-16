@@ -102,6 +102,48 @@ namespace Gtk.Forms.PresentationFramework.Tests
 			Assert.Equal(MessageBoxImage.Warning, fake.LastIcon);
 		}
 
+		// ── F4: GtkMessageBoxPresenter.MapResponse — per-button index mapping ───────
+
+		/// <summary>
+		/// Each button index must map to the correct MessageBoxResult.
+		/// These cover the pure response-collection logic added in F3/F4;
+		/// the GTK dialog itself is not opened (no display needed).
+		/// </summary>
+		[Theory]
+		[InlineData(MessageBoxButton.OK,          0, MessageBoxResult.OK)]
+		[InlineData(MessageBoxButton.OKCancel,    0, MessageBoxResult.OK)]
+		[InlineData(MessageBoxButton.OKCancel,    1, MessageBoxResult.Cancel)]
+		[InlineData(MessageBoxButton.YesNo,       0, MessageBoxResult.Yes)]
+		[InlineData(MessageBoxButton.YesNo,       1, MessageBoxResult.No)]
+		[InlineData(MessageBoxButton.YesNoCancel, 0, MessageBoxResult.Yes)]
+		[InlineData(MessageBoxButton.YesNoCancel, 1, MessageBoxResult.No)]
+		[InlineData(MessageBoxButton.YesNoCancel, 2, MessageBoxResult.Cancel)]
+		public void MapResponse_index_maps_to_correct_result(
+			MessageBoxButton button, int index, MessageBoxResult expected)
+		{
+			Assert.Equal(expected, GtkMessageBoxPresenter.MapResponse(index, button));
+		}
+
+		[Theory]
+		[InlineData(MessageBoxButton.OK)]
+		[InlineData(MessageBoxButton.OKCancel)]
+		[InlineData(MessageBoxButton.YesNo)]
+		[InlineData(MessageBoxButton.YesNoCancel)]
+		public void MapResponse_negative_index_returns_None(MessageBoxButton button)
+		{
+			Assert.Equal(MessageBoxResult.None, GtkMessageBoxPresenter.MapResponse(-1, button));
+		}
+
+		[Theory]
+		[InlineData(MessageBoxButton.OK)]
+		[InlineData(MessageBoxButton.OKCancel)]
+		[InlineData(MessageBoxButton.YesNo)]
+		[InlineData(MessageBoxButton.YesNoCancel)]
+		public void MapResponse_out_of_range_returns_None(MessageBoxButton button)
+		{
+			Assert.Equal(MessageBoxResult.None, GtkMessageBoxPresenter.MapResponse(99, button));
+		}
+
 		// ── Fake presenter ────────────────────────────────────────────────────────
 
 		sealed class FakePresenter : IMessageBoxPresenter
