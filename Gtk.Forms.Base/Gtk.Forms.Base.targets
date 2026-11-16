@@ -1,0 +1,17 @@
+<Project>
+  <!--
+    GtkFormsConvertProject — runs before the first build after the consumer adds this package.
+    Strips <UseWPF>/<UseWindowsForms>, collapses the TFM to net10.0, and sets OutputType=Exe
+    so the WPF app's entry point (emitted by the MarkupCompiler from ApplicationDefinition) is used.
+
+    Skipped during design-time builds (IDE IntelliSense) and when the consumer sets
+    SkipGtkFormsConvert=true (opt-out for projects that have already been converted).
+
+    NuGet auto-imports build/$(PackageId).props and build/$(PackageId).targets in the direct
+    consumer; buildTransitive/ copies ensure the same assets reach transitive consumers.
+  -->
+  <Target Name="GtkFormsConvertProject" BeforeTargets="BeforeBuild"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(SkipGtkFormsConvert)' != 'true'">
+    <Exec Command='dotnet "$(MSBuildThisFileDirectory)../tools/Gtk.Forms.ProjectConverter.dll" --convert-project "$(MSBuildProjectFullPath)"' />
+  </Target>
+</Project>
