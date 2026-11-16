@@ -489,6 +489,38 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   Duration now animates); **T7** `{TemplateBinding Prop, …}` uses only the property path + stale doc fixed.
   **Round 8 totals: 961 tests** (40 WindowsBase + 786 PresentationFramework + 119 MarkupCompiler +
   16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample` (unmodified WPF) compiles.
+- **Round 9 Track B — data validation + CollectionView runtime (DONE).** No compiler changes.
+  - **Validation**:
+    - `ValidationRule` (abstract; `Validate(value, culture) → ValidationResult`), `ValidationResult`
+      (`IsValid`, `ErrorContent`), `ValidationError` (`RuleInError`, `ErrorContent`, `Exception`).
+    - `Validation` static: read-only `Errors`/`HasError` attached DPs, stub `ErrorTemplate` attached DP,
+      `Error` attached routed event (Bubble); `SetErrors`/`ClearErrors` internal helpers.
+    - `ExceptionValidationRule` and `DataErrorValidationRule` singletons.
+    - `Binding` gains `ValidationRules`, `ValidatesOnDataErrors`, `ValidatesOnExceptions`, `NotifyOnValidationError`.
+    - Binding engine: pre-write `ValidationRules` gate; post-write `IDataErrorInfo`/`INotifyDataErrorInfo`
+      check (`ValidatesOnDataErrors`); `TargetInvocationException` unwrap for `ValidatesOnExceptions`.
+      BCL `IDataErrorInfo`/`INotifyDataErrorInfo` used (net10.0 ships them; no redefinition needed).
+  - **CollectionView**:
+    - `ICollectionView` interface (`SourceCollection`, `Filter`, `SortDescriptions`, `GroupDescriptions`,
+      `Groups`, `CurrentItem`/`CurrentPosition`, `MoveCurrentTo*`, `Refresh`, `CurrentChanged`, `CollectionChanged`).
+    - `ListCollectionView` over `IEnumerable`/INCC: applies filter → sort → group; `BuildGroups` (single-level);
+      `Refresh` raises `CollectionChanged(Reset)`.
+    - `CollectionViewSource` (`Source`/`View` instance; `GetDefaultView(source)` stable cache via
+      `ConditionalWeakTable`; returns existing `ICollectionView` unchanged).
+    - `SortDescription` struct (BCL has `ListSortDirection` in `System.ComponentModel.TypeConverter`; only
+      `SortDescription` is defined here — `ListSortDirection` reused from BCL).
+    - `GroupDescription` abstract + `PropertyGroupDescription` (single-property grouping).
+    - `CollectionViewGroup` (`Name`, `Items`, `ItemCount`).
+    - `ItemsControl` wired: `OnItemsSourceChanged` now calls `CollectionViewSource.GetDefaultView` and
+      subscribes to the view's `CollectionChanged`; `RebuildItems` iterates `EffectiveItems` (view or raw source).
+  - **18 new tests** (6 validation + 12 CollectionView; all pure, all pass):
+    - `ValidationTests`: rule rejects/clears, `IDataErrorInfo` surfaced, `INotifyDataErrorInfo` surfaced,
+      `ExceptionValidationRule`, `NotifyOnValidationError` routed event.
+    - `CollectionViewTests`: filter hides items, sort ascending/descending, `PropertyGroupDescription` groups,
+      `MoveCurrentToNext`/`CurrentItem`, `CollectionViewSource.GetDefaultView` stable cache, `ICollectionView`
+      passthrough, `ItemsControl` items reflect filtered+sorted view order, plain collection defaults.
+  - **Round 9 totals: 979 tests** (40 WindowsBase + 804 PresentationFramework + 119 MarkupCompiler +
+    16 ProjectConverter), all pass timeboxed; `Gtk.Forms.WpfSample` (unmodified WPF) still compiles.
 - **Carry-over (Round 5 Opus review — not addressed this round)**: compiler DP-vs-CLR resolution is a
   name heuristic (`IsKnownDp`: "is it in `System.Windows.*` and not on the CLR-only exclusion list?").
   Should be replaced with real assembly symbol resolution — load the referenced assemblies, reflect

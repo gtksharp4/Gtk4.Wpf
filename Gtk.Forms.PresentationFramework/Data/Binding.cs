@@ -1,8 +1,12 @@
+using System.Collections.ObjectModel;
+using System.Windows.Controls;
+
 namespace System.Windows.Data
 {
 	/// <summary>
 	/// Declares a one-way (Phase-0) or two-way (Phase-1) data binding.
 	/// Round 7: adds <see cref="RelativeSource"/>, <see cref="UpdateSourceTrigger"/>.
+	/// Round 9: adds validation properties.
 	/// <see cref="BindingBase.StringFormat"/>, <see cref="BindingBase.FallbackValue"/> and
 	/// <see cref="BindingBase.TargetNullValue"/> are inherited from <see cref="BindingBase"/>.
 	/// </summary>
@@ -70,5 +74,28 @@ namespace System.Windows.Data
 		/// <see cref="UpdateSourceTrigger.LostFocus"/> falls back to PropertyChanged.
 		/// </summary>
 		public UpdateSourceTrigger UpdateSourceTrigger { get; set; } = UpdateSourceTrigger.Default;
+
+		// ── Validation ───────────────────────────────────────────────────────────
+
+		/// <summary>Collection of <see cref="ValidationRule"/>s evaluated on source update.</summary>
+		public Collection<ValidationRule> ValidationRules { get; } = new Collection<ValidationRule>();
+
+		/// <summary>
+		/// When <c>true</c>, checks <see cref="IDataErrorInfo"/> / <see cref="INotifyDataErrorInfo"/>
+		/// on the source after a TwoWay update.
+		/// </summary>
+		public bool ValidatesOnDataErrors { get; set; }
+
+		/// <summary>
+		/// When <c>true</c>, any exception thrown during a source update is caught and surfaced
+		/// as a validation error via <see cref="ExceptionValidationRule"/>.
+		/// </summary>
+		public bool ValidatesOnExceptions { get; set; }
+
+		/// <summary>
+		/// When <c>true</c>, validation errors are reported via the
+		/// <see cref="Validation.ErrorEvent"/> attached routed event.
+		/// </summary>
+		public bool NotifyOnValidationError { get; set; }
 	}
 }
