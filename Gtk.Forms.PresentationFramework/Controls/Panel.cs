@@ -38,7 +38,7 @@ namespace System.Windows.Controls
 		}
 
 		/// <summary>True when this panel's backing GTK widget has been materialised.</summary>
-		protected abstract bool IsWidgetCreated { get; }
+		protected new abstract bool IsWidgetCreated { get; }
 
 		/// <summary>
 		/// Packs <paramref name="child"/>'s backing widget into this panel's GTK container.
