@@ -213,6 +213,22 @@ build target cannot retarget the build in progress — the first build rewrites,
 `SkipGtkConvert`/`SkipGtkHost` opt out. Still open: `Gtk4.Forms.Build.Tasks` must expose its XAML
 targets via `buildTransitive/` for a fully hands-off XAML consumer.
 
+**WPF-on-GTK compatibility layer (`Gtk.Forms.*`, Phase 0).** A separate, in-progress effort to run an
+**unmodified WPF** app (its `System.Windows.*` code and WPF XAML) on the GTK engine — no namespace or
+XAML changes. The types are reimplemented in the real `System.Windows.*` namespaces (projects named
+`Gtk.Forms.*`, own assembly names): `Gtk.Forms.WindowsBase` (the `DependencyObject`/`DependencyProperty`
+property + routed-event system, pure netstandard2.0), `Gtk.Forms.PresentationFramework`
+(`UIElement`→`Window`/controls + a one-way binding engine, rendering on GtkSharp 4, net10.0), and
+`Gtk.Forms.MarkupCompiler` (a build-time, System.Xaml-free MSBuild task that generates
+`InitializeComponent` from the untouched presentation-namespace XAML — `[assembly: XmlnsDefinition]`
+makes the WPF xmlns resolve to our types). `Gtk.Forms.Base` is the one-package drop-in (+ a WPF
+`Gtk.Forms.ProjectConverter`: strip `UseWPF`, `net*-windows`→`net10.0`, `OutputType=Exe`).
+`Gtk.Forms.WpfSample` is an unmodified-WPF app that compiles through the compiler as the end-to-end
+proof. **This is Phase 0 of an aim-for-1:1 program** (full WPF is Avalonia-scale); the four suites
+(`Gtk.Forms.*.Tests`, ~104 tests) + the sample prove the vertical slice. Two-way binding, templates,
+triggers, the full control set and attribute-driven `XmlnsDefinition` resolution are later phases
+(marked `TODO (Phase 1)` in-code).
+
 ## Coding style
 
 .NET Foundation style with the project's exceptions (see `.editorconfig`, which is authoritative):
