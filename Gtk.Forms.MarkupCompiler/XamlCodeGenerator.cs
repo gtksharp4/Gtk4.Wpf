@@ -12,7 +12,7 @@ namespace Gtk.Forms.MarkupCompiler
 	/// <c>InitializeComponent</c> partial class (C# source text).
 	/// No MSBuild, no System.Xaml dependency.
 	/// </summary>
-	public class XamlCodeGenerator
+	public partial class XamlCodeGenerator
 	{
 		/// <summary>
 		/// Generates the <c>.g.cs</c> source for <paramref name="xaml"/>.
@@ -463,6 +463,10 @@ namespace Gtk.Forms.MarkupCompiler
 
 			// Template and ContentTemplate property elements contain a ControlTemplate child.
 			// ItemTemplate property elements contain a DataTemplate child.
+			// MultiBinding property elements contain a MultiBinding child.
+			string ownerLocalName = localName.Substring(0, dot);
+			string ownerFqType = WpfXmlnsMap.Resolve(ownerLocalName) ?? ownerLocalName;
+
 			foreach (XElement child in propEl.Elements())
 			{
 				string childLocal = child.Name.LocalName;
@@ -478,6 +482,14 @@ namespace Gtk.Forms.MarkupCompiler
 					string tmplVar = $"__dt{counter++}";
 					EmitDataTemplateInline(w, child, xNs, tmplVar, ref counter);
 					w.Line($"{parentVar}.{propName} = {tmplVar};");
+					return;
+				}
+				if (childLocal == "MultiBinding")
+				{
+					string mbVar = $"__mb{counter++}";
+					EmitMultiBindingInline(w, child, xNs, mbVar, ref counter);
+					// SetBinding(DP, BindingBase): resolve DP from owner type name.
+					w.Line($"{parentVar}.SetBinding({ownerFqType}.{propName}Property, {mbVar});");
 					return;
 				}
 			}
@@ -834,150 +846,6 @@ namespace Gtk.Forms.MarkupCompiler
 			return resolved ?? localName;
 		}
 
-		/// <summary>
-		/// Returns <c>true</c> when <paramref name="value"/> is a
-		/// <c>{StaticResource key}</c> or <c>{DynamicResource key}</c> markup extension.
-		/// Sets <paramref name="resourceKey"/> to the key string.
-		/// <para>
-		/// DynamicResource is resolved like StaticResource at load time (Phase-0 pragmatic
-		/// approach — TODO: true dynamic tracking with change notifications is a later phase).
-		/// </para>
-		/// </summary>
-		static bool IsStaticOrDynamicResource(string value, out string resourceKey)
-		{
-			resourceKey = null;
-			if (value == null) return false;
-			string trimmed = value.Trim();
-			string prefix = null;
-			if (trimmed.StartsWith("{StaticResource", StringComparison.Ordinal))
-				prefix = "{StaticResource";
-			else if (trimmed.StartsWith("{DynamicResource", StringComparison.Ordinal))
-				prefix = "{DynamicResource";
-			if (prefix == null) return false;
-			if (!trimmed.EndsWith("}")) return false;
-			resourceKey = trimmed.Substring(prefix.Length).TrimEnd('}').Trim();
-			return !string.IsNullOrEmpty(resourceKey);
-		}
-
-		/// <summary>
-		/// Returns true when <paramref name="value"/> is a <c>{Binding ...}</c> markup
-		/// extension and sets <paramref name="bindingInit"/> to the C# object-initializer
-		/// expression for the resulting <see cref="System.Windows.Data.Binding"/>.
-		/// Handles: empty path, positional path, Path=, Mode=, ElementName=, Converter=
-		/// (Converter via StaticResource emits a TODO comment and is otherwise skipped).
-		/// </summary>
-		static bool IsBindingExpression(string value, out string bindingInit)
-		{
-			bindingInit = null;
-			if (value == null) return false;
-			string trimmed = value.Trim();
-			if (!trimmed.StartsWith("{Binding", StringComparison.Ordinal)) return false;
-			if (!trimmed.EndsWith("}")) return false;
-
-			string inner = trimmed.Substring("{Binding".Length).TrimEnd('}').Trim();
-
-			// {Binding} — empty path, binds to DataContext.
-			if (string.IsNullOrEmpty(inner))
-			{
-				bindingInit = "new System.Windows.Data.Binding()";
-				return true;
-			}
-
-			var args = SplitBindingArgs(inner);
-
-			string path = null;
-			string mode = null;
-			string elementName = null;
-			bool hasConverter = false;
-
-			bool firstPositional = true;
-			foreach (string arg in args)
-			{
-				string a = arg.Trim();
-				if (a.StartsWith("Path=", StringComparison.Ordinal))
-					path = a.Substring("Path=".Length).Trim();
-				else if (a.StartsWith("Mode=", StringComparison.Ordinal))
-					mode = a.Substring("Mode=".Length).Trim();
-				else if (a.StartsWith("ElementName=", StringComparison.Ordinal))
-					elementName = a.Substring("ElementName=".Length).Trim();
-				else if (a.StartsWith("Converter=", StringComparison.Ordinal))
-					hasConverter = true;
-				else if (firstPositional && !a.Contains("="))
-					path = a; // positional path
-				firstPositional = false;
-			}
-
-			var sb = new System.Text.StringBuilder();
-			if (path != null)
-				sb.Append($"new System.Windows.Data.Binding(\"{EscapeString(path)}\")");
-			else
-				sb.Append("new System.Windows.Data.Binding()");
-
-			bool hasInit = mode != null || elementName != null || hasConverter;
-			if (hasInit)
-			{
-				sb.Append(" { ");
-				bool comma = false;
-				if (mode != null)
-				{
-					sb.Append($"Mode = System.Windows.Data.BindingMode.{mode}");
-					comma = true;
-				}
-				if (elementName != null)
-				{
-					if (comma) sb.Append(", ");
-					sb.Append($"ElementName = \"{EscapeString(elementName)}\"");
-					comma = true;
-				}
-				if (hasConverter)
-				{
-					if (comma) sb.Append(", ");
-					// TODO: resolve Converter={StaticResource ...} once resource round is done.
-					sb.Append("/* Converter = TODO(StaticResource) */");
-				}
-				sb.Append(" }");
-			}
-
-			bindingInit = sb.ToString();
-			return true;
-		}
-
-		/// <summary>
-		/// Splits binding arguments on commas, respecting nested braces.
-		/// e.g. <c>Path=X, Mode=TwoWay, Converter={StaticResource c}</c>
-		/// produces three tokens.
-		/// </summary>
-		static System.Collections.Generic.List<string> SplitBindingArgs(string inner)
-		{
-			var result = new System.Collections.Generic.List<string>();
-			int depth = 0;
-			int start = 0;
-			for (int i = 0; i < inner.Length; i++)
-			{
-				char c = inner[i];
-				if (c == '{') depth++;
-				else if (c == '}') depth--;
-				else if (c == ',' && depth == 0)
-				{
-					result.Add(inner.Substring(start, i - start));
-					start = i + 1;
-				}
-			}
-			if (start < inner.Length)
-				result.Add(inner.Substring(start));
-			return result;
-		}
-
-		/// <summary>
-		/// Escapes a raw string value so it can be emitted as a C# string literal.
-		/// Handles backslash, double-quote, and control characters (\r, \n, \t).
-		/// </summary>
-		internal static string EscapeString(string s) =>
-			s.Replace("\\", "\\\\")
-			 .Replace("\"", "\\\"")
-			 .Replace("\r", "\\r")
-			 .Replace("\n", "\\n")
-			 .Replace("\t", "\\t");
 	}
 
 	/// <summary>Exception thrown when XAML code generation fails.</summary>

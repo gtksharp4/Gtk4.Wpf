@@ -15,26 +15,36 @@ namespace System.Windows
 		}
 
 		/// <summary>
-		/// WPF-compatible overload: attaches <paramref name="binding"/> to
-		/// <paramref name="dp"/> and returns the live <see cref="BindingExpressionBase"/>
-		/// (currently returns <c>null</c>; expression objects are Phase-2).
+		/// Attaches <paramref name="binding"/> to <paramref name="dp"/> and returns the live
+		/// <see cref="BindingExpressionBase"/> (a <see cref="BindingExpression"/> for simple
+		/// bindings, or <see cref="MultiBindingExpression"/> for multi-bindings).
 		/// </summary>
 		public BindingExpressionBase? SetBinding(DependencyProperty dp, Binding binding)
 		{
 			if (dp == null) throw new ArgumentNullException(nameof(dp));
 			if (binding == null) throw new ArgumentNullException(nameof(binding));
-			BindingEngine.SetBinding(this, dp, binding);
-			return null;
+			return BindingEngine.SetBinding(this, dp, binding);
 		}
 
 		/// <summary>
-		/// Returns the <see cref="BindingExpressionBase"/> for <paramref name="dp"/>,
-		/// or <c>null</c> when no binding is active. Phase-2 will return a real object;
-		/// for now it is a cheap null placeholder matching the WPF signature.
+		/// Attaches a <see cref="BindingBase"/> (Binding or MultiBinding) to
+		/// <paramref name="dp"/> and returns the live expression.
+		/// </summary>
+		public void SetBinding(DependencyProperty dp, BindingBase binding)
+		{
+			if (dp == null) throw new ArgumentNullException(nameof(dp));
+			if (binding == null) throw new ArgumentNullException(nameof(binding));
+			BindingEngine.SetBinding(this, dp, binding);
+		}
+
+		/// <summary>
+		/// Returns the live <see cref="BindingExpressionBase"/> for <paramref name="dp"/>,
+		/// or <c>null</c> when no binding is active.
 		/// </summary>
 		public BindingExpressionBase? GetBindingExpression(DependencyProperty dp)
 		{
-			return null;
+			if (dp == null) throw new ArgumentNullException(nameof(dp));
+			return BindingEngine.GetBindingExpression(this, dp);
 		}
 	}
 }
