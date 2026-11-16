@@ -6,9 +6,11 @@ A classic WPF application runs on Windows only. Rehosting its XAML on **Gtk4.For
 you a single XAML + C# codebase that renders on native **GTK 4** widgets and runs on
 **Windows, Linux and macOS** from the same build output.
 
-This is not an automatic converter. WPF XAML and Forms XAML are different dialects of the same
-idea, so the port is mechanical but manual: you keep your layout intent, data bindings and
-view-model code, and you rewrite the markup and the bootstrap. This article is the step-by-step.
+The project plumbing — the executable, the target framework, the package references and the GTK
+entry point — is done for you by a single package, **`Gtk4.Forms.Base`**. The work that remains is
+translating the markup: WPF XAML and Forms XAML are different dialects of the same idea, so you keep
+your layout intent, data bindings and view-model code, and rewrite the controls. This article is the
+step-by-step.
 
 Be clear about the trade first:
 
@@ -46,53 +48,34 @@ and its native libraries together, and the same build runs on all three OSes. A 
 a display server (X11/Wayland, or `xvfb-run` for headless CI); macOS renders through the Quartz GDK
 backend.
 
-## The project file
+## Set up the project — add one package
 
-A WPF project is `<Project Sdk="Microsoft.NET.Sdk">` with `UseWPF=true` and a Windows-only TFM
-(`net10.0-windows`). Replace that with a plain, OS-neutral executable.
+Add a single `PackageReference` to **`Gtk4.Forms.Base`**:
 
 ```xml
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <!-- Exe, NOT WinExe. WinExe is a Windows-subsystem concept with no meaning on Linux/macOS,
-         and it suppresses console output you want for diagnostics. -->
-    <OutputType>Exe</OutputType>
-
-    <!-- net10.0, NOT netstandard2.0 and NOT net10.0-windows. An application must name a concrete,
-         OS-neutral runtime: netstandard emits no runtimeconfig.json (launch fails with
-         "libhostpolicy not found"); a -windows TFM defeats the point of running on Linux/macOS. -->
-    <TargetFramework>net10.0</TargetFramework>
-
-    <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Gtk4.Forms.Core" Version="5.0.0.*" />
-    <PackageReference Include="Gtk4.Forms.Xaml" Version="5.0.0.*" />
-    <PackageReference Include="Gtk4.Forms.Platform.Gtk" Version="5.0.0.*" />
-    <!-- Gtk4.Forms.Platform.Gtk transitively pulls in GtkSharp4 and the backend. -->
-  </ItemGroup>
-</Project>
+<ItemGroup>
+  <PackageReference Include="Gtk4.Forms.Base" Version="5.0.0.*" />
+</ItemGroup>
 ```
 
-Remove from the old WPF project: `UseWPF`, `ApplicationDefinition` (the `App.xaml`
-auto-wiring), `net*-windows`, and any `PackageReference` to WPF-only libraries.
+That package does the whole plumbing. At build time it:
 
-Keep your `.xaml` files as `<Page>` build items — `Gtk4.Forms.Build.Tasks` (pulled in transitively
-by the packages) runs `XamlGTask`/`XamlCTask` to generate `InitializeComponent` and compile the
-markup, exactly like WPF's XAML build tasks. SDK-style default globbing already includes `.xaml`;
-no explicit `<Compile>` entries are needed.
+- **Rewrites the `.csproj`** — sets `OutputType=Exe` and a single OS-neutral `TargetFramework=net10.0`,
+  drops the `UseWPF` / `net*-windows` / WPF-only bits and any leftover `Xamarin.Forms` package
+  references, and pulls in Core, Xaml, Platform.Gtk and the XAML build tasks. Those tasks run
+  `XamlGTask`/`XamlCTask` to generate `InitializeComponent` and compile your markup, exactly like
+  WPF's XAML build tasks. SDK-style default globbing already includes `.xaml`; no explicit
+  `<Compile>` entries are needed.
+- **Injects the GTK entry point** — a generated `Main` that initialises GTK and Forms, finds your
+  `Application` subclass, hosts it in a `FormsWindow` and runs the GTK main loop. You write no
+  bootstrap.
 
-**Shortcut — `Gtk4.Forms.Base`.** Instead of hand-writing the three package references above *and*
-the entry point in Step 4, you can add the single meta-package `Gtk4.Forms.Base`. At build time it
-rewrites the `.csproj` (sets `OutputType=Exe` / `TargetFramework=net10.0`, strips any leftover
-`Xamarin.Forms`/`net*-windows` bits, and pulls in Core, Xaml, Platform.Gtk and the build tasks) and
-injects the GTK `Main` for you, so the manual project file and the Step 4 bootstrap become optional.
-Because an MSBuild target cannot retarget the build already running, the **first** build after adding
-the package rewrites the project and the **second** is the clean one (the rewrite is idempotent;
-`SkipGtkConvert`/`SkipGtkHost` opt out). The manual versions below remain worth reading as a precise
-description of what the package does.
+Because an MSBuild target cannot retarget the build already running, the conversion is **one-time**:
+the **first** build after adding the package rewrites the project, and the **second** build is the
+clean one. The rewrite is idempotent (re-running changes nothing); `SkipGtkConvert` / `SkipGtkHost`
+are the opt-outs if you ever want to take the wheel back.
+
+Everything else below is the markup translation — the part no package can do for you.
 
 ## Conceptual mapping
 
@@ -119,7 +102,7 @@ description of what the package does.
 | `HorizontalAlignment` | `HorizontalOptions` (`LayoutOptions`) | `Stretch`→`FillAndExpand`, etc. |
 
 Your **view models, commands, converters, and `INotifyPropertyChanged` code generally move over
-unchanged** — they never referenced WPF types. The work is in the markup and the bootstrap.
+unchanged** — they never referenced WPF types. The work is in the markup.
 
 ## Step 1 — Convert the XAML root namespaces
 
@@ -178,7 +161,9 @@ namespace MyApp
 
 ## Step 3 — The Application class
 
-WPF's `App.xaml` with `StartupUri` has no Forms analogue. Forms' `Application` owns a `MainPage`.
+WPF's `App.xaml` with `StartupUri` has no Forms analogue. Forms' `Application` owns a `MainPage`,
+and the injected entry point finds this class and runs it — so this is the only startup code you
+write.
 
 ```csharp
 using Xamarin.Forms;
@@ -197,57 +182,10 @@ namespace MyApp
 
 If you prefer XAML for `App`, make `App.xaml` a `ResourceDictionary` host exactly as in Forms
 samples (`<Application ...>` root, `x:Class="MyApp.App"`), and set `MainPage` in the code-behind
-constructor after `InitializeComponent()`.
+constructor after `InitializeComponent()`. If more than one `Application` subclass exists, mark the
+one to launch with `[assembly: Xamarin.Forms.Platform.GTK.GtkMainApplication(typeof(App))]`.
 
-## Step 4 — The entry point (bootstrap)
-
-This is the part with no WPF equivalent. WPF generates `Main` for you from `App.xaml`. Here you
-write it: initialise GTK, initialise Forms, host the `Application` in a `FormsWindow`, run the
-GTK main loop. (If you took the `Gtk4.Forms.Base` shortcut above, you can skip this section entirely
-— the package injects an equivalent `Main` that reflects out your `Application` subclass and runs it.)
-
-```csharp
-using System;
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.GTK;
-
-namespace MyApp
-{
-    static class Program
-    {
-        [STAThread]   // required: GTK's Win32 backend calls OleInitialize, which needs STA
-        static void Main()
-        {
-            GtkThemes.Init();
-            Gtk.Application.Init();
-            Forms.Init();
-
-            var window = new FormsWindow();
-            window.LoadApplication(new App());
-            window.SetApplicationTitle("My App");
-            window.SetApplicationIcon("icon.png");
-            window.Show();
-
-            Gtk.Application.Run();
-        }
-    }
-}
-```
-
-Two bootstrap subtleties:
-
-- **`[STAThread]` is mandatory.** On Windows, GTK's GDK backend calls `OleInitialize`, which
-  fails on an MTA thread (`Gdk-ERROR: OleInitialize failed`) and hangs the process.
-- **`Forms.Init()` only scans loaded assemblies.** If any renderers, effects or `Maps` live in
-  a separate assembly, merely referencing the package is not enough — force the load by naming a
-  type in it:
-
-  ```csharp
-  Forms.Init(new[] { typeof(Xamarin.Forms.Maps.GTK.MapRenderer).Assembly });
-  Xamarin.Forms.Maps.GTK.FormsMaps.Init();
-  ```
-
-## Step 5 — Bindings, resources and styles
+## Step 4 — Bindings, resources and styles
 
 These are the highest-leverage part of the port because they usually carry over almost verbatim.
 
@@ -291,7 +229,7 @@ Differences to fix by hand:
 </Entry>
 ```
 
-## Step 6 — Assets
+## Step 5 — Assets
 
 WPF `Resource`/`Content` build actions become Forms `Content` with copy-to-output, and
 file-based images are loaded by name at runtime:
@@ -313,8 +251,7 @@ files at the output root, not in subfolders, unless you include the path.
 
 ## Building and running on each OS
 
-The build is plain `dotnet`. The **same** published output runs on all three OSes; only the
-native GTK 4 runtime differs.
+The build is plain `dotnet`, and the **same** output runs on all three OSes.
 
 ```powershell
 dotnet build MyApp.csproj
@@ -356,9 +293,9 @@ dotnet run --project MyApp.csproj
 
 ## Threading
 
-GTK is not thread-safe. **Everything that touches a widget must run on the thread that called
-`Forms.Init()`** — the thread running `Gtk.Application.Run()`. From a background thread, marshal
-back:
+GTK is not thread-safe. **Everything that touches a widget must run on the main GTK thread** — the
+thread running `Gtk.Application.Run()` (set up for you by the entry point). From a background thread,
+marshal back:
 
 ```csharp
 Device.BeginInvokeOnMainThread(() => label.Text = "done");
@@ -385,20 +322,14 @@ problems surface early rather than all at once.
 
 ## Summary
 
-1. New SDK-style project: `OutputType=Exe`, `TargetFramework=net10.0` (OS-neutral).
-2. Reference `Gtk4.Forms.Core` + `Gtk4.Forms.Xaml` + `Gtk4.Forms.Platform.Gtk` from nuget.org (the
-   `GtkSharp4` dependency, and its native runtime, come along automatically).
-3. Rewrite each `Window` as a `ContentPage`; swap the default `xmlns` to the Forms namespace and
+1. Add one `PackageReference` to **`Gtk4.Forms.Base`** — it turns the project into a cross-platform
+   GTK executable and writes the entry point for you (build twice the first time; the conversion is
+   one-time and idempotent).
+2. Rewrite each `Window` as a `ContentPage`; swap the default `xmlns` to the Forms namespace and
    translate the controls.
-4. `DataContext` → `BindingContext`; drop `Path=`; keep commands, converters and view models.
-5. Write the `Main` bootstrap: `GtkThemes.Init()` → `Gtk.Application.Init()` → `Forms.Init()` →
-   `FormsWindow.LoadApplication(new App())` → `Gtk.Application.Run()`, on an `[STAThread]`.
-6. Run the **same** build everywhere — the native GTK 4 runtime ships with the package, so there is
+3. `DataContext` → `BindingContext`; drop `Path=`; keep commands, converters and view models.
+4. Run the **same** build everywhere — the native GTK 4 runtime ships with the package, so there is
    nothing to install per OS (Linux still needs a display: X11/Wayland or `xvfb-run`).
-
-Steps 1, 2 and 5 can be collapsed into a single `PackageReference` to **`Gtk4.Forms.Base`**, which
-rewrites the project and injects the `Main` for you (see the shortcut under *The project file*); the
-XAML translation in steps 3–4 is the part that stays manual.
 
 The reward is a WPF-shaped codebase — XAML, bindings, styles, MVVM — that is no longer tied to
 Windows.
@@ -407,5 +338,4 @@ Windows.
 
 *Part of the Gtk4.Forms `5.0.0` maintenance fork. See also
 [`article-gtk4-forms-gtk.md`](article-gtk4-forms-gtk.md) for the architecture of the backend,
-and the `Gtk4.Forms.ControlGallery` project for a complete runnable example of the bootstrap
-described here.*
+and the `Gtk4.Forms.ControlGallery` project for a complete runnable example.*
