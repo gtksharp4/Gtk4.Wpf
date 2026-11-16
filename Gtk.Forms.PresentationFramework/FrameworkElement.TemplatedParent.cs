@@ -9,11 +9,12 @@ namespace System.Windows
 	/// Set internally by <see cref="Controls.Control"/> when it applies its
 	/// <see cref="Controls.Control.Template"/>. Read by <see cref="Data.RelativeSource"/>
 	/// when <c>Mode = TemplatedParent</c> to resolve the binding source.
-	/// Only the visual-tree root produced by the factory is stamped; child elements further
-	/// down the factory tree are reachable via their own <c>TemplatedParent</c> (stamped
-	/// when each sub-element is reparented into the same template scope, though the full
-	/// subtree walk is not implemented — documented limitation: only the factory root is
-	/// guaranteed to have this set).
+	/// The full visual subtree produced by the factory is stamped recursively via
+	/// <c>StampTemplatedParent</c>, and all <c>RelativeSource=TemplatedParent</c>
+	/// bindings on the subtree are re-activated afterwards via
+	/// <c>BindingEngine.RefreshTemplatedParentBindings</c> so they resolve correctly
+	/// even when the binding was set inside the factory lambda (before <c>TemplatedParent</c>
+	/// was assigned).
 	/// </para>
 	/// </summary>
 	public abstract partial class FrameworkElement

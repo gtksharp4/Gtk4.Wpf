@@ -174,5 +174,30 @@ namespace Gtk.Forms.MarkupCompiler.Tests
 			Assert.Contains("new System.Windows.Data.Binding(\"Name\")", code);
 			Assert.DoesNotContain("TemplatedParent", code);
 		}
+
+		// ── T7: TemplateBinding with extra comma args uses only the first token ─
+
+		[Fact]
+		public void T7_TemplateBinding_with_comma_extra_args_uses_only_property_path()
+		{
+			// {TemplateBinding Prop, Converter=…} — the fix takes only "Prop" as the path,
+			// not the whole comma-containing string.
+			bool result = XamlCodeGenerator.IsTemplateBindingExpression(
+				"{TemplateBinding Background, Converter={StaticResource c}}", out string init);
+
+			Assert.True(result);
+			// Path must be "Background" only, not "Background, Converter=…"
+			Assert.Contains("\"Background\"", init);
+			Assert.DoesNotContain(",", init.Split('"')[1]); // first quoted token has no comma
+		}
+
+		[Fact]
+		public void T7_TemplateBinding_simple_property_unaffected()
+		{
+			// Without a comma the behaviour is unchanged.
+			XamlCodeGenerator.IsTemplateBindingExpression(
+				"{TemplateBinding FontSize}", out string init);
+			Assert.Contains("\"FontSize\"", init);
+		}
 	}
 }

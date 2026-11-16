@@ -69,15 +69,21 @@ namespace System.Windows.Media.Animation
 
 			var localTime = _elapsed - beginTime;
 
-			// Finite duration check.
-			if (!_timeline.Duration.HasTimeSpan)
+			// Resolve the effective duration.
+			// Duration.Automatic (the Timeline default) maps to 1 second, matching WPF behaviour.
+			// Duration.Forever is infinite — keep clock Active at current progress indefinitely.
+			Duration effectiveDuration = _timeline.Duration;
+			if (effectiveDuration.DurationType == DurationType.Automatic)
+				effectiveDuration = new Duration(TimeSpan.FromSeconds(1));
+
+			if (!effectiveDuration.HasTimeSpan)
 			{
-				// Automatic / Forever: run indefinitely at progress=0 (no-op for Automatic).
-				ApplyValue(0.0);
+				// Forever: run indefinitely at current progress (no completion).
+				ApplyValue(CurrentProgress);
 				return;
 			}
 
-			var dur = _timeline.Duration.TimeSpan;
+			var dur = effectiveDuration.TimeSpan;
 			if (dur == TimeSpan.Zero)
 			{
 				// Zero-duration: immediately at end.

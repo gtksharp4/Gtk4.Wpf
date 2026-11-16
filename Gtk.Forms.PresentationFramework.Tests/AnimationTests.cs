@@ -352,5 +352,38 @@ namespace Gtk.Forms.PresentationFramework.Tests
 			// Must not throw.
 			action.Invoke(target);
 		}
+
+		// ── T6: Duration.Automatic resolves to 1 second ──────────────────────────
+
+		[Fact]
+		public void T6_DoubleAnimation_no_Duration_set_ticked_1s_reaches_To()
+		{
+			// Duration defaults to Automatic.  Without the fix the clock stays at progress=0.
+			var target = new DoubleTarget();
+			var anim = new DoubleAnimation { From = 0, To = 10 }; // no Duration → Automatic
+
+			Assert.Equal(Duration.Automatic, anim.Duration); // precondition
+
+			var clock = MakeClock(anim, target, DoubleTarget.ValueProperty);
+			clock.Tick(TimeSpan.FromSeconds(1.0));
+
+			// 1 s elapsed == the resolved 1-second duration → animation complete, value = To.
+			Assert.Equal(10.0, GetDouble(target, DoubleTarget.ValueProperty), precision: 10);
+			Assert.Equal(ClockState.Filling, clock.CurrentState);
+		}
+
+		[Fact]
+		public void T6_DoubleAnimation_no_Duration_at_half_second_is_half_way()
+		{
+			var target = new DoubleTarget();
+			var anim = new DoubleAnimation { From = 0, To = 10 };
+			var clock = MakeClock(anim, target, DoubleTarget.ValueProperty);
+
+			clock.Tick(TimeSpan.FromSeconds(0.5));
+
+			// 0.5 s / 1 s = 50% → value ≈ 5.
+			Assert.Equal(5.0, GetDouble(target, DoubleTarget.ValueProperty), precision: 10);
+			Assert.Equal(ClockState.Active, clock.CurrentState);
+		}
 	}
 }

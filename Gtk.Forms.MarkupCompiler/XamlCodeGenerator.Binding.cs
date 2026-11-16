@@ -356,6 +356,12 @@ namespace Gtk.Forms.MarkupCompiler
 		/// Sets <paramref name="bindingInit"/> to a C# <see cref="System.Windows.Data.Binding"/>
 		/// expression that binds in one-way mode against
 		/// <see cref="System.Windows.Data.RelativeSource.TemplatedParent"/>.
+		/// <para>
+		/// Only single-property form is supported: <c>{TemplateBinding Prop}</c>.
+		/// If additional comma-separated arguments are present (e.g.
+		/// <c>{TemplateBinding Prop, Converter=…}</c>) only the first token before the
+		/// comma is used as the path; the extra arguments are silently ignored.
+		/// </para>
 		/// </summary>
 		internal static bool IsTemplateBindingExpression(string value, out string bindingInit)
 		{
@@ -365,15 +371,22 @@ namespace Gtk.Forms.MarkupCompiler
 			if (!trimmed.StartsWith("{TemplateBinding", StringComparison.Ordinal)) return false;
 			if (!trimmed.EndsWith("}")) return false;
 
-			// Extract the property name (the positional argument after {TemplateBinding).
+			// Extract the content between {TemplateBinding and the closing brace.
 			string inner = trimmed
 				.Substring("{TemplateBinding".Length, trimmed.Length - "{TemplateBinding".Length - 1)
 				.Trim();
 
 			if (string.IsNullOrEmpty(inner)) return false;
 
+			// Take only the first comma-separated token as the path so that
+			// {TemplateBinding Prop, Converter=…} does not produce a malformed path.
+			int comma = inner.IndexOf(',');
+			string propertyPath = comma >= 0 ? inner.Substring(0, comma).Trim() : inner;
+
+			if (string.IsNullOrEmpty(propertyPath)) return false;
+
 			// {TemplateBinding Prop} → new Binding("Prop") { RelativeSource = RS.TemplatedParent, Mode = OneWay }
-			bindingInit = "new System.Windows.Data.Binding(\"" + EscapeString(inner) + "\") { "
+			bindingInit = "new System.Windows.Data.Binding(\"" + EscapeString(propertyPath) + "\") { "
 				+ "RelativeSource = System.Windows.Data.RelativeSource.TemplatedParent, "
 				+ "Mode = System.Windows.Data.BindingMode.OneWay }";
 			return true;

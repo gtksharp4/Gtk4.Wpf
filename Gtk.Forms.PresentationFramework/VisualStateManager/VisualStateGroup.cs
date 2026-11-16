@@ -43,9 +43,11 @@ namespace System.Windows
 			=> CurrentStateChanging?.Invoke(control,
 				new VisualStateChangedEventArgs(CurrentState, newState, control, this));
 
-		internal void RaiseChanged(Controls.Control control, VisualState newState)
+		/// <param name="oldState">The state that was active before the transition.</param>
+		/// <param name="newState">The state that is now active.</param>
+		internal void RaiseChanged(Controls.Control control, VisualState? oldState, VisualState newState)
 			=> CurrentStateChanged?.Invoke(control,
-				new VisualStateChangedEventArgs(CurrentState, newState, control, this));
+				new VisualStateChangedEventArgs(oldState, newState, control, this));
 	}
 
 	/// <summary>Event args for <see cref="VisualStateGroup"/> state-change events.</summary>

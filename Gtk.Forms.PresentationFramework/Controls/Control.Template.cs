@@ -46,6 +46,10 @@ namespace System.Windows.Controls
 			// Stamp TemplatedParent on the produced root (and its subtree).
 			StampTemplatedParent(_templateRoot, this);
 
+			// Re-activate any RelativeSource=TemplatedParent bindings that the factory
+			// registered while TemplatedParent was still null (the compiler-emitted path).
+			Data.BindingEngine.RefreshTemplatedParentBindings(_templateRoot);
+
 			// If the backing widget has already been created, swap in the template widget.
 			// If it has not, Widget property creation will be skipped for the default path
 			// — override OnApplyTemplate in the concrete class if needed.

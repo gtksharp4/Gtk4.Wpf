@@ -7,8 +7,14 @@ namespace System.Windows.Media.Animation
 	/// Manages all active <see cref="AnimationClock"/> instances and ticks them on the
 	/// GTK thread via a single <c>GLib.Timeout</c> at ~60 fps.
 	///
-	/// All GTK/GLib interactions remain on the GLib main-loop thread; the ticker is not
-	/// started until the first animation is registered.
+	/// <b>Thread contract:</b> <see cref="Register"/> MUST be called on the GLib main-loop
+	/// thread when the GLib event loop is running.  When GTK is not running (e.g. pure unit
+	/// tests that tick clocks directly via <see cref="AnimationClock.Tick"/>) the check and
+	/// the GLib timer registration are skipped, so the test-seam path is unaffected.
+	///
+	/// To enforce the contract in a live GLib context, call
+	/// <see cref="NotifyGtkInitialised"/> once after <c>Gtk.Application.Init()</c>;
+	/// from that point <see cref="Register"/> asserts <c>GLib.MainContext.Default.IsOwner</c>.
 	///
 	/// Unit tests that do not run a GLib main loop tick clocks directly via
 	/// <see cref="AnimationClock.Tick"/>, bypassing this scheduler entirely.
@@ -22,16 +28,40 @@ namespace System.Windows.Media.Animation
 		static DateTime _lastTick = DateTime.UtcNow;
 		static readonly object _lock = new object();
 
+		// Set to true once Gtk.Application.Init() has been called so that Register
+		// knows whether to enforce the GTK-thread contract.
+		static bool _gtkReady;
+
+		/// <summary>
+		/// Override hook used by unit tests to inject a custom "is on GLib main-loop thread"
+		/// predicate.  When null and <see cref="_gtkReady"/> is false the check is skipped.
+		/// </summary>
+		internal static Func<bool>? IsOnGtkThreadOverride;
+
+		/// <summary>
+		/// Must be called once after <c>Gtk.Application.Init()</c> to tell the scheduler
+		/// that the GLib event loop is now live and thread-safety checks should be enforced.
+		/// </summary>
+		internal static void NotifyGtkInitialised()
+		{
+			lock (_lock) { _gtkReady = true; }
+		}
+
 		/// <summary>
 		/// Registers <paramref name="clock"/> for GLib-driven ticking.
-		/// Safe to call before the first GLib iteration — the timer is started lazily.
+		/// When GTK is running (after <see cref="NotifyGtkInitialised"/>), this MUST be
+		/// called on the GLib main-loop thread; otherwise an
+		/// <see cref="InvalidOperationException"/> is thrown.
+		/// When GTK is not running (pure unit tests) the GLib timer is not started and
+		/// the clock is added to the list only (ticked via <see cref="AnimationClock.Tick"/>).
 		/// </summary>
 		internal static void Register(AnimationClock clock)
 		{
+			AssertGtkThread();
 			lock (_lock)
 			{
 				_active.Add(clock);
-				if (!_running)
+				if (_gtkReady && !_running)
 				{
 					_running = true;
 					_lastTick = DateTime.UtcNow;
@@ -49,6 +79,18 @@ namespace System.Windows.Media.Animation
 			lock (_lock)
 				_active.Remove(clock);
 		}
+
+		/// <summary>
+		/// Test-only entry point that calls <see cref="Register"/> (and thus the GTK-thread
+		/// assertion).  Used to verify that the guard fires when called from a non-GTK thread.
+		/// </summary>
+		internal static void RegisterForTest(AnimationClock clock) => Register(clock);
+
+		/// <summary>
+		/// Test-only entry point that calls <see cref="Unregister"/> without requiring the
+		/// GTK thread (cleanup after a failed <see cref="RegisterForTest"/> call that threw).
+		/// </summary>
+		internal static void UnregisterForTest(AnimationClock clock) => Unregister(clock);
 
 		// Called on the GLib main-loop thread every ~16 ms.
 		static bool OnTick()
@@ -90,6 +132,33 @@ namespace System.Windows.Media.Animation
 			}
 
 			return true; // keep firing
+		}
+
+		/// <summary>
+		/// Throws <see cref="InvalidOperationException"/> when the caller is not on the
+		/// GLib main-loop thread and GTK has been initialised.  When
+		/// <see cref="IsOnGtkThreadOverride"/> is set it is used instead of the GLib check
+		/// (for unit tests).  When neither applies (GTK not yet initialised) the check is
+		/// skipped to allow pure test-seam usage.
+		/// </summary>
+		static void AssertGtkThread()
+		{
+			if (IsOnGtkThreadOverride != null)
+			{
+				if (!IsOnGtkThreadOverride())
+					throw new InvalidOperationException(
+						"AnimationScheduler.Register must be called on the GLib main-loop thread. "
+						+ "Marshal the call via GLib.Idle.Add or the application dispatcher.");
+				return;
+			}
+
+			// Only enforce when GTK is actually running.
+			if (!_gtkReady) return;
+
+			if (!GLib.MainContext.Default.IsOwner)
+				throw new InvalidOperationException(
+					"AnimationScheduler.Register must be called on the GLib main-loop thread. "
+					+ "Marshal the call via GLib.Idle.Add or the application dispatcher.");
 		}
 	}
 }

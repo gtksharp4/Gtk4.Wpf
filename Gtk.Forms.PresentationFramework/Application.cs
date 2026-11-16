@@ -52,6 +52,9 @@ namespace System.Windows
 		public int Run()
 		{
 			Gtk.Application.Init();
+			// Notify the animation scheduler that the GLib event loop is now live and
+			// GTK-thread assertions should be enforced from this point on.
+			System.Windows.Media.Animation.AnimationScheduler.NotifyGtkInitialised();
 
 			var window = MainWindow;
 			window?.Show();

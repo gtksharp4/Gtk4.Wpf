@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 
 namespace System.Windows
 {
@@ -12,14 +14,19 @@ namespace System.Windows
 	/// <see cref="VisualStateGroup.CurrentStateChanging"/> and
 	/// <see cref="VisualStateGroup.CurrentStateChanged"/>, and applies any
 	/// <see cref="Setter"/>s defined on the new <see cref="VisualState"/>.
+	/// Previous-state setters are reverted before the new state's setters are applied.
 	/// </para>
 	/// </summary>
 	public class VisualStateManager
 	{
 		// ── VisualStateGroups attached property ────────────────────────────────
 
-		static readonly Dictionary<Controls.Control, IList<VisualStateGroup>> _groups =
-			new Dictionary<Controls.Control, IList<VisualStateGroup>>();
+		// ConditionalWeakTable: control is the key; no strong ref kept, so controls
+		// are eligible for GC once they are unreachable from the app side.
+		// Value type is ObservableCollection<VisualStateGroup> which has a public
+		// parameterless constructor, satisfying ConditionalWeakTable's constraint.
+		static readonly ConditionalWeakTable<Controls.Control, ObservableCollection<VisualStateGroup>> _groups =
+			new ConditionalWeakTable<Controls.Control, ObservableCollection<VisualStateGroup>>();
 
 		/// <summary>
 		/// Returns the <see cref="VisualStateGroup"/>s attached to <paramref name="control"/>,
@@ -28,12 +35,7 @@ namespace System.Windows
 		public static IList<VisualStateGroup> GetVisualStateGroups(Controls.Control control)
 		{
 			if (control == null) throw new ArgumentNullException(nameof(control));
-			if (!_groups.TryGetValue(control, out var list))
-			{
-				list = new ObservableCollection<VisualStateGroup>();
-				_groups[control] = list;
-			}
-			return list;
+			return _groups.GetOrCreateValue(control);
 		}
 
 		/// <summary>
@@ -45,7 +47,15 @@ namespace System.Windows
 			IList<VisualStateGroup> groups)
 		{
 			if (control == null) throw new ArgumentNullException(nameof(control));
-			_groups[control] = groups ?? new ObservableCollection<VisualStateGroup>();
+
+			// Normalise to ObservableCollection<VisualStateGroup> so it fits the table value type.
+			var collection = groups as ObservableCollection<VisualStateGroup>
+				?? new ObservableCollection<VisualStateGroup>(
+					groups ?? (IEnumerable<VisualStateGroup>)Array.Empty<VisualStateGroup>());
+
+			// ConditionalWeakTable: remove any existing entry then add the new one.
+			_groups.Remove(control);
+			_groups.Add(control, collection);
 		}
 
 		// ── GoToState ─────────────────────────────────────────────────────────
@@ -82,14 +92,19 @@ namespace System.Windows
 				// Raise CurrentStateChanging with the OLD CurrentState still set.
 				group.RaiseChanging(control, state);
 
-				// Apply setters.
+				// Revert the previous state's setters before applying the new ones.
+				// This prevents properties set by a state from "leaking" after leaving it.
+				RevertSetters(control, group.CurrentState, state);
+
+				// Apply the new state's setters.
 				ApplySetters(control, state);
 
 				// Future-round seam: apply state.Storyboard here when animation is wired.
 
-				// Update the recorded state and raise CurrentStateChanged.
+				// Capture the old state, update CurrentState, then raise Changed with correct args.
+				var old = group.CurrentState;
 				group.CurrentState = state;
-				group.RaiseChanged(control, state);
+				group.RaiseChanged(control, old, state);
 
 				return true;
 			}
@@ -97,12 +112,39 @@ namespace System.Windows
 			return false;
 		}
 
-		// ── Setter application ────────────────────────────────────────────────
+		// ── Setter application / revert ───────────────────────────────────────
 
 		static void ApplySetters(Controls.Control control, VisualState state)
 		{
 			foreach (var setter in state.Setters)
 				setter.Apply(control);
+		}
+
+		/// <summary>
+		/// Clears DPs that were set by <paramref name="previousState"/> but are NOT
+		/// also set by <paramref name="nextState"/>.  Reverts them to the layer beneath
+		/// (local value or default) so the state's effects do not persist after exit.
+		/// When <paramref name="previousState"/> is null (first transition) nothing is done.
+		/// </summary>
+		static void RevertSetters(
+			Controls.Control control,
+			VisualState? previousState,
+			VisualState nextState)
+		{
+			if (previousState == null) return;
+
+			// Build a fast lookup of DPs the NEXT state touches.
+			var nextDps = new System.Collections.Generic.HashSet<DependencyProperty>(
+				System.Collections.Generic.ReferenceEqualityComparer.Instance);
+			foreach (var s in nextState.Setters)
+				if (s.Property != null) nextDps.Add(s.Property);
+
+			// Clear any DP the previous state applied that the next state does not re-set.
+			foreach (var setter in previousState.Setters)
+			{
+				if (setter.Property != null && !nextDps.Contains(setter.Property))
+					control.ClearValue(setter.Property);
+			}
 		}
 	}
 }
