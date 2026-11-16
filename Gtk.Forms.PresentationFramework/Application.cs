@@ -52,9 +52,22 @@ namespace System.Windows
 		public int Run()
 		{
 			Gtk.Application.Init();
-			// Notify the animation scheduler that the GLib event loop is now live and
-			// GTK-thread assertions should be enforced from this point on.
+			// Notify the animation scheduler that the GLib event loop is now live.
 			System.Windows.Media.Animation.AnimationScheduler.NotifyGtkInitialised();
+			// Wire Dispatcher delegates to the GLib main loop.
+			Threading.Dispatcher.IsOnDispatcherThread = () => GLib.MainContext.Default.IsOwner;
+			Threading.Dispatcher.BeginInvokeAction = action => GLib.Idle.Add(() => { action(); return false; });
+			Threading.Dispatcher.InvokeAction = action =>
+			{
+				if (GLib.MainContext.Default.IsOwner) { action(); return; }
+				using var done = new System.Threading.ManualResetEventSlim();
+				GLib.Idle.Add(() => { try { action(); } finally { done.Set(); } return false; });
+				done.Wait();
+			};
+			// Wire DispatcherTimer delegates to GLib.
+			Threading.DispatcherTimer.ScheduleAction = (ms, cb) =>
+				GLib.Timeout.Add(ms, new GLib.TimeoutHandler(() => cb()));
+			Threading.DispatcherTimer.RemoveSourceAction = id => GLib.Source.Remove(id);
 
 			var window = MainWindow;
 			window?.Show();
