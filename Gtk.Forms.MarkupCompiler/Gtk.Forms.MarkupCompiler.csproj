@@ -8,6 +8,7 @@
     <PackageId>Gtk.Forms.MarkupCompiler</PackageId>
     <Description>Build-time WPF XAML markup compiler for the Gtk.Forms compatibility layer.</Description>
     <!-- Packable (restored transitively via Gtk.Forms.Base); stable 4-part Version avoids NU5104. -->
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <IsPackable>true</IsPackable>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <PackageOutputPath>$(XFPackageOutputPath)</PackageOutputPath>

@@ -19,6 +19,7 @@
     <NoWarn>$(NoWarn);CS0436</NoWarn>
     <!-- GTK4 port: GtkSharp4 marks many GTK3 compat shims [Obsolete]; demote to warnings. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);CS0612;CS0618</WarningsNotAsErrors>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
