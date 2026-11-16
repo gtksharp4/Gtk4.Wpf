@@ -611,6 +611,19 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
 - **Round 10 totals (both tracks merged): 1094 tests** (60 WindowsBase + 860 PresentationFramework +
   158 MarkupCompiler + 16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample`
   (unmodified WPF) still compiles.
+- **Round 10 review (Opus) + fixes — DONE.** 2 High + Mediums, all fixed with pins: **V1** the
+  `DpSymbolResolver` **locked consumer DLLs** (`Assembly.LoadFrom` holds a file lock for the MSBuild-node
+  lifetime → later targets fail "file in use" — the lock seen this round) → now `Assembly.Load(File.ReadAllBytes)`
+  (lock-free) + an `AssemblyResolve` handler serving dependencies from an in-memory map, with heuristic
+  fallback on any load failure; pinned by a test asserting the resolved DLL can be deleted afterward; **V2**
+  `{x:Static}`/`{x:Type}` now resolve a `local:` prefix against the element's `xmlns:local="clr-namespace:…"`
+  scope and emit the **fully-qualified** `global::MyApp.Type.Member` (were dropping the user namespace → invalid
+  C#); **V3** an unresolvable `{x:Type}` raises a clear compiler diagnostic (was silent invalid output); **V4**
+  `{x:Null}` on a non-nullable value-type CLR property emits `default(T)` (was `= null` → CS0037); **V5** three
+  oversized test files split to ≤200 lines; **V6** non-Bold font weights emit a Pango weight span. **Round 10
+  totals: 1108 tests** (60 WindowsBase + 863 PresentationFramework + 169 MarkupCompiler + 16 ProjectConverter),
+  all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample` (unmodified WPF) compiles through the lock-free
+  real-symbol-resolution compiler.
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
   true `{DynamicResource}` change-tracking; GTK key-event wiring for `InputBindings`;
   `Gtk.PopoverMenu` integration for `MenuItem`; element-level `FrameworkElement.Triggers` auto-attach on
