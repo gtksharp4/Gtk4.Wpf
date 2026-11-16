@@ -221,6 +221,30 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   now a RoutedCommand with no matching binding is simply non-executable (WPF semantics). **368 tests total**
   (40 WindowsBase + 265 PresentationFramework + 47 MarkupCompiler + 16 ProjectConverter), all pass, PF full
   run completes with no stack overflow; `Gtk.Forms.WpfSample` (unmodified WPF) still compiles.
+- **Round 4 Track A — navigation, windows & dialogs (DONE).** **330 PF tests** (265 baseline + 65 new):
+  - `System.Windows.Controls.Page` (`FrameworkElement` subclass, `Content`/`Title`/`WindowTitle` DPs,
+    internal `NavigationService` setter, backed by `Gtk.Box`).
+  - `System.Windows.Navigation.NavigationService` (cursor-based `NavigationJournal` —
+    pure, back/forward with forward-trim on `Push`), `Navigate(object)`/`Navigate(Uri)`,
+    `GoBack`/`GoForward`, `Navigating`/`Navigated`/`NavigationStopped` events, internal
+    `ContentChanged` event, pluggable `IContentResolver`/`DictionaryContentResolver` for URI lookup.
+  - `System.Windows.Controls.Frame` (`ContentControl` subclass, `Source` DP, owns `NavigationService`,
+    swaps `Gtk.Box` child on `ContentChanged`).
+  - `System.Windows.Navigation.NavigationWindow` (`Window` subclass, owns `NavigationService`,
+    wires `ContentChanged` to set `Content` and push `Page.WindowTitle` to `Title`,
+    exposes `CanGoBack/CanGoForward`/`GoBack`/`GoForward`/`Navigate` pass-throughs).
+  - `System.Windows.MessageBox` (static `Show(…)` overloads, injectable `IMessageBoxPresenter`,
+    `GtkMessageBoxPresenter` using deprecated-but-available `Gtk.MessageDialog` with `GLib.MainLoop`
+    synchrony, `MessageBoxButtonMapping` pure static — `ButtonLabels`/`ResultFromLabel`/`DefaultResult`).
+  - `Window.Owner`/`Window.DialogResult`/`Window.ShowDialog()`/`Window.Close(bool?)` — modal semantics
+    via nested `GLib.MainLoop` (GTK 4 equivalent of `gtk_dialog_run`).
+  - **Root cause of the long investigation**: `Gtk.Window` exists in GtkSharp4; inside namespace
+    `Gtk.Forms.PresentationFramework.Tests` Roslyn resolves bare `Window` to `Gtk.Window` (namespace
+    chain lookup beats using-directive lookup). Fix: `using WpfWindow = System.Windows.Window;` in
+    affected test files, matching the pattern already used in `GtkSmokeTests.cs`.
+  - New tests: 10 `NavigationJournalTests` + 13 `NavigationServiceTests` + 7 `NavigationWindowTests`
+    + 7 `FrameGtkSmokeTests` + 22 `MessageBoxTests` (button mapping) + 6 `WindowDialogTests`.
+
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
   full attribute type-converter resolution (typed `Setter.Value`/resource values); `BindingExpression`
   live object; `Converter={StaticResource}`; true `{DynamicResource}` change-tracking; XAML
