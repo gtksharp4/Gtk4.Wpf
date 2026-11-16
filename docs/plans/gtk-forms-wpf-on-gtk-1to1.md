@@ -196,10 +196,22 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `BasedOn` cycle guard + `ReadLocalValue`-based implicit-style guard. **304 tests total** across the
   four suites (35 WindowsBase + 213 PresentationFramework + 40 MarkupCompiler + 16 ProjectConverter),
   all pass; `Gtk.Forms.WpfSample` (unmodified WPF) still compiles through the compiler.
+- **Round 3 track B — commands + input (DONE).** `System.Windows.Input.ICommand` (BCL; no duplicate),
+  `RoutedCommand`/`RoutedUICommand`, `CommandBinding`/`CommandBindingCollection`,
+  `CommandManager` (`RequerySuggested`/`InvalidateRequerySuggested`, tree-walking `Execute`/`CanExecute`),
+  `ICommandSource`, `CommandSourceHelper` (shared subscribe/unsubscribe), `UIElement.CommandBindings`
+  partial, `Button.Command`/`CommandParameter`/`CommandTarget` partial (sensitivity tracks `CanExecute`),
+  `MenuItem` (`Header`/`Command`/`Click`; backed by `Gtk.Button`), `InputGesture`/`KeyGesture`/`MouseGesture`
+  + `KeyBinding`/`MouseBinding` + `UIElement.InputBindings` with `InvokeInputBinding` dispatch entry point.
+  **21 new tests** (18 pure + 3 GTK smoke): **234 PresentationFramework tests** (233 pass; 1 pre-existing
+  `Style_Apply_sets_property_via_name` failure). GTK-widget choice for `MenuItem`: `Gtk.Button`
+  (functional; `Gtk.PopoverMenu` wiring is a later phase).
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
   full attribute type-converter resolution (typed `Setter.Value`/resource values); `BindingExpression`
   live object; `Converter={StaticResource}`; true `{DynamicResource}` change-tracking; XAML
-  `<ControlTemplate>`/`<DataTemplate>`/inline-`<ListBoxItem>` parsing in the compiler (runtime exists).
+  `<ControlTemplate>`/`<DataTemplate>`/inline-`<ListBoxItem>` parsing in the compiler (runtime exists);
+  GTK key-event wiring for `InputBindings` (programmatic `InvokeInputBinding` dispatch exists);
+  `Gtk.PopoverMenu` integration for `MenuItem`.
 
 ## Phased roadmap (after Phase 0 proves the spine)
 
