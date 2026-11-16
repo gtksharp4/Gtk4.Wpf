@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 namespace System.Windows.Markup
 {
@@ -107,6 +108,37 @@ namespace System.Windows.Markup
 			return rawValue;
 		}
 
+		/// <summary>
+		/// Converts <paramref name="rawValue"/> to <paramref name="targetType"/> directly
+		/// (no <see cref="DependencyProperty"/> needed — used for animation value types
+		/// that are not registered as DPs on the animation class itself).
+		/// </summary>
+		public static object? ConvertByType(Type targetType, string rawValue)
+		{
+			if (targetType == null) throw new ArgumentNullException(nameof(targetType));
+			if (targetType == typeof(string)) return rawValue;
+
+			Type lookupType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+			if (_converters.TryGetValue(lookupType, out var converter))
+				return converter(rawValue);
+
+			if (lookupType.IsEnum)
+				return Enum.Parse(lookupType, rawValue, ignoreCase: true);
+
+			return rawValue;
+		}
+
+		/// <summary>
+		/// Converts <paramref name="rawValue"/> to the given <paramref name="targetType"/>,
+		/// with <paramref name="ownerType"/> and a null DP (for contexts where there is no DP).
+		/// Used by compiler-emitted animation property assignments.
+		/// </summary>
+		public static object? Convert(Type ownerType, DependencyProperty? dp, Type targetType, string rawValue)
+		{
+			if (targetType == null) throw new ArgumentNullException(nameof(targetType));
+			return ConvertByType(targetType, rawValue);
+		}
+
 		// ── Built-in registration ────────────────────────────────────────────────
 
 		static void RegisterBuiltIns()
@@ -130,6 +162,10 @@ namespace System.Windows.Markup
 			Register<Color>(MediaConverters.ParseColor);
 			Register<Brush>(MediaConverters.ParseBrush);
 			Register<SolidColorBrush>(raw => (SolidColorBrush)MediaConverters.ParseBrush(raw));
+
+			// Animation primitives
+			Register<Duration>(AnimationConverters.ParseDuration);
+			Register<RepeatBehavior>(AnimationConverters.ParseRepeatBehavior);
 		}
 	}
 }

@@ -31,6 +31,10 @@ namespace System.Windows.Media.Animation
 		readonly Dictionary<Timeline, DependencyProperty> _targetProperties =
 			new Dictionary<Timeline, DependencyProperty>(System.Collections.Generic.ReferenceEqualityComparer.Instance);
 
+		// Property-path strings stored when the DP is not yet known (compiler path).
+		readonly Dictionary<Timeline, string> _targetPropertyNames =
+			new Dictionary<Timeline, string>(System.Collections.Generic.ReferenceEqualityComparer.Instance);
+
 		/// <summary>Sets the target element name for a child timeline.</summary>
 		public void SetTargetName(Timeline timeline, string name)
 		{
@@ -53,6 +57,21 @@ namespace System.Windows.Media.Animation
 		/// <summary>Returns the target DP for <paramref name="timeline"/>, or null.</summary>
 		public DependencyProperty? GetTargetProperty(Timeline timeline) =>
 			timeline != null && _targetProperties.TryGetValue(timeline, out var dp) ? dp : null;
+
+		/// <summary>
+		/// Stores a property-name string for lazy DP resolution at <see cref="Begin"/> time.
+		/// Used by the markup compiler when the owner type is not known at code-gen time.
+		/// </summary>
+		public void SetTargetPropertyName(Timeline timeline, string propertyName)
+		{
+			if (timeline == null) throw new ArgumentNullException(nameof(timeline));
+			if (propertyName == null) throw new ArgumentNullException(nameof(propertyName));
+			_targetPropertyNames[timeline] = propertyName;
+		}
+
+		/// <summary>Returns the stored property-name string for <paramref name="timeline"/>, or null.</summary>
+		public string? GetTargetPropertyName(Timeline timeline) =>
+			timeline != null && _targetPropertyNames.TryGetValue(timeline, out var s) ? s : null;
 
 		// ── Static helpers (WPF attached-property API style) ─────────────────────
 
@@ -84,9 +103,6 @@ namespace System.Windows.Media.Animation
 			{
 				if (child is AnimationTimeline anim)
 				{
-					var dp = GetTargetProperty(child);
-					if (dp == null) continue;
-
 					// Target element: resolve by name or fall back to the storyboard target.
 					DependencyObject animTarget = target;
 					var nameStr = GetTargetName(child);
@@ -95,6 +111,16 @@ namespace System.Windows.Media.Animation
 						var named = target.FindName(nameStr) as DependencyObject;
 						if (named != null) animTarget = named;
 					}
+
+					// Resolve the DP: prefer a pre-set DP, fall back to name-based lookup.
+					var dp = GetTargetProperty(child);
+					if (dp == null)
+					{
+						var propName = GetTargetPropertyName(child);
+						if (!string.IsNullOrEmpty(propName))
+							dp = DependencyProperty.FindByName(propName, animTarget.GetType());
+					}
+					if (dp == null) continue;
 
 					var clock = new AnimationClock(anim, animTarget, dp);
 					_clocks.Add(clock);

@@ -1,11 +1,11 @@
 using System.Collections.Generic;
+using System.Windows.Media.Animation;
 
 namespace System.Windows
 {
 	/// <summary>
 	/// Represents a named state within a <see cref="VisualStateGroup"/>.
-	/// Setter-based state application is supported; storyboard application is deferred
-	/// to the animation track (a future round).
+	/// Setter-based and storyboard-based state transitions are both supported.
 	/// </summary>
 	public class VisualState
 	{
@@ -20,9 +20,9 @@ namespace System.Windows
 		public IList<Setter> Setters { get; } = new List<Setter>();
 
 		/// <summary>
-		/// Storyboard for animated transitions. Stored but not applied until the animation
-		/// track is wired — a seam for a future round. Set to any object to record the value.
+		/// Optional storyboard started when this state becomes active and stopped when
+		/// the state is exited.  Null means no animation.
 		/// </summary>
-		public object? Storyboard { get; set; }
+		public Storyboard? Storyboard { get; set; }
 	}
 }
