@@ -157,10 +157,13 @@ namespace System.Windows
 		}
 
 		/// <summary>
-		/// Resolves the effective value: local > trigger > style > inherited > metadata default.
+		/// Resolves the effective value: animation > local > trigger > style > inherited > metadata default.
 		/// </summary>
 		internal object? ResolveEffectiveValue(DependencyProperty dp)
 		{
+			// D10: animation values sit above everything else (WPF precedence).
+			if (_animationValues.TryGetValue(dp, out var anim)) return anim;
+
 			if (_localValues.TryGetValue(dp, out var local)) return local;
 
 			// D8: trigger values sit above style but below local.

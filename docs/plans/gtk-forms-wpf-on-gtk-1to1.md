@@ -432,6 +432,31 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `Binding.DoNothing` sentinel added. **Round 7 totals: 901 tests** (40 WindowsBase + 741 PresentationFramework
   + 104 MarkupCompiler + 16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample`
   (unmodified WPF) still compiles.
+- **Round 8 Track B — animation & storyboards runtime (DONE).** `System.Windows.Media.Animation`:
+  - `Duration` (finite/Forever/Automatic), `RepeatBehavior` (count/duration/Forever), `FillBehavior` (HoldEnd/Stop).
+  - `Timeline` (abstract; `Duration`/`BeginTime`/`AutoReverse`/`RepeatBehavior`/`FillBehavior`) +
+    `AnimationTimeline` (abstract; `GetCurrentValue(origin, dest, clock)`).
+  - **Animation value layer** added to `DependencyObject` (D10) above local in
+    `ResolveEffectiveValue`: `SetAnimationValue(dp,v)` / `ClearAnimationValue(dp)` in
+    `Gtk.Forms.WindowsBase/DependencyObject.Animation.cs` (new partial file).
+  - `AnimationClock` — per-timeline-per-target clock; `Tick(TimeSpan)` test seam (no GLib loop required);
+    handles `BeginTime`, finite/Forever repeat, `AutoReverse`, `FillBehavior.HoldEnd`/`Stop`, `Pause`/`Resume`/`Stop`.
+  - `AnimationScheduler` — single `GLib.Timeout` at ~16ms/60fps; registers/unregisters clocks;
+    advances active clocks on the GTK thread and removes completed ones.
+  - `IEasingFunction` interface + `EasingFunction` property on `DoubleAnimation`.
+  - Concrete animations: `DoubleAnimation` (`From`/`To`/`By`/`EasingFunction`), `ColorAnimation`
+    (per-channel ARGB lerp), `ThicknessAnimation` (per-side lerp).
+  - `Storyboard : Timeline` — `Children` (`TimelineCollection`); per-child `SetTargetName`/`SetTargetProperty`
+    (instance dictionary, reference-equality keyed); `Begin(FrameworkElement)` creates+registers clocks,
+    `Stop`/`Pause`/`Resume`; `internal ActiveClocks` for test inspection.
+  - `BeginStoryboard : TriggerAction` — `Storyboard` property; `Invoke` calls `Storyboard.Begin(target)`;
+    `EventTrigger` already invokes any `TriggerAction` — no changes to `EventTrigger.cs`.
+  - **13 new pure tests** (`AnimationTests`): at t=0.5s→5, at t=1s→10/Filling, HoldEnd holds, Stop reverts,
+    animation beats local, local returns after Stop, AutoReverse@1.5s, AutoReverse HoldEnd at From, Forever Active,
+    ColorAnimation channels, BeginStoryboard fires on EventTrigger, null Storyboard noop.
+  - **Round 8B totals: 754 PresentationFramework** (+13 animation), 40 WindowsBase, all pass; no GTK smoke needed.
+  - Limitation: `Storyboard`-in-XAML (`<Storyboard>` property element, storyboard keyed resource) is not
+    compiler-wired yet — deferred to a later sub-round. Only runtime (code-behind) use works now.
 - **Carry-over (Round 5 Opus review — not addressed this round)**: compiler DP-vs-CLR resolution is a
   name heuristic (`IsKnownDp`: "is it in `System.Windows.*` and not on the CLR-only exclusion list?").
   Should be replaced with real assembly symbol resolution — load the referenced assemblies, reflect
@@ -442,7 +467,8 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   true `{DynamicResource}` change-tracking; GTK key-event wiring for `InputBindings`;
   `Gtk.PopoverMenu` integration for `MenuItem`; element-level `FrameworkElement.Triggers` auto-attach on
   load (runtime exists, compiler emits `Style.Triggers` only); nested-path `DataTrigger` bindings;
-  `EventTrigger` storyboards/animations; `TemplateBinding` markup extension inside `ControlTemplate`;
+  `Storyboard`-in-XAML (storyboard as keyed resource / property element — runtime only now);
+  `TemplateBinding` markup extension inside `ControlTemplate`;
   `Popup`/`ContextMenu` replay of an `IsOpen=true` set before the backing widget exists (currently dropped);
   GTK4-native backings deferred for the Round-6 controls (`Gio.Menu`/`Gtk.PopoverMenuBar` for `Menu`,
   `Gtk.ListView`+`TreeExpander` for `TreeView`, `Gtk.ActionBar` for `ToolBar`).
