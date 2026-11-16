@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Windows.Markup;
 
 namespace System.Windows.Controls
@@ -50,5 +51,8 @@ namespace System.Windows.Controls
 		/// Removes <paramref name="child"/>'s backing widget from this panel's GTK container.
 		/// </summary>
 		protected abstract void RemoveChildWidget(UIElement child);
+
+		/// <inheritdoc/>
+		internal override IEnumerable<UIElement> VisualChildren => Children;
 	}
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace System.Windows
 {
@@ -68,6 +69,18 @@ namespace System.Windows
 
 		/// <summary>Override to participate in Phase-1+ two-pass layout.</summary>
 		protected virtual void ArrangeCore(Rect finalRect) { }
+
+		// ── Visual children (for TemplatedParent subtree stamping) ──────────────────
+
+		/// <summary>
+		/// Returns the direct visual children of this element.
+		/// Override in <see cref="Controls.Panel"/> and content controls to expose the actual
+		/// child collection. The base implementation returns an empty enumerable.
+		/// Used by <see cref="Controls.Control"/> to stamp <c>TemplatedParent</c> on the
+		/// entire produced subtree after a template is applied.
+		/// </summary>
+		internal virtual IEnumerable<UIElement> VisualChildren =>
+			System.Linq.Enumerable.Empty<UIElement>();
 
 		// ── Logical parent ───────────────────────────────────────────────────────────
 

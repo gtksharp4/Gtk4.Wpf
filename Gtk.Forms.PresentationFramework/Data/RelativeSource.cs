@@ -76,8 +76,7 @@ namespace System.Windows.Data
 					return FindAncestor(target);
 
 				case RelativeSourceMode.TemplatedParent:
-					// TemplatedParent is not wired in this phase; documented limitation.
-					return null;
+					return target.TemplatedParent;
 
 				case RelativeSourceMode.PreviousData:
 					// PreviousData requires collection context; not implemented.

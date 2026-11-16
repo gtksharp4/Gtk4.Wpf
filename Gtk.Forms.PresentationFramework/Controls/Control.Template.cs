@@ -43,11 +43,27 @@ namespace System.Windows.Controls
 			_templateRoot = template.CreateVisualTree();
 			if (_templateRoot == null) return;
 
+			// Stamp TemplatedParent on the produced root (and its subtree).
+			StampTemplatedParent(_templateRoot, this);
+
 			// If the backing widget has already been created, swap in the template widget.
 			// If it has not, Widget property creation will be skipped for the default path
 			// — override OnApplyTemplate in the concrete class if needed.
 			// For the minimal Phase-2 wire-up we re-host only when already materialised.
 			ApplyTemplateRoot();
+		}
+
+		/// <summary>
+		/// Recursively stamps <paramref name="templatedParent"/> on each
+		/// <see cref="FrameworkElement"/> in the subtree rooted at <paramref name="root"/>.
+		/// Walks <see cref="UIElement"/> children via <see cref="UIElement.VisualChildren"/>.
+		/// </summary>
+		static void StampTemplatedParent(UIElement root, FrameworkElement templatedParent)
+		{
+			if (root is FrameworkElement fe)
+				fe.TemplatedParent = templatedParent;
+			foreach (var child in root.VisualChildren)
+				StampTemplatedParent(child, templatedParent);
 		}
 
 		/// <summary>

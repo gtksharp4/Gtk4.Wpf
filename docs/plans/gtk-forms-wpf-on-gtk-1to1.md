@@ -432,17 +432,39 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `Binding.DoNothing` sentinel added. **Round 7 totals: 901 tests** (40 WindowsBase + 741 PresentationFramework
   + 104 MarkupCompiler + 16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample`
   (unmodified WPF) still compiles.
+- **Round 8 Track A — TemplatedParent + TemplateBinding + VisualStateManager (DONE).**
+  - `FrameworkElement.TemplatedParent` (internal setter): set on the visual-tree root (and subtree,
+    via `UIElement.VisualChildren` walk through `Panel.Children`, `ContentControl.Content`,
+    `Border.Child`) when `Control.OnTemplateChanged` applies a `ControlTemplate`. Full subtree
+    guaranteed for `Panel`/`ContentControl`/`Border`; documented limitation for custom hosts.
+  - `RelativeSource.Resolve` for `TemplatedParent` mode now returns `target.TemplatedParent`
+    (was null). `{Binding Path, RelativeSource={RelativeSource TemplatedParent}}` resolves correctly.
+  - `TemplateBindingExtension` (runtime): `new TemplateBindingExtension("Prop").ToBinding()` →
+    `new Binding("Prop") { RelativeSource = RelativeSource.TemplatedParent, Mode = OneWay }`.
+  - Compiler: `IsTemplateBindingExpression` parses `{TemplateBinding Prop}` inside any element
+    (including `EmitControlTemplateInline` factory body) and emits the equivalent `Binding` with
+    `RelativeSource.TemplatedParent` + `BindingMode.OneWay`; checked before `{Binding}` in both
+    `EmitElement` and `EmitRootAttributes`.
+  - `VisualStateManager` (functional-minimal): `GoToState(control, stateName, useTransitions)` —
+    finds the state in attached groups, raises `VisualStateGroup.CurrentStateChanging`/`CurrentStateChanged`,
+    applies `VisualState.Setters` via `Setter.Apply`, records `CurrentState`. Storyboard application
+    is a seam (stored in `VisualState.Storyboard`, applied by a future animation track).
+    `VisualStateGroup`/`VisualState`/`VisualStateChangedEventArgs` in `System.Windows` namespace.
+    `GetVisualStateGroups`/`SetVisualStateGroups` attached-property pattern (dictionary, not DP).
+  - **+20 PF tests** (`TemplatedParentTests` — 8 tests; `VisualStateManagerTests` — 12 tests);
+    **+13 MarkupCompiler tests** (`XamlCodeGeneratorTemplateBindingTests`).
+  - **Round 8 totals: 934 tests** (40 WindowsBase + 761 PresentationFramework + 117 MarkupCompiler
+    + 16 ProjectConverter), all pass timeboxed; `Gtk.Forms.WpfSample` (unmodified WPF) still compiles.
 - **Carry-over (Round 5 Opus review — not addressed this round)**: compiler DP-vs-CLR resolution is a
   name heuristic (`IsKnownDp`: "is it in `System.Windows.*` and not on the CLR-only exclusion list?").
   Should be replaced with real assembly symbol resolution — load the referenced assemblies, reflect
   the declared `<Name>Property` fields, and distinguish DP from CLR at the type level. Filed for a
   future MarkupCompiler phase.
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
-  `RelativeSource.TemplatedParent` resolution (templated parent not wired — documented limitation);
   true `{DynamicResource}` change-tracking; GTK key-event wiring for `InputBindings`;
   `Gtk.PopoverMenu` integration for `MenuItem`; element-level `FrameworkElement.Triggers` auto-attach on
   load (runtime exists, compiler emits `Style.Triggers` only); nested-path `DataTrigger` bindings;
-  `EventTrigger` storyboards/animations; `TemplateBinding` markup extension inside `ControlTemplate`;
+  `EventTrigger` storyboards/animations; `VisualStateManager` storyboard/animation application (track B seam);
   `Popup`/`ContextMenu` replay of an `IsOpen=true` set before the backing widget exists (currently dropped);
   GTK4-native backings deferred for the Round-6 controls (`Gio.Menu`/`Gtk.PopoverMenuBar` for `Menu`,
   `Gtk.ListView`+`TreeExpander` for `TreeView`, `Gtk.ActionBar` for `ToolBar`).

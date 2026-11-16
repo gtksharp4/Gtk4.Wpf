@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Markup;
 
 namespace System.Windows.Controls
@@ -84,5 +86,9 @@ namespace System.Windows.Controls
 				_frame.Child = Child.Widget;
 			return _frame;
 		}
+
+		/// <inheritdoc/>
+		internal override IEnumerable<UIElement> VisualChildren =>
+			Child != null ? new[] { Child } : Enumerable.Empty<UIElement>();
 	}
 }
