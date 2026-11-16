@@ -11,7 +11,7 @@ namespace System.Windows.Controls
 	/// call, so Right/Bottom are approximated as <c>Left=0</c>/<c>Top=0</c> until a
 	/// resize callback is wired — noted approximation, Phase 2).
 	/// </summary>
-	public class Canvas : Panel
+	public partial class Canvas : Panel
 	{
 		// ── Attached properties ──────────────────────────────────────────────────────
 

@@ -12,7 +12,7 @@ namespace System.Windows.Controls
 	///   (not yet wired — noted as Phase 2).  For now, pixel defs are treated as Auto.
 	/// - Span is passed directly to Gtk.Grid.Attach(col, row, colSpan, rowSpan).
 	/// </summary>
-	public class Grid : Panel
+	public partial class Grid : Panel
 	{
 		// ── Attached properties ──────────────────────────────────────────────────────
 

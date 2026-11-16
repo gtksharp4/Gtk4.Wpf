@@ -654,8 +654,49 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
       `Selection.Text` returns/sets document text, `TextRange.Text` round-trip, `IsReadOnly` toggle, `GetAllText` join.
     - `RichTextBoxGtkSmokeTests`: `CreateWidget` → `Gtk.ScrolledWindow`, scrolled window contains `Gtk.TextView`,
       `IsReadOnly=true` → `Editable=false`, `Document` syncs buffer text, `FlowDocumentScrollViewer` creates/realizes.
-  - **Round 11 totals: 1147 tests** (60 WindowsBase + 902 PresentationFramework + 169 MarkupCompiler + 16 ProjectConverter),
-    all pass timeboxed with no hang/crash.
+  - **+39 tests** (24 FlowDocument + 9 RichTextBox pure + 6 GTK smoke).
+- **Round 11 Track A — faithful WPF two-pass Measure/Arrange layout (DONE).**
+  - **`UIElement.Layout.cs`** (new partial): proper `Measure(Size)` / `Arrange(Rect)` with dirty flags
+    (`_measureDirty`/`_arrangeDirty`); `RenderSize` property; `ArrangeRect` (internal, for tests);
+    `InvalidateMeasure`/`InvalidateArrange`/`UpdateLayout`; `MeasureCore` / `ArrangeCore` virtual seam.
+    Old Phase-0 stubs removed from `UIElement.cs`.
+  - **`FrameworkElement.Layout.cs`** (new partial): `HorizontalAlignment`/`VerticalAlignment` enums +
+    DPs (default `Stretch`); `MinWidth`/`MaxWidth`/`MinHeight`/`MaxHeight` DPs (defaults 0/∞/0/∞).
+    `MeasureCore`: deflates available by `Margin`, clamps by explicit `Width`/`Height`/`Min*/Max*`,
+    delegates to `MeasureOverride`, adds `Margin` back; `DesiredSize` includes margin.
+    `ArrangeCore`: removes margin, computes alignment offset (Left/Center/Right/Stretch × Top/Center/Bottom/Stretch),
+    delegates to `ArrangeOverride`, sets `RenderSize` to the aligned content size (not the slot).
+  - **Panel `MeasureOverride`/`ArrangeOverride`** in new partial files (pure managed math, no GTK):
+    - `StackPanel.Layout.cs`: sum along orientation + max across; stack children sequentially.
+    - `Grid.Layout.cs`: two-pass `ResolveColumns`/`ResolveRows` (Absolute → fixed; Auto → 0 initially,
+      then `UpdateAutoFromChildren` measures span-1 children and expands; Star → `ResolveStarDistribution`
+      divides remaining space by total star weight, proportional to each star value); `BuildOffsets` for x/y;
+      child clamped to `[0, count-1]` row/col.
+    - `DockPanel.Layout.cs`: subtracts each child's size from the remaining slot in order; last child
+      fills if `LastChildFill`.
+    - `Canvas.Layout.cs`: `MeasureOverride` returns (0,0); `ArrangeOverride` resolves `Left`/`Top` (or
+      `Right`/`Bottom` relative to canvas size) per child.
+    - `WrapPanel.Layout.cs`: line-breaking algorithm (accumulate main-axis, wrap when limit exceeded);
+      `ArrangeOverride` rebuilds lines and places each child at `(mainOffset, crossOffset)`.
+    - `UniformGrid.Layout.cs`: `ComputeGrid(rows,cols,n)` for auto-sizing; equal cell dimensions; child
+      at `(i%cols * cellW, i/cols * cellH)`.
+    - `Border.Layout.cs`: deflates/inflates by `Padding + BorderThickness`; `ArrangeOverride` insets child.
+  - **GTK backing**: native GTK containers (`Gtk.Box`/`Gtk.Grid`/`Gtk.Fixed`/`Gtk.FlowBox`/`Gtk.Frame`)
+    still used for rendering. Managed layout runs on top: `Measure`/`Arrange` compute correct
+    `DesiredSize`/`RenderSize`/`ArrangeRect` (authoritative for unit tests and future GTK fixed-layout
+    replacement); existing GTK smoke tests remain green (no GTK structural changes).
+  - **33 new pure tests** (`LayoutContractTests.cs`): `FrameworkElement` Width/Margin/MinWidth/MaxWidth/
+    MinHeight/MaxHeight; Stretch/Left alignment; InvalidateMeasure/UpdateLayout; `StackPanel` vertical sum +
+    max width + stacked y-offsets + horizontal sum; `Grid` 1*+1* equal split, 2*+1* 2:1 split, Auto column
+    sizes to child, Absolute column fixed, Row/Column placement; `DockPanel` Top/Left strips + fill remainder;
+    `Canvas` desired=(0,0) + Left/Top placement; `WrapPanel` wrap to new line + 2+1 split + y offsets;
+    `UniformGrid` auto 2-col + explicit 2×2; `Border` padding/border-thickness inflate + child inset.
+  - **+33 pure Measure/Arrange tests** (`LayoutContractTests`). Note: managed layout is authoritative for the
+    contract + tests; native GTK containers still render — wiring the computed arrange rects onto a `Gtk.Fixed`
+    is a later refinement (carry-over).
+- **Round 11 totals (both tracks merged): 1180 tests** (60 WindowsBase + 935 PresentationFramework +
+  169 MarkupCompiler + 16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample`
+  (unmodified WPF) still compiles.
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
   true `{DynamicResource}` change-tracking; GTK key-event wiring for `InputBindings`;
   `Gtk.PopoverMenu` integration for `MenuItem`; element-level `FrameworkElement.Triggers` auto-attach on
@@ -663,7 +704,9 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `Popup`/`ContextMenu` replay of an `IsOpen=true` set before the backing widget exists (currently dropped);
   GTK4-native backings deferred for the Round-6 controls (`Gio.Menu`/`Gtk.PopoverMenuBar` for `Menu`,
   `Gtk.ListView`+`TreeExpander` for `TreeView`, `Gtk.ActionBar` for `ToolBar`);
-  `VisualStateManager.VisualStateGroups` XAML compilation (VSM groups and states still set in code-behind only).
+  `VisualStateManager.VisualStateGroups` XAML compilation (VSM groups and states still set in code-behind only);
+  GTK fixed-layout wiring (replace Box/Grid native backing with `Gtk.Fixed` + SizeAllocate driven by
+  the computed ArrangeRects — deferred until the managed math is verified stable).
 
 ## Phased roadmap (after Phase 0 proves the spine)
 

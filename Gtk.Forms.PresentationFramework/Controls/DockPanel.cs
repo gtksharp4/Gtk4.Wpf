@@ -22,7 +22,7 @@ namespace System.Windows.Controls
 	/// horizontal box in the centre slot. Span / overlap fidelity matches GTK's box model, not
 	/// WPF's exact pixel-precise dock algorithm — noted approximation.
 	/// </summary>
-	public class DockPanel : Panel
+	public partial class DockPanel : Panel
 	{
 		// ── Attached property: Dock ──────────────────────────────────────────────────
 
