@@ -1,0 +1,7 @@
+<Project>
+    <!-- A per-project Directory.Build.props stops MSBuild's auto-walk, so chain the root explicitly. -->
+    <Import Project="..\Directory.Build.props" />
+    <!-- In-tree builds consume the XAML build tasks from source. The file keeps its Xamarin.Forms.*
+         name inside the Gtk4.Forms.Build.Tasks package's build/ folder. -->
+    <Import Project="..\Gtk4.Forms.Build.Tasks\build\Xamarin.Forms.props" Condition="$(FromSource) == 'true'" />
+</Project>

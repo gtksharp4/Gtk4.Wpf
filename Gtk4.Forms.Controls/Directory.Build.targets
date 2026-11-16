@@ -1,0 +1,9 @@
+<Project>
+    <!-- Chain the root (Version.targets, Git.Build.targets) — a per-project file stops the auto-walk. -->
+    <Import Project="..\Directory.Build.targets" />
+    <!-- Import the XAML MSBuild tasks (XamlGTask generates InitializeComponent + x:Name fields, XamlCTask
+         compiles the XAML). Without this, every .xaml.cs fails with CS0103 on InitializeComponent. The
+         targets file keeps its Xamarin.Forms.* name inside the Gtk4.Forms.Build.Tasks package. -->
+    <Import Project="..\Gtk4.Forms.Build.Tasks\build\Xamarin.Forms.targets" Condition="$(FromSource) == 'true' AND '$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(__XFBuildTasksLocation)Xamarin.Forms.Build.Tasks.dll')" />
+    <Import Project="..\Gtk4.Forms.Build.Tasks\build\Xamarin.Forms.targets" Condition="$(FromSource) == 'true' AND '$(BuildingInsideVisualStudio)' != 'true'" />
+</Project>
