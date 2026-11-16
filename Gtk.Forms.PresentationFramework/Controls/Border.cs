@@ -11,7 +11,7 @@ namespace System.Windows.Controls
 	/// not yet applied to the GTK widget (GTK 4 uses CSS for spacing — Phase-2).
 	/// </summary>
 	[ContentProperty("Child")]
-	public class Border : FrameworkElement
+	public partial class Border : FrameworkElement
 	{
 		// ── Child DP ─────────────────────────────────────────────────────────────
 

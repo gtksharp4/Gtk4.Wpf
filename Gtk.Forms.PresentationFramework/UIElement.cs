@@ -75,33 +75,10 @@ namespace System.Windows
 			set => SetValue(OpacityProperty, value);
 		}
 
-		// ── Measure / Arrange (Phase-0 stubs — GTK drives its own layout) ───────────
+		// ── Measure / Arrange — see UIElement.Layout.cs ──────────────────────────
 
 		/// <summary>The size this element measured to on the last <see cref="Measure"/> call.</summary>
 		public Size DesiredSize { get; protected set; }
-
-		/// <summary>
-		/// Phase-0 stub: GTK drives its own layout pass. Records the available size and
-		/// delegates to <see cref="MeasureCore"/>.
-		/// </summary>
-		public void Measure(Size availableSize)
-		{
-			DesiredSize = MeasureCore(availableSize);
-		}
-
-		/// <summary>Override to participate in Phase-1+ two-pass layout.</summary>
-		protected virtual Size MeasureCore(Size availableSize) => new Size(0, 0);
-
-		/// <summary>
-		/// Phase-0 stub: GTK drives its own layout pass. Delegates to <see cref="ArrangeCore"/>.
-		/// </summary>
-		public void Arrange(Rect finalRect)
-		{
-			ArrangeCore(finalRect);
-		}
-
-		/// <summary>Override to participate in Phase-1+ two-pass layout.</summary>
-		protected virtual void ArrangeCore(Rect finalRect) { }
 
 		// ── Visual children (for TemplatedParent subtree stamping) ──────────────────
 

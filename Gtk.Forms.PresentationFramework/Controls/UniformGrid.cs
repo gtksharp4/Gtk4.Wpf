@@ -12,7 +12,7 @@ namespace System.Windows.Controls.Primitives
 	/// rows = ceil(n / columns). When only one dimension is set the other is derived.
 	/// </para>
 	/// </summary>
-	public class UniformGrid : Panel
+	public partial class UniformGrid : Panel
 	{
 		// ── Rows DP ───────────────────────────────────────────────────────────────
 

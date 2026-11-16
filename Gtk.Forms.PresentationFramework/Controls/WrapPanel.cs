@@ -14,7 +14,7 @@ namespace System.Windows.Controls
 	/// natural size of the largest child). WPF's WrapPanel sizes each child independently.
 	/// This diverges from WPF for mixed-size children; noted for Phase 2.
 	/// </summary>
-	public class WrapPanel : Panel
+	public partial class WrapPanel : Panel
 	{
 		/// <summary>Direction children flow before wrapping.</summary>
 		public static readonly DependencyProperty OrientationProperty =

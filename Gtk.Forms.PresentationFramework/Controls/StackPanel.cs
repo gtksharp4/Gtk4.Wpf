@@ -4,7 +4,7 @@ namespace System.Windows.Controls
 	/// Arranges children in a single line (horizontal or vertical) using a
 	/// <see cref="Gtk.Box"/>.
 	/// </summary>
-	public class StackPanel : Panel
+	public partial class StackPanel : Panel
 	{
 		/// <summary>Orientation of the stack. Default is <see cref="Orientation.Vertical"/>.</summary>
 		public static readonly DependencyProperty OrientationProperty =
