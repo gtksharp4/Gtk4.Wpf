@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Gtk.Forms.WindowsBase.Tests" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Gtk.Forms.WindowsBase</AssemblyName>
+    <RootNamespace>System.Windows</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <!-- Suppress CS0436: type conflicts with imported type (expected when building in-tree with
+         System.Windows.* namespaces that may partially shadow BCL types on some TFMs). -->
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
+  </PropertyGroup>
+
+</Project>
