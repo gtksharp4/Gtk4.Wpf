@@ -151,6 +151,35 @@ Linux or macOS machine ready to run. No `gvsbuild`, no `apt install libgtk-4-*`,
 thread that called `Forms.Init()` — the thread running the Gtk main loop. From anywhere else, use
 `Device.BeginInvokeOnMainThread`.
 
+## Drop-in Conversion: Add One Package
+
+Writing that `Main` by hand is optional. There is a meta-package, **`Gtk4.Forms.Base`**, whose only
+job is to make an *existing* Xamarin.Forms project run on GTK with **no source changes** — no edits
+to controls, XAML, `using`s or namespaces. That works because the whole fork keeps the
+`Xamarin.Forms.*` assembly names and namespaces (only the directories, projects and package ids
+became `Gtk4.Forms.*`), so the `Gtk4.Forms.*` DLLs are binary drop-ins and the consumer's code binds
+unchanged. Only the `.csproj` needs rewiring, and the package does it:
+
+- An auto-imported `build/Gtk4.Forms.Base.targets` runs a small tool
+  (`ProjectConverter --convert-project`) at `BeforeBuild` that rewrites the consumer `.csproj`: it
+  strips the official `Xamarin.Forms`/`Xamarin.Forms.Maps` package references (they would clash with
+  the `Gtk4.Forms.*` drop-ins), collapses the `net*-android;net*-ios;…` / `netstandard2.0` target
+  frameworks to a single `net10.0`, and sets `OutputType=Exe`. The rewrite is textual, minimal-diff,
+  idempotent and BOM-preserving (modelled on the `ResxProcessor`/`Gtk.Windows.Forms.Base` pattern).
+- `build/Gtk4.Forms.Base.props` injects a generated `Main` that calls a reflection-based host
+  (`GtkHost.Run`): it finds the app's `Xamarin.Forms.Application` subclass, loads the GTK renderer
+  assemblies, and runs the `GtkThemes.Init → Application.Init → Forms.Init → FormsWindow → Run`
+  sequence above. A `[assembly: GtkMainApplication(typeof(App))]` attribute disambiguates if there is
+  more than one `Application`; `SkipGtkHost` / `SkipGtkConvert` are the opt-outs.
+
+One sharp edge, inherent to MSBuild: a build target cannot change the target framework of the build
+already in progress, so **the first build after adding the package rewrites the project and the
+second build is the clean one** (the rewrite is idempotent, so re-running is safe). A single-project
+app pinned to `net*-android` on a box without that workload has to run the converter once by hand
+first. Consumers whose UI is XAML also need the `Gtk4.Forms.Build.Tasks` MSBuild targets to reach
+them transitively (through the meta-package) — the remaining packaging step for a fully hands-off
+XAML conversion.
+
 ## Maps Without an API Key
 
 `Gtk4.Forms.Maps` on Gtk is not a wrapper over a platform map SDK, because Gtk has none. The

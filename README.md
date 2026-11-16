@@ -43,8 +43,8 @@ One folder keeps its old name on purpose: the shared project under
 
 ## Packages
 
-Published under the `Gtk4.Forms.` prefix. The GTK backend binds **GtkSharp 4 (GTK 4.22)** — a hard
-fork **not on nuget.org**, vendored in `build/gtksharp4-packages/` (see [GtkSharp4](#gtksharp4) below).
+Published under the `Gtk4.Forms.` prefix. The GTK backend binds **GtkSharp 4 (GTK 4.22)**, published
+on nuget.org, which also carries the native GTK 4 runtime (see [GtkSharp4](#gtksharp4) below).
 
 | Package id | Assembly it builds | Role |
 | --- | --- | --- |
@@ -109,20 +109,17 @@ CI is `.github/workflows/build-and-test.yml` (Windows, Linux, macOS); per-OS log
 
 ## Native GTK 4 runtime
 
-GtkSharp 4 is only the managed binding; the native GTK 4 libraries must be present at runtime:
-
-| OS | Install |
-| --- | --- |
-| Windows | MSYS2 `mingw-w64-x86_64-gtk4`, or ship the GTK 4 DLLs beside the app. No X server needed. |
-| Linux | `sudo apt install libgtk-4-1` (Debian/Ubuntu) / `sudo dnf install gtk4` (Fedora). Needs X11 or Wayland. |
-| macOS | `brew install gtk4`. Renders via the Quartz GDK backend. |
+**There is nothing to install.** The `GtkSharp4` package carries the native GTK 4 libraries for every
+supported OS as runtime assets, so `dotnet restore` alone leaves a Windows, Linux or macOS machine
+ready to run — no MSYS2, `apt`, `brew` or `gvsbuild` step. On Linux a *display* is still needed
+(X11/Wayland, or Xvfb for a headless run); macOS renders via the Quartz GDK backend.
 
 ## GtkSharp4
 
-The GTK 4 binding is a hard fork, not published to nuget.org. Restore is kept self-contained by the
-vendored wrapper `nupkg`s committed under `build/gtksharp4-packages/` (feed `GtkSharp4Vendored` in
-`nuget.config`). Refresh them with `build/update-gtksharp4-packages.ps1` when the binding changes.
-The version is floated `4.22.4.*` via `$(GtkSharp4Version)` in `Directory.Build.props`.
+The GTK 4 binding is a hard fork of GtkSharp, published on **nuget.org**; the native GTK 4 runtime
+ships with it. The version is floated `4.22.4.*` via `$(GtkSharp4Version)` in `Directory.Build.props`.
+For hermetic/offline restore the wrapper `nupkg`s are also vendored under `build/gtksharp4-packages/`
+(feed `GtkSharp4Vendored` in `nuget.config`); refresh them with `build/update-gtksharp4-packages.ps1`.
 
 ## Getting started
 

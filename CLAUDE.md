@@ -200,6 +200,19 @@ upstream issue repros from `Gtk4.Forms.Controls.Issues/Xamarin.Forms.Controls.Is
 (the shared-project folder itself keeps its `Xamarin.Forms.*` name), so they compile into
 the gallery even though the per-platform UITest runners were pruned.
 
+**Drop-in conversion.** `Gtk4.Forms.Base` is a meta-package that makes an existing Xamarin.Forms
+project run on GTK by adding one `PackageReference` — no source changes (the preserved
+`Xamarin.Forms.*` assembly/namespace identity is what lets consumer code bind unchanged). Its
+auto-imported `build/Gtk4.Forms.Base.targets` runs `Gtk4.Forms.ProjectConverter --convert-project`
+(a `net10.0` console tool; pure, idempotent, minimal-diff csproj rewrite covered by
+`Gtk4.Forms.ProjectConverter.Tests`, ~42 xUnit v3 tests) at `BeforeBuild` to strip the official
+`Xamarin.Forms*` refs, collapse platform TFMs to `net10.0` and set `OutputType=Exe`; its
+`build/Gtk4.Forms.Base.props` injects a `Main` that calls `Gtk4.Forms.Host`'s reflection-based
+`GtkHost.Run` (assembly `Xamarin.Forms.Host`). The csproj rewrite is a **one-time conversion** (a
+build target cannot retarget the build in progress — the first build rewrites, the second is clean);
+`SkipGtkConvert`/`SkipGtkHost` opt out. Still open: `Gtk4.Forms.Build.Tasks` must expose its XAML
+targets via `buildTransitive/` for a fully hands-off XAML consumer.
+
 ## Coding style
 
 .NET Foundation style with the project's exceptions (see `.editorconfig`, which is authoritative):
