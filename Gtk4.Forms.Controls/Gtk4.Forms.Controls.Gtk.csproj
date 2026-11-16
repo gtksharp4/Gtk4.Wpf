@@ -209,6 +209,8 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
     <ItemGroup>
+        <!-- PackageReadmeFile above requires the README to actually be packed at the package root. -->
+        <Content Include="README.md" Link="README.md" Pack="true" PackagePath="\README.md" />
         <Content Include="$(SolutionDir)License.txt" Link="License.txt" Pack="true" PackagePath="\License.txt" Condition="Exists('$(SolutionDir)License.txt')" />
     </ItemGroup>
     <Import Project="..\Gtk4.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems" Label="Shared" />
