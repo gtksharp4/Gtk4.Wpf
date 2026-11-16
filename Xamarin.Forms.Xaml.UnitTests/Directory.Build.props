@@ -1,4 +1,0 @@
-﻿<Project>
-  <Import Project="..\Xamarin.Forms.Build.Tasks\build\Xamarin.Forms.props" />
-  <Import Project="..\Directory.Build.props" />
-</Project> 

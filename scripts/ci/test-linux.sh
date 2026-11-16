@@ -25,20 +25,20 @@ echo "== report native GTK version =="
 dpkg -s libgtk-4-1 2>/dev/null | grep -i '^Version' || true
 
 echo "== build (Debug; GeneratePackageOnBuild off - CI tests, it does not pack) =="
-dotnet build Xamarin.Forms.Gtk4.sln -c Debug -p:GeneratePackageOnBuild=false
+dotnet build Gtk4.Forms.sln -c Debug -p:GeneratePackageOnBuild=false
 
 echo "== Core unit tests =="
-dotnet test Xamarin.Forms.Core.UnitTests -c Debug --no-build --logger trx
+dotnet test Gtk4.Forms.Core.UnitTests -c Debug --no-build --logger trx
 
 # Category!=LongRunning drops the MSBuildTests (build-integration tests that restore generated
 # projects from an OS-temp dir, where the relative "Local" feed cannot resolve - a pre-existing
 # NU1301 unrelated to the GTK backend). Every XAML loader / XamlC compiler test runs.
 echo "== XAML unit tests (excluding LongRunning MSBuild integration tests) =="
-dotnet test Xamarin.Forms.Xaml.UnitTests -c Debug --no-build --logger trx --filter 'Category!=LongRunning'
+dotnet test Gtk4.Forms.Xaml.UnitTests -c Debug --no-build --logger trx --filter 'Category!=LongRunning'
 
 # XF_GTK_REQUIRE_NATIVE turns "no display / no GTK runtime" from a skip into a failure: both are
 # installed above, so an unusable environment means the apt or Xvfb step silently broke.
 echo "== GTK renderer tests (real GTK 4 widgets, headless under Xvfb) =="
 GDK_BACKEND=x11 XF_GTK_REQUIRE_NATIVE=1 GSETTINGS_BACKEND=memory \
   xvfb-run -a --server-args="-screen 0 1280x1024x24" \
-    dotnet test Xamarin.Forms.Platform.GTK.UnitTests -c Debug --no-build --logger trx
+    dotnet test Gtk4.Forms.Platform.Gtk.UnitTests -c Debug --no-build --logger trx

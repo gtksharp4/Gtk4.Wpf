@@ -13,7 +13,7 @@
     <!--
     Windows and Unix builds of the same working tree need separate obj\ and bin\.
 
-    A tree on a Windows drive (D:\CommonLibrary\Xamarin.Forms, reached from WSL as
+    A tree on a Windows drive (D:\CommonLibrary\Gtk4.Forms, reached from WSL as
     /mnt/d/CommonLibrary/Xamarin.Forms) can be built from both sides at once - Visual
     Studio on Windows, `dotnet build` in WSL - and they cannot share intermediate output:
 
@@ -141,8 +141,8 @@
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <IncludeSymbols>true</IncludeSymbols>
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-        <Company>Microsoft</Company>
-        <Product>Xamarin.Forms</Product>
+        <Company>Piero Viano</Company>
+        <Product>Gtk4.Forms</Product>
         <ProduceReferenceAssembly Condition="'$(UsingMicrosoftNETSdk)' == 'True' AND '$(Configuration)' == 'Debug'">True</ProduceReferenceAssembly>
     </PropertyGroup>
     <PropertyGroup>
@@ -159,7 +159,7 @@
         <Copyright>Microsoft, Piero Viano</Copyright>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <PackageProjectUrl>https://github.com/pieroviano/Xamarin.Forms</PackageProjectUrl>
-        <PackageIcon>xamarin_128x128.png</PackageIcon>
+        <PackageIcon>gtk4_128x128.png</PackageIcon>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
@@ -167,7 +167,7 @@
     <!-- Files every package carries. Condition keeps them out of non-packable projects. -->
     <ItemGroup Condition="'$(IsPackable)' != 'false'">
         <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="" Visible="false" />
-        <None Include="$(MSBuildThisFileDirectory)Assets\xamarin_128x128.png" Pack="true" PackagePath="" Visible="false" />
+        <None Include="$(MSBuildThisFileDirectory)Assets\gtk4_128x128.png" Pack="true" PackagePath="" Visible="false" />
     </ItemGroup>
     <Import Condition="'$(SampleProject)' != 'True'" Project="SourceLink.Build.props" />
     <!-- This target is replaced by GitInfo when restored. Allows Version.targets to rely on it before restore. -->

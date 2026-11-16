@@ -1,8 +1,0 @@
-<Project>
-    <Import Project="..\Directory.Build.props" />
-    <Import Project="..\Xamarin.Forms.Build.Tasks\build\Xamarin.Forms.props" Condition="$(FromSource) == 'true'" />
-    <PropertyGroup>
-        <NuGetUtilityVersion Condition="'$(NuGetUtilityVersion)'==''">1.0.15</NuGetUtilityVersion>
-    </PropertyGroup>
-    <Import Project="$(NuGetPackageRoot)net4x.nugetutility/$(NuGetUtilityVersion)/build/NuGet.Utility.props" Condition="Exists('$(NuGetPackageRoot)net4x.nugetutility/$(NuGetUtilityVersion)/build/NuGet.Utility.props')" />
-</Project>

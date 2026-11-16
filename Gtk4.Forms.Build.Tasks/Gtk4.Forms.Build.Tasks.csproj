@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <PackageOutputPath>$(XFPackageOutputPath)</PackageOutputPath>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <Version>$(VersionPrefix).$(VersionSuffix)</Version>
+    </PropertyGroup>
+    <!--
+	  Strong-naming is OPT-IN, via -p:SignBuildTasks=true. It used to happen automatically in any
+	  non-Debug build under .NET Framework MSBuild, which made a Visual Studio Release build the
+	  one place it applied - and the one place the solution did not build, because signing forces
+	  the InternalsVisibleTo in Properties/AssemblyInfo.cs to be dropped (see SIGNED_ASSEMBLY
+	  below) and Xamarin.Forms.Xaml.UnitTests then fails with CS0122 on XamlCAssemblyResolver,
+	  ILContext and ICompiledTypeConverter.
+
+	  Off by default is also the honest setting: this is the only project in the tree that signs.
+	  Core, Xaml, Maps, Maps.Gtk and Platform.Gtk are all unsigned, so a strong name here names
+	  nothing consistent - and every `dotnet build` already skipped it (MSBuildRuntimeType Core,
+	  below), which is what CI runs. A signed drop is still one property away, with the documented
+	  cost that such a build cannot also compile the XAML tests.
+	-->
+    <PropertyGroup Condition=" '$(SignBuildTasks)' != 'true' ">
+        <SignAssembly>false</SignAssembly>
+        <_DisableStrongNamer>True</_DisableStrongNamer>
+        <DelaySign>false</DelaySign>
+    </PropertyGroup>
+    <PropertyGroup>
+        <PackageId>Gtk4.Forms.Build.Tasks</PackageId>
+        <Description>MSBuild tasks and targets for Xamarin.Forms XAML compilation.</Description>
+        <IsPackable>true</IsPackable>
+        <_DisableStrongNamer Condition=" '$(_DisableStrongNamer)' != 'True' ">False</_DisableStrongNamer>
+        <AssemblyName>Xamarin.Forms.Build.Tasks</AssemblyName>
+        <!-- RootNamespace stays Xamarin.Forms.Build.Tasks (source namespace + ErrorMessages resource
+             name). Without it the renamed project defaulted to Gtk4.Forms.Build.Tasks, moving the
+             generated ErrorMessages class out of the code's namespace (CS0103). -->
+        <RootNamespace>Xamarin.Forms.Build.Tasks</RootNamespace>
+        <!--
+	      net46 dropped: Microsoft.Build 17.x (needed to clear the NU1903 advisory against
+	      Microsoft.Build.Tasks.Core 15.8.166) no longer supports net46, and one
+	      netstandard2.0 flavour serves both MSBuild runtimes.
+	    -->
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <SignAssembly Condition=" '$(_DisableStrongNamer)' != 'True' ">True</SignAssembly>
+        <DisableStrongNamer Condition=" '$(_DisableStrongNamer)' == 'True' ">True</DisableStrongNamer>
+        <DelaySign Condition=" '$(_DisableStrongNamer)' != 'True' ">true</DelaySign>
+        <AssemblyOriginatorKeyFile>..\Gtk4.forms.snk</AssemblyOriginatorKeyFile>
+        <StrongNamerKeyFile>..\Gtk4.forms.snk</StrongNamerKeyFile>
+    </PropertyGroup>
+    <!--
+	  No strong-naming under .NET Core MSBuild. StrongNamer (which signed the referenced
+	  assemblies) cannot load there, so signing this assembly while its references stay
+	  unsigned produces CS8002 - an error here because of TreatWarningsAsErrors. Signed
+	  builds therefore require .NET Framework MSBuild, matching _SetSnExe above.
+	  Placed after the groups above so it wins regardless of Configuration/Platform.
+	-->
+    <PropertyGroup Condition="'$(MSBuildRuntimeType)' == 'Core'">
+        <SignAssembly>false</SignAssembly>
+        <DelaySign>false</DelaySign>
+        <_DisableStrongNamer>True</_DisableStrongNamer>
+        <DisableStrongNamer>True</DisableStrongNamer>
+    </PropertyGroup>
+    <!--
+	  SIGNED_ASSEMBLY mirrors the SignAssembly finally resolved above, so that
+	  Properties/AssemblyInfo.cs can key its InternalsVisibleTo on it: a strong-named assembly may
+	  only befriend an assembly whose public key it names (CS1726), and Xamarin.Forms.Xaml.UnitTests
+	  has no key. Must stay AFTER every group that touches SignAssembly - it is read, not evaluated
+	  lazily.
+	-->
+    <PropertyGroup Condition="'$(SignAssembly)' == 'true'">
+        <DefineConstants>$(DefineConstants);SIGNED_ASSEMBLY</DefineConstants>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Mono.Cecil" Version="0.11.5" />
+        <PackageReference Include="System.CodeDom" Version="4.4.0" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
+        <!--
+      Only Microsoft.Build.Framework and Microsoft.Build.Utilities are used by this assembly
+      (verified by namespace usage), so the Microsoft.Build engine and Microsoft.Build.Tasks.Core
+      references were dropped - the latter carried advisory GHSA-h4j7-5rxr-p4wc at 15.8.166.
+      ExcludeAssets="runtime" is the standard pattern for MSBuild task assemblies: bind against
+      the API, but never ship/copy MSBuild's own assemblies next to the task.
+    -->
+        <PackageReference Include="Microsoft.Build.Framework" Version="17.14.28" ExcludeAssets="runtime" />
+        <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.14.28" ExcludeAssets="runtime" />
+        <!--
+      StrongNamer 0.0.8 hosts an MSBuild task built against Microsoft.Build.Utilities.v4.0,
+      which does not exist in .NET Core MSBuild - it fails to load under `dotnet build`/`pack`
+      (MSB4062). Restricted to .NET Framework MSBuild, where strong-naming of dependencies
+      still works; `dotnet` builds simply skip it.
+    -->
+        <PackageReference Include="StrongNamer" Version="0.0.8" Condition="'$(MSBuildRuntimeType)' != 'Core'" />
+        <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+        <PackageReference Include="XliffTasks" Version="1.0.0-beta.20206.1" PrivateAssets="all" />
+    </ItemGroup>
+    <PropertyGroup>
+        <UpdateXlfOnBuild Condition="'$(CI)' != 'true'">true</UpdateXlfOnBuild>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Gtk4.Forms.Core\Gtk4.Forms.Core.csproj" />
+        <ProjectReference Include="..\Gtk4.Forms.Xaml\Gtk4.Forms.Xaml.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Update="ErrorMessages.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>ErrorMessages.resx</DependentUpon>
+        </Compile>
+    </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Update="ErrorMessages.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>ErrorMessages.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+    </ItemGroup>
+    <PropertyGroup Condition="'$(SnExe)' == '' And '$(OS)' != 'Windows_NT'">
+        <SnExe>sn</SnExe>
+    </PropertyGroup>
+    <!--
+	  Only locate sn.exe when the assembly is actually going to be signed, and only under
+	  .NET Framework MSBuild: GetFrameworkSdkPath does not exist in the .NET Core version
+	  (MSB4803), so `dotnet build` on Windows failed here even though Debug sets
+	  SignAssembly=false and the signing Exec below is skipped. On Linux the OS condition
+	  meant this target never ran at all, which is why it only ever broke on Windows.
+	-->
+    <Target Name="_SetSnExe" Condition="'$(SnExe)' == '' And '$(OS)' == 'Windows_NT' And '$(SignAssembly)' == 'true' And '$(MSBuildRuntimeType)' != 'Core'">
+        <GetFrameworkSdkPath>
+            <Output TaskParameter="Path" PropertyName="WindowsSdkPath" />
+        </GetFrameworkSdkPath>
+        <Exec Command="WHERE /r &quot;$(WindowsSdkPath.TrimEnd('\\'))&quot; sn" ConsoleToMSBuild="true">
+            <Output TaskParameter="ConsoleOutput" PropertyName="SnExe" />
+        </Exec>
+        <PropertyGroup>
+            <SnExe>$([System.Text.RegularExpressions.Regex]::Replace('$(SnExe)', ';.*', ''))</SnExe>
+        </PropertyGroup>
+    </Target>
+    <Target Name="_StrongName" AfterTargets="Build" DependsOnTargets="_SetSnExe" Condition="'$(TargetPath)' != ''" Inputs="$(TargetPath)" Outputs="$(IntermediateOutputPath)Sn.stamp">
+        <!--
+  	  SnExe can legitimately be empty now (see _SetSnExe): signing is skipped rather than
+  	  invoking an empty command. Strong-naming a Release build therefore needs .NET Framework
+  	  MSBuild (msbuild.exe) on Windows, or `sn` on PATH elsewhere.
+  	-->
+        <Exec Command="&quot;$(SnExe)&quot; -R $(TargetPath) ..\Gtk4.forms.snk" Condition=" '$(SignAssembly)' == 'true' And '$(SnExe)' != '' " />
+    </Target>
+    <!--
+    Publish the tasks to a stable folder OUTSIDE any build output, and have consumers load
+    them from there (see _XFBuildTasksLocation in Directory.Build.props).
+
+    Consumers cannot load them from this project's own bin/: MSBuild keeps a loaded task
+    assembly open for the lifetime of the node, so with the solution open in Visual Studio
+    the DLL is locked indefinitely and Build.Tasks can never be rebuilt ("Access to the path
+    ... is denied"). Loading from a separate copy means VS locks the COPY, leaving this
+    project's output free to rebuild.
+
+    That is what the old .nuspec/<tfm>/ copy was for. The difference here is that a failed
+    copy is REPORTED: it used to be ContinueOnError with no message, so a locked destination
+    silently left a stale task in place - which is how an XamlCTask crash appeared earlier.
+  -->
+    <ItemGroup>
+        <PackageReference Include="Net4x.NuGetUtility" Version="$(NuGetUtilityVersion)" PrivateAssets="All" Condition="'$(OS)' == 'Windows_NT'" />
+    </ItemGroup>
+    <Target Name="_PublishBuildTasks" AfterTargets="Build" Condition="'$(TargetPath)' != ''">
+        <PropertyGroup>
+            <!--
+              Publish where consumers load from. _XFBuildTasksLocation is the single source
+              of truth (Directory.Build.props); it points at a different drop on Unix so a
+              WSL build does not fight Visual Studio for the locked Windows copy. The old
+              hardcoded path stays as the fallback for a build that does not import
+              Directory.Build.props.
+            -->
+            <_XFTasksPublishDir>$(_XFBuildTasksLocation)</_XFTasksPublishDir>
+            <_XFTasksPublishDir Condition="'$(_XFTasksPublishDir)' == ''">$(MSBuildThisFileDirectory)..\artifacts\build-tasks\$(TargetFramework)\</_XFTasksPublishDir>
+        </PropertyGroup>
+        <ItemGroup>
+            <_XFTaskFiles Include="$(TargetDir)*.dll" />
+        </ItemGroup>
+        <MakeDir Directories="$(_XFTasksPublishDir)" />
+        <Copy SourceFiles="@(_XFTaskFiles)" DestinationFolder="$(_XFTasksPublishDir)" SkipUnchangedFiles="true" ContinueOnError="WarnAndContinue" Retries="3" RetryDelayMilliseconds="200">
+            <Output TaskParameter="CopiedFiles" ItemName="_XFCopiedTaskFiles" />
+        </Copy>
+        <!--
+          The check has to be PER FILE. CopiedFiles lists every file that copied - or was
+          skipped as unchanged - and this batch is every DLL in $(TargetDir), so the old
+          '@(_XFCopiedTaskFiles)' == '' guard could only fire if ALL of them failed. The one
+          file that ever gets locked is precisely the one MSBuild has loaded as a task
+          assembly, Xamarin.Forms.Build.Tasks.dll; its eight siblings copy fine and hid the
+          failure, which is how a stale XamlCTask ended up compiling XAML against
+          freshly-built Core/Xaml assemblies with a green build.
+        -->
+        <ItemGroup>
+            <_XFPublishedTaskFileNames Include="@(_XFCopiedTaskFiles-&gt;'%(Filename)%(Extension)')" />
+            <_XFStaleTaskFiles Include="@(_XFTaskFiles-&gt;'%(Filename)%(Extension)')" Exclude="@(_XFPublishedTaskFileNames)" />
+        </ItemGroup>
+        <PropertyGroup>
+            <_XFStaleTasksMessage>Could not refresh the XAML build tasks in $(_XFTasksPublishDir): @(_XFStaleTaskFiles, ', ') could not be copied, so the PREVIOUS copy is still in place and XAML compilation would not reflect what was just built. They are locked, most likely by an open Visual Studio or a running MSBuild node holding them as loaded task assemblies. Close the solution and/or run 'dotnet build-server shutdown', then rebuild. Set XFAllowStaleBuildTasks=true to downgrade this to a warning.</_XFStaleTasksMessage>
+        </PropertyGroup>
+        <!--
+          An error, not a warning: a stale XamlCTask silently emits IL the sources no longer
+          produce, and a warning inside an otherwise green build is exactly what was missed
+          before. SkipUnchangedFiles means this can only fire when the published copy really
+          does differ from what was just built - a locked but identical file is reported as
+          copied - so the error always corresponds to genuine staleness.
+        -->
+        <Error Code="XF006" Condition="'@(_XFStaleTaskFiles)' != '' AND '$(XFAllowStaleBuildTasks)' != 'true'" Text="$(_XFStaleTasksMessage)" />
+        <Warning Code="XF006" Condition="'@(_XFStaleTaskFiles)' != '' AND '$(XFAllowStaleBuildTasks)' == 'true'" Text="$(_XFStaleTasksMessage)" />
+    </Target>
+    <!--
+    Packaged as an MSBuild task package, not a library:
+      - IncludeBuildOutput=false keeps the task assembly out of lib/, so consumers do not
+        get a compile-time reference to it.
+      - The props/targets go in build/, where NuGet auto-imports
+        build/$(PackageId).props|.targets.
+      - The task assembly and its runtime dependencies (Mono.Cecil, System.CodeDom) go in
+        build/netstandard2.0/, which is exactly where Xamarin.Forms.targets looks by
+        default ($(MSBuildThisFileDirectory)<tfm>\).
+  -->
+    <PropertyGroup>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+        <!--
+      No symbol package: with IncludeBuildOutput=false there is nothing in lib/ for it to
+      describe, and NuGet fails the empty .snupkg with NU5017.
+    -->
+        <IncludeSymbols>false</IncludeSymbols>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Include="build\*.props;build\*.targets" Exclude="build\Gtk4.Forms.Build.Tasks.props;build\Gtk4.Forms.Build.Tasks.targets" Pack="true" PackagePath="build\" />
+        <!--
+          The auto-import entry points, renamed on the way into the package: NuGet imports
+          build\$(PackageId).props|.targets and nothing else, and $(PackageId) is now
+          Net4x.Xamarin.Forms.Build.Tasks rather than the assembly name the files carry on
+          disk. Packing them under their own names instead leaves build\ with props/targets
+          that NuGet would never import - NU5129, an error here because of
+          TreatWarningsAsErrors. Deriving the packed name from $(PackageId) keeps the entry
+          point correct if the id changes again.
+        -->
+        <None Include="build\Gtk4.Forms.Build.Tasks.props" Pack="true" PackagePath="build\$(PackageId).props" />
+        <None Include="build\Gtk4.Forms.Build.Tasks.targets" Pack="true" PackagePath="build\$(PackageId).targets" />
+    </ItemGroup>
+    <Target Name="_PackBuildTaskAssemblies" BeforeTargets="_GetPackageFiles">
+        <ItemGroup>
+            <!--
+                Xamarin.Forms.Core.dll and Xamarin.Forms.Xaml.dll belong here too. XamlCTask and
+                XamlGTask load both at build time, and SuppressDependenciesWhenPacking is on, so
+                the package declared no dependencies either - a consumer restoring
+                Net4x.Xamarin.Forms.Build.Tasks on its own got the tasks with nothing to resolve
+                those references against. The in-tree publish path never showed it because
+                _PublishBuildTasks copies $(TargetDir)*.dll, i.e. everything.
+            -->
+            <None Include="$(OutputPath)Xamarin.Forms.Build.Tasks.dll;$(OutputPath)Xamarin.Forms.Core.dll;$(OutputPath)Xamarin.Forms.Xaml.dll;$(OutputPath)Mono.Cecil*.dll;$(OutputPath)System.CodeDom.dll" Pack="true" PackagePath="build\$(TargetFramework)\" Visible="false" />
+        </ItemGroup>
+    </Target>
+    <!--
+    NuGet applies a package's build\ folder ONLY to a direct PackageReference. Every entry point
+    above therefore reaches nobody who does what the READMEs tell app authors to do - reference a
+    backend package (Net4x.Xamarin.Forms.Platform.Gtk) and let it drag in the rest: XamlGTask never
+    runs and InitializeComponent() is never generated. buildTransitive\ is the folder NuGet also
+    applies to an INDIRECT reference, so shipping the entry points there as well lets a package
+    that depends on this one deliver the XAML targets downstream.
+
+    This is only half of that fix: a consumer still gets nothing until some shipped package it
+    actually references declares a non-private dependency on Net4x.Xamarin.Forms.Build.Tasks.
+
+    The forwarders are generated rather than checked in because they differ from the build\ ones
+    only in where they point - duplicating the task assemblies under buildTransitive\<tfm>\ would
+    double the package for nothing. NuGet selects exactly one of the two folders per package
+    (build\ for a direct reference, buildTransitive\ for a transitive one), which is what keeps
+    Xamarin.Forms.targets from being imported twice and failing with XF001.
+  -->
+    <Target Name="_GenerateTransitiveBuildEntryPoints" BeforeTargets="_GetPackageFiles">
+        <PropertyGroup>
+            <!-- Forward slashes throughout: this runs on the Linux CI leg too. -->
+            <_XFTransitiveBuildDir>$(IntermediateOutputPath)buildTransitive/</_XFTransitiveBuildDir>
+        </PropertyGroup>
+        <MakeDir Directories="$(_XFTransitiveBuildDir)" />
+        <WriteLinesToFile File="$(_XFTransitiveBuildDir)$(PackageId).props" Overwrite="true" WriteOnlyWhenDifferent="true" Lines="&lt;Project&gt;;&lt;!-- Generated. NuGet auto-import entry point for an indirect PackageReference. --&gt;;&lt;Import Project=&quot;%24(MSBuildThisFileDirectory)../build/Xamarin.Forms.props&quot; /&gt;;&lt;/Project&gt;" />
+        <WriteLinesToFile File="$(_XFTransitiveBuildDir)$(PackageId).targets" Overwrite="true" WriteOnlyWhenDifferent="true" Lines="&lt;Project&gt;;&lt;!-- Generated. NuGet auto-import entry point for an indirect PackageReference. --&gt;;&lt;Import Project=&quot;%24(MSBuildThisFileDirectory)../build/Xamarin.Forms.targets&quot; /&gt;;&lt;/Project&gt;" />
+        <ItemGroup>
+            <None Include="$(_XFTransitiveBuildDir)$(PackageId).props" Pack="true" PackagePath="buildTransitive\$(PackageId).props" Visible="false" />
+            <None Include="$(_XFTransitiveBuildDir)$(PackageId).targets" Pack="true" PackagePath="buildTransitive\$(PackageId).targets" Visible="false" />
+        </ItemGroup>
+    </Target>
+    <PropertyGroup>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+    <ItemGroup>
+        <Content Include="README.md" Link="README.md" Pack="true" PackagePath="\README.md" />
+        <Content Include="$(SolutionDir)License.txt" Link="License.txt" Pack="true" PackagePath="\License.txt" Condition="Exists('$(SolutionDir)License.txt')" />
+    </ItemGroup>
+    <!-- macOS CI: the GitHub macOS-arm64 runner's netstandard2.0 targeting pack resolves to nothing, so
+       every compile fails with CS0518 "System.Object is not defined", and the SDK suppresses the
+       NETStandard.Library package's own build targets (it treats the package as implicit). Disable the
+       implicit framework reference and reference netstandard.dll explicitly from the restored package -
+       a user Reference the SDK does not strip. Reference the complete facade set (what the targeting
+       pack ships), so netstandard.dll supplies the surface and the package's System.* facades dedupe
+       any legacy facade a NuGet dependency drags in (e.g. Controls.Gtk -> System.Threading.Thread,
+       which would otherwise collide: CS0433). No-op on Windows/Linux. -->
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+        <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="NETStandard.Library" Version="2.0.3" GeneratePathProperty="true" PrivateAssets="all" ExcludeAssets="build;buildTransitive" Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+    </ItemGroup>
+    <ItemGroup>
+        <Reference Include="$(PkgNETStandard_Library)/build/netstandard2.0/ref/*.dll" Private="false" Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+    </ItemGroup>
+</Project>

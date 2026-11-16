@@ -22,10 +22,11 @@ jobs:
           action: "fix"
           #only-changed-files: true # only works for PRs
           # Xamarin.Forms.sln was deleted when this fork was pruned to the GTK leg; this job failed
-          # nightly against it until 2026-08-02. Xamarin.Forms.Gtk.sln is the only solution in the
-          # tree. (The prune commit itself no longer exists: the purge of deleted files from history
-          # emptied it - see docs/plans/history-purge-deleted-files.md on the gtk4 branch.)
-          workspace: "Xamarin.Forms.Gtk.sln"
+          # nightly against it until 2026-08-02. Gtk4.Forms.sln is the only solution in the tree
+          # (projects/dirs were later renamed Xamarin.Forms.* -> Gtk4.Forms.*). (The prune commit
+          # itself no longer exists: the purge of deleted files from history emptied it - see
+          # docs/plans/history-purge-deleted-files.md on the gtk4 branch.)
+          workspace: "Gtk4.Forms.sln"
     
       - name: Commit files
         if: steps.format.outputs.has-changes == 'true'

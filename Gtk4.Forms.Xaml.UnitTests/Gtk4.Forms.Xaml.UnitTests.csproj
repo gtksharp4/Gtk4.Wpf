@@ -1,0 +1,99 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Xamarin.Forms.Xaml.UnitTests</RootNamespace>
+    <AssemblyName>Xamarin.Forms.Xaml.UnitTests</AssemblyName>
+    <!-- xUnit v3 test projects are executables, not libraries. -->
+    <OutputType>Exe</OutputType>
+    <IsPackable>true</IsPackable>
+    <LangVersion>latest</LangVersion>
+    <WarningLevel>4</WarningLevel>
+    <!--
+      xUnit analyzer rules suppressed here are ADVISORY, and both flag pre-existing
+      characteristics of the NUnit suite rather than anything the migration introduced:
+
+        xUnit1026  a [Theory] parameter is unused. These are the useCompiledXaml cases
+                   where the test body happens not to reference the flag; NUnit ran them
+                   the same way.
+        xUnit2000  literal should be the 'expected' argument. NUnit's Assert.AreEqual had
+                   the same (expected, actual) order, so these were already "wrong" - the
+                   analyzer simply surfaces them now.
+
+      The correctness-critical rules stay ON and were fixed properly, notably xUnit1008
+      (data attributes on a [Fact]), which silently ignores the data and would have made
+      309 converted tests run once with default arguments.
+    -->
+    <NoWarn>0672;0219;0414;CS0436;xUnit1026;xUnit2000</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DefineConstants>DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gtk4.Forms.Controls\Gtk4.Forms.Controls.Gtk.csproj" />
+    <ProjectReference Include="..\Gtk4.Forms.Build.Tasks\Gtk4.Forms.Build.Tasks.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!--
+      JetBrains.DotMemoryUnit dropped: no source file referenced it.
+      Microsoft.Build.Locator dropped: MSBuild/MSBuildTests.cs used it to discover a
+      Visual Studio install; those tests now drive `dotnet build` instead.
+    -->
+    <!--
+      Needed at RUNTIME, deliberately without ExcludeAssets.
+      Xamarin.Forms.Build.Tasks references these with ExcludeAssets="runtime" because an
+      MSBuild task must never ship MSBuild's own assemblies. This project is a plain
+      consumer of those types (MockCompiler drives XamlCTask, DummyBuildEngine implements
+      IBuildEngine), so the assemblies must be in the test output or NUnit cannot even load
+      the test assembly - it fails with "Could not load ... Microsoft.Build.Framework,
+      Version=15.1.0.0" and silently reports zero tests with exit code 0.
+    -->
+    <PackageReference Include="Microsoft.Build.Framework" Version="17.14.28" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.14.28" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit.v3" Version="3.2.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <!--
+      Not used by any code in this project. MSBuild/MSBuildTests.cs generates *legacy-format*
+      csproj files targeting .NET Framework v4.7 (that half of the [Theory] matrix is the only
+      coverage of the non-SDK project path through Xamarin.Forms.targets), and Linux and macOS
+      have no .NET Framework targeting pack, so those builds died with
+          error MSB3644: The reference assemblies for .NETFramework,Version=v4.7 were not found.
+      This package carries the v4.7 reference assemblies; the generated projects point
+      TargetFrameworkRootPath at it. GeneratePathProperty gives us $(Pkg...) below, and the
+      path is handed to the test code as assembly metadata - a restored package is the only
+      thing that can supply it, so a missing restore fails loudly instead of silently
+      falling back to whatever the machine happens to have installed.
+    -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net47" Version="1.0.3" PrivateAssets="all" GeneratePathProperty="true" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- build\ is the directory that contains .NETFramework\v4.7\, which is what
+         $(TargetFrameworkRootPath) expects. Trailing slash matters to MSBuild. -->
+    <AssemblyMetadata Include="NetFrameworkReferenceAssemblies" Condition="'$(PkgMicrosoft_NETFramework_ReferenceAssemblies_net47)' != ''" Value="$(PkgMicrosoft_NETFramework_ReferenceAssemblies_net47)/build/" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Gtk4.Forms.Core.UnitTests\MockDispatcherProvider.cs">
+      <Link>MockDispatcherProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Gtk4.Forms.Core.UnitTests\MockDispatcher.cs">
+      <Link>MockDispatcher.cs</Link>
+    </Compile>
+    <Compile Include="..\Gtk4.Forms.Core.UnitTests\MockPlatformServices.cs">
+      <Link>MockPlatformServices.cs</Link>
+    </Compile>
+    <!--
+      Linked, not copied. This project used to carry its own near-identical BaseTestFixture,
+      from the period when the Core.UnitTests copy was still NUnit-based. Both suites are xUnit
+      now, and two copies meant a fix to one silently did not apply to the other - which is
+      exactly how the Application.Current teardown ended up missing from the suite that needed it.
+    -->
+    <Compile Include="..\Gtk4.Forms.Core.UnitTests\BaseTestFixture.cs">
+      <Link>BaseTestFixture.cs</Link>
+    </Compile>
+  </ItemGroup>
+</Project>

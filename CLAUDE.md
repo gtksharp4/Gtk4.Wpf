@@ -115,7 +115,7 @@ themselves and previously passed only by accident of ordering.
 globbing** (`EnableDefaultCompileItems=true`) — a new test file is picked up automatically. (The
 legacy explicit-`<Compile Include>` form, where new files were silently ignored, is gone.) Core
 unit tests derive from `BaseTestFixture` and rely on `MockPlatformServices`/`MockDispatcher`,
-shared into the XAML tests via linked `<Compile Include="..\Xamarin.Forms.Core.UnitTests\...">`.
+shared into the XAML tests via linked `<Compile Include="..\Gtk4.Forms.Core.UnitTests\...">`.
 XAML compiler tests invoke `XamlCTask` in-process through
 `Xamarin.Forms.Xaml.UnitTests/MockCompiler.cs`.
 
