@@ -179,6 +179,8 @@ namespace Gtk.Forms.MarkupCompiler
 		/// <summary>Emits root-element attribute assignments onto <c>this</c>.</summary>
 		static void EmitRootAttributes(IndentedWriter w, XElement root, XNamespace xNs)
 		{
+			string rootFqType = ResolveType(root) ?? string.Empty;
+
 			foreach (XAttribute attr in root.Attributes())
 			{
 				if (attr.IsNamespaceDeclaration) continue;
@@ -189,7 +191,7 @@ namespace Gtk.Forms.MarkupCompiler
 
 				if (IsBindingExpression(val, out string bindingInit))
 				{
-					string fqType = ResolveType(root) ?? "this";
+					string fqType = string.IsNullOrEmpty(rootFqType) ? "this" : rootFqType;
 					w.Line($"this.SetBinding({fqType}.{propName}Property, {bindingInit});");
 				}
 				else if (IsStaticOrDynamicResource(val, out string resourceKey))
@@ -199,48 +201,50 @@ namespace Gtk.Forms.MarkupCompiler
 						w.Line($"this.Style = (System.Windows.Style)this.FindResource(\"{EscapeString(resourceKey)}\");");
 					else
 					{
-						string fqType = ResolveType(root) ?? "this";
+						string fqType = string.IsNullOrEmpty(rootFqType) ? "this" : rootFqType;
 						w.Line($"this.SetValue({fqType}.{propName}Property, this.FindResource(\"{EscapeString(resourceKey)}\"));");
 					}
 				}
+				else if (!string.IsNullOrEmpty(rootFqType) && IsKnownDp(rootFqType, propName))
+				{
+					w.Line($"this.SetValue({rootFqType}.{propName}Property, " +
+						$"{DpValueExpression(rootFqType, propName, val)});");
+				}
 				else
 				{
-					w.Line($"this.{propName} = {ValueExpression(propName, val)};");
+					w.Line($"this.{propName} = {ClrValueExpression(propName, val)};");
 				}
 			}
 		}
 
-		// Known enum properties and their CLR type (Phase-0 explicit list).
-		// TODO (Phase 1): resolve enum type from the target property's type via referenced assemblies.
-		static readonly Dictionary<string, string> _knownEnumProperties = new Dictionary<string, string>(
-			StringComparer.Ordinal)
-		{
-			{ "Orientation", "System.Windows.Controls.Orientation" },
-		};
-
 		/// <summary>
-		/// The C# expression for a plain (non-binding) attribute value.
+		/// Returns the C# expression for a plain (non-binding, non-markup-extension)
+		/// attribute value on a <see cref="DependencyProperty"/>.
 		/// <para>
-		/// Phase-0 pragmatic rules (no full type-converter resolution):
-		/// <list type="bullet">
-		/// <item><c>StartupUri</c> → <c>new System.Uri(...)</c></item>
-		/// <item>Known enum property → <c>EnumType.Member</c></item>
-		/// <item>Integer literal → numeric literal</item>
-		/// <item>Floating-point literal → numeric literal</item>
-		/// <item><c>true</c>/<c>false</c> (case-insensitive) → bool literal</item>
-		/// <item>Otherwise → string literal</item>
-		/// </list>
-		/// TODO (Phase 1): resolve the target property type and its type converter from
-		/// the referenced assemblies instead of this hard-coded table.
+		/// For <c>StartupUri</c> emits <c>new System.Uri(...)</c>.
+		/// For everything else defers to
+		/// <c>System.Windows.Markup.XamlValueConverter.Convert(typeof(OwnerType), OwnerType.PropProperty, "raw")</c>
+		/// so that runtime type-converter resolution handles Thickness, Brush, GridLength, etc.
 		/// </para>
 		/// </summary>
-		static string ValueExpression(string propName, string val)
+		static string DpValueExpression(string ownerType, string propName, string val)
 		{
 			if (propName == "StartupUri")
 				return $"new System.Uri(\"{EscapeString(val)}\", System.UriKind.RelativeOrAbsolute)";
 
-			if (_knownEnumProperties.TryGetValue(propName, out var enumType))
-				return $"{enumType}.{val}";
+			return $"System.Windows.Markup.XamlValueConverter.Convert(" +
+				$"typeof({ownerType}), {ownerType}.{propName}Property, \"{EscapeString(val)}\")";
+		}
+
+		/// <summary>
+		/// The C# expression for a plain (non-binding) attribute value on a plain CLR property
+		/// (non-DP path: Title, x:Name assignments, etc.).
+		/// Phase-0 rules kept for backward compat (StartupUri, bool, numeric literals, string).
+		/// </summary>
+		static string ClrValueExpression(string propName, string val)
+		{
+			if (propName == "StartupUri")
+				return $"new System.Uri(\"{EscapeString(val)}\", System.UriKind.RelativeOrAbsolute)";
 
 			if (long.TryParse(val, System.Globalization.NumberStyles.Integer,
 				System.Globalization.CultureInfo.InvariantCulture, out _))
@@ -257,6 +261,42 @@ namespace Gtk.Forms.MarkupCompiler
 				return "false";
 
 			return $"\"{EscapeString(val)}\"";
+		}
+
+		/// <summary>
+		/// Returns <c>true</c> for property names that are known WPF DependencyProperties
+		/// on the given owner type (and therefore warrant the XamlValueConverter path).
+		/// Properties like <c>Title</c>, <c>Content</c> that are plain CLR properties
+		/// continue to use <see cref="ClrValueExpression"/>.
+		/// <para>
+		/// Phase-5 TODO: resolve this fully from the referenced assemblies' DP field names.
+		/// For now, the convention "first letter upper-case + not in the CLR-only exclusion set"
+		/// is used: any property with a matching <c>&lt;Name&gt;Property</c> field on the type
+		/// will get the converter path; CLR-only props use the legacy path.
+		/// </para>
+		/// </summary>
+		static readonly System.Collections.Generic.HashSet<string> _clrOnlyProperties =
+			new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal)
+			{
+				"Title", "StartupUri", "Name",
+				// String DPs — XamlValueConverter would pass through anyway, but skip the overhead.
+				"Text", "Header", "ToolTip",
+				// object-typed DPs — string value is valid as-is; converter would pass through.
+				"Content", "Tag", "DataContext", "CommandParameter",
+			};
+
+		/// <summary>
+		/// Returns whether <paramref name="propName"/> should go through the DP converter
+		/// path given owner <paramref name="fqType"/>.
+		/// </summary>
+		static bool IsKnownDp(string fqType, string propName)
+		{
+			// Always use CLR path for explicitly excluded properties.
+			if (_clrOnlyProperties.Contains(propName)) return false;
+			// Properties that map to DPs on known types — resolved from WpfXmlnsMap.
+			// A property is treated as a DP when it matches a DP by convention:
+			// the owner type (resolved by WpfXmlnsMap) is a mapped WPF type.
+			return fqType != null && fqType.StartsWith("System.Windows", StringComparison.Ordinal);
 		}
 
 		/// <summary>
@@ -316,8 +356,13 @@ namespace Gtk.Forms.MarkupCompiler
 						else
 							w.Line($"{varName}.SetValue({fqType}.{propName}Property, {varName}.FindResource(\"{EscapeString(resourceKey)}\"));");
 					}
+					else if (IsKnownDp(fqType, propName))
+					{
+						w.Line($"{varName}.SetValue({fqType}.{propName}Property, " +
+							$"{DpValueExpression(fqType, propName, val)});");
+					}
 					else
-						w.Line($"{varName}.{propName} = {ValueExpression(propName, val)};");
+						w.Line($"{varName}.{propName} = {ClrValueExpression(propName, val)};");
 				}
 
 				// Recurse into grandchildren

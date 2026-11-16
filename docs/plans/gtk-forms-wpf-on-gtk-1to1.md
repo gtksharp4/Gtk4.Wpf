@@ -278,10 +278,26 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   scRGB). **Round 4 totals: 556 tests** (40 WindowsBase + 453 PresentationFramework + 47 MarkupCompiler +
   16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample` (unmodified WPF) still
   compiles.
+- **Round 5 Track A — typed attribute values + type-converter system (DONE).**
+  - `System.Windows.Markup.XamlValueConverter` (central runtime registry in `PresentationFramework`):
+    `Convert(ownerType, dp, rawString)` dispatches on `dp.PropertyType`; `Register<T>` for custom converters.
+  - Built-in converters: `Thickness` (1/2/4-part), `CornerRadius` (1/4-part), `GridLength`
+    (`Auto`/`*`/`2*`/px), `Color` (named via `Colors` statics + `#RGB`/`#ARGB`/`#RRGGBB`/`#AARRGGBB`),
+    `Brush`/`SolidColorBrush` (named + hex), `Point`/`Size`/`Rect` (comma-separated pairs/quads),
+    `double`/`float`/`int`/`long`/`bool`, arbitrary `Enum` (case-insensitive), `string` passthrough.
+    `PrimitiveConverters` (internal, WindowsBase) + `MediaConverters` (internal, PresentationFramework).
+  - `CornerRadius` struct added to `Gtk.Forms.WindowsBase`.
+  - `Visibility` enum added to `Gtk.Forms.PresentationFramework`.
+  - `Setter.CoerceValue`: string values converted to target DP type at apply time (style, trigger, direct).
+  - Compiler (`XamlCodeGenerator`): plain DP attributes emit
+    `SetValue(T.PropProperty, XamlValueConverter.Convert(typeof(T), T.PropProperty, "raw"))` instead of
+    bare string literals; CLR-only properties (`Title`, `StartupUri`, `Name`, `Text`) keep the existing
+    direct-assignment path. `{Binding}`, `{StaticResource}` still take their own paths (unchanged).
+  - **Round 5 Track A totals: 592 tests** (40 WindowsBase + 482 PresentationFramework + 55 MarkupCompiler
+    + 16 ProjectConverter — +29 PF, +8 MC new); all pass; `Gtk.Forms.WpfSample` still compiles.
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
-  full attribute type-converter resolution (typed `Setter.Value`/resource values); `BindingExpression`
-  live object; `Converter={StaticResource}`; true `{DynamicResource}` change-tracking; XAML
-  `<ControlTemplate>`/`<DataTemplate>`/inline-`<ListBoxItem>` parsing in the compiler (runtime exists);
+  `BindingExpression` live object; `Converter={StaticResource}`; true `{DynamicResource}` change-tracking;
+  XAML `<ControlTemplate>`/`<DataTemplate>`/inline-`<ListBoxItem>` parsing in the compiler (runtime exists);
   GTK key-event wiring for `InputBindings` (programmatic `InvokeInputBinding` dispatch exists);
   `Gtk.PopoverMenu` integration for `MenuItem`; element-level `FrameworkElement.Triggers` auto-attach on
   load (runtime exists, compiler emits `Style.Triggers` only); nested-path `DataTrigger` bindings;

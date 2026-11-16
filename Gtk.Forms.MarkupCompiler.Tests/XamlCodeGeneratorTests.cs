@@ -164,53 +164,59 @@ namespace Gtk.Forms.MarkupCompiler.Tests
 			Assert.Contains("app.Run();", code);
 		}
 
-		// ------------------------------------------------------------------ #7 typed-literal tests
+		// ------------------------------------------------------------------ #7 typed-attribute tests
+		// Round 5: DP attributes now go through XamlValueConverter.Convert for runtime type resolution.
+		// Tests updated from literal-emission assertions to converter-emission assertions.
 
 		[Fact]
-		public void Attribute_enum_emits_enum_member()
+		public void Attribute_enum_emits_converter_call()
 		{
-			// Orientation="Horizontal" on a StackPanel child should become
-			// System.Windows.Controls.Orientation.Horizontal, not a string literal.
+			// Orientation="Horizontal" on a StackPanel → SetValue + XamlValueConverter.Convert.
 			string xaml = Window(@"<StackPanel Orientation=""Horizontal"" />");
 			string code = _gen.Generate(xaml, out _);
-			Assert.Contains("System.Windows.Controls.Orientation.Horizontal", code);
-			Assert.DoesNotContain(@"""Horizontal""", code);
+			Assert.Contains("XamlValueConverter.Convert(", code);
+			Assert.Contains("\"Horizontal\"", code);
+			Assert.Contains("SetValue(", code);
 		}
 
 		[Fact]
-		public void Attribute_integer_emits_numeric_literal()
+		public void Attribute_integer_emits_converter_call()
 		{
+			// FontSize="14" → XamlValueConverter.Convert returns double 14 at runtime.
 			string xaml = Window(@"<StackPanel><TextBlock FontSize=""14"" /></StackPanel>");
 			string code = _gen.Generate(xaml, out _);
-			Assert.Contains(".FontSize = 14;", code);
-			Assert.DoesNotContain(@"""14""", code);
+			Assert.Contains("XamlValueConverter.Convert(", code);
+			Assert.Contains("\"14\"", code);
 		}
 
 		[Fact]
-		public void Attribute_double_emits_numeric_literal()
+		public void Attribute_double_emits_converter_call()
 		{
+			// Width="1.5" → XamlValueConverter.Convert returns double 1.5 at runtime.
 			string xaml = Window(@"<StackPanel><TextBlock Width=""1.5"" /></StackPanel>");
 			string code = _gen.Generate(xaml, out _);
-			Assert.Contains(".Width = 1.5;", code);
-			Assert.DoesNotContain(@"""1.5""", code);
+			Assert.Contains("XamlValueConverter.Convert(", code);
+			Assert.Contains("\"1.5\"", code);
 		}
 
 		[Fact]
-		public void Attribute_bool_true_emits_bool_literal()
+		public void Attribute_bool_true_emits_converter_call()
 		{
+			// IsEnabled="true" → XamlValueConverter.Convert returns bool true at runtime.
 			string xaml = Window(@"<StackPanel><Button IsEnabled=""true"" /></StackPanel>");
 			string code = _gen.Generate(xaml, out _);
-			Assert.Contains(".IsEnabled = true;", code);
-			Assert.DoesNotContain(@"""true""", code);
+			Assert.Contains("XamlValueConverter.Convert(", code);
+			Assert.Contains("\"true\"", code);
 		}
 
 		[Fact]
-		public void Attribute_bool_false_emits_bool_literal()
+		public void Attribute_bool_false_emits_converter_call()
 		{
+			// IsEnabled="False" → XamlValueConverter.Convert returns bool false at runtime.
 			string xaml = Window(@"<StackPanel><Button IsEnabled=""False"" /></StackPanel>");
 			string code = _gen.Generate(xaml, out _);
-			Assert.Contains(".IsEnabled = false;", code);
-			Assert.DoesNotContain(@"""False""", code);
+			Assert.Contains("XamlValueConverter.Convert(", code);
+			Assert.Contains("\"False\"", code);
 		}
 
 		[Fact]
