@@ -221,6 +221,24 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   now a RoutedCommand with no matching binding is simply non-executable (WPF semantics). **368 tests total**
   (40 WindowsBase + 265 PresentationFramework + 47 MarkupCompiler + 16 ProjectConverter), all pass, PF full
   run completes with no stack overflow; `Gtk.Forms.WpfSample` (unmodified WPF) still compiles.
+- **Round 4 Track B — shapes & media primitives (DONE).** `System.Windows.Media`: `Color` (ARGB bytes +
+  scaled floats, `ToGdkRgba`/`ToCairoColor`), `Colors`/`Brushes` (named statics), `Brush` (abstract,
+  `Opacity`) + `SolidColorBrush` (`ToGdkRgba` + Cairo `SetSourceRGBA`), `GradientBrush`/`LinearGradientBrush`/
+  `RadialGradientBrush` (`GradientStopCollection`; full Cairo `LinearGradient`/`RadialGradient` paint),
+  `Pen` (`Brush` + `Thickness`), `Geometry` base + `RectangleGeometry`/`EllipseGeometry`/`LineGeometry`/
+  `PathGeometry` (`PathFigure`/`LineSegment`/`BezierSegment`; `Bounds` on all four), `Transform` base +
+  `TranslateTransform`/`ScaleTransform`/`RotateTransform`/`MatrixTransform` + `Matrix` (multiply,
+  transform-point, `IsIdentity`, `ToCairo`).  `System.Windows.Shapes`: `Shape : FrameworkElement`
+  (`Fill`/`Stroke`/`StrokeThickness`/`Stretch` DPs; `Gtk.DrawingArea` backing; `SetDrawFunc` Cairo
+  callback; deterministic `Dispose`), `Rectangle` (`RadiusX`/`RadiusY`; rounded-rect Cairo path),
+  `Ellipse`, `Line` (`X1/Y1/X2/Y2`), `Polygon`/`Polyline` (`PointCollection`, `FillRule`), `Path`
+  (`Data` = `Geometry`).  71 new tests (18 Color/Brushes, 9 Geometry bounds, 15 Transform matrix math,
+  20 Shape DP defaults/round-trips, 10 GTK smoke). **439 tests total** (40 WindowsBase + 336
+  PresentationFramework + 47 MarkupCompiler + 16 ProjectConverter), all pass.
+  *Gradient rendering limitation*: `LinearGradientBrush`/`RadialGradientBrush` use full Cairo gradient
+  paint when `DrawFunc` is active; `ToGdkRgba` returns the first stop colour as a widget-hint fallback
+  (noted limitation, full GTK CSS gradient is not wired). `Stretch` is stored as a DP but the
+  Cairo path always paints to the full `DrawingArea` size (stretch transform is a Phase-5 addition).
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
   full attribute type-converter resolution (typed `Setter.Value`/resource values); `BindingExpression`
   live object; `Converter={StaticResource}`; true `{DynamicResource}` change-tracking; XAML
