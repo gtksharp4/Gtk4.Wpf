@@ -118,9 +118,27 @@ namespace System.Windows.Media.Animation
 					{
 						var propName = GetTargetPropertyName(child);
 						if (!string.IsNullOrEmpty(propName))
-							dp = DependencyProperty.FindByName(propName, animTarget.GetType());
+						{
+							// U3: strip surrounding parentheses and take the last dotted segment.
+							// Handles "(UIElement.Opacity)", "UIElement.Opacity", "Opacity".
+							var resolved = propName!.Trim();
+							if (resolved.Length >= 2 && resolved[0] == '(' && resolved[resolved.Length - 1] == ')')
+								resolved = resolved.Substring(1, resolved.Length - 2).Trim();
+							int dot = resolved.LastIndexOf('.');
+							if (dot >= 0)
+								resolved = resolved.Substring(dot + 1);
+							dp = DependencyProperty.FindByName(resolved, animTarget.GetType());
+						}
 					}
-					if (dp == null) continue;
+					if (dp == null)
+					{
+						// U2c: unresolvable TargetProperty is a programming error; throw with a clear message.
+						var unresolved = GetTargetPropertyName(child);
+						throw new InvalidOperationException(
+							$"Storyboard.Begin: TargetProperty '{unresolved ?? "(null)"}' could not be resolved " +
+							$"to a DependencyProperty on '{animTarget.GetType().FullName}'. " +
+							$"Register the property or use a strongly-typed SetTargetProperty call.");
+					}
 
 					var clock = new AnimationClock(anim, animTarget, dp);
 					_clocks.Add(clock);

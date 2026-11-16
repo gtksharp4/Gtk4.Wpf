@@ -51,7 +51,9 @@ namespace Gtk.Forms.PresentationFramework.Tests
 
 		sealed class TriggerTarget : FrameworkElement
 		{
-			public static readonly DependencyProperty OpacityProperty =
+			// "new" suppresses CS0108: this test-local DP uses registration name
+			// "AnimTestOpacity" to avoid colliding with UIElement.OpacityProperty.
+			public new static readonly DependencyProperty OpacityProperty =
 				DependencyProperty.Register(
 					"AnimTestOpacity", typeof(double), typeof(TriggerTarget),
 					new PropertyMetadata(1.0));
@@ -61,7 +63,7 @@ namespace Gtk.Forms.PresentationFramework.Tests
 					"AnimTestLoaded", RoutingStrategy.Bubble,
 					typeof(RoutedEventHandler), typeof(TriggerTarget));
 
-			public double Opacity
+			public new double Opacity
 			{
 				get => (double)(GetValue(OpacityProperty) ?? 1.0);
 				set => SetValue(OpacityProperty, value);

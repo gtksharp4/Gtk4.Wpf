@@ -99,12 +99,25 @@ namespace System.Windows.Controls
 		protected override void OnItemsRebuilt()
 		{
 			_containers.Clear();
-			// SelectedIndex/-Item reset on rebuild.
+
+			// U1: preserve selection across INCC-triggered rebuilds.
+			// If the previously selected item is still present in Items, restore it;
+			// only clear when it has genuinely left the collection.
+			var prevItem = SelectedItem;
+			var prevIdx = -1;
+			if (prevItem != null)
+			{
+				for (int i = 0; i < Items.Count; i++)
+				{
+					if (Equals(Items[i], prevItem)) { prevIdx = i; break; }
+				}
+			}
+
 			_updating = true;
 			try
 			{
-				SetValue(SelectedIndexProperty, -1);
-				SetValue(SelectedItemProperty, null);
+				SetValue(SelectedIndexProperty, prevIdx);
+				SetValue(SelectedItemProperty, prevIdx >= 0 ? prevItem : null);
 			}
 			finally { _updating = false; }
 		}

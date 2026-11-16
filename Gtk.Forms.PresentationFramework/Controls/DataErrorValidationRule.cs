@@ -11,11 +11,14 @@ namespace System.Windows.Controls
 		/// <summary>Singleton instance.</summary>
 		public static readonly DataErrorValidationRule Instance = new DataErrorValidationRule();
 
-		/// <summary>Validates against <see cref="IDataErrorInfo"/> if the value implements it.</summary>
+		/// <summary>
+		/// Marker: <see cref="Data.BindingEngine"/> calls <c>CollectDataErrors</c> directly on the
+		/// source when <c>ValidatesOnDataErrors</c> is set; this <c>Validate</c> body is never invoked
+		/// by the engine. It is kept as a usable fallback for callers that run validation rules manually.
+		/// </summary>
 		public override ValidationResult Validate(object? value, CultureInfo cultureInfo)
 		{
-			// DataErrorInfo checking happens on the source, not the target value.
-			// The binding engine invokes this rule with the source object when ValidatesOnDataErrors is set.
+			// Not called by the binding engine — see BindingEngine.CollectDataErrors.
 			if (value is IDataErrorInfo dataError)
 			{
 				var msg = dataError.Error;

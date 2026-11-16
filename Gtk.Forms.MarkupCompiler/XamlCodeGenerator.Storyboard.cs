@@ -258,10 +258,7 @@ namespace Gtk.Forms.MarkupCompiler
 				w.Line($"{trigVar}.Actions.Add({bsVar});");
 			}
 
-			if (isStyleTrigger)
-				w.Line($"{containerVar}.Triggers.Add({trigVar});");
-			else
-				w.Line($"{containerVar}.Triggers.Add({trigVar});");
+			w.Line($"{containerVar}.Triggers.Add({trigVar});");
 		}
 	}
 }

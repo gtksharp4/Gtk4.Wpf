@@ -41,16 +41,25 @@ namespace System.Windows.Data
 			{
 				if (_source == null) return null;
 				if (_view == null)
+				{
 					_view = new ListCollectionView(_source);
+					// U6: forward instance SortDescriptions/GroupDescriptions to the view.
+					foreach (var sd in SortDescriptions)
+						_view.SortDescriptions.Add(sd);
+					foreach (var gd in GroupDescriptions)
+						_view.GroupDescriptions.Add(gd);
+					if (SortDescriptions.Count > 0 || GroupDescriptions.Count > 0)
+						_view.Refresh();
+				}
 				return _view;
 			}
 		}
 
-		/// <summary>Design-time sort descriptions forwarded to the view.</summary>
+		/// <summary>Sort descriptions applied to the view when it is created.</summary>
 		public ObservableCollection<SortDescription> SortDescriptions { get; } =
 			new ObservableCollection<SortDescription>();
 
-		/// <summary>Design-time group descriptions forwarded to the view.</summary>
+		/// <summary>Group descriptions applied to the view when it is created.</summary>
 		public ObservableCollection<GroupDescription> GroupDescriptions { get; } =
 			new ObservableCollection<GroupDescription>();
 

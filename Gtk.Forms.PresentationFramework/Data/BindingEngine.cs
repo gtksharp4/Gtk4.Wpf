@@ -399,6 +399,13 @@ namespace System.Windows.Data
 					}
 
 					// ── Post-write: data error validation ─────────────────────────
+					// U4: skip validation work entirely when the binding has no validation rules,
+					// avoiding unnecessary DP writes and collection allocations.
+					bool hasValidation = _binding.ValidationRules.Count > 0
+						|| _binding.ValidatesOnDataErrors
+						|| _binding.ValidatesOnExceptions;
+					if (!hasValidation) return;
+
 					if (_binding.ValidatesOnDataErrors)
 						RunPostWriteDataErrorValidation(target, source, _binding.Path);
 					else

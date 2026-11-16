@@ -131,6 +131,26 @@ namespace System.Windows.Controls
 		protected override void OnItemsRebuilt()
 		{
 			_tabItems.Clear();
+
+			// U1: preserve selection across INCC-triggered rebuilds.
+			var prevItem = SelectedItem;
+			var prevIdx = -1;
+			if (prevItem != null)
+			{
+				for (int i = 0; i < Items.Count; i++)
+				{
+					if (ReferenceEquals(Items[i], prevItem) || Equals(Items[i], prevItem))
+					{ prevIdx = i; break; }
+				}
+			}
+
+			_updating = true;
+			try
+			{
+				SetValue(SelectedIndexProperty, prevIdx);
+				SetValue(SelectedItemProperty, prevIdx >= 0 ? prevItem : null);
+			}
+			finally { _updating = false; }
 		}
 
 		void ApplySelectedIndexDirect(int idx)

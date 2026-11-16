@@ -84,9 +84,17 @@ namespace System.Windows.Data
 			_groupObjects.Clear();
 
 			// 1. Filter.
+			// U5: null items are kept (WPF default view preserves nulls); Filter/Sort/Group
+			// guard against null internally.
 			foreach (var item in _source)
 			{
-				if (item == null) continue;
+				if (item == null)
+				{
+					// Null items pass through when there is no filter or the filter accepts them.
+					if (Filter == null || Filter(null!))
+						_view.Add(null);
+					continue;
+				}
 				if (Filter != null && !Filter(item)) continue;
 				_view.Add(item);
 			}
@@ -107,9 +115,12 @@ namespace System.Windows.Data
 				Groups = null;
 			}
 
-			// Clamp current position.
+			// U7c: clamp current position and raise CurrentChanged when CurrentItem changes.
+			var prevCurrentItem = CurrentItem;
 			if (_currentPosition >= _view.Count)
 				_currentPosition = _view.Count - 1;
+			if (!ReferenceEquals(prevCurrentItem, CurrentItem))
+				CurrentChanged?.Invoke(this, EventArgs.Empty);
 
 			CollectionChanged?.Invoke(this,
 				new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
@@ -151,7 +162,9 @@ namespace System.Windows.Data
 			var order = new List<string>();
 			foreach (var item in _view)
 			{
-				var rawKey = gd.GroupNameFromItem(item!, 0, CultureInfo.CurrentCulture);
+				// U5: null items are excluded from grouping (no meaningful group key).
+				if (item == null) continue;
+				var rawKey = gd.GroupNameFromItem(item, 0, CultureInfo.CurrentCulture);
 				var key = rawKey?.ToString() ?? string.Empty;
 				if (!dict.TryGetValue(key, out var grp))
 				{
@@ -159,7 +172,7 @@ namespace System.Windows.Data
 					dict[key] = grp;
 					order.Add(key);
 				}
-				grp.AddItem(item!);
+				grp.AddItem(item);
 			}
 			var result = new List<CollectionViewGroup>();
 			foreach (var k in order) result.Add(dict[k]);
