@@ -1,4 +1,5 @@
 using System;
+using System.Windows.Input;
 
 namespace System.Windows.Controls
 {
@@ -7,8 +8,11 @@ namespace System.Windows.Controls
 	/// Raises the CLR <see cref="Click"/> event when the user clicks it,
 	/// and updates the GTK button label when <see cref="ContentControl.Content"/>
 	/// is a string.
+	/// Implements <see cref="ICommandSource"/>: clicking invokes <see cref="Command"/>
+	/// when <see cref="ICommand.CanExecute"/> is true; the button's enabled state
+	/// tracks <see cref="ICommand.CanExecuteChanged"/> / <see cref="CommandManager.RequerySuggested"/>.
 	/// </summary>
-	public class Button : ContentControl
+	public partial class Button : ContentControl, ICommandSource
 	{
 		// ── Click event ──────────────────────────────────────────────────────────
 
@@ -40,6 +44,8 @@ namespace System.Windows.Controls
 			_button = new Gtk.Button();
 			_button.Label = (Content as string) ?? string.Empty;
 			_button.Clicked += OnGtkClicked;
+			// Sync sensitivity with the current command's CanExecute now that the widget exists.
+			RefreshCommandEnabled();
 			return _button;
 		}
 
@@ -53,8 +59,11 @@ namespace System.Windows.Controls
 
 		void OnGtkClicked(object? sender, EventArgs e)
 		{
+			// Raise the routed Click event first (listeners may still observe it).
 			var args = new RoutedEventArgs(ClickEvent) { Source = this };
 			RaiseEvent(args);
+			// Then invoke the command if one is set and can execute.
+			ExecuteCommandIfAble();
 		}
 
 		/// <summary>

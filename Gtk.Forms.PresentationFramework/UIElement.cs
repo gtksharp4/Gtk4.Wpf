@@ -6,7 +6,7 @@ namespace System.Windows
 	/// Base class for all WPF visual elements. Each UIElement owns a backing
 	/// <see cref="Gtk.Widget"/> created on first access via <see cref="CreateWidget"/>.
 	/// </summary>
-	public abstract class UIElement : DependencyObject
+	public abstract partial class UIElement : DependencyObject
 	{
 		Gtk.Widget? _widget;
 
