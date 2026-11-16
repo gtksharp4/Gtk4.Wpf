@@ -377,14 +377,46 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   converted from `new`-shadows to `virtual`/`override` so a base-typed reference sees the correct value.
   **Round 6 totals: 787 tests** (40 WindowsBase + 642 PresentationFramework + 89 MarkupCompiler +
   16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample` (unmodified WPF) compiles.
+- **Round 7 Track A — advanced data binding (DONE).**
+  - `RelativeSource` (`RelativeSourceMode.Self`, `FindAncestor`+`AncestorType`+`AncestorLevel`,
+    `TemplatedParent` declared with limitation, `PreviousData` stub); `Binding.RelativeSource`; engine
+    resolves via `LogicalParent`/`InheritanceParent` walk.
+  - `MultiBinding` (`Bindings`, `IMultiValueConverter` `Convert`/`ConvertBack`, `Mode`, `StringFormat`);
+    `MultiBindingEngine` subscribes to per-child INPC, calls converter, re-pushes on any child change;
+    `MultiBindingExpression` live object returned by `GetBindingExpression`.
+  - `BindingExpression` live object: `UpdateTarget()`/`UpdateSource()`, `ResolvedSource`, `DataItem`;
+    `FrameworkElement.SetBinding(dp, Binding)` returns it; `GetBindingExpression(dp)` returns it.
+    Engine refactored: each binding is now backed by a `BindingRecord` + `BindingExpression` pair;
+    expression map kept in a `ConditionalWeakTable` per element.
+  - `StringFormat` on `Binding`/`MultiBinding` (format with `string.Format(InvariantCulture, fmt, v)`;
+    WPF `{0}`-less shortcut handled); `FallbackValue` (applied when source unresolvable);
+    `TargetNullValue` (applied when resolved+converted value is null).
+  - `UpdateSourceTrigger` (`PropertyChanged` auto write-back; `Explicit` defers until
+    `BindingExpression.UpdateSource()` is called; `LostFocus`/`Default` fall back to auto).
+  - `BindingBase` updated with `StringFormat`, `FallbackValue`, `TargetNullValue` (inherited by
+    both `Binding` and `MultiBinding`).
+  - Compiler (`XamlCodeGenerator.Binding.cs` partial): `{Binding RelativeSource={RelativeSource Self}}` →
+    `RelativeSource.Self` singleton; `{RelativeSource FindAncestor, AncestorType=X}` → constructor call;
+    `{RelativeSource TemplatedParent}` → singleton; `Converter={StaticResource k}` → real
+    `(IValueConverter)FindResource("k")` (carry-over TODO removed); `StringFormat=`, `FallbackValue=`,
+    `TargetNullValue=`, `UpdateSourceTrigger=` emitted in initializer; `<MultiBinding>` property element →
+    `MultiBinding` construction + `Bindings.Add` per child + `SetBinding(dp, mb)`. Fixed `TrimEnd('}')`
+    bug (was stripping nested-brace values like `StringFormat=Total: {0}`; now removes exactly the outer
+    closing brace). `XamlCodeGenerator` split into `partial` with `XamlCodeGenerator.Binding.cs`
+    (binding/resource helpers) to stay ≤200 lines per file.
+  - **+16 PF tests** (`AdvancedBindingTests`); **+12 MarkupCompiler tests**
+    (`XamlCodeGeneratorBindingR7Tests` + updated `Converter_StaticResource` test in Phase1Tests).
+  - **Round 7 totals: 815 tests** (40 WindowsBase + 658 PresentationFramework + 101 MarkupCompiler +
+    16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample` (unmodified WPF)
+    still compiles.
 - **Carry-over (Round 5 Opus review — not addressed this round)**: compiler DP-vs-CLR resolution is a
   name heuristic (`IsKnownDp`: "is it in `System.Windows.*` and not on the CLR-only exclusion list?").
   Should be replaced with real assembly symbol resolution — load the referenced assemblies, reflect
   the declared `<Name>Property` fields, and distinguish DP from CLR at the type level. Filed for a
   future MarkupCompiler phase.
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
-  `BindingExpression` live object; `Converter={StaticResource}`; true `{DynamicResource}` change-tracking;
-  GTK key-event wiring for `InputBindings` (programmatic `InvokeInputBinding` dispatch exists);
+  `RelativeSource.TemplatedParent` resolution (templated parent not wired — documented limitation);
+  true `{DynamicResource}` change-tracking; GTK key-event wiring for `InputBindings`;
   `Gtk.PopoverMenu` integration for `MenuItem`; element-level `FrameworkElement.Triggers` auto-attach on
   load (runtime exists, compiler emits `Style.Triggers` only); nested-path `DataTrigger` bindings;
   `EventTrigger` storyboards/animations; `TemplateBinding` markup extension inside `ControlTemplate`;

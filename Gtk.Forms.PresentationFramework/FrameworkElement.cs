@@ -115,18 +115,5 @@ namespace System.Windows
 			set => SetValue(MarginProperty, value);
 		}
 
-		// ── Binding ──────────────────────────────────────────────────────────────
-
-		/// <summary>
-		/// Attaches a binding to <paramref name="dp"/> on this element. The source is
-		/// resolved at call time (or on the next DataContext change) and the binding is
-		/// re-evaluated whenever the source raises <see cref="System.ComponentModel.INotifyPropertyChanged"/>.
-		/// </summary>
-		public void SetBinding(DependencyProperty dp, BindingBase binding)
-		{
-			if (dp == null) throw new ArgumentNullException(nameof(dp));
-			if (binding == null) throw new ArgumentNullException(nameof(binding));
-			BindingEngine.SetBinding(this, dp, binding);
-		}
 	}
 }

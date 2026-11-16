@@ -64,16 +64,18 @@ namespace Gtk.Forms.MarkupCompiler.Tests
 			Assert.DoesNotContain("ElementName =", code);
 		}
 
-		// ── Converter={StaticResource} emits TODO comment ───────────────────────
+		// ── Converter={StaticResource} now emits real FindResource call ────────
 
 		[Fact]
-		public void Converter_StaticResource_emits_TODO_comment()
+		public void Converter_StaticResource_emits_FindResource_call()
 		{
 			string xaml = Window(@"<TextBlock Text=""{Binding Path=X, Converter={StaticResource conv}}"" />");
 			string code = _gen.Generate(xaml, out _);
-			Assert.Contains("TODO(StaticResource)", code);
-			// Path still present.
+			// Round 7: carry-over removed; real FindResource converter emitted.
+			Assert.DoesNotContain("TODO(StaticResource)", code);
 			Assert.Contains(@"new System.Windows.Data.Binding(""X"")", code);
+			Assert.Contains("IValueConverter", code);
+			Assert.Contains(@"FindResource(""conv"")", code);
 		}
 
 		// ── Mode=OneWay does not add ElementName ──────────────────────────────────

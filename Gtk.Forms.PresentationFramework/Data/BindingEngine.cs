@@ -7,35 +7,33 @@ using System.Runtime.CompilerServices;
 namespace System.Windows.Data
 {
 	/// <summary>
-	/// Phase-1 binding engine: OneWay, TwoWay, OneTime, OneWayToSource.
-	/// <para>
-	/// Sets a binding on a target DP, resolves the source (explicit
-	/// <see cref="Binding.Source"/>, <see cref="Binding.ElementName"/>, or the element's
-	/// inherited <c>DataContext</c>), reads the value, pushes it into the target DP,
-	/// and subscribes to <see cref="INotifyPropertyChanged"/> for future updates.
-	/// </para>
-	/// <para>
-	/// TwoWay: also subscribes to target DP changes and writes back through the path
-	/// using <see cref="IValueConverter.ConvertBack"/> when a converter is present.
-	/// A reentrancy guard prevents feedback loops.
-	/// </para>
+	/// Binding engine: OneWay, TwoWay, OneTime, OneWayToSource.
+	/// Round 7: backs each binding with a live <see cref="BindingExpression"/>;
+	/// adds RelativeSource resolution, StringFormat, FallbackValue, TargetNullValue,
+	/// and UpdateSourceTrigger (PropertyChanged / Explicit).
 	/// </summary>
 	internal static class BindingEngine
 	{
-		// Registered bindings per target element (ConditionalWeakTable lets the entry
-		// be collected with the element).
+		// Per-element list of active records.
 		static readonly ConditionalWeakTable<FrameworkElement, List<BindingRecord>> _bindings =
 			new ConditionalWeakTable<FrameworkElement, List<BindingRecord>>();
+
+		// Per-element map of DP → live BindingExpression, for GetBindingExpression.
+		static readonly ConditionalWeakTable<FrameworkElement, Dictionary<DependencyProperty, BindingExpressionBase>> _expressions =
+			new ConditionalWeakTable<FrameworkElement, Dictionary<DependencyProperty, BindingExpressionBase>>();
 
 		/// <summary>
 		/// Registers <paramref name="binding"/> on <paramref name="dp"/> of
 		/// <paramref name="target"/> and applies it immediately.
+		/// Returns the live <see cref="BindingExpressionBase"/>.
 		/// </summary>
-		internal static void SetBinding(FrameworkElement target, DependencyProperty dp, BindingBase bindingBase)
+		internal static BindingExpressionBase? SetBinding(
+			FrameworkElement target,
+			DependencyProperty dp,
+			BindingBase bindingBase)
 		{
 			var list = _bindings.GetOrCreateValue(target);
 
-			// Deactivate and remove any existing binding on the same DP.
 			int idx = list.FindIndex(r => r.TargetProperty == dp);
 			if (idx >= 0)
 			{
@@ -43,24 +41,47 @@ namespace System.Windows.Data
 				list.RemoveAt(idx);
 			}
 
+			// Remove old expression entry.
+			var exprMap = _expressions.GetOrCreateValue(target);
+			exprMap.Remove(dp);
+
+			if (bindingBase is MultiBinding mb)
+			{
+				var mbExpr = MultiBindingEngine.SetBinding(target, dp, mb);
+				exprMap[dp] = mbExpr;
+				return mbExpr;
+			}
+
 			if (bindingBase is Binding binding)
 			{
-				var record = new BindingRecord(target, dp, binding);
+				var expr = new BindingExpression(target, dp, binding);
+				var record = new BindingRecord(target, dp, binding, expr);
+				expr.Record = record;
 				list.Add(record);
+				exprMap[dp] = expr;
 				record.Activate();
+				return expr;
 			}
+
+			return null;
 		}
 
-		/// <summary>
-		/// Re-evaluates all bindings whose source is the inherited DataContext.
-		/// Called when DataContext changes.
-		/// </summary>
+		/// <summary>Returns the live expression for <paramref name="dp"/>, or null.</summary>
+		internal static BindingExpressionBase? GetBindingExpression(
+			FrameworkElement target,
+			DependencyProperty dp)
+		{
+			if (!_expressions.TryGetValue(target, out var map)) return null;
+			map.TryGetValue(dp, out var expr);
+			return expr;
+		}
+
+		/// <summary>Re-evaluates all bindings whose source is the inherited DataContext.</summary>
 		internal static void RefreshBindings(FrameworkElement target)
 		{
 			if (!_bindings.TryGetValue(target, out var list)) return;
 			foreach (var record in list)
 			{
-				// Skip records with an explicit source — they don't depend on DataContext.
 				if (!record.UsesDataContext) continue;
 				record.Activate();
 			}
@@ -68,22 +89,18 @@ namespace System.Windows.Data
 
 		// ── Path resolution ──────────────────────────────────────────────────────
 
-		/// <summary>
-		/// Resolves a dot-separated path on <paramref name="source"/>.
-		/// Returns <c>null</c> when any step is null or the property does not exist.
-		/// </summary>
+		/// <summary>Resolves a dot-separated path on <paramref name="source"/>.</summary>
 		internal static object? ResolvePath(object? source, string? path)
 		{
 			if (source == null) return null;
 			if (string.IsNullOrEmpty(path)) return source;
 
 			var current = source;
-			foreach (var segment in path?.Split('.') ?? [])
+			foreach (var segment in path!.Split('.'))
 			{
 				if (current == null) return null;
 				var prop = current.GetType().GetProperty(
-					segment,
-					BindingFlags.Public | BindingFlags.Instance);
+					segment, BindingFlags.Public | BindingFlags.Instance);
 				if (prop == null) return null;
 				current = prop.GetValue(current);
 			}
@@ -92,21 +109,15 @@ namespace System.Windows.Data
 
 		/// <summary>
 		/// Writes <paramref name="value"/> back through the dot-separated path on
-		/// <paramref name="source"/>, setting the final segment's property.
-		/// Returns <c>true</c> on success.
+		/// <paramref name="source"/>. Returns <c>true</c> on success.
 		/// </summary>
 		internal static bool WriteBackPath(object? source, string? path, object? value)
 		{
 			if (source == null) return false;
-			if (string.IsNullOrEmpty(path))
-			{
-				// No path — the source itself is the target; we can't replace the reference.
-				return false;
-			}
+			if (string.IsNullOrEmpty(path)) return false;
 
 			var current = source;
 			var segments = path!.Split('.');
-			// Walk all but the last segment.
 			for (int i = 0; i < segments.Length - 1; i++)
 			{
 				if (current == null) return false;
@@ -118,58 +129,59 @@ namespace System.Windows.Data
 
 			if (current == null) return false;
 			var lastProp = current.GetType().GetProperty(
-				segments[segments.Length - 1],
-				BindingFlags.Public | BindingFlags.Instance);
+				segments[segments.Length - 1], BindingFlags.Public | BindingFlags.Instance);
 			if (lastProp == null || !lastProp.CanWrite) return false;
-
 			lastProp.SetValue(current, value);
 			return true;
 		}
 
+		static object? ApplyStringFormat(string? fmt, object? value)
+		{
+			if (fmt == null) return value;
+			string s = fmt.Contains("{0}") ? fmt : fmt + "{0}";
+			return string.Format(CultureInfo.InvariantCulture, s, value);
+		}
+
 		// ── Inner record ────────────────────────────────────────────────────────
 
-		sealed class BindingRecord
+		internal sealed class BindingRecord
 		{
 			readonly WeakReference<FrameworkElement> _targetRef;
 			readonly DependencyProperty _dp;
 			readonly Binding _binding;
+			readonly BindingExpression _expr;
 
-			// The INotifyPropertyChanged source we are currently subscribed to for forward flow.
 			INotifyPropertyChanged? _inpcSource;
-
-			// First segment of the path (what we listen on INPC for).
 			string? _watchedProperty;
-
-			// Reentrancy guard: prevents a TwoWay push from triggering a write-back loop.
 			bool _pushing;
 
 			internal DependencyProperty TargetProperty => _dp;
 
-			/// <summary>
-			/// True when the source is the element's DataContext (not an explicit Source or ElementName).
-			/// </summary>
 			internal bool UsesDataContext =>
-				_binding.Source == null && _binding.ElementName == null;
+				_binding.Source == null
+				&& _binding.ElementName == null
+				&& _binding.RelativeSource == null;
 
-			internal BindingRecord(FrameworkElement target, DependencyProperty dp, Binding binding)
+			internal BindingRecord(
+				FrameworkElement target,
+				DependencyProperty dp,
+				Binding binding,
+				BindingExpression expr)
 			{
 				_targetRef = new WeakReference<FrameworkElement>(target);
 				_dp = dp;
 				_binding = binding;
+				_expr = expr;
 			}
 
-			/// <summary>Resolves the source and pushes the current value.</summary>
 			internal void Activate()
 			{
 				if (!_targetRef.TryGetTarget(out var target)) return;
-
-				// Detach from previous INPC source.
 				DetachInpc();
 
 				var mode = EffectiveMode();
 				if (mode == BindingMode.OneWayToSource)
 				{
-					// OneWayToSource: subscribe to target changes only, then do an initial push.
 					SubscribeTargetChanges(target);
 					WriteBack(target);
 					return;
@@ -177,12 +189,22 @@ namespace System.Windows.Data
 
 				var source = ResolveSource(target);
 
-				if (mode != BindingMode.OneWayToSource)
+				bool canResolve = source != null
+					|| (!UsesDataContext)
+					|| target.DataContext != null;
+
+				if (!canResolve)
+				{
+					// Source unresolvable — apply FallbackValue.
+					ApplyFallback(target);
+				}
+				else
+				{
 					PushToTarget(target, source);
+				}
 
-				if (mode == BindingMode.OneTime) return; // no subscriptions
+				if (mode == BindingMode.OneTime) return;
 
-				// OneWay / TwoWay: subscribe to source INPC.
 				if (source is INotifyPropertyChanged inpc)
 				{
 					_inpcSource = inpc;
@@ -192,30 +214,40 @@ namespace System.Windows.Data
 						: _binding.Path!.Split('.')[0];
 				}
 
-				// TwoWay: also subscribe to target DP changes.
-				if (mode == BindingMode.TwoWay)
+				if (mode == BindingMode.TwoWay
+					&& _binding.UpdateSourceTrigger != UpdateSourceTrigger.Explicit)
 					SubscribeTargetChanges(target);
 			}
 
-			/// <summary>Removes all subscriptions. Called when a binding is replaced.</summary>
 			internal void Deactivate()
 			{
 				DetachInpc();
 				UnsubscribeTargetChanges();
 			}
 
-			BindingMode EffectiveMode()
-			{
-				return _binding.Mode == BindingMode.Default ? BindingMode.OneWay : _binding.Mode;
-			}
+			BindingMode EffectiveMode() =>
+				_binding.Mode == BindingMode.Default ? BindingMode.OneWay : _binding.Mode;
+
+			internal object? GetResolvedSource(FrameworkElement target) => ResolveSource(target);
 
 			object? ResolveSource(FrameworkElement target)
 			{
 				if (_binding.Source != null) return _binding.Source;
 				if (_binding.ElementName != null)
 					return target.FindName(_binding.ElementName) as FrameworkElement;
+				if (_binding.RelativeSource != null)
+					return _binding.RelativeSource.Resolve(target);
 				return target.DataContext;
 			}
+
+			void ApplyFallback(FrameworkElement target)
+			{
+				var fb = _binding.FallbackValue;
+				if (!ReferenceEquals(fb, DependencyProperty.UnsetValue))
+					target.SetValue(_dp, fb);
+			}
+
+			internal void PushToTargetPublic(FrameworkElement target) => PushToTarget(target, ResolveSource(target));
 
 			void PushToTarget(FrameworkElement target, object? source)
 			{
@@ -223,10 +255,26 @@ namespace System.Windows.Data
 				try
 				{
 					var rawValue = ResolvePath(source, _binding.Path);
+
+					// FallbackValue when path resolves to null and no source.
+					if (rawValue == null && source == null)
+					{
+						ApplyFallback(target);
+						return;
+					}
+
 					object? value = rawValue;
 					if (_binding.Converter != null)
 						value = _binding.Converter.Convert(rawValue, _dp.PropertyType,
 							_binding.ConverterParameter, CultureInfo.CurrentCulture);
+
+					// TargetNullValue.
+					if (value == null && _binding.TargetNullValue != null)
+						value = _binding.TargetNullValue;
+
+					// StringFormat.
+					value = ApplyStringFormat(_binding.StringFormat, value);
+
 					target.SetValue(_dp, value);
 				}
 				finally
@@ -235,9 +283,13 @@ namespace System.Windows.Data
 				}
 			}
 
+			internal void WriteBackPublic(FrameworkElement target) => WriteBack(target);
+
 			void WriteBack(FrameworkElement target)
 			{
-				if (_pushing) return; // reentrancy guard
+				if (_pushing) return;
+				// UpdateSourceTrigger.Explicit: only write back when explicitly called.
+				// (PropertyChanged / Default / LostFocus → auto; Explicit → only via WriteBackPublic)
 				_pushing = true;
 				try
 				{
@@ -258,9 +310,6 @@ namespace System.Windows.Data
 				}
 			}
 
-			// ── Target DP change subscription ────────────────────────────────────
-
-			// Keep the handler as a delegate so we can detach by reference.
 			PropertyChangedCallback? _targetChangedCallback;
 
 			void SubscribeTargetChanges(FrameworkElement target)
@@ -280,10 +329,10 @@ namespace System.Windows.Data
 			void OnTargetPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 			{
 				if (!_targetRef.TryGetTarget(out var target)) return;
+				// Explicit: don't auto write back — wait for UpdateSource().
+				if (_binding.UpdateSourceTrigger == UpdateSourceTrigger.Explicit) return;
 				WriteBack(target);
 			}
-
-			// ── INPC ─────────────────────────────────────────────────────────────
 
 			void DetachInpc()
 			{
@@ -298,9 +347,9 @@ namespace System.Windows.Data
 			void OnSourcePropertyChanged(object? sender, PropertyChangedEventArgs e)
 			{
 				if (!_targetRef.TryGetTarget(out var target)) return;
-				if (_watchedProperty != null &&
-					e.PropertyName != null &&
-					e.PropertyName != _watchedProperty) return;
+				if (_watchedProperty != null
+					&& e.PropertyName != null
+					&& e.PropertyName != _watchedProperty) return;
 				PushToTarget(target, sender);
 			}
 		}
