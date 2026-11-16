@@ -330,8 +330,10 @@ namespace Gtk.Forms.MarkupCompiler
 
 		/// <summary>
 		/// Recursively emits construction + wiring for direct children of <paramref name="parentVar"/>.
-		/// Property-element children (<c>Type.Property</c> local names) are skipped — resources
-		/// are handled by <see cref="EmitResources"/> before the element tree.
+		/// Regular children are constructed and attached; property-element children whose property
+		/// is a known template property (<c>Template</c>, <c>ItemTemplate</c>, <c>ContentTemplate</c>)
+		/// are emitted as template factories. All other property-element children are skipped
+		/// (resources are handled by <see cref="EmitResources"/> before the element tree).
 		/// </summary>
 		void EmitChildren(
 			IndentedWriter w,
@@ -344,80 +346,135 @@ namespace Gtk.Forms.MarkupCompiler
 
 			foreach (XElement child in parent.Elements())
 			{
-				// Skip property-element syntax (e.g. <Window.Resources>).
-				if (child.Name.LocalName.IndexOf('.') >= 0) continue;
+				string childLocalName = child.Name.LocalName;
+
+				// Property-element syntax (e.g. <Button.Template>, <Window.Resources>).
+				if (childLocalName.IndexOf('.') >= 0)
+				{
+					EmitPropertyElement(w, child, xNs, parentVar, ref counter);
+					continue;
+				}
 
 				string fqType = ResolveType(child);
 				if (fqType == null) continue;
 
 				string varName = $"__e{counter++}";
-
-				// Emit resources on this element BEFORE constructing its children so
-				// {StaticResource} lookups on children resolve correctly.
-				// Resources are injected into a local ResourceDictionary expression below.
-
-				w.Line($"var {varName} = new {fqType}();");
-
-				// x:Name / Name field assignment
-				string xName = (string)(child.Attribute(xNs + "Name") ?? child.Attribute("Name"));
-				if (xName != null)
-					w.Line($"this.{xName} = {varName};");
-
-				// Emit <X.Resources> children first (before attr assignments that may reference them).
-				EmitResources(w, child, xNs, varName, ref counter);
-
-				// Attribute properties
-				foreach (XAttribute attr in child.Attributes())
-				{
-					if (attr.IsNamespaceDeclaration) continue;
-					if (attr.Name.Namespace == xNs) continue;
-					if (attr.Name.LocalName == "Name") continue;
-
-					string propName = attr.Name.LocalName;
-					string val = attr.Value;
-
-					// Attached-property syntax: "Owner.Prop" (e.g. Grid.Row, Canvas.Left).
-					int dotPos = propName.IndexOf('.');
-					if (dotPos > 0)
-					{
-						string ownerLocalName = propName.Substring(0, dotPos);
-						string attachedProp = propName.Substring(dotPos + 1);
-						string ownerFqType = WpfXmlnsMap.Resolve(ownerLocalName) ?? ownerLocalName;
-						// Emit: OwnerType.SetProp(element, (castType)XamlValueConverter.Convert(...))
-						// XamlValueConverter.Convert returns object; cast to the DP's value type.
-						string castType = ResolveAttachedPropType(ownerFqType, attachedProp);
-						w.Line($"{ownerFqType}.Set{attachedProp}({varName}, " +
-							$"({castType})System.Windows.Markup.XamlValueConverter.Convert(" +
-							$"typeof({ownerFqType}), {ownerFqType}.{attachedProp}Property, \"{EscapeString(val)}\"));");
-						continue;
-					}
-
-					if (IsBindingExpression(val, out string bindingInit))
-						w.Line($"{varName}.SetBinding({fqType}.{propName}Property, {bindingInit});");
-					else if (IsStaticOrDynamicResource(val, out string resourceKey))
-					{
-						if (propName == "Style")
-							w.Line($"{varName}.Style = (System.Windows.Style){varName}.FindResource(\"{EscapeString(resourceKey)}\");");
-						else
-							w.Line($"{varName}.SetValue({fqType}.{propName}Property, {varName}.FindResource(\"{EscapeString(resourceKey)}\"));");
-					}
-					else if (IsKnownDp(fqType, propName))
-					{
-						w.Line($"{varName}.SetValue({fqType}.{propName}Property, " +
-							$"{DpValueExpression(fqType, propName, val)});");
-					}
-					else
-						w.Line($"{varName}.{propName} = {ClrValueExpression(propName, val)};");
-				}
-
-				// Recurse into grandchildren
-				EmitChildren(w, child, xNs, varName, ref counter);
+				EmitElement(w, child, xNs, varName, fqType, ref counter);
 
 				// Attach child to parent
 				if (WpfXmlnsMap.HasChildren(parentLocalName))
 					w.Line($"{parentVar}.Children.Add({varName});");
 				else
 					w.Line($"{parentVar}.Content = {varName};");
+			}
+		}
+
+		/// <summary>
+		/// Constructs and wires a single element into <paramref name="varName"/>.
+		/// Used by both the page-body tree and template factory bodies.
+		/// </summary>
+		void EmitElement(
+			IndentedWriter w,
+			XElement el,
+			XNamespace xNs,
+			string varName,
+			string fqType,
+			ref int counter)
+		{
+			w.Line($"var {varName} = new {fqType}();");
+
+			// x:Name / Name field assignment
+			string xName = (string)(el.Attribute(xNs + "Name") ?? el.Attribute("Name"));
+			if (xName != null)
+				w.Line($"this.{xName} = {varName};");
+
+			// Emit <X.Resources> children first (before attr assignments that may reference them).
+			EmitResources(w, el, xNs, varName, ref counter);
+
+			// Attribute properties
+			foreach (XAttribute attr in el.Attributes())
+			{
+				if (attr.IsNamespaceDeclaration) continue;
+				if (attr.Name.Namespace == xNs) continue;
+				if (attr.Name.LocalName == "Name") continue;
+
+				string propName = attr.Name.LocalName;
+				string val = attr.Value;
+
+				// Attached-property syntax: "Owner.Prop" (e.g. Grid.Row, Canvas.Left).
+				int dotPos = propName.IndexOf('.');
+				if (dotPos > 0)
+				{
+					string ownerLocalName = propName.Substring(0, dotPos);
+					string attachedProp = propName.Substring(dotPos + 1);
+					string ownerFqType = WpfXmlnsMap.Resolve(ownerLocalName) ?? ownerLocalName;
+					// Emit: OwnerType.SetProp(element, (castType)XamlValueConverter.Convert(...))
+					string castType = ResolveAttachedPropType(ownerFqType, attachedProp);
+					w.Line($"{ownerFqType}.Set{attachedProp}({varName}, " +
+						$"({castType})System.Windows.Markup.XamlValueConverter.Convert(" +
+						$"typeof({ownerFqType}), {ownerFqType}.{attachedProp}Property, \"{EscapeString(val)}\"));");
+					continue;
+				}
+
+				if (IsBindingExpression(val, out string bindingInit))
+					w.Line($"{varName}.SetBinding({fqType}.{propName}Property, {bindingInit});");
+				else if (IsStaticOrDynamicResource(val, out string resourceKey))
+				{
+					if (propName == "Style")
+						w.Line($"{varName}.Style = (System.Windows.Style){varName}.FindResource(\"{EscapeString(resourceKey)}\");");
+					else
+						w.Line($"{varName}.SetValue({fqType}.{propName}Property, {varName}.FindResource(\"{EscapeString(resourceKey)}\"));");
+				}
+				else if (IsKnownDp(fqType, propName))
+				{
+					w.Line($"{varName}.SetValue({fqType}.{propName}Property, " +
+						$"{DpValueExpression(fqType, propName, val)});");
+				}
+				else
+					w.Line($"{varName}.{propName} = {ClrValueExpression(propName, val)};");
+			}
+
+			// Recurse into grandchildren (passes varName as parentVar — single-child or Children.Add)
+			EmitChildren(w, el, xNs, varName, ref counter);
+		}
+
+		/// <summary>
+		/// Handles property-element children whose property name contains a dot
+		/// (e.g. <c>&lt;Button.Template&gt;</c>, <c>&lt;ListBox.ItemTemplate&gt;</c>).
+		/// Only template-typed properties are emitted; everything else is skipped.
+		/// </summary>
+		void EmitPropertyElement(
+			IndentedWriter w,
+			XElement propEl,
+			XNamespace xNs,
+			string parentVar,
+			ref int counter)
+		{
+			string localName = propEl.Name.LocalName;
+			int dot = localName.IndexOf('.');
+			if (dot < 0) return;
+
+			string propName = localName.Substring(dot + 1);
+
+			// Template and ContentTemplate property elements contain a ControlTemplate child.
+			// ItemTemplate property elements contain a DataTemplate child.
+			foreach (XElement child in propEl.Elements())
+			{
+				string childLocal = child.Name.LocalName;
+				if (childLocal == "ControlTemplate")
+				{
+					string tmplVar = $"__ct{counter++}";
+					EmitControlTemplateInline(w, child, xNs, tmplVar, ref counter);
+					w.Line($"{parentVar}.{propName} = {tmplVar};");
+					return;
+				}
+				if (childLocal == "DataTemplate")
+				{
+					string tmplVar = $"__dt{counter++}";
+					EmitDataTemplateInline(w, child, xNs, tmplVar, ref counter);
+					w.Line($"{parentVar}.{propName} = {tmplVar};");
+					return;
+				}
 			}
 		}
 
@@ -465,6 +522,22 @@ namespace Gtk.Forms.MarkupCompiler
 				{
 					EmitStyleResource(w, item, xNs, ownerVar, key, ref counter);
 				}
+				else if (item.Name.LocalName == "ControlTemplate"
+					&& item.Name.NamespaceName == WpfXmlnsMap.PresentationNs
+					&& key != null)
+				{
+					string tmplVar = $"__ct{counter++}";
+					EmitControlTemplateInline(w, item, xNs, tmplVar, ref counter);
+					w.Line($"{ownerVar}.Resources[\"{EscapeString(key)}\"] = {tmplVar};");
+				}
+				else if (item.Name.LocalName == "DataTemplate"
+					&& item.Name.NamespaceName == WpfXmlnsMap.PresentationNs
+					&& key != null)
+				{
+					string tmplVar = $"__dt{counter++}";
+					EmitDataTemplateInline(w, item, xNs, tmplVar, ref counter);
+					w.Line($"{ownerVar}.Resources[\"{EscapeString(key)}\"] = {tmplVar};");
+				}
 				else if (key != null)
 				{
 					// Simple keyed value — emit as string for now; type-converter is later.
@@ -473,6 +546,95 @@ namespace Gtk.Forms.MarkupCompiler
 					w.Line($"{ownerVar}.Resources[\"{escapedKey}\"] = \"{escapedVal}\";");
 				}
 			}
+		}
+
+		/// <summary>
+		/// Emits a local variable <paramref name="tmplVar"/> of type
+		/// <see cref="System.Windows.Controls.ControlTemplate"/> whose <c>Factory</c>
+		/// builds the single visual-root child of <paramref name="tmplEl"/>.
+		/// <para>
+		/// The factory is a lambda <c>() =&gt; { var __e0 = …; return __e0; }</c> that
+		/// uses the same element-construction codegen as the page body.
+		/// </para>
+		/// </summary>
+		void EmitControlTemplateInline(
+			IndentedWriter w,
+			XElement tmplEl,
+			XNamespace xNs,
+			string tmplVar,
+			ref int counter)
+		{
+			string targetTypeAttr = (string)tmplEl.Attribute("TargetType");
+			string targetTypeExpr = targetTypeAttr != null
+				? $"typeof({ResolveTargetType(targetTypeAttr)})"
+				: "null";
+
+			w.Line($"var {tmplVar} = new System.Windows.Controls.ControlTemplate({targetTypeExpr});");
+
+			// Find the single visual root inside the ControlTemplate.
+			XElement root = FindTemplateRoot(tmplEl);
+			if (root != null)
+			{
+				string rootFqType = ResolveType(root);
+				if (rootFqType != null)
+				{
+					string rootVar = $"__e{counter++}";
+					w.Line($"{tmplVar}.Factory = () => {{");
+					w.Indent++;
+					EmitElement(w, root, xNs, rootVar, rootFqType, ref counter);
+					w.Line($"return {rootVar};");
+					w.Indent--;
+					w.Line("};");
+				}
+			}
+		}
+
+		/// <summary>
+		/// Emits a local variable <paramref name="tmplVar"/> of type
+		/// <see cref="System.Windows.Controls.DataTemplate"/> whose <c>ItemFactory</c>
+		/// builds the single visual-root child, with <c>__item</c> as the data context.
+		/// Any <c>{Binding}</c> expressions inside bind against <c>__item</c>'s DataContext.
+		/// </summary>
+		void EmitDataTemplateInline(
+			IndentedWriter w,
+			XElement tmplEl,
+			XNamespace xNs,
+			string tmplVar,
+			ref int counter)
+		{
+			w.Line($"var {tmplVar} = new System.Windows.Controls.DataTemplate();");
+
+			XElement root = FindTemplateRoot(tmplEl);
+			if (root != null)
+			{
+				string rootFqType = ResolveType(root);
+				if (rootFqType != null)
+				{
+					string rootVar = $"__e{counter++}";
+					w.Line($"{tmplVar}.ItemFactory = __item => {{");
+					w.Indent++;
+					EmitElement(w, root, xNs, rootVar, rootFqType, ref counter);
+					// Set DataContext so bindings inside the template pick up the item.
+					w.Line($"if ({rootVar} is System.Windows.FrameworkElement __fe{counter}) __fe{counter++}.DataContext = __item;");
+					w.Line($"return {rootVar};");
+					w.Indent--;
+					w.Line("};");
+				}
+			}
+		}
+
+		/// <summary>
+		/// Returns the first non-property-element child of a template element (the visual root).
+		/// </summary>
+		static XElement FindTemplateRoot(XElement tmplEl)
+		{
+			foreach (XElement ch in tmplEl.Elements())
+			{
+				if (ch.Name.LocalName.IndexOf('.') < 0
+					&& ch.Name.NamespaceName == WpfXmlnsMap.PresentationNs)
+					return ch;
+			}
+			return null;
 		}
 
 		/// <summary>

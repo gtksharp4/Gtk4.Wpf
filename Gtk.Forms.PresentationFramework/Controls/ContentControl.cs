@@ -8,7 +8,7 @@ namespace System.Windows.Controls
 	/// into this control's GTK container; when it is a string a <see cref="Gtk.Label"/> shows it.
 	/// </summary>
 	[ContentProperty("Content")]
-	public class ContentControl : Control
+	public partial class ContentControl : Control
 	{
 		/// <summary>The content of this control.</summary>
 		public static readonly DependencyProperty ContentProperty =

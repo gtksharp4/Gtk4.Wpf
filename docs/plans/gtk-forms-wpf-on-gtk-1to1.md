@@ -324,6 +324,25 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
     (12 attached-prop / escape). **Round 5 totals: 682 tests** (40 WindowsBase + 558 PresentationFramework
     + 68 MarkupCompiler + 16 ProjectConverter), all pass timeboxed with no hang/crash;
     `Gtk.Forms.WpfSample` (unmodified WPF) still compiles.
+- **Round 6 Track A — `<ControlTemplate>`/`<DataTemplate>` XAML compiler support (DONE).**
+  - `WpfXmlnsMap` gains `ControlTemplate`, `DataTemplate`, `ContentPresenter`, `ItemsControl`, `ListBox`, `ListView`.
+  - `XamlCodeGenerator` refactored: `EmitChildren` split into `EmitElement` (reusable per-element construction)
+    + `EmitPropertyElement` (dispatches dotted property-element children); property-element `<Button.Template>`,
+    `<ListBox.ItemTemplate>`, `<ContentControl.ContentTemplate>` etc. emit templates inline.
+  - `EmitResources` handles keyed `<ControlTemplate x:Key="k">` and `<DataTemplate x:Key="d">` entries.
+  - `EmitControlTemplateInline`: constructs `ControlTemplate(typeof(T))`, sets `Factory = () => { … return root; }`
+    using the same `EmitElement` codegen as the page body.
+  - `EmitDataTemplateInline`: constructs `DataTemplate()`, sets `ItemFactory = __item => { … DataContext = __item; return root; }`.
+  - `Template="{StaticResource k}"` resolves via the existing `{StaticResource}` → `SetValue`/`FindResource` path; confirmed correct for template objects.
+  - `ContentControl` made `partial`; `ContentControl.ContentTemplate.cs` adds `ContentTemplateProperty` DP +
+    `ApplyContentTemplate` to swap the hosted widget when the template changes.
+  - `DependencyProperty.FindByName` now calls `RuntimeHelpers.RunClassConstructor` for each type in the chain
+    before searching (fixes `beforefieldinit` types whose static DP registrations weren't guaranteed to run before
+    `FindByName` was called — caused `Setter_StringValue_UniformThickness_Applied` to fail silently).
+  - **+19 MarkupCompiler tests** (`XamlCodeGeneratorTemplateTests`): inline `<Button.Template>` / keyed
+    `<ControlTemplate x:Key>` / `<DataTemplate>` as `ItemTemplate` / `{Binding}` inside template / `{StaticResource}` on `Template`.
+  - **+11 PF pure tests** (`TemplatingXamlDpTests`): `ContentControl.ContentTemplateProperty`, `ControlTemplate` factory, `DataTemplate` factory with `DataContext` wiring, keyed resource resolution.
+  - **Round 6 totals: 712 tests** (40 WindowsBase + 569 PresentationFramework + 87 MarkupCompiler + 16 ProjectConverter), all pass; `Gtk.Forms.WpfSample` still compiles.
 - **Carry-over (Round 5 Opus review — not addressed this round)**: compiler DP-vs-CLR resolution is a
   name heuristic (`IsKnownDp`: "is it in `System.Windows.*` and not on the CLR-only exclusion list?").
   Should be replaced with real assembly symbol resolution — load the referenced assemblies, reflect
@@ -331,11 +350,10 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   future MarkupCompiler phase.
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
   `BindingExpression` live object; `Converter={StaticResource}`; true `{DynamicResource}` change-tracking;
-  XAML `<ControlTemplate>`/`<DataTemplate>`/inline-`<ListBoxItem>` parsing in the compiler (runtime exists);
   GTK key-event wiring for `InputBindings` (programmatic `InvokeInputBinding` dispatch exists);
   `Gtk.PopoverMenu` integration for `MenuItem`; element-level `FrameworkElement.Triggers` auto-attach on
   load (runtime exists, compiler emits `Style.Triggers` only); nested-path `DataTrigger` bindings;
-  `EventTrigger` storyboards/animations.
+  `EventTrigger` storyboards/animations; `TemplateBinding` markup extension inside `ControlTemplate`.
 
 ## Phased roadmap (after Phase 0 proves the spine)
 
