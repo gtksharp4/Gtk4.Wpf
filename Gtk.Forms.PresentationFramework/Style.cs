@@ -68,11 +68,13 @@ namespace System.Windows
 
 		/// <summary>
 		/// D8: Applies this setter into the trigger-value layer of <paramref name="target"/>,
-		/// recording the DP in <paramref name="applied"/> for later un-apply.
+		/// keyed by <paramref name="contributor"/> (the trigger-state instance).
+		/// Appends the resolved DP to <paramref name="appliedDps"/> for un-apply bookkeeping.
 		/// </summary>
 		internal abstract void ApplyToTriggerLayer(
 			DependencyObject target,
-			System.Collections.Generic.Dictionary<DependencyProperty, object?> applied);
+			object contributor,
+			System.Collections.Generic.List<DependencyProperty> appliedDps);
 	}
 
 	/// <summary>
@@ -124,15 +126,15 @@ namespace System.Windows
 		/// <inheritdoc/>
 		internal override void ApplyToTriggerLayer(
 			DependencyObject target,
-			System.Collections.Generic.Dictionary<DependencyProperty, object?> applied)
+			object contributor,
+			System.Collections.Generic.List<DependencyProperty> appliedDps)
 		{
 			var dp = Property;
 			if (dp == null && PropertyName != null)
 				dp = DependencyProperty.FindByName(PropertyName, target.GetType());
 			if (dp == null) return;
-			// Record effective value before applying so un-apply can fire the right delta.
-			applied[dp] = target.GetValue(dp);
-			target.SetTriggerValue(dp, Value);
+			appliedDps.Add(dp);
+			target.SetTriggerValue(dp, contributor, Value);
 		}
 	}
 }

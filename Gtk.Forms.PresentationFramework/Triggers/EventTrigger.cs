@@ -55,7 +55,9 @@ namespace System.Windows
 	}
 
 	/// <summary>
-	/// Minimal setter-style trigger action: sets a DP to a value on the target.
+	/// Minimal setter-style trigger action: sets a DP to a value on the target via the
+	/// trigger layer (D8) rather than the local layer, so it does not permanently shadow
+	/// style setters or other layer values (E6).
 	/// (Full BeginStoryboard is a later phase.)
 	/// </summary>
 	public class SetPropertyAction : TriggerAction
@@ -67,10 +69,15 @@ namespace System.Windows
 		public object? Value { get; set; }
 
 		/// <inheritdoc/>
+		/// <remarks>
+		/// Writes through the trigger layer (D8), keyed by this action instance, so the
+		/// value does not permanently beat style setters the way a local value would.
+		/// </remarks>
 		internal override void Invoke(FrameworkElement target)
 		{
 			if (Property == null) return;
-			target.SetValue(Property, Value);
+			// E6: use the trigger layer (D8), not SetValue (local layer).
+			target.SetTriggerValue(Property, this, Value);
 		}
 	}
 }

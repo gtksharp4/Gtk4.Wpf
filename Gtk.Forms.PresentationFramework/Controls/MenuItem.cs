@@ -14,7 +14,7 @@ namespace System.Windows.Controls
 	/// A <c>Gtk.PopoverMenu</c>-based implementation with keyboard accelerators is deferred;
 	/// this gives a functional, testable item that works in a horizontal/vertical layout.
 	/// </remarks>
-	public class MenuItem : FrameworkElement, ICommandSource
+	public class MenuItem : FrameworkElement, ICommandSource, IDisposable
 	{
 		// ── Header DP ─────────────────────────────────────────────────────────────
 
@@ -142,7 +142,15 @@ namespace System.Windows.Controls
 				_gtkButton.Sensitive = canRun;
 		}
 
-		/// <summary>Deterministic teardown — unsubscribes from the command's events.</summary>
-		internal void DisposeCommandSource() => _commandHelper?.Dispose();
+		bool _disposed;
+
+		/// <summary>Disposes the menu item: unsubscribes from the command's CanExecuteChanged (E3).</summary>
+		public void Dispose()
+		{
+			if (_disposed) return;
+			_disposed = true;
+			_commandHelper?.Dispose();
+			_commandHelper = null;
+		}
 	}
 }

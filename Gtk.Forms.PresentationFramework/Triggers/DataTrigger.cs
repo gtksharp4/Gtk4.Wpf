@@ -27,6 +27,14 @@ namespace System.Windows
 		internal override void Attach(FrameworkElement target)
 		{
 			if (Binding == null) return;
+
+			// E5: nested path segments are not yet supported — explicit contract violation.
+			var path = Binding.Path;
+			if (!string.IsNullOrEmpty(path) && path!.Contains('.'))
+				throw new NotSupportedException(
+					$"DataTrigger: nested binding paths ('{path}') are not yet supported. " +
+					"Use a single-segment path.");
+
 			var state = new DataTriggerState(this, target);
 			_states[target] = state;
 			state.Evaluate();
@@ -44,9 +52,11 @@ namespace System.Windows
 		{
 			readonly DataTrigger _trigger;
 			readonly FrameworkElement _target;
-			Dictionary<DependencyProperty, object?>? _applied;
+			// E1: use this DataTriggerState instance as the contributor key.
+			List<DependencyProperty>? _appliedDps;
 
 			INotifyPropertyChanged? _inpcSource;
+			// E5: single-segment path only — multi-segment raises at attach time (see Attach).
 			string? _watchedProp;
 			PropertyChangedCallback? _dcHook;
 
@@ -86,6 +96,7 @@ namespace System.Windows
 				{
 					_inpcSource = inpc;
 					var path = _trigger.Binding?.Path;
+					// Single-segment path only (multi-segment validated at Attach time).
 					_watchedProp = string.IsNullOrEmpty(path) ? null : path!.Split('.')[0];
 					_inpcSource.PropertyChanged += OnSourceChanged;
 				}
@@ -113,24 +124,24 @@ namespace System.Windows
 				var source = GetSource();
 				var current = BindingEngine.ResolvePath(source, _trigger.Binding?.Path);
 				bool match = Equals(current, _trigger.Value);
-				bool active = _applied != null;
+				bool active = _appliedDps != null;
 				if (match && !active) Apply();
 				else if (!match && active) UnApply();
 			}
 
 			void Apply()
 			{
-				_applied = new Dictionary<DependencyProperty, object?>();
+				_appliedDps = new List<DependencyProperty>();
 				foreach (var setter in _trigger.Setters)
-					setter.ApplyToTriggerLayer(_target, _applied);
+					setter.ApplyToTriggerLayer(_target, this, _appliedDps);
 			}
 
 			void UnApply()
 			{
-				if (_applied == null) return;
-				var snap = _applied;
-				_applied = null;
-				_target.ClearTriggerValues(snap);
+				if (_appliedDps == null) return;
+				var dps = _appliedDps;
+				_appliedDps = null;
+				_target.ClearTriggerValues(dps, this);
 			}
 
 			internal void Dispose()

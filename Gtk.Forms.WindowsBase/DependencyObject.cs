@@ -127,7 +127,7 @@ namespace System.Windows
 		{
 			var meta = dp.GetMetadata(GetType());
 
-			// Coerce.
+			// Coerce against the proposed local value before storing.
 			if (meta.CoerceValueCallback != null)
 				value = meta.CoerceValueCallback(this, value);
 
@@ -135,9 +135,8 @@ namespace System.Windows
 
 			_localValues[dp] = value;
 
-			// If the effective value did not change (e.g. coercion returned same as inherited),
-			// skip notifications — but always propagate to children so their resolution updates.
-			var newEffective = value; // local always wins in Phase-0 precedence
+			// Local always wins; re-resolve so coercion is reflected in the effective value.
+			var newEffective = ResolveEffectiveValue(dp);
 			FireChangeIfDifferent(dp, oldEffective, newEffective);
 		}
 
@@ -165,9 +164,11 @@ namespace System.Windows
 			if (_localValues.TryGetValue(dp, out var local)) return local;
 
 			// D8: trigger values sit above style but below local.
-			if (_triggerValues.TryGetValue(dp, out var trigger)) return trigger;
+			// The top-of-stack (last-declared) contributor wins.
+			var triggerTop = GetTopTriggerValue(dp);
+			if (!ReferenceEquals(triggerTop, DependencyProperty.UnsetValue)) return triggerTop;
 
-			// D6: style values sit below local values but above inherited/default.
+			// D6: style values sit below trigger but above inherited/default.
 			if (_styleValues.TryGetValue(dp, out var style)) return style;
 
 			var meta = dp.GetMetadata(GetType());

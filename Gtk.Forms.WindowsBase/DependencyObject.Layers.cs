@@ -9,9 +9,11 @@ namespace System.Windows
 	/// </summary>
 	public partial class DependencyObject
 	{
-		// Trigger value store: values applied by Trigger/DataTrigger/MultiTrigger setters (D8).
-		readonly Dictionary<DependencyProperty, object?> _triggerValues =
-			new Dictionary<DependencyProperty, object?>();
+		// Trigger value store: per-DP ordered list of (contributor, value) pairs.
+		// Last entry is the highest-priority (last-declared) trigger for that DP.
+		// E1: keyed by contributing trigger instance so siblings do not stomp each other.
+		readonly Dictionary<DependencyProperty, List<(object contributor, object? value)>> _triggerValues =
+			new Dictionary<DependencyProperty, List<(object, object?)>>();
 
 		// Per-DP change hooks used by triggers to subscribe to property changes.
 		Dictionary<DependencyProperty, List<PropertyChangedCallback>>? _changeHooks;
@@ -20,12 +22,19 @@ namespace System.Windows
 
 		/// <summary>
 		/// D6: Sets a style-layer value (lower priority than a local value).
-		/// Only fires a change notification when it actually changes the effective value.
+		/// Runs <see cref="PropertyMetadata.CoerceValueCallback"/> on the resulting effective
+		/// value before firing change notifications (E4).
 		/// </summary>
 		internal void SetStyleValue(DependencyProperty dp, object? value)
 		{
 			if (dp == null) throw new ArgumentNullException(nameof(dp));
 			var oldEffective = ResolveEffectiveValue(dp);
+
+			// Coerce the raw setter value before storing.
+			var meta = dp.GetMetadata(GetType());
+			if (meta.CoerceValueCallback != null)
+				value = meta.CoerceValueCallback(this, value);
+
 			_styleValues[dp] = value;
 			var newEffective = ResolveEffectiveValue(dp);
 			FireChangeIfDifferent(dp, oldEffective, newEffective);
@@ -54,36 +63,90 @@ namespace System.Windows
 		// ── Trigger value layer (D8) ─────────────────────────────────────────────
 
 		/// <summary>
-		/// D8: Sets a trigger-layer value (above style, below local).
-		/// Only fires a change notification when the effective value actually changes.
+		/// D8: Pushes or updates a trigger-layer value from a specific <paramref name="contributor"/>
+		/// (a <see cref="Trigger"/> / <see cref="DataTrigger"/> / <see cref="MultiTrigger"/> state).
+		/// Last-declared contributor wins (last in insertion order).
+		/// Runs <see cref="PropertyMetadata.CoerceValueCallback"/> on the value before storing (E4).
 		/// </summary>
-		internal void SetTriggerValue(DependencyProperty dp, object? value)
+		internal void SetTriggerValue(DependencyProperty dp, object contributor, object? value)
 		{
 			if (dp == null) throw new ArgumentNullException(nameof(dp));
+			if (contributor == null) throw new ArgumentNullException(nameof(contributor));
+
 			var oldEffective = ResolveEffectiveValue(dp);
-			_triggerValues[dp] = value;
+
+			// Coerce the raw setter value before storing.
+			var meta = dp.GetMetadata(GetType());
+			if (meta.CoerceValueCallback != null)
+				value = meta.CoerceValueCallback(this, value);
+
+			if (!_triggerValues.TryGetValue(dp, out var list))
+				_triggerValues[dp] = list = new List<(object, object?)>();
+
+			// Update existing entry for this contributor, or append a new one.
+			bool found = false;
+			for (int i = 0; i < list.Count; i++)
+			{
+				if (ReferenceEquals(list[i].contributor, contributor))
+				{
+					list[i] = (contributor, value);
+					found = true;
+					break;
+				}
+			}
+			if (!found) list.Add((contributor, value));
+
 			var newEffective = ResolveEffectiveValue(dp);
 			FireChangeIfDifferent(dp, oldEffective, newEffective);
 		}
 
 		/// <summary>
-		/// D8: Removes trigger-layer values given a snapshot, restoring to style/inherited/default.
+		/// D8: Removes the <paramref name="contributor"/>'s entry for <paramref name="dp"/>.
+		/// Resolves to the previous contributor's value (or clears the layer if none remain).
 		/// </summary>
-		internal void ClearTriggerValues(Dictionary<DependencyProperty, object?> snapshot)
+		internal void ClearTriggerValue(DependencyProperty dp, object contributor)
 		{
-			if (snapshot == null || snapshot.Count == 0) return;
-			foreach (var kv in snapshot)
+			if (dp == null || contributor == null) return;
+			if (!_triggerValues.TryGetValue(dp, out var list)) return;
+
+			var oldEffective = ResolveEffectiveValue(dp);
+
+			for (int i = list.Count - 1; i >= 0; i--)
 			{
-				_triggerValues.Remove(kv.Key);
-				if (_localValues.ContainsKey(kv.Key)) continue;
-				var newEffective = ResolveEffectiveValue(kv.Key);
-				FireChangeIfDifferent(kv.Key, kv.Value, newEffective);
+				if (ReferenceEquals(list[i].contributor, contributor))
+				{
+					list.RemoveAt(i);
+					break;
+				}
 			}
+			if (list.Count == 0) _triggerValues.Remove(dp);
+
+			if (_localValues.ContainsKey(dp)) return;
+			var newEffective = ResolveEffectiveValue(dp);
+			FireChangeIfDifferent(dp, oldEffective, newEffective);
 		}
 
-		/// <summary>Returns a snapshot of current trigger-value store (for un-apply).</summary>
-		internal Dictionary<DependencyProperty, object?> SnapshotTriggerValues() =>
-			new Dictionary<DependencyProperty, object?>(_triggerValues);
+		/// <summary>
+		/// D8 (batch): Removes all entries for the DPs in <paramref name="dps"/> that belong
+		/// to <paramref name="contributor"/>. Used by trigger un-apply.
+		/// </summary>
+		internal void ClearTriggerValues(IEnumerable<DependencyProperty> dps, object contributor)
+		{
+			if (dps == null || contributor == null) return;
+			foreach (var dp in dps)
+				ClearTriggerValue(dp, contributor);
+		}
+
+		/// <summary>
+		/// Returns the current top-of-stack trigger value for <paramref name="dp"/>,
+		/// or <see cref="DependencyProperty.UnsetValue"/> when no trigger is active.
+		/// </summary>
+		internal object? GetTopTriggerValue(DependencyProperty dp)
+		{
+			if (!_triggerValues.TryGetValue(dp, out var list) || list.Count == 0)
+				return DependencyProperty.UnsetValue;
+			return list[list.Count - 1].value;
+		}
 
 		/// <summary>
 		/// Subscribes <paramref name="callback"/> to effective-value changes of <paramref name="dp"/>.
@@ -119,7 +182,7 @@ namespace System.Windows
 		{
 			// Propagate only when neither local nor trigger value shadows the inherited one.
 			if (_localValues.ContainsKey(dp)) return;
-			if (_triggerValues.ContainsKey(dp)) return;
+			if (_triggerValues.ContainsKey(dp)) return; // any active contributor shadows inherited
 
 			var args = new DependencyPropertyChangedEventArgs(dp, oldParentValue, newParentValue);
 			OnPropertyChanged(args);

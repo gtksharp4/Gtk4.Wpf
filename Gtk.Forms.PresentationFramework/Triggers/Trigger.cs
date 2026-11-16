@@ -57,7 +57,8 @@ namespace System.Windows
 			readonly Trigger _trigger;
 			readonly FrameworkElement _target;
 			readonly DependencyProperty _dp;
-			Dictionary<DependencyProperty, object?>? _applied;
+			// E1: use this TriggerState instance as the contributor key.
+			List<DependencyProperty>? _appliedDps;
 
 			readonly PropertyChangedCallback _hook;
 
@@ -76,7 +77,7 @@ namespace System.Windows
 			internal void Evaluate()
 			{
 				bool match = IsMatch(_target.GetValue(_dp));
-				bool active = _applied != null;
+				bool active = _appliedDps != null;
 				if (match && !active) Apply();
 				else if (!match && active) UnApply();
 			}
@@ -86,17 +87,17 @@ namespace System.Windows
 
 			void Apply()
 			{
-				_applied = new Dictionary<DependencyProperty, object?>();
+				_appliedDps = new List<DependencyProperty>();
 				foreach (var setter in _trigger.Setters)
-					setter.ApplyToTriggerLayer(_target, _applied);
+					setter.ApplyToTriggerLayer(_target, this, _appliedDps);
 			}
 
 			void UnApply()
 			{
-				if (_applied == null) return;
-				var snap = _applied;
-				_applied = null;
-				_target.ClearTriggerValues(snap);
+				if (_appliedDps == null) return;
+				var dps = _appliedDps;
+				_appliedDps = null;
+				_target.ClearTriggerValues(dps, this);
 			}
 
 			internal void Dispose()

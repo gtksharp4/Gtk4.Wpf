@@ -97,13 +97,23 @@ namespace System.Windows.Controls
 
 		/// <summary>
 		/// Deterministic teardown: unsubscribes from <see cref="ICommand.CanExecuteChanged"/>.
-		/// Must be called when the button is no longer in use (e.g. from a Dispose override
-		/// if one is added, or on destruction in a future phase).
 		/// </summary>
-		internal void DisposeCommandSource()
+		void DisposeCommandSource()
 		{
 			_commandHelper?.Dispose();
 			_commandHelper = null;
+		}
+
+		bool _disposed;
+
+		/// <summary>
+		/// Disposes the button: unsubscribes from the command's CanExecuteChanged (E3).
+		/// </summary>
+		public void Dispose()
+		{
+			if (_disposed) return;
+			_disposed = true;
+			DisposeCommandSource();
 		}
 	}
 }

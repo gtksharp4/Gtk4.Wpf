@@ -12,7 +12,7 @@ namespace System.Windows.Controls
 	/// when <see cref="ICommand.CanExecute"/> is true; the button's enabled state
 	/// tracks <see cref="ICommand.CanExecuteChanged"/> / <see cref="CommandManager.RequerySuggested"/>.
 	/// </summary>
-	public partial class Button : ContentControl, ICommandSource
+	public partial class Button : ContentControl, ICommandSource, IDisposable
 	{
 		// ── Click event ──────────────────────────────────────────────────────────
 

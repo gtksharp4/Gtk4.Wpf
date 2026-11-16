@@ -31,8 +31,18 @@ namespace System.Windows
 			{
 				if (binding.Gesture == null || binding.Command == null) continue;
 				if (!binding.Gesture.Matches(this, inputEventArgs)) continue;
-				if (!binding.Command.CanExecute(binding.CommandParameter)) continue;
-				binding.Command.Execute(binding.CommandParameter);
+				// E7: pass this element as the routed-command target so CommandBindings on
+				// ancestors are found when walking the logical tree.
+				if (binding.Command is Input.RoutedCommand rc)
+				{
+					if (!rc.CanExecute(binding.CommandParameter, this)) continue;
+					rc.Execute(binding.CommandParameter, this);
+				}
+				else
+				{
+					if (!binding.Command.CanExecute(binding.CommandParameter)) continue;
+					binding.Command.Execute(binding.CommandParameter);
+				}
 				return true;
 			}
 			return false;
