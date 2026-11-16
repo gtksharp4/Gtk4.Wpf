@@ -241,6 +241,15 @@ GTK4 widget choice note: `Gtk.DropDown` is used for `ComboBox` over the deprecat
 (the latter is a GTK3 compat shim, `[Obsolete]` in GtkSharp4). `Gtk.CheckButton.Group` is a property
 setter in GtkSharp4 (not a `SetGroup()` method). Test count: 80 (48 new: 24 pure DP + 24 GTK smoke).
 
+**Round 12 track B — default control templates + theming (runtime only).** `DefaultStyleKey`
+DP on `FrameworkElement`, `OverridesDefaultStyle` flag, `System.Windows.Themes.ThemeManager`
+(theme dictionary keyed by `Type`), `System.Windows.Themes.Generic` (seeds default `Style`s and
+`ControlTemplate`s for `Button`, `CheckBox`, `RadioButton`, `Label`, `Border`), `SystemColors`
+(ControlBrush, WindowBrush, HighlightBrush, ControlTextBrush), and `Control.Properties.cs`
+(Padding, HorizontalContentAlignment, VerticalContentAlignment DPs on `Control`).  Default-style
+resolution is the lowest precedence: explicit Style > implicit TargetType style > theme default.
+`Application` ctor calls `Generic.Register()`. Total `Gtk.Forms.PresentationFramework.Tests`: 961.
+
 ## Coding style
 
 .NET Foundation style with the project's exceptions (see `.editorconfig`, which is authoritative):
