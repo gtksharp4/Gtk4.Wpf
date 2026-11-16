@@ -60,26 +60,46 @@ namespace Gtk.Forms.PresentationFramework.Tests
 		// ── Default ControlTemplate ───────────────────────────────────────────────
 
 		/// <summary>
-		/// A Button registered in Generic has a non-null Template from the default
-		/// style.  The template factory builds a visual tree: Border → ContentPresenter.
+		/// The Button default style has NO managed ControlTemplate — rendering is
+		/// delegated to the native Gtk.Button widget.  Applying managed templates over
+		/// native-widget controls is a later-round feature; the template-factory
+		/// machinery remains but is not seeded in the default style.
 		/// </summary>
 		[Fact]
-		public void Button_defaultStyle_has_ControlTemplate()
+		public void Button_defaultStyle_has_no_ControlTemplate()
 		{
 			Generic.Reset();
 
 			var style = ThemeManager.FindDefaultStyle(typeof(WpfButton));
 			Assert.NotNull(style);
 
-			WpfControlTemplate? template = null;
+			bool hasTemplate = false;
 			foreach (var setter in style!.Setters)
 			{
 				if (setter is WpfSetter s && s.Property == WpfControl.TemplateProperty)
-					template = s.Value as WpfControlTemplate;
+					hasTemplate = true;
 			}
-			Assert.NotNull(template);
-			Assert.True(template!.HasContent);
+			Assert.False(hasTemplate,
+				"Button default style must not include a ControlTemplate setter (native rendering).");
+		}
 
+		/// <summary>
+		/// The ControlTemplate factory machinery is intact: creating one manually produces
+		/// a Border → ContentPresenter tree.
+		/// </summary>
+		[Fact]
+		public void ControlTemplate_factory_machinery_intact()
+		{
+			var template = new WpfControlTemplate(typeof(WpfButton))
+			{
+				Factory = () =>
+				{
+					var border = new WpfBorder { BorderThickness = new Thickness(1) };
+					border.Child = new WpfContentPresenter();
+					return border;
+				}
+			};
+			Assert.True(template.HasContent);
 			var root = template.CreateVisualTree();
 			Assert.IsType<WpfBorder>(root);
 			Assert.IsType<WpfContentPresenter>(((WpfBorder)root!).Child);

@@ -11,6 +11,12 @@ namespace System.Windows.Controls
 	/// </summary>
 	public class RadioButton : ContentControl
 	{
+		static RadioButton()
+		{
+			DefaultStyleKeyProperty.OverrideMetadata(typeof(RadioButton),
+				new PropertyMetadata(typeof(RadioButton)));
+		}
+
 		// ── IsChecked DP ─────────────────────────────────────────────────────────
 
 		/// <summary>Gets or sets whether this button is selected.</summary>

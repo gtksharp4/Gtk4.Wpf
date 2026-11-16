@@ -10,6 +10,12 @@ namespace System.Windows.Controls
 	/// </summary>
 	public class Label : ContentControl
 	{
+		static Label()
+		{
+			DefaultStyleKeyProperty.OverrideMetadata(typeof(Label),
+				new PropertyMetadata(typeof(Label)));
+		}
+
 		/// <inheritdoc/>
 		protected override Gtk.Widget CreateWidget()
 		{

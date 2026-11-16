@@ -8,6 +8,7 @@ namespace System.Windows.Controls
 	/// multiline (<see cref="AcceptsReturn"/>=<c>true</c>) backed by
 	/// <see cref="Gtk.TextView"/> in a <see cref="Gtk.ScrolledWindow"/>.
 	/// Two-way <see cref="Text"/> binding works in both modes.
+	/// Selection model lives in <c>TextBox.Selection.cs</c>.
 	/// </summary>
 	public partial class TextBox : Control
 	{
@@ -33,7 +34,24 @@ namespace System.Windows.Controls
 
 		static void OnTextDpChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
-			((TextBox)d).OnTextChanged((string?)e.NewValue ?? string.Empty);
+			var tb = (TextBox)d;
+			var text = (string?)e.NewValue ?? string.Empty;
+
+			// Clamp to MaxLength when Text is set longer than the limit.
+			var maxLen = tb.MaxLength;
+			if (maxLen > 0 && text.Length > maxLen)
+			{
+				// Guard _updating to avoid re-entrance through the GTK→DP sync path.
+				if (!tb._updating)
+				{
+					tb._updating = true;
+					try { tb.SetValue(TextProperty, text.Substring(0, maxLen)); }
+					finally { tb._updating = false; }
+				}
+				return;
+			}
+
+			tb.OnTextChanged(text);
 		}
 
 		/// <summary>Gets or sets the displayed text.</summary>
@@ -46,8 +64,10 @@ namespace System.Windows.Controls
 		// ── AcceptsReturn DP ─────────────────────────────────────────────────────
 
 		/// <summary>
-		/// When <c>true</c> the Enter key inserts a newline and the backing
-		/// widget switches to <see cref="Gtk.TextView"/>.
+		/// When <c>true</c> the Enter key inserts a newline; the backing widget is
+		/// <see cref="Gtk.TextView"/> in a <see cref="Gtk.ScrolledWindow"/>.
+		/// Read once at widget-creation time — changes after the widget is realised
+		/// have no effect in the current round.
 		/// </summary>
 		public static readonly DependencyProperty AcceptsReturnProperty =
 			DependencyProperty.Register(nameof(AcceptsReturn), typeof(bool), typeof(TextBox),
@@ -82,7 +102,15 @@ namespace System.Windows.Controls
 				new PropertyMetadata(0, OnMaxLengthChanged));
 
 		static void OnMaxLengthChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-			=> ((TextBox)d).ApplyMaxLength((int)(e.NewValue ?? 0));
+		{
+			var tb = (TextBox)d;
+			var maxLen = (int)(e.NewValue ?? 0);
+			tb.ApplyMaxLength(maxLen);
+
+			// Truncate Text when MaxLength shrinks below current length.
+			if (maxLen > 0 && tb.Text.Length > maxLen)
+				tb.SetValue(TextProperty, tb.Text.Substring(0, maxLen));
+		}
 
 		/// <summary>Gets or sets the maximum allowed character count (0 = no limit).</summary>
 		public int MaxLength
@@ -106,107 +134,6 @@ namespace System.Windows.Controls
 		{
 			get => (bool)(GetValue(IsReadOnlyProperty) ?? false);
 			set => SetValue(IsReadOnlyProperty, value);
-		}
-
-		// ── Selection ────────────────────────────────────────────────────────────
-
-		int _selectionStart;
-		int _selectionLength;
-
-		/// <summary>Gets or sets the character index of the selection start.</summary>
-		public int SelectionStart
-		{
-			get => _selectionStart;
-			set
-			{
-				value = Math.Max(0, Math.Min(value, Text.Length));
-				if (_selectionStart == value) return;
-				_selectionStart = value;
-				SyncSelectionToWidget();
-				SelectionChanged?.Invoke(this, EventArgs.Empty);
-			}
-		}
-
-		/// <summary>Gets or sets the selection length in characters.</summary>
-		public int SelectionLength
-		{
-			get => _selectionLength;
-			set
-			{
-				value = Math.Max(0, Math.Min(value, Text.Length - _selectionStart));
-				if (_selectionLength == value) return;
-				_selectionLength = value;
-				SyncSelectionToWidget();
-				SelectionChanged?.Invoke(this, EventArgs.Empty);
-			}
-		}
-
-		/// <summary>Gets or sets the currently selected text.</summary>
-		public string SelectedText
-		{
-			get
-			{
-				if (_selectionLength == 0) return string.Empty;
-				return Text.Substring(
-					Math.Min(_selectionStart, Text.Length),
-					Math.Min(_selectionLength, Text.Length - _selectionStart));
-			}
-			set
-			{
-				if (value == null) value = string.Empty;
-				var current = Text;
-				var before = current.Substring(0, _selectionStart);
-				var after  = current.Substring(_selectionStart + _selectionLength);
-				SetValue(TextProperty, before + value + after);
-				_selectionLength = value.Length;
-				SelectionChanged?.Invoke(this, EventArgs.Empty);
-			}
-		}
-
-		// ── CaretIndex ───────────────────────────────────────────────────────────
-
-		/// <summary>Gets or sets the caret position (character index).</summary>
-		public int CaretIndex
-		{
-			get => _selectionStart;
-			set
-			{
-				value = Math.Max(0, Math.Min(value, Text.Length));
-				if (_selectionStart == value) return;
-				_selectionStart  = value;
-				_selectionLength = 0;
-				SyncSelectionToWidget();
-			}
-		}
-
-		// ── Methods ──────────────────────────────────────────────────────────────
-
-		/// <summary>Selects the range from <paramref name="start"/> for <paramref name="length"/> characters.</summary>
-		public void Select(int start, int length)
-		{
-			start  = Math.Max(0, Math.Min(start, Text.Length));
-			length = Math.Max(0, Math.Min(length, Text.Length - start));
-			_selectionStart  = start;
-			_selectionLength = length;
-			SyncSelectionToWidget();
-			SelectionChanged?.Invoke(this, EventArgs.Empty);
-		}
-
-		/// <summary>Selects all text.</summary>
-		public void SelectAll()
-		{
-			_selectionStart  = 0;
-			_selectionLength = Text.Length;
-			SyncSelectionToWidget();
-			SelectionChanged?.Invoke(this, EventArgs.Empty);
-		}
-
-		/// <summary>Clears the text.</summary>
-		public void Clear()
-		{
-			SetValue(TextProperty, string.Empty);
-			_selectionStart  = 0;
-			_selectionLength = 0;
 		}
 	}
 

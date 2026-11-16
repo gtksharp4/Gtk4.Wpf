@@ -64,30 +64,10 @@ namespace System.Windows.Themes
 				Property = Control.VerticalContentAlignmentProperty,
 				Value = VerticalAlignment.Center
 			});
-			style.Setters.Add(new Setter
-			{
-				Property = Control.TemplateProperty,
-				Value = BuildButtonTemplate()
-			});
+			// Note: a managed ControlTemplate that replaces native-widget rendering is a
+			// later-round feature. The template factory machinery is kept intact but is NOT
+			// seeded in the Button default style — the native Gtk.Button is the renderer.
 			ThemeManager.RegisterDefaultStyle(typeof(Button), style);
-		}
-
-		static ControlTemplate BuildButtonTemplate()
-		{
-			return new ControlTemplate(typeof(Button))
-			{
-				Factory = () =>
-				{
-					var border = new Border
-					{
-						BorderThickness = new Thickness(1),
-						Padding = new Thickness(6, 2, 6, 2)
-					};
-					var presenter = new ContentPresenter();
-					border.Child = presenter;
-					return border;
-				}
-			};
 		}
 
 		// ── CheckBox ──────────────────────────────────────────────────────────────

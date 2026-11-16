@@ -14,6 +14,14 @@ namespace System.Windows.Controls
 		Gtk.ScrolledWindow? _scrolled;
 		bool _updating;
 
+		/// <summary>
+		/// For multiline mode the focus target is the inner <see cref="Gtk.TextView"/>,
+		/// not the <see cref="Gtk.ScrolledWindow"/> wrapper; focus and key controllers
+		/// must attach there so GTK routes events correctly.
+		/// </summary>
+		internal override Gtk.Widget FocusWidget =>
+			_textView != null ? (Gtk.Widget)_textView : Widget;
+
 		/// <inheritdoc/>
 		protected override Gtk.Widget CreateWidget()
 		{

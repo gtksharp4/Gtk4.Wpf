@@ -8,6 +8,12 @@ namespace System.Windows.Controls
 	/// </summary>
 	public class CheckBox : ContentControl
 	{
+		static CheckBox()
+		{
+			DefaultStyleKeyProperty.OverrideMetadata(typeof(CheckBox),
+				new PropertyMetadata(typeof(CheckBox)));
+		}
+
 		// ── Checked / Unchecked events ───────────────────────────────────────────
 
 		/// <summary>Raised when <see cref="IsChecked"/> becomes <c>true</c>.</summary>

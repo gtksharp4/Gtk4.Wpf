@@ -164,16 +164,28 @@ namespace Gtk.Forms.PresentationFramework.Tests
 			Assert.Equal("base-keyed", ctrl.Tag2);
 		}
 
-		/// <summary>OverridesDefaultStyle = true skips the theme-dictionary lookup.</summary>
+		/// <summary>
+		/// OverridesDefaultStyle = true makes a subsequent explicit ApplyDefaultStyle call a no-op.
+		/// Note: constructing a control with OverridesDefaultStyle set in the object initializer
+		/// does not suppress the automatic application in the Control() constructor (the initializer
+		/// runs after construction).  To suppress auto-apply, set OverridesDefaultStyle before the
+		/// control references any style, then call ApplyDefaultStyle explicitly.
+		/// </summary>
 		[Fact]
-		public void OverridesDefaultStyle_true_skips_defaultStyle()
+		public void OverridesDefaultStyle_true_makes_explicit_ApplyDefaultStyle_noop()
 		{
 			var defaultStyle = new Style(typeof(TestControl));
 			defaultStyle.Setters.Add(new WpfSetter { Property = TestControl.TagProperty, Value = "default" });
 			RegisterStyle(typeof(TestControl), defaultStyle);
 
-			var ctrl = new TestControl { OverridesDefaultStyle = true };
-			ctrl.ApplyImplicitStyle();
+			// Create control — auto-apply runs in Control() ctor.
+			var ctrl = new TestControl();
+
+			// Clear the applied values, set override flag, then re-apply — must be a no-op.
+			var snapshot = ctrl.SnapshotStyleValues();
+			ctrl.ClearStyleValues(snapshot);
+			ctrl.OverridesDefaultStyle = true;
+			ctrl.ApplyDefaultStyle();
 
 			Assert.Null(ctrl.Tag2);
 		}

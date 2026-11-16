@@ -58,9 +58,22 @@ namespace System.Windows
 			IsAttached = isAttached;
 		}
 
-		// ── Metadata per owner-type (AddOwner / OverrideMetadata not yet wired — Phase 0) ──
+		// ── Metadata per owner-type ──────────────────────────────────────────────────
 		readonly Dictionary<Type, PropertyMetadata> _metadataByType =
 			new Dictionary<Type, PropertyMetadata>();
+
+		/// <summary>
+		/// Overrides the metadata for this property on <paramref name="forType"/> and its
+		/// subclasses.  Used in static constructors of derived controls to supply a
+		/// type-specific default value (e.g. <c>DefaultStyleKey</c>).
+		/// </summary>
+		public void OverrideMetadata(Type forType, PropertyMetadata typeMetadata)
+		{
+			if (forType == null) throw new ArgumentNullException(nameof(forType));
+			if (typeMetadata == null) throw new ArgumentNullException(nameof(typeMetadata));
+			lock (_metadataByType)
+				_metadataByType[forType] = typeMetadata;
+		}
 
 		/// <summary>
 		/// Returns the most-derived <see cref="PropertyMetadata"/> registered for

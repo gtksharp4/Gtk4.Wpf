@@ -14,6 +14,15 @@ namespace System.Windows.Controls
 	/// </summary>
 	public partial class Button : ContentControl, ICommandSource, IDisposable
 	{
+		static Button()
+		{
+			// Register the DefaultStyleKey default value for Button so the ThemeManager
+			// lookup uses typeof(Button) for instances of Button (and subclasses that
+			// do not override DefaultStyleKey).
+			DefaultStyleKeyProperty.OverrideMetadata(typeof(Button),
+				new PropertyMetadata(typeof(Button)));
+		}
+
 		// ── Click event ──────────────────────────────────────────────────────────
 
 		/// <summary>
