@@ -78,13 +78,21 @@ namespace System.Windows.Controls
 			ApplyContent();
 		}
 
+		// Tracks any UIElement we have parented so we can clear it on swap.
+		UIElement? _hostedElement;
+
 		void ApplyContent()
 		{
-			// Remove previous hosted widget.
+			// Remove previous hosted widget and clear logical parent.
 			if (_hostedWidget != null)
 			{
 				_box!.Remove(_hostedWidget);
 				_hostedWidget = null;
+			}
+			if (_hostedElement != null)
+			{
+				_hostedElement.LogicalParent = null;
+				_hostedElement = null;
 			}
 
 			var content = Content;
@@ -92,6 +100,9 @@ namespace System.Windows.Controls
 			// 1. Direct UIElement.
 			if (content is UIElement element)
 			{
+				// D1: wire logical parent so TryFindResource walks the tree.
+				element.LogicalParent = this;
+				_hostedElement = element;
 				_hostedWidget = element.Widget;
 				_box!.Add(_hostedWidget);
 				return;
@@ -103,6 +114,9 @@ namespace System.Windows.Controls
 				var visual = ContentTemplate.CreateVisualTreeForItem(content);
 				if (visual != null)
 				{
+					// D1: wire logical parent.
+					visual.LogicalParent = this;
+					_hostedElement = visual;
 					_hostedWidget = visual.Widget;
 					_box!.Add(_hostedWidget);
 					return;

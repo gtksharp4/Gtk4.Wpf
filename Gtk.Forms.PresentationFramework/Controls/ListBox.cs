@@ -29,7 +29,7 @@ namespace System.Windows.Controls
 
 		static void OnSelectedIndexChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
-			((ListBox)d).ApplySelectedIndex((int?)e.NewValue ?? -1, fromGtk: false);
+			((ListBox)d).ApplySelectedIndex((int?)e.NewValue ?? -1);
 		}
 
 		/// <summary>Gets or sets the selected index.</summary>
@@ -65,6 +65,11 @@ namespace System.Windows.Controls
 
 		Gtk.ListBox? _gtkListBox;
 		readonly List<ListBoxItem> _containers = new List<ListBoxItem>();
+
+		/// <summary>
+		/// Re-entrant guard: when set, DP callbacks and GTK handlers suppress
+		/// further cross-sync and do NOT raise SelectionChanged a second time.
+		/// </summary>
 		bool _updating;
 
 		/// <inheritdoc/>
@@ -104,76 +109,112 @@ namespace System.Windows.Controls
 			finally { _updating = false; }
 		}
 
+		// ── GTK row-selected handler ──────────────────────────────────────────────
+
 		void OnGtkRowSelected(object? sender, Gtk.RowSelectedArgs e)
 		{
 			if (_updating) return;
-			_updating = true;
-			try
+
+			var row = e.Row;
+			var oldItem = SelectedItem;
+
+			if (row == null)
 			{
-				var row = e.Row;
-				var oldItem = SelectedItem;
-
-				if (row == null)
-				{
-					SetValue(SelectedIndexProperty, -1);
-					SetValue(SelectedItemProperty, null);
-					SelectionChanged?.Invoke(this, new SelectionChangedEventArgs(this, oldItem, null));
-					return;
-				}
-
-				int idx = -1;
-				for (int i = 0; i < _containers.Count; i++)
-				{
-					if (ReferenceEquals(_containers[i].Row, row)) { idx = i; break; }
-				}
-				if (idx < 0) return;
-
-				var newItem = idx < Items.Count ? Items[idx] : null;
-				SetValue(SelectedIndexProperty, idx);
-				SetValue(SelectedItemProperty, newItem);
-				SelectionChanged?.Invoke(this, new SelectionChangedEventArgs(this, oldItem, newItem));
+				SetSelectionCore(-1, null, oldItem);
+				return;
 			}
-			finally { _updating = false; }
+
+			int idx = -1;
+			for (int i = 0; i < _containers.Count; i++)
+			{
+				if (ReferenceEquals(_containers[i].Row, row)) { idx = i; break; }
+			}
+			if (idx < 0) return;
+
+			var newItem = idx < Items.Count ? Items[idx] : null;
+			SetSelectionCore(idx, newItem, oldItem);
 		}
 
-		void ApplySelectedIndex(int idx, bool fromGtk)
+		// ── DP callbacks ─────────────────────────────────────────────────────────
+
+		/// <summary>
+		/// D4/D5: Entry point when <see cref="SelectedIndex"/> is set programmatically.
+		/// Cross-syncs SelectedItem and GTK row; raises SelectionChanged exactly once.
+		/// </summary>
+		void ApplySelectedIndex(int idx)
 		{
 			if (_updating) return;
-			_updating = true;
-			try
-			{
-				if (idx < 0 || idx >= Items.Count)
-				{
-					if (_gtkListBox != null) _gtkListBox.UnselectAll();
-					SetValue(SelectedItemProperty, null);
-					return;
-				}
-				var newItem = idx < Items.Count ? Items[idx] : null;
-				SetValue(SelectedItemProperty, newItem);
-				if (_gtkListBox != null && idx < _containers.Count)
-				{
-					var row = _containers[idx].Row;
-					if (row != null) _gtkListBox.SelectRow(row);
-				}
-			}
-			finally { _updating = false; }
+
+			object? newItem = (idx >= 0 && idx < Items.Count) ? Items[idx] : null;
+			if (idx < 0 || idx >= Items.Count) idx = -1;
+			var oldItem = SelectedItem;
+
+			// No-op if nothing actually changed.
+			if (idx == SelectedIndex && Equals(newItem, oldItem)) return;
+
+			SetSelectionCore(idx, newItem, oldItem);
 		}
 
+		/// <summary>
+		/// D4/D5: Entry point when <see cref="SelectedItem"/> is set programmatically.
+		/// Cross-syncs SelectedIndex and GTK row; raises SelectionChanged exactly once.
+		/// </summary>
 		void ApplySelectedItem(object? oldItem, object? newItem)
 		{
 			if (_updating) return;
+
 			int idx = -1;
 			for (int i = 0; i < Items.Count; i++)
 			{
 				if (Equals(Items[i], newItem)) { idx = i; break; }
 			}
+
+			// D5: if newItem not in list, treat as deselect.
+			if (newItem != null && idx < 0)
+			{
+				// item not in list — set index -1 only if it was different; no event if nothing changed
+				if (SelectedIndex == -1 && SelectedItem == null) return;
+				SetSelectionCore(-1, null, oldItem);
+				return;
+			}
+
+			// No-op if nothing changed.
+			if (idx == SelectedIndex && Equals(newItem, oldItem)) return;
+
+			SetSelectionCore(idx, newItem, oldItem);
+		}
+
+		// ── Central selection mutator (D4: raises exactly once) ───────────────────
+
+		/// <summary>
+		/// Updates both DPs and the GTK row selection, then raises
+		/// <see cref="SelectionChanged"/> exactly once.
+		/// </summary>
+		void SetSelectionCore(int idx, object? newItem, object? oldItem)
+		{
 			_updating = true;
 			try
 			{
-				if (SelectedIndex != idx)
-					SetValue(SelectedIndexProperty, idx);
+				SetValue(SelectedIndexProperty, idx);
+				SetValue(SelectedItemProperty, newItem);
+
+				// D5: sync GTK visual selection.
+				if (_gtkListBox != null)
+				{
+					if (idx < 0 || idx >= _containers.Count)
+					{
+						_gtkListBox.UnselectAll();
+					}
+					else
+					{
+						var row = _containers[idx].Row;
+						if (row != null) _gtkListBox.SelectRow(row);
+					}
+				}
 			}
 			finally { _updating = false; }
+
+			// D4: raise exactly once, after all state is consistent.
 			SelectionChanged?.Invoke(this, new SelectionChangedEventArgs(this, oldItem, newItem));
 		}
 	}

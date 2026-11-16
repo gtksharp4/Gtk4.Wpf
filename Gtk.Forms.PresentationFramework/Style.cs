@@ -26,24 +26,31 @@ namespace System.Windows
 
 		/// <summary>
 		/// Applies the full BasedOn chain (outermost first) then this style's setters
-		/// to <paramref name="target"/>.
+		/// to <paramref name="target"/> using the style-value layer (D6).
+		/// D7: a cycle guard prevents infinite loops in <see cref="BasedOn"/> chains.
 		/// </summary>
 		public void Apply(DependencyObject target)
 		{
 			if (target == null) throw new ArgumentNullException(nameof(target));
 
 			// Build the chain: [root…, parent, this] order so outer styles apply first.
+			// D7: guard against BasedOn cycles using a visited list (reference equality).
 			var chain = new List<Style>();
 			var s = this;
 			while (s != null)
 			{
+				// Cycle detection via reference scan of already-visited styles.
+				bool seen = false;
+				for (int v = 0; v < chain.Count; v++)
+					if (ReferenceEquals(chain[v], s)) { seen = true; break; }
+				if (seen) break;
 				chain.Add(s);
 				s = s.BasedOn;
 			}
 			// Apply outermost (most base) first; this style last (highest priority).
 			for (int i = chain.Count - 1; i >= 0; i--)
 				foreach (var setter in chain[i].Setters)
-					setter.Apply(target);
+					setter.ApplyToStyleLayer(target);
 		}
 	}
 
@@ -53,8 +60,11 @@ namespace System.Windows
 	/// <summary>Base class for all setter types.</summary>
 	public abstract class SetterBase
 	{
-		/// <summary>Applies this setter to <paramref name="target"/>.</summary>
+		/// <summary>Applies this setter to <paramref name="target"/> as a local value (direct apply).</summary>
 		internal abstract void Apply(DependencyObject target);
+
+		/// <summary>Applies this setter into the style-value layer of <paramref name="target"/> (D6).</summary>
+		internal abstract void ApplyToStyleLayer(DependencyObject target);
 	}
 
 	/// <summary>
@@ -91,6 +101,16 @@ namespace System.Windows
 				dp = DependencyProperty.FindByName(PropertyName, target.GetType());
 			if (dp != null)
 				target.SetValue(dp, Value);
+		}
+
+		/// <inheritdoc/>
+		internal override void ApplyToStyleLayer(DependencyObject target)
+		{
+			var dp = Property;
+			if (dp == null && PropertyName != null)
+				dp = DependencyProperty.FindByName(PropertyName, target.GetType());
+			if (dp != null)
+				target.SetStyleValue(dp, Value);
 		}
 	}
 }

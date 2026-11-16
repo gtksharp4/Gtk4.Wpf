@@ -179,17 +179,17 @@ namespace System.Windows.Controls
 		}
 	}
 
-	/// <summary>Event data for <see cref="ComboBox.SelectionChanged"/>.</summary>
+	/// <summary>Event data for <see cref="ComboBox.SelectionChanged"/> and <see cref="ListBox.SelectionChanged"/>.</summary>
 	public sealed partial class SelectionChangedEventArgs : EventArgs
 	{
-		/// <summary>The combo box whose selection changed.</summary>
-		public ComboBox Source { get; }
+		/// <summary>The control whose selection changed (a <see cref="ComboBox"/> or <see cref="ListBox"/>).</summary>
+		public object Source { get; }
 		/// <summary>The previously selected item.</summary>
 		public object? OldValue { get; }
 		/// <summary>The newly selected item.</summary>
 		public object? NewValue { get; }
 
-		internal SelectionChangedEventArgs(ComboBox source, object? oldValue, object? newValue)
+		internal SelectionChangedEventArgs(object source, object? oldValue, object? newValue)
 		{
 			Source = source;
 			OldValue = oldValue;

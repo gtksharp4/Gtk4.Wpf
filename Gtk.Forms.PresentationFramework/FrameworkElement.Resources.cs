@@ -17,7 +17,15 @@ namespace System.Windows
 		static void OnStyleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
 			if (d is FrameworkElement fe)
+			{
+				// D6: un-apply old style before applying new one.
+				if (e.OldValue is Style)
+				{
+					var snapshot = fe.SnapshotStyleValues();
+					fe.ClearStyleValues(snapshot);
+				}
 				(e.NewValue as Style)?.Apply(fe);
+			}
 		}
 
 		/// <summary>Gets or sets the style applied to this element.</summary>
@@ -35,36 +43,46 @@ namespace System.Windows
 		/// <see cref="Application.Current"/>?.Resources.
 		/// Returns the resource or throws <see cref="InvalidOperationException"/>.
 		/// </summary>
-		public object FindResource(object key)
+		public object? FindResource(object key)
 		{
-			var v = TryFindResource(key);
-			if (v == null)
-				throw new InvalidOperationException(
-					$"Resource with key '{key}' not found.");
-			return v;
+			if (key == null) throw new ArgumentNullException(nameof(key));
+			// Walk the full chain; use _TryFindResourceCore to distinguish "found null" from "absent".
+			if (TryFindResourceCore(key, out var v))
+				return v;
+			throw new InvalidOperationException(
+				$"Resource with key '{key}' not found.");
 		}
 
 		/// <summary>
-		/// Same walk as <see cref="FindResource"/>, returns <c>null</c> when absent.
+		/// Same walk as <see cref="FindResource"/>; returns <c>true</c> even when the
+		/// stored value is <c>null</c> (D2: found-null ≠ absent).
+		/// </summary>
+		bool TryFindResourceCore(object key, out object? value)
+		{
+			DependencyObject? current = this;
+			int steps = 0;
+			while (current != null && steps < 1000)
+			{
+				steps++;
+				if (current is FrameworkElement fe && fe.Resources.TryGetValue(key, out value))
+					return true;
+				current = (current as UIElement)?.LogicalParent ?? current.InheritanceParent;
+			}
+			if (Application.Current?.Resources.TryGetValue(key, out value) == true)
+				return true;
+			value = null;
+			return false;
+		}
+
+		/// <summary>
+		/// Same walk as <see cref="FindResource"/>, returns <c>null</c> when absent or when the
+		/// stored value is <c>null</c>.  Use <see cref="FindResource"/> to distinguish the two cases.
 		/// </summary>
 		public object? TryFindResource(object key)
 		{
 			if (key == null) throw new ArgumentNullException(nameof(key));
-
-			// Walk the logical parent chain.
-			DependencyObject? current = this;
-			while (current != null)
-			{
-				if (current is FrameworkElement fe && fe.Resources.TryGetValue(key, out var v))
-					return v;
-				current = current.InheritanceParent;
-			}
-
-			// Fall back to Application.Current.Resources.
-			if (Application.Current?.Resources.TryGetValue(key, out var appVal) == true)
-				return appVal;
-
-			return null;
+			TryFindResourceCore(key, out var v);
+			return v;
 		}
 
 		// ── Implicit style application ───────────────────────────────────────────
@@ -76,9 +94,10 @@ namespace System.Windows
 		/// </summary>
 		internal void ApplyImplicitStyle()
 		{
-			if (GetValue(StyleProperty) != null) return; // explicit style wins
-			var implicit_ = TryFindResource(GetType());
-			if (implicit_ is Style s)
+			// D7: check for an EXPLICIT (local) Style, not just any effective value != null.
+			if (!ReferenceEquals(ReadLocalValue(StyleProperty), DependencyProperty.UnsetValue))
+				return;
+			if (TryFindResourceCore(GetType(), out var res) && res is Style s)
 				Style = s;
 		}
 	}

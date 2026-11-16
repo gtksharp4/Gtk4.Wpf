@@ -165,8 +165,13 @@ namespace System.Windows.Controls
 
 			if (!_widgetCreated) return;
 
-			foreach (var (_, gw) in _rows)
+			foreach (var (container, gw) in _rows)
+			{
+				// D1: clear logical parent when removing.
+				if (container is UIElement uiContainer)
+					uiContainer.LogicalParent = null;
 				RemoveItemWidget(gw);
+			}
 			_rows.Clear();
 
 			PopulateRows();
@@ -183,6 +188,9 @@ namespace System.Windows.Controls
 			foreach (var item in Items)
 			{
 				var container = GetContainerForItem(item);
+				// D1: wire logical-parent so TryFindResource walks the full tree.
+				if (container is UIElement uiContainer)
+					uiContainer.LogicalParent = this;
 				var gw = container.Widget;
 				_rows.Add((container, gw));
 				AddItemWidget(gw);
