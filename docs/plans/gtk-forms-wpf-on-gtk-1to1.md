@@ -555,7 +555,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   - **Carry-over (VSM compiler)**: `<VisualStateManager.VisualStateGroups>` / `<VisualStateGroup>` /
     `<VisualState><Storyboard>` XAML compilation is not wired — VSM groups must be built in code-behind.
     Runtime (programmatic) storyboard-based states work. Deferred to a future round.
-- **Round 9 totals (both tracks merged): 1006 tests** (40 WindowsBase + 820 PresentationFramework +
+- **Round 9 totals (both tracks merged): 1008 tests** (40 WindowsBase + 820 PresentationFramework +
   132 MarkupCompiler + 16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample`
   (unmodified WPF) still compiles.
 - **Carry-over (Round 5 Opus review — not addressed this round)**: compiler DP-vs-CLR resolution is a
