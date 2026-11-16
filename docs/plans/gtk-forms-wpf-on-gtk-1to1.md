@@ -570,11 +570,38 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `CollectionViewSource` instance `SortDescriptions`/`GroupDescriptions` forwarded into its `View`; **U7** nits.
   **Round 9 totals: 1024 tests** (40 WindowsBase + 836 PresentationFramework + 132 MarkupCompiler +
   16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample` (unmodified WPF) compiles.
-- **Carry-over (Round 5 Opus review — not addressed this round)**: compiler DP-vs-CLR resolution is a
-  name heuristic (`IsKnownDp`: "is it in `System.Windows.*` and not on the CLR-only exclusion list?").
-  Should be replaced with real assembly symbol resolution — load the referenced assemblies, reflect
-  the declared `<Name>Property` fields, and distinguish DP from CLR at the type level. Filed for a
-  future MarkupCompiler phase.
+- **Round 10 Track A — real assembly-symbol DP resolution + `x:` markup extensions (DONE).**
+  - **`DpSymbolResolver`** (`XamlCodeGenerator.SymbolResolver.cs`): loads the referenced assemblies
+    via `Assembly.LoadFrom` (MSBuild task path; avoids `System.Runtime.Loader` which is unavailable on
+    `netstandard2.0` target), searches for a public static `<Name>Property` field whose type name
+    contains "DependencyProperty", walks the full inheritance chain (inherited DPs + attached DPs on
+    base types), caches results in a `ConcurrentDictionary`. Falls back to the previous name heuristic
+    when no reference paths are supplied (all existing tests keep passing unchanged).
+  - **Reference threading**: `MarkupCompileTask` gains an optional `ReferencePaths` task property
+    (`ITaskItem[]`); `Gtk.Forms.MarkupCompiler.targets` passes `@(ReferencePath)` to it; the task
+    calls `generator.SetReferencePaths(paths)` before processing. `XamlCodeGenerator` implements
+    `IDisposable` (disposes the resolver's loaded assembly list).
+  - **`IsKnownDp` replaced**: now delegates to `_resolver.IsDP(fqType, propName)` instead of the
+    pure heuristic; `EmitRootAttributes` made non-static to access the resolver.
+  - **`x:Null`** (`IsXNull`): `{x:Null}` on a DP prop → `SetValue(…Property, null)`; on CLR →
+    `this.Prop = null`.
+  - **`x:Type`** (`IsXType`): `{x:Type Button}` → `typeof(global::System.Windows.Controls.Button)`;
+    resolved via `WpfXmlnsMap`; unknown types fall back to as-is.
+  - **`x:Static`** (`IsXStatic`): `{x:Static local:Foo.Bar}` / `{x:Static SystemColors.ControlBrush}`
+    → `global::Ns.Type.Member`; xmlns prefix stripped; type part resolved via `WpfXmlnsMap`.
+  - **`x:Array`** (`TryEmitXArray`): `<x:Array Type="sys:String"><sys:String>a</sys:String>…</x:Array>`
+    → `new System.String[] { "a", … }`. Supports `String`, `Int32`, `Int64`, `Double`, `Single`,
+    `Boolean`, `Object`, and any type mapped by `WpfXmlnsMap`. Limitation: child elements must be
+    simple value wrappers (no nested XAML elements).
+  - All x: extensions are dispatched **before** the DP/CLR attribute-value paths and checked for
+    `IsKnownDp` to route SetValue vs direct assignment; none interfere with
+    `{Binding}`/`{StaticResource}`/`{TemplateBinding}` (each starts with a distinct prefix).
+  - **+26 tests**: 9 `XamlCodeGeneratorSymbolResolverTests` (resolver: no-ref fallback ×3, known DP,
+    CLR prop, inherited DP, unknown type fallback, generator integration ×2) + 17
+    `XamlCodeGeneratorXExtensionTests` (x:Null ×3, x:Type ×5, x:Static ×5, x:Array ×2, dispatch ×2).
+  - **Round 10 totals: 1050 tests** (40 WindowsBase + 836 PresentationFramework + 158 MarkupCompiler +
+    16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample` (unmodified WPF)
+    still compiles.
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
   true `{DynamicResource}` change-tracking; GTK key-event wiring for `InputBindings`;
   `Gtk.PopoverMenu` integration for `MenuItem`; element-level `FrameworkElement.Triggers` auto-attach on

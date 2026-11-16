@@ -12,8 +12,24 @@ namespace Gtk.Forms.MarkupCompiler
 	/// <c>InitializeComponent</c> partial class (C# source text).
 	/// No MSBuild, no System.Xaml dependency.
 	/// </summary>
-	public partial class XamlCodeGenerator
+	public partial class XamlCodeGenerator : IDisposable
 	{
+		DpSymbolResolver _resolver = new DpSymbolResolver(null);
+
+		/// <summary>
+		/// Supplies the reference-assembly search paths that the resolver uses to
+		/// distinguish DependencyProperty fields from plain CLR properties.
+		/// Must be called before <see cref="Generate"/> when reference paths are available.
+		/// </summary>
+		public void SetReferencePaths(IReadOnlyList<string> paths)
+		{
+			_resolver?.Dispose();
+			_resolver = new DpSymbolResolver(paths);
+		}
+
+		/// <inheritdoc />
+		public void Dispose() => _resolver?.Dispose();
+
 		/// <summary>
 		/// Generates the <c>.g.cs</c> source for <paramref name="xaml"/>.
 		/// </summary>
@@ -177,7 +193,7 @@ namespace Gtk.Forms.MarkupCompiler
 		}
 
 		/// <summary>Emits root-element attribute assignments onto <c>this</c>.</summary>
-		static void EmitRootAttributes(IndentedWriter w, XElement root, XNamespace xNs)
+		void EmitRootAttributes(IndentedWriter w, XElement root, XNamespace xNs)
 		{
 			string rootFqType = ResolveType(root) ?? string.Empty;
 
@@ -209,6 +225,27 @@ namespace Gtk.Forms.MarkupCompiler
 						string fqType = string.IsNullOrEmpty(rootFqType) ? "this" : rootFqType;
 						w.Line($"this.SetValue({fqType}.{propName}Property, this.FindResource(\"{EscapeString(resourceKey)}\"));");
 					}
+				}
+				else if (IsXNull(val))
+				{
+					if (!string.IsNullOrEmpty(rootFqType) && IsKnownDp(rootFqType, propName))
+						w.Line($"this.SetValue({rootFqType}.{propName}Property, null);");
+					else
+						w.Line($"this.{propName} = null;");
+				}
+				else if (IsXType(val, out string typeofExpr))
+				{
+					if (!string.IsNullOrEmpty(rootFqType) && IsKnownDp(rootFqType, propName))
+						w.Line($"this.SetValue({rootFqType}.{propName}Property, {typeofExpr});");
+					else
+						w.Line($"this.{propName} = {typeofExpr};");
+				}
+				else if (IsXStatic(val, out string staticExpr))
+				{
+					if (!string.IsNullOrEmpty(rootFqType) && IsKnownDp(rootFqType, propName))
+						w.Line($"this.SetValue({rootFqType}.{propName}Property, {staticExpr});");
+					else
+						w.Line($"this.{propName} = {staticExpr};");
 				}
 				else if (!string.IsNullOrEmpty(rootFqType) && IsKnownDp(rootFqType, propName))
 				{
@@ -322,15 +359,14 @@ namespace Gtk.Forms.MarkupCompiler
 		/// <summary>
 		/// Returns whether <paramref name="propName"/> should go through the DP converter
 		/// path given owner <paramref name="fqType"/>.
+		/// When reference paths were supplied, delegates to the assembly symbol resolver;
+		/// otherwise falls back to the name heuristic (preserves existing test behaviour).
 		/// </summary>
-		static bool IsKnownDp(string fqType, string propName)
+		bool IsKnownDp(string fqType, string propName)
 		{
 			// Always use CLR path for explicitly excluded properties.
 			if (_clrOnlyProperties.Contains(propName)) return false;
-			// Properties that map to DPs on known types — resolved from WpfXmlnsMap.
-			// A property is treated as a DP when it matches a DP by convention:
-			// the owner type (resolved by WpfXmlnsMap) is a mapped WPF type.
-			return fqType != null && fqType.StartsWith("System.Windows", StringComparison.Ordinal);
+			return _resolver.IsDP(fqType, propName);
 		}
 
 		/// <summary>
@@ -357,6 +393,16 @@ namespace Gtk.Forms.MarkupCompiler
 				if (childLocalName.IndexOf('.') >= 0)
 				{
 					EmitPropertyElement(w, child, xNs, parentVar, ref counter);
+					continue;
+				}
+
+				// x:Array element.
+				if (TryEmitXArray(w, child, xNs, out string arrVar, ref counter))
+				{
+					if (WpfXmlnsMap.HasChildren(parentLocalName))
+						w.Line($"{parentVar}.Children.Add({arrVar});");
+					else
+						w.Line($"{parentVar}.Content = {arrVar};");
 					continue;
 				}
 
@@ -431,6 +477,27 @@ namespace Gtk.Forms.MarkupCompiler
 						w.Line($"{varName}.Style = (System.Windows.Style){varName}.FindResource(\"{EscapeString(resourceKey)}\");");
 					else
 						w.Line($"{varName}.SetValue({fqType}.{propName}Property, {varName}.FindResource(\"{EscapeString(resourceKey)}\"));");
+				}
+				else if (IsXNull(val))
+				{
+					if (IsKnownDp(fqType, propName))
+						w.Line($"{varName}.SetValue({fqType}.{propName}Property, null);");
+					else
+						w.Line($"{varName}.{propName} = null;");
+				}
+				else if (IsXType(val, out string typeofExpr))
+				{
+					if (IsKnownDp(fqType, propName))
+						w.Line($"{varName}.SetValue({fqType}.{propName}Property, {typeofExpr});");
+					else
+						w.Line($"{varName}.{propName} = {typeofExpr};");
+				}
+				else if (IsXStatic(val, out string staticExpr))
+				{
+					if (IsKnownDp(fqType, propName))
+						w.Line($"{varName}.SetValue({fqType}.{propName}Property, {staticExpr});");
+					else
+						w.Line($"{varName}.{propName} = {staticExpr};");
 				}
 				else if (IsKnownDp(fqType, propName))
 				{
