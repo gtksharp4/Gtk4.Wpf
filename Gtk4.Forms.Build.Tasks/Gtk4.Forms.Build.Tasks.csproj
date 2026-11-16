@@ -223,18 +223,18 @@
         <IncludeSymbols>false</IncludeSymbols>
     </PropertyGroup>
     <ItemGroup>
-        <None Include="build\*.props;build\*.targets" Exclude="build\Gtk4.Forms.Build.Tasks.props;build\Gtk4.Forms.Build.Tasks.targets" Pack="true" PackagePath="build\" />
+        <None Include="build\*.props;build\*.targets" Exclude="build\Xamarin.Forms.Build.Tasks.props;build\Xamarin.Forms.Build.Tasks.targets" Pack="true" PackagePath="build\" />
         <!--
           The auto-import entry points, renamed on the way into the package: NuGet imports
           build\$(PackageId).props|.targets and nothing else, and $(PackageId) is now
-          Net4x.Xamarin.Forms.Build.Tasks rather than the assembly name the files carry on
+          Gtk4.Xamarin.Forms.Build.Tasks rather than the assembly name the files carry on
           disk. Packing them under their own names instead leaves build\ with props/targets
           that NuGet would never import - NU5129, an error here because of
           TreatWarningsAsErrors. Deriving the packed name from $(PackageId) keeps the entry
           point correct if the id changes again.
         -->
-        <None Include="build\Gtk4.Forms.Build.Tasks.props" Pack="true" PackagePath="build\$(PackageId).props" />
-        <None Include="build\Gtk4.Forms.Build.Tasks.targets" Pack="true" PackagePath="build\$(PackageId).targets" />
+        <None Include="build\Xamarin.Forms.Build.Tasks.props" Pack="true" PackagePath="build\$(PackageId).props" />
+        <None Include="build\Xamarin.Forms.Build.Tasks.targets" Pack="true" PackagePath="build\$(PackageId).targets" />
     </ItemGroup>
     <Target Name="_PackBuildTaskAssemblies" BeforeTargets="_GetPackageFiles">
         <ItemGroup>
@@ -242,7 +242,7 @@
                 Xamarin.Forms.Core.dll and Xamarin.Forms.Xaml.dll belong here too. XamlCTask and
                 XamlGTask load both at build time, and SuppressDependenciesWhenPacking is on, so
                 the package declared no dependencies either - a consumer restoring
-                Net4x.Xamarin.Forms.Build.Tasks on its own got the tasks with nothing to resolve
+                Gtk4.Xamarin.Forms.Build.Tasks on its own got the tasks with nothing to resolve
                 those references against. The in-tree publish path never showed it because
                 _PublishBuildTasks copies $(TargetDir)*.dll, i.e. everything.
             -->
@@ -252,13 +252,13 @@
     <!--
     NuGet applies a package's build\ folder ONLY to a direct PackageReference. Every entry point
     above therefore reaches nobody who does what the READMEs tell app authors to do - reference a
-    backend package (Net4x.Xamarin.Forms.Platform.Gtk) and let it drag in the rest: XamlGTask never
+    backend package (Gtk4.Xamarin.Forms.Platform.Gtk) and let it drag in the rest: XamlGTask never
     runs and InitializeComponent() is never generated. buildTransitive\ is the folder NuGet also
     applies to an INDIRECT reference, so shipping the entry points there as well lets a package
     that depends on this one deliver the XAML targets downstream.
 
     This is only half of that fix: a consumer still gets nothing until some shipped package it
-    actually references declares a non-private dependency on Net4x.Xamarin.Forms.Build.Tasks.
+    actually references declares a non-private dependency on Gtk4.Xamarin.Forms.Build.Tasks.
 
     The forwarders are generated rather than checked in because they differ from the build\ ones
     only in where they point - duplicating the task assemblies under buildTransitive\<tfm>\ would
