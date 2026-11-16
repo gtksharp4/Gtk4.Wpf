@@ -68,6 +68,12 @@
 	  consumer; buildTransitive/ copies ensure the same assets reach transitive consumers.
 	-->
 	<ItemGroup>
+		<!--
+		  Empty placeholder: this package ships no assembly of its own (IncludeBuildOutput=false), but
+		  it declares netstandard2.0 dependencies. NuGet's NU5128 requires a lib/ folder matching the
+		  dependency group's TFM; the canonical "_._" marker satisfies it without shipping a real lib.
+		-->
+		<None Include="_._" Pack="true" PackagePath="\lib\netstandard2.0\_._" />
 		<None Include="Gtk4.Forms.Base.props"      Pack="true" PackagePath="\build\;\buildTransitive\" />
 		<None Include="Gtk4.Forms.Base.targets"    Pack="true" PackagePath="\build\;\buildTransitive\" />
 		<None Include="content\GtkEntryPoint.g.cs" Pack="true" PackagePath="\content\" />
