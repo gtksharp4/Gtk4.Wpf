@@ -1,0 +1,56 @@
+<Project>
+  <!--
+    Registers MarkupCompileTask, discovers WPF XAML files (Page + ApplicationDefinition build
+    items) and adds the generated .g.cs files to @(Compile) before CoreCompile runs.
+    Guard prevents double-import when both build/ and buildTransitive/ are applied.
+  -->
+
+  <PropertyGroup>
+    <_GFMarkupCompilerTargetsImportedAgain
+        Condition="'$(_GFMarkupCompilerTargetsImported)' == 'true'">true</_GFMarkupCompilerTargetsImportedAgain>
+    <_GFMarkupCompilerTargetsImported>true</_GFMarkupCompilerTargetsImported>
+  </PropertyGroup>
+
+  <Target Name="_ValidateGFMarkupCompilerImport"
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
+          Condition="'$(GFDisableMarkupCompilerValidation)' != 'true'">
+    <Error Code="GF001"
+           Condition="'$(_GFMarkupCompilerTargetsImportedAgain)' == 'true'"
+           Text="Gtk.Forms.MarkupCompiler targets imported more than once. Remove the duplicate import." />
+  </Target>
+
+  <UsingTask TaskName="Gtk.Forms.MarkupCompiler.MarkupCompileTask"
+             AssemblyFile="$(_GFMarkupCompilerTasksDir)Gtk.Forms.MarkupCompiler.dll" />
+
+  <!-- Output directory for .g.cs files; can be overridden by the consumer. -->
+  <PropertyGroup>
+    <GFMarkupOutputDir
+        Condition="'$(GFMarkupOutputDir)' == ''">$(IntermediateOutputPath)gf-wpf-generated\</GFMarkupOutputDir>
+  </PropertyGroup>
+
+  <!--
+    Collect Page and ApplicationDefinition XAML items.
+    Incremental: only re-runs when inputs are newer than outputs.
+  -->
+  <Target Name="_GFMarkupCompile"
+          BeforeTargets="CoreCompile"
+          Condition="'@(Page)' != '' or '@(ApplicationDefinition)' != ''">
+
+    <ItemGroup>
+      <_GFWpfXamlInputs Include="@(Page);@(ApplicationDefinition)" />
+    </ItemGroup>
+
+    <MarkupCompileTask
+        XamlFiles="@(_GFWpfXamlInputs)"
+        OutputDirectory="$(GFMarkupOutputDir)">
+      <Output TaskParameter="GeneratedFiles" ItemName="_GFGeneratedCs" />
+    </MarkupCompileTask>
+
+    <ItemGroup>
+      <Compile Include="@(_GFGeneratedCs)" />
+      <FileWrites Include="@(_GFGeneratedCs)" />
+    </ItemGroup>
+
+  </Target>
+
+</Project>

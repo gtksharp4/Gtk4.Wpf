@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Gtk.Forms.MarkupCompiler.Tests</AssemblyName>
+    <RootNamespace>Gtk.Forms.MarkupCompiler.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <LangVersion>latest</LangVersion>
+    <OutputType>Exe</OutputType>
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk"       Version="17.11.1" />
+    <PackageReference Include="xunit.v3"                     Version="3.2.2" />
+    <PackageReference Include="xunit.runner.visualstudio"    Version="3.1.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gtk.Forms.MarkupCompiler\Gtk.Forms.MarkupCompiler.csproj" />
+  </ItemGroup>
+
+</Project>

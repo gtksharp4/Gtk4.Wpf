@@ -1,0 +1,14 @@
+<Project>
+  <!--
+    NuGet auto-import entry point (.props half).
+    Sets the task-assembly location so the .targets UsingTask resolves correctly both when
+    consumed from the package (build/netstandard2.0/) and in-tree (via a ProjectReference).
+  -->
+  <PropertyGroup>
+    <!-- Default: packaged layout — task DLL lives next to this file under netstandard2.0/. -->
+    <_GFMarkupCompilerTasksDir
+        Condition="'$(_GFMarkupCompilerTasksDir)' == ''">$(MSBuildThisFileDirectory)netstandard2.0\</_GFMarkupCompilerTasksDir>
+    <!-- Guard against double-import. -->
+    <_GFMarkupCompilerPropsImported>true</_GFMarkupCompilerPropsImported>
+  </PropertyGroup>
+</Project>

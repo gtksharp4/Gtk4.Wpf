@@ -1,0 +1,103 @@
+using System;
+using System.IO;
+using System.Collections.Generic;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
+using IOPath = System.IO.Path;
+
+namespace Gtk.Forms.MarkupCompiler
+{
+	/// <summary>
+	/// MSBuild task that generates <c>InitializeComponent</c> partial classes from WPF XAML files.
+	/// Registered via <c>Gtk.Forms.MarkupCompiler.targets</c>; runs before <c>CoreCompile</c>.
+	/// </summary>
+	public class MarkupCompileTask : Task
+	{
+		/// <summary>
+		/// XAML files to process (Page and ApplicationDefinition build items).
+		/// Each item's <c>%(Identity)</c> is the file path.
+		/// </summary>
+		[Required]
+		public ITaskItem[] XamlFiles { get; set; }
+
+		/// <summary>Directory under which generated <c>.g.cs</c> files are written.</summary>
+		[Required]
+		public string OutputDirectory { get; set; }
+
+		/// <summary>Generated <c>.g.cs</c> files; added to <c>@(Compile)</c> by the .targets.</summary>
+		[Output]
+		public ITaskItem[] GeneratedFiles { get; private set; }
+
+		/// <inheritdoc />
+		public override bool Execute()
+		{
+			if (XamlFiles == null || XamlFiles.Length == 0)
+			{
+				Log.LogMessage(MessageImportance.Low, "MarkupCompileTask: no XAML files to process.");
+				GeneratedFiles = Array.Empty<ITaskItem>();
+				return true;
+			}
+
+			Log.LogMessage(MessageImportance.Normal,
+				"MarkupCompileTask: generating code for {0} XAML file(s).", XamlFiles.Length);
+
+			Directory.CreateDirectory(OutputDirectory);
+
+			bool success = true;
+			var generated = new List<ITaskItem>();
+			var generator = new XamlCodeGenerator();
+
+			foreach (ITaskItem item in XamlFiles)
+			{
+				string xamlPath = item.ItemSpec;
+				// Normalise path separators on the current OS.
+				if (IOPath.DirectorySeparatorChar == '/' && xamlPath.Contains("\\"))
+					xamlPath = xamlPath.Replace('\\', '/');
+				else if (IOPath.DirectorySeparatorChar == '\\' && xamlPath.Contains("/"))
+					xamlPath = xamlPath.Replace('/', '\\');
+
+				string outputPath = IOPath.Combine(
+					OutputDirectory,
+					IOPath.GetFileNameWithoutExtension(xamlPath) + ".g.cs");
+
+				try
+				{
+					string xaml = File.ReadAllText(xamlPath);
+					string code = generator.Generate(xaml, out string className);
+
+					if (code == null)
+					{
+						Log.LogMessage(MessageImportance.Low,
+							"  Skipped {0}: no x:Class attribute.", xamlPath);
+						continue;
+					}
+
+					File.WriteAllText(outputPath, code);
+					Log.LogMessage(MessageImportance.Low,
+						"  {0} -> {1} ({2})", xamlPath, outputPath, className);
+					generated.Add(new TaskItem(outputPath));
+				}
+				catch (XamlCodeGeneratorException ex)
+				{
+					Log.LogError(null, null, null, xamlPath, 0, 0, 0, 0,
+						ex.Message, ex.HelpLink, ex.Source);
+					// Write an empty file so the .g.cs item still exists in @(Compile).
+					File.WriteAllText(outputPath, string.Empty);
+					generated.Add(new TaskItem(outputPath));
+					success = false;
+				}
+				catch (Exception ex)
+				{
+					Log.LogError(null, null, null, xamlPath, 0, 0, 0, 0,
+						ex.Message, ex.HelpLink, ex.Source);
+					File.WriteAllText(outputPath, string.Empty);
+					generated.Add(new TaskItem(outputPath));
+					success = false;
+				}
+			}
+
+			GeneratedFiles = generated.ToArray();
+			return success;
+		}
+	}
+}

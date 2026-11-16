@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Gtk.Forms.MarkupCompiler</AssemblyName>
+    <RootNamespace>Gtk.Forms.MarkupCompiler</RootNamespace>
+    <PackageId>Gtk.Forms.MarkupCompiler</PackageId>
+    <Description>Build-time WPF XAML markup compiler for the Gtk.Forms compatibility layer.</Description>
+    <IsPackable>false</IsPackable>
+    <!-- Task assemblies bind against MSBuild's API but must not ship MSBuild next to them. -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Same versions as Gtk4.Forms.Build.Tasks.csproj. -->
+    <PackageReference Include="Microsoft.Build.Framework"
+                      Version="17.14.28"
+                      ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core"
+                      Version="17.14.28"
+                      ExcludeAssets="runtime" />
+  </ItemGroup>
+
+</Project>
