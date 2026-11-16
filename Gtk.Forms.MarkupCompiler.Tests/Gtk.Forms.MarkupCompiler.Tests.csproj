@@ -18,6 +18,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Gtk.Forms.MarkupCompiler\Gtk.Forms.MarkupCompiler.csproj" />
+    <!-- Referenced so DpSymbolResolver tests can supply the built PresentationFramework DLL path.
+         ReferenceOutputAssembly=false avoids a compile-time type conflict (System.Windows.* namespaces);
+         CopyToOutputDirectory copies the DLL so tests can load it via its filename. -->
+    <ProjectReference Include="..\Gtk.Forms.PresentationFramework\Gtk.Forms.PresentationFramework.csproj"
+                      ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>

@@ -20,6 +20,13 @@ namespace Gtk.Forms.MarkupCompiler
 		[Required]
 		public ITaskItem[] XamlFiles { get; set; }
 
+		/// <summary>
+		/// Reference assembly paths (<c>@(ReferencePath)</c> from MSBuild).
+		/// Optional; when supplied the DP symbol resolver uses them instead of the
+		/// name heuristic so user-defined controls are handled correctly.
+		/// </summary>
+		public ITaskItem[] ReferencePaths { get; set; }
+
 		/// <summary>Directory under which generated <c>.g.cs</c> files are written.</summary>
 		[Required]
 		public string OutputDirectory { get; set; }
@@ -46,6 +53,15 @@ namespace Gtk.Forms.MarkupCompiler
 			bool success = true;
 			var generated = new List<ITaskItem>();
 			var generator = new XamlCodeGenerator();
+
+			// Thread reference paths into the DP symbol resolver when available.
+			if (ReferencePaths != null && ReferencePaths.Length > 0)
+			{
+				var paths = new List<string>(ReferencePaths.Length);
+				foreach (ITaskItem item in ReferencePaths)
+					paths.Add(item.ItemSpec);
+				generator.SetReferencePaths(paths);
+			}
 
 			foreach (ITaskItem item in XamlFiles)
 			{
@@ -97,6 +113,7 @@ namespace Gtk.Forms.MarkupCompiler
 			}
 
 			GeneratedFiles = generated.ToArray();
+			generator.Dispose();
 			return success;
 		}
 	}
