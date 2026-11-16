@@ -624,6 +624,38 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   totals: 1108 tests** (60 WindowsBase + 863 PresentationFramework + 169 MarkupCompiler + 16 ProjectConverter),
   all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample` (unmodified WPF) compiles through the lock-free
   real-symbol-resolution compiler.
+- **Round 11 Track B — FlowDocument + RichTextBox + block documents (DONE).** Runtime only; no compiler changes.
+  - **Block hierarchy** (`System.Windows.Documents`): `Block : TextElement` (base; `Margin`/`Padding`/`TextAlignment`/`LineHeight`),
+    `Paragraph` (`Inlines` — `InlineCollection`; `AppendMarkup`/`AppendPlainText`), `Section` (`Blocks` — `BlockCollection`; nests blocks),
+    `List` (`ListItems`; `MarkerStyle`; bullet/number marker rendering; `ToAlpha`/`ToRoman` helpers), `ListItem` (`Blocks`),
+    `BlockUIContainer` (`Child : UIElement`; emits nothing in markup/plain-text — no text representation for a hosted widget).
+    `BlockCollection` (typed, `Changed` event; mirrors `InlineCollection` pattern). `TextMarkerStyle` enum (9 values).
+  - **`TextAlignment` enum** (`System.Windows`) added to `PresentationFramework` (Left/Right/Center/Justify).
+  - **`FlowDocument`** (`[ContentProperty("Blocks")]`; `FontFamily`/`FontSize`/`Foreground`/`TextAlignment`/`PagePadding`):
+    `BuildMarkup()` — paragraphs joined by `\n\n`, block `AppendMarkup` per block; `BuildPlainText()` — same with
+    `AppendPlainText`; `GetAllText()` (internal) — single-newline joined for buffer loading.
+  - **`RichTextBox : Control`** (`System.Windows.Controls`): `Document` DP (`FlowDocument`), `IsReadOnly` DP
+    (`→ Gtk.TextView.Editable`), `Selection` (`TextSelection`), `AppendText`; backed by `Gtk.TextView` +
+    `Gtk.ScrolledWindow`. `SyncBufferFromDocument` populates the buffer from the document, applying `Gtk.TextTag`s
+    for bold/italic/underline. `OnBufferChanged` writes plain text back to the first paragraph (minimal two-way;
+    full rich round-trip is a later phase). `TextRange`/`TextSelection` cover the whole document (Phase-1 subset).
+  - **`FlowDocumentScrollViewer : Control`** (`System.Windows.Controls`): `Document` DP, read-only; backed by
+    `Gtk.ScrolledWindow` + `Gtk.Label` with Pango markup from `FlowDocument.BuildMarkup()`.
+  - **GTK-widget choices + limitations**: `Gtk.TextView.Buffer.Insert(TextIter, string)` is a GtkSharp4 compat shim
+    (`[Obsolete]`, demoted via `WarningsNotAsErrors CS0618`); the `ref TextIter` overload is the idiomatic API —
+    switching deferred (shim is functionally correct). `FlowDocumentScrollViewer` uses `Gtk.Label` (Pango markup) for
+    read-only display; a `Gtk.TextView` with read-only tags would be more faithful but is a later refinement.
+    Two-way editing (buffer → Document) covers only the plain-text content of the first paragraph; re-parsing
+    `Gtk.TextTag` state back into `Bold`/`Italic` runs is explicitly deferred.
+  - **39 new tests** (24 `FlowDocumentTests` pure + 9 `RichTextBoxTests` pure + 6 `RichTextBoxGtkSmokeTests` GTK):
+    - `FlowDocumentTests`: block hierarchy, two-paragraph plain-text/markup with blank-line separation, bold markup,
+      markup escaping, disc/decimal list markers, section nesting, `BlockUIContainer` emits nothing, document property round-trips.
+    - `RichTextBoxTests`: `Document` get/set, `AppendText` creates paragraph+run, two `AppendText` → two paragraphs,
+      `Selection.Text` returns/sets document text, `TextRange.Text` round-trip, `IsReadOnly` toggle, `GetAllText` join.
+    - `RichTextBoxGtkSmokeTests`: `CreateWidget` → `Gtk.ScrolledWindow`, scrolled window contains `Gtk.TextView`,
+      `IsReadOnly=true` → `Editable=false`, `Document` syncs buffer text, `FlowDocumentScrollViewer` creates/realizes.
+  - **Round 11 totals: 1147 tests** (60 WindowsBase + 902 PresentationFramework + 169 MarkupCompiler + 16 ProjectConverter),
+    all pass timeboxed with no hang/crash.
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
   true `{DynamicResource}` change-tracking; GTK key-event wiring for `InputBindings`;
   `Gtk.PopoverMenu` integration for `MenuItem`; element-level `FrameworkElement.Triggers` auto-attach on
