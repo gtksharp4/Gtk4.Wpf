@@ -80,7 +80,12 @@ namespace System.Windows
 				MainWindow = CreateWindowFromStartupUri(StartupUri);
 
 			var window = MainWindow;
-			window?.Show();
+			if (window != null)
+			{
+				// WPF default ShutdownMode.OnLastWindowClose: closing the main window exits the app.
+				window.Closed += (_, _) => Shutdown();
+				window.Show();
+			}
 
 			_loop = new GLib.MainLoop();
 			_loop.Run();

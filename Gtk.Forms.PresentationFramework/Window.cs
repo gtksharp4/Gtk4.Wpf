@@ -47,6 +47,12 @@ namespace System.Windows
 		public Window? Owner { get; set; }
 
 		/// <summary>
+		/// Raised once after the window has closed (WPF-compatible). <see cref="Application"/>
+		/// subscribes to the main window's event to exit on close (default shutdown mode).
+		/// </summary>
+		public event EventHandler? Closed;
+
+		/// <summary>
 		/// The dialog result set by <see cref="Close(bool?)"/>; <c>null</c> when the
 		/// window was closed without setting an explicit result.
 		/// </summary>
@@ -56,6 +62,7 @@ namespace System.Windows
 
 		Gtk.Window? _window;
 		bool _dialogClosed;
+		bool _closed;
 
 		/// <inheritdoc/>
 		protected override Gtk.Widget CreateWidget()
@@ -148,6 +155,13 @@ namespace System.Windows
 			_ = keepResult; // reserved for future use
 			_dialogClosed = true;
 			((Gtk.Window)Widget).Hide();
+
+			// Fire Closed once, after the window is hidden (WPF order). Drives app shutdown.
+			if (!_closed)
+			{
+				_closed = true;
+				Closed?.Invoke(this, EventArgs.Empty);
+			}
 		}
 
 		/// <summary>
