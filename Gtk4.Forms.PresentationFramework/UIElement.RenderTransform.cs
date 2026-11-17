@@ -93,6 +93,19 @@ public abstract partial class UIElement
 		ApplyRenderTransform(widget);
 
 	/// <summary>
+	/// Applies the current <see cref="FrameworkElement.LayoutTransform"/> as a best-effort
+	/// CSS transform on the backing widget (same mechanism as <see cref="RenderTransform"/>).
+	/// Called from <see cref="FrameworkElement.LayoutTransform"/>'s changed callback.
+	/// The managed layout slot (DesiredSize/RenderSize) is already authoritative regardless.
+	/// </summary>
+	internal void ApplyLayoutTransformCss()
+	{
+		if (_widget == null) return;
+		Transform? lt = GetValue(FrameworkElement.LayoutTransformProperty) as Transform;
+		ApplyTransformCss(_widget, lt, new Point(0, 0));
+	}
+
+	/// <summary>
 	/// Pushes the current <see cref="RenderTransform"/> and
 	/// <see cref="RenderTransformOrigin"/> values into the widget's style context.
 	/// </summary>
@@ -100,7 +113,16 @@ public abstract partial class UIElement
 	{
 		Transform? t = GetValue(RenderTransformProperty) as Transform;
 		Point origin = (Point)(GetValue(RenderTransformOriginProperty) ?? new Point(0, 0));
+		ApplyTransformCss(widget, t, origin);
+	}
 
+	/// <summary>
+	/// Pushes <paramref name="transform"/> and <paramref name="origin"/> into the CSS
+	/// transform of <paramref name="widget"/> using this element's CSS provider.
+	/// Assigns a unique CSS widget name when necessary.
+	/// </summary>
+	void ApplyTransformCss(Gtk.Widget widget, Transform? transform, Point origin)
+	{
 		// Assign a process-unique widget name so the CSS selector targets only this
 		// widget. A monotonic counter (not GetHashCode) avoids a hash collision where a
 		// parent's "#rt-X" rule would also cascade onto a same-named descendant.
@@ -108,7 +130,7 @@ public abstract partial class UIElement
 			widget.Name = $"rt-{System.Threading.Interlocked.Increment(ref _rtNameCounter):x8}";
 
 		string selector = $"#{widget.Name}";
-		string css = RenderTransformCss.BuildCssSnippet(selector, t, origin);
+		string css = RenderTransformCss.BuildCssSnippet(selector, transform, origin);
 
 		if (_transformCssProvider == null)
 		{
