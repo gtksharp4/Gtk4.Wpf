@@ -8,9 +8,9 @@ name: Build and test
 # linux-gtk.yml.
 on:
   push:
-    branches: [main]
+    branches: [feature/xamarin-forms]
   pull_request:
-    branches: [main]
+    branches: [feature/xamarin-forms]
   workflow_dispatch:
 
 jobs:
