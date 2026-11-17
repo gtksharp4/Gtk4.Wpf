@@ -54,6 +54,10 @@ public abstract partial class UIElement : Media.Visual
 		// Apply any RenderTransform set before widget creation.
 		// Implemented in UIElement.RenderTransform.cs.
 		ApplyRenderTransformOnCreated(widget);
+
+		// Apply any Effect set before widget creation.
+		// Implemented in UIElement.Effect.cs.
+		ApplyEffectOnCreated(widget);
 	}
 
 	/// <summary>
@@ -68,6 +72,13 @@ public abstract partial class UIElement : Media.Visual
 	/// Implemented in <c>UIElement.RenderTransform.cs</c>.
 	/// </summary>
 	partial void ApplyRenderTransformOnCreated(Gtk.Widget widget);
+
+	/// <summary>
+	/// Called from <see cref="OnWidgetCreated"/> to apply any
+	/// <see cref="Effect"/> set before widget creation.
+	/// Implemented in <c>UIElement.Effect.cs</c>.
+	/// </summary>
+	partial void ApplyEffectOnCreated(Gtk.Widget widget);
 
 	// ── Opacity ──────────────────────────────────────────────────────────────────
 
