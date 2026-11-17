@@ -18,7 +18,7 @@ namespace System.Windows.Controls;
 /// Reacts to <see cref="INotifyCollectionChanged"/> if the source implements it.
 /// </para>
 /// </summary>
-public class ItemsControl : Control
+public partial class ItemsControl : Control
 {
 	// ── ItemsSource DP ───────────────────────────────────────────────────────
 
@@ -135,22 +135,8 @@ public class ItemsControl : Control
 	readonly List<(UIElement Container, Gtk.Widget Widget)> _rows =
 		new List<(UIElement, Gtk.Widget)>();
 
-	// ── Item factory ─────────────────────────────────────────────────────────
-
-	/// <summary>
-	/// Creates a container <see cref="UIElement"/> for <paramref name="item"/>.
-	/// Default wraps in a <see cref="ContentPresenter"/>, or applies
-	/// <see cref="ItemTemplate"/> if set.
-	/// </summary>
-	protected virtual UIElement GetContainerForItem(object? item)
-	{
-		if (ItemTemplate != null && ItemTemplate.HasContent)
-		{
-			var visual = ItemTemplate.CreateVisualTreeForItem(item);
-			if (visual != null) return visual;
-		}
-		return new ContentPresenter { Content = item };
-	}
+	// Item factory hook — defined in ItemsControl.Selectors.cs partial.
+	// GetContainerForItem is declared there with full selector/template/path logic.
 
 	// ── GTK backing ──────────────────────────────────────────────────────────
 
