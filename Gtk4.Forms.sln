@@ -77,6 +77,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk.Forms.Base", "Gtk.Forms
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk.Forms.WpfSample", "Gtk.Forms.WpfSample\Gtk.Forms.WpfSample.csproj", "{A5724D86-3A93-46E1-8257-4D72FD5C5F16}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk.Forms.Integration.Tests", "Gtk.Forms.Integration.Tests\Gtk.Forms.Integration.Tests.csproj", "{94DD8146-CB1D-4EE7-A32E-409EA04CD1BE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -411,6 +413,18 @@ Global
 		{A5724D86-3A93-46E1-8257-4D72FD5C5F16}.Release|x64.Build.0 = Release|Any CPU
 		{A5724D86-3A93-46E1-8257-4D72FD5C5F16}.Release|x86.ActiveCfg = Release|Any CPU
 		{A5724D86-3A93-46E1-8257-4D72FD5C5F16}.Release|x86.Build.0 = Release|Any CPU
+		{94DD8146-CB1D-4EE7-A32E-409EA04CD1BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94DD8146-CB1D-4EE7-A32E-409EA04CD1BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94DD8146-CB1D-4EE7-A32E-409EA04CD1BE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{94DD8146-CB1D-4EE7-A32E-409EA04CD1BE}.Debug|x64.Build.0 = Debug|Any CPU
+		{94DD8146-CB1D-4EE7-A32E-409EA04CD1BE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{94DD8146-CB1D-4EE7-A32E-409EA04CD1BE}.Debug|x86.Build.0 = Debug|Any CPU
+		{94DD8146-CB1D-4EE7-A32E-409EA04CD1BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94DD8146-CB1D-4EE7-A32E-409EA04CD1BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94DD8146-CB1D-4EE7-A32E-409EA04CD1BE}.Release|x64.ActiveCfg = Release|Any CPU
+		{94DD8146-CB1D-4EE7-A32E-409EA04CD1BE}.Release|x64.Build.0 = Release|Any CPU
+		{94DD8146-CB1D-4EE7-A32E-409EA04CD1BE}.Release|x86.ActiveCfg = Release|Any CPU
+		{94DD8146-CB1D-4EE7-A32E-409EA04CD1BE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -426,6 +440,7 @@ Global
 		{8C9D04BA-18A5-4271-9C39-DC2CAC365112} = {98013F4F-7A74-4B69-8949-57EE3C21ED50}
 		{2AA1C21D-567A-4CF0-A718-A0DCAAB871D3} = {98013F4F-7A74-4B69-8949-57EE3C21ED50}
 		{A5724D86-3A93-46E1-8257-4D72FD5C5F16} = {2EBCF073-4498-4EF0-9475-A504D166D397}
+		{94DD8146-CB1D-4EE7-A32E-409EA04CD1BE} = {98013F4F-7A74-4B69-8949-57EE3C21ED50}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F96F981E-4986-4435-A59E-5A4E4F806746}
