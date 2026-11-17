@@ -144,6 +144,28 @@ namespace Gtk.Forms.PresentationFramework.Tests
 			Assert.Equal(MessageBoxResult.None, GtkMessageBoxPresenter.MapResponse(99, button));
 		}
 
+		// ── MapIconName — WPF image → themed icon name ──────────────────────────────
+
+		[Theory]
+		[InlineData(MessageBoxImage.Error, "dialog-error")]
+		[InlineData(MessageBoxImage.Stop, "dialog-error")]
+		[InlineData(MessageBoxImage.Hand, "dialog-error")]
+		[InlineData(MessageBoxImage.Warning, "dialog-warning")]
+		[InlineData(MessageBoxImage.Exclamation, "dialog-warning")]
+		[InlineData(MessageBoxImage.Question, "dialog-question")]
+		[InlineData(MessageBoxImage.Information, "dialog-information")]
+		[InlineData(MessageBoxImage.Asterisk, "dialog-information")]
+		public void MapIconName_maps_known_images(MessageBoxImage image, string expected)
+		{
+			Assert.Equal(expected, GtkMessageBoxPresenter.MapIconName(image));
+		}
+
+		[Fact]
+		public void MapIconName_none_has_no_icon()
+		{
+			Assert.Null(GtkMessageBoxPresenter.MapIconName(MessageBoxImage.None));
+		}
+
 		// ── Fake presenter ────────────────────────────────────────────────────────
 
 		sealed class FakePresenter : IMessageBoxPresenter

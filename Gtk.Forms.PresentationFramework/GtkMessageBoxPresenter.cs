@@ -5,12 +5,13 @@ namespace System.Windows
 	/// by pumping the GTK main loop until the user responds.
 	/// </summary>
 	/// <remarks>
-	/// GTK 4 removed <c>gtk_dialog_run</c>; synchrony is recovered by subscribing
-	/// <c>Gtk.Dialog.Response</c>, presenting the dialog, then pumping
-	/// <c>Gtk.Application.RunIteration(true)</c> until the response flag is set — the
-	/// same technique used by <see cref="Window.ShowDialog"/>.  A blocking nested
-	/// <see cref="GLib.MainLoop"/> is NOT used because it would freeze the single GTK
-	/// thread, preventing the response signal from firing.
+	/// Builds a custom dialog (not <c>Gtk.MessageDialog</c>) so the layout matches WPF: an
+	/// optional icon beside the message, and the action buttons right-aligned along the bottom.
+	/// GTK 4 removed <c>gtk_dialog_run</c>; synchrony is recovered by presenting the window and
+	/// pumping <c>Gtk.Application.RunIteration(true)</c> until a button is clicked — the same
+	/// technique used by <see cref="Window.ShowDialog"/>. A blocking nested
+	/// <see cref="GLib.MainLoop"/> is NOT used because it would freeze the single GTK thread,
+	/// preventing the button handlers from firing.
 	/// <para>
 	/// <b>Non-interactive environments:</b> in a headless test or CI session the dialog
 	/// blocks indefinitely because no user can click a button. Inject a fake
@@ -19,7 +20,6 @@ namespace System.Windows
 	/// is pure and covered by tests without opening any window.
 	/// </para>
 	/// </remarks>
-#pragma warning disable CS0618 // Gtk.MessageDialog is an [Obsolete] GTK3 compat shim in GtkSharp4
 	sealed class GtkMessageBoxPresenter : IMessageBoxPresenter
 	{
 		public MessageBoxResult Show(
@@ -28,40 +28,73 @@ namespace System.Windows
 			MessageBoxButton button,
 			MessageBoxImage icon)
 		{
-			var gtkType = MapIcon(icon);
-			var dialog = new Gtk.MessageDialog(
-				null,
-				Gtk.DialogFlags.Modal,
-				gtkType,
-				Gtk.ButtonsType.None,
-				messageText);
+			var win = new Gtk.Window
+			{
+				Title = caption,
+				Modal = true,
+				Resizable = false,
+			};
 
-			dialog.Title = caption;
+			var root = new Gtk.Box(Gtk.Orientation.Vertical, 16)
+			{
+				MarginTop = 16,
+				MarginBottom = 16,
+				MarginStart = 16,
+				MarginEnd = 16,
+			};
 
-			// Add each button with a distinct response id (index-based) so we can map
-			// which button was clicked without relying on button labels (F4 fix).
-			var labels = MessageBoxButtonMapping.ButtonLabels(button);
-			for (int i = 0; i < labels.Count; i++)
-				dialog.AddButton(labels[i], (Gtk.ResponseType)i);
+			// Message row: optional icon beside the (wrapped, left-aligned) text, as in WPF.
+			var messageRow = new Gtk.Box(Gtk.Orientation.Horizontal, 12);
+			string? iconName = MapIconName(icon);
+			if (iconName != null)
+			{
+				var img = Gtk.Image.NewFromIconName(iconName);
+				img.WidthRequest = 32;
+				img.HeightRequest = 32;
+				img.Valign = Gtk.Align.Start;
+				messageRow.Append(img);
+			}
+			messageRow.Append(new Gtk.Label(messageText)
+			{
+				Wrap = true,
+				Xalign = 0f,
+				Valign = Gtk.Align.Center,
+			});
+			root.Append(messageRow);
+
+			// Action row: buttons right-aligned along the bottom (WPF places them bottom-right;
+			// Gtk.MessageDialog placed them at the start).
+			var actions = new Gtk.Box(Gtk.Orientation.Horizontal, 8) { Halign = Gtk.Align.End };
 
 			int responseIndex = -1;
 			bool responded = false;
 
-			dialog.Response += (_, args) =>
+			var labels = MessageBoxButtonMapping.ButtonLabels(button);
+			for (int i = 0; i < labels.Count; i++)
 			{
-				responseIndex = (int)args.ResponseId;
-				responded = true;
-			};
+				int index = i; // capture per-button for the handler
+				// UseUnderline renders the "_" mnemonic prefix as an accelerator (e.g. "_OK" → OK)
+				// rather than showing the literal underscore.
+				var b = new Gtk.Button { Label = labels[i], UseUnderline = true, WidthRequest = 88 };
+				b.Clicked += (_, _) => { responseIndex = index; responded = true; };
+				actions.Append(b);
+			}
+			root.Append(actions);
 
-			dialog.Present();
+			win.Child = root;
 
-			// Pump the GTK main loop until the response fires. RunIteration(true) blocks
-			// for the next event and dispatches it, keeping the thread live without a
-			// nested GLib.MainLoop that would deadlock same-thread handlers.
+			// Closing the window with no button click maps to None.
+			win.CloseRequest += (_, _) => { responded = true; };
+
+			win.Present();
+
+			// Pump the GTK main loop until a button fires. RunIteration(true) blocks for the next
+			// event and dispatches it, keeping the thread live without a nested GLib.MainLoop that
+			// would deadlock same-thread handlers.
 			while (!responded)
 				Gtk.Application.RunIteration(true);
 
-			dialog.Destroy();
+			win.Destroy();
 
 			return MapResponse(responseIndex, button);
 		}
@@ -83,19 +116,19 @@ namespace System.Windows
 			return MessageBoxButtonMapping.ResultFromLabel(labels[responseIndex]);
 		}
 
-		static Gtk.MessageType MapIcon(MessageBoxImage icon) =>
+		/// <summary>Maps the WPF message image to a themed icon name, or null for none.</summary>
+		internal static string? MapIconName(MessageBoxImage icon) =>
 			icon switch
 			{
 				MessageBoxImage.Error or
 				MessageBoxImage.Stop or
-				MessageBoxImage.Hand      => Gtk.MessageType.Error,
+				MessageBoxImage.Hand        => "dialog-error",
 				MessageBoxImage.Warning or
-				MessageBoxImage.Exclamation => Gtk.MessageType.Warning,
-				MessageBoxImage.Question    => Gtk.MessageType.Question,
+				MessageBoxImage.Exclamation => "dialog-warning",
+				MessageBoxImage.Question    => "dialog-question",
 				MessageBoxImage.Information or
-				MessageBoxImage.Asterisk    => Gtk.MessageType.Info,
-				_                           => Gtk.MessageType.Other
+				MessageBoxImage.Asterisk    => "dialog-information",
+				_                           => null
 			};
 	}
-#pragma warning restore CS0618
 }
