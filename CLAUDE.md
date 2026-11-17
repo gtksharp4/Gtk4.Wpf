@@ -236,6 +236,7 @@ adds the core WPF control set under `Gtk.Forms.PresentationFramework/Controls/`:
 | `Image` | `Gtk.Image` | `System.Windows.Media.ImageSource` (Phase-1 file-path stub in `Media/ImageSource.cs`) |
 | `Border` | `Gtk.Frame` | `[ContentProperty("Child")]`; `BorderThickness`/`Padding` stored (CSS application Phase-2) |
 | `Label` | `Gtk.Box`+`Gtk.Label` | Thin `ContentControl` subclass; string content displayed in `Gtk.Label` |
+| `WebBrowser` | `Gtk.Box` + placeholder `Gtk.Label` | Backed by `IWebBrowserHost`; default `PhotinoWebBrowserHost` (Photino.NET 4.0.16); web content in Photino's own native window (not embedded in GTK tree — future refinement). `InvokeScript` sends a web message; no synchronous JS-eval via Photino. `HostFactory` is a static injectable seam for tests. 26 tests (21 pure model + 5 GTK smoke). |
 
 GTK4 widget choice note: `Gtk.DropDown` is used for `ComboBox` over the deprecated `Gtk.ComboBoxText`
 (the latter is a GTK3 compat shim, `[Obsolete]` in GtkSharp4). `Gtk.CheckButton.Group` is a property
@@ -248,7 +249,7 @@ DP on `FrameworkElement`, `OverridesDefaultStyle` flag, `System.Windows.Themes.T
 (ControlBrush, WindowBrush, HighlightBrush, ControlTextBrush), and `Control.Properties.cs`
 (Padding, HorizontalContentAlignment, VerticalContentAlignment DPs on `Control`).  Default-style
 resolution is the lowest precedence: explicit Style > implicit TargetType style > theme default.
-`Application` ctor calls `Generic.Register()`. Total `Gtk.Forms.PresentationFramework.Tests`: 961.
+`Application` ctor calls `Generic.Register()`. Total `Gtk.Forms.PresentationFramework.Tests`: 961 (1098 including WebBrowser + later rounds).
 
 ## Coding style
 

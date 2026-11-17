@@ -35,7 +35,7 @@ namespace System.Windows.Navigation
 		/// <summary>Set to <c>true</c> to cancel the navigation.</summary>
 		public bool Cancel { get; set; }
 
-		internal NavigatingCancelEventArgs(object? content, Uri? uri, NavigationMode mode = NavigationMode.New)
+		public NavigatingCancelEventArgs(object? content, Uri? uri, NavigationMode mode = NavigationMode.New)
 		{
 			Content = content;
 			Uri = uri;
