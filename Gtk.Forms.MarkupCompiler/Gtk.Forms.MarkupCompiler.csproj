@@ -7,7 +7,7 @@
     <RootNamespace>Gtk.Forms.MarkupCompiler</RootNamespace>
     <PackageId>Gtk.Forms.MarkupCompiler</PackageId>
     <Description>Build-time WPF XAML markup compiler for the Gtk.Forms compatibility layer.</Description>
-    <!-- Packable (restored transitively via Gtk.Forms.Base); stable 4-part Version avoids NU5104. -->
+    <!-- Packable (restored transitively via Gtk.Forms.Wpf); stable 4-part Version avoids NU5104. -->
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <IsPackable>true</IsPackable>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
@@ -20,7 +20,7 @@
           compile-time reference to it (it is a build-time task only).
         - build/ props+targets are what NuGet auto-imports for a direct PackageReference;
           buildTransitive/ forwarders deliver the same to indirect consumers (reached via
-          Gtk.Forms.Base). The task DLL is packed under build/netstandard2.0/, exactly where
+          Gtk.Forms.Wpf). The task DLL is packed under build/netstandard2.0/, exactly where
           the props' _GFMarkupCompilerTasksDir default looks ($(MSBuildThisFileDirectory)<tfm>/).
         - SuppressDependenciesWhenPacking drops the Microsoft.Build.* API refs (ExcludeAssets
           =runtime already) from the nuspec; they are provided by the build host, not shipped.

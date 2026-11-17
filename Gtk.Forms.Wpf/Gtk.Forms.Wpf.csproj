@@ -4,19 +4,19 @@
 	  Meta-package: ships no compiled code of its own. Its purpose is to:
 	    1. Pull in the Gtk.Forms.* dependency chain (WindowsBase, PresentationFramework,
 	       MarkupCompiler) so a consumer needs only one PackageReference.
-	    2. Pack Gtk.Forms.Base.props/.targets into build/ and buildTransitive/ so NuGet
+	    2. Pack Gtk.Forms.Wpf.props/.targets into build/ and buildTransitive/ so NuGet
 	       auto-imports them in the consumer (NuGet only auto-imports
 	       build/$(PackageId).props|.targets).
 	       buildTransitive/ ensures the assets also flow to projects that reach this package
 	       transitively — build/ assets do not flow past the direct consumer.
-	    3. Pack the Gtk.Forms.ProjectConverter tool DLL into tools/ so Base.targets can
+	    3. Pack the Gtk.Forms.ProjectConverter tool DLL into tools/ so Gtk.Forms.Wpf.targets can
 	       invoke it via `dotnet <dll>` (RID-agnostic, no instance guard) to rewrite the
 	       consumer .csproj (strip UseWPF/UseWindowsForms, collapse TFM; OutputType is left as-is,
 	       so a WPF app keeps its WinExe). No injected Main is needed: WPF's entry point comes
 	       from the ApplicationDefinition compiled by the MarkupCompiler.
 	-->
 	<PropertyGroup>
-		<PackageId>Gtk.Forms.Base</PackageId>
+		<PackageId>Gtk.Forms.Wpf</PackageId>
 		<Description>Meta-package: add one PackageReference to run an existing WPF app on GTK 4 without editing controls, XAML, usings or namespaces. The package rewrites the consumer .csproj and pulls in the Gtk.Forms WPF compatibility layer.</Description>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<PackageOutputPath>$(XFPackageOutputPath)</PackageOutputPath>
@@ -76,10 +76,10 @@
 		  canonical "_._" marker satisfies it without shipping a real lib.
 		-->
 		<None Include="_._" Pack="true" PackagePath="\lib\net10.0\_._" />
-		<None Include="Gtk.Forms.Base.props"   Pack="true" PackagePath="\build\;\buildTransitive\" />
-		<None Include="Gtk.Forms.Base.targets" Pack="true" PackagePath="\build\;\buildTransitive\" />
+		<None Include="Gtk.Forms.Wpf.props"   Pack="true" PackagePath="\build\;\buildTransitive\" />
+		<None Include="Gtk.Forms.Wpf.targets" Pack="true" PackagePath="\build\;\buildTransitive\" />
 		<!--
-		  Pack the entire net10.0 output of ProjectConverter into tools/ so Base.targets can
+		  Pack the entire net10.0 output of ProjectConverter into tools/ so Gtk.Forms.Wpf.targets can
 		  invoke it as `dotnet tools/Gtk.Forms.ProjectConverter.dll` (RID-agnostic). The Link
 		  metadata is cosmetic (shown in VS) but does not affect the PackagePath.
 		-->

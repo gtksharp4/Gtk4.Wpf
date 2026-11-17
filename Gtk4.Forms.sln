@@ -73,7 +73,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk.Forms.ProjectConverter"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk.Forms.ProjectConverter.Tests", "Gtk.Forms.ProjectConverter.Tests\Gtk.Forms.ProjectConverter.Tests.csproj", "{2AA1C21D-567A-4CF0-A718-A0DCAAB871D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk.Forms.Base", "Gtk.Forms.Base\Gtk.Forms.Base.csproj", "{AED658D7-9E85-4E55-9564-A66395C5B02D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk.Forms.Wpf", "Gtk.Forms.Wpf\Gtk.Forms.Wpf.csproj", "{AED658D7-9E85-4E55-9564-A66395C5B02D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk.Forms.WpfSample", "Gtk.Forms.WpfSample\Gtk.Forms.WpfSample.csproj", "{A5724D86-3A93-46E1-8257-4D72FD5C5F16}"
 EndProject

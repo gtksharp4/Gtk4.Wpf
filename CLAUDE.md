@@ -221,7 +221,7 @@ property + routed-event system, pure netstandard2.0), `Gtk.Forms.PresentationFra
 (`UIElement`→`Window`/controls + a one-way binding engine, rendering on GtkSharp 4, net10.0), and
 `Gtk.Forms.MarkupCompiler` (a build-time, System.Xaml-free MSBuild task that generates
 `InitializeComponent` from the untouched presentation-namespace XAML — `[assembly: XmlnsDefinition]`
-makes the WPF xmlns resolve to our types). `Gtk.Forms.Base` is the one-package drop-in (+ a WPF
+makes the WPF xmlns resolve to our types). `Gtk.Forms.Wpf` is the one-package drop-in (+ a WPF
 `Gtk.Forms.ProjectConverter`: strip `UseWPF`, `net*-windows`→`net10.0`, `OutputType=Exe`).
 `Gtk.Forms.WpfSample` is an unmodified-WPF app that compiles through the compiler as the end-to-end
 proof. **Phase 0** proved the architecture (four controls, one-way binding, ~104 tests). **Phase 1**

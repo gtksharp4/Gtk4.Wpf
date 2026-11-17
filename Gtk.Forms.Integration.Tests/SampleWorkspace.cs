@@ -5,7 +5,7 @@ namespace Gtk.Forms.Integration.Tests;
 
 /// <summary>
 /// Materialises the embedded WPF sample solution into a temporary directory and wires it to
-/// build against the locally-built <c>Gtk.Forms.Base</c> package.
+/// build against the locally-built <c>Gtk.Forms.Wpf</c> package.
 /// </summary>
 sealed class SampleWorkspace : IDisposable
 {
@@ -48,15 +48,15 @@ sealed class SampleWorkspace : IDisposable
 	}
 
 	/// <summary>
-	/// Adds the <c>Gtk.Forms.Base</c> PackageReference (this is what converts the WPF project
+	/// Adds the <c>Gtk.Forms.Wpf</c> PackageReference (this is what converts the WPF project
 	/// on build) and writes a nuget.config that resolves it from the local feed.
 	/// </summary>
-	public void UseGtkFormsBase(string packagesDir, string version)
+	public void UseGtkFormsWpf(string packagesDir, string version)
 	{
 		string csproj = File.ReadAllText(ProjectPath);
 		string itemGroup =
 			"  <ItemGroup>\n" +
-			$"    <PackageReference Include=\"Gtk.Forms.Base\" Version=\"{version}\" />\n" +
+			$"    <PackageReference Include=\"Gtk.Forms.Wpf\" Version=\"{version}\" />\n" +
 			"  </ItemGroup>\n\n";
 		File.WriteAllText(ProjectPath, csproj.Replace("</Project>", itemGroup + "</Project>"));
 

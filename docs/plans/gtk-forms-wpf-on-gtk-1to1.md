@@ -15,7 +15,7 @@ XAML stack, the property system, templates, triggers and the binding engine.
 | XAML → objects | **Build-time markup compiler** (like WPF's `PresentationBuildTasks`), not runtime loading |
 | Rendering substrate | **Hybrid** — reuse Gtk4.Forms GTK plumbing + control mappings; implement WPF-faithful layout/templating on GtkSharp 4 where the Forms model cannot express it |
 | Location | **This repo** (the Xamarin.Forms→GTK fork), next to the engine it depends on |
-| Delivery | A one-package drop-in, **`Gtk.Forms.Base`**, reusing the `Gtk4.Forms.Base` pattern just built |
+| Delivery | A one-package drop-in, **`Gtk.Forms.Wpf`**, reusing the `Gtk4.Forms.Base` pattern just built |
 
 ## Reality check — 1:1 is a program, not a task
 
@@ -110,7 +110,7 @@ Reimplement per WPF semantics: the `Binding` engine (`Path`, `Mode`, `Converter`
 `Trigger`/`DataTrigger`/`MultiTrigger`/`EventTrigger`. Gtk4.Forms has analogues to study but different
 semantics; this is new code.
 
-### F. Drop-in delivery (`Gtk.Forms.Base`)
+### F. Drop-in delivery (`Gtk.Forms.Wpf`)
 
 Reuse the pattern shipped in `Gtk4.Forms.Base` (see `Gtk4.Forms.Base/` + `Gtk4.Forms.ProjectConverter/`):
 one `PackageReference` that (1) rewrites the consumer `.csproj` — strip `<UseWPF>`/`net*-windows`,
@@ -140,15 +140,15 @@ control library.
 | B1 | `[assembly: XmlnsDefinition]` + the forked compiler resolves **unmodified** presentation-namespace XAML to our `System.Windows.Controls.*` types | A `<Window><Grid><TextBlock Text="hi"/></Grid></Window>` (verbatim WPF XAML, WPF `x:Class` code-behind) compiles with our markup task — `InitializeComponent` generated, no XAML edits |
 | B2 | `DependencyObject`/`DependencyProperty` carries a bound value with inheritance + change notification | A `{Binding}` on `TextBlock.Text` to an `INotifyPropertyChanged` VM updates the widget |
 | B3 | The hybrid bridge paints on GTK via the engine | That window shows a GTK label reading "hi" on Windows **and** headless Linux (Xvfb) |
-| B4 | The drop-in works | A stock WPF project + `<PackageReference Include="Gtk.Forms.Base">` builds to a cross-platform exe (two-build conversion) and runs |
+| B4 | The drop-in works | A stock WPF project + `<PackageReference Include="Gtk.Forms.Wpf">` builds to a cross-platform exe (two-build conversion) and runs |
 
-Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (minimal) + `Window`/`Grid`/`TextBlock`/`Button` on Tier 1 + a one-way `Binding` + `Gtk.Forms.Base`. One window, one binding, running on two OSes.
+Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (minimal) + `Window`/`Grid`/`TextBlock`/`Button` on Tier 1 + a one-way `Binding` + `Gtk.Forms.Wpf`. One window, one binding, running on two OSes.
 
 ## Progress (living)
 
 - **Phase 0 — DONE.** `Gtk.Forms.WindowsBase` (property/event system), `Gtk.Forms.MarkupCompiler`
   (build-time compiler), `Gtk.Forms.PresentationFramework` (`UIElement`→`Window`/`Grid`/`StackPanel`/
-  `TextBlock`/`Button` + one-way binding on GtkSharp 4), `Gtk.Forms.ProjectConverter` + `Gtk.Forms.Base`
+  `TextBlock`/`Button` + one-way binding on GtkSharp 4), `Gtk.Forms.ProjectConverter` + `Gtk.Forms.Wpf`
   (drop-in), and `Gtk.Forms.WpfSample` (unmodified WPF, compiles through the compiler). ~104 tests;
   blocking checks B1–B4 pass. Reviewed (no foundational defect); inheritance-on-reparent, leaks and
   compile-compat fixed.
@@ -854,7 +854,7 @@ regression suite.
   routed-event tunnel/bubble — fail-before/pass-after, no GTK needed.
 - **Markup-compiler unit tests**: given WPF XAML in, assert the generated `InitializeComponent`/IL
   (mirror how `Gtk4.Forms.Xaml.UnitTests` drives `XamlCTask` in-process via `MockCompiler`).
-- **Drop-in e2e**: a stock WPF repo + `Gtk.Forms.Base` → cross-platform exe, no source edits.
+- **Drop-in e2e**: a stock WPF repo + `Gtk.Forms.Wpf` → cross-platform exe, no source edits.
 
 ## Risks
 
@@ -870,7 +870,7 @@ regression suite.
 ## Recommendation
 
 Approve **Phase 0 only** first: the `WindowsBase` property-system subset + the forked markup compiler
-(minimal) + four controls on Tier 1 + one binding + `Gtk.Forms.Base`, proving **B1–B4**. That slice
+(minimal) + four controls on Tier 1 + one binding + `Gtk.Forms.Wpf`, proving **B1–B4**. That slice
 is small, fully testable, and settles every architectural unknown (xmlns binding, the compiler fork,
 the hybrid bridge, the drop-in). Only after it runs a real one-window WPF app unmodified on two OSes
 is it worth committing to the multi-phase build toward 1:1.

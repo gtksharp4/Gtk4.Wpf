@@ -21,7 +21,7 @@
 
     Dormant while the project is still WPF (UseWPF/UseWindowsForms set): on that FIRST build the
     WindowsDesktop SDK already adds its own default Page/ApplicationDefinition items, so emitting
-    ours too would fail with NETSDK1022 (duplicate items) before Gtk.Forms.Base's converter even
+    ours too would fail with NETSDK1022 (duplicate items) before Gtk.Forms.Wpf's converter even
     runs. The converter strips UseWPF; on the next build (plain Microsoft.NET.Sdk, which has no
     default Page items) these become the only XAML items and the markup compiler consumes them.
   -->

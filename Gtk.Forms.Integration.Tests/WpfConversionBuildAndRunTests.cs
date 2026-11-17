@@ -7,7 +7,7 @@ using Xunit;
 namespace Gtk.Forms.Integration.Tests;
 
 /// <summary>
-/// End-to-end: take the embedded WPF sample solution, add the <c>Gtk.Forms.Base</c> package
+/// End-to-end: take the embedded WPF sample solution, add the <c>Gtk.Forms.Wpf</c> package
 /// reference, build the solution (the package converts the project on the first build), run the
 /// produced executable, and kill it one second after its MainWindow appears.
 /// </summary>
@@ -23,22 +23,22 @@ public class WpfConversionBuildAndRunTests
 		if (packagesDir == null)
 			Assert.Skip("Repository Packages folder not found.");
 
-		string? version = PackageFeed.LatestVersion(packagesDir, "Gtk.Forms.Base");
+		string? version = PackageFeed.LatestVersion(packagesDir, "Gtk.Forms.Wpf");
 		if (version == null)
-			Assert.Skip("Gtk.Forms.Base package not in the Packages folder; build the solution first.");
+			Assert.Skip("Gtk.Forms.Wpf package not in the Packages folder; build the solution first.");
 
 		if (!GtkRuntime.IsAvailable())
 			Assert.Skip("Native GTK 4 runtime not found on PATH.");
 
 		using var ws = SampleWorkspace.Create();
-		ws.UseGtkFormsBase(packagesDir, version);
+		ws.UseGtkFormsWpf(packagesDir, version);
 
 		BuildSolution(ws);
 		RunAndKillAfterWindow(FindExecutable(ws.Root));
 	}
 
 	/// <summary>
-	/// The Gtk.Forms.Base converter rewrites the project on the first build and stops it with a
+	/// The Gtk.Forms.Wpf converter rewrites the project on the first build and stops it with a
 	/// "re-run the build" error; the second build compiles the converted project. Try twice.
 	/// </summary>
 	static void BuildSolution(SampleWorkspace ws)

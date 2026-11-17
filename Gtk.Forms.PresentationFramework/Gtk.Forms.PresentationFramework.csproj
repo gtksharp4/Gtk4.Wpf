@@ -18,7 +18,7 @@
     <RootNamespace>System.Windows</RootNamespace>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <!-- Packable (restored transitively via Gtk.Forms.Base); stable 4-part Version avoids NU5104. -->
+    <!-- Packable (restored transitively via Gtk.Forms.Wpf); stable 4-part Version avoids NU5104. -->
     <IsPackable>true</IsPackable>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <PackageOutputPath>$(XFPackageOutputPath)</PackageOutputPath>

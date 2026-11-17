@@ -12,7 +12,7 @@
     <RootNamespace>System.Windows</RootNamespace>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <!-- Packable (a consumer restores it transitively via Gtk.Forms.Base). The stable 4-part Version
+    <!-- Packable (a consumer restores it transitively via Gtk.Forms.Wpf). The stable 4-part Version
          keeps the Base package's dependency on it stable rather than prerelease (NU5104). -->
     <IsPackable>true</IsPackable>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
