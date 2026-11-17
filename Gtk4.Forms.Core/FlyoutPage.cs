@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Platform;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[RenderWith(typeof(_FlyoutPageRenderer))]
 	[ContentProperty("Detail")]

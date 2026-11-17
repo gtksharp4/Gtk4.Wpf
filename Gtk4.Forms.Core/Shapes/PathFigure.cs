@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xamarin.Forms.Shapes
+namespace Gtk4.Forms.Shapes
 {
 	[ContentProperty("Segments")]
 	public sealed class PathFigure : BindableObject, IAnimatable

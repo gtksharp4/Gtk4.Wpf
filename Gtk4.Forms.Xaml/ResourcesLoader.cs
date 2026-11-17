@@ -1,10 +1,10 @@
 ﻿using System.IO;
 using System.Reflection;
 using System.Xml;
-using Xamarin.Forms;
+using Gtk4.Forms;
 
-[assembly: Dependency(typeof(Xamarin.Forms.Xaml.ResourcesLoader))]
-namespace Xamarin.Forms.Xaml
+[assembly: Dependency(typeof(Gtk4.Forms.Xaml.ResourcesLoader))]
+namespace Gtk4.Forms.Xaml
 {
 	class ResourcesLoader : IResourcesLoader
 	{

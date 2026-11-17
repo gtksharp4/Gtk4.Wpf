@@ -1,8 +1,8 @@
 ﻿using System;
 using Xunit;
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public partial class AutomationProperties : ContentPage
 {
@@ -37,7 +37,7 @@ public partial class AutomationProperties : ContentPage
 		{
 			var layout = new AutomationProperties(useCompiledXaml);
 
-			Assert.Equal("Name", (string)layout.entry.GetValue(Xamarin.Forms.AutomationProperties.NameProperty));
+			Assert.Equal("Name", (string)layout.entry.GetValue(Gtk4.Forms.AutomationProperties.NameProperty));
 		}
 
 		[Theory]
@@ -47,7 +47,7 @@ public partial class AutomationProperties : ContentPage
 		{
 			var layout = new AutomationProperties(useCompiledXaml);
 
-			Assert.Equal("Sets your name", (string)layout.entry.GetValue(Xamarin.Forms.AutomationProperties.HelpTextProperty));
+			Assert.Equal("Sets your name", (string)layout.entry.GetValue(Gtk4.Forms.AutomationProperties.HelpTextProperty));
 		}
 
 		[Theory]
@@ -58,7 +58,7 @@ public partial class AutomationProperties : ContentPage
 			var layout = new AutomationProperties(useCompiledXaml);
 			Application.Current.MainPage = layout;
 
-			Assert.True((bool)layout.entry.GetValue(Xamarin.Forms.AutomationProperties.IsInAccessibleTreeProperty));
+			Assert.True((bool)layout.entry.GetValue(Gtk4.Forms.AutomationProperties.IsInAccessibleTreeProperty));
 		}
 
 		[Theory]
@@ -69,7 +69,7 @@ public partial class AutomationProperties : ContentPage
 			var layout = new AutomationProperties(useCompiledXaml);
 			Application.Current.MainPage = layout;
 
-			Assert.Equal(layout.label, (Element)layout.entry.GetValue(Xamarin.Forms.AutomationProperties.LabeledByProperty));
+			Assert.Equal(layout.label, (Element)layout.entry.GetValue(Gtk4.Forms.AutomationProperties.LabeledByProperty));
 		}
 	}
 }

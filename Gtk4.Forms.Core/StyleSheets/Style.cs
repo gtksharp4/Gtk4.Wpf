@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Xml;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.StyleSheets
+namespace Gtk4.Forms.StyleSheets
 {
 	sealed class Style
 	{

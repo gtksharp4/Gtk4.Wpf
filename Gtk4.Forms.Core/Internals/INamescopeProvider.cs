@@ -1,8 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Xaml.Internals
+namespace Gtk4.Forms.Xaml.Internals
 {
 	[Obsolete]
 	[EditorBrowsable(EditorBrowsableState.Never)]

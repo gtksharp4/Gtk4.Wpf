@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Xamarin.Forms.StyleSheets
+namespace Gtk4.Forms.StyleSheets
 {
 	sealed class CssReader : TextReader
 	{

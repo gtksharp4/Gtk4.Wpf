@@ -6,9 +6,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Cadenza.Collections;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Internals
+namespace Gtk4.Forms.Internals
 {
 
 	[EditorBrowsable(EditorBrowsableState.Never)]

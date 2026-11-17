@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Build.Tasks;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Xaml
+namespace Gtk4.Forms.Xaml
 {
 	interface ICompiledTypeConverter
 	{
@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Xaml
 	}
 }
 
-namespace Xamarin.Forms.Core.XamlC
+namespace Gtk4.Forms.Core.XamlC
 {
 	//only used in unit tests to make sure the compiled InitializeComponent is invoked
 	class IsCompiledTypeConverter : ICompiledTypeConverter

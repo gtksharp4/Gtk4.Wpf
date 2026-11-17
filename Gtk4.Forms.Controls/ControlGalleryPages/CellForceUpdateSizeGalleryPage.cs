@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	[Preserve(AllMembers = true)]
 	public class CellForceUpdateSizeGalleryPage : NavigationPage

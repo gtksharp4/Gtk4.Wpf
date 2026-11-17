@@ -1,9 +1,9 @@
 ﻿using System.Security;
 using System.Text;
 using Pango;
-using Xamarin.Forms.Platform.GTK.Helpers;
+using Gtk4.Forms.Platform.GTK.Helpers;
 
-namespace Xamarin.Forms.Platform.GTK.Extensions;
+namespace Gtk4.Forms.Platform.GTK.Extensions;
 
 internal static class LabelExtensions
 {

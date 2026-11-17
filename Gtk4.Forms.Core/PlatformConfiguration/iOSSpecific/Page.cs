@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
+﻿namespace Gtk4.Forms.PlatformConfiguration.iOSSpecific
 {
 	using System.ComponentModel;
 	using FormsElement = Forms.Page;

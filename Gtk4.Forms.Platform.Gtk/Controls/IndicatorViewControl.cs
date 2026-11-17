@@ -1,10 +1,10 @@
 using System;
 using Cairo;
 
-namespace Xamarin.Forms.Platform.GTK.Controls;
+namespace Gtk4.Forms.Platform.GTK.Controls;
 
 /// <summary>
-/// Draws the indicator dots for <c>Xamarin.Forms.IndicatorView</c>. One DrawingArea painting
+/// Draws the indicator dots for <c>Gtk4.Forms.IndicatorView</c>. One DrawingArea painting
 /// every dot, rather than a Box of one widget per dot: the count changes as the bound
 /// collection changes, and repainting is far cheaper than adding and removing widgets.
 /// </summary>

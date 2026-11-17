@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 	public sealed class DependencyAttribute : Attribute

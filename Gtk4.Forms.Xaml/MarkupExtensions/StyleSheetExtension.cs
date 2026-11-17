@@ -2,12 +2,12 @@
 using System.IO;
 using System.Reflection;
 using System.Xml;
-using Xamarin.Forms.StyleSheets;
+using Gtk4.Forms.StyleSheets;
 
-namespace Xamarin.Forms.Xaml
+namespace Gtk4.Forms.Xaml
 {
 	[ContentProperty(nameof(Style))]
-	[ProvideCompiled("Xamarin.Forms.Core.XamlC.StyleSheetProvider")]
+	[ProvideCompiled("Gtk4.Forms.Core.XamlC.StyleSheetProvider")]
 	public sealed class StyleSheetExtension : IValueProvider
 	{
 		public string Style { get; set; }

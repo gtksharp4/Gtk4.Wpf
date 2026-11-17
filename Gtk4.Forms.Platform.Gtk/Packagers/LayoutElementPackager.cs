@@ -1,7 +1,7 @@
-﻿using Xamarin.Forms.Platform.GTK.Extensions;
-using Xamarin.Forms.Platform.GTK.Renderers;
+﻿using Gtk4.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Platform.GTK.Renderers;
 
-namespace Xamarin.Forms.Platform.GTK.Packagers;
+namespace Gtk4.Forms.Platform.GTK.Packagers;
 
 public class LayoutElementPackager : VisualElementPackager<LayoutRenderer>
 {

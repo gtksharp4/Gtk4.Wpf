@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	public class MacOSTestGallery : ContentPage
 	{

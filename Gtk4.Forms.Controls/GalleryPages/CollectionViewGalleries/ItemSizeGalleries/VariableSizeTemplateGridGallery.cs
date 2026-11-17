@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ItemSizeGalleries
+﻿namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.ItemSizeGalleries
 {
 	internal class VariableSizeTemplateGridGallery : ContentPage
 	{

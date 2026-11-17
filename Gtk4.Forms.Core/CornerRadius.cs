@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[DebuggerDisplay("TopLeft={TopLeft}, TopRight={TopRight}, BottomLeft={BottomLeft}, BottomRight={BottomRight}")]
 	[TypeConverter(typeof(CornerRadiusTypeConverter))]

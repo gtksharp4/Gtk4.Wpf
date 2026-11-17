@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Xunit;
-using Xamarin.Forms;
-using Xamarin.Forms.Build.Tasks;
+using Gtk4.Forms;
+using Gtk4.Forms.Build.Tasks;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 [XamlCompilation(XamlCompilationOptions.Skip)]
 public partial class Gh1978 : ContentPage

@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public interface IWebViewController : IViewController
 	{

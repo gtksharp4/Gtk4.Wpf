@@ -2,10 +2,10 @@
 using System.IO;
 
 
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms.Core.UnitTests;
 using Xunit;
 
-namespace Xamarin.Forms.StyleSheets.UnitTests;
+namespace Gtk4.Forms.StyleSheets.UnitTests;
 
 public class StyleTests : IDisposable
 {

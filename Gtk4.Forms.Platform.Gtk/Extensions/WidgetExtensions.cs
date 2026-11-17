@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Gtk;
 
-namespace Xamarin.Forms.Platform.GTK.Extensions;
+namespace Gtk4.Forms.Platform.GTK.Extensions;
 
 public static class WidgetExtensions
 {

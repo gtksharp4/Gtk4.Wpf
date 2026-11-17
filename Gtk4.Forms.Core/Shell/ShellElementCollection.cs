@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 
 	internal abstract class ShellElementCollection :

@@ -28,11 +28,11 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[DebuggerDisplay("X={X}, Y={Y}, Width={Width}, Height={Height}")]
 	[TypeConverter(typeof(RectangleTypeConverter))]
-	//[Obsolete("Xamarin.Forms.Rectangle is obsolete in 4.8. use Xamarin.Forms.Rect instead")]
+	//[Obsolete("Gtk4.Forms.Rectangle is obsolete in 4.8. use Gtk4.Forms.Rect instead")]
 	public struct Rectangle
 	{
 		public double X { get; set; }

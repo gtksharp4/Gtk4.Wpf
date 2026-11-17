@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public class DataPackageView
 	{

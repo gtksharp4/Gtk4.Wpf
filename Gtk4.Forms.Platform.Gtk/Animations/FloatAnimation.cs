@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xamarin.Forms.Platform.GTK.Animations;
+namespace Gtk4.Forms.Platform.GTK.Animations;
 
 internal class FloatAnimation : BaseAnimation
 {

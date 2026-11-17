@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Xunit;
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public class BasePage : ContentPage
 {
@@ -53,7 +53,7 @@ public class TestCases
 			<ContentPage
 			xmlns=""http://xamarin.com/schemas/2014/forms""
 			xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-			xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests""
+			xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests""
 			Title=""Home"">
 				<local:TestCases.InnerView>
 					<Label x:Name=""innerView""/>
@@ -89,7 +89,7 @@ public class TestCases
             <local:BasePage
                 xmlns=""http://xamarin.com/schemas/2014/forms""
                 xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-			    xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests""
+			    xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests""
                 x:Class=""Tramchester.App.Views.HomeView"">
                 <local:BasePage.Content>
                   <Label Text=""Hi There!"" />
@@ -190,7 +190,7 @@ public class TestCases
 						<ContentPage 
 							xmlns=""http://xamarin.com/schemas/2014/forms"" 
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-							xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+							xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests"">
 							<Label x:Name=""label"" Text=""{Binding Converter={x:Static local:ReverseConverter.Instance}, Mode=TwoWay}""/>
 						</ContentPage>";
 		var page = new ContentPage().LoadFromXaml(xaml);

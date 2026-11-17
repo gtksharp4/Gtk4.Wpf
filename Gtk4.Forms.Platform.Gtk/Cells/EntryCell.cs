@@ -1,9 +1,9 @@
 ﻿using System;
 using Gtk;
-using Xamarin.Forms.Platform.GTK.Controls;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Platform.GTK.Controls;
+using Gtk4.Forms.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Cells;
+namespace Gtk4.Forms.Platform.GTK.Cells;
 
 internal class EntryCell : CellBase
 {

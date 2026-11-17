@@ -2,12 +2,12 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Gtk;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK.Controls;
-using Xamarin.Forms.Platform.GTK.Extensions;
-using Xamarin.Forms.PlatformConfiguration.GTKSpecific;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Platform.GTK.Controls;
+using Gtk4.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.PlatformConfiguration.GTKSpecific;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers;
+namespace Gtk4.Forms.Platform.GTK.Renderers;
 
 public class TabbedPageRenderer : AbstractPageRenderer<NotebookWrapper, TabbedPage>
 {
@@ -178,14 +178,14 @@ public class TabbedPageRenderer : AbstractPageRenderer<NotebookWrapper, TabbedPa
 
 	void OnPagePropertyChanged(object sender, PropertyChangedEventArgs e)
 	{
-		if (e.PropertyName == Xamarin.Forms.Page.TitleProperty.PropertyName)
+		if (e.PropertyName == Gtk4.Forms.Page.TitleProperty.PropertyName)
 		{
 			var page = (Page)sender;
 			var index = TabbedPage.GetIndex(page);
 
 			Widget.SetTabLabelText(index, page.Title);
 		}
-		else if (e.PropertyName == Xamarin.Forms.Page.IconImageSourceProperty.PropertyName)
+		else if (e.PropertyName == Gtk4.Forms.Page.IconImageSourceProperty.PropertyName)
 		{
 			var page = (Page)sender;
 			var index = TabbedPage.GetIndex(page);

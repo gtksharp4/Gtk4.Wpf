@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
-using Xamarin.Forms.Platform.GTK.Extensions;
-using Xamarin.Forms.PlatformConfiguration.GTKSpecific;
+using Gtk4.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.PlatformConfiguration.GTKSpecific;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers;
+namespace Gtk4.Forms.Platform.GTK.Renderers;
 
 public class BoxViewRenderer : ViewRenderer<BoxView, Controls.BoxView>
 {

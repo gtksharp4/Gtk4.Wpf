@@ -1,6 +1,6 @@
 using Gtk;
 
-namespace Xamarin.Forms.Platform.GTK.Helpers;
+namespace Gtk4.Forms.Platform.GTK.Helpers;
 
 public class GrabHelper
 {

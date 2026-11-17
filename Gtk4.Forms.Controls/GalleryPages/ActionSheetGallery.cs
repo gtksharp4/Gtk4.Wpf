@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	public class ActionSheetGallery : ContentPage
 	{

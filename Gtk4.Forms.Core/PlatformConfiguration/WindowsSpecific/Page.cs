@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
+namespace Gtk4.Forms.PlatformConfiguration.WindowsSpecific
 {
 	using FormsElement = Forms.Page;
 

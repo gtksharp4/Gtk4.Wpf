@@ -2,7 +2,7 @@
 using Xunit;
 
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 public class StepperUnitTests : BaseTestFixture
 {
@@ -210,7 +210,7 @@ public class StepperUnitTests : BaseTestFixture
 	[InlineData(100, .0000000003, -10000, 10000)]
 	[InlineData(100, .0000000000003, -10000, 10000)]
 	[InlineData(100, .00003456, -10000, 10000)] //we support 4 significant digits for the increment. no less, no more
-	//https://github.com/pieroviano/Xamarin.Forms/issues/5168
+	//https://github.com/pieroviano/Gtk4.Forms/issues/5168
 	public void SmallIncrements(int steps, double increment, double min, double max)
 	{
 		var stepper = new Stepper(min, max, 0, increment);
@@ -230,7 +230,7 @@ public class StepperUnitTests : BaseTestFixture
 	}
 
 	[Fact]
-	//https://github.com/pieroviano/Xamarin.Forms/issues/10032
+	//https://github.com/pieroviano/Gtk4.Forms/issues/10032
 	public void InitialValue()
 	{
 		var increment = .1;

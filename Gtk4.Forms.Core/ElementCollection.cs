@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	internal class ElementCollection<T> : ObservableWrapper<Element, T> where T : Element
 	{

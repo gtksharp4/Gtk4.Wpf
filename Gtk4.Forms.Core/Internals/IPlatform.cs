@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 
-namespace Xamarin.Forms.Internals
+namespace Gtk4.Forms.Internals
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	[Obsolete("This interface is obsolete as of 3.5.0. Do not use it.")]

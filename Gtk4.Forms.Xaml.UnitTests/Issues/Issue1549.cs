@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using Xunit;
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public class SeverityColorConverter : IValueConverter
 {
@@ -73,7 +73,7 @@ public class Issue1549
 <ContentPage 							
 xmlns=""http://xamarin.com/schemas/2014/forms"" 
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-							xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+							xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests"">
 
 <ContentPage.Resources>
 <ResourceDictionary>
@@ -102,7 +102,7 @@ xmlns=""http://xamarin.com/schemas/2014/forms""
 <ContentPage 							
 xmlns=""http://xamarin.com/schemas/2014/forms"" 
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-							xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+							xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests"">
 
 <ContentPage.Resources>
 <ResourceDictionary>
@@ -130,7 +130,7 @@ xmlns=""http://xamarin.com/schemas/2014/forms""
 		var xaml = @"<local:BaseView 
 	xmlns=""http://xamarin.com/schemas/2014/forms"" 
 	xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"" 
-  	xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests""
+  	xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests""
 	Padding=""0,40,0,0"">
     <local:BaseView.Resources>
     <ResourceDictionary>

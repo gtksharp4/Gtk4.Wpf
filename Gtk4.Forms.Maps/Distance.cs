@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace Xamarin.Forms.Maps
+namespace Gtk4.Forms.Maps
 {
 	public struct Distance
 	{

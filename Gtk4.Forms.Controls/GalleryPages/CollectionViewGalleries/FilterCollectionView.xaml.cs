@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Xaml;
+﻿using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class FilterCollectionView : ContentPage

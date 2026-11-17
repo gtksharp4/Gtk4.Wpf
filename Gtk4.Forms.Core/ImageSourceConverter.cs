@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[Xaml.TypeConversion(typeof(ImageSource))]
 	public sealed class ImageSourceConverter : TypeConverter

@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[TypeConverter(typeof(FileImageSourceConverter))]
 	public sealed class FileImageSource : ImageSource

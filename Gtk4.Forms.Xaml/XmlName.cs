@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Xamarin.Forms.Xaml
+namespace Gtk4.Forms.Xaml
 {
 	[DebuggerDisplay("{NamespaceURI}:{LocalName}")]
 	internal struct XmlName

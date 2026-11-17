@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 
-namespace Xamarin.Forms.Internals
+namespace Gtk4.Forms.Internals
 {
 	[Flags]
 	[EditorBrowsable(EditorBrowsableState.Never)]

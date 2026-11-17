@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[Xaml.TypeConversion(typeof(Keyboard))]
 	public class KeyboardTypeConverter : TypeConverter

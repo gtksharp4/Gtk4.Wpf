@@ -3,10 +3,10 @@ using System.Linq;
 using System.Xml;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace Gtk4.Forms.Build.Tasks
 {
 	static class XmlTypeExtensions
 	{

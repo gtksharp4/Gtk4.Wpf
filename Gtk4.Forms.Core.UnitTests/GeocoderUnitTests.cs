@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Xamarin.Forms.Maps;
+using Gtk4.Forms.Maps;
 using Xunit;
 
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 public class GeocoderUnitTests : BaseTestFixture
 {

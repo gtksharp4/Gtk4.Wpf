@@ -1,7 +1,7 @@
 using System.Linq;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	[Preserve(AllMembers = true)]
 	public class EntryCellTest

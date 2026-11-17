@@ -1,11 +1,11 @@
 using System;
 using System.Globalization;
 using System.Linq;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
-	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.ColorTypeConverter")]
+	[Xaml.ProvideCompiled("Gtk4.Forms.Core.XamlC.ColorTypeConverter")]
 	[Xaml.TypeConversion(typeof(Color))]
 	public class ColorTypeConverter : TypeConverter
 	{

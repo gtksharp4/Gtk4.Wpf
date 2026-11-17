@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Xml;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace Gtk4.Forms.Build.Tasks
 {
 	[Serializable]
 	class BuildException : Exception

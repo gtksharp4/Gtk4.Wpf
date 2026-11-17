@@ -1,8 +1,8 @@
 ﻿using System;
 using Xunit;
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public partial class Issue6280 : ContentPage
 {

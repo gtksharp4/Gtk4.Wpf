@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 public class KeyboardTests : BaseTestFixture
 {

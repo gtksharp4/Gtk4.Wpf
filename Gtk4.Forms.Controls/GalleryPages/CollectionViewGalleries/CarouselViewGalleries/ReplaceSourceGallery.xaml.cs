@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
 {
 	public partial class ReplaceSourceGallery : ContentPage
 	{

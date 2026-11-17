@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Windows.Input;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public sealed class Command<T> : Command
 	{

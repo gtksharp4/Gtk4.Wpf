@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 
-namespace Xamarin.Forms.Platform.GTK.UnitTests;
+namespace Gtk4.Forms.Platform.GTK.UnitTests;
 
 /// <summary>
 /// Lets a thread-0 runner (see <c>Program.RunOnThreadZero</c>, used on macOS) own the thread GTK

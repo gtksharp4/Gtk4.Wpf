@@ -1,7 +1,7 @@
 using System;
-using Xamarin.Forms.Platform;
+using Gtk4.Forms.Platform;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[RenderWith(typeof(_TabbedPageRenderer))]
 	public class TabbedPage : MultiPage<Page>, IBarElement, IElementConfiguration<TabbedPage>

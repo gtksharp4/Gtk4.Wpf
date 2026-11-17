@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
+namespace Gtk4.Forms.PlatformConfiguration.iOSSpecific
 {
 	public enum UISearchBarStyle
 	{

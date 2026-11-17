@@ -31,9 +31,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Xaml
+namespace Gtk4.Forms.Xaml
 {
 	static class XamlParser
 	{

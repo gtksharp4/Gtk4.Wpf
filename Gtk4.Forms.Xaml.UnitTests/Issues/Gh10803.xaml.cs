@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using Xunit;
-using Xamarin.Forms;
-using Xamarin.Forms.Core.UnitTests;
-using Xamarin.Forms.Xaml.Diagnostics;
+using Gtk4.Forms;
+using Gtk4.Forms.Core.UnitTests;
+using Gtk4.Forms.Xaml.Diagnostics;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public partial class Gh10803 : ContentPage
 {
@@ -24,7 +24,7 @@ public partial class Gh10803 : ContentPage
 		{
 			Device.PlatformServices = new MockPlatformServices();
 			VisualDiagnostics.VisualTreeChanged += VTChanged;
-			debuggerinitialstate = Xamarin.Forms.Xaml.Diagnostics.DebuggerHelper._mockDebuggerIsAttached;
+			debuggerinitialstate = Gtk4.Forms.Xaml.Diagnostics.DebuggerHelper._mockDebuggerIsAttached;
 			DebuggerHelper._mockDebuggerIsAttached = true;
 		}
 

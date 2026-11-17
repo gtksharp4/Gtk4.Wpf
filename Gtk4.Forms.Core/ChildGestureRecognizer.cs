@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public sealed class ChildGestureRecognizer : IGestureRecognizer
 	{

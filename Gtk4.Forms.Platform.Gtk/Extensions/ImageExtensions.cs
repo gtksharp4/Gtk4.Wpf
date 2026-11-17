@@ -2,11 +2,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Gdk;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK.Renderers;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Platform.GTK.Renderers;
 using IOPath = System.IO.Path;
 
-namespace Xamarin.Forms.Platform.GTK.Extensions;
+namespace Gtk4.Forms.Platform.GTK.Extensions;
 
 public static class ImageExtensions
 {

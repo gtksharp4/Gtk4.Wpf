@@ -3,7 +3,7 @@ using Xunit;
 using System.Collections.Generic;
 
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 public class DatePickerUnitTest : BaseTestFixture
 {
@@ -182,7 +182,7 @@ public class DatePickerUnitTest : BaseTestFixture
 	}
 
 	[Fact]
-	//https://github.com/pieroviano/Xamarin.Forms/issues/5784
+	//https://github.com/pieroviano/Gtk4.Forms/issues/5784
 	public void SetMaxAndMinDateTimeToNow()
 	{
 		var datePicker = new DatePicker();

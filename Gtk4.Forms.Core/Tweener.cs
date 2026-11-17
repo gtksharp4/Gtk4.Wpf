@@ -25,9 +25,9 @@
 // THE SOFTWARE.
 
 using System;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	internal class Tweener
 	{

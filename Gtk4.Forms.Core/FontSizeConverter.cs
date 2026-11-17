@@ -1,9 +1,9 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[TypeConversion(typeof(double))]
 	public class FontSizeConverter : TypeConverter, IExtendedTypeConverter

@@ -1,5 +1,5 @@
 ﻿using System.Globalization;
-namespace Xamarin.Forms.Controls.GalleryPages.DateTimePickerGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.DateTimePickerGalleries
 {
 	public interface ILocalize
 	{

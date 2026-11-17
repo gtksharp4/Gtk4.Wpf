@@ -1,8 +1,8 @@
-﻿using Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+﻿using Gtk4.Forms.Controls.GalleryPages.PlatformSpecificsGalleries;
+using Gtk4.Forms.PlatformConfiguration;
+using Gtk4.Forms.PlatformConfiguration.iOSSpecific;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	public class PlatformSpecificsGallery : ContentPage
 	{

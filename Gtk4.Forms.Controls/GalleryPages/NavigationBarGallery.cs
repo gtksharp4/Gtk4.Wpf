@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using static Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage;
-namespace Xamarin.Forms.Controls
+using Gtk4.Forms.PlatformConfiguration;
+using Gtk4.Forms.PlatformConfiguration.AndroidSpecific.AppCompat;
+using Gtk4.Forms.PlatformConfiguration.iOSSpecific;
+using static Gtk4.Forms.PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage;
+namespace Gtk4.Forms.Controls
 {
 	public class NavigationBarGallery : ContentPage
 	{

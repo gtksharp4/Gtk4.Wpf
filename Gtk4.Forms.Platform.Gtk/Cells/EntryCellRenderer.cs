@@ -1,8 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Cells;
+namespace Gtk4.Forms.Platform.GTK.Cells;
 
 public class EntryCellRenderer : CellRenderer
 {
@@ -20,7 +20,7 @@ public class EntryCellRenderer : CellRenderer
 
 	protected override Gtk.Container GetCellWidgetInstance(Cell item)
 	{
-		var entryCell = (Xamarin.Forms.EntryCell)item;
+		var entryCell = (Gtk4.Forms.EntryCell)item;
 
 		var label = entryCell.Label ?? string.Empty;
 		var labelColor = entryCell.LabelColor.ToGtkColor();
@@ -39,21 +39,21 @@ public class EntryCellRenderer : CellRenderer
 		base.CellPropertyChanged(sender, args);
 
 		var gtkEntryCell = (EntryCell)sender;
-		var entryCell = (Xamarin.Forms.EntryCell)gtkEntryCell.Cell;
+		var entryCell = (Gtk4.Forms.EntryCell)gtkEntryCell.Cell;
 
-		if (args.PropertyName == Xamarin.Forms.EntryCell.LabelProperty.PropertyName)
+		if (args.PropertyName == Gtk4.Forms.EntryCell.LabelProperty.PropertyName)
 		{
 			gtkEntryCell.Label = entryCell.Label ?? string.Empty;
 		}
-		else if (args.PropertyName == Xamarin.Forms.EntryCell.LabelColorProperty.PropertyName)
+		else if (args.PropertyName == Gtk4.Forms.EntryCell.LabelColorProperty.PropertyName)
 		{
 			gtkEntryCell.LabelColor = entryCell.LabelColor.ToGtkColor();
 		}
-		else if (args.PropertyName == Xamarin.Forms.EntryCell.TextProperty.PropertyName)
+		else if (args.PropertyName == Gtk4.Forms.EntryCell.TextProperty.PropertyName)
 		{
 			gtkEntryCell.Text = entryCell.Text ?? string.Empty;
 		}
-		else if (args.PropertyName == Xamarin.Forms.EntryCell.PlaceholderProperty.PropertyName)
+		else if (args.PropertyName == Gtk4.Forms.EntryCell.PlaceholderProperty.PropertyName)
 		{
 			gtkEntryCell.Placeholder = entryCell.Placeholder;
 		}
@@ -61,7 +61,7 @@ public class EntryCellRenderer : CellRenderer
 
 	private void OnTextChanged(object sender, string text)
 	{
-		((Xamarin.Forms.EntryCell)Cell).Text = text ?? string.Empty;
+		((Gtk4.Forms.EntryCell)Cell).Text = text ?? string.Empty;
 	}
 
 	private void OnEditingDone(object sender, EventArgs e)

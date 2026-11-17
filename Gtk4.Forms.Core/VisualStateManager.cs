@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public static class VisualStateManager
 	{

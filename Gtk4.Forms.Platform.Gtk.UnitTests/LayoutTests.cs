@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
-using Xamarin.Forms;
+using Gtk4.Forms;
 using Xunit;
 
-namespace Xamarin.Forms.Platform.GTK.UnitTests;
+namespace Gtk4.Forms.Platform.GTK.UnitTests;
 
 /// <summary>
 /// Coverage target 3 of plan §10.2, and the regression net for M3's root causes. Every one of
@@ -269,7 +269,7 @@ public class LayoutTests : GtkTestBase
 
 	/// <summary>
 	/// The M3 residual, reduced to a unit test: the ControlGallery's CoreRootPage
-	/// (Xamarin.Forms.Controls/CoreGallery.cs:645) is an AbsoluteLayout with three
+	/// (Gtk4.Forms.Controls/CoreGallery.cs:645) is an AbsoluteLayout with three
 	/// proportional children that tile the page, and on screen the buttons painted on top of
 	/// the ListView rows.
 	///

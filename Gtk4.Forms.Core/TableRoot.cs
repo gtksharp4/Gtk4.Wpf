@@ -2,7 +2,7 @@ using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public sealed class TableRoot : TableSectionBase<TableSection>
 	{

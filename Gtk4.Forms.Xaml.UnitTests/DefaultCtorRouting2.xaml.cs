@@ -1,8 +1,8 @@
 ﻿using System;
 using Xunit;
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public partial class DefaultCtorRouting2 : ContentPage
 {
@@ -48,7 +48,7 @@ public partial class DefaultCtorRouting2 : ContentPage
 					return @"<?xml version=""1.0"" encoding=""UTF-8""?>
 <ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 	xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-	x:Class=""Xamarin.Forms.Xaml.UnitTests.DefaultCtorRouting2""
+	x:Class=""Gtk4.Forms.Xaml.UnitTests.DefaultCtorRouting2""
 	IsCompiled=""IsCompiled?"">
 </ContentPage>";
 				return null;

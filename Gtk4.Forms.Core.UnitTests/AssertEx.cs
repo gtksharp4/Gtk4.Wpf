@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 /// <summary>
 /// Small helpers for NUnit assertions with no direct xUnit counterpart.
@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Core.UnitTests;
 /// Record.Exception + Assert.Null - so the intent survives the migration and a throw
 /// still produces a clear failure rather than an unhandled exception.
 ///
-/// Mirrors Xamarin.Forms.Xaml.UnitTests/AssertEx.cs, which the earlier migration of that
+/// Mirrors Gtk4.Forms.Xaml.UnitTests/AssertEx.cs, which the earlier migration of that
 /// project introduced for the same reason.
 /// </remarks>
 public static class AssertEx

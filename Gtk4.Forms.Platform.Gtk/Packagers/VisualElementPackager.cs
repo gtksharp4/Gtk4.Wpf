@@ -1,7 +1,7 @@
 ﻿using System;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Packagers;
+namespace Gtk4.Forms.Platform.GTK.Packagers;
 
 public class VisualElementPackager<TElementRenderer> : IDisposable
 	where TElementRenderer : class, IVisualElementRenderer

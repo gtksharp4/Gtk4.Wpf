@@ -1,3 +1,3 @@
-﻿using Xamarin.Forms.Internals;
+﻿using Gtk4.Forms.Internals;
 
 [assembly: Preserve]

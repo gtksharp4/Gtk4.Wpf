@@ -3,11 +3,11 @@ using System.IO;
 using System.Linq;
 using Microsoft.Build.Utilities;
 using Xunit;
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms.Build.Tasks;
+using Gtk4.Forms.Core.UnitTests;
 using IOPath = System.IO.Path;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public class XamlgFileLockTests : BaseTestFixture
 {

@@ -1,12 +1,12 @@
 using System;
 using System.Linq;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.PlatformConfiguration;
+using Gtk4.Forms.PlatformConfiguration.WindowsSpecific;
 
-using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+using WindowsOS = Gtk4.Forms.PlatformConfiguration.Windows;
 
-namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 {
 	internal static class WindowsPlatformSpecificsGalleryHelpers
 	{

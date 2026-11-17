@@ -9,11 +9,11 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.CSharp;
 using Mono.Cecil;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Xaml;
 using IOPath = System.IO.Path;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace Gtk4.Forms.Build.Tasks
 {
 	class XamlGenerator
 	{
@@ -173,7 +173,7 @@ namespace Xamarin.Forms.Build.Tasks
 		static Version version = typeof(XamlGenerator).Assembly.GetName().Version;
 		static CodeAttributeDeclaration GeneratedCodeAttrDecl =>
 			new CodeAttributeDeclaration(new CodeTypeReference($"global::{typeof(GeneratedCodeAttribute).FullName}"),
-						new CodeAttributeArgument(new CodePrimitiveExpression("Xamarin.Forms.Build.Tasks.XamlG")),
+						new CodeAttributeArgument(new CodePrimitiveExpression("Gtk4.Forms.Build.Tasks.XamlG")),
 						new CodeAttributeArgument(new CodePrimitiveExpression($"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}")));
 
 		void GenerateCode()
@@ -403,7 +403,7 @@ namespace Xamarin.Forms.Build.Tasks
 			var paths = References?.Split(';').Distinct().ToList() ?? new List<string>();
 			//Load xmlnsdef from Core and Xaml
 			paths.Add(typeof(Label).Assembly.Location);
-			paths.Add(typeof(Xamarin.Forms.Xaml.Extensions).Assembly.Location);
+			paths.Add(typeof(Gtk4.Forms.Xaml.Extensions).Assembly.Location);
 
 			foreach (var path in paths)
 			{

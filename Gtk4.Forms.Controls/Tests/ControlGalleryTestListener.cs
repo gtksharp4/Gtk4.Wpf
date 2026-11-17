@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using Xunit.Sdk;
 
-namespace Xamarin.Forms.Controls.Tests
+namespace Gtk4.Forms.Controls.Tests
 {
 	// The xUnit counterpart of NUnit's ITestListener. Everything the engine reports arrives
 	// here as an IMessageSinkMessage; the interesting ones are relayed over MessagingCenter

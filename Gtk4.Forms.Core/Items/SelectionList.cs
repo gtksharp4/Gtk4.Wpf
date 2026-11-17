@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	// Used by the SelectableItemsView to keep track of (and respond to changes in) the SelectedItems property
 	internal class SelectionList : IList<object>

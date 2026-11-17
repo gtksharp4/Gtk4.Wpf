@@ -4,9 +4,9 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Internals
+namespace Gtk4.Forms.Internals
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public interface IPlatformServices

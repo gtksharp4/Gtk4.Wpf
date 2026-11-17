@@ -1,7 +1,7 @@
 ﻿using System.Collections.Specialized;
 using System.ComponentModel;
 
-namespace Xamarin.Forms.Shapes
+namespace Gtk4.Forms.Shapes
 {
 	[ContentProperty("Children")]
 	public sealed class TransformGroup : Transform

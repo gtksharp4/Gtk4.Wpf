@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms
+﻿namespace Gtk4.Forms
 {
 	public abstract class ItemsLayout : BindableObject, IItemsLayout
 	{

@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Shapes
+﻿namespace Gtk4.Forms.Shapes
 {
 	public class ArcSegment : PathSegment
 	{

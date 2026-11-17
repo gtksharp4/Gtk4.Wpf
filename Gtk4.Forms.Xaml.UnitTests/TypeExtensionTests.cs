@@ -2,9 +2,9 @@
 using System.Reflection;
 using System.Xml;
 using Xunit;
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public class TypeExtensionTests : BaseTestFixture
 {
@@ -15,7 +15,7 @@ public class TypeExtensionTests : BaseTestFixture
 	{
 		var nsManager = new XmlNamespaceManager(new NameTable());
 		nsManager.AddNamespace("", "http://xamarin.com/schemas/2014/forms");
-		nsManager.AddNamespace("local", "clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests");
+		nsManager.AddNamespace("local", "clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests");
 		nsManager.AddNamespace("sys", "clr-namespace:System;assembly=mscorlib");
 		nsManager.AddNamespace("x", "http://schemas.microsoft.com/winfx/2006/xaml");
 

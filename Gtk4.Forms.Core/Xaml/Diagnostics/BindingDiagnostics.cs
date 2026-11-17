@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 using System;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Xaml.Diagnostics
+namespace Gtk4.Forms.Xaml.Diagnostics
 {
 	public class BindingDiagnostics
 	{

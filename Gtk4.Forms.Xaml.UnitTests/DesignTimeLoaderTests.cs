@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public class DesignTimeLoaderTests
 	: IDisposable{
 	public DesignTimeLoaderTests()
 	{
 		Device.PlatformServices = new MockPlatformServices();
-		Xamarin.Forms.Internals.Registrar.RegisterAll(new Type[0]);
+		Gtk4.Forms.Internals.Registrar.RegisterAll(new Type[0]);
 	}
 
 	public void Dispose()
@@ -21,8 +21,8 @@ public class DesignTimeLoaderTests
 		XamlLoader.ValueCreatedCallback = null;
 		XamlLoader.InstantiationFailedCallback = null;
 #pragma warning disable 0618
-		Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = null;
-		Xamarin.Forms.Xaml.Internals.XamlLoader.DoNotThrowOnExceptions = false;
+		Gtk4.Forms.Internals.ResourceLoader.ExceptionHandler = null;
+		Gtk4.Forms.Xaml.Internals.XamlLoader.DoNotThrowOnExceptions = false;
 #pragma warning restore 0618
 	}
 
@@ -32,7 +32,7 @@ public class DesignTimeLoaderTests
 		var xaml = @"
 				<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-					x:Class=""Xamarin.Forms.Xaml.UnitTests.CustomView""
+					x:Class=""Gtk4.Forms.Xaml.UnitTests.CustomView""
 				/>";
 
 		Assert.IsType<ContentPage>(XamlLoader.Create(xaml, true));
@@ -44,7 +44,7 @@ public class DesignTimeLoaderTests
 		var xaml = @"
 				<ContentView xmlns=""http://xamarin.com/schemas/2014/forms""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-					x:Class=""Xamarin.Forms.Xaml.UnitTests.CustomView""
+					x:Class=""Gtk4.Forms.Xaml.UnitTests.CustomView""
 				/>";
 
 		Assert.IsType<ContentView>(XamlLoader.Create(xaml, true));
@@ -403,7 +403,7 @@ public class DesignTimeLoaderTests
 
 		var exceptions = new List<Exception>();
 #pragma warning disable CS0618 // Type or member is obsolete
-		Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+		Gtk4.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
 #pragma warning restore CS0618 // Type or member is obsolete
 
 		var page = (ContentPage)XamlLoader.Create(xaml, true);
@@ -530,7 +530,7 @@ public class DesignTimeLoaderTests
 		var xaml = @"
 					<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 						xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-						xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests""
+						xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests""
 						xmlns:missing=""clr-namespace:MissingNamespace;assembly=MissingAssembly"">
 						<StackLayout>
 							<local:InstantiateThrows />
@@ -559,7 +559,7 @@ public class DesignTimeLoaderTests
 		var xaml = @"
 						<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-							xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+							xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests"">
 							<StackLayout>
 								<local:ReplacedType x:FactoryMethod=""CreateInstance"" />
 							</StackLayout>
@@ -575,13 +575,13 @@ public class DesignTimeLoaderTests
 		var xaml = @"
 					<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 						xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-						xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+						xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests"">
 						<local:SettingPropertyThrows TestValue=""Test"" TestBP=""bar""/>
 					</ContentPage>";
 
 		var exceptions = new List<Exception>();
 #pragma warning disable CS0618 // Type or member is obsolete
-		Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+		Gtk4.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
 #pragma warning restore CS0618 // Type or member is obsolete
 		AssertEx.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 		Assert.Equal(2, exceptions.Count);
@@ -593,13 +593,13 @@ public class DesignTimeLoaderTests
 		var xaml = @"
 					<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 						xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-						xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+						xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests"">
 						<Label BackgroundColor=""AlmostPink"" />
 					</ContentPage>";
 
 		var exceptions = new List<Exception>();
 #pragma warning disable CS0618 // Type or member is obsolete
-		Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+		Gtk4.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
 #pragma warning restore CS0618 // Type or member is obsolete
 		AssertEx.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 		Assert.Single(exceptions);
@@ -611,7 +611,7 @@ public class DesignTimeLoaderTests
 		var xaml = @"
 						<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-								xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+								xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests"">
 								<StackLayout>
 									<ListView ItemsSource=""{x:Static Foo}"" />
 									<ListView ItemsSource=""{local:Missing Test}"" />
@@ -620,7 +620,7 @@ public class DesignTimeLoaderTests
 						</ContentPage>";
 		var exceptions = new List<Exception>();
 #pragma warning disable CS0618 // Type or member is obsolete
-		Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+		Gtk4.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
 #pragma warning restore CS0618 // Type or member is obsolete
 		AssertEx.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 		Assert.True(exceptions.Count > 1);
@@ -686,7 +686,7 @@ public class DesignTimeLoaderTests
 		var xaml = @"
 					<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 						xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-						xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+						xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests"">
 						<StackLayout>
 							<local:Missing x:Name=""MyName"" />
 							<Button x:Name=""button"" />
@@ -695,7 +695,7 @@ public class DesignTimeLoaderTests
 					</ContentPage>";
 		var exceptions = new List<Exception>();
 #pragma warning disable CS0618 // Type or member is obsolete
-		Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+		Gtk4.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
 #pragma warning restore CS0618 // Type or member is obsolete
 		AssertEx.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 		Assert.True(exceptions.Count > 1);
@@ -712,7 +712,7 @@ public class DesignTimeLoaderTests
 
 		var exceptions = new List<Exception>();
 #pragma warning disable CS0618 // Type or member is obsolete
-		Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+		Gtk4.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
 #pragma warning restore CS0618 // Type or member is obsolete
 		var content = (ContentPage)XamlLoader.Create(xaml, true);
 		AssertEx.DoesNotThrow(() => content.FindByName<Button>("MyName"));
@@ -725,7 +725,7 @@ public class DesignTimeLoaderTests
 		var xaml = @"
 						<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-								xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+								xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests"">
 								<StackLayout>
 									<Label>xyz</Label>
 									<StackLayout>foo</StackLayout>
@@ -735,7 +735,7 @@ public class DesignTimeLoaderTests
 		XamlLoader.Create(xaml, true);
 		var exceptions = new List<Exception>();
 #pragma warning disable CS0618 // Type or member is obsolete
-		Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
+		Gtk4.Forms.Internals.ResourceLoader.ExceptionHandler = exceptions.Add;
 #pragma warning restore CS0618 // Type or member is obsolete
 		AssertEx.DoesNotThrow(() => XamlLoader.Create(xaml, true));
 		Assert.True(exceptions.Count >= 1);

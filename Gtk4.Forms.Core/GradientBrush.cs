@@ -2,7 +2,7 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[ContentProperty(nameof(GradientStops))]
 	public abstract class GradientBrush : Brush

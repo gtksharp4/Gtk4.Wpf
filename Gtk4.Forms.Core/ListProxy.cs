@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	internal sealed class ListProxy : IReadOnlyList<object>, IListProxy, INotifyCollectionChanged
 	{

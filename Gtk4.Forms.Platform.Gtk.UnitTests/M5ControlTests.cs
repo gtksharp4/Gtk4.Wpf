@@ -2,15 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.GTK.Controls;
-using Xamarin.Forms.Platform.GTK.Renderers;
+using Gtk4.Forms;
+using Gtk4.Forms.Platform.GTK.Controls;
+using Gtk4.Forms.Platform.GTK.Renderers;
 using Xunit;
-using FormsImageButton = Xamarin.Forms.ImageButton;
-using GtkImageButton = Xamarin.Forms.Platform.GTK.Controls.ImageButton;
-using LineShape = Xamarin.Forms.Shapes.Line;
+using FormsImageButton = Gtk4.Forms.ImageButton;
+using GtkImageButton = Gtk4.Forms.Platform.GTK.Controls.ImageButton;
+using LineShape = Gtk4.Forms.Shapes.Line;
 
-namespace Xamarin.Forms.Platform.GTK.UnitTests;
+namespace Gtk4.Forms.Platform.GTK.UnitTests;
 
 /// <summary>
 /// The M5 controls (plan §8.1/§8.2): CheckBox, ImageButton, Line, RefreshView, IndicatorView,
@@ -279,7 +279,7 @@ public class M5ControlTests : GtkTestBase
 	// ---- IndicatorView ---------------------------------------------------------------
 	//
 	// MEASURED, and it invalidates the obvious test: the IndicatorView's ALLOCATION is not the
-	// renderer's to decide. Xamarin.Forms.Core/IndicatorView.cs:112 overrides OnMeasure and,
+	// renderer's to decide. Gtk4.Forms.Core/IndicatorView.cs:112 overrides OnMeasure and,
 	// whenever IndicatorTemplate is null, returns
 	//
 	//     new SizeRequest(new Size(Count * (IndicatorSize + 4 + 4 + 1), IndicatorSize), ...)

@@ -4,10 +4,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 public class RelativeLayoutTests : BaseTestFixture
 {
@@ -115,7 +115,7 @@ public class RelativeLayoutTests : BaseTestFixture
 	}
 
 	[Fact]
-	//https://github.com/pieroviano/Xamarin.Forms/issues/2169
+	//https://github.com/pieroviano/Gtk4.Forms/issues/2169
 	public void BoundsUpdatedIfConstraintsChangedWhileNotParented()
 	{
 		var relativeLayout = new RelativeLayout

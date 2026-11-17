@@ -4,7 +4,7 @@ using Mono.Cecil;
 using Xunit;
 using IOPath = System.IO.Path;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public class MockAssemblyResolver : BaseAssemblyResolver
 {

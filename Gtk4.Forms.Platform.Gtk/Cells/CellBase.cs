@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Gtk;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Cells;
+namespace Gtk4.Forms.Platform.GTK.Cells;
 
 public abstract class CellBase : EventBox
 {

@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Platform.GTK.Extensions;
+﻿using Gtk4.Forms.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Controls;
+namespace Gtk4.Forms.Platform.GTK.Controls;
 
 // CustomCombobox, Gtk.Entry + Gtk.Button
 public class CustomComboBox : Gtk.Box

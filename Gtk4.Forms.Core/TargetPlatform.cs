@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[Obsolete]
 	[EditorBrowsable(EditorBrowsableState.Never)]

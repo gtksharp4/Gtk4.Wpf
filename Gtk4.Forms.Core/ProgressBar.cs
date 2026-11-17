@@ -1,10 +1,10 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Platform;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[RenderWith(typeof(_ProgressBarRenderer))]
 	public class ProgressBar : View, IElementConfiguration<ProgressBar>

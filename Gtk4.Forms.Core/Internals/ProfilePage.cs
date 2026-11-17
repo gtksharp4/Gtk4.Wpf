@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Xamarin.Forms;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Internals
+namespace Gtk4.Forms.Internals
 {
 	public class ProfileDatum
 	{

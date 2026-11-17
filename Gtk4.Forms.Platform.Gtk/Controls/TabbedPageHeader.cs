@@ -1,7 +1,7 @@
 ﻿using Gdk;
 using Gtk;
 
-namespace Xamarin.Forms.Platform.GTK.Controls;
+namespace Gtk4.Forms.Platform.GTK.Controls;
 
 public class TabbedPageHeader : Box
 {

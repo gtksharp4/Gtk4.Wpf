@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
-using Xamarin.Forms;
+using Gtk4.Forms;
 using Xunit;
 
-namespace Xamarin.Forms.Platform.GTK.UnitTests;
+namespace Gtk4.Forms.Platform.GTK.UnitTests;
 
 /// <summary>
 /// Tests of the harness itself, not of the backend.

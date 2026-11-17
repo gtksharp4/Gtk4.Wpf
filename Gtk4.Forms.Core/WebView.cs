@@ -5,10 +5,10 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Platform;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[RenderWith(typeof(_WebViewRenderer))]
 	public class WebView : View, IWebViewController, IElementConfiguration<WebView>
@@ -101,7 +101,7 @@ namespace Xamarin.Forms
 				return null;
 
 			//make all the platforms mimic Android's implementation, which is by far the most complete.
-			if (Xamarin.Forms.Device.RuntimePlatform != "Android")
+			if (Gtk4.Forms.Device.RuntimePlatform != "Android")
 			{
 				script = EscapeJsString(script);
 				script = "try{JSON.stringify(eval('" + script + "'))}catch(e){'null'};";

@@ -5,9 +5,9 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Xml;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.StyleSheets
+namespace Gtk4.Forms.StyleSheets
 {
 	public sealed class StyleSheet : IStyle
 	{

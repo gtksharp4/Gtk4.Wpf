@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[TypeConverter(typeof(FontTypeConverter))]
 	public struct Font

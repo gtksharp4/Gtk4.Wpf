@@ -2,9 +2,9 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[DebuggerDisplay("R={R}, G={G}, B={B}, A={A}, Hue={Hue}, Saturation={Saturation}, Luminosity={Luminosity}")]
 	[TypeConverter(typeof(ColorTypeConverter))]

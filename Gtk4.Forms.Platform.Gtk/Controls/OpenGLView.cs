@@ -2,12 +2,12 @@ using System;
 using System.Runtime.InteropServices;
 using Gtk;
 
-namespace Xamarin.Forms.Platform.GTK.Controls;
+namespace Gtk4.Forms.Platform.GTK.Controls;
 
 /// <summary>
 /// Hosts a <see cref="Gtk.GLArea"/> — the GTK 3.16+ widget that owns an OpenGL context and
 /// composites its framebuffer into the widget tree — and turns its <c>::render</c> signal into
-/// the <see cref="OnDisplay"/> callback that <c>Xamarin.Forms.OpenGLView</c> expects.
+/// the <see cref="OnDisplay"/> callback that <c>Gtk4.Forms.OpenGLView</c> expects.
 ///
 /// This replaces the OpenTK 3 <c>GLWidget</c> that used to live in <c>Controls/GLWidget/**</c>:
 /// that widget drove GLX/WGL/AGL by hand through per-platform "window info" initializers, all of
@@ -59,7 +59,7 @@ public class OpenGLView : EventBox
 	}
 
 	/// <summary>
-	/// The Forms-side draw callback (<c>Xamarin.Forms.OpenGLView.OnDisplay</c>). It is invoked
+	/// The Forms-side draw callback (<c>Gtk4.Forms.OpenGLView.OnDisplay</c>). It is invoked
 	/// from the <c>::render</c> signal with the GL context already current, and is handed the
 	/// area's allocation.
 	/// </summary>
@@ -71,7 +71,7 @@ public class OpenGLView : EventBox
 
 	/// <summary>
 	/// Drives a continuous redraw off the widget's frame clock while true. Mirrors
-	/// <c>Xamarin.Forms.OpenGLView.HasRenderLoop</c>.
+	/// <c>Gtk4.Forms.OpenGLView.HasRenderLoop</c>.
 	/// </summary>
 	public bool HasRenderLoop
 	{
@@ -145,7 +145,7 @@ public class OpenGLView : EventBox
 	public int RenderCount { get; private set; }
 
 	/// <summary>
-	/// Requests exactly one frame. This is what <c>Xamarin.Forms.OpenGLView.Display()</c> maps to.
+	/// Requests exactly one frame. This is what <c>Gtk4.Forms.OpenGLView.Display()</c> maps to.
 	/// Not named <c>Display</c>: <c>Gtk.Widget.Display</c> is the GdkDisplay property.
 	/// </summary>
 	public void RequestRender()

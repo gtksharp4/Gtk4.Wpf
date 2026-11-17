@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Internals;
+﻿using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.ShapesGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.ShapesGalleries
 {
 	[Preserve(AllMembers = true)]
 	public partial class PathGallery : ContentPage

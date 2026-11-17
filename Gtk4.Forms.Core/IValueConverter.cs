@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public interface IValueConverter
 	{

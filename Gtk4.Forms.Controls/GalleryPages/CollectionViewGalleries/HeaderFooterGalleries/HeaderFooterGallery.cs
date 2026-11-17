@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.HeaderFooterGalleries
+﻿namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.HeaderFooterGalleries
 {
 	internal class HeaderFooterGallery : ContentPage
 	{

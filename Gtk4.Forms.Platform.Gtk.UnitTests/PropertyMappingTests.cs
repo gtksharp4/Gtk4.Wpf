@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.GTK.Controls;
+using Gtk4.Forms;
+using Gtk4.Forms.Platform.GTK.Controls;
 using Xunit;
 
-namespace Xamarin.Forms.Platform.GTK.UnitTests;
+namespace Gtk4.Forms.Platform.GTK.UnitTests;
 
 /// <summary>
 /// Coverage target 2 of plan §10.2: Forms property to native property, both at creation and

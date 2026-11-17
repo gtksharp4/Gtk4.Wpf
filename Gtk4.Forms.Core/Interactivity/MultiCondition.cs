@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	internal sealed class MultiCondition : Condition
 	{

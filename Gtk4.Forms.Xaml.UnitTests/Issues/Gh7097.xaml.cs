@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Windows.Input;
 using Xunit;
-using Xamarin.Forms;
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms;
+using Gtk4.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public partial class Gh7097 : Gh7097Base
 {
@@ -53,7 +53,7 @@ public partial class Gh7097 : Gh7097Base
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
-		//this was later reported as https://github.com/pieroviano/Xamarin.Forms/issues/7286
+		//this was later reported as https://github.com/pieroviano/Gtk4.Forms/issues/7286
 		public void RegisteringXNameOnSubPages(bool useCompiledXaml)
 		{
 			var layout = new Gh7097(useCompiledXaml);

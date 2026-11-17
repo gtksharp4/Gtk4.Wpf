@@ -2,9 +2,9 @@
 <ContentPage
         xmlns="http://xamarin.com/schemas/2014/forms"
         xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-        x:Class="Xamarin.Forms.Xaml.UnitTests.Gh11334">
+        x:Class="Gtk4.Forms.Xaml.UnitTests.Gh11334">
     <StackLayout x:Name="stack">
-        <Label x:Name="label" Text="Welcome to Xamarin.Forms!!!!" 
+        <Label x:Name="label" Text="Welcome to Gtk4.Forms!!!!" 
            HorizontalOptions="Start"
            VerticalOptions="CenterAndExpand" />
         <StackLayout Orientation="Horizontal" HorizontalOptions="FillAndExpand">

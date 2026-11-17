@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	public class ImageSourcesGallery : NavigationPage
 	{
@@ -29,12 +29,12 @@ namespace Xamarin.Forms.Controls
 				new ImageSourcePickerItem
 				{
 					Text = "Embedded",
-					Getter = () => ImageSource.FromResource("Xamarin.Forms.Controls.GalleryPages.crimson.jpg", typeof(App))
+					Getter = () => ImageSource.FromResource("Gtk4.Forms.Controls.GalleryPages.crimson.jpg", typeof(App))
 				},
 				new ImageSourcePickerItem
 				{
 					Text = "Stream",
-					Getter = () => ImageSource.FromStream(() => typeof(App).GetTypeInfo().Assembly.GetManifestResourceStream("Xamarin.Forms.Controls.coffee.png"))
+					Getter = () => ImageSource.FromStream(() => typeof(App).GetTypeInfo().Assembly.GetManifestResourceStream("Gtk4.Forms.Controls.coffee.png"))
 				},
 				new ImageSourcePickerItem
 				{

@@ -3,9 +3,9 @@ using System.Collections;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace Gtk4.Forms.Build.Tasks
 {
 	class SetResourcesVisitor : IXamlNodeVisitor
 	{
@@ -72,8 +72,8 @@ namespace Xamarin.Forms.Build.Tasks
 		bool IsResourceDictionary(IElementNode node)
 		{
 			var parentVar = Context.Variables[(IElementNode)node];
-			return parentVar.VariableType.FullName == "Xamarin.Forms.ResourceDictionary"
-				|| parentVar.VariableType.ResolveCached().BaseType?.FullName == "Xamarin.Forms.ResourceDictionary";
+			return parentVar.VariableType.FullName == "Gtk4.Forms.ResourceDictionary"
+				|| parentVar.VariableType.ResolveCached().BaseType?.FullName == "Gtk4.Forms.ResourceDictionary";
 		}
 
 		public bool SkipChildren(INode node, INode parentNode)

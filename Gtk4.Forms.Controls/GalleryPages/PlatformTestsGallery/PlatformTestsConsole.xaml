@@ -5,9 +5,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" 
              Title="Platform Test Console"
-             xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
+             xmlns:ios="clr-namespace:Gtk4.Forms.PlatformConfiguration.iOSSpecific;assembly=Gtk4.Forms.Core"
              ios:Page.UseSafeArea="true"
-             x:Class="Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery.PlatformTestsConsole">
+             x:Class="Gtk4.Forms.Controls.GalleryPages.PlatformTestsGallery.PlatformTestsConsole">
     <ContentPage.Content>
         <StackLayout Margin="2">
             <Grid MinimumHeightRequest="100">

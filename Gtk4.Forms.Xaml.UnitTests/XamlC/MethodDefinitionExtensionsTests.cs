@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
 using Xunit;
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Xaml.UnitTests;
+using Gtk4.Forms.Build.Tasks;
+using Gtk4.Forms.Xaml.UnitTests;
 
-namespace Xamarin.Forms.XamlcUnitTests;
+namespace Gtk4.Forms.XamlcUnitTests;
 
 public class MethodDefinitionExtensionsTests : IDisposable
 {

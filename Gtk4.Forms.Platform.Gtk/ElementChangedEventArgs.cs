@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xamarin.Forms.Platform.GTK;
+namespace Gtk4.Forms.Platform.GTK;
 
 public class ElementChangedEventArgs<TElement> : EventArgs where TElement : Element
 {

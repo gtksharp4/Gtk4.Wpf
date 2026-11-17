@@ -1,11 +1,11 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
-	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.LayoutOptionsConverter")]
+	[Xaml.ProvideCompiled("Gtk4.Forms.Core.XamlC.LayoutOptionsConverter")]
 	[Xaml.TypeConversion(typeof(LayoutOptions))]
 	public sealed class LayoutOptionsConverter : TypeConverter
 	{

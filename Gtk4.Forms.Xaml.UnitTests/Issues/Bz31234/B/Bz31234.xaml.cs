@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using Xamarin.Forms;
+using Gtk4.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests.B;
+namespace Gtk4.Forms.Xaml.UnitTests.B;
 
 public partial class Bz31234 : ContentPage
 {

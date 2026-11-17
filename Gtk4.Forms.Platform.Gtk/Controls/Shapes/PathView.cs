@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using Cairo;
 using Gdk;
-using Xamarin.Forms.Platform.GTK.Extensions;
-using Xamarin.Forms.Shapes;
+using Gtk4.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Shapes;
 
-namespace Xamarin.Forms.Platform.GTK.Controls;
+namespace Gtk4.Forms.Platform.GTK.Controls;
 
 public class PathView : ShapeView
 {

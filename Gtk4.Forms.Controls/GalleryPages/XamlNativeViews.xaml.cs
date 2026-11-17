@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using Xamarin.Forms;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	public partial class XamlNativeViews : ContentPage
 	{

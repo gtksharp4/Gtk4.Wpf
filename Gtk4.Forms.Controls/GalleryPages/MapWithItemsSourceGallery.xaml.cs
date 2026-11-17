@@ -5,11 +5,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Maps;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Maps;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages
+namespace Gtk4.Forms.Controls.GalleryPages
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class MapWithItemsSourceGallery : ContentPage

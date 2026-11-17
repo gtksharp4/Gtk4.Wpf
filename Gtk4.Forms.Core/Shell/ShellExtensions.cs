@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Xamarin.Forms.Core
+namespace Gtk4.Forms.Core
 {
 	internal static class ShellExtensions
 	{

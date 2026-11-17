@@ -4,9 +4,9 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	// Don't add IElementConfiguration<Cell> because it kills performance on UWP structures that use Cells
 	public abstract class Cell : Element, ICellController, IFlowDirectionController, IPropertyPropagationController, IVisualController
@@ -43,7 +43,7 @@ namespace Xamarin.Forms
 			}
 		}
 
-		IVisual _effectiveVisual = Xamarin.Forms.VisualMarker.Default;
+		IVisual _effectiveVisual = Gtk4.Forms.VisualMarker.Default;
 		IVisual IVisualController.EffectiveVisual
 		{
 			get { return _effectiveVisual; }
@@ -56,7 +56,7 @@ namespace Xamarin.Forms
 				OnPropertyChanged(VisualElement.VisualProperty.PropertyName);
 			}
 		}
-		IVisual IVisualController.Visual => Xamarin.Forms.VisualMarker.MatchParent;
+		IVisual IVisualController.Visual => Gtk4.Forms.VisualMarker.MatchParent;
 
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => true;
 

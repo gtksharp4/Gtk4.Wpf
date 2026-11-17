@@ -10,9 +10,9 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Mdb;
 using Mono.Cecil.Pdb;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace Gtk4.Forms.Build.Tasks
 {
 	[LoadInSeparateAppDomain]
 	public abstract class XamlTask : MarshalByRefObject, ITask
@@ -109,7 +109,7 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			foreach (var ca in module.GetCustomAttributes())
 			{
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "XamlResourceIdAttribute"))))
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Gtk4.Forms.Core", "Gtk4.Forms.Xaml", "XamlResourceIdAttribute"))))
 					continue;
 				if (ca.ConstructorArguments[0].Value as string != resourceId)
 					continue;

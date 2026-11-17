@@ -1,7 +1,7 @@
 ﻿using Xunit;
-using Xamarin.Forms;
+using Gtk4.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public partial class XNull : ContentPage
 {

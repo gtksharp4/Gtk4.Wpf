@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.RefreshViewGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.RefreshViewGalleries
 {
 	[Preserve(AllMembers = true)]
 	public class RefreshViewGallery : ContentPage

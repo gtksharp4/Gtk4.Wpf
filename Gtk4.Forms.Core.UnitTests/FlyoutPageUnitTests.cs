@@ -1,9 +1,9 @@
 ﻿using System;
 
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 public class FlyoutPageUnitTests : BaseTestFixture
 {

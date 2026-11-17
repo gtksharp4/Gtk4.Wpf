@@ -1,9 +1,9 @@
 ﻿using System;
 using Mono.Cecil;
 using Xunit;
-using Xamarin.Forms.Build.Tasks;
+using Gtk4.Forms.Build.Tasks;
 
-namespace Xamarin.Forms.XamlcUnitTests;
+namespace Gtk4.Forms.XamlcUnitTests;
 
 public class ModuleDefinitionExtensionsTests : IDisposable
 {

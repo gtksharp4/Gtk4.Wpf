@@ -4,13 +4,13 @@ using System.Xml;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Build.Tasks;
+using Gtk4.Forms.Xaml;
 
 using static System.String;
-using static Xamarin.Forms.Build.Tasks.BuildExceptionCode;
+using static Gtk4.Forms.Build.Tasks.BuildExceptionCode;
 
-namespace Xamarin.Forms.Core.XamlC
+namespace Gtk4.Forms.Core.XamlC
 {
 	class BindablePropertyConverter : ICompiledTypeConverter
 	{

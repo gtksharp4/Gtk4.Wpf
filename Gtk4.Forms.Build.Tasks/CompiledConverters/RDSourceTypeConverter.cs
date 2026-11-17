@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Build.Tasks;
+using Gtk4.Forms.Xaml;
 using static Mono.Cecil.Cil.Instruction;
 using static Mono.Cecil.Cil.OpCodes;
 
-namespace Xamarin.Forms.Core.XamlC
+namespace Gtk4.Forms.Core.XamlC
 {
 	class RDSourceTypeConverter : ICompiledTypeConverter
 	{
@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Core.XamlC
 			if (resourceId == null)
 				throw new BuildException(BuildExceptionCode.ResourceMissing, node, null, value);
 
-			var resourceDictionaryType = ("Xamarin.Forms.Core", "Xamarin.Forms", "ResourceDictionary");
+			var resourceDictionaryType = ("Gtk4.Forms.Core", "Gtk4.Forms", "ResourceDictionary");
 
 			//abuse the converter, produce some side effect, but leave the stack untouched
 			//public void SetAndLoadSource(Uri value, string resourceID, Assembly assembly, System.Xml.IXmlLineInfo lineInfo)
@@ -95,7 +95,7 @@ namespace Xamarin.Forms.Core.XamlC
 		{
 			foreach (var ca in type.Module.GetCustomAttributes())
 			{
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "XamlResourceIdAttribute"))))
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Gtk4.Forms.Core", "Gtk4.Forms.Xaml", "XamlResourceIdAttribute"))))
 					continue;
 				if (!TypeRefComparer.Default.Equals(ca.ConstructorArguments[2].Value as TypeReference, type))
 					continue;

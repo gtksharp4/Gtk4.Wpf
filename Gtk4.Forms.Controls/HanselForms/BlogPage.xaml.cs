@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Xamarin.Forms;
+using Gtk4.Forms;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	public partial class BlogPage : ContentPage
 	{

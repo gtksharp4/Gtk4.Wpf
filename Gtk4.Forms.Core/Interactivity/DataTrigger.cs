@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[ContentProperty("Setters")]
-	[ProvideCompiled("Xamarin.Forms.Core.XamlC.PassthroughValueProvider")]
+	[ProvideCompiled("Gtk4.Forms.Core.XamlC.PassthroughValueProvider")]
 	[AcceptEmptyServiceProvider]
 	public sealed class DataTrigger : TriggerBase, IValueProvider
 	{

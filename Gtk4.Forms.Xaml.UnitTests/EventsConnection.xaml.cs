@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using Xunit;
-using Xamarin.Forms;
+using Gtk4.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public class BaseForEvents : ContentView
 {
@@ -80,7 +80,7 @@ public partial class EventsConnection : BaseForEvents
 
 	// This is necessary because the interpreter searches the class
 	// specified by x:Class for a static method.
-	// See: https://github.com/pieroviano/Xamarin.Forms/issues/5100
+	// See: https://github.com/pieroviano/Gtk4.Forms/issues/5100
 	static void HandleStaticClicked(object sender, EventArgs e)
 	{
 		staticClicked++;
@@ -185,7 +185,7 @@ public class SubForEvents : EventsConnection
 
 	// This is necessary because the interpreter searches the subclass
 	// for a static method.
-	// See: https://github.com/pieroviano/Xamarin.Forms/issues/5100
+	// See: https://github.com/pieroviano/Gtk4.Forms/issues/5100
 	static void HandleStaticClicked(object sender, EventArgs e)
 	{
 		staticClicked++;

@@ -2,9 +2,9 @@
 using System.Globalization;
 using System.Xml;
 using Xunit;
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public class FooConverter : TypeConverter
 {
@@ -127,7 +127,7 @@ public class TypeConverterTestsLegacy : BaseTestFixture
 		var bindable = new Bindable();
 
 		Assert.Null(bindable.Baz);
-		var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
+		var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
 		{
 			Properties = {
 				{ new XmlName (null, "Baz"), node },
@@ -147,7 +147,7 @@ public class TypeConverterTestsLegacy : BaseTestFixture
 		var bindable = new Bindable();
 
 		Assert.Null(bindable.Baz);
-		var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
+		var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
 		{
 			Properties = {
 				{ new XmlName (null, "Baz"), node },
@@ -165,7 +165,7 @@ public class TypeConverterTestsLegacy : BaseTestFixture
 		var bindable = new Bindable();
 
 		Assert.Null(bindable.Foo);
-		var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
+		var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
 		{
 			Properties = {
 				{ new XmlName (null, "Foo"), node },
@@ -187,7 +187,7 @@ public class TypeConverterTestsLegacy : BaseTestFixture
 		var bindable = new Bindable();
 
 		Assert.Null(bindable.Bar);
-		var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
+		var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
 		{
 			Properties = {
 				{ new XmlName (null, "Bar"), node },
@@ -208,10 +208,10 @@ public class TypeConverterTestsLegacy : BaseTestFixture
 		var bindable = new Bindable();
 
 		Assert.Null(Bindable.GetQux(bindable));
-		var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
+		var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
 		{
 			Properties = {
-				{ new XmlName ("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable.Qux"), node },
+				{ new XmlName ("clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests", "Bindable.Qux"), node },
 			}
 		};
 		var context = new HydrationContext { RootElement = new Label() };
@@ -229,7 +229,7 @@ public class TypeConverterTestsLegacy : BaseTestFixture
 		var bindable = new Bindable();
 
 		Assert.Null(bindable.FooBar);
-		var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
+		var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
 		{
 			Properties = {
 				{ new XmlName (null, "FooBar"), node },

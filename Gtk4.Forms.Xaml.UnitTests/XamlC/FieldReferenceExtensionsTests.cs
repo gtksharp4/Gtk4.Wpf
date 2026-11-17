@@ -2,10 +2,10 @@
 using System.Linq;
 using Mono.Cecil;
 using Xunit;
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Xaml.UnitTests;
+using Gtk4.Forms.Build.Tasks;
+using Gtk4.Forms.Xaml.UnitTests;
 
-namespace Xamarin.Forms.XamlcUnitTests;
+namespace Gtk4.Forms.XamlcUnitTests;
 
 public class FieldReferenceExtensionsTests : IDisposable
 {
@@ -56,11 +56,11 @@ public class FieldReferenceExtensionsTests : IDisposable
 		TypeReference declaringTypeReference;
 		FieldDefinition field = type.GetField(fd => fd.Name == "NonGenericField", out declaringTypeReference);
 		Assert.Equal("NonGenericField", field.Name);
-		Assert.Equal("Xamarin.Forms.XamlcUnitTests.FieldReferenceExtensionsTests/GenericClass`2", field.DeclaringType.FullName);
+		Assert.Equal("Gtk4.Forms.XamlcUnitTests.FieldReferenceExtensionsTests/GenericClass`2", field.DeclaringType.FullName);
 		Assert.False(field.DeclaringType.IsGenericInstance);
 		var genericField = field.ResolveGenericParameters(declaringTypeReference);
 		Assert.Equal("NonGenericField", genericField.Name);
-		Assert.Equal("Xamarin.Forms.XamlcUnitTests.FieldReferenceExtensionsTests/GenericClass`2<System.String,System.Double>", genericField.DeclaringType.FullName);
+		Assert.Equal("Gtk4.Forms.XamlcUnitTests.FieldReferenceExtensionsTests/GenericClass`2<System.String,System.Double>", genericField.DeclaringType.FullName);
 		Assert.True(genericField.DeclaringType.IsGenericInstance);
 	}
 
@@ -72,28 +72,28 @@ public class FieldReferenceExtensionsTests : IDisposable
 
 		FieldDefinition field1 = type.GetField(fd => fd.Name == "GenericField1", out declaringTypeReference);
 		Assert.Equal("GenericField1", field1.Name);
-		Assert.Equal("Xamarin.Forms.XamlcUnitTests.FieldReferenceExtensionsTests/GenericClass`2", field1.DeclaringType.FullName);
+		Assert.Equal("Gtk4.Forms.XamlcUnitTests.FieldReferenceExtensionsTests/GenericClass`2", field1.DeclaringType.FullName);
 		Assert.False(field1.DeclaringType.IsGenericInstance);
 		Assert.True(field1.FieldType.IsGenericParameter);
 		Assert.Equal("T1", field1.FieldType.FullName);
 
 		var genericField1 = field1.ResolveGenericParameters(declaringTypeReference);
 		Assert.Equal("GenericField1", genericField1.Name);
-		Assert.Equal("Xamarin.Forms.XamlcUnitTests.FieldReferenceExtensionsTests/GenericClass`2<System.String,System.Double>", genericField1.DeclaringType.FullName);
+		Assert.Equal("Gtk4.Forms.XamlcUnitTests.FieldReferenceExtensionsTests/GenericClass`2<System.String,System.Double>", genericField1.DeclaringType.FullName);
 		Assert.True(genericField1.DeclaringType.IsGenericInstance);
 		Assert.False(genericField1.FieldType.IsGenericParameter);
 		Assert.Equal("System.String", genericField1.FieldType.FullName);
 
 		FieldDefinition field2 = type.GetField(fd => fd.Name == "GenericField2", out declaringTypeReference);
 		Assert.Equal("GenericField2", field2.Name);
-		Assert.Equal("Xamarin.Forms.XamlcUnitTests.FieldReferenceExtensionsTests/GenericClass`2", field2.DeclaringType.FullName);
+		Assert.Equal("Gtk4.Forms.XamlcUnitTests.FieldReferenceExtensionsTests/GenericClass`2", field2.DeclaringType.FullName);
 		Assert.False(field2.DeclaringType.IsGenericInstance);
 		Assert.True(field2.FieldType.IsGenericParameter);
 		Assert.Equal("T2", field2.FieldType.FullName);
 
 		var genericField2 = field2.ResolveGenericParameters(declaringTypeReference);
 		Assert.Equal("GenericField2", genericField2.Name);
-		Assert.Equal("Xamarin.Forms.XamlcUnitTests.FieldReferenceExtensionsTests/GenericClass`2<System.String,System.Double>", genericField2.DeclaringType.FullName);
+		Assert.Equal("Gtk4.Forms.XamlcUnitTests.FieldReferenceExtensionsTests/GenericClass`2<System.String,System.Double>", genericField2.DeclaringType.FullName);
 		Assert.True(genericField2.DeclaringType.IsGenericInstance);
 		Assert.False(genericField2.FieldType.IsGenericParameter);
 		Assert.Equal("System.Double", genericField2.FieldType.FullName);

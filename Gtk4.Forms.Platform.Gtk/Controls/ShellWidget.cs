@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using Gtk;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Controls;
+namespace Gtk4.Forms.Platform.GTK.Controls;
 
 /// <summary>
-/// How the flyout relates to the content, mirroring <see cref="Xamarin.Forms.FlyoutBehavior"/>.
+/// How the flyout relates to the content, mirroring <see cref="Gtk4.Forms.FlyoutBehavior"/>.
 /// </summary>
 public enum ShellFlyoutBehaviorType
 {
@@ -17,7 +17,7 @@ public enum ShellFlyoutBehaviorType
 
 /// <summary>
 /// How the nav bar's search box is presented, mirroring
-/// <see cref="Xamarin.Forms.SearchBoxVisibility"/>.
+/// <see cref="Gtk4.Forms.SearchBoxVisibility"/>.
 /// </summary>
 public enum ShellSearchBoxMode
 {
@@ -27,7 +27,7 @@ public enum ShellSearchBoxMode
 }
 
 /// <summary>
-/// One nav bar toolbar entry, flattened out of a <see cref="Xamarin.Forms.ToolbarItem"/> so the
+/// One nav bar toolbar entry, flattened out of a <see cref="Gtk4.Forms.ToolbarItem"/> so the
 /// widget needs no Forms knowledge.
 /// </summary>
 public sealed class ShellToolbarItemInfo

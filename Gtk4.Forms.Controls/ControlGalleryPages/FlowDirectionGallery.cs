@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 
 	public class FlowDirectionGalleryLandingPage : ContentPage
@@ -205,16 +205,16 @@ namespace Xamarin.Forms.Controls
 				string parentType = ParentPage.GetType().ToString();
 				switch (parentType)
 				{
-					case "Xamarin.Forms.Controls.FlowDirectionGalleryMDP":
+					case "Gtk4.Forms.Controls.FlowDirectionGalleryMDP":
 						FlowDirectionGalleryLandingPage.PushFlyoutPage(newDirection);
 						break;
-					case "Xamarin.Forms.Controls.FlowDirectionGalleryCarP":
+					case "Gtk4.Forms.Controls.FlowDirectionGalleryCarP":
 						FlowDirectionGalleryLandingPage.PushCarouselPage(newDirection);
 						break;
-					case "Xamarin.Forms.Controls.FlowDirectionGalleryNP":
+					case "Gtk4.Forms.Controls.FlowDirectionGalleryNP":
 						FlowDirectionGalleryLandingPage.PushNavigationPage(newDirection);
 						break;
-					case "Xamarin.Forms.Controls.FlowDirectionGalleryTP":
+					case "Gtk4.Forms.Controls.FlowDirectionGalleryTP":
 						FlowDirectionGalleryLandingPage.PushTabbedPage(newDirection);
 						break;
 				}

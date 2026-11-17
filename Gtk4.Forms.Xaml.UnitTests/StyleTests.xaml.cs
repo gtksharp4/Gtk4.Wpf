@@ -1,10 +1,10 @@
 ﻿using System.Linq;
 using Xunit;
-using Xamarin.Forms;
-using Xamarin.Forms.Core.UnitTests;
-using Xamarin.Forms.Xaml.UnitTests;
+using Gtk4.Forms;
+using Gtk4.Forms.Core.UnitTests;
+using Gtk4.Forms.Xaml.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public partial class StyleTests : ContentPage
 {

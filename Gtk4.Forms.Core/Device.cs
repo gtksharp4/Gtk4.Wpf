@@ -5,9 +5,9 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public static class Device
 	{
@@ -62,7 +62,7 @@ namespace Xamarin.Forms
 			get
 			{
 				if (info == null)
-					throw new InvalidOperationException("You must call Xamarin.Forms.Forms.Init(); prior to using this property.");
+					throw new InvalidOperationException("You must call Gtk4.Forms.Forms.Init(); prior to using this property.");
 				return info;
 			}
 			set { info = value; }
@@ -84,7 +84,7 @@ namespace Xamarin.Forms
 			get
 			{
 				if (s_platformServices == null)
-					throw new InvalidOperationException("You must call Xamarin.Forms.Forms.Init(); prior to using this property.");
+					throw new InvalidOperationException("You must call Gtk4.Forms.Forms.Init(); prior to using this property.");
 				return s_platformServices;
 			}
 			set { s_platformServices = value; }

@@ -1,6 +1,6 @@
 using Xunit;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 [XamlCompilation(XamlCompilationOptions.Compile)]
 public partial class Gh4238

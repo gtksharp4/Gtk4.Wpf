@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Gtk;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK.Helpers;
-using Xamarin.Forms.Platform.GTK.Renderers;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Platform.GTK.Helpers;
+using Gtk4.Forms.Platform.GTK.Renderers;
 
-namespace Xamarin.Forms.Platform.GTK;
+namespace Gtk4.Forms.Platform.GTK;
 
 public class Platform : BindableObject, INavigation, IDisposable
 #pragma warning disable CS0618

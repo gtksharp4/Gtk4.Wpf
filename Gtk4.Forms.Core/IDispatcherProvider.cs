@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public interface IDispatcherProvider

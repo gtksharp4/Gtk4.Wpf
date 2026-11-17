@@ -5,7 +5,7 @@ using Xunit;
 using System.Threading.Tasks;
 
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 public class ScrollViewUnitTests : BaseTestFixture
 {

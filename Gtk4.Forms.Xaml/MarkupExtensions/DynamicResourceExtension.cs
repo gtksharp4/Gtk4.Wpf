@@ -1,7 +1,7 @@
 using System;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Xaml
+namespace Gtk4.Forms.Xaml
 {
 	[ContentProperty(nameof(Key))]
 	public sealed class DynamicResourceExtension : IMarkupExtension<DynamicResource>

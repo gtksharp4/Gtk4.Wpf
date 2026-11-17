@@ -11,15 +11,15 @@
         -->
         <Version>$(VersionPrefix).$(VersionSuffix)</Version>
         <PackageId>Gtk4.Forms.Platform.Gtk</PackageId>
-        <Description>GTK4 backend for Xamarin.Forms, built on GtkSharp 4 (GTK 4.22).</Description>
+        <Description>GTK4 backend for Gtk4.Forms, built on GtkSharp 4 (GTK 4.22).</Description>
         <IsPackable>true</IsPackable>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <AssemblyName>Xamarin.Forms.Platform.Gtk4</AssemblyName>
-        <!-- Capital GTK matches the source namespaces (Xamarin.Forms.Platform.GTK.*). A lowercase
-             RootNamespace put the 11 files without an explicit namespace into Xamarin.Forms.Platform.Gtk,
+        <AssemblyName>Gtk4.Forms.Platform.Gtk4</AssemblyName>
+        <!-- Capital GTK matches the source namespaces (Gtk4.Forms.Platform.GTK.*). A lowercase
+             RootNamespace put the 11 files without an explicit namespace into Gtk4.Forms.Platform.Gtk,
              which shadows GtkSharp's global Gtk namespace for consumers. -->
-        <RootNamespace>Xamarin.Forms.Platform.GTK</RootNamespace>
-        <Description>GTK4 Backend for Xamarin.Forms</Description>
+        <RootNamespace>Gtk4.Forms.Platform.GTK</RootNamespace>
+        <Description>GTK4 Backend for Gtk4.Forms</Description>
         <LangVersion>latest</LangVersion>
         <!--
           TRUE, so the SDK emits AssemblyVersion/FileVersion/InformationalVersion from the

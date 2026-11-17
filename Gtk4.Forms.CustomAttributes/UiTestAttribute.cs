@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace Xamarin.Forms.CustomAttributes
+namespace Gtk4.Forms.CustomAttributes
 {
 	[Conditional("DEBUG")]
 	[AttributeUsage(

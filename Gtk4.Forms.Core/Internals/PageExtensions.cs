@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace Xamarin.Forms.Internals
+namespace Gtk4.Forms.Internals
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class PageExtensions

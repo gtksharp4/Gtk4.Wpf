@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers;
+namespace Gtk4.Forms.Platform.GTK.Renderers;
 
 /// <summary>
 /// CollectionView on GTK: a <see cref="Gtk.ScrolledWindow"/> over a <see cref="Gtk.Viewport"/>

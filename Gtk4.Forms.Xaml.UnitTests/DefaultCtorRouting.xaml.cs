@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Xunit;
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Core.UnitTests;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Build.Tasks;
+using Gtk4.Forms.Core.UnitTests;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 [XamlCompilation(XamlCompilationOptions.Skip)]
 public partial class DefaultCtorRouting : ContentPage
@@ -41,7 +41,7 @@ public partial class DefaultCtorRouting : ContentPage
 	}
 }
 
-[ProvideCompiled("Xamarin.Forms.Core.XamlC.IsCompiledTypeConverter")]
+[ProvideCompiled("Gtk4.Forms.Core.XamlC.IsCompiledTypeConverter")]
 class IsCompiledTypeConverter : TypeConverter, ICompiledTypeConverter
 {
 	public override object ConvertFromInvariantString(string value)

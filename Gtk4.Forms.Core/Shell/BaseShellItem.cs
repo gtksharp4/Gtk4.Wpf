@@ -4,10 +4,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.StyleSheets;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.StyleSheets;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[DebuggerDisplay("Title = {Title}, Route = {Route}")]
 	public class BaseShellItem : NavigableElement, IPropertyPropagationController, IVisualController, IFlowDirectionController, ITabStopElement
@@ -206,7 +206,7 @@ namespace Xamarin.Forms
 
 		protected virtual bool TabStopDefaultValueCreator() => true;
 
-		IVisual _effectiveVisual = Xamarin.Forms.VisualMarker.Default;
+		IVisual _effectiveVisual = Gtk4.Forms.VisualMarker.Default;
 		IVisual IVisualController.EffectiveVisual
 		{
 			get { return _effectiveVisual; }
@@ -219,7 +219,7 @@ namespace Xamarin.Forms
 				OnPropertyChanged(VisualElement.VisualProperty.PropertyName);
 			}
 		}
-		IVisual IVisualController.Visual => Xamarin.Forms.VisualMarker.MatchParent;
+		IVisual IVisualController.Visual => Gtk4.Forms.VisualMarker.MatchParent;
 
 		static void OnIconChanged(BindableObject bindable, object oldValue, object newValue)
 		{

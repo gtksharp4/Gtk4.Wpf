@@ -5,12 +5,12 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
-	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.BindablePropertyConverter")]
+	[Xaml.ProvideCompiled("Gtk4.Forms.Core.XamlC.BindablePropertyConverter")]
 	[Xaml.TypeConversion(typeof(BindableProperty))]
 	public sealed class BindablePropertyConverter : TypeConverter, IExtendedTypeConverter
 	{
@@ -86,7 +86,7 @@ namespace Xamarin.Forms
 				Log.Warning(null, $"Can't resolve {value}. Accepted syntax is Type.PropertyName.");
 				return null;
 			}
-			Type type = Type.GetType("Xamarin.Forms." + parts[0]);
+			Type type = Type.GetType("Gtk4.Forms." + parts[0]);
 			return ConvertFrom(type, parts[1], null);
 		}
 

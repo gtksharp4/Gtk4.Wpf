@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[TypeConverter(typeof(ImageSourceConverter))]
 	public abstract class ImageSource : Element

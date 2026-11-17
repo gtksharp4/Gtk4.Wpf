@@ -1,8 +1,8 @@
 ﻿using System;
 using Gtk;
-using static Xamarin.Forms.Button;
+using static Gtk4.Forms.Button;
 
-namespace Xamarin.Forms.Platform.GTK.Extensions;
+namespace Gtk4.Forms.Platform.GTK.Extensions;
 
 public static class ButtonContentLayoutExtensions
 {

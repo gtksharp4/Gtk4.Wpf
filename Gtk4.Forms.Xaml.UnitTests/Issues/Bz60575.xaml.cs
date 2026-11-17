@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Xunit;
-using Xamarin.Forms.Core.UnitTests;
-namespace Xamarin.Forms.Xaml.UnitTests;
+using Gtk4.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public class Bz60575Helpers
 {

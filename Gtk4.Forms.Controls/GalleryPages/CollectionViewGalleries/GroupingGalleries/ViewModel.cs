@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGalleries
 {
 	[Preserve(AllMembers = true)]
 	class Team : List<Member>

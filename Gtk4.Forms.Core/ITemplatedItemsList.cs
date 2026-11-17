@@ -5,7 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public interface ITemplatedItemsList<TItem> : IReadOnlyList<TItem>, INotifyCollectionChanged where TItem : BindableObject
 	{

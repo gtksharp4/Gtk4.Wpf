@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.MSBuild.UnitTests;
+using Gtk4.Forms.Build.Tasks;
+using Gtk4.Forms.MSBuild.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public static class MockCompiler
 {

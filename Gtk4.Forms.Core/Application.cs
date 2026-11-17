@@ -4,10 +4,10 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Platform;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public class Application : Element, IResourcesProvider, IApplicationController, IElementConfiguration<Application>
 	{
@@ -53,7 +53,7 @@ namespace Xamarin.Forms
 				if (_appIndexProvider == null)
 					throw new ArgumentException("No IAppIndexingProvider was provided");
 				if (_appIndexProvider.AppLinks == null)
-					throw new ArgumentException("No AppLinks implementation was found, if in Android make sure you installed the Xamarin.Forms.AppLinks");
+					throw new ArgumentException("No AppLinks implementation was found, if in Android make sure you installed the Gtk4.Forms.AppLinks");
 				return _appIndexProvider.AppLinks;
 			}
 		}

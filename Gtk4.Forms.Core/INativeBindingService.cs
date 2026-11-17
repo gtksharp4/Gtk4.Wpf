@@ -1,4 +1,4 @@
-namespace Xamarin.Forms.Xaml.Internals
+namespace Gtk4.Forms.Xaml.Internals
 {
 
 	public interface INativeBindingService

@@ -1,5 +1,5 @@
 
-namespace Xamarin.Forms.PlatformConfiguration
+namespace Gtk4.Forms.PlatformConfiguration
 {
 	public sealed class Android : IConfigPlatform { }
 	public sealed class iOS : IConfigPlatform { }

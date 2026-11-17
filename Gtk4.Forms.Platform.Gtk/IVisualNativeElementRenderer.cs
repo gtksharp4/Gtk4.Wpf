@@ -1,6 +1,6 @@
 ﻿using Control = Gtk.Widget;
 
-namespace Xamarin.Forms.Platform.GTK;
+namespace Gtk4.Forms.Platform.GTK;
 
 public interface IVisualNativeElementRenderer : IVisualElementRenderer
 {

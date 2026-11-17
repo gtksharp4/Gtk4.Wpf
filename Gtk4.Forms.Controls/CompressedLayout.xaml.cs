@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using Xamarin.Forms;
+using Gtk4.Forms;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	public partial class CompressedLayout : ContentPage
 	{

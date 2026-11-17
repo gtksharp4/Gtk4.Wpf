@@ -34,7 +34,7 @@
 using System;
 using System.Text;
 
-namespace Xamarin.Forms.Xaml
+namespace Gtk4.Forms.Xaml
 {
 	abstract class MarkupExpressionParser
 	{

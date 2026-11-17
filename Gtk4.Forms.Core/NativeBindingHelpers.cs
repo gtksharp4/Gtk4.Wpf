@@ -4,11 +4,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
 using static System.String;
 
-namespace Xamarin.Forms.Internals
+namespace Gtk4.Forms.Internals
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class NativeBindingHelpers

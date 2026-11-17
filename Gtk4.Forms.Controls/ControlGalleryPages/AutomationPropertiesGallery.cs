@@ -1,5 +1,5 @@
 ﻿
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	public class AutomationPropertiesGallery : ContentPage
 	{

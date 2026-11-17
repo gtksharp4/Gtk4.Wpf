@@ -1,7 +1,7 @@
 ﻿using System;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class ButtonBorderBackgroundGalleryPage : ContentPage

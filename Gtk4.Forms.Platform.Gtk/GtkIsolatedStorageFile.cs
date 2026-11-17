@@ -2,9 +2,9 @@
 using System.IO;
 using System.IO.IsolatedStorage;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Platform.GTK;
+namespace Gtk4.Forms.Platform.GTK;
 
 public class GtkIsolatedStorageFile : IIsolatedStorageFile
 {

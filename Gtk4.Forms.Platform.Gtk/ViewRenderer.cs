@@ -1,6 +1,6 @@
 ﻿using NativeView = Gtk.Widget;
 
-namespace Xamarin.Forms.Platform.GTK;
+namespace Gtk4.Forms.Platform.GTK;
 
 public abstract class ViewRenderer : ViewRenderer<View, NativeView>
 {

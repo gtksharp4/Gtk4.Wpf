@@ -19,7 +19,7 @@
        PackageVersion string specified '1.0.0.+1048-sha.<commit>-azdo.' is invalid.
 
    Because every shipping csproj sets GeneratePackageOnBuild, that killed the plain
-   `dotnet build Xamarin.Forms.Gtk.sln` step in the workflow - CI could not build itself.
+   `dotnet build Gtk4.Forms.Gtk.sln` step in the workflow - CI could not build itself.
 
    TF_BUILD is Azure's own "I am a build agent" variable and is the correct gate. On GitHub
    Actions this is false and the normal PackageVersion on line 38 applies.
@@ -66,7 +66,7 @@
         The other six packable projects import Net4x.NuGetUtility, whose PrepareGenerateNuspecPack
         runs BeforeTargets="GenerateNuspec" - i.e. after this target - and overwrote PackageVersion
         with exactly $(VersionPrefix).$(VersionSuffix). The result was that the same commit packed
-        three different ways: six packages as 1.0.0.<yyddd> on Windows, Xamarin.Forms.Platform.GTK
+        three different ways: six packages as 1.0.0.<yyddd> on Windows, Gtk4.Forms.Platform.GTK
         (which deliberately does not import that tooling) as 1.0.0, and on Linux - where the
         tooling is skipped by its own '$(OS)' == 'Windows_NT' condition - all seven as 1.0.0.
         Computing the same value here makes that overwrite a no-op rather than the thing that

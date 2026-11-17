@@ -1,9 +1,9 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers;
+namespace Gtk4.Forms.Platform.GTK.Renderers;
 
 public class WebViewRenderer : ViewRenderer<WebView, Controls.WebView>, IWebViewDelegate, IEffectControlProvider
 {

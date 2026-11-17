@@ -1,7 +1,7 @@
 using System;
 using Gtk;
 
-namespace Xamarin.Forms.Platform.GTK;
+namespace Gtk4.Forms.Platform.GTK;
 
 /// <summary>
 /// Application-wide GTK theming.

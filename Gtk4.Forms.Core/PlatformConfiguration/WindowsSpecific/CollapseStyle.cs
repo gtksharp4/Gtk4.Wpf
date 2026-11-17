@@ -1,5 +1,5 @@
 
-namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
+namespace Gtk4.Forms.PlatformConfiguration.WindowsSpecific
 {
 	public enum CollapseStyle
 	{

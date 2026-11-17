@@ -1,8 +1,8 @@
 using System;
-using Xamarin.Forms.Internals;
-using static Xamarin.Forms.VisualElement;
+using Gtk4.Forms.Internals;
+using static Gtk4.Forms.VisualElement;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public interface IVisualElementController : IElementController
 	{

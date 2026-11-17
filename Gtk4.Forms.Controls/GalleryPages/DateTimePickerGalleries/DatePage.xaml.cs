@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using Xamarin.Forms;
+using Gtk4.Forms;
 
-namespace Xamarin.Forms.Controls.GalleryPages.DateTimePickerGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.DateTimePickerGalleries
 {
 	public partial class DatePage : ContentPage
 	{

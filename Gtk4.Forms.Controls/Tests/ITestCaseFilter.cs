@@ -1,6 +1,6 @@
 using Xunit.Sdk;
 
-namespace Xamarin.Forms.Controls.Tests
+namespace Gtk4.Forms.Controls.Tests
 {
 	// Replaces NUnit's ITestFilter. xUnit has no filter abstraction of its own below the
 	// runner-utility layer: discovery hands back a flat list of test cases and the runner

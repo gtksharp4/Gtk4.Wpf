@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Xamarin.Forms.Controls.Tests.TestClasses
+namespace Gtk4.Forms.Controls.Tests.TestClasses
 {
 	public class CustomButton : Button
 	{

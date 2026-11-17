@@ -1,8 +1,8 @@
 using System.Linq;
 using Mono.Cecil.Cil;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace Gtk4.Forms.Build.Tasks
 {
 	class SetFieldVisitor : IXamlNodeVisitor
 	{
@@ -22,8 +22,8 @@ namespace Xamarin.Forms.Build.Tasks
 		public bool IsResourceDictionary(ElementNode node)
 		{
 			var parentVar = Context.Variables[(IElementNode)node];
-			return parentVar.VariableType.FullName == "Xamarin.Forms.ResourceDictionary"
-				|| parentVar.VariableType.Resolve().BaseType?.FullName == "Xamarin.Forms.ResourceDictionary";
+			return parentVar.VariableType.FullName == "Gtk4.Forms.ResourceDictionary"
+				|| parentVar.VariableType.Resolve().BaseType?.FullName == "Gtk4.Forms.ResourceDictionary";
 		}
 
 		public void Visit(ValueNode node, INode parentNode)

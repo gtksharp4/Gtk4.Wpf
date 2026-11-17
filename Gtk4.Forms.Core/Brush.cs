@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	internal class ImmutableBrush : SolidColorBrush
 	{

@@ -2,8 +2,8 @@
 <ContentPage
 	xmlns="http://xamarin.com/schemas/2014/forms"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	x:Class="Xamarin.Forms.Controls.BehaviorsAndTriggers"
-	xmlns:local="clr-namespace:Xamarin.Forms.Controls;assembly=Xamarin.Forms.Controls"
+	x:Class="Gtk4.Forms.Controls.BehaviorsAndTriggers"
+	xmlns:local="clr-namespace:Gtk4.Forms.Controls;assembly=Gtk4.Forms.Controls"
 	Padding="8">
 	<StackLayout>
 		<Label Text="Type red in the entry below" />

@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
+﻿namespace Gtk4.Forms.PlatformConfiguration.iOSSpecific
 {
-	using FormsElement = Xamarin.Forms.TimePicker;
+	using FormsElement = Gtk4.Forms.TimePicker;
 
 	public static class TimePicker
 	{

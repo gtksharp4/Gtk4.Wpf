@@ -1,8 +1,8 @@
 ﻿using System;
 using Cairo;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Controls;
+namespace Gtk4.Forms.Platform.GTK.Controls;
 
 public class EllipseView : ShapeView
 {

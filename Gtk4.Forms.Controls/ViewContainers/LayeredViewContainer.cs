@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	internal class LayeredViewContainer<T> : ViewContainer<T>
 		where T : View

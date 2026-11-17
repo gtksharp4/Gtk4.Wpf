@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xamarin.Forms.Controls.XamStore
+namespace Gtk4.Forms.Controls.XamStore
 {
 	static class Icons
 	{

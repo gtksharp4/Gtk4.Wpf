@@ -1,8 +1,8 @@
 ﻿using System;
 using Xunit;
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public partial class ResourceDictionaryWithSource : ContentPage
 {
@@ -34,11 +34,11 @@ public partial class ResourceDictionaryWithSource : ContentPage
 		public void RelativeAndAbsoluteURI(bool useCompiledXaml)
 		{
 			var layout = new ResourceDictionaryWithSource(useCompiledXaml);
-			Assert.Equal(new Uri("./SharedResourceDictionary.xaml;assembly=Xamarin.Forms.Xaml.UnitTests", UriKind.Relative), ((ResourceDictionary)layout.Resources["relURI"]).Source);
+			Assert.Equal(new Uri("./SharedResourceDictionary.xaml;assembly=Gtk4.Forms.Xaml.UnitTests", UriKind.Relative), ((ResourceDictionary)layout.Resources["relURI"]).Source);
 			Assert.IsType<Style>(((ResourceDictionary)layout.Resources["relURI"])["sharedfoo"]);
-			Assert.Equal(new Uri("/SharedResourceDictionary.xaml;assembly=Xamarin.Forms.Xaml.UnitTests", UriKind.Relative), ((ResourceDictionary)layout.Resources["absURI"]).Source);
+			Assert.Equal(new Uri("/SharedResourceDictionary.xaml;assembly=Gtk4.Forms.Xaml.UnitTests", UriKind.Relative), ((ResourceDictionary)layout.Resources["absURI"]).Source);
 			Assert.IsType<Style>(((ResourceDictionary)layout.Resources["absURI"])["sharedfoo"]);
-			Assert.Equal(new Uri("SharedResourceDictionary.xaml;assembly=Xamarin.Forms.Xaml.UnitTests", UriKind.Relative), ((ResourceDictionary)layout.Resources["shortURI"]).Source);
+			Assert.Equal(new Uri("SharedResourceDictionary.xaml;assembly=Gtk4.Forms.Xaml.UnitTests", UriKind.Relative), ((ResourceDictionary)layout.Resources["shortURI"]).Source);
 			Assert.IsType<Style>(((ResourceDictionary)layout.Resources["shortURI"])["sharedfoo"]);
 			Assert.IsType<Color>(((ResourceDictionary)layout.Resources["Colors"])["MediumGrayTextColor"]);
 			Assert.IsType<Color>(((ResourceDictionary)layout.Resources["CompiledColors"])["MediumGrayTextColor"]);
@@ -71,9 +71,9 @@ public partial class ResourceDictionaryWithSource : ContentPage
 		public void LoadResourcesWithAssembly(bool useCompiledXaml)
 		{
 			var layout = new ResourceDictionaryWithSource(useCompiledXaml);
-			Assert.Equal(new Uri("/AppResources/Colors.xaml;assembly=Xamarin.Forms.Xaml.UnitTests", UriKind.Relative), ((ResourceDictionary)layout.Resources["inCurrentAssembly"]).Source);
+			Assert.Equal(new Uri("/AppResources/Colors.xaml;assembly=Gtk4.Forms.Xaml.UnitTests", UriKind.Relative), ((ResourceDictionary)layout.Resources["inCurrentAssembly"]).Source);
 			Assert.IsType<Color>(((ResourceDictionary)layout.Resources["inCurrentAssembly"])["MediumGrayTextColor"]);
-			Assert.Equal(new Uri("/AppResources.xaml;assembly=Xamarin.Forms.Controls", UriKind.Relative), ((ResourceDictionary)layout.Resources["inOtherAssembly"]).Source);
+			Assert.Equal(new Uri("/AppResources.xaml;assembly=Gtk4.Forms.Controls", UriKind.Relative), ((ResourceDictionary)layout.Resources["inOtherAssembly"]).Source);
 			Assert.IsType<Color>(((ResourceDictionary)layout.Resources["inOtherAssembly"])["notBlue"]);
 		}
 

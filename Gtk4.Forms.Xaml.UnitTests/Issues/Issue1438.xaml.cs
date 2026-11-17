@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Xunit;
-using Xamarin.Forms;
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms;
+using Gtk4.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public partial class Issue1438 : ContentPage
 {

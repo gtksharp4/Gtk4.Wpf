@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using IOPath = System.IO.Path;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	internal class ShellUriHandler
 	{

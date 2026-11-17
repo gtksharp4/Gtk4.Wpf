@@ -4,10 +4,10 @@ using System.ComponentModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 using IOPath = System.IO.Path;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public sealed class UriImageSource : ImageSource
 	{
@@ -16,7 +16,7 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty UriProperty = BindableProperty.Create("Uri", typeof(Uri), typeof(UriImageSource), default(Uri),
 			propertyChanged: (bindable, oldvalue, newvalue) => ((UriImageSource)bindable).OnUriChanged(), validateValue: (bindable, value) => value == null || ((Uri)value).IsAbsoluteUri);
 
-		static readonly Xamarin.Forms.Internals.IIsolatedStorageFile Store = Device.PlatformServices.GetUserStoreForApplication();
+		static readonly Gtk4.Forms.Internals.IIsolatedStorageFile Store = Device.PlatformServices.GetUserStoreForApplication();
 
 		static readonly object s_syncHandle = new object();
 		static readonly Dictionary<string, LockingSemaphore> s_semaphores = new Dictionary<string, LockingSemaphore>();
@@ -104,7 +104,7 @@ namespace Xamarin.Forms
 			}
 			catch (Exception ex)
 			{
-				Xamarin.Forms.Internals.Log.Warning("Image Loading", $"Error getting stream for {Uri}: {ex}");
+				Gtk4.Forms.Internals.Log.Warning("Image Loading", $"Error getting stream for {Uri}: {ex}");
 				throw;
 			}
 
@@ -170,7 +170,7 @@ namespace Xamarin.Forms
 				}
 				catch (Exception ex)
 				{
-					Xamarin.Forms.Internals.Log.Warning("Image Loading", $"Error getting stream for {Uri}: {ex}");
+					Gtk4.Forms.Internals.Log.Warning("Image Loading", $"Error getting stream for {Uri}: {ex}");
 					stream = null;
 				}
 			}
@@ -285,7 +285,7 @@ namespace Xamarin.Forms
 		/// Marks a cache entry unusable so the next load re-downloads it.
 		/// </summary>
 		/// <remarks>
-		/// <see cref="Xamarin.Forms.Internals.IIsolatedStorageFile"/> exposes no delete, and there
+		/// <see cref="Gtk4.Forms.Internals.IIsolatedStorageFile"/> exposes no delete, and there
 		/// is no rename to write the download to a temporary file and swap it in atomically, so
 		/// the entry is truncated to zero bytes instead - the length the read path already treats
 		/// as broken. Best effort: if even that fails the next successful download overwrites the

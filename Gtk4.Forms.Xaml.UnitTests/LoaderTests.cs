@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
 using Xunit;
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms.Build.Tasks;
+using Gtk4.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 [ContentProperty("Content")]
 public class CustomView : View
@@ -98,7 +98,7 @@ public class LoaderTests : BaseTestFixture
 				<View
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				x:Class=""Xamarin.Forms.Xaml.UnitTests.CustomView"" 
+				x:Class=""Gtk4.Forms.Xaml.UnitTests.CustomView"" 
 				x:Name=""customView"" 
 				/>";
 
@@ -183,7 +183,7 @@ public class LoaderTests : BaseTestFixture
 				<View 
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				x:Class=""Xamarin.Forms.Xaml.UnitTests.CustomView"" 
+				x:Class=""Gtk4.Forms.Xaml.UnitTests.CustomView"" 
 				Name=""customView"" 
 				NotBindable=""{Binding text}""
 				/>";
@@ -232,7 +232,7 @@ public class LoaderTests : BaseTestFixture
 				<ContentPage 
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+				xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests"">
 					<ContentPage.Resources>
 						<ResourceDictionary>
 							<local:ReverseConverter x:Key=""reverseConverter""/>
@@ -305,7 +305,7 @@ public class LoaderTests : BaseTestFixture
 				<Label 
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+				xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests"">
 					<Label.Resources>
 						<ResourceDictionary>
 							<local:ReverseConverter x:Key=""reverseConverter""/>
@@ -326,7 +326,7 @@ public class LoaderTests : BaseTestFixture
 				<Label 
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
+				xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests"">
 					<Label.Resources>
 						<ResourceDictionary>
 							<local:ReverseConverter />
@@ -429,7 +429,7 @@ public class LoaderTests : BaseTestFixture
 				<Button 
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				x:Class=""Xamarin.Forms.Xaml.UnitTests.CustView"" Clicked=""onButtonClicked"" />
+				x:Class=""Gtk4.Forms.Xaml.UnitTests.CustView"" Clicked=""onButtonClicked"" />
 				</Button>";
 		var view = new CustView();
 		view.LoadFromXaml(xaml);
@@ -445,10 +445,10 @@ public class LoaderTests : BaseTestFixture
 				<View 
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				x:Class=""Xamarin.Forms.Xaml.UnitTests.CustView"" Activated=""missingMethod"" />
+				x:Class=""Gtk4.Forms.Xaml.UnitTests.CustView"" Activated=""missingMethod"" />
 				</View>";
 		var view = new CustView();
-		new XamlParseExceptionConstraint(5, 53).Verify(() => view.LoadFromXaml(xaml));
+		new XamlParseExceptionConstraint(5, 50).Verify(() => view.LoadFromXaml(xaml));
 	}
 
 	[Fact]
@@ -458,11 +458,11 @@ public class LoaderTests : BaseTestFixture
 				<View 
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				x:Class=""Xamarin.Forms.Xaml.UnitTests.CustView"" Activated=""wrongSignature"" />
+				x:Class=""Gtk4.Forms.Xaml.UnitTests.CustView"" Activated=""wrongSignature"" />
 				</View>";
 		var view = new CustView();
 
-		new XamlParseExceptionConstraint(5, 53).Verify(() => view.LoadFromXaml(xaml));
+		new XamlParseExceptionConstraint(5, 50).Verify(() => view.LoadFromXaml(xaml));
 	}
 
 
@@ -483,7 +483,7 @@ public class LoaderTests : BaseTestFixture
 			<Entry
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				x:Class=""Xamarin.Forms.Xaml.UnitTests.CustEntry"" TextChanged=""onValueChanged"" />
+				x:Class=""Gtk4.Forms.Xaml.UnitTests.CustEntry"" TextChanged=""onValueChanged"" />
 			</Entry>";
 		new CustEntry().LoadFromXaml(xaml);
 	}
@@ -545,7 +545,7 @@ public class LoaderTests : BaseTestFixture
 				<Label
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"" 
+				xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests"" 
 				local:Catalog.Message=""foobar""/>";
 		var label = new Label().LoadFromXaml(xaml);
 		Assert.Equal("raboof", label.Text);
@@ -558,7 +558,7 @@ public class LoaderTests : BaseTestFixture
 				<Label
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"" 
+				xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests"" 
 				local:Catalog.Message=""{Binding .}""/>";
 		var label = new Label().LoadFromXaml(xaml);
 		label.BindingContext = "foobar";
@@ -572,7 +572,7 @@ public class LoaderTests : BaseTestFixture
 				<local:CustomView
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"" >
+				xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests"" >
 					<Label x:Name=""contentview""/>
 				</local:CustomView>";
 		CustomView customView = null;
@@ -646,7 +646,7 @@ public class LoaderTests : BaseTestFixture
 				<local:ViewWithChildrenContent
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"" >
+				xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests"" >
 					<local:ViewWithChildrenContent.Children>
 						<local:ViewList>
 							<Label x:Name=""child0""/>
@@ -669,7 +669,7 @@ public class LoaderTests : BaseTestFixture
 				<local:ViewWithChildrenContent
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"" >
+				xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests"" >
 					<Label x:Name=""child0""/>
 					<Label x:Name=""child1""/>
 				</local:ViewWithChildrenContent>";
@@ -688,7 +688,7 @@ public class LoaderTests : BaseTestFixture
 				<local:ViewWithChildrenContent
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"" >
+				xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests"" >
 					<local:ViewWithChildrenContent.Children>
 						<Label x:Name=""child0""/>
 						<Label x:Name=""child1""/>
@@ -710,7 +710,7 @@ public class LoaderTests : BaseTestFixture
 				<local:ViewWithChildrenContent
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"" >
+				xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests"" >
 					<Label x:Name=""child0""/>
 				</local:ViewWithChildrenContent>";
 		ViewWithChildrenContent layout = null;
@@ -750,7 +750,7 @@ public class LoaderTests : BaseTestFixture
 				<local:CustomView
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"" 
+				xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests"" 
 				MockFlags=""Bar""
 				/>";
 		var view = new CustomView().LoadFromXaml(xaml);
@@ -765,7 +765,7 @@ public class LoaderTests : BaseTestFixture
 				<local:CustomView
 				xmlns=""http://xamarin.com/schemas/2014/forms""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"" 
+				xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests"" 
 				MockFlags=""Baz,Bar""
 				/>";
 		var view = new CustomView().LoadFromXaml(xaml);
@@ -789,7 +789,7 @@ public class LoaderTests : BaseTestFixture
 
 	[Fact]
 	public void BindingIsResolvedAsBindingExtension()
-		// https://github.com/pieroviano/Xamarin.Forms/issues/3606#issuecomment-422377338
+		// https://github.com/pieroviano/Gtk4.Forms/issues/3606#issuecomment-422377338
 	{
 		var bindingType = XamlParser.GetElementType(new XmlType("http://xamarin.com/schemas/2014/forms", "Binding", null), null, null, out var ex);
 		Assert.Null(ex);
@@ -800,6 +800,6 @@ public class LoaderTests : BaseTestFixture
 			Kind = ModuleKind.Dll,
 		});
 		var bindingTypeRef = new XmlType("http://xamarin.com/schemas/2014/forms", "Binding", null).GetTypeReference(module, null);
-		Assert.Equal("Xamarin.Forms.Xaml.BindingExtension", bindingType.FullName);
+		Assert.Equal("Gtk4.Forms.Xaml.BindingExtension", bindingType.FullName);
 	}
 }

@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls.GalleryPages.ShapesGalleries
+﻿namespace Gtk4.Forms.Controls.GalleryPages.ShapesGalleries
 {
 	public partial class ClipGallery : ContentPage
 	{

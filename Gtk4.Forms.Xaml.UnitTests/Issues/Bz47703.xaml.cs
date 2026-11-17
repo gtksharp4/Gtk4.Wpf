@@ -2,7 +2,7 @@
 using System.Globalization;
 using Xunit;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public class Bz47703Converter : IValueConverter
 {

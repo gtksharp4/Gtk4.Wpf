@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using Xamarin.Forms.Xaml.Diagnostics;
+using Gtk4.Forms.Xaml.Diagnostics;
 
-namespace Xamarin.Forms.Internals
+namespace Gtk4.Forms.Internals
 {
 	//FIXME: need a better name for this, and share with Binding, so we can share more unittests
 	[EditorBrowsable(EditorBrowsableState.Never)]

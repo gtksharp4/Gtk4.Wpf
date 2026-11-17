@@ -1,7 +1,7 @@
 using System;
 using Xunit;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 /// <summary>
 /// Small helpers for NUnit assertions with no direct xUnit counterpart.

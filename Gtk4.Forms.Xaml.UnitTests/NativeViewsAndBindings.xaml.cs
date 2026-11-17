@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using Xunit;
-using Xamarin.Forms;
-using Xamarin.Forms.Core.UnitTests;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml.Internals;
+using Gtk4.Forms;
+using Gtk4.Forms.Core.UnitTests;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Xaml.Internals;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public abstract class MockNativeView
 {

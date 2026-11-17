@@ -4,15 +4,15 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Gtk;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK.Animations;
-using Xamarin.Forms.Platform.GTK.Controls;
-using Xamarin.Forms.Platform.GTK.Extensions;
-using Xamarin.Forms.Platform.GTK.Helpers;
-using Xamarin.Forms.PlatformConfiguration.GTKSpecific;
-using Container = Xamarin.Forms.Platform.GTK.GtkFormsContainer;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Platform.GTK.Animations;
+using Gtk4.Forms.Platform.GTK.Controls;
+using Gtk4.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Platform.GTK.Helpers;
+using Gtk4.Forms.PlatformConfiguration.GTKSpecific;
+using Container = Gtk4.Forms.Platform.GTK.GtkFormsContainer;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers;
+namespace Gtk4.Forms.Platform.GTK.Renderers;
 
 public class NavigationPageRenderer : AbstractPageRenderer<Fixed, NavigationPage>, IToolbarTracker
 {
@@ -138,7 +138,7 @@ public class NavigationPageRenderer : AbstractPageRenderer<Fixed, NavigationPage
 	/// <remarks>
 	/// The native toolbar is drawn INSIDE the current page's <see cref="Controls.Page"/> header,
 	/// so a page's content gets the allocation minus <c>GtkToolbarConstants.ToolbarHeight</c> -
-	/// but Forms' own <see cref="Xamarin.Forms.NavigationPage"/> knows nothing about that and
+	/// but Forms' own <see cref="Gtk4.Forms.NavigationPage"/> knows nothing about that and
 	/// lays its child pages out at the NavigationPage's full height. The two then disagreed by
 	/// exactly the toolbar height, and because the page's container is sized from the Forms
 	/// bounds its natural height became toolbar + full height: the whole window grew by 72px
@@ -320,9 +320,9 @@ public class NavigationPageRenderer : AbstractPageRenderer<Fixed, NavigationPage
 
 	private void OnCurrentPagePropertyChanged(object sender, PropertyChangedEventArgs e)
 	{
-		if (e.PropertyName == Xamarin.Forms.Page.TitleProperty.PropertyName)
+		if (e.PropertyName == Gtk4.Forms.Page.TitleProperty.PropertyName)
 			UpdateTitle();
-		else if (e.PropertyName == Xamarin.Forms.Page.IconImageSourceProperty.PropertyName)
+		else if (e.PropertyName == Gtk4.Forms.Page.IconImageSourceProperty.PropertyName)
 			UpdateIcon();
 	}
 

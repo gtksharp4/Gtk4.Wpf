@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using Mono.Cecil.Cil;
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Build.Tasks;
+using Gtk4.Forms.Xaml;
 using static Mono.Cecil.Cil.Instruction;
 using static Mono.Cecil.Cil.OpCodes;
 
-namespace Xamarin.Forms.Core.XamlC
+namespace Gtk4.Forms.Core.XamlC
 {
 	class EasingTypeConverter : ICompiledTypeConverter
 	{
@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Core.XamlC
 			if (parts.Length == 2 && parts[0] == nameof(Easing))
 				value = parts[parts.Length - 1];
 
-			var assemblyTypeInfo = ("Xamarin.Forms.Core", "Xamarin.Forms", nameof(Easing));
+			var assemblyTypeInfo = ("Gtk4.Forms.Core", "Gtk4.Forms", nameof(Easing));
 
 			var module = context.Body.Method.Module;
 			var fieldReference = module.ImportFieldReference(assemblyTypeInfo, value, isStatic: true, caseSensitive: false);

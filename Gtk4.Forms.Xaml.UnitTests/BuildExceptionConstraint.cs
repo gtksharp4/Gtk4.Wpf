@@ -1,8 +1,8 @@
 ﻿using System;
-using Xamarin.Forms.Build.Tasks;
+using Gtk4.Forms.Build.Tasks;
 using Xunit;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 /// <summary>
 /// xUnit replacement for the former NUnit ExceptionTypeConstraint. See

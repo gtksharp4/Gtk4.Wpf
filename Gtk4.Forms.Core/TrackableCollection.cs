@@ -1,7 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	internal class TrackableCollection<T> : ObservableCollection<T>
 	{

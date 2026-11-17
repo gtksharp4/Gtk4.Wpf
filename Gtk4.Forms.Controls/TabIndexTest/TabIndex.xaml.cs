@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace Xamarin.Forms.Controls.TabIndexTest
+namespace Gtk4.Forms.Controls.TabIndexTest
 {
 	public partial class TabIndex : ContentPage
 	{

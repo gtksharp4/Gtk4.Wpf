@@ -1,8 +1,8 @@
 using System.ComponentModel;
-using Xamarin.Forms.Platform.GTK.Controls;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Platform.GTK.Controls;
+using Gtk4.Forms.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers;
+namespace Gtk4.Forms.Platform.GTK.Renderers;
 
 public class IndicatorViewRenderer : ViewRenderer<IndicatorView, IndicatorViewControl>
 {

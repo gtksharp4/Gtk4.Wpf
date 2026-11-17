@@ -2,11 +2,11 @@
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Gtk;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK.Controls;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Platform.GTK.Controls;
+using Gtk4.Forms.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers;
+namespace Gtk4.Forms.Platform.GTK.Renderers;
 
 public class FlyoutPageRenderer : AbstractPageRenderer<Controls.FlyoutPage, FlyoutPage>
 {
@@ -182,7 +182,7 @@ public class FlyoutPageRenderer : AbstractPageRenderer<Controls.FlyoutPage, Flyo
 
 	private async void HandleFlyoutPropertyChanged(object sender, PropertyChangedEventArgs e)
 	{
-		if (e.PropertyName != Xamarin.Forms.Page.IconImageSourceProperty.PropertyName)
+		if (e.PropertyName != Gtk4.Forms.Page.IconImageSourceProperty.PropertyName)
 			return;
 
 		// async void: there is no Task for anyone to observe, so an exception escaping here is
@@ -295,7 +295,7 @@ public class FlyoutPageRenderer : AbstractPageRenderer<Controls.FlyoutPage, Flyo
 
 	private Task UpdateHamburguerIconAsync()
 	{
-		return Page.Flyout.ApplyNativeImageAsync(Xamarin.Forms.Page.IconImageSourceProperty, image =>
+		return Page.Flyout.ApplyNativeImageAsync(Gtk4.Forms.Page.IconImageSourceProperty, image =>
 		{
 			Widget.UpdateHamburguerIcon(image);
 

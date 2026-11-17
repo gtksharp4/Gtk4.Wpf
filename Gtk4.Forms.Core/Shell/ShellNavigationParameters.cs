@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	// At somepoint this will be shaped into a public API but for now we are using it
 	// to simplify internal navigation parameters

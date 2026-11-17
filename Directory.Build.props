@@ -2,7 +2,7 @@
     <!--
     Repo-anchored package output. The projects used $(SolutionDir)Packages/, which is
     only defined when MSBuild is driven through a .sln - so the per-project build that
-    CLAUDE.md documents (dotnet build Xamarin.Forms.Platform.GTK/...csproj) packed into
+    CLAUDE.md documents (dotnet build Gtk4.Forms.Platform.GTK/...csproj) packed into
     <ProjectDir>/Packages/ instead, leaving stray untracked nupkgs scattered through the
     tree. MSBuildThisFileDirectory is this file's directory, i.e. the repo root, under
     every invocation.
@@ -14,7 +14,7 @@
     Windows and Unix builds of the same working tree need separate obj\ and bin\.
 
     A tree on a Windows drive (D:\CommonLibrary\Gtk4.Forms, reached from WSL as
-    /mnt/d/CommonLibrary/Xamarin.Forms) can be built from both sides at once - Visual
+    /mnt/d/CommonLibrary/Gtk4.Forms) can be built from both sides at once - Visual
     Studio on Windows, `dotnet build` in WSL - and they cannot share intermediate output:
 
       * project.assets.json records absolute package paths. A Windows restore writes
@@ -40,7 +40,7 @@
     Scoped to trees that are actually shared, i.e. mounted under /mnt (drvfs). A native
     Linux or macOS checkout has no Windows side to collide with and keeps the conventional
     obj\/bin\ - which build.cake depends on, e.g. IOS_TEST_LIBRARY's
-    ./Xamarin.Forms.Core.iOS.UITests/bin/<config>/. Force it either way with
+    ./Gtk4.Forms.Core.iOS.UITests/bin/<config>/. Force it either way with
     -p:UseOSSpecificOutputPaths=true|false.
 
     The XAML build tasks drop moves too, via _XFBuildTasksLocation below - otherwise the
@@ -77,7 +77,7 @@
       Source builds load the XAML build tasks from artifacts\build-tasks\, published there
       by Build.Tasks' _PublishBuildTasks target.
 
-      NOT from Xamarin.Forms.Build.Tasks\bin\: MSBuild holds a loaded task assembly open for
+      NOT from Gtk4.Forms.Build.Tasks\bin\: MSBuild holds a loaded task assembly open for
       the lifetime of the node, so with the solution open in Visual Studio that DLL stays
       locked and Build.Tasks can never be rebuilt ("Access to the path ... is denied").
       Loading from a separate copy puts the lock on the copy instead. This is what the old
@@ -85,9 +85,9 @@
       instead of silently leaving a stale task behind.
 
       Must set _XFBuildTasksLocation (ONE underscore) - that is the property
-      Xamarin.Forms.targets feeds to its <UsingTask AssemblyFile=...>. Its own default,
+      Gtk4.Forms.targets feeds to its <UsingTask AssemblyFile=...>. Its own default,
       $(MSBuildThisFileDirectory)<tfm>\, is correct for the packaged layout
-      (build/Xamarin.Forms.targets next to build/netstandard2.0/) but wrong in-tree.
+      (build/Gtk4.Forms.targets next to build/netstandard2.0/) but wrong in-tree.
 
       Configuration-independent on purpose: the path is fixed, so it does not matter that
       Directory.Build.props is evaluated before the SDK defaults $(Configuration).
@@ -110,15 +110,15 @@
     </PropertyGroup>
     <!--
     NuGet metadata for SDK-style packing, replacing the hand-written .nuspec files.
-    Each shipping project now packs itself (`dotnet pack Xamarin.Forms.Gtk.sln`); the old
-    single Xamarin.Forms metapackage bundled Core + Xaml + Platform + the build tasks and
+    Each shipping project now packs itself (`dotnet pack Gtk4.Forms.Gtk.sln`); the old
+    single Gtk4.Forms metapackage bundled Core + Xaml + Platform + the build tasks and
     is no longer produced from this solution.
   -->
     <PropertyGroup>
         <Authors>Microsoft, Piero Viano</Authors>
         <Copyright>Microsoft, Piero Viano</Copyright>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
-        <PackageProjectUrl>https://github.com/pieroviano/Xamarin.Forms</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/pieroviano/Gtk4.Forms</PackageProjectUrl>
         <PackageIcon>gtk4_128x128.png</PackageIcon>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <IncludeSymbols>true</IncludeSymbols>

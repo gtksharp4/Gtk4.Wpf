@@ -4,10 +4,10 @@ using System.Globalization;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Build.Tasks;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Core.XamlC
+namespace Gtk4.Forms.Core.XamlC
 {
 	class BoundsTypeConverter : ICompiledTypeConverter
 	{
@@ -68,7 +68,7 @@ namespace Xamarin.Forms.Core.XamlC
 			yield return Instruction.Create(OpCodes.Ldc_R8, y);
 			yield return Instruction.Create(OpCodes.Ldc_R8, w);
 			yield return Instruction.Create(OpCodes.Ldc_R8, h);
-			yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Rectangle"), parameterTypes: new[] {
+			yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Gtk4.Forms.Core", "Gtk4.Forms", "Rectangle"), parameterTypes: new[] {
 				("mscorlib", "System", "Double"),
 				("mscorlib", "System", "Double"),
 				("mscorlib", "System", "Double"),

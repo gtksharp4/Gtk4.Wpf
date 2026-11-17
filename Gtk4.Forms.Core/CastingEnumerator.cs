@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	internal class CastingEnumerator<T, TFrom> : IEnumerator<T> where T : class where TFrom : class
 	{

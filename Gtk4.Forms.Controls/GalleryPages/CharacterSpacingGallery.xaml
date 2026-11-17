@@ -2,8 +2,8 @@
 
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Xamarin.Forms.Controls.GalleryPages.CharacterSpacingGallery"
-             xmlns:controls="clr-namespace:Xamarin.Forms.Controls">
+             x:Class="Gtk4.Forms.Controls.GalleryPages.CharacterSpacingGallery"
+             xmlns:controls="clr-namespace:Gtk4.Forms.Controls">
 
     <StackLayout>
         <Label>
@@ -22,29 +22,29 @@
 
         <ScrollView>
             <StackLayout>
-                <Label Text="Welcome to Xamarin.Forms! - Label" CharacterSpacing="0" x:Name="Label" TextColor="Red"/>
+                <Label Text="Welcome to Gtk4.Forms! - Label" CharacterSpacing="0" x:Name="Label" TextColor="Red"/>
                 <Label>
                     <Label.FormattedText>
                         <FormattedString>
-                            <Span Text="Welcome to Xamarin.Forms! - Span" CharacterSpacing="0" x:Name="Span" TextColor="Red"/>
+                            <Span Text="Welcome to Gtk4.Forms! - Span" CharacterSpacing="0" x:Name="Span" TextColor="Red"/>
                         </FormattedString>
                     </Label.FormattedText>
                 </Label>
-                <Entry Text="Welcome to Xamarin.Forms! - Entry" CharacterSpacing="0" x:Name="Entry" TextColor="Red" PlaceholderColor="BlueViolet"/>
-                <Entry Placeholder="Welcome to Xamarin.Forms! - Entry" CharacterSpacing="0" x:Name="PlaceholderEntry" TextColor="Red" PlaceholderColor="BlueViolet"/>
-                <Editor Text="Welcome to Xamarin.Forms! - Editor" CharacterSpacing="0" x:Name="Editor" TextColor="Red" PlaceholderColor="BlueViolet"/>
-                <Editor Placeholder="Welcome to Xamarin.Forms! - Editor" CharacterSpacing="0" x:Name="PlaceholderEditor" TextColor="Red" PlaceholderColor="BlueViolet"/>
+                <Entry Text="Welcome to Gtk4.Forms! - Entry" CharacterSpacing="0" x:Name="Entry" TextColor="Red" PlaceholderColor="BlueViolet"/>
+                <Entry Placeholder="Welcome to Gtk4.Forms! - Entry" CharacterSpacing="0" x:Name="PlaceholderEntry" TextColor="Red" PlaceholderColor="BlueViolet"/>
+                <Editor Text="Welcome to Gtk4.Forms! - Editor" CharacterSpacing="0" x:Name="Editor" TextColor="Red" PlaceholderColor="BlueViolet"/>
+                <Editor Placeholder="Welcome to Gtk4.Forms! - Editor" CharacterSpacing="0" x:Name="PlaceholderEditor" TextColor="Red" PlaceholderColor="BlueViolet"/>
                 <DatePicker Date="2019-01-01" CharacterSpacing="0" x:Name="DatePicker" TextColor="Red"/>
                 <TimePicker Time="10:10" CharacterSpacing="0" x:Name="TimePicker" TextColor="Red"/>
-                <Picker Title="Welcome to Xamarin.Forms! - Picker"  CharacterSpacing="0" x:Name="Picker" TextColor="Red" TitleColor="BlueViolet">
+                <Picker Title="Welcome to Gtk4.Forms! - Picker"  CharacterSpacing="0" x:Name="Picker" TextColor="Red" TitleColor="BlueViolet">
                     <Picker.Items>
                         <x:String>Welcome to Xamarin.Forms1</x:String>
                         <x:String>Welcome to Xamarin.Forms2</x:String>
                     </Picker.Items>
                 </Picker>
-                <SearchBar Text="Welcome to Xamarin.Forms! - SearchBar" CharacterSpacing="0" x:Name="SearchBar" TextColor="Red" PlaceholderColor="BlueViolet"/>
-                <SearchBar Placeholder="Welcome to Xamarin.Forms! - SearchBar" CharacterSpacing="0" x:Name="PlaceholderSearchBar" TextColor="Red" PlaceholderColor="BlueViolet"/>
-                <Button Text="Welcome to Xamarin.Forms! - Button" TextColor="Red" CharacterSpacing="0" x:Name="Button" />
+                <SearchBar Text="Welcome to Gtk4.Forms! - SearchBar" CharacterSpacing="0" x:Name="SearchBar" TextColor="Red" PlaceholderColor="BlueViolet"/>
+                <SearchBar Placeholder="Welcome to Gtk4.Forms! - SearchBar" CharacterSpacing="0" x:Name="PlaceholderSearchBar" TextColor="Red" PlaceholderColor="BlueViolet"/>
+                <Button Text="Welcome to Gtk4.Forms! - Button" TextColor="Red" CharacterSpacing="0" x:Name="Button" />
                 <Button Text="Reset" Clicked="ResetButtonClicked"></Button>
             </StackLayout>
         </ScrollView>

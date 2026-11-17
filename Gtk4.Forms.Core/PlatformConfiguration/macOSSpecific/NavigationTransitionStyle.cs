@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.macOSSpecific
+﻿namespace Gtk4.Forms.PlatformConfiguration.macOSSpecific
 {
 	public enum NavigationTransitionStyle
 	{

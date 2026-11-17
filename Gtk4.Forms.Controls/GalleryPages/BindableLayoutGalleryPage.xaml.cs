@@ -1,10 +1,10 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages
+namespace Gtk4.Forms.Controls.GalleryPages
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class BindableLayoutGalleryPage : ContentPage

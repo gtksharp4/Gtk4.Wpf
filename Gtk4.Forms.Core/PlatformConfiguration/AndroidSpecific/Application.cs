@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific
+﻿namespace Gtk4.Forms.PlatformConfiguration.AndroidSpecific
 {
 	using FormsElement = Forms.Application;
 

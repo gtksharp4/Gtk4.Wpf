@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Internals;
+﻿using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
 {
 	[Preserve(AllMembers = true)]
 	internal class CarouselViewGallery : ContentPage

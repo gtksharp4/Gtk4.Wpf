@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Xamarin.Forms;
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms;
+using Gtk4.Forms.Core.UnitTests;
 using Xunit;
 
 [assembly: TestHandler(typeof(Button), typeof(ButtonTarget))]
@@ -13,7 +13,7 @@ using Xunit;
 [assembly: TestHandler(typeof(ButtonPriority), typeof(ButtonHigherPriorityTarget), Priority = 1)]
 [assembly: TestHandlerLowerPriority(typeof(ButtonPriority), typeof(ButtonLowerPriorityTarget), Priority = 0)]
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 internal class TestHandlerAttribute : HandlerAttribute
 {
@@ -120,7 +120,7 @@ public class VisualRegistrarTests : BaseTestFixture
 	[Fact]
 	public void EnsureDefaultChildRendererTrumpsParentRenderWith()
 	{
-		Xamarin.Forms.Internals.Registrar.Registered.Register(typeof(RenderWithChild), typeof(RenderWithChildTarget));
+		Gtk4.Forms.Internals.Registrar.Registered.Register(typeof(RenderWithChild), typeof(RenderWithChildTarget));
 
 		IRegisterable renderWithTarget;
 

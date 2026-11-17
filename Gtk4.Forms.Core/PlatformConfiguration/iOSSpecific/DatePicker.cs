@@ -1,6 +1,6 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
+﻿namespace Gtk4.Forms.PlatformConfiguration.iOSSpecific
 {
-	using FormsElement = Xamarin.Forms.DatePicker;
+	using FormsElement = Gtk4.Forms.DatePicker;
 
 	public static class DatePicker
 	{

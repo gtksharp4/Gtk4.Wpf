@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xamarin.Forms.Controls.GalleryPages
+namespace Gtk4.Forms.Controls.GalleryPages
 {
 	public static class GalleryBuilder
 	{

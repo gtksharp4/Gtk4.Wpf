@@ -18,7 +18,7 @@ public class CsprojConverterRefsOutputTests
 		</Project>
 		""";
 
-	// ── Xamarin.Forms PackageReference removal ─────────────────────────────────
+	// ── Gtk4.Forms PackageReference removal ─────────────────────────────────
 
 	[Fact]
 	public void RemovesXamarinFormsSelfClosed()
@@ -27,7 +27,7 @@ public class CsprojConverterRefsOutputTests
 			"""
 			<Project>
 			  <ItemGroup>
-			    <PackageReference Include="Xamarin.Forms" Version="1.0.0" />
+			    <PackageReference Include="Gtk4.Forms" Version="1.0.0" />
 			    <PackageReference Include="SomeOtherLib" Version="1.0.0" />
 			  </ItemGroup>
 			</Project>
@@ -36,7 +36,7 @@ public class CsprojConverterRefsOutputTests
 		var result = CsprojConverter.Transform(input, out var changed);
 
 		Assert.True(changed);
-		Assert.DoesNotContain("Xamarin.Forms", result);
+		Assert.DoesNotContain("Gtk4.Forms", result);
 		Assert.Contains("SomeOtherLib", result);
 	}
 
@@ -47,7 +47,7 @@ public class CsprojConverterRefsOutputTests
 			"""
 			<Project>
 			  <ItemGroup>
-			    <PackageReference Include="Xamarin.Forms" Version="1.0.0">
+			    <PackageReference Include="Gtk4.Forms" Version="1.0.0">
 			      <PrivateAssets>all</PrivateAssets>
 			    </PackageReference>
 			    <PackageReference Include="SomeOtherLib" Version="1.0.0" />
@@ -58,7 +58,7 @@ public class CsprojConverterRefsOutputTests
 		var result = CsprojConverter.Transform(input, out var changed);
 
 		Assert.True(changed);
-		Assert.DoesNotContain("Xamarin.Forms", result);
+		Assert.DoesNotContain("Gtk4.Forms", result);
 		Assert.Contains("SomeOtherLib", result);
 	}
 
@@ -69,7 +69,7 @@ public class CsprojConverterRefsOutputTests
 			"""
 			<Project>
 			  <ItemGroup>
-			    <PackageReference Include="Xamarin.Forms.Maps" Version="1.0.0" />
+			    <PackageReference Include="Gtk4.Forms.Maps" Version="1.0.0" />
 			  </ItemGroup>
 			</Project>
 			""";
@@ -77,7 +77,7 @@ public class CsprojConverterRefsOutputTests
 		var result = CsprojConverter.Transform(input, out var changed);
 
 		Assert.True(changed);
-		Assert.DoesNotContain("Xamarin.Forms.Maps", result);
+		Assert.DoesNotContain("Gtk4.Forms.Maps", result);
 	}
 
 	[Fact]
@@ -87,7 +87,7 @@ public class CsprojConverterRefsOutputTests
 			"""
 			<Project>
 			  <ItemGroup>
-			    <PackageReference Include="Xamarin.Forms.Visual.Material" Version="1.0.0" />
+			    <PackageReference Include="Gtk4.Forms.Visual.Material" Version="1.0.0" />
 			  </ItemGroup>
 			</Project>
 			""";
@@ -95,7 +95,7 @@ public class CsprojConverterRefsOutputTests
 		var result = CsprojConverter.Transform(input, out var changed);
 
 		Assert.True(changed);
-		Assert.DoesNotContain("Xamarin.Forms.Visual.Material", result);
+		Assert.DoesNotContain("Gtk4.Forms.Visual.Material", result);
 	}
 
 	[Fact]
@@ -105,7 +105,7 @@ public class CsprojConverterRefsOutputTests
 			"""
 			<Project>
 			  <ItemGroup>
-			    <PackageReference Include="Xamarin.Forms.Platform.Android" Version="1.0.0" />
+			    <PackageReference Include="Gtk4.Forms.Platform.Android" Version="1.0.0" />
 			  </ItemGroup>
 			</Project>
 			""";
@@ -113,7 +113,7 @@ public class CsprojConverterRefsOutputTests
 		var result = CsprojConverter.Transform(input, out var changed);
 
 		Assert.True(changed);
-		Assert.DoesNotContain("Xamarin.Forms.Platform.Android", result);
+		Assert.DoesNotContain("Gtk4.Forms.Platform.Android", result);
 	}
 
 	// ── OutputType and StartupObject insertion ─────────────────────────────────

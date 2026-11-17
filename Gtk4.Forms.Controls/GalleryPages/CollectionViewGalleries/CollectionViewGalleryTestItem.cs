@@ -2,9 +2,9 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries
 {
 	[Preserve(AllMembers = true)]
 	public class CollectionViewGalleryTestItem : INotifyPropertyChanged

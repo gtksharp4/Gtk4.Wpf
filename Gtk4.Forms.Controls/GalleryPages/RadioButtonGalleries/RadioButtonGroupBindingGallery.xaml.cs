@@ -1,9 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Globalization;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.RadioButtonGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.RadioButtonGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class RadioButtonGroupBindingGallery : ContentPage

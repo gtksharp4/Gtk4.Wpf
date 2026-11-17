@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Xamarin.Forms.Maps.GTK.Controls;
+namespace Gtk4.Forms.Maps.GTK.Controls;
 
 /// <summary>
 /// A Web-Mercator "slippy map" drawn with Cairo onto a <see cref="Gtk.DrawingArea"/>.

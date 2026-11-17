@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <!-- Capital GTK: the source namespaces are Xamarin.Forms.Platform.GTK.* and the renderer grants
+    <!-- Capital GTK: the source namespaces are Gtk4.Forms.Platform.GTK.* and the renderer grants
          InternalsVisibleTo under that name. A lowercase RootNamespace made files without an explicit
-         namespace land in Xamarin.Forms.Platform.Gtk, which then shadowed GtkSharp's global Gtk
+         namespace land in Gtk4.Forms.Platform.Gtk, which then shadowed GtkSharp's global Gtk
          namespace (every `Gtk.Widget` became CS0234). Only the dir/project/package were renamed. -->
-    <AssemblyName>Xamarin.Forms.Platform.GTK.UnitTests</AssemblyName>
-    <RootNamespace>Xamarin.Forms.Platform.GTK.UnitTests</RootNamespace>
+    <AssemblyName>Gtk4.Forms.Platform.GTK.UnitTests</AssemblyName>
+    <RootNamespace>Gtk4.Forms.Platform.GTK.UnitTests</RootNamespace>
     <!-- xUnit v3 test projects are executables, not libraries - same as Xaml.UnitTests. -->
     <OutputType>Exe</OutputType>
     <!--
@@ -22,7 +22,7 @@
     <LangVersion>latest</LangVersion>
     <!--
       SDK-style default globbing on purpose (plan D3/§10.2): the legacy explicit
-      <Compile Include> style of Xamarin.Forms.Core.UnitTests.csproj silently ignores a new
+      <Compile Include> style of Gtk4.Forms.Core.UnitTests.csproj silently ignores a new
       test file, which is exactly the trap this project exists to avoid.
     -->
     <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
@@ -36,7 +36,7 @@
     <!--
       GTK4 port: GtkSharp4 marks many GTK3 compat shims [Obsolete] (CS0612/CS0618) but keeps
       them functional. With TreatWarningsAsErrors every such call is a hard error; allow them
-      here the same way Xamarin.Forms.Platform.Gtk.csproj does.
+      here the same way Gtk4.Forms.Platform.Gtk.csproj does.
     -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);CS0612;CS0618</WarningsNotAsErrors>
   </PropertyGroup>

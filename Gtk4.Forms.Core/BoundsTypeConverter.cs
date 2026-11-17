@@ -1,9 +1,9 @@
 using System;
 using System.Globalization;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
-	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.BoundsTypeConverter")]
+	[Xaml.ProvideCompiled("Gtk4.Forms.Core.XamlC.BoundsTypeConverter")]
 	[Xaml.TypeConversion(typeof(Rectangle))]
 	public sealed class BoundsTypeConverter : TypeConverter
 	{

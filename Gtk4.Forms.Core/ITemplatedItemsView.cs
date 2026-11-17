@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public interface ITemplatedItemsView<TItem> : IItemsView<TItem> where TItem : BindableObject
 	{

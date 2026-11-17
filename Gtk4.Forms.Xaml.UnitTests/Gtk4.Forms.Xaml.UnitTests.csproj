@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <RootNamespace>Xamarin.Forms.Xaml.UnitTests</RootNamespace>
-    <AssemblyName>Xamarin.Forms.Xaml.UnitTests</AssemblyName>
+    <RootNamespace>Gtk4.Forms.Xaml.UnitTests</RootNamespace>
+    <AssemblyName>Gtk4.Forms.Xaml.UnitTests</AssemblyName>
     <!-- xUnit v3 test projects are executables, not libraries. -->
     <OutputType>Exe</OutputType>
     <IsPackable>true</IsPackable>
@@ -45,7 +45,7 @@
     -->
     <!--
       Needed at RUNTIME, deliberately without ExcludeAssets.
-      Xamarin.Forms.Build.Tasks references these with ExcludeAssets="runtime" because an
+      Gtk4.Forms.Build.Tasks references these with ExcludeAssets="runtime" because an
       MSBuild task must never ship MSBuild's own assemblies. This project is a plain
       consumer of those types (MockCompiler drives XamlCTask, DummyBuildEngine implements
       IBuildEngine), so the assemblies must be in the test output or NUnit cannot even load
@@ -60,7 +60,7 @@
     <!--
       Not used by any code in this project. MSBuild/MSBuildTests.cs generates *legacy-format*
       csproj files targeting .NET Framework v4.7 (that half of the [Theory] matrix is the only
-      coverage of the non-SDK project path through Xamarin.Forms.targets), and Linux and macOS
+      coverage of the non-SDK project path through Gtk4.Forms.targets), and Linux and macOS
       have no .NET Framework targeting pack, so those builds died with
           error MSB3644: The reference assemblies for .NETFramework,Version=v4.7 were not found.
       This package carries the v4.7 reference assemblies; the generated projects point

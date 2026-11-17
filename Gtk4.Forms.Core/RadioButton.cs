@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Shapes;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Shapes;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public class RadioButton : TemplatedView, IElementConfiguration<RadioButton>, ITextElement, IFontElement, IBorderElement
 	{

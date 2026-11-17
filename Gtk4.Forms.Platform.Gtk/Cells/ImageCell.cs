@@ -1,7 +1,7 @@
 ﻿using Gtk;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Cells;
+namespace Gtk4.Forms.Platform.GTK.Cells;
 
 internal class ImageCell : CellBase
 {

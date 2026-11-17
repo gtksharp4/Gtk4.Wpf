@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls.GalleryPages
+﻿namespace Gtk4.Forms.Controls.GalleryPages
 {
 	public class IndicatorGalleries : ContentPage
 	{

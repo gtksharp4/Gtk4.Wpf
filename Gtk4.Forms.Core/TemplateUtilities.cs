@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	internal static class TemplateUtilities
 	{

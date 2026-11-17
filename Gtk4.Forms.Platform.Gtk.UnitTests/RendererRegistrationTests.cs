@@ -2,15 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Xamarin.Forms;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK;
-using Xamarin.Forms.Platform.GTK.Cells;
-using Xamarin.Forms.Platform.GTK.Renderers;
+using Gtk4.Forms;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Platform.GTK;
+using Gtk4.Forms.Platform.GTK.Cells;
+using Gtk4.Forms.Platform.GTK.Renderers;
 using Xunit;
-using GtkShapes = Xamarin.Forms.Shapes;
+using GtkShapes = Gtk4.Forms.Shapes;
 
-namespace Xamarin.Forms.Platform.GTK.UnitTests;
+namespace Gtk4.Forms.Platform.GTK.UnitTests;
 
 /// <summary>
 /// Coverage target 1 of plan §10.2, and the cheapest test in the suite to justify: the GTK
@@ -24,7 +24,7 @@ public class RendererRegistrationTests : GtkTestBase
 {
 	/// <summary>
 	/// Every <c>[assembly: ExportRenderer]</c> / <c>ExportCell</c> / <c>ExportImageSourceHandler</c>
-	/// in Xamarin.Forms.Platform.GTK/Properties/AssemblyInfo.cs. Read out of the assembly's own
+	/// in Gtk4.Forms.Platform.GTK/Properties/AssemblyInfo.cs. Read out of the assembly's own
 	/// attributes rather than re-typed here, so the list cannot drift out of date and a renderer
 	/// deleted from AssemblyInfo.cs disappears from the suite instead of failing it. The count
 	/// guard below is what catches such a deletion.
@@ -200,7 +200,7 @@ public class RendererRegistrationTests : GtkTestBase
 			"update this number.");
 	});
 
-	// HandlerAttribute.TargetType / .HandlerType are internal to Xamarin.Forms.Core, so this
+	// HandlerAttribute.TargetType / .HandlerType are internal to Gtk4.Forms.Core, so this
 	// assembly cannot see them without an InternalsVisibleTo in Core; reflect rather than
 	// modify Core for a test's benefit.
 	//

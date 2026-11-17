@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[Xaml.TypeConversion(typeof(ColumnDefinitionCollection))]
 	public class ColumnDefinitionCollectionTypeConverter : TypeConverter

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Windows.Input;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public class SelectableItemsView : StructuredItemsView
 	{

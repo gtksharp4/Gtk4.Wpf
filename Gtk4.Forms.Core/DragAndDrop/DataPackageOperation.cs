@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	// These are copied from UWP so if you add additional values please use those
 	// https://docs.microsoft.com/en-us/uwp/api/windows.applicationmodel.datatransfer.datapackageoperation?view=winrt-19041

@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
-	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.UriTypeConverter")]
+	[Xaml.ProvideCompiled("Gtk4.Forms.Core.XamlC.UriTypeConverter")]
 	[Xaml.TypeConversion(typeof(Uri))]
 	public class UriTypeConverter : TypeConverter
 	{

@@ -1,3 +1,3 @@
 ﻿using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Xamarin.Forms.Core")]
+[assembly: InternalsVisibleTo("Gtk4.Forms.Core")]

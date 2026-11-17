@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 
 	[DebuggerDisplay("Location = {Location}")]

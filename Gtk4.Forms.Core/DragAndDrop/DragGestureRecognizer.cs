@@ -5,9 +5,9 @@ using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using Gtk4.Forms.PlatformConfiguration.AndroidSpecific;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public class DragGestureRecognizer : GestureRecognizer
 	{

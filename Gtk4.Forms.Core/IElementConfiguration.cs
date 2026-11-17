@@ -1,5 +1,5 @@
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public interface IElementConfiguration<out TElement> where TElement : Element
 	{

@@ -1,7 +1,7 @@
-﻿using Xamarin.Forms.Shapes;
+﻿using Gtk4.Forms.Shapes;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 public class PathFigureCollectionTests
 {

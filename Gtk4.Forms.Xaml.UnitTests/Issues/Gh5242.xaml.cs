@@ -3,10 +3,10 @@ using System.Collections.Generic;
 
 using Xunit;
 
-using Xamarin.Forms;
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms;
+using Gtk4.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public class Gh5242VM
 {

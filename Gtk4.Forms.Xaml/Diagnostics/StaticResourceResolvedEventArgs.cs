@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Xamarin.Forms.Xaml.Diagnostics
+namespace Gtk4.Forms.Xaml.Diagnostics
 {
 	internal class StaticResourceResolvedEventArgs : EventArgs
 	{

@@ -3,10 +3,10 @@ using System.Globalization;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Build.Tasks;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Core.XamlC
+namespace Gtk4.Forms.Core.XamlC
 {
 	class ThicknessTypeConverter : ICompiledTypeConverter
 	{
@@ -45,7 +45,7 @@ namespace Xamarin.Forms.Core.XamlC
 		{
 			foreach (var d in args)
 				yield return Instruction.Create(OpCodes.Ldc_R8, d);
-			yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Thickness"), parameterTypes: args.Select(a => ("mscorlib", "System", "Double")).ToArray()));
+			yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Gtk4.Forms.Core", "Gtk4.Forms", "Thickness"), parameterTypes: args.Select(a => ("mscorlib", "System", "Double")).ToArray()));
 		}
 	}
 

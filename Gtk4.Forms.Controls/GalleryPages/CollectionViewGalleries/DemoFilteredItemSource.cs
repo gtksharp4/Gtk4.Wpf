@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries
 {
 	internal class DemoFilteredItemSource
 	{

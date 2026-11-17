@@ -1,9 +1,9 @@
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.GTK.Controls;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms;
+using Gtk4.Forms.Platform.GTK.Controls;
+using Gtk4.Forms.Platform.GTK.Extensions;
 using Xunit;
 
-namespace Xamarin.Forms.Platform.GTK.UnitTests;
+namespace Gtk4.Forms.Platform.GTK.UnitTests;
 
 /// <summary>
 /// The stale-layout hazard recorded in plan §8.3.1 and left standing there: a font applied as

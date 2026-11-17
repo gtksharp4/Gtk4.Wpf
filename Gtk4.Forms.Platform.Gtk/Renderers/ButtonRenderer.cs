@@ -1,11 +1,11 @@
 ﻿using System;
 using System.ComponentModel;
 using Gtk;
-using Xamarin.Forms.Platform.GTK.Controls;
-using Xamarin.Forms.Platform.GTK.Extensions;
-using GtkImageButton = Xamarin.Forms.Platform.GTK.Controls.ImageButton;
+using Gtk4.Forms.Platform.GTK.Controls;
+using Gtk4.Forms.Platform.GTK.Extensions;
+using GtkImageButton = Gtk4.Forms.Platform.GTK.Controls.ImageButton;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers;
+namespace Gtk4.Forms.Platform.GTK.Renderers;
 
 public class ButtonRenderer : ViewRenderer<Button, GtkImageButton>
 {
@@ -44,7 +44,7 @@ public class ButtonRenderer : ViewRenderer<Button, GtkImageButton>
 		{
 			if (Control == null)
 			{
-				// To allow all available options in Xamarin.Forms, a custom control has been created.
+				// To allow all available options in Gtk4.Forms, a custom control has been created.
 				// Can set text, text color, border, image, etc.
 				var btn = new GtkImageButton();
 				SetNativeControl(btn);

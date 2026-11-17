@@ -5,11 +5,11 @@
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <PackageId>Gtk4.Forms.Platform.Base</PackageId>
         <!-- Assembly identity is independent of the .csproj file name: Core grants
-             InternalsVisibleTo("Xamarin.Forms.Platform") and AssemblyInfoTests does
-             Assembly.Load("Xamarin.Forms.Platform"). -->
-        <AssemblyName>Xamarin.Forms.Platform</AssemblyName>
-        <RootNamespace>Xamarin.Forms.Platform</RootNamespace>
-        <Description>Platform facade referenced by the Xamarin.Forms renderers.</Description>
+             InternalsVisibleTo("Gtk4.Forms.Platform") and AssemblyInfoTests does
+             Assembly.Load("Gtk4.Forms.Platform"). -->
+        <AssemblyName>Gtk4.Forms.Platform</AssemblyName>
+        <RootNamespace>Gtk4.Forms.Platform</RootNamespace>
+        <Description>Platform facade referenced by the Gtk4.Forms renderers.</Description>
         <IsPackable>true</IsPackable>
         <Version>$(VersionPrefix).$(VersionSuffix)</Version>
         <TargetFramework>netstandard2.0</TargetFramework>

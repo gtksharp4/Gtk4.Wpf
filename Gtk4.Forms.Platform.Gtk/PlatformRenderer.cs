@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Platform.GTK;
+﻿namespace Gtk4.Forms.Platform.GTK;
 
 internal class PlatformRenderer : GtkFormsContainer
 {

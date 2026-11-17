@@ -5,9 +5,9 @@ using System.IO;
 using System.IO.IsolatedStorage;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Platform.GTK;
+namespace Gtk4.Forms.Platform.GTK;
 
 internal sealed class GtkSerializer : IDeserializer
 {

@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 
 // Keyed on SIGNED_ASSEMBLY, not on #if DEBUG. It used to be #if DEBUG, and the effect was that
-// Xamarin.Forms.Xaml.UnitTests could not compile in Release at all - XamlCAssemblyResolver,
+// Gtk4.Forms.Xaml.UnitTests could not compile in Release at all - XamlCAssemblyResolver,
 // ILContext and ICompiledTypeConverter are all internal - so the suite could only ever run
 // against Debug binaries. That made Release the one configuration that ships and the one
 // configuration nothing verifies.
@@ -26,5 +26,5 @@ using System.Runtime.CompilerServices;
 // This is an MSBuild task assembly: app authors never reference it, so widening internals to a
 // single named test assembly costs nothing at the public API surface.
 #if !SIGNED_ASSEMBLY
-[assembly: InternalsVisibleTo("Xamarin.Forms.Xaml.UnitTests")]
+[assembly: InternalsVisibleTo("Gtk4.Forms.Xaml.UnitTests")]
 #endif

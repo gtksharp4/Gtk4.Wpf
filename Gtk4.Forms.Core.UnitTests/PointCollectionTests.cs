@@ -1,7 +1,7 @@
 ﻿using Xunit;
 
 
-namespace Xamarin.Forms.Shapes.UnitTests;
+namespace Gtk4.Forms.Shapes.UnitTests;
 
 public class PointCollectionTests
 {

@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
+﻿namespace Gtk4.Forms.PlatformConfiguration.TizenSpecific
 {
 	using System.ComponentModel;
 	using FormsElement = Forms.Application;

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 using Xunit;
 
-using Xamarin.Forms;
+using Gtk4.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public partial class XamlLoaderGetXamlForTypeTests : ContentPage
 {
@@ -24,7 +24,7 @@ public partial class XamlLoaderGetXamlForTypeTests : ContentPage
 		public Tests()
 		{
 #pragma warning disable 0618
-			Xamarin.Forms.Xaml.Internals.XamlLoader.XamlFileProvider = null;
+			Gtk4.Forms.Xaml.Internals.XamlLoader.XamlFileProvider = null;
 #pragma warning restore 0618
 		}
 
@@ -35,8 +35,8 @@ public partial class XamlLoaderGetXamlForTypeTests : ContentPage
 			XamlLoader.ValueCreatedCallback = null;
 			XamlLoader.InstantiationFailedCallback = null;
 #pragma warning disable 0618
-			Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = null;
-			Xamarin.Forms.Xaml.Internals.XamlLoader.DoNotThrowOnExceptions = false;
+			Gtk4.Forms.Internals.ResourceLoader.ExceptionHandler = null;
+			Gtk4.Forms.Xaml.Internals.XamlLoader.DoNotThrowOnExceptions = false;
 #pragma warning restore 0618
 
 		}
@@ -50,14 +50,14 @@ public partial class XamlLoaderGetXamlForTypeTests : ContentPage
 			Assert.IsType<Button>(layout.Content);
 
 #pragma warning disable 0618
-			Xamarin.Forms.Xaml.Internals.XamlLoader.XamlFileProvider = (t) =>
+			Gtk4.Forms.Xaml.Internals.XamlLoader.XamlFileProvider = (t) =>
 			{
 #pragma warning restore 0618
 				if (t == typeof(XamlLoaderGetXamlForTypeTests))
 					return @"
 	<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 		xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-		x:Class=""Xamarin.Forms.Xaml.UnitTests.XamlLoaderGetXamlForTypeTests"">
+		x:Class=""Gtk4.Forms.Xaml.UnitTests.XamlLoaderGetXamlForTypeTests"">
 		<Label x:Name=""Label""/>
 	</ContentPage>";
 				return null;

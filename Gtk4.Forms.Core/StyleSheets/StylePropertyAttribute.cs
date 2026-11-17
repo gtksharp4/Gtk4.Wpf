@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms.StyleSheets
+namespace Gtk4.Forms.StyleSheets
 {
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true, Inherited = true)]
 	sealed class StylePropertyAttribute : Attribute

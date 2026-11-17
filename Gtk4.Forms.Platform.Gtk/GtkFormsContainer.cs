@@ -3,7 +3,7 @@ using Cairo;
 using Gdk;
 using Gtk;
 
-namespace Xamarin.Forms.Platform.GTK;
+namespace Gtk4.Forms.Platform.GTK;
 
 /// <summary>
 /// A generic container to embed visual elements.

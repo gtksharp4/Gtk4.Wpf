@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.PlatformConfiguration;
+using Gtk4.Forms.PlatformConfiguration.AndroidSpecific;
+using Gtk4.Forms.PlatformConfiguration.iOSSpecific;
 
-namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.SwipeViewGalleries
 {
 	[Preserve(AllMembers = true)]
 	public class SwipeTransitionModeGallery : ContentPage

@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Xaml.UnitTests;
+﻿namespace Gtk4.Forms.Xaml.UnitTests;
 
 public partial class Gh6192Template : ContentView
 {

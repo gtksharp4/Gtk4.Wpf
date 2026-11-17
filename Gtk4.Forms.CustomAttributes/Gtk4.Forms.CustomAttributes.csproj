@@ -13,9 +13,9 @@
     <WarningLevel>4</WarningLevel>
     <NoWarn>0169</NoWarn>
     <PackageId>Gtk4.Forms.CustomAttributes</PackageId>
-    <!-- Assembly identity stays Xamarin.Forms.* (only project/dir/package were renamed). -->
-    <AssemblyName>Xamarin.Forms.CustomAttributes</AssemblyName>
-    <RootNamespace>Xamarin.Forms.CustomAttributes</RootNamespace>
+    <!-- Assembly identity stays Gtk4.Forms.* (only project/dir/package were renamed). -->
+    <AssemblyName>Gtk4.Forms.CustomAttributes</AssemblyName>
+    <RootNamespace>Gtk4.Forms.CustomAttributes</RootNamespace>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>

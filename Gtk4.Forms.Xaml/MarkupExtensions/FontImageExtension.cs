@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xamarin.Forms.Xaml
+namespace Gtk4.Forms.Xaml
 {
 	[AcceptEmptyServiceProvider]
 	[ContentProperty(nameof(Glyph))]

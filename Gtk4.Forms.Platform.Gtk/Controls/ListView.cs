@@ -4,14 +4,14 @@ using System.Diagnostics;
 using System.Linq;
 using GLib;
 using Gtk;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK.Cells;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Platform.GTK.Cells;
+using Gtk4.Forms.Platform.GTK.Extensions;
 
 // Gtk.ListStore is [Obsolete] in GTK4 but has no tree-model replacement yet.
 #pragma warning disable CS0612
 
-namespace Xamarin.Forms.Platform.GTK.Controls;
+namespace Gtk4.Forms.Platform.GTK.Controls;
 
 public class ItemTappedEventArgs : EventArgs
 {

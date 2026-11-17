@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat
+﻿namespace Gtk4.Forms.PlatformConfiguration.AndroidSpecific.AppCompat
 {
 	using FormsElement = Forms.NavigationPage;
 

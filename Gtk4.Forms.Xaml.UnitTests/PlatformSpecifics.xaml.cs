@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using Xunit;
-using Xamarin.Forms;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+using Gtk4.Forms;
+using Gtk4.Forms.PlatformConfiguration;
+using Gtk4.Forms.PlatformConfiguration.WindowsSpecific;
+using WindowsOS = Gtk4.Forms.PlatformConfiguration.Windows;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public partial class PlatformSpecific : FlyoutPage
 {

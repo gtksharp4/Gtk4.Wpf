@@ -4,7 +4,7 @@ using System.Linq;
 using Xunit;
 
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 internal class NaiveLayout : Layout<View>
 {

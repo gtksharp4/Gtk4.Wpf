@@ -2,7 +2,7 @@
 using System.Globalization;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 public class ToStringValueConverterTests : BaseTestFixture
 {

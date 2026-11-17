@@ -1,10 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml.Internals;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Xaml.Internals;
 
-namespace Xamarin.Forms.Xaml
+namespace Gtk4.Forms.Xaml
 {
 	class FillResourceDictionariesVisitor : IXamlNodeVisitor
 	{

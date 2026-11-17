@@ -5,10 +5,10 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[DebuggerDisplay("{PropertyName}")]
 	[TypeConverter(typeof(BindablePropertyConverter))]

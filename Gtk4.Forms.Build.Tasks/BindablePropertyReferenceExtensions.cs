@@ -5,9 +5,9 @@ using System.Xml;
 
 using Mono.Cecil;
 
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace Gtk4.Forms.Build.Tasks
 {
 	static class BindablePropertyReferenceExtensions
 	{
@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Build.Tasks
 												md.IsStatic &&
 												md.IsPublic &&
 												md.Parameters.Count == 1 &&
-												md.Parameters[0].ParameterType.InheritsFromOrImplements(module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms", "BindableObject"))), module).FirstOrDefault()?.Item1;
+												md.Parameters[0].ParameterType.InheritsFromOrImplements(module.ImportReference(("Gtk4.Forms.Core", "Gtk4.Forms", "BindableObject"))), module).FirstOrDefault()?.Item1;
 			if (getter == null)
 				throw new BuildException(BuildExceptionCode.BPName, iXmlLineInfo, null, bpName, bpRef.DeclaringType);
 
@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Build.Tasks
 												md.IsStatic &&
 												md.IsPublic &&
 												md.Parameters.Count == 1 &&
-												md.Parameters[0].ParameterType.InheritsFromOrImplements(module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms", "BindableObject"))), module).FirstOrDefault()?.Item1;
+												md.Parameters[0].ParameterType.InheritsFromOrImplements(module.ImportReference(("Gtk4.Forms.Core", "Gtk4.Forms", "BindableObject"))), module).FirstOrDefault()?.Item1;
 
 			var attributes = new List<CustomAttribute>();
 			if (property != null && property.HasCustomAttributes)

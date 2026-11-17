@@ -1,14 +1,14 @@
 ﻿using System;
 using GLib;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.GTK;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Platform.GTK;
-using Xamarin.Forms.Platform.GTK.Renderers;
+using Gtk4.Forms;
+using Gtk4.Forms.ControlGallery.GTK;
+using Gtk4.Forms.Controls;
+using Gtk4.Forms.Platform.GTK;
+using Gtk4.Forms.Platform.GTK.Renderers;
 
 [assembly: ExportRenderer(typeof(DisposePage), typeof(DisposePageRenderer))]
 [assembly: ExportRenderer(typeof(DisposeLabel), typeof(DisposeLabelRenderer))]
-namespace Xamarin.Forms.ControlGallery.GTK;
+namespace Gtk4.Forms.ControlGallery.GTK;
 
 class Program
 {
@@ -23,14 +23,14 @@ class Program
 		GtkThemes.Init();
 		Gtk.Application.Init();
 
-		// The Maps renderer lives in Xamarin.Forms.Maps.GTK, so that assembly has to be
+		// The Maps renderer lives in Gtk4.Forms.Maps.GTK, so that assembly has to be
 		// loaded before Registrar scans - naming a type in it is what forces the load.
-		Forms.Init(new[] { typeof(Xamarin.Forms.Maps.GTK.MapRenderer).Assembly });
-		Xamarin.Forms.Maps.GTK.FormsMaps.Init();
+		Forms.Init(new[] { typeof(Gtk4.Forms.Maps.GTK.MapRenderer).Assembly });
+		Gtk4.Forms.Maps.GTK.FormsMaps.Init();
 		var app = new App();
 		var window = new FormsWindow();
 		window.LoadApplication(app);
-		window.SetApplicationTitle("Xamarin.Forms GTK# Backend");
+		window.SetApplicationTitle("Gtk4.Forms GTK# Backend");
 		window.SetApplicationIcon("gtk4logo.png");
 		window.Show();
 		Gtk.Application.Run();

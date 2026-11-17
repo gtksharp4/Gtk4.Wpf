@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 
-namespace Xamarin.Forms.Maps
+namespace Gtk4.Forms.Maps
 {
 	public class MapElement : Element
 	{

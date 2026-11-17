@@ -1,7 +1,7 @@
 ﻿using Gtk;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Cells;
+namespace Gtk4.Forms.Platform.GTK.Cells;
 
 public class ViewCellRenderer : CellRenderer
 {
@@ -12,7 +12,7 @@ public class ViewCellRenderer : CellRenderer
 
 	protected override void OnForceUpdateSizeRequest(Cell cell, Container nativeCell)
 	{
-		var viewCell = cell as Xamarin.Forms.ViewCell;
+		var viewCell = cell as Gtk4.Forms.ViewCell;
 		var view = viewCell?.View;
 
 		if (view != null)

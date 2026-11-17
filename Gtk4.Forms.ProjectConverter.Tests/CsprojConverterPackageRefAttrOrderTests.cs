@@ -15,7 +15,7 @@ public class CsprojConverterPackageRefAttrOrderTests
 			"""
 			<Project>
 			  <ItemGroup>
-			    <PackageReference Version="1.0.0" Include="Xamarin.Forms" />
+			    <PackageReference Version="1.0.0" Include="Gtk4.Forms" />
 			    <PackageReference Include="SomeOtherLib" Version="1.0.0" />
 			  </ItemGroup>
 			</Project>
@@ -24,7 +24,7 @@ public class CsprojConverterPackageRefAttrOrderTests
 		var result = CsprojConverter.Transform(input, out var changed);
 
 		Assert.True(changed);
-		Assert.DoesNotContain("Xamarin.Forms\"", result);
+		Assert.DoesNotContain("Gtk4.Forms\"", result);
 		Assert.Contains("SomeOtherLib", result);
 	}
 
@@ -35,7 +35,7 @@ public class CsprojConverterPackageRefAttrOrderTests
 			"""
 			<Project>
 			  <ItemGroup>
-			    <PackageReference Version="1.0.0" Include="Xamarin.Forms.Maps" />
+			    <PackageReference Version="1.0.0" Include="Gtk4.Forms.Maps" />
 			  </ItemGroup>
 			</Project>
 			""";
@@ -43,7 +43,7 @@ public class CsprojConverterPackageRefAttrOrderTests
 		var result = CsprojConverter.Transform(input, out var changed);
 
 		Assert.True(changed);
-		Assert.DoesNotContain("Xamarin.Forms.Maps", result);
+		Assert.DoesNotContain("Gtk4.Forms.Maps", result);
 	}
 
 	// ── Include-not-first, bodied ──────────────────────────────────────────────
@@ -55,7 +55,7 @@ public class CsprojConverterPackageRefAttrOrderTests
 			"""
 			<Project>
 			  <ItemGroup>
-			    <PackageReference Version="1.0.0" Include="Xamarin.Forms">
+			    <PackageReference Version="1.0.0" Include="Gtk4.Forms">
 			      <PrivateAssets>all</PrivateAssets>
 			    </PackageReference>
 			    <PackageReference Include="SomeOtherLib" Version="1.0.0" />
@@ -66,11 +66,11 @@ public class CsprojConverterPackageRefAttrOrderTests
 		var result = CsprojConverter.Transform(input, out var changed);
 
 		Assert.True(changed);
-		Assert.DoesNotContain("Xamarin.Forms\"", result);
+		Assert.DoesNotContain("Gtk4.Forms\"", result);
 		Assert.Contains("SomeOtherLib", result);
 	}
 
-	// ── Safety boundary: Xamarin.Forms.FooBar must NOT be stripped ────────────
+	// ── Safety boundary: Gtk4.Forms.FooBar must NOT be stripped ────────────
 
 	[Fact]
 	public void XamarinFormsFooBar_IsNotStripped()
@@ -79,7 +79,7 @@ public class CsprojConverterPackageRefAttrOrderTests
 			"""
 			<Project>
 			  <ItemGroup>
-			    <PackageReference Include="Xamarin.Forms.FooBar" Version="1.0.0" />
+			    <PackageReference Include="Gtk4.Forms.FooBar" Version="1.0.0" />
 			  </ItemGroup>
 			</Project>
 			""";
@@ -87,7 +87,7 @@ public class CsprojConverterPackageRefAttrOrderTests
 		var result = CsprojConverter.Transform(input, out var changed);
 
 		// Only change is from OutputType/StartupObject insertion, not PackageReference removal.
-		Assert.Contains("Xamarin.Forms.FooBar", result);
+		Assert.Contains("Gtk4.Forms.FooBar", result);
 	}
 
 	[Fact]
@@ -97,7 +97,7 @@ public class CsprojConverterPackageRefAttrOrderTests
 			"""
 			<Project>
 			  <ItemGroup>
-			    <PackageReference Version="1.0.0" Include="Xamarin.Forms.Platform.Android" />
+			    <PackageReference Version="1.0.0" Include="Gtk4.Forms.Platform.Android" />
 			  </ItemGroup>
 			</Project>
 			""";
@@ -105,6 +105,6 @@ public class CsprojConverterPackageRefAttrOrderTests
 		var result = CsprojConverter.Transform(input, out var changed);
 
 		Assert.True(changed);
-		Assert.DoesNotContain("Xamarin.Forms.Platform.Android", result);
+		Assert.DoesNotContain("Gtk4.Forms.Platform.Android", result);
 	}
 }

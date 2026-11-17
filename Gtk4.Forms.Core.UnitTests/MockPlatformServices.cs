@@ -6,9 +6,9 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Forms;
-using Xamarin.Forms.Core.UnitTests;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms;
+using Gtk4.Forms.Core.UnitTests;
+using Gtk4.Forms.Internals;
 using FileAccess = System.IO.FileAccess;
 using FileMode = System.IO.FileMode;
 using FileShare = System.IO.FileShare;
@@ -17,7 +17,7 @@ using Stream = System.IO.Stream;
 [assembly: Dependency(typeof(MockDeserializer))]
 [assembly: Dependency(typeof(MockResourcesProvider))]
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 internal class MockPlatformServices : Internals.IPlatformServices
 {

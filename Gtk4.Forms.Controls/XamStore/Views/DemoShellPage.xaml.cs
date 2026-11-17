@@ -3,10 +3,10 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Input;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Controls.XamStore
+namespace Gtk4.Forms.Controls.XamStore
 {
 	[Preserve(AllMembers = true)]
 	public partial class DemoShellPage : ContentPage

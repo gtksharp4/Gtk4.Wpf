@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms.Maps.GTK.Controls;
+namespace Gtk4.Forms.Maps.GTK.Controls;
 
 /// <summary>
 /// An XYZ ("slippy map") raster tile layer: a URL template plus the attribution the tile

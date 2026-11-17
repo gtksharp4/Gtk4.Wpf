@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Shapes
+﻿namespace Gtk4.Forms.Shapes
 {
 	[TypeConverter(typeof(TransformTypeConverter))]
 	public class Transform : BindableObject

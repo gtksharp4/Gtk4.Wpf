@@ -1,12 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows.Input;
-using Xamarin.Forms.Maps;
+using Gtk4.Forms.Maps;
 using Xunit;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 public class NotifiedPropertiesTests : BaseTestFixture
 {

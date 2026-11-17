@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public class DefinitionCollection<T> : IList<T>, ICollection<T> where T : IDefinition
 	{

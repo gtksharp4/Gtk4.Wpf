@@ -2,7 +2,7 @@
 <ContentPage
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Xamarin.Forms.Controls.XamStore.Views.ModalShellPage">
+    x:Class="Gtk4.Forms.Controls.XamStore.Views.ModalShellPage">
     <ContentPage.Content>
         <Button Clicked="Button_Clicked" HorizontalOptions="Center" Text="Close" VerticalOptions="Center" />
     </ContentPage.Content>

@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[DebuggerDisplay("Left={Left}, Top={Top}, Right={Right}, Bottom={Bottom}, HorizontalThickness={HorizontalThickness}, VerticalThickness={VerticalThickness}")]
 	[TypeConverter(typeof(ThicknessTypeConverter))]

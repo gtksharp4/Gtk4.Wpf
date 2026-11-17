@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Xamarin.Forms.StyleSheets
+namespace Gtk4.Forms.StyleSheets
 {
 	static class TextReaderExtensions
 	{

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Xamarin.Forms.Controls.GalleryPages.GradientGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.GradientGalleries
 {
 	public partial class RadialGradientExplorerGallery : ContentPage
 	{

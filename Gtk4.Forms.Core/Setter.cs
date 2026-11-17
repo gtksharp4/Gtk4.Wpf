@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[ContentProperty("Value")]
-	[ProvideCompiled("Xamarin.Forms.Core.XamlC.SetterValueProvider")]
+	[ProvideCompiled("Gtk4.Forms.Core.XamlC.SetterValueProvider")]
 	public sealed class Setter : IValueProvider
 	{
 		readonly ConditionalWeakTable<BindableObject, object> _originalValues = new ConditionalWeakTable<BindableObject, object>();

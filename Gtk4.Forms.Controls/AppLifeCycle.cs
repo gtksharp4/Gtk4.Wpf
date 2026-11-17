@@ -1,4 +1,4 @@
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	public class AppLifeCycle : Application
 	{

@@ -1,6 +1,6 @@
 using Mono.Cecil;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace Gtk4.Forms.Build.Tasks
 {
 	static class FieldReferenceExtensions
 	{

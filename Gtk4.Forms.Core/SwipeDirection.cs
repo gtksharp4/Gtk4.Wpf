@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[Flags]
 	public enum SwipeDirection
@@ -13,7 +13,7 @@ namespace Xamarin.Forms
 	}
 }
 
-namespace Xamarin.Forms.Internals
+namespace Gtk4.Forms.Internals
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class SwipeDirectionHelper

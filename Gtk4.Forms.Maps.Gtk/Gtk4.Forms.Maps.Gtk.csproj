@@ -5,13 +5,13 @@
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <Version>$(VersionPrefix).$(VersionSuffix)</Version>
         <PackageId>Gtk4.Forms.Maps.Gtk</PackageId>
-        <Description>GTK4 map renderer for Xamarin.Forms.Maps, drawn with Cairo over OpenStreetMap-compatible tiles.</Description>
+        <Description>GTK4 map renderer for Gtk4.Forms.Maps, drawn with Cairo over OpenStreetMap-compatible tiles.</Description>
         <IsPackable>true</IsPackable>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <AssemblyName>Xamarin.Forms.Maps.Gtk</AssemblyName>
-        <!-- Capital GTK matches the source namespaces (Xamarin.Forms.Maps.GTK.*); a lowercase
+        <AssemblyName>Gtk4.Forms.Maps.Gtk</AssemblyName>
+        <!-- Capital GTK matches the source namespaces (Gtk4.Forms.Maps.GTK.*); a lowercase
              RootNamespace would shadow GtkSharp's global Gtk namespace (see Platform.Gtk). -->
-        <RootNamespace>Xamarin.Forms.Maps.GTK</RootNamespace>
+        <RootNamespace>Gtk4.Forms.Maps.GTK</RootNamespace>
         <LangVersion>latest</LangVersion>
         <!--
           TRUE, so the SDK emits AssemblyVersion/FileVersion/InformationalVersion from the
@@ -23,12 +23,12 @@
         -->
         <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
         <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
-        <!-- GTK4 port bootstrap: see the same note in Xamarin.Forms.Platform.Gtk.csproj. -->
+        <!-- GTK4 port bootstrap: see the same note in Gtk4.Forms.Platform.Gtk.csproj. -->
         <WarningsNotAsErrors>$(WarningsNotAsErrors);CS0612;CS0618</WarningsNotAsErrors>
     </PropertyGroup>
     <ItemGroup>
         <!--
-          Pinned explicitly, to the same version as Xamarin.Forms.Platform.Gtk. See the comment
+          Pinned explicitly, to the same version as Gtk4.Forms.Platform.Gtk. See the comment
           there: the Net4x.NuGetUtility tooling has property-ised this reference before and broken
           restore with "'.' is not a valid version string". Do not let it be property-ised again -
           it has already happened twice. $(InputBoxLibraryVersion) and $(VersionBuildSuffix) are

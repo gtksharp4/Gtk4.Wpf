@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.GTK;
-using Xamarin.Forms.Controls;
+using Gtk4.Forms;
+using Gtk4.Forms.ControlGallery.GTK;
+using Gtk4.Forms.Controls;
 
 [assembly: Dependency(typeof(PlatformSpecificCoreGalleryFactory))]
 
-namespace Xamarin.Forms.ControlGallery.GTK;
+namespace Gtk4.Forms.ControlGallery.GTK;
 
 public class PlatformSpecificCoreGalleryFactory : IPlatformSpecificCoreGalleryFactory
 {

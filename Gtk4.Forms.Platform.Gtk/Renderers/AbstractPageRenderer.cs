@@ -2,11 +2,11 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Gtk;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK.Extensions;
-using Container = Xamarin.Forms.Platform.GTK.GtkFormsContainer;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Platform.GTK.Extensions;
+using Container = Gtk4.Forms.Platform.GTK.GtkFormsContainer;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers;
+namespace Gtk4.Forms.Platform.GTK.Renderers;
 
 public abstract class AbstractPageRenderer<TWidget, TPage> : Container, IPageControl, IVisualElementRenderer, IEffectControlProvider
 	where TWidget : Widget
@@ -290,7 +290,7 @@ public abstract class AbstractPageRenderer<TWidget, TPage> : Container, IPageCon
 	{
 		if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 			UpdateBackgroundColor();
-		else if (e.PropertyName == Xamarin.Forms.Page.BackgroundImageSourceProperty.PropertyName)
+		else if (e.PropertyName == Gtk4.Forms.Page.BackgroundImageSourceProperty.PropertyName)
 			UpdateBackgroundImage();
 	}
 

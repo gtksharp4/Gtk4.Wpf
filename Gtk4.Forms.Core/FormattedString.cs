@@ -5,7 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[ContentProperty("Spans")]
 	public class FormattedString : Element

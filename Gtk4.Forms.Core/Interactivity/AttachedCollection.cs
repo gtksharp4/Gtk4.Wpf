@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	internal class AttachedCollection<T> : ObservableCollection<T>, ICollection<T>, IAttachedObject where T : BindableObject, IAttachedObject
 	{

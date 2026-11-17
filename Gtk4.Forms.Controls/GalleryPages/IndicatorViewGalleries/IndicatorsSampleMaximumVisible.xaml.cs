@@ -1,7 +1,7 @@
 ﻿using System;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
+using Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
 
-namespace Xamarin.Forms.Controls.GalleryPages
+namespace Gtk4.Forms.Controls.GalleryPages
 {
 	public partial class IndicatorsSampleMaximumVisible : ContentPage
 	{

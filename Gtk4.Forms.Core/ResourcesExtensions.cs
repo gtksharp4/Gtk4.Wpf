@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	static class ResourcesExtensions
 	{

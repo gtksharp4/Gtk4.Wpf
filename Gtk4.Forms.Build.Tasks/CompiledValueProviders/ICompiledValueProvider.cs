@@ -2,9 +2,9 @@ using System.Collections.Generic;
 
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Xamarin.Forms.Build.Tasks;
+using Gtk4.Forms.Build.Tasks;
 
-namespace Xamarin.Forms.Xaml
+namespace Gtk4.Forms.Xaml
 {
 	interface ICompiledValueProvider
 	{

@@ -9,12 +9,12 @@
 
 using System;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
 	public sealed class ContentPropertyAttribute : Attribute
 	{
-		internal static string[] ContentPropertyTypes = { "Xamarin.Forms.ContentPropertyAttribute", "System.Windows.Markup.ContentPropertyAttribute" };
+		internal static string[] ContentPropertyTypes = { "Gtk4.Forms.ContentPropertyAttribute", "System.Windows.Markup.ContentPropertyAttribute" };
 
 		public ContentPropertyAttribute(string name) => Name = name;
 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Xamarin.Forms.Maps
+namespace Gtk4.Forms.Maps
 {
 	public class PinClickedEventArgs : EventArgs
 	{

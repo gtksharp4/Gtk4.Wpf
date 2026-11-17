@@ -1,8 +1,8 @@
 using System;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml.Internals;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Xaml.Internals;
 
-namespace Xamarin.Forms.Xaml
+namespace Gtk4.Forms.Xaml
 {
 	[ContentProperty(nameof(Name))]
 	public class ReferenceExtension : IMarkupExtension

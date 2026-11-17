@@ -1,9 +1,9 @@
 ﻿using System.Collections;
 using System.Linq;
 using Xunit;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public static class ApplyPropertiesVisitorTests
 {
@@ -23,7 +23,7 @@ public static class ApplyPropertiesVisitorTests
 	[Fact]
 	public static void ProvideValueForCollectionItem()
 	{
-		const string NAMESPACE = "clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests";
+		const string NAMESPACE = "clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests";
 		var resolver = new MockNameSpaceResolver();
 		var type = new XmlType(NAMESPACE, "ApplyPropertiesVisitorTests+MarkupExtension", null);
 		var listNode = new ListNode(new[]

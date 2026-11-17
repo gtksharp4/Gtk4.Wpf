@@ -9,7 +9,7 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Maps.GTK;
+namespace Gtk4.Forms.Maps.GTK;
 
 /// <summary>
 /// Backs <see cref="Geocoder"/> with Nominatim, the OpenStreetMap geocoder.
@@ -44,7 +44,7 @@ internal static class GeocoderBackend
 
 		client.DefaultRequestHeaders.TryAddWithoutValidation(
 			"User-Agent",
-			"Xamarin.Forms.Maps.GTK/1.0 (+https://github.com/pieroviano/Xamarin.Forms)");
+			"Gtk4.Forms.Maps.GTK/1.0 (+https://github.com/pieroviano/Gtk4.Forms)");
 
 		return client;
 	}

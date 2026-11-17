@@ -5,13 +5,13 @@
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <Version>$(VersionPrefix).$(VersionSuffix)</Version>
         <PackageId>Gtk4.Forms.Host</PackageId>
-        <Description>Reflection-based GTK 4 host for Xamarin.Forms: discovers the Application subclass and runs the GTK main loop.</Description>
+        <Description>Reflection-based GTK 4 host for Gtk4.Forms: discovers the Application subclass and runs the GTK main loop.</Description>
         <IsPackable>true</IsPackable>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <!-- Assembly identity stays Xamarin.Forms.* (dirs/project/package use Gtk4.Forms.*). -->
-        <AssemblyName>Xamarin.Forms.Host</AssemblyName>
+        <!-- Assembly identity stays Gtk4.Forms.* (dirs/project/package use Gtk4.Forms.*). -->
+        <AssemblyName>Gtk4.Forms.Host</AssemblyName>
         <!-- Capital GTK: a lowercase RootNamespace shadows GtkSharp's global Gtk namespace. -->
-        <RootNamespace>Xamarin.Forms.Platform.GTK</RootNamespace>
+        <RootNamespace>Gtk4.Forms.Platform.GTK</RootNamespace>
         <LangVersion>latest</LangVersion>
         <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
         <EnableDefaultCompileItems>true</EnableDefaultCompileItems>

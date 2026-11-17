@@ -5,9 +5,9 @@ using System.Net.Http;
 
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	internal class StreamWrapper : Stream
 	{

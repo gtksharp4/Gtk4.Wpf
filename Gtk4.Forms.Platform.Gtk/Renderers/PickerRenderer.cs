@@ -1,12 +1,12 @@
 ﻿using System.ComponentModel;
 using System.Linq;
 using Gtk;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Platform.GTK.Extensions;
 
 // TODO GTK4: migrate to Gtk.DropDown; full rewrite is out of scope for this compile pass.
 #pragma warning disable CS0612
-namespace Xamarin.Forms.Platform.GTK.Renderers;
+namespace Gtk4.Forms.Platform.GTK.Renderers;
 
 public class PickerRenderer : ViewRenderer<Picker, ComboBox>
 {

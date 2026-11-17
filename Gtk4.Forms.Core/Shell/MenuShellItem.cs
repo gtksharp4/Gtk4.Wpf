@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.StyleSheets;
+using Gtk4.Forms.StyleSheets;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	internal class MenuShellItem : ShellItem, IMenuItemController, IStyleSelectable
 	{

@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Threading;
 using Gtk;
 
-namespace Xamarin.Forms.Platform.GTK;
+namespace Gtk4.Forms.Platform.GTK;
 
 public class FormsWindow : Window
 {
@@ -37,7 +37,7 @@ public class FormsWindow : Window
 		if (application == null)
 			throw new ArgumentNullException(nameof(application));
 
-		Xamarin.Forms.Application.SetCurrentApplication(application);
+		Gtk4.Forms.Application.SetCurrentApplication(application);
 		_application = application;
 
 		application.PropertyChanged += ApplicationOnPropertyChanged;
@@ -75,7 +75,7 @@ public class FormsWindow : Window
 
 	void ApplicationOnPropertyChanged(object sender, PropertyChangedEventArgs args)
 	{
-		if (args.PropertyName == nameof(Xamarin.Forms.Application.MainPage))
+		if (args.PropertyName == nameof(Gtk4.Forms.Application.MainPage))
 		{
 			UpdateMainPage();
 		}

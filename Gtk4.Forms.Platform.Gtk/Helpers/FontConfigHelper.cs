@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Xamarin.Forms.Platform.GTK.Helpers;
+namespace Gtk4.Forms.Platform.GTK.Helpers;
 
 /// <summary>
 /// A thin P/Invoke layer over libfontconfig, used to make a font file that was written at

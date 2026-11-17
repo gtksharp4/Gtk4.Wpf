@@ -1,9 +1,9 @@
 ﻿using System;
 using Xunit;
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms.Build.Tasks;
+using Gtk4.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 [TypeConverter(typeof(ThicknessTypeConverter))]
 public struct Bz55862Bar

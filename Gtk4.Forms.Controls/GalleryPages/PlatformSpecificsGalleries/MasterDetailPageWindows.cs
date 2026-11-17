@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Input;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
-using static Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries.WindowsPlatformSpecificsGalleryHelpers;
+using Gtk4.Forms.PlatformConfiguration;
+using Gtk4.Forms.PlatformConfiguration.WindowsSpecific;
+using static Gtk4.Forms.Controls.GalleryPages.PlatformSpecificsGalleries.WindowsPlatformSpecificsGalleryHelpers;
 
-using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+using WindowsOS = Gtk4.Forms.PlatformConfiguration.Windows;
 
-namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 {
 	public class FlyoutPageWindows : FlyoutPage
 	{

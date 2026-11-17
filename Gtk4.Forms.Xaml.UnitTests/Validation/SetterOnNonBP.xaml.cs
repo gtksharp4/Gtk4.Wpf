@@ -1,7 +1,7 @@
 ﻿using Xunit;
 
-using Xamarin.Forms;
-namespace Xamarin.Forms.Xaml.UnitTests;
+using Gtk4.Forms;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public class FakeView : View
 {

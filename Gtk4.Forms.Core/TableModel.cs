@@ -1,8 +1,8 @@
 using System;
 using System.ComponentModel;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Internals
+namespace Gtk4.Forms.Internals
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public abstract class TableModel : ITableModel

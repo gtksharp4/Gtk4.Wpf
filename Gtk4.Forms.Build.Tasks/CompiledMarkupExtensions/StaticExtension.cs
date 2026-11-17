@@ -5,11 +5,11 @@ using System.Xml;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 
 using static System.String;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace Gtk4.Forms.Build.Tasks
 {
 	class StaticExtension : ICompiledMarkupExtension
 	{

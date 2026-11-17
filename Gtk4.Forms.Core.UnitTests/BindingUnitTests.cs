@@ -7,10 +7,10 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 public class BindingUnitTests
 	: BindingBaseUnitTests
@@ -1748,8 +1748,8 @@ public class BindingUnitTests
 		Assert.Equal(1, log.Messages.Count);
 		Assert.Contains(String.Format(BindingExpression.PropertyNotFoundErrorMessage,
 			"Text2",
-			"Xamarin.Forms.Core.UnitTests.BindingUnitTests+DifferentViewModel",
-			"Xamarin.Forms.Core.UnitTests.MockBindable",
+			"Gtk4.Forms.Core.UnitTests.BindingUnitTests+DifferentViewModel",
+			"Gtk4.Forms.Core.UnitTests.MockBindable",
 			"Text"), log.Messages[0]);
 
 		Assert.Equal(MockBindable.TextProperty.DefaultValue, ((DifferentViewModel)bindable.BindingContext).Text);
@@ -1767,8 +1767,8 @@ public class BindingUnitTests
 		Assert.True(log.Messages.Count <= 1, "Too many errors were logged");
 		Assert.Contains(String.Format(BindingExpression.PropertyNotFoundErrorMessage,
 			"Text",
-			"Xamarin.Forms.Core.UnitTests.BindingUnitTests+EmptyViewModel",
-			"Xamarin.Forms.Core.UnitTests.MockBindable",
+			"Gtk4.Forms.Core.UnitTests.BindingUnitTests+EmptyViewModel",
+			"Gtk4.Forms.Core.UnitTests.MockBindable",
 			"Text"), log.Messages[0]);
 	}
 
@@ -1781,8 +1781,8 @@ public class BindingUnitTests
 		Assert.Equal(1, log.Messages.Count);
 		Assert.Contains(String.Format(BindingExpression.PropertyNotFoundErrorMessage,
 			"Text",
-			"Xamarin.Forms.Core.UnitTests.BindingUnitTests+DifferentViewModel",
-			"Xamarin.Forms.Core.UnitTests.MockBindable",
+			"Gtk4.Forms.Core.UnitTests.BindingUnitTests+DifferentViewModel",
+			"Gtk4.Forms.Core.UnitTests.MockBindable",
 			"Text"), log.Messages[0]);
 
 		AssertEx.DoesNotThrow(() => bindable.SetValueCore(MockBindable.TextProperty, "foo"));
@@ -1797,8 +1797,8 @@ public class BindingUnitTests
 		Assert.Equal(1, log.Messages.Count);
 		Assert.Contains(String.Format(BindingExpression.PropertyNotFoundErrorMessage,
 			"PrivateSetter",
-			"Xamarin.Forms.Core.UnitTests.BindingUnitTests+DifferentViewModel",
-			"Xamarin.Forms.Core.UnitTests.MockBindable",
+			"Gtk4.Forms.Core.UnitTests.BindingUnitTests+DifferentViewModel",
+			"Gtk4.Forms.Core.UnitTests.MockBindable",
 			"Text"), log.Messages[0]);
 
 		AssertEx.DoesNotThrow(() => bindable.SetValueCore(MockBindable.TextProperty, "foo"));
@@ -1806,8 +1806,8 @@ public class BindingUnitTests
 		Assert.Equal(2, log.Messages.Count);
 		Assert.Contains(String.Format(BindingExpression.PropertyNotFoundErrorMessage,
 			"PrivateSetter",
-			"Xamarin.Forms.Core.UnitTests.BindingUnitTests+DifferentViewModel",
-			"Xamarin.Forms.Core.UnitTests.MockBindable",
+			"Gtk4.Forms.Core.UnitTests.BindingUnitTests+DifferentViewModel",
+			"Gtk4.Forms.Core.UnitTests.MockBindable",
 			"Text"), log.Messages[1]);
 	}
 
@@ -1820,8 +1820,8 @@ public class BindingUnitTests
 		Assert.Equal(1, log.Messages.Count);
 		Assert.Contains(String.Format(BindingExpression.PropertyNotFoundErrorMessage,
 			"MissingProperty",
-			"Xamarin.Forms.Core.UnitTests.MockViewModel",
-			"Xamarin.Forms.Core.UnitTests.MockBindable",
+			"Gtk4.Forms.Core.UnitTests.MockViewModel",
+			"Gtk4.Forms.Core.UnitTests.MockBindable",
 			"Text"), log.Messages[0]);
 	}
 
@@ -1850,8 +1850,8 @@ public class BindingUnitTests
 		Assert.Equal(1, log.Messages.Count);
 		Assert.Contains(String.Format(BindingExpression.PropertyNotFoundErrorMessage,
 			"MissingProperty",
-			"Xamarin.Forms.Core.UnitTests.BindingBaseUnitTests+ComplexMockViewModel",
-			"Xamarin.Forms.Core.UnitTests.MockBindable",
+			"Gtk4.Forms.Core.UnitTests.BindingBaseUnitTests+ComplexMockViewModel",
+			"Gtk4.Forms.Core.UnitTests.MockBindable",
 			"Text"), log.Messages[0]);
 
 		Assert.Equal(MockBindable.TextProperty.DefaultValue, bindable.Text);
@@ -2379,7 +2379,7 @@ public class BindingUnitTests
 	}
 
 	[Fact]
-	//https://github.com/pieroviano/Xamarin.Forms/issues/3467
+	//https://github.com/pieroviano/Gtk4.Forms/issues/3467
 	public void TargetNullValueIgnoredWhenBindingIsResolved()
 	{
 		var bindable = new MockBindable();
@@ -2402,7 +2402,7 @@ public class BindingUnitTests
 	}
 
 	[Fact]
-	//https://github.com/pieroviano/Xamarin.Forms/issues/3994
+	//https://github.com/pieroviano/Gtk4.Forms/issues/3994
 	public void INPCOnBindingWithSource()
 	{
 		var page = new ContentPage { Title = "Foo" };
@@ -2418,7 +2418,7 @@ public class BindingUnitTests
 	}
 
 	[Fact]
-	//https://github.com/pieroviano/Xamarin.Forms/issues/10405
+	//https://github.com/pieroviano/Gtk4.Forms/issues/10405
 	public void TypeConversionExceptionIsCaughtAndLogged()
 	{
 		var label = new Label();

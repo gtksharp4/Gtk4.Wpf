@@ -1,7 +1,7 @@
 ﻿using Xunit;
-using Xamarin.Forms.Build.Tasks;
+using Gtk4.Forms.Build.Tasks;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 [XamlCompilation(XamlCompilationOptions.Skip)]
 public partial class Gh2063 : ContentPage

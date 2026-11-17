@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ScrollModeGalleries;
+using Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.ScrollModeGalleries;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.AlternateLayoutGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.AlternateLayoutGalleries
 {
 	internal class AlternateLayoutGallery : ContentPage
 	{

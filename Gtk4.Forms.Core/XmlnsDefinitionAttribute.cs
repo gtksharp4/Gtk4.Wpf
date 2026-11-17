@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 	[DebuggerDisplay("{XmlNamespace}, {ClrNamespace}, {AssemblyName}")]

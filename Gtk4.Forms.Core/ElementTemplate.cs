@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 #pragma warning disable 612
 	public class ElementTemplate : IElement, IDataTemplate

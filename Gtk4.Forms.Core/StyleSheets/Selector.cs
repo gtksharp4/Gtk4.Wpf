@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms.StyleSheets
+namespace Gtk4.Forms.StyleSheets
 {
 	abstract class Selector
 	{

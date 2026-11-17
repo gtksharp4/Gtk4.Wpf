@@ -1,14 +1,14 @@
-﻿using Xamarin.Forms;
-using Xamarin.Forms.Platform.GTK;
-using Xamarin.Forms.Platform.GTK.Cells;
-using Xamarin.Forms.Platform.GTK.Renderers;
+﻿using Gtk4.Forms;
+using Gtk4.Forms.Platform.GTK;
+using Gtk4.Forms.Platform.GTK.Cells;
+using Gtk4.Forms.Platform.GTK.Renderers;
 
 // So the renderer test suite can exercise Platform.DisposeModelAndChildrenRenderers - the
 // path navigation runs when a page leaves the stack, and the one plan risk R8 is about.
 // Without this the lifecycle tests could only assert preconditions.
 // Fully qualified: a `using System.Runtime.CompilerServices;` here makes the
 // [Dependency] attributes below ambiguous with that namespace's DependencyAttribute.
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform.GTK.UnitTests")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Gtk4.Forms.Platform.GTK.UnitTests")]
 
 [assembly: ExportImageSourceHandler(typeof(FileImageSource), typeof(FileImageSourceHandler))]
 [assembly: ExportImageSourceHandler(typeof(StreamImageSource), typeof(StreamImagesourceHandler))]
@@ -63,15 +63,15 @@ using Xamarin.Forms.Platform.GTK.Renderers;
 [assembly: ExportRenderer(typeof(WebView), typeof(WebViewRenderer))]
 
 [assembly: ExportCell(typeof(Cell), typeof(CellRenderer))]
-[assembly: ExportCell(typeof(Xamarin.Forms.EntryCell), typeof(EntryCellRenderer))]
-[assembly: ExportCell(typeof(Xamarin.Forms.TextCell), typeof(TextCellRenderer))]
-[assembly: ExportCell(typeof(Xamarin.Forms.ImageCell), typeof(ImageCellRenderer))]
-[assembly: ExportCell(typeof(Xamarin.Forms.SwitchCell), typeof(SwitchCellRenderer))]
-[assembly: ExportCell(typeof(Xamarin.Forms.ViewCell), typeof(ViewCellRenderer))]
+[assembly: ExportCell(typeof(Gtk4.Forms.EntryCell), typeof(EntryCellRenderer))]
+[assembly: ExportCell(typeof(Gtk4.Forms.TextCell), typeof(TextCellRenderer))]
+[assembly: ExportCell(typeof(Gtk4.Forms.ImageCell), typeof(ImageCellRenderer))]
+[assembly: ExportCell(typeof(Gtk4.Forms.SwitchCell), typeof(SwitchCellRenderer))]
+[assembly: ExportCell(typeof(Gtk4.Forms.ViewCell), typeof(ViewCellRenderer))]
 
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Shapes.Rectangle), typeof(RectangleRenderer))]
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Shapes.Ellipse), typeof(EllipseRenderer))]
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Shapes.Path), typeof(PathRenderer))]
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Shapes.Polygon), typeof(PolygonRenderer))]
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Shapes.Polyline), typeof(PolylineRenderer))]
-[assembly: ExportRenderer(typeof(Xamarin.Forms.Shapes.Line), typeof(LineRenderer))]
+[assembly: ExportRenderer(typeof(Gtk4.Forms.Shapes.Rectangle), typeof(RectangleRenderer))]
+[assembly: ExportRenderer(typeof(Gtk4.Forms.Shapes.Ellipse), typeof(EllipseRenderer))]
+[assembly: ExportRenderer(typeof(Gtk4.Forms.Shapes.Path), typeof(PathRenderer))]
+[assembly: ExportRenderer(typeof(Gtk4.Forms.Shapes.Polygon), typeof(PolygonRenderer))]
+[assembly: ExportRenderer(typeof(Gtk4.Forms.Shapes.Polyline), typeof(PolylineRenderer))]
+[assembly: ExportRenderer(typeof(Gtk4.Forms.Shapes.Line), typeof(LineRenderer))]

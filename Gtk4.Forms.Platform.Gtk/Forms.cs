@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Platform.GTK;
 
-namespace Xamarin.Forms;
+namespace Gtk4.Forms;
 
 public static class Forms
 {

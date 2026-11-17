@@ -1,8 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.SwipeViewGalleries
 {
 	[Preserve(AllMembers = true)]
 	public partial class SwipeViewBindingContextGallery : ContentPage

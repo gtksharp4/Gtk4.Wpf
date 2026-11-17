@@ -1,8 +1,8 @@
 ﻿using System;
 using Xunit;
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public class Issue1545
 	: IDisposable{
@@ -21,7 +21,7 @@ public class Issue1545
 	{
 		string xaml = @"<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 						 xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-						 x:Class=""Xamarin.Forms.Controls.Issue1545"">
+						 x:Class=""Gtk4.Forms.Controls.Issue1545"">
 						<ListView x:Name=""List"" ItemsSource=""{Binding}"">
 							<ListView.ItemTemplate>
 								<DataTemplate>
@@ -50,7 +50,7 @@ public class Issue1545
 	{
 		string xaml = @"<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 						 xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-						 x:Class=""Xamarin.Forms.Controls.Issue1545"">
+						 x:Class=""Gtk4.Forms.Controls.Issue1545"">
 							<ContentPage.Resources>
 							<ResourceDictionary>
 							<Color x:Key=""color"">#ff00aa</Color>
@@ -97,7 +97,7 @@ public class Issue1545
 		var xaml = @"<ListView 
 						xmlns=""http://xamarin.com/schemas/2014/forms""
 						xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-						xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests""
+						xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests""
 						ItemsSource=""{Binding}"">
 							<ListView.ItemTemplate>
 								<DataTemplate>

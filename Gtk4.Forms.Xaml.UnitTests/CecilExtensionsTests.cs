@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
 using Xunit;
-using Xamarin.Forms.Build.Tasks;
+using Gtk4.Forms.Build.Tasks;
 using IOPath = System.IO.Path;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public class CecilExtensionsTests : IAssemblyResolver, IDisposable{
-	const string testNamespace = "Xamarin.Forms.Xaml.UnitTests";
+	const string testNamespace = "Gtk4.Forms.Xaml.UnitTests";
 	AssemblyDefinition assembly;
 	readonly List<AssemblyDefinition> assemblies = new List<AssemblyDefinition>();
 	readonly ReaderParameters readerParameters;

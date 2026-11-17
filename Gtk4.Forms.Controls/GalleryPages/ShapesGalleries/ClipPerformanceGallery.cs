@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
-using Xamarin.Forms.Shapes;
+using Gtk4.Forms.Shapes;
 
-namespace Xamarin.Forms.Controls.GalleryPages.ShapesGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.ShapesGalleries
 {
 	public class ClipPerformanceGallery : ContentPage
 	{

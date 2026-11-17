@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[Internals.Preserve(AllMembers = true)]
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]

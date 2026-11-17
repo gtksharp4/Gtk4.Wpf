@@ -3,10 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:radiobuttongalleries="clr-namespace:Xamarin.Forms.Controls.GalleryPages.RadioButtonGalleries"
+             xmlns:radiobuttongalleries="clr-namespace:Gtk4.Forms.Controls.GalleryPages.RadioButtonGalleries"
              mc:Ignorable="d"
              x:DataType="radiobuttongalleries:RadioButtonGroupBindingModel"
-             x:Class="Xamarin.Forms.Controls.GalleryPages.RadioButtonGalleries.RadioButtonGroupBindingGallery">
+             x:Class="Gtk4.Forms.Controls.GalleryPages.RadioButtonGalleries.RadioButtonGroupBindingGallery">
     <ContentPage.Resources>
         <ResourceDictionary>
             <radiobuttongalleries:PillConverter x:Key="pillConverter" />

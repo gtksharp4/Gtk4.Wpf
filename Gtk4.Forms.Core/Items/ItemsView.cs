@@ -3,10 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml.Diagnostics;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Xaml.Diagnostics;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public abstract class ItemsView : View
 	{

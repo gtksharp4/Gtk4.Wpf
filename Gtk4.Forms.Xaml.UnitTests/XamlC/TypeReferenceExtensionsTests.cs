@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using Mono.Cecil;
 using Xunit;
-using Xamarin.Forms.Build.Tasks;
+using Gtk4.Forms.Build.Tasks;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public class Effect
 	{
 	}
 }
-namespace Xamarin.Forms.XamlcUnitTests
+namespace Gtk4.Forms.XamlcUnitTests
 {
 	// NUnit's [OneTimeSetUp]/[OneTimeTearDown] became the ctor/Dispose: xUnit builds one
 	// instance per test, so the Cecil resolver and module are now created per test rather
@@ -159,7 +159,7 @@ namespace Xamarin.Forms.XamlcUnitTests
 		[InlineData(typeof(Bar<string>), typeof(Foo), true)]
 		[InlineData(typeof(Bar<string>), typeof(Foo<bool>), false)]
 		[InlineData(typeof(Bar<string>), typeof(Foo<string>), true)]
-		[InlineData(typeof(Qux<string>), typeof(double), false)] //https://github.com/pieroviano/Xamarin.Forms/issues/1497
+		[InlineData(typeof(Qux<string>), typeof(double), false)] //https://github.com/pieroviano/Gtk4.Forms/issues/1497
 		[InlineData(typeof(IGrault<object>), typeof(IGrault<string>), false)]
 		[InlineData(typeof(IGrault<string>), typeof(IGrault<object>), false)]
 		[InlineData(typeof(ICovariant<object>), typeof(ICovariant<string>), false)]
@@ -183,8 +183,8 @@ namespace Xamarin.Forms.XamlcUnitTests
 			var test = typeof(TypeReferenceExtensionsTests).Assembly;
 
 			Assert.False(TypeReferenceExtensions.InheritsFromOrImplements(
-				module.ImportReference(test.GetType("Xamarin.Forms.Effect")),
-				module.ImportReference(core.GetType("Xamarin.Forms.Effect"))));
+				module.ImportReference(test.GetType("Gtk4.Forms.Effect")),
+				module.ImportReference(core.GetType("Gtk4.Forms.Effect"))));
 		}
 
 		[Fact]
@@ -245,7 +245,7 @@ namespace Xamarin.Forms.XamlcUnitTests
 			IList<TypeReference> arguments;
 			var garply = module.ImportReference(typeof(Garply<System.Byte>));
 
-			Assert.True(garply.ImplementsGenericInterface("Xamarin.Forms.XamlcUnitTests.TypeReferenceExtensionsTests/IGrault`1<T>", out igrault, out arguments));
+			Assert.True(garply.ImplementsGenericInterface("Gtk4.Forms.XamlcUnitTests.TypeReferenceExtensionsTests/IGrault`1<T>", out igrault, out arguments));
 
 			Assert.Equal("System", igrault.GenericArguments[0].Namespace);
 			Assert.Equal("Byte", igrault.GenericArguments[0].Name);

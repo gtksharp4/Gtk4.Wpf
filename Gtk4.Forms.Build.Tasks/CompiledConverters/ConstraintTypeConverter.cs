@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Globalization;
 using Mono.Cecil.Cil;
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Build.Tasks;
+using Gtk4.Forms.Xaml;
 using static Mono.Cecil.Cil.Instruction;
 using static Mono.Cecil.Cil.OpCodes;
 
-namespace Xamarin.Forms.Core.XamlC
+namespace Gtk4.Forms.Core.XamlC
 {
 	class ConstraintTypeConverter : ICompiledTypeConverter
 	{
@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Core.XamlC
 				throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Constraint));
 
 			yield return Create(Ldc_R8, size);
-			yield return Create(Call, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Constraint"),
+			yield return Create(Call, module.ImportMethodReference(("Gtk4.Forms.Core", "Gtk4.Forms", "Constraint"),
 																   methodName: "Constant",
 																   parameterTypes: new[] { ("mscorlib", "System", "Double") },
 																   isStatic: true));

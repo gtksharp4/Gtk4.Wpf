@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Xamarin.Forms;
-using Xamarin.Forms.Platform.GTK;
+using Gtk4.Forms;
+using Gtk4.Forms.Platform.GTK;
 using Xunit;
 
 /// <summary>
@@ -36,7 +36,7 @@ public static class GtkTestHost
 	const string RequiredVariable = "XF_GTK_REQUIRE_NATIVE";
 
 	/// <summary>
-	/// Brings up the single GTK thread (via <see cref="Xamarin.Forms.Platform.GTK.UnitTests.GtkFixture"/>)
+	/// Brings up the single GTK thread (via <see cref="Gtk4.Forms.Platform.GTK.UnitTests.GtkFixture"/>)
 	/// and either returns - GTK is running on that thread - or skips, so an environment that cannot host
 	/// GTK reports as such rather than as a wall of identical failures. Called from
 	/// <see cref="GtkTestBase"/>'s constructor, which xUnit runs before every test.
@@ -47,7 +47,7 @@ public static class GtkTestHost
 	/// </summary>
 	public static void EnsureInitialized()
 	{
-		var reason = Xamarin.Forms.Platform.GTK.UnitTests.GtkFixture.Instance.UnavailableReason;
+		var reason = Gtk4.Forms.Platform.GTK.UnitTests.GtkFixture.Instance.UnavailableReason;
 
 		if (reason != null)
 			Unavailable(reason);
@@ -73,7 +73,7 @@ public static class GtkTestHost
 			return null;
 
 		return "No DISPLAY. These are real GTK widget tests and need an X server: " +
-			"run them as `xvfb-run -a dotnet test Xamarin.Forms.Platform.GTK.UnitTests`.";
+			"run them as `xvfb-run -a dotnet test Gtk4.Forms.Platform.GTK.UnitTests`.";
 	}
 
 	internal static string NoNativeRuntime(string detail) =>
@@ -182,7 +182,7 @@ public static class GtkTestHost
 	/// Drains pending main-loop work without blocking, after each test body, so a failure in layout,
 	/// a draw function or an idle callback a test queued is attributed to that test rather than to
 	/// whichever runs next. Bounded, so a test that queues work forever fails by timing out instead of
-	/// wedging the GTK thread. Called by <see cref="Xamarin.Forms.Platform.GTK.UnitTests.GtkFixture"/>.
+	/// wedging the GTK thread. Called by <see cref="Gtk4.Forms.Platform.GTK.UnitTests.GtkFixture"/>.
 	/// </summary>
 	internal static void PumpPending()
 	{
@@ -543,9 +543,9 @@ public abstract class GtkTestBase
 
 	/// <summary>Runs a test body on the GTK thread, rethrowing anything it throws.</summary>
 	protected void Run(System.Action body) =>
-		Xamarin.Forms.Platform.GTK.UnitTests.GtkFixture.Instance.Invoke(body);
+		Gtk4.Forms.Platform.GTK.UnitTests.GtkFixture.Instance.Invoke(body);
 
 	/// <summary>Runs a test body on the GTK thread and returns its value.</summary>
 	protected T Run<T>(System.Func<T> body) =>
-		Xamarin.Forms.Platform.GTK.UnitTests.GtkFixture.Instance.Invoke(body);
+		Gtk4.Forms.Platform.GTK.UnitTests.GtkFixture.Instance.Invoke(body);
 }

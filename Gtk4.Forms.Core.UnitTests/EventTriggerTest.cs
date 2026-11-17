@@ -1,7 +1,7 @@
 ﻿using System;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 internal class MockTriggerAction : TriggerAction<BindableObject>
 {

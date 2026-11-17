@@ -1,7 +1,7 @@
 ﻿using System;
 using Xunit;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public class BoxView1501 : BoxView
 {
@@ -22,7 +22,7 @@ public class Issue1501
 				<BoxView 
 					xmlns=""http://xamarin.com/schemas/2014/forms""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-					x:Class=""Xamarin.Forms.Xaml.UnitTests.BoxView1501"" >
+					x:Class=""Gtk4.Forms.Xaml.UnitTests.BoxView1501"" >
 				    <BoxView.GestureRecognizers>
 				      <TapGestureRecognizer Tapped=""OnBoxViewTapped"" />
 				    </BoxView.GestureRecognizers>

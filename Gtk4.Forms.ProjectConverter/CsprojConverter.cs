@@ -4,8 +4,8 @@ using System.Text.RegularExpressions;
 namespace Gtk4.Forms.ProjectConverter;
 
 /// <summary>
-/// Converts a consumer Xamarin.Forms project to build on the GTK 4 backend: collapses
-/// platform TFMs to <c>net10.0</c>, removes official <c>Xamarin.Forms*</c> package refs
+/// Converts a consumer Gtk4.Forms project to build on the GTK 4 backend: collapses
+/// platform TFMs to <c>net10.0</c>, removes official <c>Gtk4.Forms*</c> package refs
 /// (which collide with the <c>Gtk4.Forms.*</c> drop-ins), and sets <c>OutputType=Exe</c>
 /// with the injected GTK entry point as <c>StartupObject</c>.
 /// </summary>
@@ -30,10 +30,10 @@ internal static class CsprojConverter
 		@"^(?:uap10\.0.*|monoandroid.*|xamarin\.ios.*|xamarinios.*|tizen.*|netstandard2\.\d|portable.*)$",
 		RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-	// A whole PackageReference line for Xamarin.Forms official packages (self-closed).
-	// Include may appear after other attributes (e.g. Version="5.0" Include="Xamarin.Forms" />).
+	// A whole PackageReference line for Gtk4.Forms official packages (self-closed).
+	// Include may appear after other attributes (e.g. Version="5.0" Include="Gtk4.Forms" />).
 	// Matches the entire line including leading indent and trailing newline.
-	// The Include value must end with a closing quote boundary — Xamarin.Forms.FooBar must NOT match.
+	// The Include value must end with a closing quote boundary — Gtk4.Forms.FooBar must NOT match.
 	static readonly Regex _xamarinFormsRef = new(
 		@"[^\S\r\n]*<PackageReference\b[^>]*\bInclude=""Xamarin\.Forms(?:\.Maps|\.Visual\.Material|\.Platform\.[^""]*)?""[^>]*/>[^\S\r\n]*(\r?\n)?",
 		RegexOptions.Compiled | RegexOptions.IgnoreCase);

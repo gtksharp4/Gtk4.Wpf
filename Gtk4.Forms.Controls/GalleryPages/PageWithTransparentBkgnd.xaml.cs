@@ -1,7 +1,7 @@
 ﻿using System;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages
+namespace Gtk4.Forms.Controls.GalleryPages
 {
 	[Preserve(AllMembers = true)]
 	public partial class PageWithTransparentBkgnd : ContentPage

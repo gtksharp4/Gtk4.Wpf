@@ -37,7 +37,7 @@ pkg-config --modversion gtk4 2>/dev/null || true
 # preserved): overriding it before the build drops the dirs the SDK compiler needs. XF_GTK_MAC_RUNNER
 # selects the thread-0 path in Program.cs; XF_GTK_REQUIRE_NATIVE turns "no GTK runtime" into a failure.
 echo "== GTK renderer tests (real GTK 4 widgets, thread-0 runner over Quartz) =="
-GTK_DLL="Gtk4.Forms.Platform.Gtk.UnitTests/bin/Debug/net10.0/Xamarin.Forms.Platform.GTK.UnitTests.dll"
+GTK_DLL="Gtk4.Forms.Platform.Gtk.UnitTests/bin/Debug/net10.0/Gtk4.Forms.Platform.GTK.UnitTests.dll"
 # -verbose prints STARTING/FINISHED per test, so a native Quartz crash names the test it died on.
 DYLD_FALLBACK_LIBRARY_PATH="$GTK_PREFIX/lib:/usr/local/lib:/usr/lib:/lib" \
 	XF_GTK_MAC_RUNNER=1 XF_GTK_REQUIRE_NATIVE=1 \

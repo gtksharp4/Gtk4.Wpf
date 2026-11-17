@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace Xamarin.Forms.Xaml
+namespace Gtk4.Forms.Xaml
 {
 	[ContentProperty(nameof(TypeName))]
-	[ProvideCompiled("Xamarin.Forms.Build.Tasks.DataTemplateExtension")]
+	[ProvideCompiled("Gtk4.Forms.Build.Tasks.DataTemplateExtension")]
 	public sealed class DataTemplateExtension : IMarkupExtension<DataTemplate>
 	{
 		public string TypeName { get; set; }

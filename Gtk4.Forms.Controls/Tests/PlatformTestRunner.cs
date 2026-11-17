@@ -6,7 +6,7 @@ using Xunit.Runner.Common;
 using Xunit.Sdk;
 using Xunit.v3;
 
-namespace Xamarin.Forms.Controls.Tests
+namespace Gtk4.Forms.Controls.Tests
 {
 	public class PlatformTestRunner
 	{

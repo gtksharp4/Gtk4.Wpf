@@ -5,7 +5,7 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using IOPath = System.IO.Path;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace Gtk4.Forms.Build.Tasks
 {
 	public class XamlGTask : Task
 	{

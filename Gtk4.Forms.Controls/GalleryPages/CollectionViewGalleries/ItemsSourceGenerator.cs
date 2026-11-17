@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries
 {
 	internal enum ItemsSourceType
 	{

@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms
+﻿namespace Gtk4.Forms
 {
 	[TypeConverter(typeof(BrushTypeConverter))]
 	public class SolidColorBrush : Brush

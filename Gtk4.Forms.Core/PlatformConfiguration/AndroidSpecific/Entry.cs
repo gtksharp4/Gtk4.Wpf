@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific
+﻿namespace Gtk4.Forms.PlatformConfiguration.AndroidSpecific
 {
 	using FormsElement = Forms.Entry;
 
@@ -21,7 +21,7 @@
 			return GetImeOptions(config.Element);
 		}
 
-		public static IPlatformElementConfiguration<Android, FormsElement> SetImeOptions(this IPlatformElementConfiguration<Xamarin.Forms.PlatformConfiguration.Android, FormsElement> config, ImeFlags value)
+		public static IPlatformElementConfiguration<Android, FormsElement> SetImeOptions(this IPlatformElementConfiguration<Gtk4.Forms.PlatformConfiguration.Android, FormsElement> config, ImeFlags value)
 		{
 			SetImeOptions(config.Element, value);
 			return config;

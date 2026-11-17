@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.GradientGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.GradientGalleries
 {
 	[Preserve(AllMembers = true)]
 	public class ColorSource : BindableObject

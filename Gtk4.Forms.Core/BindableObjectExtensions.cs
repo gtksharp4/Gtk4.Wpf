@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq.Expressions;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public static class BindableObjectExtensions
 	{

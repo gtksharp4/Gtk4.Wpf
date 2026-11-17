@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
-	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.ListStringTypeConverter")]
+	[Xaml.ProvideCompiled("Gtk4.Forms.Core.XamlC.ListStringTypeConverter")]
 	[Xaml.TypeConversion(typeof(List<string>))]
 	public class ListStringTypeConverter : TypeConverter
 	{

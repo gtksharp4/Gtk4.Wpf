@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Xamarin.Forms.Platform;
+using Gtk4.Forms.Platform;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[ContentProperty("Content")]
 	[RenderWith(typeof(_RefreshViewRenderer))]

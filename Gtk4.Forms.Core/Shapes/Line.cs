@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Platform;
+﻿using Gtk4.Forms.Platform;
 
-namespace Xamarin.Forms.Shapes
+namespace Gtk4.Forms.Shapes
 {
 	[RenderWith(typeof(_LineRenderer))]
 	public sealed class Line : Shape

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Xamarin.Forms.Controls.Tests
+namespace Gtk4.Forms.Controls.Tests
 {
 	public class ObjectDisposedExceptionTests : CrossPlatformTestFixture
 	{

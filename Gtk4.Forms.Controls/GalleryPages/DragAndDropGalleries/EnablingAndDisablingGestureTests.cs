@@ -2,9 +2,9 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.DragAndDropGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.DragAndDropGalleries
 {
 
 

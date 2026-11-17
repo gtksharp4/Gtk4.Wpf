@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[Xaml.TypeConversion(typeof(Binding))]
 	[Obsolete("Obsolete since XF 5.0.0")] //not used anywhere

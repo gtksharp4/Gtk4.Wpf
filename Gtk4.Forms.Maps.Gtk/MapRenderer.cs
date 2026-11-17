@@ -4,10 +4,10 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using Xamarin.Forms.Maps.GTK.Controls;
-using Xamarin.Forms.Platform.GTK;
+using Gtk4.Forms.Maps.GTK.Controls;
+using Gtk4.Forms.Platform.GTK;
 
-namespace Xamarin.Forms.Maps.GTK;
+namespace Gtk4.Forms.Maps.GTK;
 
 public class MapRenderer : ViewRenderer<Map, MapControl>
 {
@@ -62,15 +62,15 @@ public class MapRenderer : ViewRenderer<Map, MapControl>
 	{
 		base.OnElementPropertyChanged(sender, e);
 
-		// Xamarin.Forms.Maps.Map has to be spelled out: inside a renderer the bare name Map
+		// Gtk4.Forms.Maps.Map has to be spelled out: inside a renderer the bare name Map
 		// binds to the inherited Gtk.Widget.Map() method, not to the Forms type (CS0119).
-		if (e.PropertyName == Xamarin.Forms.Maps.Map.MapTypeProperty.PropertyName)
+		if (e.PropertyName == Gtk4.Forms.Maps.Map.MapTypeProperty.PropertyName)
 			UpdateMapType();
-		else if (e.PropertyName == Xamarin.Forms.Maps.Map.IsShowingUserProperty.PropertyName)
+		else if (e.PropertyName == Gtk4.Forms.Maps.Map.IsShowingUserProperty.PropertyName)
 			UpdateIsShowingUser();
-		else if (e.PropertyName == Xamarin.Forms.Maps.Map.HasScrollEnabledProperty.PropertyName)
+		else if (e.PropertyName == Gtk4.Forms.Maps.Map.HasScrollEnabledProperty.PropertyName)
 			UpdateHasScrollEnabled();
-		else if (e.PropertyName == Xamarin.Forms.Maps.Map.HasZoomEnabledProperty.PropertyName)
+		else if (e.PropertyName == Gtk4.Forms.Maps.Map.HasZoomEnabledProperty.PropertyName)
 			UpdateHasZoomEnabled();
 	}
 

@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ScrollModeGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.ScrollModeGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class ScrollModeTestGallery : ContentPage

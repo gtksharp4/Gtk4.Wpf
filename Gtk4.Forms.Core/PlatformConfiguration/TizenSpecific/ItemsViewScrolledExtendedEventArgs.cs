@@ -1,4 +1,4 @@
-namespace Xamarin.Forms.Core.PlatformConfiguration.TizenSpecific
+namespace Gtk4.Forms.Core.PlatformConfiguration.TizenSpecific
 {
 	public class ItemsViewScrolledExtendedEventArgs : ItemsViewScrolledEventArgs
 	{

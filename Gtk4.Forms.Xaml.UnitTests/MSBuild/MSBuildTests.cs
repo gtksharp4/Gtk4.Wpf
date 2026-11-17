@@ -7,20 +7,20 @@ using System.Text;
 using System.Xml.Linq;
 using Mono.Cecil;
 using Xunit;
-using static Xamarin.Forms.MSBuild.UnitTests.MSBuildXmlExtensions;
+using static Gtk4.Forms.MSBuild.UnitTests.MSBuildXmlExtensions;
 using IOPath = System.IO.Path;
 
-namespace Xamarin.Forms.MSBuild.UnitTests;
+namespace Gtk4.Forms.MSBuild.UnitTests;
 
-//This set of tests is for validating Xamarin.Forms.targets
+//This set of tests is for validating Gtk4.Forms.targets
 [Trait("Category", "LongRunning")]
 public class MSBuildTests : IDisposable
 {
 	static readonly string[] references = {
 		"mscorlib",
 		"System",
-		"Xamarin.Forms.Core.dll",
-		"Xamarin.Forms.Xaml.dll",
+		"Gtk4.Forms.Core.dll",
+		"Gtk4.Forms.Xaml.dll",
 	};
 
 	// Directory holding .NETFramework\v4.7\, supplied by the
@@ -42,9 +42,9 @@ public class MSBuildTests : IDisposable
 	// trailing backslash immediately before a closing quote would escape that quote on a
 	// Windows command line.
 	//
-	// Matched by EXTENSION rather than by name. This used to look for "Xamarin.Forms.sln"
+	// Matched by EXTENSION rather than by name. This used to look for "Gtk4.Forms.sln"
 	// specifically; the prune in cc8874b9b deleted that solution and every test in this class
-	// then failed in the type initializer with "Could not find Xamarin.Forms.sln". Globbing
+	// then failed in the type initializer with "Could not find Gtk4.Forms.sln". Globbing
 	// survives the rename - and there is exactly one .sln in the tree, at the root, so this
 	// cannot latch onto the wrong directory. (Directory.Build.props would: two project
 	// directories have one of their own.)
@@ -76,7 +76,7 @@ public class MSBuildTests : IDisposable
 				<ContentPage
 					xmlns=""{XamarinFormsDefaultNamespace}""
 					xmlns:x=""{XamarinFormsXNamespace}""
-					x:Class=""Xamarin.Forms.Xaml.UnitTests.MainPage"">
+					x:Class=""Gtk4.Forms.Xaml.UnitTests.MainPage"">
 					<Label x:Name=""label0""/>
 				</ContentPage>";
 
@@ -84,7 +84,7 @@ public class MSBuildTests : IDisposable
 				<ContentView
 					xmlns=""{XamarinFormsDefaultNamespace}""
 					xmlns:x=""{XamarinFormsXNamespace}""
-					x:Class=""Xamarin.Forms.Xaml.UnitTests.CustomView"">
+					x:Class=""Gtk4.Forms.Xaml.UnitTests.CustomView"">
 					<Label x:Name=""label0""/>
 				</ContentView>";
 	}
@@ -124,7 +124,7 @@ public class MSBuildTests : IDisposable
 		// the XamlC target is never up-to-date - it re-ran on every incremental build. The OS
 		// temp directory is a native filesystem on every platform we run on (ext4 on Linux,
 		// NTFS on Windows), which restores the precision the incrementality check needs.
-		tempDirectory = IOPath.Combine(IOPath.GetTempPath(), "Xamarin.Forms.MSBuild.UnitTests", testName);
+		tempDirectory = IOPath.Combine(IOPath.GetTempPath(), "Gtk4.Forms.MSBuild.UnitTests", testName);
 		intermediateDirectory = IOPath.Combine(tempDirectory, "obj", "Debug");
 		// The temp directory now outlives `dotnet clean` and a bin\ wipe, and Dispose()
 		// deliberately leaves it behind when a test fails, so start each test from an empty
@@ -144,8 +144,8 @@ public class MSBuildTests : IDisposable
 			var sourcesDirectory = Environment.GetEnvironmentVariable("BUILD_SOURCESDIRECTORY");
 			if (!string.IsNullOrEmpty(sourcesDirectory))
 			{
-				props = IOPath.Combine(sourcesDirectory, "Xamarin.Forms.Xaml.UnitTests", "MSBuild", "_Directory.Build.props");
-				targets = IOPath.Combine(sourcesDirectory, "Xamarin.Forms.Xaml.UnitTests", "MSBuild", "_Directory.Build.targets");
+				props = IOPath.Combine(sourcesDirectory, "Gtk4.Forms.Xaml.UnitTests", "MSBuild", "_Directory.Build.props");
+				targets = IOPath.Combine(sourcesDirectory, "Gtk4.Forms.Xaml.UnitTests", "MSBuild", "_Directory.Build.targets");
 
 				if (!File.Exists(props))
 					Assert.Fail("Unable to find _Directory.Build.props at path: " + props);
@@ -303,7 +303,7 @@ public class MSBuildTests : IDisposable
 		project.Add(itemGroup);
 
 		//Let's enable XamlC assembly-wide
-		project.Add(AddFile("AssemblyInfo.cs", "Compile", "[assembly: Xamarin.Forms.Xaml.XamlCompilation (Xamarin.Forms.Xaml.XamlCompilationOptions.Compile)]"));
+		project.Add(AddFile("AssemblyInfo.cs", "Compile", "[assembly: Gtk4.Forms.Xaml.XamlCompilation (Gtk4.Forms.Xaml.XamlCompilationOptions.Compile)]"));
 
 		//Add a single CSS file
 		project.Add(AddFile("Foo.css", "EmbeddedResource", Css.Foo));
@@ -552,8 +552,8 @@ public class MSBuildTests : IDisposable
 	}
 
 	// The build-tasks NuGet package id (Gtk4.Forms.Build.Tasks.csproj <PackageId>). The
-	// directory/project/package names were renamed Xamarin.Forms.* -> Gtk4.Forms.*; the
-	// assemblies packed inside keep the Xamarin.Forms.* names.
+	// directory/project/package names were renamed Gtk4.Forms.* -> Gtk4.Forms.*; the
+	// assemblies packed inside keep the Gtk4.Forms.* names.
 	const string BuildTasksPackageId = "Gtk4.Forms.Build.Tasks";
 
 	/// <summary>
@@ -562,7 +562,7 @@ public class MSBuildTests : IDisposable
 	/// <remarks>
 	/// Every case above points <c>_XFBuildTasksLocation</c> at this test assembly's own output
 	/// directory, which holds the whole of <c>$(TargetDir)</c> - so the tasks always find
-	/// Xamarin.Forms.Core.dll and Xamarin.Forms.Xaml.dll next to themselves, whatever the nupkg
+	/// Gtk4.Forms.Core.dll and Gtk4.Forms.Xaml.dll next to themselves, whatever the nupkg
 	/// contains. XamlCTask and XamlGTask genuinely bind both at build time, so a package that
 	/// ships neither them nor a NuGet dependency that could supply them fails with
 	/// FileNotFoundException on the first .xaml file, and nothing in the tree noticed.
@@ -571,7 +571,7 @@ public class MSBuildTests : IDisposable
 	/// <c>PackageReference</c>, NuGet's own props/targets auto-import - and compiles a XAML file
 	/// with it. The generated project deliberately gets EMPTY Directory.Build.[props|targets]:
 	/// the repository's set <c>_XFBuildTasksLocation</c> to artifacts\build-tasks\ and import
-	/// Xamarin.Forms.targets directly, either of which would hide exactly what is under test
+	/// Gtk4.Forms.targets directly, either of which would hide exactly what is under test
 	/// (and the second would fail XF001 for a double import).</para>
 	///
 	/// <para><c>RestorePackagesPath</c> is redirected into the temp directory rather than left
@@ -592,7 +592,7 @@ public class MSBuildTests : IDisposable
 
 		if (nupkg == null)
 			Assert.Fail($"No {BuildTasksPackageId}.*.nupkg in {packagesDirectory}. It is produced by " +
-			            "Xamarin.Forms.Build.Tasks (GeneratePackageOnBuild=True), so build the solution before " +
+			            "Gtk4.Forms.Build.Tasks (GeneratePackageOnBuild=True), so build the solution before " +
 			            "running this test.");
 
 		var version = IOPath.GetFileNameWithoutExtension(nupkg.Name).Substring(BuildTasksPackageId.Length + 1);
@@ -642,9 +642,9 @@ public class MSBuildTests : IDisposable
 		// arriving as an MSB4062/FileNotFoundException buried in the log.
 		var packagedTasks = IOPath.Combine(restorePackagesPath, BuildTasksPackageId.ToLowerInvariant(),
 			version, "build", "netstandard2.0");
-		AssertExists(IOPath.Combine(packagedTasks, "Xamarin.Forms.Build.Tasks.dll"), nonEmpty: true);
-		AssertExists(IOPath.Combine(packagedTasks, "Xamarin.Forms.Core.dll"), nonEmpty: true);
-		AssertExists(IOPath.Combine(packagedTasks, "Xamarin.Forms.Xaml.dll"), nonEmpty: true);
+		AssertExists(IOPath.Combine(packagedTasks, "Gtk4.Forms.Build.Tasks.dll"), nonEmpty: true);
+		AssertExists(IOPath.Combine(packagedTasks, "Gtk4.Forms.Core.dll"), nonEmpty: true);
+		AssertExists(IOPath.Combine(packagedTasks, "Gtk4.Forms.Xaml.dll"), nonEmpty: true);
 
 		Build(projectFile);
 
@@ -864,7 +864,7 @@ public class MSBuildTests : IDisposable
 	/// It is now asserted on the target's observable effect instead. XamlC's sole outputs
 	/// are the rewritten assembly and the XamlC.stamp it Touch-es, so an absent stamp after
 	/// a successful build means the target did not execute. The CssG output is checked in
-	/// the same breath as a positive control: it proves Xamarin.Forms.targets really was
+	/// the same breath as a positive control: it proves Gtk4.Forms.targets really was
 	/// imported and its targets really did run, so the missing stamp is XamlC being skipped
 	/// and not the whole targets file being absent.
 	/// </summary>
@@ -880,7 +880,7 @@ public class MSBuildTests : IDisposable
 		Build(projectFile);
 
 		AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
-		//positive control: the Xamarin.Forms targets ran
+		//positive control: the Gtk4.Forms targets ran
 		AssertExists(IOPath.Combine(intermediateDirectory, "Foo.css.g.cs"), nonEmpty: true);
 		//XamlC should be skipped if there are no .xaml files
 		AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));

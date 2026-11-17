@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Input;
-using Xamarin.Forms.StyleSheets;
+using Gtk4.Forms.StyleSheets;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public class MenuItem : BaseMenuItem, IMenuItemController, IStyleSelectable
 	{

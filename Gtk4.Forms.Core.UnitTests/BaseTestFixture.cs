@@ -2,10 +2,10 @@ using System;
 using System.Globalization;
 using System.Threading;
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 /// <summary>
-/// Base fixture for both Xamarin.Forms.Core.UnitTests and Xamarin.Forms.Xaml.UnitTests, which
+/// Base fixture for both Gtk4.Forms.Core.UnitTests and Gtk4.Forms.Xaml.UnitTests, which
 /// links this file rather than keeping a copy.
 /// </summary>
 /// <remarks>

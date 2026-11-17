@@ -1,9 +1,9 @@
-﻿using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SpacingGalleries;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+﻿using Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.SpacingGalleries;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.PlatformConfiguration;
+using Gtk4.Forms.PlatformConfiguration.iOSSpecific;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
 {
 	[Preserve(AllMembers = true)]
 	internal class CarouselCodeGallery : ContentPage

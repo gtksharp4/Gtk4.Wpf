@@ -4,11 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms.StyleSheets;
-using Xamarin.Forms.StyleSheets.UnitTests;
+using Gtk4.Forms.StyleSheets;
+using Gtk4.Forms.StyleSheets.UnitTests;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests.StyleSheets;
+namespace Gtk4.Forms.Core.UnitTests.StyleSheets;
 
 public class BaseClassSelectorTests
 {

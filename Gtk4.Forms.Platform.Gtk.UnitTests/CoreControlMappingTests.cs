@@ -1,10 +1,10 @@
 using System;
 using System.IO;
 using System.Linq;
-using Xamarin.Forms;
+using Gtk4.Forms;
 using Xunit;
 
-namespace Xamarin.Forms.Platform.GTK.UnitTests;
+namespace Gtk4.Forms.Platform.GTK.UnitTests;
 
 /// <summary>
 /// The rest of coverage target 2 of plan §10.2. <see cref="PropertyMappingTests"/> covers the

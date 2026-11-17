@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Xamarin.Forms;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using static Xamarin.Forms.Controls.DynamicViewGallery;
-using static Xamarin.Forms.Controls.XamStore.BasePage;
+using Gtk4.Forms;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.PlatformConfiguration;
+using Gtk4.Forms.PlatformConfiguration.iOSSpecific;
+using static Gtk4.Forms.Controls.DynamicViewGallery;
+using static Gtk4.Forms.Controls.XamStore.BasePage;
 
-namespace Xamarin.Forms.Controls.XamStore
+namespace Gtk4.Forms.Controls.XamStore
 {
 	[Preserve(AllMembers = true)]
 	public class SearchHandlerPage : ContentPage

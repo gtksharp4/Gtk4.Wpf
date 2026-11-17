@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers;
+namespace Gtk4.Forms.Platform.GTK.Renderers;
 
 public class FrameRenderer : ViewRenderer<Frame, Controls.CustomFrame>
 {

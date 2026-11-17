@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.PlatformConfiguration.GTKSpecific
+﻿namespace Gtk4.Forms.PlatformConfiguration.GTKSpecific
 {
 	using FormsElement = Forms.TabbedPage;
 

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Xunit;
 
-namespace Xamarin.Forms.StyleSheets.UnitTests;
+namespace Gtk4.Forms.StyleSheets.UnitTests;
 
 class MockStylable : IStyleSelectable
 {

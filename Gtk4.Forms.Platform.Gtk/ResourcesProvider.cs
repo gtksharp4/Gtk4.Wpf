@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Internals;
+﻿using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Platform.GTK;
+namespace Gtk4.Forms.Platform.GTK;
 
 internal class ResourcesProvider : ISystemResourcesProvider
 {

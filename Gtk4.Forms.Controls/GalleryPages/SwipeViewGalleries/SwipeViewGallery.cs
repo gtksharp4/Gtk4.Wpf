@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Internals;
+﻿using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.SwipeViewGalleries
 {
 	[Preserve(AllMembers = true)]
 	public class SwipeViewGallery : ContentPage

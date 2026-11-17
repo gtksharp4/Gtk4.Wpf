@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public enum ItemsUpdatingScrollMode
 	{

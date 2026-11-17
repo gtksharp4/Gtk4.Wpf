@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[ContentProperty("View")]
 	public class ViewCell : Cell

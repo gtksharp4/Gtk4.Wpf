@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.StyleSheets;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.StyleSheets;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public partial class VisualElement : IStylable
 	{

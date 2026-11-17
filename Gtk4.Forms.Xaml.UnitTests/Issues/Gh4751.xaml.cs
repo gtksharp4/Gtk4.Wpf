@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 
 using Xunit;
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms.Build.Tasks;
+using Gtk4.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public class Gh4751VM
 {

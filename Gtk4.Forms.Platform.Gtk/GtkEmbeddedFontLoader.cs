@@ -2,9 +2,9 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using Xamarin.Forms.Platform.GTK.Helpers;
+using Gtk4.Forms.Platform.GTK.Helpers;
 
-namespace Xamarin.Forms.Platform.GTK;
+namespace Gtk4.Forms.Platform.GTK;
 
 /// <summary>
 /// Extracts fonts declared with <c>[assembly: ExportFont("MyFont.ttf")]</c> out of the
@@ -13,14 +13,14 @@ namespace Xamarin.Forms.Platform.GTK;
 /// <para>
 /// Unlike WPF, where <c>PrivateFontCollection</c> makes an arbitrary file loadable, a font on
 /// Linux has to be somewhere fontconfig looks. The file is written under the user font
-/// directory (<c>$XDG_DATA_HOME/fonts/Xamarin.Forms</c>, i.e. <c>~/.local/share/fonts/Xamarin.Forms</c>)
+/// directory (<c>$XDG_DATA_HOME/fonts/Gtk4.Forms</c>, i.e. <c>~/.local/share/fonts/Gtk4.Forms</c>)
 /// so it survives, and is additionally handed to <c>FcConfigAppFontAddFile</c> so it is usable
 /// immediately rather than only by processes started later.
 /// </para>
 /// </summary>
 public class GtkEmbeddedFontLoader : IEmbeddedFontLoader
 {
-	internal const string FontCacheFolderName = "Xamarin.Forms";
+	internal const string FontCacheFolderName = "Gtk4.Forms";
 
 	public (bool success, string filePath) LoadFont(EmbeddedFont font)
 	{
@@ -111,9 +111,9 @@ public class GtkEmbeddedFontLoader : IEmbeddedFontLoader
 		}
 
 		// Windows (and any platform without a usable home): mirror what
-		// Xamarin.Forms.Platform.WPF does and use a per-application temp folder.
+		// Gtk4.Forms.Platform.WPF does and use a per-application temp folder.
 		var entryAssembly = System.Reflection.Assembly.GetEntryAssembly();
-		var appName = entryAssembly?.GetName()?.Name ?? "Xamarin.Forms";
+		var appName = entryAssembly?.GetName()?.Name ?? "Gtk4.Forms";
 
 		return Path.Combine(Path.GetTempPath(), appName, "Fonts");
 	}

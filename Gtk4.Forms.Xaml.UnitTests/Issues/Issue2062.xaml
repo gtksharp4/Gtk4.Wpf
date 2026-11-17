@@ -2,7 +2,7 @@
 <ContentPage 
 	xmlns="http://xamarin.com/schemas/2014/forms" 
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
-	x:Class="Xamarin.Forms.Xaml.UnitTests.Issue2062">
+	x:Class="Gtk4.Forms.Xaml.UnitTests.Issue2062">
 	<StackLayout>
 		<Label x:Name="label1">
 			<Label.Text>text explicitly set to Label.Text</Label.Text>

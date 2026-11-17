@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Shapes;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Shapes;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, ITabStopElement
 	{
@@ -106,7 +106,7 @@ namespace Xamarin.Forms
 			BindableProperty.Create(nameof(Visual), typeof(IVisual), typeof(VisualElement), Forms.VisualMarker.MatchParent,
 									validateValue: (b, v) => v != null, propertyChanged: OnVisualChanged);
 
-		static IVisual _defaultVisual = Xamarin.Forms.VisualMarker.Default;
+		static IVisual _defaultVisual = Gtk4.Forms.VisualMarker.Default;
 		IVisual _effectiveVisual = _defaultVisual;
 
 		public IVisual Visual
@@ -1014,7 +1014,7 @@ namespace Xamarin.Forms
 			var newVisual = (IVisual)newValue;
 
 			if (newVisual.IsMatchParent())
-				self.EffectiveVisual = Xamarin.Forms.VisualMarker.Default;
+				self.EffectiveVisual = Gtk4.Forms.VisualMarker.Default;
 			else
 				self.EffectiveVisual = (IVisual)newValue;
 

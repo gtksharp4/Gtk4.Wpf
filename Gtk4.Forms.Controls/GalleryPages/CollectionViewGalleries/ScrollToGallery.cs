@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ScrollToGalleries;
+﻿using Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.ScrollToGalleries;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries
 {
 	internal class ScrollToGallery : ContentPage
 	{

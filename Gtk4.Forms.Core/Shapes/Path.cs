@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
-using Xamarin.Forms.Platform;
+using Gtk4.Forms.Platform;
 
-namespace Xamarin.Forms.Shapes
+namespace Gtk4.Forms.Shapes
 {
 	[RenderWith(typeof(_PathRenderer))]
 	public class Path : Shape

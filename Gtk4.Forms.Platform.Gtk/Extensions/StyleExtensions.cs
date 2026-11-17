@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Gtk;
 
-namespace Xamarin.Forms.Platform.GTK.Extensions;
+namespace Gtk4.Forms.Platform.GTK.Extensions;
 
 /// <summary>
 /// GTK3 replacements for the GTK2 styling API.

@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.DragAndDropGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.DragAndDropGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class DragAndDropBetweenLayouts : ContentPage

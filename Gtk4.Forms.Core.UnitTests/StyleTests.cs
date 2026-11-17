@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 public class StyleTests : BaseTestFixture
 {
@@ -201,7 +201,7 @@ public class StyleTests : BaseTestFixture
 		};
 
 		Assert.Equal(3, rd.Count);
-		Assert.Contains("Xamarin.Forms.Label", rd.Keys);
+		Assert.Contains("Gtk4.Forms.Label", rd.Keys);
 	}
 
 	[Fact]
@@ -919,7 +919,7 @@ public class StyleTests : BaseTestFixture
 		t.Style = s;
 
 		Assert.Equal(log.Messages.Count, 1);
-		Assert.Equal(log.Messages.FirstOrDefault(), $"[Styles] Style TargetType Xamarin.Forms.Button is not compatible with element target type Xamarin.Forms.View");
+		Assert.Equal(log.Messages.FirstOrDefault(), $"[Styles] Style TargetType Gtk4.Forms.Button is not compatible with element target type Gtk4.Forms.View");
 	}
 
 	[Fact]
@@ -931,7 +931,7 @@ public class StyleTests : BaseTestFixture
 		t.Style = s;
 
 		Assert.Equal(log.Messages.Count, 1);
-		Assert.Equal(log.Messages.FirstOrDefault(), $"[Styles] Style TargetType Xamarin.Forms.Button is not compatible with element target type Xamarin.Forms.Label");
+		Assert.Equal(log.Messages.FirstOrDefault(), $"[Styles] Style TargetType Gtk4.Forms.Button is not compatible with element target type Gtk4.Forms.Label");
 	}
 
 	[Fact]

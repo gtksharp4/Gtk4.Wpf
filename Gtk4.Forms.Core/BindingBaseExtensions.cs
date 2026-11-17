@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	static class BindingBaseExtensions
 	{

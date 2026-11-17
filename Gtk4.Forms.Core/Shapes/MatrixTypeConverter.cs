@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 
-namespace Xamarin.Forms.Shapes
+namespace Gtk4.Forms.Shapes
 {
 	public class MatrixTypeConverter : TypeConverter
 	{

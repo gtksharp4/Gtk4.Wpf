@@ -14,7 +14,7 @@
 	-->
 	<PropertyGroup>
 		<PackageId>Gtk4.Forms.Base</PackageId>
-		<Description>Meta-package: add one PackageReference to run an existing Xamarin.Forms app on GTK 4 without editing controls, XAML, usings or namespaces. The package rewrites the consumer .csproj and injects a GTK entry point.</Description>
+		<Description>Meta-package: add one PackageReference to run an existing Gtk4.Forms app on GTK 4 without editing controls, XAML, usings or namespaces. The package rewrites the consumer .csproj and injects a GTK entry point.</Description>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<PackageOutputPath>$(XFPackageOutputPath)</PackageOutputPath>
 		<!--

@@ -1,7 +1,7 @@
 ﻿using System;
 using Gtk;
 
-namespace Xamarin.Forms.Platform.GTK.Cells;
+namespace Gtk4.Forms.Platform.GTK.Cells;
 
 internal class SwitchCell : CellBase
 {

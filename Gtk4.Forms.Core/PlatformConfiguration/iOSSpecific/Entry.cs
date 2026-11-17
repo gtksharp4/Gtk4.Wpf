@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
+namespace Gtk4.Forms.PlatformConfiguration.iOSSpecific
 {
 	using FormsElement = Forms.Entry;
 

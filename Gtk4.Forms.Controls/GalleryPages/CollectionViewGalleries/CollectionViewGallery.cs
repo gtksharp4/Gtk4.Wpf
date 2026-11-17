@@ -1,15 +1,15 @@
 
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.AlternateLayoutGalleries;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.EmptyViewGalleries;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGalleries;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.HeaderFooterGalleries;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ItemSizeGalleries;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ScrollModeGalleries;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionGalleries;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SpacingGalleries;
+using Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.AlternateLayoutGalleries;
+using Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
+using Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.EmptyViewGalleries;
+using Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGalleries;
+using Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.HeaderFooterGalleries;
+using Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.ItemSizeGalleries;
+using Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.ScrollModeGalleries;
+using Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionGalleries;
+using Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.SpacingGalleries;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries
 {
 	public class CollectionViewGallery : ContentPage
 	{

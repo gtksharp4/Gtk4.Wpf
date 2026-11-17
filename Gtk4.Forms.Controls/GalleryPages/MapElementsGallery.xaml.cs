@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
-using Xamarin.Forms.Maps;
-using Xamarin.Forms.Xaml;
-using Map = Xamarin.Forms.Maps;
+using Gtk4.Forms.Maps;
+using Gtk4.Forms.Xaml;
+using Map = Gtk4.Forms.Maps;
 
-namespace Xamarin.Forms.Controls.GalleryPages
+namespace Gtk4.Forms.Controls.GalleryPages
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class MapElementsGallery : ContentPage

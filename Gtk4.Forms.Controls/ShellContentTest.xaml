@@ -4,7 +4,7 @@
 			 Title="Welcome"
 			 Routing.Route="shellcontent"
 			 Shell.TabBarIsVisible="false"
-             x:Class="Xamarin.Forms.Controls.ShellContentTest">
+             x:Class="Gtk4.Forms.Controls.ShellContentTest">
 	<Page.ToolbarItems>
 		<ToolbarItem Text="Search" Icon="bank.png" />
 	</Page.ToolbarItems>

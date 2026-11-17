@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Xamarin.Forms.Platform.GTK;
+namespace Gtk4.Forms.Platform.GTK;
 
 /// <summary>
 /// Reflection-based GTK 4 host. Discovers the consumer's
-/// <see cref="Xamarin.Forms.Application"/> subclass, initialises the platform and
+/// <see cref="Gtk4.Forms.Application"/> subclass, initialises the platform and
 /// runs the GTK main loop.
 /// </summary>
 public static class GtkHost
 {
 	/// <summary>
-	/// Initialises Xamarin.Forms on the GTK 4 backend and enters the main loop.
+	/// Initialises Gtk4.Forms on the GTK 4 backend and enters the main loop.
 	/// Returns 0 on normal exit.
 	/// </summary>
 	/// <param name="args">Command-line arguments (unused; reserved for future use).</param>
@@ -34,7 +34,7 @@ public static class GtkHost
 
 		var title = attr?.Title
 		            ?? Assembly.GetEntryAssembly()?.GetName().Name
-		            ?? "Xamarin.Forms";
+		            ?? "Gtk4.Forms";
 
 		window.SetApplicationTitle(title);
 
@@ -52,18 +52,18 @@ public static class GtkHost
 
 	/// <summary>
 	/// Returns the renderer assemblies to pass to <see cref="Forms.Init"/>.
-	/// Always includes <c>Xamarin.Forms.Platform.Gtk4</c>; optionally adds
-	/// <c>Xamarin.Forms.Maps.Gtk</c> when that assembly is resolvable.
+	/// Always includes <c>Gtk4.Forms.Platform.Gtk4</c>; optionally adds
+	/// <c>Gtk4.Forms.Maps.Gtk</c> when that assembly is resolvable.
 	/// </summary>
 	static IEnumerable<Assembly> RendererAssemblies()
 	{
 		var list = new List<Assembly>();
 
-		list.Add(Assembly.Load("Xamarin.Forms.Platform.Gtk4"));
+		list.Add(Assembly.Load("Gtk4.Forms.Platform.Gtk4"));
 
 		try
 		{
-			list.Add(Assembly.Load("Xamarin.Forms.Maps.Gtk"));
+			list.Add(Assembly.Load("Gtk4.Forms.Maps.Gtk"));
 		}
 		catch (Exception)
 		{
@@ -75,7 +75,7 @@ public static class GtkHost
 	}
 
 	/// <summary>
-	/// Finds the <see cref="Xamarin.Forms.Application"/> subclass to instantiate.
+	/// Finds the <see cref="Gtk4.Forms.Application"/> subclass to instantiate.
 	/// </summary>
 	/// <remarks>
 	/// Resolution order:
@@ -120,7 +120,7 @@ public static class GtkHost
 
 		if (candidates.Count == 0)
 			throw new InvalidOperationException(
-				"No concrete Xamarin.Forms.Application subclass with a public " +
+				"No concrete Gtk4.Forms.Application subclass with a public " +
 				"parameterless constructor was found in the entry assembly. " +
 				"Annotate your application with " +
 				"[assembly: GtkMainApplication(typeof(YourApp))].");
@@ -135,7 +135,7 @@ public static class GtkHost
 
 		var names = string.Join(", ", candidates.Select(t => t.FullName));
 		throw new InvalidOperationException(
-			$"Multiple Xamarin.Forms.Application subclasses found: {names}. " +
+			$"Multiple Gtk4.Forms.Application subclasses found: {names}. " +
 			"Annotate your assembly to disambiguate: " +
 			"[assembly: GtkMainApplication(typeof(YourApp))].");
 	}
@@ -144,7 +144,7 @@ public static class GtkHost
 	{
 		if (!typeof(Application).IsAssignableFrom(type))
 			throw new InvalidOperationException(
-				$"{type.FullName} does not inherit from Xamarin.Forms.Application.");
+				$"{type.FullName} does not inherit from Gtk4.Forms.Application.");
 
 		return (Application)Activator.CreateInstance(type);
 	}

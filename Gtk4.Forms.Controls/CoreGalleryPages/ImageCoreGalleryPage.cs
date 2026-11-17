@@ -1,8 +1,8 @@
 using System;
 
-using Xamarin.Forms.CustomAttributes;
+using Gtk4.Forms.CustomAttributes;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	internal class ImageCoreGalleryPage : CoreGalleryPage<Image>
 	{
@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Controls
 			InitializeElement(isLoadingContainer.View);
 			InitializeElement(isOpaqueContainer.View);
 
-			var sourceContainer = new ViewContainer<Image>(Test.Image.Source, new Image { Source = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/Xamarin.Forms.Controls/coffee.png" });
+			var sourceContainer = new ViewContainer<Image>(Test.Image.Source, new Image { Source = "https://raw.githubusercontent.com/xamarin/Gtk4.Forms/main/Gtk4.Forms.Controls/coffee.png" });
 
 			Add(aspectFillContainer);
 			Add(aspectFitContainer);

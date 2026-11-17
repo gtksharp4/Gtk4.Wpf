@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.VisualStateManagerGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class VisualStateSetterTarget : ContentPage

@@ -32,12 +32,12 @@
 
 using System;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[AttributeUsage(AttributeTargets.All)]
 	public sealed class TypeConverterAttribute : Attribute
 	{
-		internal static string[] TypeConvertersType = { "Xamarin.Forms.TypeConverterAttribute", "System.ComponentModel.TypeConverterAttribute" };
+		internal static string[] TypeConvertersType = { "Gtk4.Forms.TypeConverterAttribute", "System.ComponentModel.TypeConverterAttribute" };
 
 		public static readonly TypeConverterAttribute Default = new TypeConverterAttribute();
 

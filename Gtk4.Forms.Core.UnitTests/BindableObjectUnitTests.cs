@@ -6,10 +6,10 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 [TypeConverter(typeof(ToBarConverter))]
 internal class Bar
@@ -1539,7 +1539,7 @@ public class BindableObjectUnitTests : BaseTestFixture
 	}
 
 	[Fact]
-	//https://github.com/pieroviano/Xamarin.Forms/issues/2019
+	//https://github.com/pieroviano/Gtk4.Forms/issues/2019
 	public void EventSubscribingOnBindingContextChanged()
 	{
 		var source = new MockBindable();
@@ -1599,7 +1599,7 @@ public class BindableObjectUnitTests : BaseTestFixture
 	}
 
 	[Fact]
-	//https://github.com/pieroviano/Xamarin.Forms/issues/6281
+	//https://github.com/pieroviano/Gtk4.Forms/issues/6281
 	public void SetValueToTextInvokesToString()
 	{
 		var prop = BindableProperty.Create("foo", typeof(string), typeof(MockBindable), null);
@@ -1610,7 +1610,7 @@ public class BindableObjectUnitTests : BaseTestFixture
 	}
 
 	[Fact]
-	//https://github.com/pieroviano/Xamarin.Forms/issues/6281
+	//https://github.com/pieroviano/Gtk4.Forms/issues/6281
 	public void SetBindingToTextInvokesToString()
 	{
 		var prop = BindableProperty.Create("foo", typeof(string), typeof(MockBindable), null);
@@ -1621,7 +1621,7 @@ public class BindableObjectUnitTests : BaseTestFixture
 	}
 
 	[Fact]
-	//https://github.com/pieroviano/Xamarin.Forms/issues/9151
+	//https://github.com/pieroviano/Gtk4.Forms/issues/9151
 	public void SetValueWorksWithAttachedCollectionValuedProperties()
 	{
 		var prop = BindableProperty.CreateAttached("AttachedCollection", typeof(IList<string>), typeof(AttachedPropertyHolder), null, defaultValueCreator: _ => new List<string>());
@@ -1633,7 +1633,7 @@ public class BindableObjectUnitTests : BaseTestFixture
 	}
 
 	[Fact]
-	//https://github.com/pieroviano/Xamarin.Forms/issues/9151
+	//https://github.com/pieroviano/Gtk4.Forms/issues/9151
 	public void SetValueWorksWithAttachedCollectionValuedPropertiesOnMultipleBindables()
 	{
 		var prop = BindableProperty.CreateAttached("AttachedCollection", typeof(IList<string>), typeof(AttachedPropertyHolder), null, defaultValueCreator: _ => new List<string>());

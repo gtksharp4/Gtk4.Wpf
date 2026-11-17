@@ -3,7 +3,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using GLib;
 
-namespace Xamarin.Forms.Platform.GTK;
+namespace Gtk4.Forms.Platform.GTK;
 
 public class GtkSynchronizationContext : SynchronizationContext
 {

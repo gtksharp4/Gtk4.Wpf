@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Xamarin.Forms;
-using Xamarin.Forms.Controls.Issues;
+using Gtk4.Forms;
+using Gtk4.Forms.Controls.Issues;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	public class VisualGallery : VisualControlsPage
 	{

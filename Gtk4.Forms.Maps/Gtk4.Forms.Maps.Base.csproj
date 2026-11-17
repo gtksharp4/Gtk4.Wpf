@@ -6,14 +6,14 @@
         <Version>$(VersionPrefix).$(VersionSuffix)</Version>
         <PackageId>Gtk4.Forms.Maps.Base</PackageId>
         <!-- Assembly identity is independent of the .csproj file name: XAML says
-             assembly=Xamarin.Forms.Maps, Core grants it InternalsVisibleTo, and
-             AssemblyInfoTests does Assembly.Load("Xamarin.Forms.Maps"). -->
-        <AssemblyName>Xamarin.Forms.Maps</AssemblyName>
-        <RootNamespace>Xamarin.Forms.Maps</RootNamespace>
-        <Description>Map control abstraction for Xamarin.Forms.</Description>
+             assembly=Gtk4.Forms.Maps, Core grants it InternalsVisibleTo, and
+             AssemblyInfoTests does Assembly.Load("Gtk4.Forms.Maps"). -->
+        <AssemblyName>Gtk4.Forms.Maps</AssemblyName>
+        <RootNamespace>Gtk4.Forms.Maps</RootNamespace>
+        <Description>Map control abstraction for Gtk4.Forms.</Description>
         <IsPackable>true</IsPackable>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <Description>Provides Maps support for Xamarin.Forms</Description>
+        <Description>Provides Maps support for Gtk4.Forms</Description>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'"></PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'"></PropertyGroup>

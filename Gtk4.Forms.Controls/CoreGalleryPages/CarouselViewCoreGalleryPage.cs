@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.CustomAttributes;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	[Preserve(AllMembers = true)]
 	internal class CarouselViewCoreGalleryPage : CoreGalleryPage<CarouselView>

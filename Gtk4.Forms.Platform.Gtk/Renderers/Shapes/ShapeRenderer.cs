@@ -2,12 +2,12 @@
 using System.ComponentModel;
 using System.Linq;
 using Cairo;
-using Xamarin.Forms.Platform.GTK.Controls;
-using Xamarin.Forms.Platform.GTK.Extensions;
-using Xamarin.Forms.PlatformConfiguration.GTKSpecific;
-using Xamarin.Forms.Shapes;
+using Gtk4.Forms.Platform.GTK.Controls;
+using Gtk4.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.PlatformConfiguration.GTKSpecific;
+using Gtk4.Forms.Shapes;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers;
+namespace Gtk4.Forms.Platform.GTK.Renderers;
 
 public class ShapeRenderer<TShape, TNativeShape> : ViewRenderer<TShape, TNativeShape>
 	where TShape : Shape

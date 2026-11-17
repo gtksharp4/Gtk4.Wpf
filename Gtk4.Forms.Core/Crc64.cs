@@ -7,7 +7,7 @@ using System.Text;
 /// <summary>
 /// https://github.com/pieroviano/java.interop/blob/master/src/Java.Interop.Tools.JavaCallableWrappers/Java.Interop.Tools.JavaCallableWrappers/Crc64.cs
 /// </summary>
-namespace Xamarin.Forms.Internals
+namespace Gtk4.Forms.Internals
 {
 	/// <summary>
 	///  CRC64 variant: crc-64-jones 64-bit

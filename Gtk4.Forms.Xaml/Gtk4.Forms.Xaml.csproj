@@ -5,11 +5,11 @@
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <Version>$(VersionPrefix).$(VersionSuffix)</Version>
         <PackageId>Gtk4.Forms.Xaml</PackageId>
-        <!-- Assembly identity stays Xamarin.Forms.* (only project/dir/package were renamed); the
-             InternalsVisibleTo grants across the tree key off the Xamarin.Forms.* assembly names. -->
-        <AssemblyName>Xamarin.Forms.Xaml</AssemblyName>
-        <RootNamespace>Xamarin.Forms.Xaml</RootNamespace>
-        <Description>XAML loader and markup support for Xamarin.Forms.</Description>
+        <!-- Assembly identity stays Gtk4.Forms.* (only project/dir/package were renamed); the
+             InternalsVisibleTo grants across the tree key off the Gtk4.Forms.* assembly names. -->
+        <AssemblyName>Gtk4.Forms.Xaml</AssemblyName>
+        <RootNamespace>Gtk4.Forms.Xaml</RootNamespace>
+        <Description>XAML loader and markup support for Gtk4.Forms.</Description>
         <IsPackable>true</IsPackable>
         <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>

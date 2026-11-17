@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using static Xamarin.Forms.Easing;
+using static Gtk4.Forms.Easing;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
-	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.EasingTypeConverter")]
+	[Xaml.ProvideCompiled("Gtk4.Forms.Core.XamlC.EasingTypeConverter")]
 	[Xaml.TypeConversion(typeof(Easing))]
 	public class EasingTypeConverter : TypeConverter
 	{

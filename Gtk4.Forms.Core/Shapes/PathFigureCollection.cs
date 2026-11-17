@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace Xamarin.Forms.Shapes
+namespace Gtk4.Forms.Shapes
 {
 	public sealed class PathFigureCollection : ObservableCollection<PathFigure>
 	{

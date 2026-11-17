@@ -5,13 +5,13 @@
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <Version>$(VersionPrefix).$(VersionSuffix)</Version>
         <PackageId>Gtk4.Forms.Core</PackageId>
-        <!-- Assembly identity stays Xamarin.Forms.* (only the project/dir/package were renamed to
+        <!-- Assembly identity stays Gtk4.Forms.* (only the project/dir/package were renamed to
              Gtk4.Forms.*). The InternalsVisibleTo grants and renderer resolution across the tree all
-             key off the Xamarin.Forms.* assembly names; without this the renamed project would emit
+             key off the Gtk4.Forms.* assembly names; without this the renamed project would emit
              Gtk4.Forms.Core and break them (CS0122). -->
-        <AssemblyName>Xamarin.Forms.Core</AssemblyName>
-        <RootNamespace>Xamarin.Forms.Core</RootNamespace>
-        <Description>Core assembly of Xamarin.Forms: the cross-platform UI abstraction.</Description>
+        <AssemblyName>Gtk4.Forms.Core</AssemblyName>
+        <RootNamespace>Gtk4.Forms.Core</RootNamespace>
+        <Description>Core assembly of Gtk4.Forms: the cross-platform UI abstraction.</Description>
         <IsPackable>true</IsPackable>
         <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>

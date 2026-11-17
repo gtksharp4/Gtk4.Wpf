@@ -5,9 +5,9 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Maps
+namespace Gtk4.Forms.Maps
 {
 	public class Map : View, IEnumerable<Pin>
 	{

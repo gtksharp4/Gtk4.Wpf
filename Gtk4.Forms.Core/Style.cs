@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[ContentProperty("Setters")]
 	public sealed class Style : IStyle
 	{
-		internal const string StyleClassPrefix = "Xamarin.Forms.StyleClass.";
+		internal const string StyleClassPrefix = "Gtk4.Forms.StyleClass.";
 
 		const int CleanupTrigger = 128;
 		int _cleanupThreshold = CleanupTrigger;

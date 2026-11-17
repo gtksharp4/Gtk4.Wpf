@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace Xamarin.Forms.Controls.GalleryPages
+namespace Gtk4.Forms.Controls.GalleryPages
 {
 	public class MaterialEntryGalleryPage : ContentPage
 	{

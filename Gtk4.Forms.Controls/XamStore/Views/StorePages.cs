@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms.Controls.XamStore.Views;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Controls.XamStore.Views;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls.XamStore
+namespace Gtk4.Forms.Controls.XamStore
 {
 	public class BasePage : ContentPage
 	{

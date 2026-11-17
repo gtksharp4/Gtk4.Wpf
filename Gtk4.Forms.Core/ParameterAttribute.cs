@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[AttributeUsage(AttributeTargets.Parameter)]
 	internal sealed class ParameterAttribute : Attribute

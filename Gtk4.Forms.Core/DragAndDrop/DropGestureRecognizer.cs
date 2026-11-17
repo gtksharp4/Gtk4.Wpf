@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public class DropGestureRecognizer : GestureRecognizer
 	{

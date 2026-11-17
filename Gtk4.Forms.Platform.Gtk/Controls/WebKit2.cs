@@ -2,14 +2,14 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Xamarin.Forms.Platform.GTK.Controls;
+namespace Gtk4.Forms.Platform.GTK.Controls;
 
 /// <summary>
 /// Minimal hand-written P/Invoke binding to WebKit2GTK (<c>libwebkit2gtk-4.1.so.0</c>).
 ///
 /// There is no maintained GtkSharp 3 binding for WebKit2GTK — webkit-sharp 1.1.15, which this
 /// backend used to reference, binds WebKit *1* and has been dead for over a decade. Only the
-/// handful of entry points the Forms <see cref="Xamarin.Forms.WebView"/> contract needs are
+/// handful of entry points the Forms <see cref="Gtk4.Forms.WebView"/> contract needs are
 /// bound here.
 ///
 /// Every entry point is resolved lazily: <see cref="IsAvailable"/> probes the library once and

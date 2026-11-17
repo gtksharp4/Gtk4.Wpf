@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Xml;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Xaml.Internals
+namespace Gtk4.Forms.Xaml.Internals
 {
 	public class XamlServiceProvider : IServiceProvider
 	{

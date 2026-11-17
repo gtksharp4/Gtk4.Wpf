@@ -1,7 +1,7 @@
 ﻿using System;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	public class NativeBindingGalleryPage : ContentPage
 	{

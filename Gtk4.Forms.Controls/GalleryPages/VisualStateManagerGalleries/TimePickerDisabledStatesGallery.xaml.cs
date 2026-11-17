@@ -1,7 +1,7 @@
 ﻿using System;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.VisualStateManagerGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class TimePickerDisabledStatesGallery : ContentPage

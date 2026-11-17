@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			xmlns:windowsSpecific="clr-namespace:Xamarin.Forms.PlatformConfiguration.WindowsSpecific;assembly=Xamarin.Forms.Core"
-			xmlns:androidSpecific="clr-namespace:Xamarin.Forms.PlatformConfiguration.AndroidSpecific;assembly=Xamarin.Forms.Core"
-			xmlns:iosSpecific="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
-			x:Class="Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries.ButtonDisabledStatesGallery"
+			xmlns:windowsSpecific="clr-namespace:Gtk4.Forms.PlatformConfiguration.WindowsSpecific;assembly=Gtk4.Forms.Core"
+			xmlns:androidSpecific="clr-namespace:Gtk4.Forms.PlatformConfiguration.AndroidSpecific;assembly=Gtk4.Forms.Core"
+			xmlns:iosSpecific="clr-namespace:Gtk4.Forms.PlatformConfiguration.iOSSpecific;assembly=Gtk4.Forms.Core"
+			x:Class="Gtk4.Forms.Controls.GalleryPages.VisualStateManagerGalleries.ButtonDisabledStatesGallery"
 			Title="Button Disabled States Gallery">
 	
 	<ContentPage.Resources>

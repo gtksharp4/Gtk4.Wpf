@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
+namespace Gtk4.Forms.PlatformConfiguration.WindowsSpecific
 {
 	public enum WebViewExecutionMode
 	{

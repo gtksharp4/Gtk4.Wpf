@@ -1,7 +1,7 @@
 ﻿using System;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.StyleSheets
+namespace Gtk4.Forms.StyleSheets
 {
 	class StyleSheetServiceProvider : IServiceProvider
 	{

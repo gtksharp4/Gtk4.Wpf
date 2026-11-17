@@ -1,4 +1,4 @@
 ﻿<Project>
-  <Import Project="..\Gtk4.Forms.Build.Tasks\build\Xamarin.Forms.props" />
+  <Import Project="..\Gtk4.Forms.Build.Tasks\build\Gtk4.Forms.props" />
   <Import Project="..\Directory.Build.props" />
 </Project> 

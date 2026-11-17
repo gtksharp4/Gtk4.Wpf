@@ -3,8 +3,8 @@
     <!-- Sample/support project: not shipped as a package. -->
     <IsPackable>false</IsPackable>
     <!-- The .csproj file name carries the Gtk3 flavour; the app's assembly identity does not. -->
-    <AssemblyName>Xamarin.Forms.Gtk4.ControlGallery.Gtk</AssemblyName>
-    <RootNamespace>Xamarin.Forms.ControlGallery.Gtk</RootNamespace>
+    <AssemblyName>Gtk4.Forms.Gtk4.ControlGallery.Gtk</AssemblyName>
+    <RootNamespace>Gtk4.Forms.ControlGallery.Gtk</RootNamespace>
 
     <ProjectGuid>{03A51E5B-0A1E-41F0-AAE3-4B19406F7340}</ProjectGuid>
     <!-- Exe, not WinExe: WinExe is a Windows-subsystem concept and there is no such
@@ -16,7 +16,7 @@
       runtime), so the host treats it as self-contained and fails at launch with
       "The library 'libhostpolicy.so' required to execute the application was not found".
       Libraries target netstandard; an application must name a concrete runtime.
-      Xamarin.Forms.Platform.Gtk IS netstandard2.0 - that is the reusable half.
+      Gtk4.Forms.Platform.Gtk IS netstandard2.0 - that is the reusable half.
     -->
     <TargetFramework>net10.0</TargetFramework>
     <!--
@@ -33,7 +33,7 @@
     -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
-    <!-- Matches Xamarin.Forms.Platform.Gtk; see the note on CS0612/CS0618 there. -->
+    <!-- Matches Gtk4.Forms.Platform.Gtk; see the note on CS0612/CS0618 there. -->
     <NoWarn>$(NoWarn);CS0612;CS0618</NoWarn>
     <PackageId>Extension.$(AssemblyName)</PackageId>
     <Nullable>enable</Nullable>

@@ -1,9 +1,9 @@
 using System.Linq;
-using Xamarin.Forms.Controls.Tests;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Controls.Tests;
+using Gtk4.Forms.Internals;
 using Xunit.Sdk;
 
-namespace Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery
+namespace Gtk4.Forms.Controls.GalleryPages.PlatformTestsGallery
 {
 	[Preserve(AllMembers = true)]
 	public class CategoryFilter : ITestCaseFilter

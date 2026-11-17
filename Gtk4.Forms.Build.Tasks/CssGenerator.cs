@@ -4,10 +4,10 @@ using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.CSharp;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 using IOPath = System.IO.Path;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace Gtk4.Forms.Build.Tasks
 {
 	class CssGenerator
 	{

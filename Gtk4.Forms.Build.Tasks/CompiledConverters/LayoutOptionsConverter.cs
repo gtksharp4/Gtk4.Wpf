@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Build.Tasks;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Core.XamlC
+namespace Gtk4.Forms.Core.XamlC
 {
 	class LayoutOptionsConverter : ICompiledTypeConverter
 	{
@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Core.XamlC
 				{
 					var options = parts[parts.Length - 1];
 
-					var fieldReference = module.ImportFieldReference(("Xamarin.Forms.Core", "Xamarin.Forms", "LayoutOptions"),
+					var fieldReference = module.ImportFieldReference(("Gtk4.Forms.Core", "Gtk4.Forms", "LayoutOptions"),
 																	 fieldName: options,
 																	 isStatic: true);
 					if (fieldReference != null)

@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	// Not quite sure how to turn this into a test case, effectively replace the normal Application with this to repro issues reported.
 	// Full repro requires assignment to MainPage, hence the issue

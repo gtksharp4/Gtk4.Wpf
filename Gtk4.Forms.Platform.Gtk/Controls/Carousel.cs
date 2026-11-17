@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Gdk;
 using Gtk;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Controls;
+namespace Gtk4.Forms.Platform.GTK.Controls;
 
 public class CarouselEventArgs : EventArgs
 {
@@ -30,9 +30,9 @@ public class CarouselPage
 {
 	public Container GtkPage { get; set; }
 
-	public Xamarin.Forms.Page Page { get; set; }
+	public Gtk4.Forms.Page Page { get; set; }
 
-	public CarouselPage(Container gtkPage, Xamarin.Forms.Page page)
+	public CarouselPage(Container gtkPage, Gtk4.Forms.Page page)
 	{
 		GtkPage = gtkPage;
 		Page = page;
@@ -123,7 +123,7 @@ public class Carousel : Fixed
 
 	public void AddPage(int index, object element)
 	{
-		var page = element as Xamarin.Forms.Page;
+		var page = element as Gtk4.Forms.Page;
 
 		if (page != null)
 		{
@@ -139,7 +139,7 @@ public class Carousel : Fixed
 
 	public void RemovePage(object element)
 	{
-		var page = element as Xamarin.Forms.Page;
+		var page = element as Gtk4.Forms.Page;
 
 		if (page != null)
 		{

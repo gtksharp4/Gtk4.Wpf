@@ -4,13 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml.Diagnostics;
-using Xamarin.Forms.Xaml.Internals;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Xaml.Diagnostics;
+using Gtk4.Forms.Xaml.Internals;
 
 using static System.String;
 
-namespace Xamarin.Forms.Xaml
+namespace Gtk4.Forms.Xaml
 {
 	class ApplyPropertiesVisitor : IXamlNodeVisitor
 	{

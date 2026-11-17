@@ -1,4 +1,4 @@
-namespace Xamarin.Forms.Maps
+namespace Gtk4.Forms.Maps
 {
 	public enum PinType
 	{

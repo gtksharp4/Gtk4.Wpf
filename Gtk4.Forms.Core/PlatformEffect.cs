@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public abstract class PlatformEffect<TContainer, TControl> : Effect where TContainer : class where TControl : class
 	{

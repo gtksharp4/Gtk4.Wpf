@@ -1,9 +1,9 @@
 using System.Linq;
 using Gtk;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Helpers;
+namespace Gtk4.Forms.Platform.GTK.Helpers;
 // TODO GTK4: migrate to Gtk.AlertDialog (async Choose/ChooseFinish).
 // Callers in Platform.cs use synchronous Action<> lambdas; a full rewrite
 // would require making those async, which is out of scope for this compile pass.

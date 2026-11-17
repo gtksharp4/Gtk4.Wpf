@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace Xamarin.Forms.Maps
+namespace Gtk4.Forms.Maps
 {
 	public class Polyline : MapElement
 	{

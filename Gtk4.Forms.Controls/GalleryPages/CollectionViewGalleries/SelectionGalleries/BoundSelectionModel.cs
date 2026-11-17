@@ -2,9 +2,9 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionGalleries
 {
 	[Preserve(AllMembers = true)]
 	internal class BoundSelectionModel : INotifyPropertyChanged

@@ -2,7 +2,7 @@
 
 
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Gtk4.Forms.Controls.Issues
 {
 	public interface IMultiWindowService
 	{

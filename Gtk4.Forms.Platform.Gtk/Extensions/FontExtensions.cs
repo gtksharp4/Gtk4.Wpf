@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.IO;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK.Helpers;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Platform.GTK.Helpers;
 
-namespace Xamarin.Forms.Platform.GTK.Extensions;
+namespace Gtk4.Forms.Platform.GTK.Extensions;
 
 /// <summary>
-/// Turns a Xamarin.Forms <c>FontFamily</c> into something Pango can match on.
+/// Turns a Gtk4.Forms <c>FontFamily</c> into something Pango can match on.
 /// <para>
 /// Pango resolves fonts by <em>family name</em> through fontconfig. A Forms app, on the other
 /// hand, names fonts the way the other backends do: by the file name or alias given to
@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Platform.GTK.Extensions;
 /// produced the theme's default font.
 /// </para>
 /// <para>
-/// This mirrors <c>Xamarin.Forms.Platform.WPF/Extensions/FontExtensions.cs</c>: ask
+/// This mirrors <c>Gtk4.Forms.Platform.WPF/Extensions/FontExtensions.cs</c>: ask
 /// <see cref="FontRegistrar"/> first (which extracts the font through
 /// <see cref="GtkEmbeddedFontLoader"/> on the way), and resolve the resulting file to the family
 /// name that is actually inside it.

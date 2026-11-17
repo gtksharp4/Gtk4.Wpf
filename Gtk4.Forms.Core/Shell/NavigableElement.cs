@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.StyleSheets;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.StyleSheets;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public class NavigableElement : Element, INavigationProxy, IStyleSelectable
 	{

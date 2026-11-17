@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.DataTemplateSelectorGalleries;
+﻿using Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.DataTemplateSelectorGalleries;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries
 {
 	internal class DataTemplateGallery : ContentPage
 	{

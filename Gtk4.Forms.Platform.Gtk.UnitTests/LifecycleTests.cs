@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Xamarin.Forms;
+using Gtk4.Forms;
 using Xunit;
 
-namespace Xamarin.Forms.Platform.GTK.UnitTests;
+namespace Gtk4.Forms.Platform.GTK.UnitTests;
 
 /// <summary>
 /// Coverage target 4 of plan §10.2, guarding risk R8 (GtkSharp Dispose interacting with

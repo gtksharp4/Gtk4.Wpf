@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class SelectionModeGallery : ContentPage

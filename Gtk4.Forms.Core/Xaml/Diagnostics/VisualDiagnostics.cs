@@ -4,9 +4,9 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Xaml.Diagnostics
+namespace Gtk4.Forms.Xaml.Diagnostics
 {
 	public class VisualDiagnostics
 	{

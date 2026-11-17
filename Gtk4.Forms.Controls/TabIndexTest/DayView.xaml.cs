@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Controls.TabIndexTest
+namespace Gtk4.Forms.Controls.TabIndexTest
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class DayView : ContentView

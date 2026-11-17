@@ -1,10 +1,10 @@
 using System;
 using System.IO;
-using Xamarin.Forms;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms;
+using Gtk4.Forms.Internals;
 using Xunit;
 
-namespace Xamarin.Forms.Platform.GTK.UnitTests;
+namespace Gtk4.Forms.Platform.GTK.UnitTests;
 
 /// <summary>
 /// Coverage target 5 of plan §10.2. <c>GtkPlatformServices</c> is internal, so everything here

@@ -1,8 +1,8 @@
 using System;
 using System.Reflection;
-using Xamarin.Forms;
-using Xamarin.Forms.Core.UnitTests;
-using Xamarin.Forms.Xaml.UnitTests;
+using Gtk4.Forms;
+using Gtk4.Forms.Core.UnitTests;
+using Gtk4.Forms.Xaml.UnitTests;
 using Xunit;
 using Xunit.v3;
 
@@ -16,7 +16,7 @@ using Xunit.v3;
 // Applied to the whole assembly: xUnit runs Before() ahead of every test method in it.
 [assembly: EnsurePlatformServices]
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 /// <summary>
 /// Guarantees every test runs with a usable <see cref="Device.PlatformServices"/>, whatever
@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Xaml.UnitTests;
 /// global set, and every one of the ~179 classes that *does* set it puts it back to
 /// <c>null</c> on teardown. The outcome was therefore decided by which class ran first, and
 /// the suite produced 0-2 failures per run with
-/// <c>InvalidOperationException : You must call Xamarin.Forms.Forms.Init(); prior to using
+/// <c>InvalidOperationException : You must call Gtk4.Forms.Forms.Init(); prior to using
 /// this property</c> - never the same set twice.
 ///
 /// Measured, before this attribute existed:

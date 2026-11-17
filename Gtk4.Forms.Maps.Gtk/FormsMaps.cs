@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
-using Xamarin.Forms.Maps.GTK.Controls;
+using Gtk4.Forms.Maps.GTK.Controls;
 
-namespace Xamarin.Forms.Maps.GTK;
+namespace Gtk4.Forms.Maps.GTK;
 
 public static class FormsMaps
 {

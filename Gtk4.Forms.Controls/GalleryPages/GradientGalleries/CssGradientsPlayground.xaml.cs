@@ -1,7 +1,7 @@
 ﻿using System;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.GradientGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.GradientGalleries
 {
 	public partial class CssGradientsPlayground : ContentPage
 	{

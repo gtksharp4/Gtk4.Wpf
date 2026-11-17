@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms.Maps.GTK.Controls;
+namespace Gtk4.Forms.Maps.GTK.Controls;
 
 /// <summary>
 /// Spherical Web-Mercator (EPSG:3857) projection, in the "slippy map" pixel convention every

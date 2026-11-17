@@ -1,11 +1,11 @@
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using Gtk4.Forms.CustomAttributes;
+using Gtk4.Forms.PlatformConfiguration;
+using Gtk4.Forms.PlatformConfiguration.AndroidSpecific;
+using Gtk4.Forms.PlatformConfiguration.WindowsSpecific;
 
-using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
+using WindowsOS = Gtk4.Forms.PlatformConfiguration.Windows;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	internal class WebViewCoreGalleryPage : CoreGalleryPage<WebView>
 	{
@@ -56,7 +56,7 @@ namespace Xamarin.Forms.Controls
 <link rel=""stylesheet"" href=""default.css"">
 </head>
 <body>
-<h1>Xamarin.Forms</h1>
+<h1>Gtk4.Forms</h1>
 <p>The CSS and image are loaded from local files!</p>
 <img src='WebImages/gtk4logo.png'/>
 <p><a href=""local.html"">next page</a></p>

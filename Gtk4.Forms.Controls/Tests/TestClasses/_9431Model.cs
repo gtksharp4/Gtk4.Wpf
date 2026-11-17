@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls.Tests
+﻿namespace Gtk4.Forms.Controls.Tests
 {
 	public class _9431Model : System.ComponentModel.INotifyPropertyChanged
 	{

@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms.Maps.GTK.Controls;
+namespace Gtk4.Forms.Maps.GTK.Controls;
 
 public class MapPositionEventArgs : EventArgs
 {

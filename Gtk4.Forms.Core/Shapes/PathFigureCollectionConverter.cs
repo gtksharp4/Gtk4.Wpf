@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Globalization;
-using Xamarin.Forms;
+using Gtk4.Forms;
 
-namespace Xamarin.Forms.Shapes
+namespace Gtk4.Forms.Shapes
 {
 	public class PathFigureCollectionConverter : TypeConverter
 	{

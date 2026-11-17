@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public sealed class GradientStopCollection : ObservableCollection<GradientStop>
 	{

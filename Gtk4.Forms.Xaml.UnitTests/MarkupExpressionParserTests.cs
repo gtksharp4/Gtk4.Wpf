@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Xml;
 using Xunit;
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public class MarkupExpressionParserTests : BaseTestFixture
 {
@@ -85,7 +85,7 @@ public class MarkupExpressionParserTests : BaseTestFixture
 	public MarkupExpressionParserTests()
 	{
 		var nsManager = new XmlNamespaceManager(new NameTable());
-		nsManager.AddNamespace("local", "clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests");
+		nsManager.AddNamespace("local", "clr-namespace:Gtk4.Forms.Xaml.UnitTests;assembly=Gtk4.Forms.Xaml.UnitTests");
 		nsManager.AddNamespace("x", "http://schemas.microsoft.com/winfx/2009/xaml");
 		typeResolver = new Internals.XamlTypeResolver(nsManager, XamlParser.GetElementType, Assembly.GetCallingAssembly());
 	}

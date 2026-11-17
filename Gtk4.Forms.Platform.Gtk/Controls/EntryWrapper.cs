@@ -1,8 +1,8 @@
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Platform.GTK.Extensions;
 using Gtk;
 using Pango;
 
-namespace Xamarin.Forms.Platform.GTK.Controls;
+namespace Gtk4.Forms.Platform.GTK.Controls;
 
 // Wraps a Gtk.Entry so the renderers keep a stable surface.
 //

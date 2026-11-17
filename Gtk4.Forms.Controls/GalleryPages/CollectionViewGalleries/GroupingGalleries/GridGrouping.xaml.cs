@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Xaml;
+﻿using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.GroupingGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class GridGrouping : ContentPage

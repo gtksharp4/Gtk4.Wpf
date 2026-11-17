@@ -1,9 +1,9 @@
 using System;
 using System.Globalization;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
-	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.ConstraintTypeConverter")]
+	[Xaml.ProvideCompiled("Gtk4.Forms.Core.XamlC.ConstraintTypeConverter")]
 	[Xaml.TypeConversion(typeof(Constraint))]
 	public class ConstraintTypeConverter : TypeConverter
 	{

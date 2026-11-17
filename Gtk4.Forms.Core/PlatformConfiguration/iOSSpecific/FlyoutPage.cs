@@ -1,5 +1,5 @@
 
-namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
+namespace Gtk4.Forms.PlatformConfiguration.iOSSpecific
 {
 	using System;
 	using FormsElement = Forms.FlyoutPage;

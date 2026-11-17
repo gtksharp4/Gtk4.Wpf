@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Internals
+﻿namespace Gtk4.Forms.Internals
 {
 	public interface IPlatformInvalidate
 

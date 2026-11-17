@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ScrollModeGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.ScrollModeGalleries
 {
 	internal class ScrollModeGallery : ContentPage
 	{

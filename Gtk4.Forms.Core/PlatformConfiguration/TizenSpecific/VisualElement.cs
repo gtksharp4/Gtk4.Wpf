@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
+namespace Gtk4.Forms.PlatformConfiguration.TizenSpecific
 {
 	using FormsElement = Forms.VisualElement;
 	public static class VisualElement

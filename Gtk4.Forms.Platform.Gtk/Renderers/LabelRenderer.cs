@@ -2,11 +2,11 @@
 using System.ComponentModel;
 using Gdk;
 using Gtk;
-using Xamarin.Forms.Platform.GTK.Extensions;
-using Xamarin.Forms.Platform.GTK.Helpers;
+using Gtk4.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Platform.GTK.Helpers;
 using NativeLabel = Gtk.Label;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers;
+namespace Gtk4.Forms.Platform.GTK.Renderers;
 
 public class LabelRenderer : ViewRenderer<Label, NativeLabel>
 {

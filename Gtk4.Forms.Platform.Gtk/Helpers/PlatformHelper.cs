@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace Xamarin.Forms.Platform.GTK.Helpers;
+namespace Gtk4.Forms.Platform.GTK.Helpers;
 
 public enum GTKPlatform
 {

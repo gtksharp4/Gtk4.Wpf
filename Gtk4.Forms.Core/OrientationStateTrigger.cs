@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
-using Xamarin.Forms.Internals;
-using FormsDevice = Xamarin.Forms.Device;
+using Gtk4.Forms.Internals;
+using FormsDevice = Gtk4.Forms.Device;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public sealed class OrientationStateTrigger : StateTriggerBase
 	{

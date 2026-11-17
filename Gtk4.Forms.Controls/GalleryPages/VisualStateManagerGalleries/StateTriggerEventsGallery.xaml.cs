@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.VisualStateManagerGalleries
 {
 	public partial class StateTriggerEventsGallery : ContentPage
 	{

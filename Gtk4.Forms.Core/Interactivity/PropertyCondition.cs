@@ -1,11 +1,11 @@
 using System;
 using System.ComponentModel;
 using System.Reflection;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
-	[ProvideCompiled("Xamarin.Forms.Core.XamlC.PassthroughValueProvider")]
+	[ProvideCompiled("Gtk4.Forms.Core.XamlC.PassthroughValueProvider")]
 	[AcceptEmptyServiceProvider]
 	public sealed class PropertyCondition : Condition, IValueProvider
 	{

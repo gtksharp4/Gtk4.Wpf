@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Xamarin.Forms.StyleSheets
+namespace Gtk4.Forms.StyleSheets
 {
 	static class StyleSheetExtensions
 	{

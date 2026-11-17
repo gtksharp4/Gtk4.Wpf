@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	public class PinchToZoomContainer : ContentView
 	{

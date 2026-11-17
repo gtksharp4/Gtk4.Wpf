@@ -1,6 +1,6 @@
-﻿using FormsDevice = Xamarin.Forms.Device;
+﻿using FormsDevice = Gtk4.Forms.Device;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public sealed class DeviceStateTrigger : StateTriggerBase
 	{

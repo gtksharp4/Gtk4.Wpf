@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Xunit;
-using Xamarin.Forms;
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms;
+using Gtk4.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public partial class Gh1766 : ContentPage
 {
@@ -23,7 +23,7 @@ public partial class Gh1766 : ContentPage
 		public Tests()
 		{
 			Device.PlatformServices = new MockPlatformServices();
-			Xamarin.Forms.Internals.Registrar.RegisterAll(new Type[0]);
+			Gtk4.Forms.Internals.Registrar.RegisterAll(new Type[0]);
 		}
 
 		public void Dispose()

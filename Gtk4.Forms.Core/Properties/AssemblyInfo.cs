@@ -1,21 +1,21 @@
 using System.Runtime.CompilerServices;
-using Xamarin.Forms;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.StyleSheets;
+using Gtk4.Forms;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.StyleSheets;
 
-[assembly: InternalsVisibleTo("Xamarin.Forms.Controls")]
-[assembly: InternalsVisibleTo("Xamarin.Forms.Core.UnitTests")]
-[assembly: InternalsVisibleTo("Xamarin.Forms.Xaml")]
-[assembly: InternalsVisibleTo("Xamarin.Forms.Maps")]
-[assembly: InternalsVisibleTo("Xamarin.Forms.Xaml.UnitTests")]
-[assembly: InternalsVisibleTo("Xamarin.Forms.Build.Tasks")]
-[assembly: InternalsVisibleTo("Xamarin.Forms.Platform")]
+[assembly: InternalsVisibleTo("Gtk4.Forms.Controls")]
+[assembly: InternalsVisibleTo("Gtk4.Forms.Core.UnitTests")]
+[assembly: InternalsVisibleTo("Gtk4.Forms.Xaml")]
+[assembly: InternalsVisibleTo("Gtk4.Forms.Maps")]
+[assembly: InternalsVisibleTo("Gtk4.Forms.Xaml.UnitTests")]
+[assembly: InternalsVisibleTo("Gtk4.Forms.Build.Tasks")]
+[assembly: InternalsVisibleTo("Gtk4.Forms.Platform")]
 [assembly: Preserve]
 
-[assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms", "Xamarin.Forms.Shapes")]
-[assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms", "Xamarin.Forms")]
-[assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms/design", "Xamarin.Forms.Shapes")]
-[assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms/design", "Xamarin.Forms")]
+[assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms", "Gtk4.Forms.Shapes")]
+[assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms", "Gtk4.Forms")]
+[assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms/design", "Gtk4.Forms.Shapes")]
+[assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms/design", "Gtk4.Forms")]
 [assembly: XmlnsPrefix("http://xamarin.com/schemas/2014/forms", "xf")]
 [assembly: XmlnsPrefix("http://xamarin.com/schemas/2014/forms/design", "d")]
 

@@ -10,10 +10,10 @@
         <XFDisableTargetsValidation>True</XFDisableTargetsValidation>
         <PackageId>Gtk4.Forms.Controls</PackageId>
         <!-- The project file is named for the GTK leg, but the assembly identity must stay
-             Xamarin.Forms.Controls: 14 XAML files say assembly=Xamarin.Forms.Controls, and
-             Xamarin.Forms.Core's AssemblyInfo.cs grants InternalsVisibleTo under that name. -->
-        <AssemblyName>Xamarin.Forms.Controls</AssemblyName>
-        <RootNamespace>Xamarin.Forms.Controls</RootNamespace>
+             Gtk4.Forms.Controls: 14 XAML files say assembly=Gtk4.Forms.Controls, and
+             Gtk4.Forms.Core's AssemblyInfo.cs grants InternalsVisibleTo under that name. -->
+        <AssemblyName>Gtk4.Forms.Controls</AssemblyName>
+        <RootNamespace>Gtk4.Forms.Controls</RootNamespace>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <DefineConstants>TRACE;DEBUG;PERF;APP</DefineConstants>
@@ -213,7 +213,7 @@
         <Content Include="README.md" Link="README.md" Pack="true" PackagePath="\README.md" />
         <Content Include="$(SolutionDir)License.txt" Link="License.txt" Pack="true" PackagePath="\License.txt" Condition="Exists('$(SolutionDir)License.txt')" />
     </ItemGroup>
-    <Import Project="..\Gtk4.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems" Label="Shared" />
+    <Import Project="..\Gtk4.Forms.Controls.Issues\Gtk4.Forms.Controls.Issues.Shared\Gtk4.Forms.Controls.Issues.Shared.projitems" Label="Shared" />
     <!-- macOS CI: the GitHub macOS-arm64 runner's netstandard2.0 targeting pack resolves to nothing, so
        every compile fails with CS0518 "System.Object is not defined", and the SDK suppresses the
        NETStandard.Library package's own build targets (it treats the package as implicit). Disable the

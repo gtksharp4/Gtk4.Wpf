@@ -4,12 +4,12 @@ using System.ComponentModel;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
-using Xamarin.Forms.Controls.Tests;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Controls.Tests;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Xaml;
 using Xunit.Sdk;
 
-namespace Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery
+namespace Gtk4.Forms.Controls.GalleryPages.PlatformTestsGallery
 {
 	[Preserve(AllMembers = true)]
 	[XamlCompilation(XamlCompilationOptions.Compile)]

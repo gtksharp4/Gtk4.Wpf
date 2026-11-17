@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Reflection;
 
-namespace Xamarin.Forms.Xaml
+namespace Gtk4.Forms.Xaml
 {
 	[ContentProperty(nameof(Default))]
 	public class OnPlatformExtension : IMarkupExtension

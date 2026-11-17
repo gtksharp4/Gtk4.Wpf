@@ -2,7 +2,7 @@
 <ContentPage
 	xmlns="http://xamarin.com/schemas/2014/forms"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	x:Class="Xamarin.Forms.Xaml.UnitTests.Gh11551">
+	x:Class="Gtk4.Forms.Xaml.UnitTests.Gh11551">
     <ContentPage.Resources>
 		<Rect x:Key="rect" Height="22" Width="{x:Static AbsoluteLayout.AutoSize}" X="1" Y="0.5"/>
     </ContentPage.Resources>

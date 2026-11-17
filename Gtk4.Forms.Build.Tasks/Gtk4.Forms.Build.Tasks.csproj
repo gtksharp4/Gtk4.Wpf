@@ -10,7 +10,7 @@
 	  non-Debug build under .NET Framework MSBuild, which made a Visual Studio Release build the
 	  one place it applied - and the one place the solution did not build, because signing forces
 	  the InternalsVisibleTo in Properties/AssemblyInfo.cs to be dropped (see SIGNED_ASSEMBLY
-	  below) and Xamarin.Forms.Xaml.UnitTests then fails with CS0122 on XamlCAssemblyResolver,
+	  below) and Gtk4.Forms.Xaml.UnitTests then fails with CS0122 on XamlCAssemblyResolver,
 	  ILContext and ICompiledTypeConverter.
 
 	  Off by default is also the honest setting: this is the only project in the tree that signs.
@@ -26,14 +26,14 @@
     </PropertyGroup>
     <PropertyGroup>
         <PackageId>Gtk4.Forms.Build.Tasks</PackageId>
-        <Description>MSBuild tasks and targets for Xamarin.Forms XAML compilation.</Description>
+        <Description>MSBuild tasks and targets for Gtk4.Forms XAML compilation.</Description>
         <IsPackable>true</IsPackable>
         <_DisableStrongNamer Condition=" '$(_DisableStrongNamer)' != 'True' ">False</_DisableStrongNamer>
-        <AssemblyName>Xamarin.Forms.Build.Tasks</AssemblyName>
-        <!-- RootNamespace stays Xamarin.Forms.Build.Tasks (source namespace + ErrorMessages resource
+        <AssemblyName>Gtk4.Forms.Build.Tasks</AssemblyName>
+        <!-- RootNamespace stays Gtk4.Forms.Build.Tasks (source namespace + ErrorMessages resource
              name). Without it the renamed project defaulted to Gtk4.Forms.Build.Tasks, moving the
              generated ErrorMessages class out of the code's namespace (CS0103). -->
-        <RootNamespace>Xamarin.Forms.Build.Tasks</RootNamespace>
+        <RootNamespace>Gtk4.Forms.Build.Tasks</RootNamespace>
         <!--
 	      net46 dropped: Microsoft.Build 17.x (needed to clear the NU1903 advisory against
 	      Microsoft.Build.Tasks.Core 15.8.166) no longer supports net46, and one
@@ -63,7 +63,7 @@
     <!--
 	  SIGNED_ASSEMBLY mirrors the SignAssembly finally resolved above, so that
 	  Properties/AssemblyInfo.cs can key its InternalsVisibleTo on it: a strong-named assembly may
-	  only befriend an assembly whose public key it names (CS1726), and Xamarin.Forms.Xaml.UnitTests
+	  only befriend an assembly whose public key it names (CS1726), and Gtk4.Forms.Xaml.UnitTests
 	  has no key. Must stay AFTER every group that touches SignAssembly - it is read, not evaluated
 	  lazily.
 	-->
@@ -179,7 +179,7 @@
           skipped as unchanged - and this batch is every DLL in $(TargetDir), so the old
           '@(_XFCopiedTaskFiles)' == '' guard could only fire if ALL of them failed. The one
           file that ever gets locked is precisely the one MSBuild has loaded as a task
-          assembly, Xamarin.Forms.Build.Tasks.dll; its eight siblings copy fine and hid the
+          assembly, Gtk4.Forms.Build.Tasks.dll; its eight siblings copy fine and hid the
           failure, which is how a stale XamlCTask ended up compiling XAML against
           freshly-built Core/Xaml assemblies with a green build.
         -->
@@ -207,7 +207,7 @@
       - The props/targets go in build/, where NuGet auto-imports
         build/$(PackageId).props|.targets.
       - The task assembly and its runtime dependencies (Mono.Cecil, System.CodeDom) go in
-        build/netstandard2.0/, which is exactly where Xamarin.Forms.targets looks by
+        build/netstandard2.0/, which is exactly where Gtk4.Forms.targets looks by
         default ($(MSBuildThisFileDirectory)<tfm>\).
   -->
     <PropertyGroup>
@@ -220,48 +220,48 @@
         <IncludeSymbols>false</IncludeSymbols>
     </PropertyGroup>
     <ItemGroup>
-        <None Include="build\*.props;build\*.targets" Exclude="build\Xamarin.Forms.Build.Tasks.props;build\Xamarin.Forms.Build.Tasks.targets" Pack="true" PackagePath="build\" />
+        <None Include="build\*.props;build\*.targets" Exclude="build\Gtk4.Forms.Build.Tasks.props;build\Gtk4.Forms.Build.Tasks.targets" Pack="true" PackagePath="build\" />
         <!--
           The auto-import entry points, renamed on the way into the package: NuGet imports
           build\$(PackageId).props|.targets and nothing else, and $(PackageId) is now
-          Gtk4.Xamarin.Forms.Build.Tasks rather than the assembly name the files carry on
+          Gtk4.Gtk4.Forms.Build.Tasks rather than the assembly name the files carry on
           disk. Packing them under their own names instead leaves build\ with props/targets
           that NuGet would never import - NU5129, an error here because of
           TreatWarningsAsErrors. Deriving the packed name from $(PackageId) keeps the entry
           point correct if the id changes again.
         -->
-        <None Include="build\Xamarin.Forms.Build.Tasks.props" Pack="true" PackagePath="build\$(PackageId).props" />
-        <None Include="build\Xamarin.Forms.Build.Tasks.targets" Pack="true" PackagePath="build\$(PackageId).targets" />
+        <None Include="build\Gtk4.Forms.Build.Tasks.props" Pack="true" PackagePath="build\$(PackageId).props" />
+        <None Include="build\Gtk4.Forms.Build.Tasks.targets" Pack="true" PackagePath="build\$(PackageId).targets" />
     </ItemGroup>
     <Target Name="_PackBuildTaskAssemblies" BeforeTargets="_GetPackageFiles">
         <ItemGroup>
             <!--
-                Xamarin.Forms.Core.dll and Xamarin.Forms.Xaml.dll belong here too. XamlCTask and
+                Gtk4.Forms.Core.dll and Gtk4.Forms.Xaml.dll belong here too. XamlCTask and
                 XamlGTask load both at build time, and SuppressDependenciesWhenPacking is on, so
                 the package declared no dependencies either - a consumer restoring
-                Gtk4.Xamarin.Forms.Build.Tasks on its own got the tasks with nothing to resolve
+                Gtk4.Gtk4.Forms.Build.Tasks on its own got the tasks with nothing to resolve
                 those references against. The in-tree publish path never showed it because
                 _PublishBuildTasks copies $(TargetDir)*.dll, i.e. everything.
             -->
-            <None Include="$(OutputPath)Xamarin.Forms.Build.Tasks.dll;$(OutputPath)Xamarin.Forms.Core.dll;$(OutputPath)Xamarin.Forms.Xaml.dll;$(OutputPath)Mono.Cecil*.dll;$(OutputPath)System.CodeDom.dll" Pack="true" PackagePath="build\$(TargetFramework)\" Visible="false" />
+            <None Include="$(OutputPath)Gtk4.Forms.Build.Tasks.dll;$(OutputPath)Gtk4.Forms.Core.dll;$(OutputPath)Gtk4.Forms.Xaml.dll;$(OutputPath)Mono.Cecil*.dll;$(OutputPath)System.CodeDom.dll" Pack="true" PackagePath="build\$(TargetFramework)\" Visible="false" />
         </ItemGroup>
     </Target>
     <!--
     NuGet applies a package's build\ folder ONLY to a direct PackageReference. Every entry point
     above therefore reaches nobody who does what the READMEs tell app authors to do - reference a
-    backend package (Gtk4.Xamarin.Forms.Platform.Gtk) and let it drag in the rest: XamlGTask never
+    backend package (Gtk4.Gtk4.Forms.Platform.Gtk) and let it drag in the rest: XamlGTask never
     runs and InitializeComponent() is never generated. buildTransitive\ is the folder NuGet also
     applies to an INDIRECT reference, so shipping the entry points there as well lets a package
     that depends on this one deliver the XAML targets downstream.
 
     This is only half of that fix: a consumer still gets nothing until some shipped package it
-    actually references declares a non-private dependency on Gtk4.Xamarin.Forms.Build.Tasks.
+    actually references declares a non-private dependency on Gtk4.Gtk4.Forms.Build.Tasks.
 
     The forwarders are generated rather than checked in because they differ from the build\ ones
     only in where they point - duplicating the task assemblies under buildTransitive\<tfm>\ would
     double the package for nothing. NuGet selects exactly one of the two folders per package
     (build\ for a direct reference, buildTransitive\ for a transitive one), which is what keeps
-    Xamarin.Forms.targets from being imported twice and failing with XF001.
+    Gtk4.Forms.targets from being imported twice and failing with XF001.
   -->
     <Target Name="_GenerateTransitiveBuildEntryPoints" BeforeTargets="_GetPackageFiles">
         <PropertyGroup>
@@ -269,8 +269,8 @@
             <_XFTransitiveBuildDir>$(IntermediateOutputPath)buildTransitive/</_XFTransitiveBuildDir>
         </PropertyGroup>
         <MakeDir Directories="$(_XFTransitiveBuildDir)" />
-        <WriteLinesToFile File="$(_XFTransitiveBuildDir)$(PackageId).props" Overwrite="true" WriteOnlyWhenDifferent="true" Lines="&lt;Project&gt;;&lt;!-- Generated. NuGet auto-import entry point for an indirect PackageReference. --&gt;;&lt;Import Project=&quot;%24(MSBuildThisFileDirectory)../build/Xamarin.Forms.props&quot; /&gt;;&lt;/Project&gt;" />
-        <WriteLinesToFile File="$(_XFTransitiveBuildDir)$(PackageId).targets" Overwrite="true" WriteOnlyWhenDifferent="true" Lines="&lt;Project&gt;;&lt;!-- Generated. NuGet auto-import entry point for an indirect PackageReference. --&gt;;&lt;Import Project=&quot;%24(MSBuildThisFileDirectory)../build/Xamarin.Forms.targets&quot; /&gt;;&lt;/Project&gt;" />
+        <WriteLinesToFile File="$(_XFTransitiveBuildDir)$(PackageId).props" Overwrite="true" WriteOnlyWhenDifferent="true" Lines="&lt;Project&gt;;&lt;!-- Generated. NuGet auto-import entry point for an indirect PackageReference. --&gt;;&lt;Import Project=&quot;%24(MSBuildThisFileDirectory)../build/Gtk4.Forms.props&quot; /&gt;;&lt;/Project&gt;" />
+        <WriteLinesToFile File="$(_XFTransitiveBuildDir)$(PackageId).targets" Overwrite="true" WriteOnlyWhenDifferent="true" Lines="&lt;Project&gt;;&lt;!-- Generated. NuGet auto-import entry point for an indirect PackageReference. --&gt;;&lt;Import Project=&quot;%24(MSBuildThisFileDirectory)../build/Gtk4.Forms.targets&quot; /&gt;;&lt;/Project&gt;" />
         <ItemGroup>
             <None Include="$(_XFTransitiveBuildDir)$(PackageId).props" Pack="true" PackagePath="buildTransitive\$(PackageId).props" Visible="false" />
             <None Include="$(_XFTransitiveBuildDir)$(PackageId).targets" Pack="true" PackagePath="buildTransitive\$(PackageId).targets" Visible="false" />

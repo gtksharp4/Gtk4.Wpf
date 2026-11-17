@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Windows.Input;
 using Xunit;
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 #pragma warning disable 0618 //retaining legacy call to obsolete code
 
 public class XamlLoaderCreateTests
@@ -14,8 +14,8 @@ public class XamlLoaderCreateTests
 		XamlLoader.FallbackTypeResolver = null;
 		XamlLoader.ValueCreatedCallback = null;
 		XamlLoader.InstantiationFailedCallback = null;
-		Xamarin.Forms.Internals.ResourceLoader.ExceptionHandler = null;
-		Xamarin.Forms.Xaml.Internals.XamlLoader.DoNotThrowOnExceptions = false;
+		Gtk4.Forms.Internals.ResourceLoader.ExceptionHandler = null;
+		Gtk4.Forms.Xaml.Internals.XamlLoader.DoNotThrowOnExceptions = false;
 	}
 
 	[Fact]
@@ -24,7 +24,7 @@ public class XamlLoaderCreateTests
 		var xaml = @"
 				<ContentView xmlns=""http://xamarin.com/schemas/2014/forms""
 							 xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-						 	 x:Class=""Xamarin.Forms.Xaml.UnitTests.FOO"">
+						 	 x:Class=""Gtk4.Forms.Xaml.UnitTests.FOO"">
 					<Label Text=""Foo""  x:Name=""label""/>
 				</ContentView>";
 

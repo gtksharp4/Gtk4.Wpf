@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using Mono.Cecil;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace Gtk4.Forms.Build.Tasks
 {
 	static class MethodDefinitionExtensions
 	{

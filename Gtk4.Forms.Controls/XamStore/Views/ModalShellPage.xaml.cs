@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xamarin.Forms.Controls.XamStore.Views
+namespace Gtk4.Forms.Controls.XamStore.Views
 {
 	public partial class ModalShellPage : ContentPage
 	{

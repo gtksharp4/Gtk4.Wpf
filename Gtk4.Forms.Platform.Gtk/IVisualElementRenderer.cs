@@ -1,7 +1,7 @@
 ﻿using System;
-using Container = Xamarin.Forms.Platform.GTK.GtkFormsContainer;
+using Container = Gtk4.Forms.Platform.GTK.GtkFormsContainer;
 
-namespace Xamarin.Forms.Platform.GTK;
+namespace Gtk4.Forms.Platform.GTK;
 
 public interface IVisualElementRenderer : IDisposable, IRegisterable
 {

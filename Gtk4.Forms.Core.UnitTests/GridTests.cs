@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 public class GridTests : BaseTestFixture
 {
@@ -262,7 +262,7 @@ public class GridTests : BaseTestFixture
 	}
 
 	[Fact]
-	[Trait("Description", "Columns with a Star width less than one should not cause the Grid to contract below the target width; see https://github.com/pieroviano/Xamarin.Forms/issues/11742")]
+	[Trait("Description", "Columns with a Star width less than one should not cause the Grid to contract below the target width; see https://github.com/pieroviano/Gtk4.Forms/issues/11742")]
 	public void StarWidthsLessThanOneShouldNotContractGrid()
 	{
 		var grid = new Grid
@@ -2263,7 +2263,7 @@ public class GridTests : BaseTestFixture
 	}
 
 	[Fact]
-	//https://github.com/pieroviano/Xamarin.Forms/issues/4933
+	//https://github.com/pieroviano/Gtk4.Forms/issues/4933
 	public void GridHeightCorrectWhenAspectFitImageGetsShrinked()
 	{
 		var contentGrid = new Grid

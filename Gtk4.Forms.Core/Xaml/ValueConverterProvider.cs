@@ -1,11 +1,11 @@
 using System;
 using System.Reflection;
 
-using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms;
+using Gtk4.Forms.Xaml;
 
 [assembly: Dependency(typeof(ValueConverterProvider))]
-namespace Xamarin.Forms.Xaml
+namespace Gtk4.Forms.Xaml
 {
 	class ValueConverterProvider : IValueConverterProvider
 	{

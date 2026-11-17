@@ -1,10 +1,10 @@
 ﻿using ImAVendor.Forms.PlatformConfiguration.iOS;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using Gtk4.Forms.PlatformConfiguration;
+using Gtk4.Forms.PlatformConfiguration.AndroidSpecific;
+using Gtk4.Forms.PlatformConfiguration.iOSSpecific;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Gtk4.Forms.Core.UnitTests
 {
 	public class PlatformSpecificsTests
 	{
@@ -68,9 +68,9 @@ namespace Xamarin.Forms.Core.UnitTests
 
 namespace ImAVendor.Forms.PlatformConfiguration.iOS
 {
-	using Xamarin.Forms;
-	using Xamarin.Forms.PlatformConfiguration;
-	using FormsElement = Xamarin.Forms.FlyoutPage;
+	using Gtk4.Forms;
+	using Gtk4.Forms.PlatformConfiguration;
+	using FormsElement = Gtk4.Forms.FlyoutPage;
 
 	public static class FlyoutPage
 	{
@@ -103,9 +103,9 @@ namespace ImAVendor.Forms.PlatformConfiguration.iOS
 
 namespace ImAVendor.Forms.PlatformConfiguration.iOS
 {
-	using Xamarin.Forms;
-	using Xamarin.Forms.PlatformConfiguration;
-	using FormsElement = Xamarin.Forms.NavigationPage;
+	using Gtk4.Forms;
+	using Gtk4.Forms.PlatformConfiguration;
+	using FormsElement = Gtk4.Forms.NavigationPage;
 
 	public static class NavigationPage
 	{
@@ -152,9 +152,9 @@ namespace ImAVendor.Forms.PlatformConfiguration.iOS
 	}
 }
 
-namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific
+namespace Gtk4.Forms.PlatformConfiguration.AndroidSpecific
 {
-	using FormsElement = Xamarin.Forms.FlyoutPage;
+	using FormsElement = Gtk4.Forms.FlyoutPage;
 
 	public static class FlyoutPage
 	{

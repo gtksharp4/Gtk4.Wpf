@@ -1,4 +1,4 @@
-namespace Xamarin.Forms.Platform.GTK.Controls;
+namespace Gtk4.Forms.Platform.GTK.Controls;
 
 /// <summary>
 /// Which pointer button raised an item-tapped event.

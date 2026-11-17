@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Globalization;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public abstract class TypeConverter
 	{

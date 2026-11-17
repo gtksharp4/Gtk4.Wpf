@@ -1,15 +1,15 @@
 ﻿using System.ComponentModel;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Cells;
+namespace Gtk4.Forms.Platform.GTK.Cells;
 
 public class TextCellRenderer : CellRenderer
 {
 	public override CellBase GetCell(Cell item, Gtk.Container reusableView, Controls.ListView listView)
 	{
 		var gtkTextCell = base.GetCell(item, reusableView, listView) as TextCell;
-		var textCell = (Xamarin.Forms.TextCell)item;
+		var textCell = (Gtk4.Forms.TextCell)item;
 
 		gtkTextCell.IsGroupHeader = textCell.GetIsGroupHeader<ItemsView<Cell>, Cell>();
 
@@ -18,7 +18,7 @@ public class TextCellRenderer : CellRenderer
 
 	protected override Gtk.Container GetCellWidgetInstance(Cell item)
 	{
-		var textCell = (Xamarin.Forms.TextCell)item;
+		var textCell = (Gtk4.Forms.TextCell)item;
 
 		var text = textCell.Text ?? string.Empty;
 		var textColor = textCell.TextColor.ToGtkColor();
@@ -37,19 +37,19 @@ public class TextCellRenderer : CellRenderer
 		base.CellPropertyChanged(sender, args);
 
 		var gtkTextCell = (TextCell)sender;
-		var textCell = (Xamarin.Forms.TextCell)gtkTextCell.Cell;
+		var textCell = (Gtk4.Forms.TextCell)gtkTextCell.Cell;
 
-		if (args.PropertyName == Xamarin.Forms.TextCell.TextProperty.PropertyName)
+		if (args.PropertyName == Gtk4.Forms.TextCell.TextProperty.PropertyName)
 		{
 			gtkTextCell.Text = textCell.Text ?? string.Empty;
 		}
-		else if (args.PropertyName == Xamarin.Forms.TextCell.DetailProperty.PropertyName)
+		else if (args.PropertyName == Gtk4.Forms.TextCell.DetailProperty.PropertyName)
 		{
 			gtkTextCell.Detail = textCell.Detail ?? string.Empty;
 		}
-		else if (args.PropertyName == Xamarin.Forms.TextCell.TextColorProperty.PropertyName)
+		else if (args.PropertyName == Gtk4.Forms.TextCell.TextColorProperty.PropertyName)
 			gtkTextCell.TextColor = textCell.TextColor.ToGtkColor();
-		else if (args.PropertyName == Xamarin.Forms.TextCell.DetailColorProperty.PropertyName)
+		else if (args.PropertyName == Gtk4.Forms.TextCell.DetailColorProperty.PropertyName)
 			gtkTextCell.DetailColor = textCell.DetailColor.ToGtkColor();
 	}
 }

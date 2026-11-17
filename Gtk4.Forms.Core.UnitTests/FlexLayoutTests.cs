@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Threading;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 public class FlexLayoutTests : BaseTestFixture
 {
@@ -393,7 +393,7 @@ public class FlexLayoutTests : BaseTestFixture
 	}
 
 	[Fact]
-	//https://github.com/pieroviano/Xamarin.Forms/issues/2551
+	//https://github.com/pieroviano/Gtk4.Forms/issues/2551
 	public void TestReverseWithGrow()
 	{
 		var label0 = new Label
@@ -416,7 +416,7 @@ public class FlexLayoutTests : BaseTestFixture
 
 	[Fact]
 	public void TestIsVisible()
-		//https://github.com/pieroviano/Xamarin.Forms/issues/2593
+		//https://github.com/pieroviano/Gtk4.Forms/issues/2593
 	{
 		var label0 = new Label
 		{
@@ -458,7 +458,7 @@ public class FlexLayoutTests : BaseTestFixture
 
 	[Fact]
 	public void ChangingGrowTriggersLayout()
-		//https://github.com/pieroviano/Xamarin.Forms/issues/2821
+		//https://github.com/pieroviano/Gtk4.Forms/issues/2821
 	{
 		var layout = new FlexLayout
 		{
@@ -482,7 +482,7 @@ public class FlexLayoutTests : BaseTestFixture
 
 	[Fact]
 	public void PaddingOnLayout()
-		//https://github.com/pieroviano/Xamarin.Forms/issues/2663
+		//https://github.com/pieroviano/Gtk4.Forms/issues/2663
 	{
 		var label0 = new Label
 		{

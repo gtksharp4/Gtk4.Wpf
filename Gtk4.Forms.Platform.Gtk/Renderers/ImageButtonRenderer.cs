@@ -1,9 +1,9 @@
 using System;
 using System.ComponentModel;
-using Xamarin.Forms.Platform.GTK.Extensions;
-using GtkImageButton = Xamarin.Forms.Platform.GTK.Controls.ImageButton;
+using Gtk4.Forms.Platform.GTK.Extensions;
+using GtkImageButton = Gtk4.Forms.Platform.GTK.Controls.ImageButton;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers;
+namespace Gtk4.Forms.Platform.GTK.Renderers;
 
 /// <summary>
 /// ImageButton is an image-only button: unlike <see cref="Button"/> it has no Text, and its

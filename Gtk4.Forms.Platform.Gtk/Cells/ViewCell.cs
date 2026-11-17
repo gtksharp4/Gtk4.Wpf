@@ -1,7 +1,7 @@
 ﻿using System;
-using static Xamarin.Forms.Platform.GTK.Platform;
+using static Gtk4.Forms.Platform.GTK.Platform;
 
-namespace Xamarin.Forms.Platform.GTK.Cells;
+namespace Gtk4.Forms.Platform.GTK.Cells;
 
 internal class ViewCell : CellBase
 {
@@ -16,7 +16,7 @@ internal class ViewCell : CellBase
 		{
 			_lastAllocation = allocation;
 
-			var viewCell = Cell as Xamarin.Forms.ViewCell;
+			var viewCell = Cell as Gtk4.Forms.ViewCell;
 			var view = viewCell.View;
 
 			if (view == null)
@@ -44,7 +44,7 @@ internal class ViewCell : CellBase
 		}
 	}
 
-	private double GetHeightMeasure(Xamarin.Forms.ViewCell viewCell, Gdk.Rectangle allocation)
+	private double GetHeightMeasure(Gtk4.Forms.ViewCell viewCell, Gdk.Rectangle allocation)
 	{
 		var request = viewCell.View.Measure(allocation.Width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
 
@@ -69,7 +69,7 @@ internal class ViewCell : CellBase
 		// the incoming one straight after this returns. Repeating the pair here queued them against
 		// the new cell, so ListView.ItemAppearing fired twice per row and ItemDisappearing fired for
 		// a row that had never appeared - paging/infinite-scroll handlers double-loaded.
-		var viewCell = Cell as Xamarin.Forms.ViewCell;
+		var viewCell = Cell as Gtk4.Forms.ViewCell;
 
 		if (viewCell == null)
 			return;
@@ -96,7 +96,7 @@ internal class ViewCell : CellBase
 
 	private IVisualElementRenderer GetNewRenderer()
 	{
-		var viewCell = Cell as Xamarin.Forms.ViewCell;
+		var viewCell = Cell as Gtk4.Forms.ViewCell;
 
 		if (viewCell.View == null)
 		{

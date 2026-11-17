@@ -1,7 +1,7 @@
-﻿using FormsRectangle = Xamarin.Forms.Shapes.Rectangle;
+﻿using FormsRectangle = Gtk4.Forms.Shapes.Rectangle;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 public class RectTests : BaseTestFixture
 {

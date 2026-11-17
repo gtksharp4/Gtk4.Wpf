@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Xamarin.Forms.Controls.Tests
+namespace Gtk4.Forms.Controls.Tests
 {
 	public class CrossPlatformTests : CrossPlatformTestFixture
 	{

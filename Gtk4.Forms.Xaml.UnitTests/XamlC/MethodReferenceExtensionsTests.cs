@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
 using Xunit;
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Xaml.UnitTests;
+using Gtk4.Forms.Build.Tasks;
+using Gtk4.Forms.Xaml.UnitTests;
 
-namespace Xamarin.Forms.XamlcUnitTests;
+namespace Gtk4.Forms.XamlcUnitTests;
 
 public class MethodReferenceExtensionsTests : IDisposable
 {
@@ -39,12 +39,12 @@ public class MethodReferenceExtensionsTests : IDisposable
 		var adderT = propertyType.GetMethods((md, tr) => md.Name == "Add", module).Single();
 		var adder = adderT.Item1;
 		var ptype = adderT.Item2;
-		Assert.Equal("System.Void Xamarin.Forms.DefinitionCollection`1::Add(T)", adder.FullName);
-		Assert.Equal("Xamarin.Forms.DefinitionCollection`1<Xamarin.Forms.RowDefinition>", ptype.FullName);
+		Assert.Equal("System.Void Gtk4.Forms.DefinitionCollection`1::Add(T)", adder.FullName);
+		Assert.Equal("Gtk4.Forms.DefinitionCollection`1<Gtk4.Forms.RowDefinition>", ptype.FullName);
 		var adderRef = module.ImportReference(adder);
-		Assert.Equal("System.Void Xamarin.Forms.DefinitionCollection`1::Add(T)", adderRef.FullName);
+		Assert.Equal("System.Void Gtk4.Forms.DefinitionCollection`1::Add(T)", adderRef.FullName);
 		adderRef = adderRef.ResolveGenericParameters(ptype, module);
-		Assert.Equal("System.Void Xamarin.Forms.DefinitionCollection`1<Xamarin.Forms.RowDefinition>::Add(T)", adderRef.FullName);
+		Assert.Equal("System.Void Gtk4.Forms.DefinitionCollection`1<Gtk4.Forms.RowDefinition>::Add(T)", adderRef.FullName);
 	}
 
 	[Fact]
@@ -53,17 +53,17 @@ public class MethodReferenceExtensionsTests : IDisposable
 		TypeReference declaringTypeReference;
 		var type = module.ImportReference(typeof(StackLayout));
 		var property = type.GetProperty(pd => pd.Name == "Children", out declaringTypeReference);
-		Assert.Equal("System.Collections.Generic.IList`1<T> Xamarin.Forms.Layout`1::Children()", property.FullName);
-		Assert.Equal("Xamarin.Forms.Layout`1<Xamarin.Forms.View>", declaringTypeReference.FullName);
+		Assert.Equal("System.Collections.Generic.IList`1<T> Gtk4.Forms.Layout`1::Children()", property.FullName);
+		Assert.Equal("Gtk4.Forms.Layout`1<Gtk4.Forms.View>", declaringTypeReference.FullName);
 		var propertyGetter = property.GetMethod;
-		Assert.Equal("System.Collections.Generic.IList`1<T> Xamarin.Forms.Layout`1::get_Children()", propertyGetter.FullName);
+		Assert.Equal("System.Collections.Generic.IList`1<T> Gtk4.Forms.Layout`1::get_Children()", propertyGetter.FullName);
 		var propertyGetterRef = module.ImportReference(propertyGetter);
-		Assert.Equal("System.Collections.Generic.IList`1<T> Xamarin.Forms.Layout`1::get_Children()", propertyGetterRef.FullName);
+		Assert.Equal("System.Collections.Generic.IList`1<T> Gtk4.Forms.Layout`1::get_Children()", propertyGetterRef.FullName);
 
 		propertyGetterRef = module.ImportReference(propertyGetterRef.ResolveGenericParameters(declaringTypeReference, module));
-		Assert.Equal("System.Collections.Generic.IList`1<T> Xamarin.Forms.Layout`1<Xamarin.Forms.View>::get_Children()", propertyGetterRef.FullName);
+		Assert.Equal("System.Collections.Generic.IList`1<T> Gtk4.Forms.Layout`1<Gtk4.Forms.View>::get_Children()", propertyGetterRef.FullName);
 		var returnType = propertyGetterRef.ReturnType.ResolveGenericParameters(declaringTypeReference);
-		Assert.Equal("System.Collections.Generic.IList`1<Xamarin.Forms.View>", returnType.FullName);
+		Assert.Equal("System.Collections.Generic.IList`1<Gtk4.Forms.View>", returnType.FullName);
 	}
 
 	[Fact]
@@ -72,17 +72,17 @@ public class MethodReferenceExtensionsTests : IDisposable
 		TypeReference declaringTypeReference;
 		var type = module.ImportReference(typeof(Style));
 		var property = type.GetProperty(pd => pd.Name == "Setters", out declaringTypeReference);
-		Assert.Equal("System.Collections.Generic.IList`1<Xamarin.Forms.Setter> Xamarin.Forms.Style::Setters()", property.FullName);
-		Assert.Equal("Xamarin.Forms.Style", declaringTypeReference.FullName);
+		Assert.Equal("System.Collections.Generic.IList`1<Gtk4.Forms.Setter> Gtk4.Forms.Style::Setters()", property.FullName);
+		Assert.Equal("Gtk4.Forms.Style", declaringTypeReference.FullName);
 		var propertyGetter = property.GetMethod;
-		Assert.Equal("System.Collections.Generic.IList`1<Xamarin.Forms.Setter> Xamarin.Forms.Style::get_Setters()", propertyGetter.FullName);
+		Assert.Equal("System.Collections.Generic.IList`1<Gtk4.Forms.Setter> Gtk4.Forms.Style::get_Setters()", propertyGetter.FullName);
 
 		var propertyGetterRef = module.ImportReference(propertyGetter);
-		Assert.Equal("System.Collections.Generic.IList`1<Xamarin.Forms.Setter> Xamarin.Forms.Style::get_Setters()", propertyGetterRef.FullName);
+		Assert.Equal("System.Collections.Generic.IList`1<Gtk4.Forms.Setter> Gtk4.Forms.Style::get_Setters()", propertyGetterRef.FullName);
 		propertyGetterRef = module.ImportReference(propertyGetterRef.ResolveGenericParameters(declaringTypeReference, module));
-		Assert.Equal("System.Collections.Generic.IList`1<Xamarin.Forms.Setter> Xamarin.Forms.Style::get_Setters()", propertyGetterRef.FullName);
+		Assert.Equal("System.Collections.Generic.IList`1<Gtk4.Forms.Setter> Gtk4.Forms.Style::get_Setters()", propertyGetterRef.FullName);
 		var returnType = propertyGetterRef.ReturnType.ResolveGenericParameters(declaringTypeReference);
-		Assert.Equal("System.Collections.Generic.IList`1<Xamarin.Forms.Setter>", returnType.FullName);
+		Assert.Equal("System.Collections.Generic.IList`1<Gtk4.Forms.Setter>", returnType.FullName);
 	}
 
 	[Fact]
@@ -93,11 +93,11 @@ public class MethodReferenceExtensionsTests : IDisposable
 		var adder = adderT.Item1;
 		var ptype = adderT.Item2;
 		Assert.Equal("System.Void System.Collections.Generic.ICollection`1::Add(T)", adder.FullName);
-		Assert.Equal("System.Collections.Generic.ICollection`1<Xamarin.Forms.View>", ptype.FullName);
+		Assert.Equal("System.Collections.Generic.ICollection`1<Gtk4.Forms.View>", ptype.FullName);
 		var adderRef = module.ImportReference(adder);
 		Assert.Equal("System.Void System.Collections.Generic.ICollection`1::Add(T)", adderRef.FullName);
 		adderRef = adderRef.ResolveGenericParameters(ptype, module);
-		Assert.Equal("System.Void System.Collections.Generic.ICollection`1<Xamarin.Forms.View>::Add(T)", adderRef.FullName);
+		Assert.Equal("System.Void System.Collections.Generic.ICollection`1<Gtk4.Forms.View>::Add(T)", adderRef.FullName);
 	}
 
 	[Fact]
@@ -117,7 +117,7 @@ public class MethodReferenceExtensionsTests : IDisposable
 		var method = type.Resolve().Methods.Where(md => md.Name == "CustmAttributeParameterMethod").Single();
 		var resolved = method.ResolveGenericParameters(type, module);
 
-		Assert.Equal("Xamarin.Forms.ParameterAttribute", resolved.Parameters[0].CustomAttributes[0].AttributeType.FullName);
+		Assert.Equal("Gtk4.Forms.ParameterAttribute", resolved.Parameters[0].CustomAttributes[0].AttributeType.FullName);
 	}
 
 	[Fact]

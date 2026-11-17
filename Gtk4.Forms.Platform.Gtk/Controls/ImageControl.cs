@@ -2,7 +2,7 @@ using System;
 using Cairo;
 using Gdk;
 
-namespace Xamarin.Forms.Platform.GTK.Controls;
+namespace Gtk4.Forms.Platform.GTK.Controls;
 
 public class ImageControl : Gtk.Box, IDesiredSizeProvider
 {

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Gtk;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Controls;
+namespace Gtk4.Forms.Platform.GTK.Controls;
 
 /// <summary>
 /// Carries the index of the tab the user picked.

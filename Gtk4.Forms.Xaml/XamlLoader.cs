@@ -34,10 +34,10 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml.Diagnostics;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Xaml.Diagnostics;
 
-namespace Xamarin.Forms.Xaml.Internals
+namespace Gtk4.Forms.Xaml.Internals
 {
 	[Obsolete("Replaced by ResourceLoader")]
 	[EditorBrowsable(EditorBrowsableState.Never)]
@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Xaml.Internals
 			internal set
 			{
 				xamlFileProvider = value;
-				Xamarin.Forms.DesignMode.IsDesignModeEnabled = true;
+				Gtk4.Forms.DesignMode.IsDesignModeEnabled = true;
 				//¯\_(ツ)_/¯ the previewer forgot to set that bool
 				DoNotThrowOnExceptions = value != null;
 			}
@@ -61,7 +61,7 @@ namespace Xamarin.Forms.Xaml.Internals
 	}
 }
 
-namespace Xamarin.Forms.Xaml
+namespace Gtk4.Forms.Xaml
 {
 	static class XamlLoader
 	{

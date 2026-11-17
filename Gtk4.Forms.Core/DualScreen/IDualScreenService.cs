@@ -1,10 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Xamarin.Forms;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.DualScreen
+namespace Gtk4.Forms.DualScreen
 {
 	internal interface IDualScreenService
 	{

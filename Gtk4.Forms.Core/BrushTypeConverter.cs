@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public class BrushTypeConverter : TypeConverter
 	{

@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.Build.Utilities;
 using Xunit;
-using Xamarin.Forms;
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Core.UnitTests;
-using Xamarin.Forms.MSBuild.UnitTests;
+using Gtk4.Forms;
+using Gtk4.Forms.Build.Tasks;
+using Gtk4.Forms.Controls;
+using Gtk4.Forms.Core.UnitTests;
+using Gtk4.Forms.MSBuild.UnitTests;
 using IOPath = System.IO.Path;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 public partial class Gh2691 : ContentPage
 {
@@ -31,9 +31,9 @@ public partial class Gh2691 : ContentPage
 							 xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							 xmlns:test=""http://xamarin.com/schemas/2014/forms/customurl1""
 							 xmlns:test2=""http://xamarin.com/schemas/2014/forms/customurl2""
-							 xmlns:test3=""clr-namespace:Xamarin.Forms.Controls.CustomNamespace1;assembly=Xamarin.Forms.Controls""
-							 xmlns:test4=""using:Xamarin.Forms.Xaml.UnitTests""
-							 x:Class=""Xamarin.Forms.Xaml.UnitTests.Gh2691"">
+							 xmlns:test3=""clr-namespace:Gtk4.Forms.Controls.CustomNamespace1;assembly=Gtk4.Forms.Controls""
+							 xmlns:test4=""using:Gtk4.Forms.Xaml.UnitTests""
+							 x:Class=""Gtk4.Forms.Xaml.UnitTests.Gh2691"">
 					<ContentPage.Content>
 						<StackLayout>
 							<test:CustomButton x:Name=""_testButton1""
@@ -66,27 +66,27 @@ public partial class Gh2691 : ContentPage
 		{
 			Gh2691 issue2691 = new Gh2691(useCompiledXaml);
 
-			// http://xamarin.com/schemas/2014/forms/customurl1 -> Xamarin.Forms.Controls.CustomNamespace1
+			// http://xamarin.com/schemas/2014/forms/customurl1 -> Gtk4.Forms.Controls.CustomNamespace1
 			var button = issue2691.FindByName("_testButton1") as Controls.CustomNamespace1.CustomButton;
 			Assert.NotNull(button);
 
-			// http://xamarin.com/schemas/2014/forms/customurl1 -> Xamarin.Forms.Controls.CustomNamespace2
+			// http://xamarin.com/schemas/2014/forms/customurl1 -> Gtk4.Forms.Controls.CustomNamespace2
 			var label1 = issue2691.FindByName("_testLabel1") as Controls.CustomNamespace2.CustomLabel;
 			Assert.NotNull(label1);
 
-			// http://xamarin.com/schemas/2014/forms/customurl2 -> Xamarin.Forms.Controls.CustomNamespace3
+			// http://xamarin.com/schemas/2014/forms/customurl2 -> Gtk4.Forms.Controls.CustomNamespace3
 			var label2 = issue2691.FindByName("_testLabel2") as Controls.CustomNamespace3.CustomLabel;
 			Assert.NotNull(label2);
 
-			// http://xamarin.com/schemas/2014/forms/customurl2 -> Xamarin.Forms.Controls.CustomNamespace3
+			// http://xamarin.com/schemas/2014/forms/customurl2 -> Gtk4.Forms.Controls.CustomNamespace3
 			var stack = issue2691.FindByName("_testStackLayout") as Controls.CustomNamespace3.CustomStackLayout;
 			Assert.NotNull(stack);
 
-			// clr-namespace:Xamarin.Forms.Controls.CustomNamespace1;assembly=Xamarin.Forms.Controls
+			// clr-namespace:Gtk4.Forms.Controls.CustomNamespace1;assembly=Gtk4.Forms.Controls
 			var button2 = issue2691.FindByName("_testButton2") as Controls.CustomNamespace1.CustomButton;
 			Assert.NotNull(button2);
 
-			// using:Xamarin.Forms.Xaml.UnitTests
+			// using:Gtk4.Forms.Xaml.UnitTests
 			var label3 = issue2691.FindByName("_testLabel3") as Gh2691TestUsingSyntaxLabel;
 			Assert.NotNull(label3);
 		}
@@ -115,10 +115,10 @@ public partial class Gh2691 : ContentPage
 			var references = string.Join(";",
 				IOPath.GetFullPath(
 					IOPath.Combine(
-						AppContext.BaseDirectory, "Xamarin.Forms.Controls.dll")),
+						AppContext.BaseDirectory, "Gtk4.Forms.Controls.dll")),
 				IOPath.GetFullPath(
 					IOPath.Combine(
-						AppContext.BaseDirectory, "Xamarin.Forms.Core.dll"))
+						AppContext.BaseDirectory, "Gtk4.Forms.Core.dll"))
 			);
 			var xamlg = new XamlGTask()
 			{

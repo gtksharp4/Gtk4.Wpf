@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xamarin.Forms.Xaml
+namespace Gtk4.Forms.Xaml
 {
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
 	sealed class ProvideCompiledAttribute : Attribute

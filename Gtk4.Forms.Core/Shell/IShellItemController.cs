@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public interface IShellItemController : IElementController
 	{

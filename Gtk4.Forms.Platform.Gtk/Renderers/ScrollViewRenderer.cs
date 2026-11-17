@@ -1,9 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
 using Gtk;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers;
+namespace Gtk4.Forms.Platform.GTK.Renderers;
 
 public class ScrollViewRenderer : ViewRenderer<ScrollView, ScrolledWindow>
 {

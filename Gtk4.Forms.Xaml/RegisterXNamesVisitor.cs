@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Xaml
+namespace Gtk4.Forms.Xaml
 {
 	class RegisterXNamesVisitor : IXamlNodeVisitor
 	{

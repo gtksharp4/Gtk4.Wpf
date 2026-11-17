@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public static class Routing
 	{

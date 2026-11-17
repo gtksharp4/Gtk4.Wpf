@@ -1,7 +1,7 @@
 ﻿using Pango;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Helpers;
+namespace Gtk4.Forms.Platform.GTK.Helpers;
 
 internal static class FontDescriptionHelper
 {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xamarin.Forms.Controls.GalleryPages.AppThemeGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.AppThemeGalleries
 {
 	public class AppThemeCodeGallery : ContentPage
 	{

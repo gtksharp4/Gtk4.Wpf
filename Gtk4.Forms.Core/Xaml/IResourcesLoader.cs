@@ -3,7 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Xml;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	interface IResourcesLoader
 	{

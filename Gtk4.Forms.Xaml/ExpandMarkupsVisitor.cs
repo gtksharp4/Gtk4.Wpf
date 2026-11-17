@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Xml;
-using Xamarin.Forms.Xaml.Internals;
+using Gtk4.Forms.Xaml.Internals;
 
-namespace Xamarin.Forms.Xaml
+namespace Gtk4.Forms.Xaml
 {
 	class ExpandMarkupsVisitor : IXamlNodeVisitor
 	{

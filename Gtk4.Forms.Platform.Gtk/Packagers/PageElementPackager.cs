@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Platform.GTK.Renderers;
+﻿using Gtk4.Forms.Platform.GTK.Renderers;
 
-namespace Xamarin.Forms.Platform.GTK.Packagers;
+namespace Gtk4.Forms.Platform.GTK.Packagers;
 
 public class PageElementPackager : VisualElementPackager<PageRenderer>
 {

@@ -7,9 +7,9 @@ using System.ComponentModel;
 
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[ContentProperty(nameof(Content))]
 	public class ShellContent : BaseShellItem, IShellContentController

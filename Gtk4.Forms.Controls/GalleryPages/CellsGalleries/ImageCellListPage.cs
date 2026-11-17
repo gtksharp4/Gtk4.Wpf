@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	[Preserve(AllMembers = true)]
 	public class ImageCellTest
@@ -94,7 +94,7 @@ namespace Xamarin.Forms.Controls
 			var albums = new List<string>();
 			for (int i = 0; i < 30; i++)
 			{
-				albums.Add(string.Format("https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/Xamarin.Forms.Controls/coffee.png?ticks={0}", i));
+				albums.Add(string.Format("https://raw.githubusercontent.com/xamarin/Gtk4.Forms/main/Gtk4.Forms.Controls/coffee.png?ticks={0}", i));
 			}
 
 

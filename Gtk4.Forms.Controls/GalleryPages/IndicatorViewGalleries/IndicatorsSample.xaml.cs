@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms.Xaml;
+﻿using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages
+namespace Gtk4.Forms.Controls.GalleryPages
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class IndicatorsSample : ContentPage

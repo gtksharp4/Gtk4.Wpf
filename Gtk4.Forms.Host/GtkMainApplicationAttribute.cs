@@ -1,9 +1,9 @@
 using System;
 
-namespace Xamarin.Forms.Platform.GTK;
+namespace Gtk4.Forms.Platform.GTK;
 
 /// <summary>
-/// Marks the application's entry-point <see cref="Xamarin.Forms.Application"/> subclass.
+/// Marks the application's entry-point <see cref="Gtk4.Forms.Application"/> subclass.
 /// Apply this assembly-level attribute when more than one concrete <c>Application</c>
 /// subclass exists, or to suppress the automatic "type named App" heuristic.
 /// </summary>
@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Platform.GTK;
 public sealed class GtkMainApplicationAttribute : Attribute
 {
 	/// <param name="applicationType">
-	/// The concrete <see cref="Xamarin.Forms.Application"/> subclass to instantiate.
+	/// The concrete <see cref="Gtk4.Forms.Application"/> subclass to instantiate.
 	/// </param>
 	public GtkMainApplicationAttribute(Type applicationType)
 	{

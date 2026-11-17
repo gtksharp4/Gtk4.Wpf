@@ -8,10 +8,10 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml.Diagnostics;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Xaml.Diagnostics;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[ContentProperty(nameof(Items))]
 	public class Shell : Page, IShellController, IPropertyPropagationController, IPageContainer<Page>

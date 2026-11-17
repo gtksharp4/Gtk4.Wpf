@@ -5,11 +5,11 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Input;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform;
-using Xamarin.Forms.Xaml.Diagnostics;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Platform;
+using Gtk4.Forms.Xaml.Diagnostics;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[RenderWith(typeof(_ListViewRenderer))]
 	public class ListView : ItemsView<Cell>, IListViewController, IElementConfiguration<ListView>

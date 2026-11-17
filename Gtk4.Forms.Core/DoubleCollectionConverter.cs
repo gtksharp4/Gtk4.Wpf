@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Linq;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public class DoubleCollectionConverter : TypeConverter
 	{

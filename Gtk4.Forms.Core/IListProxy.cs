@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Specialized;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public interface IListProxy : IList
 	{

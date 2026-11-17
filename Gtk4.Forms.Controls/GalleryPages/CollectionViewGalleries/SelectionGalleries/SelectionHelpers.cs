@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionGalleries
 {
 	internal static class SelectionHelpers
 	{

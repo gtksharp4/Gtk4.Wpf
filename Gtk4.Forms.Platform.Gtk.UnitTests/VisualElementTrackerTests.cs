@@ -1,7 +1,7 @@
-using Xamarin.Forms;
+using Gtk4.Forms;
 using Xunit;
 
-namespace Xamarin.Forms.Platform.GTK.UnitTests;
+namespace Gtk4.Forms.Platform.GTK.UnitTests;
 
 /// <summary>
 /// Covers the VisualElement properties that VisualElementTracker maps onto the container
@@ -107,7 +107,7 @@ public class VisualElementTrackerTests : GtkTestBase
 	/// <remarks>
 	/// What this replaced (GTK3) asserted <c>widget.Window.PassThrough == false</c> before and
 	/// after the toggle. Nothing in this backend ever writes that property - <see
-	/// cref="Xamarin.Forms.Platform.GTK.VisualElementTracker{TElement,TNativeElement}"/>
+	/// cref="Gtk4.Forms.Platform.GTK.VisualElementTracker{TElement,TNativeElement}"/>
 	/// implements InputTransparent by attaching or detaching the container's ButtonPressEvent
 	/// handler - so both assertions held whether or not UpdateInputTransparent had a body at
 	/// all. That is precisely the blindness the class remarks above say these tests exist to

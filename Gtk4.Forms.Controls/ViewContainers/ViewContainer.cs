@@ -1,7 +1,7 @@
 using System;
 using System.Linq.Expressions;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	internal enum ViewLayoutType
 	{

@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.EmptyViewGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.EmptyViewGalleries
 {
 	[Preserve(AllMembers = true)]
 	public class EmptyViewGalleryFilterInfo : INotifyPropertyChanged

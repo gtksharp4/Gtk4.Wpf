@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Xaml
+﻿namespace Gtk4.Forms.Xaml
 {
 	public static class IServiceProviderExtensions
 	{

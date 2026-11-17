@@ -1,11 +1,11 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
-	[ProvideCompiled("Xamarin.Forms.Core.XamlC.TypeTypeConverter")]
+	[ProvideCompiled("Gtk4.Forms.Core.XamlC.TypeTypeConverter")]
 	[TypeConversion(typeof(Type))]
 	public sealed class TypeTypeConverter : TypeConverter, IExtendedTypeConverter
 	{

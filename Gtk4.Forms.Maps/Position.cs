@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xamarin.Forms.Maps
+namespace Gtk4.Forms.Maps
 {
 	public struct Position
 	{

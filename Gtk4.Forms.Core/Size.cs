@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[DebuggerDisplay("Width={Width}, Height={Height}")]
 	[TypeConverter(typeof(SizeTypeConverter))]

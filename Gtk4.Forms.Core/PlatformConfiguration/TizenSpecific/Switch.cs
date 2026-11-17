@@ -1,5 +1,5 @@
 
-namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
+namespace Gtk4.Forms.PlatformConfiguration.TizenSpecific
 {
 	using FormsElement = Forms.Switch;
 

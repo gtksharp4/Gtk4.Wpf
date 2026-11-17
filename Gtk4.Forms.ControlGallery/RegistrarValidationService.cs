@@ -1,10 +1,10 @@
-﻿using Xamarin.Forms;
-using Xamarin.Forms.ControlGallery.GTK;
-using Xamarin.Forms.Controls;
-using Xamarin.Forms.Platform.GTK;
+﻿using Gtk4.Forms;
+using Gtk4.Forms.ControlGallery.GTK;
+using Gtk4.Forms.Controls;
+using Gtk4.Forms.Platform.GTK;
 
 [assembly: Dependency(typeof(RegistrarValidationService))]
-namespace Xamarin.Forms.ControlGallery.GTK;
+namespace Gtk4.Forms.ControlGallery.GTK;
 
 public class RegistrarValidationService : IRegistrarValidationService
 {

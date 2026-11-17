@@ -1,8 +1,8 @@
 using System;
 using System.ComponentModel;
-using Xamarin.Forms.Platform;
+using Gtk4.Forms.Platform;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[ContentProperty("Content")]
 	[RenderWith(typeof(_FrameRenderer))]

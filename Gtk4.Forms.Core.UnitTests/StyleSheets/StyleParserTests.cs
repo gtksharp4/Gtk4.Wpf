@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using Xunit;
 
-namespace Xamarin.Forms.StyleSheets.UnitTests;
+namespace Gtk4.Forms.StyleSheets.UnitTests;
 
 public class StyleParserTests
 {

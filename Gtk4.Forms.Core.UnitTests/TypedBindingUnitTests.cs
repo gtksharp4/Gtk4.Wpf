@@ -6,10 +6,10 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 public class TypedBindingUnitTests : BindingBaseUnitTests
 {
@@ -1053,7 +1053,7 @@ public class TypedBindingUnitTests : BindingBaseUnitTests
 	}
 
 	[Fact]
-	//https://github.com/pieroviano/Xamarin.Forms/issues/4103
+	//https://github.com/pieroviano/Gtk4.Forms/issues/4103
 	public void TestTargetNullValue()
 	{
 		var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), default(string));
@@ -1714,8 +1714,8 @@ public class TypedBindingUnitTests : BindingBaseUnitTests
 	}
 
 	[Fact]
-	//https://github.com/pieroviano/Xamarin.Forms/issues/3650
-	//https://github.com/pieroviano/Xamarin.Forms/issues/3613
+	//https://github.com/pieroviano/Gtk4.Forms/issues/3650
+	//https://github.com/pieroviano/Gtk4.Forms/issues/3613
 	public void TypedBindingsShouldNotHang()
 	{
 		var typedBinding = new TypedBinding<VM3650, string>(

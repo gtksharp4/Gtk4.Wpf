@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using Gtk4.Forms.Controls.Issues;
+using Gtk4.Forms.PlatformConfiguration.iOSSpecific;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	public class PickerGallery : ContentPage
 	{

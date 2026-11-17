@@ -1,7 +1,7 @@
 ﻿using Gtk;
-using Xamarin.Forms.Platform.GTK.Packagers;
+using Gtk4.Forms.Platform.GTK.Packagers;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers;
+namespace Gtk4.Forms.Platform.GTK.Renderers;
 
 public class LayoutRenderer : ViewRenderer<Layout, Fixed>
 {

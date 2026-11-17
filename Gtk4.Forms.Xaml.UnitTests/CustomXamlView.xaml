@@ -2,6 +2,6 @@
 <ContentView
 	xmlns="http://xamarin.com/schemas/2014/forms"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	x:Class="Xamarin.Forms.Xaml.UnitTests.CustomXamlView">
+	x:Class="Gtk4.Forms.Xaml.UnitTests.CustomXamlView">
 	<Label x:Name="label0" Text="foobar"/>
 </ContentView>

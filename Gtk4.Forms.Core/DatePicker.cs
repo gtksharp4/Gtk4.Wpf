@@ -1,8 +1,8 @@
 using System;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Platform;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[RenderWith(typeof(_DatePickerRenderer))]
 	public class DatePicker : View, IFontElement, ITextElement, IElementConfiguration<DatePicker>

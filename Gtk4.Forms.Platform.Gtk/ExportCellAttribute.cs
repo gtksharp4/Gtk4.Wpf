@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xamarin.Forms.Platform.GTK;
+namespace Gtk4.Forms.Platform.GTK;
 
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 public sealed class ExportCellAttribute : HandlerAttribute

@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace Xamarin.Forms.StyleSheets
+namespace Gtk4.Forms.StyleSheets
 {
 	static class CharExtensions
 	{

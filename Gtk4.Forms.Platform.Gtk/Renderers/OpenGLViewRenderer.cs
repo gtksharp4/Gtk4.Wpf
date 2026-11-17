@@ -1,10 +1,10 @@
 using System;
 using System.ComponentModel;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers;
+namespace Gtk4.Forms.Platform.GTK.Renderers;
 
 /// <summary>
-/// Maps <c>Xamarin.Forms.OpenGLView</c> onto <see cref="Controls.OpenGLView"/>, which wraps
+/// Maps <c>Gtk4.Forms.OpenGLView</c> onto <see cref="Controls.OpenGLView"/>, which wraps
 /// <c>Gtk.GLArea</c> (plan M6 §9.2).
 ///
 /// Two drawing modes, exactly as on the other backends:

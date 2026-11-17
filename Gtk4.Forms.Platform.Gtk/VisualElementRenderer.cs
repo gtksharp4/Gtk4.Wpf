@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using Gtk;
-using Xamarin.Forms.Platform.GTK.Extensions;
-using Container = Xamarin.Forms.Platform.GTK.GtkFormsContainer;
+using Gtk4.Forms.Platform.GTK.Extensions;
+using Container = Gtk4.Forms.Platform.GTK.GtkFormsContainer;
 using Control = Gtk.Widget;
 
-namespace Xamarin.Forms.Platform.GTK;
+namespace Gtk4.Forms.Platform.GTK;
 
 public class VisualElementRenderer<TElement, TNativeElement> : Container, IVisualNativeElementRenderer, IVisualElementRenderer, IDisposable, IEffectControlProvider
 	where TElement : VisualElement

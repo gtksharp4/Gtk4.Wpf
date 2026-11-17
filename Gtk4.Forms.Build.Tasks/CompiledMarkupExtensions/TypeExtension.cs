@@ -5,12 +5,12 @@ using System.Xml;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 
 using static Mono.Cecil.Cil.Instruction;
 using static Mono.Cecil.Cil.OpCodes;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace Gtk4.Forms.Build.Tasks
 {
 	class TypeExtension : ICompiledMarkupExtension
 	{
@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Build.Tasks
 				typeNameNode = node.CollectionItems[0];
 
 			if (!(typeNameNode is ValueNode valueNode))
-				throw new BuildException(BuildExceptionCode.PropertyMissing, node as IXmlLineInfo, null, "TypeName", typeof(Xamarin.Forms.Xaml.TypeExtension));
+				throw new BuildException(BuildExceptionCode.PropertyMissing, node as IXmlLineInfo, null, "TypeName", typeof(Gtk4.Forms.Xaml.TypeExtension));
 
 			if (!node.Properties.ContainsKey(name))
 			{

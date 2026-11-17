@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.ItemSizeGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.ItemSizeGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class ChatExample : ContentPage

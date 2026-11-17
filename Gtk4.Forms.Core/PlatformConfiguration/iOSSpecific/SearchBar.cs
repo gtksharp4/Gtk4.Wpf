@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Xamarin.Forms.PlatformConfiguration;
+using Gtk4.Forms.PlatformConfiguration;
 
-namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
+namespace Gtk4.Forms.PlatformConfiguration.iOSSpecific
 {
-	using FormsElement = Xamarin.Forms.SearchBar;
+	using FormsElement = Gtk4.Forms.SearchBar;
 
 	public static class SearchBar
 	{

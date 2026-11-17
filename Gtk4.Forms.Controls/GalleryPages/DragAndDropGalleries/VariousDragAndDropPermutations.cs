@@ -1,7 +1,7 @@
 ﻿using System;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.DragAndDropGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.DragAndDropGalleries
 {
 	[Preserve(AllMembers = true)]
 	public class VariousDragAndDropPermutations : ContentPage
@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.DragAndDropGalleries
 			stackLayout.Children.Add(CreateControls<DatePicker>(dragElementText: "False"));
 			stackLayout.Children.Add(CreateControls<TimePicker>(dragElementText: $"{DateTime.Now}"));
 			stackLayout.Children.Add(CreateControls<CheckBox>(dragElementText: $"{DateTime.Now.TimeOfDay}"));
-			stackLayout.Children.Add(CreateControls<Entry>(dragElementText: "https://github.com/pieroviano/Xamarin.Forms/blob/f27f5a3650f37894d4a1ac925d6fab4dc7350087/Xamarin.Forms.ControlGallery.Android/Resources/drawable/oasis.jpg?raw=true"));
+			stackLayout.Children.Add(CreateControls<Entry>(dragElementText: "https://github.com/pieroviano/Gtk4.Forms/blob/f27f5a3650f37894d4a1ac925d6fab4dc7350087/Gtk4.Forms.ControlGallery.Android/Resources/drawable/oasis.jpg?raw=true"));
 			stackLayout.Children.Add(CreateControls<StackDrag>());
 
 			Content = stackLayout;

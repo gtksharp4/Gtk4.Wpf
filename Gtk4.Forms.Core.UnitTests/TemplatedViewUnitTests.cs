@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests;
+namespace Gtk4.Forms.Core.UnitTests;
 
 public class TemplatedViewUnitTests : BaseTestFixture
 {
@@ -40,7 +40,7 @@ public class TemplatedViewUnitTests : BaseTestFixture
 		var xaml = @"<ContentView
 					xmlns=""http://xamarin.com/schemas/2014/forms""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-					x:Class=""Xamarin.Forms.Core.UnitTests.MyTestContentView"">
+					x:Class=""Gtk4.Forms.Core.UnitTests.MyTestContentView"">
                        <ContentView.ControlTemplate>
                          <ControlTemplate>
                            <Label x:Name=""label0""/>
@@ -61,7 +61,7 @@ public class TemplatedViewUnitTests : BaseTestFixture
 		var xaml = @"<ContentPage
 					xmlns=""http://xamarin.com/schemas/2014/forms""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-					x:Class=""Xamarin.Forms.Core.UnitTests.MyTestContentPage"">
+					x:Class=""Gtk4.Forms.Core.UnitTests.MyTestContentPage"">
                        <ContentPage.ControlTemplate>
                          <ControlTemplate>
                            <Label x:Name=""label0""/>
@@ -82,7 +82,7 @@ public class TemplatedViewUnitTests : BaseTestFixture
 		var xaml = @"<ContentView
 					xmlns=""http://xamarin.com/schemas/2014/forms""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-					x:Class=""Xamarin.Forms.Core.UnitTests.MyTestContentView"">
+					x:Class=""Gtk4.Forms.Core.UnitTests.MyTestContentView"">
                        <ContentView.ControlTemplate>
                          <ControlTemplate>
                            <Label x:Name=""label0""/>
@@ -101,7 +101,7 @@ public class TemplatedViewUnitTests : BaseTestFixture
 		var xaml = @"<ContentPage
 					xmlns=""http://xamarin.com/schemas/2014/forms""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-					x:Class=""Xamarin.Forms.Core.UnitTests.MyTestContentPage"">
+					x:Class=""Gtk4.Forms.Core.UnitTests.MyTestContentPage"">
                        <ContentPage.ControlTemplate>
                          <ControlTemplate>
                            <Label x:Name=""label0""/>

@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionGalleries
+﻿namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.SelectionGalleries
 {
 	internal class SelectionGallery : ContentPage
 	{

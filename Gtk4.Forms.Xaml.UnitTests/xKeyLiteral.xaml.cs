@@ -3,11 +3,11 @@
 using System;
 using System.Collections.Generic;
 using Xunit;
-using Xamarin.Forms;
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms;
+using Gtk4.Forms.Build.Tasks;
+using Gtk4.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests;
+namespace Gtk4.Forms.Xaml.UnitTests;
 
 [XamlCompilation(XamlCompilationOptions.Skip)]
 public partial class xKeyLiteral : ContentPage
@@ -26,7 +26,7 @@ public partial class xKeyLiteral : ContentPage
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
-		//this requirement might change, see https://github.com/pieroviano/Xamarin.Forms/issues/12425
+		//this requirement might change, see https://github.com/pieroviano/Gtk4.Forms/issues/12425
 		public void xKeyRequireStringLiteral(bool useCompiledXaml)
 		{
 			if (useCompiledXaml)

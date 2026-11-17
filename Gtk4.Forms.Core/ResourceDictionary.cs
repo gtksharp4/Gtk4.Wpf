@@ -9,10 +9,10 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public class ResourceDictionary : IResourceDictionary, IDictionary<string, object>
 	{
@@ -351,7 +351,7 @@ namespace Xamarin.Forms
 		//only used for unit testing
 		internal static void ClearCache() => s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
 
-		[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.RDSourceTypeConverter")]
+		[Xaml.ProvideCompiled("Gtk4.Forms.Core.XamlC.RDSourceTypeConverter")]
 		[TypeConversion(typeof(Uri))]
 		public class RDSourceTypeConverter : TypeConverter, IExtendedTypeConverter
 		{

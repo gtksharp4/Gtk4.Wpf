@@ -1,5 +1,5 @@
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public class Configuration<TPlatform, TElement> : IPlatformElementConfiguration<TPlatform, TElement>
 			where TPlatform : IConfigPlatform

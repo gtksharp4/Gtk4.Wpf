@@ -2,27 +2,27 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Xamarin.Forms.Controls.GalleryPages;
-using Xamarin.Forms.Controls.GalleryPages.AppThemeGalleries;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries;
-using Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
-using Xamarin.Forms.Controls.GalleryPages.DateTimePickerGalleries;
-using Xamarin.Forms.Controls.GalleryPages.DragAndDropGalleries;
-using Xamarin.Forms.Controls.GalleryPages.GradientGalleries;
-using Xamarin.Forms.Controls.GalleryPages.PlatformTestsGallery;
-using Xamarin.Forms.Controls.GalleryPages.RadioButtonGalleries;
-using Xamarin.Forms.Controls.GalleryPages.RefreshViewGalleries;
-using Xamarin.Forms.Controls.GalleryPages.ShapesGalleries;
-using Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries;
-using Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries;
-using Xamarin.Forms.Controls.Issues;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using Gtk4.Forms.Controls.GalleryPages;
+using Gtk4.Forms.Controls.GalleryPages.AppThemeGalleries;
+using Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries;
+using Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
+using Gtk4.Forms.Controls.GalleryPages.DateTimePickerGalleries;
+using Gtk4.Forms.Controls.GalleryPages.DragAndDropGalleries;
+using Gtk4.Forms.Controls.GalleryPages.GradientGalleries;
+using Gtk4.Forms.Controls.GalleryPages.PlatformTestsGallery;
+using Gtk4.Forms.Controls.GalleryPages.RadioButtonGalleries;
+using Gtk4.Forms.Controls.GalleryPages.RefreshViewGalleries;
+using Gtk4.Forms.Controls.GalleryPages.ShapesGalleries;
+using Gtk4.Forms.Controls.GalleryPages.SwipeViewGalleries;
+using Gtk4.Forms.Controls.GalleryPages.VisualStateManagerGalleries;
+using Gtk4.Forms.Controls.Issues;
+using Gtk4.Forms.CustomAttributes;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.PlatformConfiguration;
+using Gtk4.Forms.PlatformConfiguration.AndroidSpecific;
+using Gtk4.Forms.PlatformConfiguration.iOSSpecific;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	[Preserve(AllMembers = true)]
 	public static class Messages

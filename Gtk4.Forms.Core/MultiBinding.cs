@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml.Diagnostics;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Xaml.Diagnostics;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[ContentProperty(nameof(Bindings))]
 	public sealed class MultiBinding : BindingBase

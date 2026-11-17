@@ -1,12 +1,12 @@
 ﻿using System;
 
-namespace Xamarin.Forms.Platform.GTK.Controls;
+namespace Gtk4.Forms.Platform.GTK.Controls;
 
 public class NavigationChildPage : IDisposable
 {
 	bool _disposed;
 
-	public NavigationChildPage(Xamarin.Forms.Page page)
+	public NavigationChildPage(Gtk4.Forms.Page page)
 	{
 		Page = page;
 		Identifier = Guid.NewGuid().ToString();
@@ -23,5 +23,5 @@ public class NavigationChildPage : IDisposable
 
 	public string Identifier { get; set; }
 
-	public Xamarin.Forms.Page Page { get; private set; }
+	public Gtk4.Forms.Page Page { get; private set; }
 }

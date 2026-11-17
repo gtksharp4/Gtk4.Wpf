@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Controls.Tests
+namespace Gtk4.Forms.Controls.Tests
 {
 	public interface ITestingPlatformService
 	{

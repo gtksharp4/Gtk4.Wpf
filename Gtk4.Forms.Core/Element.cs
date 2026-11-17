@@ -4,10 +4,10 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml.Diagnostics;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Xaml.Diagnostics;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public abstract partial class Element : BindableObject, IElement, INameScope, IElementController
 	{

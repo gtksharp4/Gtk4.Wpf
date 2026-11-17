@@ -2,10 +2,10 @@
 using System.Xml;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Build.Tasks;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Core.XamlC
+namespace Gtk4.Forms.Core.XamlC
 {
 	class SetterValueProvider : ICompiledValueProvider
 	{
@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Core.XamlC
 				yield break;
 
 			var value = ((string)((ValueNode)valueNode).Value);
-			var setterType = ("Xamarin.Forms.Core", "Xamarin.Forms", "Setter");
+			var setterType = ("Gtk4.Forms.Core", "Gtk4.Forms", "Setter");
 
 			//push the setter
 			foreach (var instruction in vardefref.VariableDefinition.LoadAs(module.GetTypeDefinition(setterType), module))

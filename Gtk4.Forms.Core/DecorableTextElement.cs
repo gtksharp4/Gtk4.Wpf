@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[Flags]
 	[TypeConverter(typeof(TextDecorationConverter))]

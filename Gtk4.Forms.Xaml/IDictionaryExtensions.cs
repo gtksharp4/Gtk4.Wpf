@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Xamarin.Forms.Xaml
+namespace Gtk4.Forms.Xaml
 {
 	internal static class IDictionaryExtensions
 	{

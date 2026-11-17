@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 
 	public class ImageLoadingGallery : ContentPage
@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Controls
 
 			var source = new UriImageSource
 			{
-				Uri = new Uri("https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/banner.png"),
+				Uri = new Uri("https://raw.githubusercontent.com/xamarin/Gtk4.Forms/main/banner.png"),
 				CachingEnabled = false
 			};
 

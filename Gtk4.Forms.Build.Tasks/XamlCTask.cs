@@ -7,12 +7,12 @@ using System.Xml;
 using Microsoft.Build.Framework;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 using static Microsoft.Build.Framework.MessageImportance;
 using static Mono.Cecil.Cil.OpCodes;
 using IOPath = System.IO.Path;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace Gtk4.Forms.Build.Tasks
 {
 	public class XamlCTask : XamlTask
 	{
@@ -84,7 +84,7 @@ namespace Xamarin.Forms.Build.Tasks
 					if (assemblyDefinition.HasCustomAttributes &&
 						(xamlcAttr =
 							assemblyDefinition.CustomAttributes.FirstOrDefault(
-								ca => ca.AttributeType.FullName == "Xamarin.Forms.Xaml.XamlCompilationAttribute")) != null)
+								ca => ca.AttributeType.FullName == "Gtk4.Forms.Xaml.XamlCompilationAttribute")) != null)
 					{
 						var options = (XamlCompilationOptions)xamlcAttr.ConstructorArguments[0].Value;
 						if ((options & XamlCompilationOptions.Skip) == XamlCompilationOptions.Skip)
@@ -99,7 +99,7 @@ namespace Xamarin.Forms.Build.Tasks
 						if (module.HasCustomAttributes &&
 							(xamlcAttr =
 								module.CustomAttributes.FirstOrDefault(
-									ca => ca.AttributeType.FullName == "Xamarin.Forms.Xaml.XamlCompilationAttribute")) != null)
+									ca => ca.AttributeType.FullName == "Gtk4.Forms.Xaml.XamlCompilationAttribute")) != null)
 						{
 							var options = (XamlCompilationOptions)xamlcAttr.ConstructorArguments[0].Value;
 							if ((options & XamlCompilationOptions.Skip) == XamlCompilationOptions.Skip)
@@ -129,7 +129,7 @@ namespace Xamarin.Forms.Build.Tasks
 							if (typeDef.HasCustomAttributes &&
 								(xamlcAttr =
 									typeDef.CustomAttributes.FirstOrDefault(
-										ca => ca.AttributeType.FullName == "Xamarin.Forms.Xaml.XamlCompilationAttribute")) != null)
+										ca => ca.AttributeType.FullName == "Gtk4.Forms.Xaml.XamlCompilationAttribute")) != null)
 							{
 								var options = (XamlCompilationOptions)xamlcAttr.ConstructorArguments[0].Value;
 								if ((options & XamlCompilationOptions.Skip) == XamlCompilationOptions.Skip)
@@ -155,7 +155,7 @@ namespace Xamarin.Forms.Build.Tasks
 							}
 
 							CustomAttribute xamlFilePathAttr;
-							var xamlFilePath = typeDef.HasCustomAttributes && (xamlFilePathAttr = typeDef.CustomAttributes.FirstOrDefault(ca => ca.AttributeType.FullName == "Xamarin.Forms.Xaml.XamlFilePathAttribute")) != null ?
+							var xamlFilePath = typeDef.HasCustomAttributes && (xamlFilePathAttr = typeDef.CustomAttributes.FirstOrDefault(ca => ca.AttributeType.FullName == "Gtk4.Forms.Xaml.XamlFilePathAttribute")) != null ?
 													  (string)xamlFilePathAttr.ConstructorArguments[0].Value :
 													  resource.Name;
 
@@ -305,10 +305,10 @@ namespace Xamarin.Forms.Build.Tasks
 					var nop = Instruction.Create(Nop);
 
 					// if (ResourceLoader.IsEnabled && ...
-					il.Emit(Call, module.ImportPropertyGetterReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "ResourceLoader"), "IsEnabled", isStatic: true));
+					il.Emit(Call, module.ImportPropertyGetterReference(("Gtk4.Forms.Core", "Gtk4.Forms.Internals", "ResourceLoader"), "IsEnabled", isStatic: true));
 					il.Emit(Brfalse, nop);
 
-					il.Emit(Newobj, module.ImportCtorReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "ResourceLoader/ResourceLoadingQuery"), 0));
+					il.Emit(Newobj, module.ImportCtorReference(("Gtk4.Forms.Core", "Gtk4.Forms.Internals", "ResourceLoader/ResourceLoadingQuery"), 0));
 
 					//AssemblyName
 					il.Emit(Dup); //dup the RLQ
@@ -317,19 +317,19 @@ namespace Xamarin.Forms.Build.Tasks
 					il.Emit(Call, module.ImportMethodReference(("mscorlib", "System.Reflection", "IntrospectionExtensions"), methodName: "GetTypeInfo", parameterTypes: new[] { ("mscorlib", "System", "Type") }, isStatic: true));
 					il.Emit(Callvirt, module.ImportPropertyGetterReference(("mscorlib", "System.Reflection", "TypeInfo"), propertyName: "Assembly", flatten: true));
 					il.Emit(Callvirt, module.ImportMethodReference(("mscorlib", "System.Reflection", "Assembly"), methodName: "GetName", parameterTypes: null));
-					il.Emit(Callvirt, module.ImportPropertySetterReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "ResourceLoader/ResourceLoadingQuery"), "AssemblyName"));
+					il.Emit(Callvirt, module.ImportPropertySetterReference(("Gtk4.Forms.Core", "Gtk4.Forms.Internals", "ResourceLoader/ResourceLoadingQuery"), "AssemblyName"));
 
 					//ResourcePath
 					il.Emit(Dup); //dup the RLQ
 					il.Emit(Ldstr, resourcePath);
-					il.Emit(Callvirt, module.ImportPropertySetterReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "ResourceLoader/ResourceLoadingQuery"), "ResourcePath"));
+					il.Emit(Callvirt, module.ImportPropertySetterReference(("Gtk4.Forms.Core", "Gtk4.Forms.Internals", "ResourceLoader/ResourceLoadingQuery"), "ResourcePath"));
 
 					//Instance
 					il.Emit(Dup); //dup the RLQ
 					il.Emit(Ldarg_0); //Instance = this
-					il.Emit(Callvirt, module.ImportPropertySetterReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "ResourceLoader/ResourceLoadingQuery"), "Instance"));
+					il.Emit(Callvirt, module.ImportPropertySetterReference(("Gtk4.Forms.Core", "Gtk4.Forms.Internals", "ResourceLoader/ResourceLoadingQuery"), "Instance"));
 
-					il.Emit(Call, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "ResourceLoader"), "CanProvideContentFor", 1, isStatic: true));
+					il.Emit(Call, module.ImportMethodReference(("Gtk4.Forms.Core", "Gtk4.Forms.Internals", "ResourceLoader"), "CanProvideContentFor", 1, isStatic: true));
 					il.Emit(Brfalse, nop);
 					il.Emit(Ldarg_0);
 					il.Emit(Call, initCompRuntime);
@@ -339,7 +339,7 @@ namespace Xamarin.Forms.Build.Tasks
 					//Or using the deprecated XamlLoader
 					nop = Instruction.Create(Nop);
 
-					var getXamlFileProvider = module.ImportPropertyGetterReference(("Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml.Internals", "XamlLoader"), propertyName: "XamlFileProvider", isStatic: true);
+					var getXamlFileProvider = module.ImportPropertyGetterReference(("Gtk4.Forms.Xaml", "Gtk4.Forms.Xaml.Internals", "XamlLoader"), propertyName: "XamlFileProvider", isStatic: true);
 					il.Emit(Call, getXamlFileProvider);
 					il.Emit(Brfalse, nop);
 					il.Emit(Call, getXamlFileProvider);
@@ -388,7 +388,7 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			foreach (var ca in type.Module.GetCustomAttributes())
 			{
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "XamlResourceIdAttribute"))))
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Gtk4.Forms.Core", "Gtk4.Forms.Xaml", "XamlResourceIdAttribute"))))
 					continue;
 				if (!TypeRefComparer.Default.Equals(ca.ConstructorArguments[2].Value as TypeReference, type))
 					continue;
@@ -401,7 +401,7 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			foreach (var ca in module.GetCustomAttributes())
 			{
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "XamlResourceIdAttribute"))))
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Gtk4.Forms.Core", "Gtk4.Forms.Xaml", "XamlResourceIdAttribute"))))
 					continue;
 				if (ca.ConstructorArguments[1].Value as string != path)
 					continue;

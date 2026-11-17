@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Build.Tasks;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Core.XamlC
+namespace Gtk4.Forms.Core.XamlC
 {
 	class ColorTypeConverter : ICompiledTypeConverter
 	{
@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Core.XamlC
 					yield return Instruction.Create(OpCodes.Ldc_R8, color.B);
 					yield return Instruction.Create(OpCodes.Ldc_R8, color.A);
 
-					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Color"), parameterTypes: new[] {
+					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Gtk4.Forms.Core", "Gtk4.Forms", "Color"), parameterTypes: new[] {
 						("mscorlib", "System", "Double"),
 						("mscorlib", "System", "Double"),
 						("mscorlib", "System", "Double"),
@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Core.XamlC
 					var color = parts[parts.Length - 1];
 					if (color == "lightgrey")
 						color = "lightgray";
-					var fieldReference = module.ImportFieldReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Color"),
+					var fieldReference = module.ImportFieldReference(("Gtk4.Forms.Core", "Gtk4.Forms", "Color"),
 																	 color,
 																	 isStatic: true,
 																	 caseSensitive: false);
@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Core.XamlC
 						yield return Instruction.Create(OpCodes.Ldsfld, fieldReference);
 						yield break;
 					}
-					var propertyGetterReference = module.ImportPropertyGetterReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Color"),
+					var propertyGetterReference = module.ImportPropertyGetterReference(("Gtk4.Forms.Core", "Gtk4.Forms", "Color"),
 																					   color,
 																					   isStatic: true,
 																					   caseSensitive: false);

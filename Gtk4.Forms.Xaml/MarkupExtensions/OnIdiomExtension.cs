@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Xml;
 
-namespace Xamarin.Forms.Xaml
+namespace Gtk4.Forms.Xaml
 {
 	[ContentProperty(nameof(Default))]
 	public class OnIdiomExtension : IMarkupExtension

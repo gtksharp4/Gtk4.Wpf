@@ -1,8 +1,8 @@
 using System;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Platform;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[RenderWith(typeof(_TimePickerRenderer))]
 	public class TimePicker : View, IFontElement, ITextElement, IElementConfiguration<TimePicker>

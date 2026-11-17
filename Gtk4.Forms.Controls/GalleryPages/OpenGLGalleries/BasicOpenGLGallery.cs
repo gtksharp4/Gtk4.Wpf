@@ -2,7 +2,7 @@
 using System;
 using OpenTK.Graphics.OpenGL;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	public class BasicOpenGLGallery : ContentPage
 	{

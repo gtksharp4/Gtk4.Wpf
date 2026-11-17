@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Maps.GTK.Controls;
+namespace Gtk4.Forms.Maps.GTK.Controls;
 
 /// <summary>
 /// Fetches and caches raster map tiles.
@@ -51,7 +51,7 @@ internal sealed class TileCache
 		// clients are served 429/403.
 		client.DefaultRequestHeaders.TryAddWithoutValidation(
 			"User-Agent",
-			"Xamarin.Forms.Maps.GTK/1.0 (+https://github.com/pieroviano/Xamarin.Forms)");
+			"Gtk4.Forms.Maps.GTK/1.0 (+https://github.com/pieroviano/Gtk4.Forms)");
 
 		return client;
 	}
@@ -64,7 +64,7 @@ internal sealed class TileCache
 
 			return string.IsNullOrEmpty(root)
 				? null
-				: Path.Combine(root, "Xamarin.Forms.Maps.GTK", "tiles");
+				: Path.Combine(root, "Gtk4.Forms.Maps.GTK", "tiles");
 		}
 		catch (Exception)
 		{

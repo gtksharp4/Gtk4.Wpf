@@ -1,9 +1,9 @@
 using System;
-using Xamarin.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Platform.GTK.Extensions;
 using System.Linq;
 using Gtk;
 
-namespace Xamarin.Forms.Platform.GTK.Controls;
+namespace Gtk4.Forms.Platform.GTK.Controls;
 
 public class DateEventArgs : EventArgs
 {

@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Globalization;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[DebuggerDisplay("X={X}, Y={Y}, Width={Width}, Height={Height}")]
 	[TypeConverter(typeof(RectTypeConverter))]

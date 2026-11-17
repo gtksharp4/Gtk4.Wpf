@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Xamarin.Forms.Xaml
+namespace Gtk4.Forms.Xaml
 {
-	[ProvideCompiled("Xamarin.Forms.Build.Tasks.NullExtension")]
+	[ProvideCompiled("Gtk4.Forms.Build.Tasks.NullExtension")]
 	[AcceptEmptyServiceProvider]
 	public class NullExtension : IMarkupExtension
 	{

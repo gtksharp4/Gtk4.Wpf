@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[TypeConverter(typeof(LayoutOptionsConverter))]
 	public struct LayoutOptions

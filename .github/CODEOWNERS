@@ -1,42 +1,42 @@
 # Tizen
-/Xamarin.Forms.ControlGallery.Tizen/ @rookiejava @myroot @shyunmin @sung-su
-/Stubs/Xamarin.Forms.Platform.Tizen/ @rookiejava @myroot @shyunmin @sung-su
-/Xamarin.Forms.Platform.Tizen/ @rookiejava @myroot @shyunmin @sung-su
-/Xamarin.Forms.Maps.Tizen/ @rookiejava @myroot @shyunmin @sung-su
+/Gtk4.Forms.ControlGallery.Tizen/ @rookiejava @myroot @shyunmin @sung-su
+/Stubs/Gtk4.Forms.Platform.Tizen/ @rookiejava @myroot @shyunmin @sung-su
+/Gtk4.Forms.Platform.Tizen/ @rookiejava @myroot @shyunmin @sung-su
+/Gtk4.Forms.Maps.Tizen/ @rookiejava @myroot @shyunmin @sung-su
 /EmbeddingTestBeds/Embedding.Tizen/ @rookiejava @myroot @shyunmin @sung-su
 /PagesGallery/PagesGallery.Tizen/ @rookiejava @myroot @shyunmin @sung-su
-/Xamarin.Forms.Core/PlatformConfiguration/TizenSpecific @rookiejava  @myroot @wonyoungChoi
+/Gtk4.Forms.Core/PlatformConfiguration/TizenSpecific @rookiejava  @myroot @wonyoungChoi
 
 # GTK
-/Xamarin.Forms.ControlGallery.GTK/ @jsuarezruiz
-/Stubs/Xamarin.Forms.Platform.GTK/ @jsuarezruiz
-/Xamarin.Forms.Platform.GTK/ @jsuarezruiz
-/Xamarin.Forms.Maps.GTK/ @jsuarezruiz
+/Gtk4.Forms.ControlGallery.GTK/ @jsuarezruiz
+/Stubs/Gtk4.Forms.Platform.GTK/ @jsuarezruiz
+/Gtk4.Forms.Platform.GTK/ @jsuarezruiz
+/Gtk4.Forms.Maps.GTK/ @jsuarezruiz
 /EmbeddingTestBeds/Embedding.GTK/ @jsuarezruiz
 /PagesGallery/PagesGallery.GTK/ @jsuarezruiz
-/Xamarin.Forms.Core/PlatformConfiguration/GTKSpecific @jsuarezruiz
+/Gtk4.Forms.Core/PlatformConfiguration/GTKSpecific @jsuarezruiz
 
 # WPF
-/Xamarin.Forms.ControlGallery.WPF/ @mohachouch
-/Stubs/Xamarin.Forms.Platform.WPF/ @mohachouch
-/Xamarin.Forms.Platform.WPF/ @mohachouch
-/Xamarin.Forms.Maps.WPF/ @mohachouch
+/Gtk4.Forms.ControlGallery.WPF/ @mohachouch
+/Stubs/Gtk4.Forms.Platform.WPF/ @mohachouch
+/Gtk4.Forms.Platform.WPF/ @mohachouch
+/Gtk4.Forms.Maps.WPF/ @mohachouch
 /EmbeddingTestBeds/Embedding.WPF/ @mohachouch
 /PagesGallery/PagesGallery.WPF/ @mohachouch
-/Xamarin.Forms.Core/PlatformConfiguration/WPFSpecific @mohachouch
+/Gtk4.Forms.Core/PlatformConfiguration/WPFSpecific @mohachouch
 
 # macOS
-/Xamarin.Forms.ControlGallery.macOS/ @rmarinho
-/Stubs/Xamarin.Forms.Platform.macOS/ @rmarinho
-/Xamarin.Forms.Platform.macOS/ @rmarinho
-/Xamarin.Forms.Maps.macOS/ @rmarinho
+/Gtk4.Forms.ControlGallery.macOS/ @rmarinho
+/Stubs/Gtk4.Forms.Platform.macOS/ @rmarinho
+/Gtk4.Forms.Platform.macOS/ @rmarinho
+/Gtk4.Forms.Maps.macOS/ @rmarinho
 /EmbeddingTestBeds/Embedding.macOS/ @rmarinho
 /PagesGallery/PagesGallery.macOS/ @rmarinho
-/Xamarin.Forms.Core/PlatformConfiguration/macOSSpecific @rmarinho
+/Gtk4.Forms.Core/PlatformConfiguration/macOSSpecific @rmarinho
 
 # XAML
-/Xamarin.Forms.Xaml/ @StephaneDelcroix
-/Xamarin.Forms.Build.Tasks/ @StephaneDelcroix
+/Gtk4.Forms.Xaml/ @StephaneDelcroix
+/Gtk4.Forms.Build.Tasks/ @StephaneDelcroix
 
 # Core
-/Xamarin.Forms.Core/ @StephaneDelcroix
+/Gtk4.Forms.Core/ @StephaneDelcroix

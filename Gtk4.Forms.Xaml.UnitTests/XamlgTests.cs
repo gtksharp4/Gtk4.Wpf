@@ -4,11 +4,11 @@ using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
 using Xunit;
-using Xamarin.Forms.Build.Tasks;
-using Xamarin.Forms.Core.UnitTests;
+using Gtk4.Forms.Build.Tasks;
+using Gtk4.Forms.Core.UnitTests;
 using IOPath = System.IO.Path;
 
-namespace Xamarin.Forms.MSBuild.UnitTests;
+namespace Gtk4.Forms.MSBuild.UnitTests;
 
 public class XamlgTests : BaseTestFixture
 {
@@ -18,7 +18,7 @@ public class XamlgTests : BaseTestFixture
 		var xaml = @"<View
 					xmlns=""http://xamarin.com/schemas/2014/forms""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-					x:Class=""Xamarin.Forms.Xaml.UnitTests.CustomView"" >
+					x:Class=""Gtk4.Forms.Xaml.UnitTests.CustomView"" >
 						<Label x:Name=""label0""/>
 					</View>";
 
@@ -27,10 +27,10 @@ public class XamlgTests : BaseTestFixture
 		var references = string.Join(";",
 			IOPath.GetFullPath(
 				IOPath.Combine(
-					AppContext.BaseDirectory, "Xamarin.Forms.Controls.dll")),
+					AppContext.BaseDirectory, "Gtk4.Forms.Controls.dll")),
 			IOPath.GetFullPath(
 				IOPath.Combine(
-					AppContext.BaseDirectory, "Xamarin.Forms.Core.dll"))
+					AppContext.BaseDirectory, "Gtk4.Forms.Core.dll"))
 		);
 
 		var generator = new XamlGenerator(null, null, null, null, null, null, references);
@@ -41,11 +41,11 @@ public class XamlgTests : BaseTestFixture
 		Assert.NotNull(generator.NamedFields);
 
 		Assert.Equal("CustomView", generator.RootType);
-		Assert.Equal("Xamarin.Forms.Xaml.UnitTests", generator.RootClrNamespace);
-		Assert.Equal("Xamarin.Forms.View", generator.BaseType.BaseType);
+		Assert.Equal("Gtk4.Forms.Xaml.UnitTests", generator.RootClrNamespace);
+		Assert.Equal("Gtk4.Forms.View", generator.BaseType.BaseType);
 		Assert.Single(generator.NamedFields);
 		Assert.Equal("label0", generator.NamedFields.First().Name);
-		Assert.Equal("Xamarin.Forms.Label", generator.NamedFields.First().Type.BaseType);
+		Assert.Equal("Gtk4.Forms.Label", generator.NamedFields.First().Type.BaseType);
 	}
 
 	[Fact]
@@ -54,7 +54,7 @@ public class XamlgTests : BaseTestFixture
 		var xaml = @"<View
 					xmlns=""http://xamarin.com/schemas/2014/forms""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-					x:Class=""Xamarin.Forms.Xaml.UnitTests.CustomView"" >
+					x:Class=""Gtk4.Forms.Xaml.UnitTests.CustomView"" >
 						<Label x:Name=""label0""/>
 					</View>";
 
@@ -63,10 +63,10 @@ public class XamlgTests : BaseTestFixture
 		var references = string.Join(";",
 			IOPath.GetFullPath(
 				IOPath.Combine(
-					AppContext.BaseDirectory, "Xamarin.Forms.Controls.dll")),
+					AppContext.BaseDirectory, "Gtk4.Forms.Controls.dll")),
 			IOPath.GetFullPath(
 				IOPath.Combine(
-					AppContext.BaseDirectory, "Xamarin.Forms.Core.dll"))
+					AppContext.BaseDirectory, "Gtk4.Forms.Core.dll"))
 		);
 
 		var generator = new XamlGenerator(null, null, null, null, null, null, references);
@@ -77,11 +77,11 @@ public class XamlgTests : BaseTestFixture
 		Assert.NotNull(generator.NamedFields);
 
 		Assert.Equal("CustomView", generator.RootType);
-		Assert.Equal("Xamarin.Forms.Xaml.UnitTests", generator.RootClrNamespace);
-		Assert.Equal("Xamarin.Forms.View", generator.BaseType.BaseType);
+		Assert.Equal("Gtk4.Forms.Xaml.UnitTests", generator.RootClrNamespace);
+		Assert.Equal("Gtk4.Forms.View", generator.BaseType.BaseType);
 		Assert.Single(generator.NamedFields);
 		Assert.Equal("label0", generator.NamedFields.First().Name);
-		Assert.Equal("Xamarin.Forms.Label", generator.NamedFields.First().Type.BaseType);
+		Assert.Equal("Gtk4.Forms.Label", generator.NamedFields.First().Type.BaseType);
 	}
 
 	[Fact]
@@ -109,10 +109,10 @@ public class XamlgTests : BaseTestFixture
 		var references = string.Join(";",
 			IOPath.GetFullPath(
 				IOPath.Combine(
-					AppContext.BaseDirectory, "Xamarin.Forms.Controls.dll")),
+					AppContext.BaseDirectory, "Gtk4.Forms.Controls.dll")),
 			IOPath.GetFullPath(
 				IOPath.Combine(
-					AppContext.BaseDirectory, "Xamarin.Forms.Core.dll"))
+					AppContext.BaseDirectory, "Gtk4.Forms.Core.dll"))
 		);
 
 		var generator = new XamlGenerator(null, null, null, null, null, null, references);
@@ -148,10 +148,10 @@ public class XamlgTests : BaseTestFixture
 		var references = string.Join(";",
 			IOPath.GetFullPath(
 				IOPath.Combine(
-					AppContext.BaseDirectory, "Xamarin.Forms.Controls.dll")),
+					AppContext.BaseDirectory, "Gtk4.Forms.Controls.dll")),
 			IOPath.GetFullPath(
 				IOPath.Combine(
-					AppContext.BaseDirectory, "Xamarin.Forms.Core.dll"))
+					AppContext.BaseDirectory, "Gtk4.Forms.Core.dll"))
 		);
 
 		var generator = new XamlGenerator(null, null, null, null, null, null, references);
@@ -186,10 +186,10 @@ public class XamlgTests : BaseTestFixture
 		var references = string.Join(";",
 			IOPath.GetFullPath(
 				IOPath.Combine(
-					AppContext.BaseDirectory, "Xamarin.Forms.Controls.dll")),
+					AppContext.BaseDirectory, "Gtk4.Forms.Controls.dll")),
 			IOPath.GetFullPath(
 				IOPath.Combine(
-					AppContext.BaseDirectory, "Xamarin.Forms.Core.dll"))
+					AppContext.BaseDirectory, "Gtk4.Forms.Core.dll"))
 		);
 
 		var generator = new XamlGenerator(null, null, null, null, null, null, references);
@@ -213,17 +213,17 @@ public class XamlgTests : BaseTestFixture
 		var references = string.Join(";",
 			IOPath.GetFullPath(
 				IOPath.Combine(
-					AppContext.BaseDirectory, "Xamarin.Forms.Controls.dll")),
+					AppContext.BaseDirectory, "Gtk4.Forms.Controls.dll")),
 			IOPath.GetFullPath(
 				IOPath.Combine(
-					AppContext.BaseDirectory, "Xamarin.Forms.Core.dll"))
+					AppContext.BaseDirectory, "Gtk4.Forms.Core.dll"))
 		);
 
 		var generator = new XamlGenerator(null, null, null, null, null, null, references);
 		generator.ParseXaml(reader);
 
 		Assert.Equal("FooBar", generator.RootType);
-		Assert.Equal("Xamarin.Forms.Layout`1", generator.BaseType.BaseType);
+		Assert.Equal("Gtk4.Forms.Layout`1", generator.BaseType.BaseType);
 		Assert.Single(generator.BaseType.TypeArguments);
 		Assert.Equal("System.String", generator.BaseType.TypeArguments[0].BaseType);
 	}
@@ -242,17 +242,17 @@ public class XamlgTests : BaseTestFixture
 		var references = string.Join(";",
 			IOPath.GetFullPath(
 				IOPath.Combine(
-					AppContext.BaseDirectory, "Xamarin.Forms.Controls.dll")),
+					AppContext.BaseDirectory, "Gtk4.Forms.Controls.dll")),
 			IOPath.GetFullPath(
 				IOPath.Combine(
-					AppContext.BaseDirectory, "Xamarin.Forms.Core.dll"))
+					AppContext.BaseDirectory, "Gtk4.Forms.Core.dll"))
 		);
 
 		var generator = new XamlGenerator(null, null, null, null, null, null, references);
 		generator.ParseXaml(reader);
 
 		Assert.Equal("FooBar", generator.RootType);
-		Assert.Equal("Xamarin.Forms.ObservableWrapper`2", generator.BaseType.BaseType);
+		Assert.Equal("Gtk4.Forms.ObservableWrapper`2", generator.BaseType.BaseType);
 		Assert.Equal(2, generator.BaseType.TypeArguments.Count);
 		Assert.Equal("System.String", generator.BaseType.TypeArguments[0].BaseType);
 		Assert.Equal("System.Int32", generator.BaseType.TypeArguments[1].BaseType);
@@ -272,17 +272,17 @@ public class XamlgTests : BaseTestFixture
 		var references = string.Join(";",
 			IOPath.GetFullPath(
 				IOPath.Combine(
-					AppContext.BaseDirectory, "Xamarin.Forms.Controls.dll")),
+					AppContext.BaseDirectory, "Gtk4.Forms.Controls.dll")),
 			IOPath.GetFullPath(
 				IOPath.Combine(
-					AppContext.BaseDirectory, "Xamarin.Forms.Core.dll"))
+					AppContext.BaseDirectory, "Gtk4.Forms.Core.dll"))
 		);
 
 		var generator = new XamlGenerator(null, null, null, null, null, null, references);
 		generator.ParseXaml(reader);
 
 		Assert.Equal("FooBar", generator.RootType);
-		Assert.Equal("Xamarin.Forms.ObservableWrapper`2", generator.BaseType.BaseType);
+		Assert.Equal("Gtk4.Forms.ObservableWrapper`2", generator.BaseType.BaseType);
 		Assert.Equal(2, generator.BaseType.TypeArguments.Count);
 		Assert.Equal("System.String", generator.BaseType.TypeArguments[0].BaseType);
 		Assert.Equal("System.Int32", generator.BaseType.TypeArguments[1].BaseType);
@@ -296,8 +296,8 @@ public class XamlgTests : BaseTestFixture
 						    xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							x:Class=""FooBar"" 
 							x:TypeArguments=""nsone:IDummyInterface,nstwo:IDummyInterfaceTwo""
-							xmlns:nsone=""clr-namespace:Xamarin.Forms.Xaml.UnitTests.Bugzilla24258.Interfaces""
-							xmlns:nstwo=""clr-namespace:Xamarin.Forms.Xaml.UnitTests.Bugzilla24258.InterfacesTwo""
+							xmlns:nsone=""clr-namespace:Gtk4.Forms.Xaml.UnitTests.Bugzilla24258.Interfaces""
+							xmlns:nstwo=""clr-namespace:Gtk4.Forms.Xaml.UnitTests.Bugzilla24258.InterfacesTwo""
 
 			/>";
 		var reader = new StringReader(xaml);
@@ -305,20 +305,20 @@ public class XamlgTests : BaseTestFixture
 		var references = string.Join(";",
 			IOPath.GetFullPath(
 				IOPath.Combine(
-					AppContext.BaseDirectory, "Xamarin.Forms.Controls.dll")),
+					AppContext.BaseDirectory, "Gtk4.Forms.Controls.dll")),
 			IOPath.GetFullPath(
 				IOPath.Combine(
-					AppContext.BaseDirectory, "Xamarin.Forms.Core.dll"))
+					AppContext.BaseDirectory, "Gtk4.Forms.Core.dll"))
 		);
 
 		var generator = new XamlGenerator(null, null, null, null, null, null, references);
 		generator.ParseXaml(reader);
 
 		Assert.Equal("FooBar", generator.RootType);
-		Assert.Equal("Xamarin.Forms.ObservableWrapper`2", generator.BaseType.BaseType);
+		Assert.Equal("Gtk4.Forms.ObservableWrapper`2", generator.BaseType.BaseType);
 		Assert.Equal(2, generator.BaseType.TypeArguments.Count);
-		Assert.Equal("Xamarin.Forms.Xaml.UnitTests.Bugzilla24258.Interfaces.IDummyInterface", generator.BaseType.TypeArguments[0].BaseType);
-		Assert.Equal("Xamarin.Forms.Xaml.UnitTests.Bugzilla24258.InterfacesTwo.IDummyInterfaceTwo", generator.BaseType.TypeArguments[1].BaseType);
+		Assert.Equal("Gtk4.Forms.Xaml.UnitTests.Bugzilla24258.Interfaces.IDummyInterface", generator.BaseType.TypeArguments[0].BaseType);
+		Assert.Equal("Gtk4.Forms.Xaml.UnitTests.Bugzilla24258.InterfacesTwo.IDummyInterfaceTwo", generator.BaseType.TypeArguments[1].BaseType);
 	}
 
 	[Fact]
@@ -329,8 +329,8 @@ public class XamlgTests : BaseTestFixture
 						    xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							x:Class=""FooBar"" 
 							x:TypeArguments=""nsone:IDummyInterface, nstwo:IDummyInterfaceTwo""
-							xmlns:nsone=""clr-namespace:Xamarin.Forms.Xaml.UnitTests.Bugzilla24258.Interfaces""
-							xmlns:nstwo=""clr-namespace:Xamarin.Forms.Xaml.UnitTests.Bugzilla24258.InterfacesTwo""
+							xmlns:nsone=""clr-namespace:Gtk4.Forms.Xaml.UnitTests.Bugzilla24258.Interfaces""
+							xmlns:nstwo=""clr-namespace:Gtk4.Forms.Xaml.UnitTests.Bugzilla24258.InterfacesTwo""
 
 			/>";
 		var reader = new StringReader(xaml);
@@ -338,20 +338,20 @@ public class XamlgTests : BaseTestFixture
 		var references = string.Join(";",
 			IOPath.GetFullPath(
 				IOPath.Combine(
-					AppContext.BaseDirectory, "Xamarin.Forms.Controls.dll")),
+					AppContext.BaseDirectory, "Gtk4.Forms.Controls.dll")),
 			IOPath.GetFullPath(
 				IOPath.Combine(
-					AppContext.BaseDirectory, "Xamarin.Forms.Core.dll"))
+					AppContext.BaseDirectory, "Gtk4.Forms.Core.dll"))
 		);
 
 		var generator = new XamlGenerator(null, null, null, null, null, null, references);
 		generator.ParseXaml(reader);
 
 		Assert.Equal("FooBar", generator.RootType);
-		Assert.Equal("Xamarin.Forms.ObservableWrapper`2", generator.BaseType.BaseType);
+		Assert.Equal("Gtk4.Forms.ObservableWrapper`2", generator.BaseType.BaseType);
 		Assert.Equal(2, generator.BaseType.TypeArguments.Count);
-		Assert.Equal("Xamarin.Forms.Xaml.UnitTests.Bugzilla24258.Interfaces.IDummyInterface", generator.BaseType.TypeArguments[0].BaseType);
-		Assert.Equal("Xamarin.Forms.Xaml.UnitTests.Bugzilla24258.InterfacesTwo.IDummyInterfaceTwo", generator.BaseType.TypeArguments[1].BaseType);
+		Assert.Equal("Gtk4.Forms.Xaml.UnitTests.Bugzilla24258.Interfaces.IDummyInterface", generator.BaseType.TypeArguments[0].BaseType);
+		Assert.Equal("Gtk4.Forms.Xaml.UnitTests.Bugzilla24258.InterfacesTwo.IDummyInterfaceTwo", generator.BaseType.TypeArguments[1].BaseType);
 	}
 
 	[Fact]
@@ -370,10 +370,10 @@ public class XamlgTests : BaseTestFixture
 			var references = string.Join(";",
 				IOPath.GetFullPath(
 					IOPath.Combine(
-						AppContext.BaseDirectory, "Xamarin.Forms.Controls.dll")),
+						AppContext.BaseDirectory, "Gtk4.Forms.Controls.dll")),
 				IOPath.GetFullPath(
 					IOPath.Combine(
-						AppContext.BaseDirectory, "Xamarin.Forms.Core.dll"))
+						AppContext.BaseDirectory, "Gtk4.Forms.Core.dll"))
 			);
 
 			var generator = new XamlGenerator(null, null, null, null, null, null, references);
@@ -390,8 +390,8 @@ public class XamlgTests : BaseTestFixture
 		var xaml = @"
 			<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 			             xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-			             xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests""
-			             x:Class=""Xamarin.Forms.Xaml.UnitTests.FieldModifier"">
+			             xmlns:local=""clr-namespace:Gtk4.Forms.Xaml.UnitTests""
+			             x:Class=""Gtk4.Forms.Xaml.UnitTests.FieldModifier"">
 				<StackLayout>
 			        <Label x:Name=""privateLabel"" />
 			        <Label x:Name=""internalLabel"" x:FieldModifier=""NotPublic"" />
@@ -404,10 +404,10 @@ public class XamlgTests : BaseTestFixture
 			var references = string.Join(";",
 				IOPath.GetFullPath(
 					IOPath.Combine(
-						AppContext.BaseDirectory, "Xamarin.Forms.Controls.dll")),
+						AppContext.BaseDirectory, "Gtk4.Forms.Controls.dll")),
 				IOPath.GetFullPath(
 					IOPath.Combine(
-						AppContext.BaseDirectory, "Xamarin.Forms.Core.dll"))
+						AppContext.BaseDirectory, "Gtk4.Forms.Core.dll"))
 			);
 
 			var generator = new XamlGenerator(null, null, null, null, null, null, references);
@@ -420,7 +420,7 @@ public class XamlgTests : BaseTestFixture
 	}
 
 	[Fact]
-	//https://github.com/pieroviano/Xamarin.Forms/issues/2574
+	//https://github.com/pieroviano/Gtk4.Forms/issues/2574
 	public void xNameOnRoot()
 	{
 		var xaml = @"<ContentPage
@@ -433,10 +433,10 @@ public class XamlgTests : BaseTestFixture
 		var references = string.Join(";",
 			IOPath.GetFullPath(
 				IOPath.Combine(
-					AppContext.BaseDirectory, "Xamarin.Forms.Controls.dll")),
+					AppContext.BaseDirectory, "Gtk4.Forms.Controls.dll")),
 			IOPath.GetFullPath(
 				IOPath.Combine(
-					AppContext.BaseDirectory, "Xamarin.Forms.Core.dll"))
+					AppContext.BaseDirectory, "Gtk4.Forms.Core.dll"))
 		);
 
 		var generator = new XamlGenerator(null, null, null, null, null, null, references);
@@ -444,7 +444,7 @@ public class XamlgTests : BaseTestFixture
 
 		Assert.Single(generator.NamedFields);
 		Assert.Equal("bar", generator.NamedFields.First().Name);
-		Assert.Equal("Xamarin.Forms.ContentPage", generator.NamedFields.First().Type.BaseType);
+		Assert.Equal("Gtk4.Forms.ContentPage", generator.NamedFields.First().Type.BaseType);
 	}
 
 	[Fact]

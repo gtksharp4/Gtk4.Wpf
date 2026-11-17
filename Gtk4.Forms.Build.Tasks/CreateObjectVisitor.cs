@@ -5,11 +5,11 @@ using System.Linq;
 using System.Xml;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 using static Mono.Cecil.Cil.Instruction;
 using static Mono.Cecil.Cil.OpCodes;
 
-namespace Xamarin.Forms.Build.Tasks
+namespace Gtk4.Forms.Build.Tasks
 {
 	class CreateObjectVisitor : IXamlNodeVisitor
 	{
@@ -32,8 +32,8 @@ namespace Xamarin.Forms.Build.Tasks
 		public bool IsResourceDictionary(ElementNode node)
 		{
 			var parentVar = Context.Variables[(IElementNode)node];
-			return parentVar.VariableType.FullName == "Xamarin.Forms.ResourceDictionary"
-				|| parentVar.VariableType.Resolve().BaseType?.FullName == "Xamarin.Forms.ResourceDictionary";
+			return parentVar.VariableType.FullName == "Gtk4.Forms.ResourceDictionary"
+				|| parentVar.VariableType.Resolve().BaseType?.FullName == "Gtk4.Forms.ResourceDictionary";
 		}
 
 		public void Visit(ValueNode node, INode parentNode)
@@ -64,7 +64,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 			//if this is a MarkupExtension that can be compiled directly, compile and returns the value
 			var compiledMarkupExtensionName = typeref
-				.GetCustomAttribute(Module, ("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "ProvideCompiledAttribute"))
+				.GetCustomAttribute(Module, ("Gtk4.Forms.Core", "Gtk4.Forms.Xaml", "ProvideCompiledAttribute"))
 				?.ConstructorArguments?[0].Value as string;
 			Type compiledMarkupExtensionType;
 			ICompiledMarkupExtension markupProvider;
@@ -130,7 +130,7 @@ namespace Xamarin.Forms.Build.Tasks
 																					 pd.CustomAttributes.Any(
 																						 ca =>
 																							 ca.AttributeType.FullName ==
-																							 "Xamarin.Forms.ParameterAttribute")));
+																							 "Gtk4.Forms.ParameterAttribute")));
 			}
 			string missingCtorParameter = null;
 			if (parameterizedCtorInfo != null && ValidateCtorArguments(parameterizedCtorInfo, node, out missingCtorParameter))
@@ -186,7 +186,7 @@ namespace Xamarin.Forms.Build.Tasks
 				else if (!typedef.IsValueType)
 				{
 					var ctor = Module.ImportReference(ctorinforef);
-					//					IL_0001:  newobj instance void class [Xamarin.Forms.Core]Xamarin.Forms.Button::'.ctor'()
+					//					IL_0001:  newobj instance void class [Gtk4.Forms.Core]Gtk4.Forms.Button::'.ctor'()
 					//					IL_0006:  stloc.0 
 					Context.IL.Emit(OpCodes.Newobj, ctor);
 					Context.IL.Emit(OpCodes.Stloc, vardef);
@@ -211,7 +211,7 @@ namespace Xamarin.Forms.Build.Tasks
 					Context.IL.Emit(OpCodes.Initobj, Module.ImportReference(typedef));
 				}
 
-				if (typeref.FullName == "Xamarin.Forms.Xaml.ArrayExtension")
+				if (typeref.FullName == "Gtk4.Forms.Xaml.ArrayExtension")
 				{
 					var visitor = new SetPropertiesVisitor(Context);
 					foreach (var cnode in node.Properties.Values.ToList())
@@ -272,7 +272,7 @@ namespace Xamarin.Forms.Build.Tasks
 			foreach (var parameter in ctorinfo.Parameters)
 			{
 				var propname =
-					parameter.CustomAttributes.First(ca => ca.AttributeType.FullName == "Xamarin.Forms.ParameterAttribute")
+					parameter.CustomAttributes.First(ca => ca.AttributeType.FullName == "Gtk4.Forms.ParameterAttribute")
 						.ConstructorArguments.First()
 						.Value as string;
 				if (!enode.Properties.ContainsKey(new XmlName("", propname)))
@@ -289,7 +289,7 @@ namespace Xamarin.Forms.Build.Tasks
 			foreach (var parameter in ctorinfo.Parameters)
 			{
 				var propname =
-					parameter.CustomAttributes.First(ca => ca.AttributeType.FullName == "Xamarin.Forms.ParameterAttribute")
+					parameter.CustomAttributes.First(ca => ca.AttributeType.FullName == "Gtk4.Forms.ParameterAttribute")
 						.ConstructorArguments.First()
 						.Value as string;
 				var node = enode.Properties[new XmlName("", propname)];
@@ -607,7 +607,7 @@ namespace Xamarin.Forms.Build.Tasks
 			yield return Create(Ldc_I4, lineInfo.LineNumber);               //lineNumber
 			yield return Create(Ldc_I4, lineInfo.LinePosition);             //linePosition
 
-			yield return Create(Call, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml.Diagnostics", "VisualDiagnostics"),
+			yield return Create(Call, module.ImportMethodReference(("Gtk4.Forms.Core", "Gtk4.Forms.Xaml.Diagnostics", "VisualDiagnostics"),
 																   methodName: "RegisterSourceInfo",
 																   parameterTypes: new[] {
 																	   ("mscorlib", "System", "Object"),

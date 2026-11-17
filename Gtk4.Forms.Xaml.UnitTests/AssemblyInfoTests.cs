@@ -7,23 +7,23 @@ using System.Reflection;
 using Xunit;
 using IOPath = System.IO.Path;
 
-namespace Xamarin.Forms.MSBuild.UnitTests;
+namespace Gtk4.Forms.MSBuild.UnitTests;
 
 public class AssemblyInfoTests
 {
 	static readonly string[] references = new[]
 	{
-		"Xamarin.Forms.Core",
-		"Xamarin.Forms.Maps",
-		"Xamarin.Forms.Xaml",
-		"Xamarin.Forms.Build.Tasks",
-		"Xamarin.Forms.Platform",
+		"Gtk4.Forms.Core",
+		"Gtk4.Forms.Maps",
+		"Gtk4.Forms.Xaml",
+		"Gtk4.Forms.Build.Tasks",
+		"Gtk4.Forms.Platform",
 	};
 
 	public static IEnumerable<object[]> ReferencesData => references.Select(r => new object[] { r });
 
 	// Product/Company were rebranded in Directory.Build.props (assembly identities stay
-	// Xamarin.Forms.* - see the assemblyName list above, which GetName().Name still matches).
+	// Gtk4.Forms.* - see the assemblyName list above, which GetName().Name still matches).
 	const string s_productName = "Gtk4.Forms";
 
 	const string s_company = "Piero Viano";

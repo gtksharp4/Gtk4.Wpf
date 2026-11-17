@@ -3,10 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Input;
-using Xamarin.Forms.Internals;
-using static Xamarin.Forms.VisualElement;
+using Gtk4.Forms.Internals;
+using static Gtk4.Forms.VisualElement;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	public class SearchHandler : BindableObject, ISearchHandlerController, IPlaceholderElement, IFontElement, ITextElement, ITextAlignmentElement
 	{

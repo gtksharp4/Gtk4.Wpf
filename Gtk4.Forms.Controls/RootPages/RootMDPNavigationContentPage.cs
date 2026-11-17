@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	//FlyoutPage -> NavigationPage -> ContentPage
 	public class RootMDPNavigationContentPage : FlyoutPage

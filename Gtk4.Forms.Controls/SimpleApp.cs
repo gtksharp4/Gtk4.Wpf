@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	public class SimpleApp : Application
 	{

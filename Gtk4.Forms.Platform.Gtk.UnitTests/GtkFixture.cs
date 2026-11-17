@@ -4,7 +4,7 @@ using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace Xamarin.Forms.Platform.GTK.UnitTests;
+namespace Gtk4.Forms.Platform.GTK.UnitTests;
 
 /// <summary>
 /// Owns the single thread that GTK + Forms are initialised on, and marshals every test body onto
@@ -64,7 +64,7 @@ sealed class GtkFixture
 				try
 				{
 					Gtk.Application.Init();
-					Xamarin.Forms.Forms.Init();
+					Gtk4.Forms.Forms.Init();
 				}
 				catch (DllNotFoundException e)
 				{
@@ -89,7 +89,7 @@ sealed class GtkFixture
 			try
 			{
 				Gtk.Application.Init();
-				Xamarin.Forms.Forms.Init();
+				Gtk4.Forms.Forms.Init();
 			}
 			catch (DllNotFoundException e)
 			{

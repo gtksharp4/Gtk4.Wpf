@@ -1,9 +1,9 @@
 using System;
 
-namespace Xamarin.Forms.Xaml
+namespace Gtk4.Forms.Xaml
 {
 	[ContentProperty(nameof(TypeName))]
-	[ProvideCompiled("Xamarin.Forms.Build.Tasks.TypeExtension")]
+	[ProvideCompiled("Gtk4.Forms.Build.Tasks.TypeExtension")]
 	public class TypeExtension : IMarkupExtension<Type>
 	{
 		public string TypeName { get; set; }

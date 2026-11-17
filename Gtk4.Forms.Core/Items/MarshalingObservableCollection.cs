@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	// Wraps a List which implements INotifyCollectionChanged (usually an ObservableCollection)
 	// and marshals all of the list modifications to the main thread. Modifications to the underlying 

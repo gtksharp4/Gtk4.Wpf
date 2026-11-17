@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Controls.GalleryPages.SwipeViewGalleries
+﻿namespace Gtk4.Forms.Controls.GalleryPages.SwipeViewGalleries
 {
 	public partial class SwipeThresholdCustomSwipeItemGallery : ContentPage
 	{

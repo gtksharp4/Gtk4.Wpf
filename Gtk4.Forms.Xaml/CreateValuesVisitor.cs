@@ -4,10 +4,10 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml.Internals;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Xaml.Internals;
 
-namespace Xamarin.Forms.Xaml
+namespace Gtk4.Forms.Xaml
 {
 	class CreateValuesVisitor : IXamlNodeVisitor
 	{
@@ -214,7 +214,7 @@ namespace Xamarin.Forms.Xaml
 			foreach (var parameter in ctorInfo.GetParameters())
 			{
 				var propname =
-					parameter.CustomAttributes.First(ca => ca.AttributeType.FullName == "Xamarin.Forms.ParameterAttribute")
+					parameter.CustomAttributes.First(ca => ca.AttributeType.FullName == "Gtk4.Forms.ParameterAttribute")
 						.ConstructorArguments.First()
 						.Value as string;
 				if (!node.Properties.ContainsKey(new XmlName("", propname)))

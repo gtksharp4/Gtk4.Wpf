@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using Xamarin.Forms.Platform.GTK.Controls;
-using Xamarin.Forms.Platform.GTK.Extensions;
-using FormsPage = Xamarin.Forms.Page;
+using Gtk4.Forms.Platform.GTK.Controls;
+using Gtk4.Forms.Platform.GTK.Extensions;
+using FormsPage = Gtk4.Forms.Page;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers;
+namespace Gtk4.Forms.Platform.GTK.Renderers;
 
 /// <summary>
 /// Shell on GTK: the flyout (header, items, menu items, footer), the current page, the
@@ -979,9 +979,9 @@ public class ShellRenderer : AbstractPageRenderer<ShellWidget, Shell>, IFlyoutBe
 
 		return new DataTemplate(() =>
 		{
-			// Rule: inside Xamarin.Forms.Platform.GTK the bare name Grid is Xamarin.Forms.Grid,
+			// Rule: inside Gtk4.Forms.Platform.GTK the bare name Grid is Gtk4.Forms.Grid,
 			// which is what is wanted here - spelled out so it is not read as a mistake.
-			var grid = new Xamarin.Forms.Grid
+			var grid = new Gtk4.Forms.Grid
 			{
 				HeightRequest = 44,
 				ColumnSpacing = 0,

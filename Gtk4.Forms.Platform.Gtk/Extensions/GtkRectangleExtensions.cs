@@ -1,4 +1,4 @@
-﻿namespace Xamarin.Forms.Platform.GTK.Extensions;
+﻿namespace Gtk4.Forms.Platform.GTK.Extensions;
 
 public static class GtkRectangleExtensions
 {

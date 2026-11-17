@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Xamarin.Forms.Internals;
+using Gtk4.Forms.Internals;
 
-namespace Xamarin.Forms.Controls.GalleryPages.DragAndDropGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.DragAndDropGalleries
 {
 	[Preserve(AllMembers = true)]
 	public class DragAndDropGallery : Shell

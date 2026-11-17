@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Xamarin.Forms.Platform.GTK.Cells;
+namespace Gtk4.Forms.Platform.GTK.Cells;
 
 public class SwitchCellRenderer : CellRenderer
 {
@@ -16,7 +16,7 @@ public class SwitchCellRenderer : CellRenderer
 
 	protected override Gtk.Container GetCellWidgetInstance(Cell item)
 	{
-		var switchCell = (Xamarin.Forms.SwitchCell)item;
+		var switchCell = (Gtk4.Forms.SwitchCell)item;
 
 		var text = switchCell.Text ?? string.Empty;
 		var on = switchCell.On;
@@ -29,13 +29,13 @@ public class SwitchCellRenderer : CellRenderer
 		base.CellPropertyChanged(sender, args);
 
 		var gtkSwitchCell = (SwitchCell)sender;
-		var switchCell = (Xamarin.Forms.SwitchCell)gtkSwitchCell.Cell;
+		var switchCell = (Gtk4.Forms.SwitchCell)gtkSwitchCell.Cell;
 
-		if (args.PropertyName == Xamarin.Forms.SwitchCell.TextProperty.PropertyName)
+		if (args.PropertyName == Gtk4.Forms.SwitchCell.TextProperty.PropertyName)
 		{
 			gtkSwitchCell.Text = switchCell.Text ?? string.Empty;
 		}
-		else if (args.PropertyName == Xamarin.Forms.SwitchCell.OnProperty.PropertyName)
+		else if (args.PropertyName == Gtk4.Forms.SwitchCell.OnProperty.PropertyName)
 		{
 			gtkSwitchCell.On = switchCell.On;
 		}
@@ -43,6 +43,6 @@ public class SwitchCellRenderer : CellRenderer
 
 	private void OnToggled(object sender, bool active)
 	{
-		((Xamarin.Forms.SwitchCell)Cell).On = active;
+		((Gtk4.Forms.SwitchCell)Cell).On = active;
 	}
 }

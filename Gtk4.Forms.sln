@@ -446,6 +446,6 @@ Global
 		SolutionGuid = {F96F981E-4986-4435-A59E-5A4E4F806746}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Gtk4.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{5a1a318e-90af-4b26-acaf-a124287bd221}*SharedItemsImports = 5
+		Gtk4.Forms.Controls.Issues\Gtk4.Forms.Controls.Issues.Shared\Gtk4.Forms.Controls.Issues.Shared.projitems*{5a1a318e-90af-4b26-acaf-a124287bd221}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

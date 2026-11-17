@@ -3,9 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 xmlns:test="http://xamarin.com/schemas/2014/forms/customurl1"
 			 xmlns:test2="http://xamarin.com/schemas/2014/forms/customurl2" 
-			 xmlns:test3="clr-namespace:Xamarin.Forms.Controls.CustomNamespace1;assembly=Xamarin.Forms.Controls"
-			 xmlns:test4="using:Xamarin.Forms.Xaml.UnitTests"
-             x:Class="Xamarin.Forms.Xaml.UnitTests.Gh2691">
+			 xmlns:test3="clr-namespace:Gtk4.Forms.Controls.CustomNamespace1;assembly=Gtk4.Forms.Controls"
+			 xmlns:test4="using:Gtk4.Forms.Xaml.UnitTests"
+             x:Class="Gtk4.Forms.Xaml.UnitTests.Gh2691">
 	<ContentPage.Content>
 		<StackLayout>
 			<test:CustomButton x:Name="_testButton1"

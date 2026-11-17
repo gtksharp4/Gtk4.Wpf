@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public interface IBorderElement

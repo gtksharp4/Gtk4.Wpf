@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers;
+namespace Gtk4.Forms.Platform.GTK.Renderers;
 
 public class SliderRenderer : ViewRenderer<Slider, Gtk.Scale>
 {
@@ -38,7 +38,7 @@ public class SliderRenderer : ViewRenderer<Slider, Gtk.Scale>
 				// separate Gtk.HScale class with an orientation on Gtk.Scale.
 				SetNativeControl(new Gtk.Scale(Gtk.Orientation.Horizontal, _minimum, _maximum, stepping)
 				{
-					// Do not show a label in order to mimic the rest of the Xamarin.Forms backends
+					// Do not show a label in order to mimic the rest of the Gtk4.Forms backends
 					DrawValue = false
 				});
 				Control.ValueChanged += OnControlValueChanged;

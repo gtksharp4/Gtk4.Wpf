@@ -1,7 +1,7 @@
 ﻿using System;
-using Xamarin.Forms.Controls.Issues;
+using Gtk4.Forms.Controls.Issues;
 
-namespace Xamarin.Forms.Controls
+namespace Gtk4.Forms.Controls
 {
 	public class FlyoutPageTabletPage : ContentPage
 	{

@@ -5,12 +5,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Gdk;
 using Gtk;
-using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.GTK.Controls;
-using Xamarin.Forms.Platform.GTK.Extensions;
-using Xamarin.Forms.Platform.GTK.Renderers;
+using Gtk4.Forms.Internals;
+using Gtk4.Forms.Platform.GTK.Controls;
+using Gtk4.Forms.Platform.GTK.Extensions;
+using Gtk4.Forms.Platform.GTK.Renderers;
 
-namespace Xamarin.Forms.Platform.GTK;
+namespace Gtk4.Forms.Platform.GTK;
 
 public class GtkToolbarTracker
 {

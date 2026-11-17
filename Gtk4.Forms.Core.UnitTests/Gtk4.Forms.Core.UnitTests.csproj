@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <AssemblyName>Xamarin.Forms.Core.UnitTests</AssemblyName>
-    <RootNamespace>Xamarin.Forms.Core.UnitTests</RootNamespace>
+    <AssemblyName>Gtk4.Forms.Core.UnitTests</AssemblyName>
+    <RootNamespace>Gtk4.Forms.Core.UnitTests</RootNamespace>
     <IsPackable>false</IsPackable>
     <LangVersion>latest</LangVersion>
     <!-- xUnit v3 test projects are executables, not libraries. -->

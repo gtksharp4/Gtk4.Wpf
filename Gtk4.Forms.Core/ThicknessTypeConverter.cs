@@ -1,9 +1,9 @@
 using System;
 using System.Globalization;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
-	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.ThicknessTypeConverter")]
+	[Xaml.ProvideCompiled("Gtk4.Forms.Core.XamlC.ThicknessTypeConverter")]
 	[Xaml.TypeConversion(typeof(Thickness))]
 	public class ThicknessTypeConverter : TypeConverter
 	{

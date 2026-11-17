@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
-namespace Xamarin.Forms.Internals
+namespace Gtk4.Forms.Internals
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class NotifyCollectionChangedEventArgsEx : NotifyCollectionChangedEventArgs

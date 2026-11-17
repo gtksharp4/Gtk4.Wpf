@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace Xamarin.Forms
+namespace Gtk4.Forms
 {
 	[DebuggerDisplay("RequestDefinition = {Request}, StackRequest = {StackRequest}")]
 	internal class NavigationRequest

@@ -1,4 +1,4 @@
-namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
+namespace Gtk4.Forms.PlatformConfiguration.iOSSpecific
 {
 	public enum StatusBarTextColorMode
 	{

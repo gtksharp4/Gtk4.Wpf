@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xamarin.Forms.Shapes
+namespace Gtk4.Forms.Shapes
 {
 	internal enum MatrixTypes
 	{
@@ -671,7 +671,7 @@ namespace Xamarin.Forms.Shapes
 
 	internal static class MatrixUtil
 	{
-		internal static void TransformRect(ref Xamarin.Forms.Rectangle rect, ref Matrix matrix)
+		internal static void TransformRect(ref Gtk4.Forms.Rectangle rect, ref Matrix matrix)
 		{
 			if (rect.IsEmpty)
 			{

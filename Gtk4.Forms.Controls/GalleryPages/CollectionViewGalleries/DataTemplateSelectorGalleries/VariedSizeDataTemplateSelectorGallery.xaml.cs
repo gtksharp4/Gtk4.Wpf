@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms.Xaml;
+using Gtk4.Forms.Xaml;
 
-namespace Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.DataTemplateSelectorGalleries
+namespace Gtk4.Forms.Controls.GalleryPages.CollectionViewGalleries.DataTemplateSelectorGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class VariedSizeDataTemplateSelectorGallery : ContentPage
