@@ -876,7 +876,34 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `new …Storyboard()` + `.Storyboard =`.
   **Round 15 totals: 1615 tests** (83 WindowsBase + 1330 PresentationFramework + 187 MarkupCompiler +
   15 ProjectConverter), all pass; warning-clean.
-- **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
+- **Round 16 Track A — element-level `FrameworkElement.Triggers` XAML compilation + runtime attach (DONE).**
+  The markup compiler now emits the `<{element}.Triggers>` / `<FrameworkElement.Triggers>` property-element form
+  (triggers added to `element.Triggers`, then `AttachElementTriggers()`). The shared trigger-emit methods were
+  renamed (`EmitPropertyTrigger`→`EmitTriggerToCollection`, …; `styleVar`→`containerVar`) and reused for both
+  `Style.Triggers` and element triggers (no duplication; Style output unchanged). Runtime
+  `FrameworkElement.Triggers.cs` attaches/detaches ALL `TriggerBase` subtypes. Files:
+  `XamlCodeGenerator.cs`, `XamlCodeGenerator.ElementTriggers.cs` (new). **+18 tests** (11 compiler + 7 runtime).
+  Fidelity note: real WPF permits only `EventTrigger` in `FrameworkElement.Triggers`; this is a documented
+  **superset** (property triggers also attach) — harmless for valid WPF XAML, carried over as a future compiler
+  diagnostic.
+- **Round 16 Track B — Popup/ContextMenu deferred-open replay (DONE).** Fixes the dropped-open defect: an
+  `IsOpen` set before the backing GTK widget exists is stored (`_pendingOpen`) and replayed in an
+  `OnWidgetCreated` override; a later `IsOpen=false` before realize cancels it (stores the false, no stale open).
+  General (replays whatever value was set), not sample-specific. Files: `Controls/Popup.cs`, `Controls/ContextMenu.cs`.
+  **+6 tests** (4 pure-DP + 2 GTK cancel-path smoke).
+- **Round 16 review (Opus) + fixes — DONE.** No Critical/High. Fixed: **H1** split the 230-line
+  `XamlCodeGeneratorElementTriggerTests.cs` into a shared base + EventTrigger/form file +
+  property-trigger file (all ≤200 lines); **A4** (pre-existing latent leak, widened by element reuse)
+  `Trigger.Attach`/`EventTrigger.Attach` are now idempotent — a re-attach detaches the prior state/handler
+  instead of orphaning it (pinned by 2 failing-first reattach tests). Carried over (Low, non-blocking):
+  **A1** compiler diagnostic for non-`EventTrigger` element triggers; **B2** positive open-replay path is proven
+  only by pure-DP inspection (GTK `Popover.Popup()` crashes without a parent window), cancel path is asserted.
+  **Round 16 totals: 1641 tests** (83 WindowsBase + 1345 PresentationFramework + 198 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean.
+- **Carry-over**: compiler diagnostic/warning for a non-`EventTrigger` placed in `FrameworkElement.Triggers`
+  (match WPF's compile-time rejection; runtime superset stays); positive Popup/ContextMenu open-replay GTK test
+  under a realized parent window;
+  attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
   true `{DynamicResource}` change-tracking;
   `Gtk.PopoverMenu` integration for `MenuItem`; element-level `FrameworkElement.Triggers` auto-attach on
   load (runtime exists, compiler emits `Style.Triggers` only); nested-path `DataTrigger` bindings;

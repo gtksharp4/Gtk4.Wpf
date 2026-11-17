@@ -1,24 +1,14 @@
-using Gtk4.Forms.MarkupCompiler;
 using Xunit;
 
 namespace Gtk4.Forms.MarkupCompiler.Tests;
 
 /// <summary>
-/// Compiler tests for element-level trigger code generation:
-/// <c>&lt;Button.Triggers&gt;</c> / <c>&lt;FrameworkElement.Triggers&gt;</c>
-/// declared directly on a FrameworkElement (not inside a Style).
+/// Compiler tests for element-level <c>EventTrigger</c> codegen, the
+/// <c>&lt;FrameworkElement.Triggers&gt;</c> form, multi-trigger blocks, the
+/// single-attach guarantee, and that <c>&lt;Style.Triggers&gt;</c> is unchanged.
 /// </summary>
-public class XamlCodeGeneratorElementTriggerTests
+public class XamlCodeGeneratorElementTriggerTests : XamlCodeGeneratorElementTriggerTestBase
 {
-	readonly XamlCodeGenerator _gen = new XamlCodeGenerator();
-
-	static string Window(string body) =>
-		$@"<Window x:Class=""MyApp.MainWindow""
-	xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
-	xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"">
-	{body}
-</Window>";
-
 	// ── EventTrigger on element ───────────────────────────────────────────────
 
 	[Fact]
@@ -65,75 +55,6 @@ public class XamlCodeGeneratorElementTriggerTests
 <Button>
   <Button.Triggers>
     <EventTrigger RoutedEvent=""Button.Click"" />
-  </Button.Triggers>
-</Button>");
-
-		string code = _gen.Generate(xaml, out _);
-
-		Assert.Contains(".AttachElementTriggers()", code);
-	}
-
-	// ── Property Trigger on element ───────────────────────────────────────────
-
-	[Fact]
-	public void ElementTriggers_PropertyTrigger_emits_construction()
-	{
-		string xaml = Window(@"
-<Button>
-  <Button.Triggers>
-    <Trigger Property=""IsMouseOver"" Value=""True"">
-      <Setter Property=""Opacity"" Value=""0.5"" />
-    </Trigger>
-  </Button.Triggers>
-</Button>");
-
-		string code = _gen.Generate(xaml, out _);
-
-		Assert.Contains("new System.Windows.Trigger", code);
-		Assert.Contains("IsMouseOver", code);
-		Assert.Contains("True", code);
-	}
-
-	[Fact]
-	public void ElementTriggers_PropertyTrigger_emits_Setter_inside_trigger()
-	{
-		string xaml = Window(@"
-<Button>
-  <Button.Triggers>
-    <Trigger Property=""IsMouseOver"" Value=""True"">
-      <Setter Property=""Opacity"" Value=""0.5"" />
-    </Trigger>
-  </Button.Triggers>
-</Button>");
-
-		string code = _gen.Generate(xaml, out _);
-
-		Assert.Contains(@"PropertyName = ""Opacity""", code);
-		Assert.Contains(@"Value = ""0.5""", code);
-	}
-
-	[Fact]
-	public void ElementTriggers_PropertyTrigger_emits_Triggers_Add()
-	{
-		string xaml = Window(@"
-<Button>
-  <Button.Triggers>
-    <Trigger Property=""IsMouseOver"" Value=""True"" />
-  </Button.Triggers>
-</Button>");
-
-		string code = _gen.Generate(xaml, out _);
-
-		Assert.Contains(".Triggers.Add(", code);
-	}
-
-	[Fact]
-	public void ElementTriggers_PropertyTrigger_emits_AttachElementTriggers()
-	{
-		string xaml = Window(@"
-<Button>
-  <Button.Triggers>
-    <Trigger Property=""IsMouseOver"" Value=""True"" />
   </Button.Triggers>
 </Button>");
 

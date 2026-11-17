@@ -33,6 +33,10 @@ public class EventTrigger : TriggerBase
 	internal override void Attach(FrameworkElement target)
 	{
 		if (RoutedEvent == null) return;
+		// Idempotent: a re-attach removes the prior handler so it is not orphaned
+		// (double-attach would leave a dangling RoutedEventHandler subscription).
+		if (_handlers.ContainsKey(target)) Detach(target);
+
 		RoutedEventHandler handler = (s, e) => RunActions(target);
 		_handlers[target] = handler;
 		target.AddHandler(RoutedEvent, handler);
