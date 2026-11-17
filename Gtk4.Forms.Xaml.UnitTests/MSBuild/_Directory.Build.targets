@@ -1,11 +1,13 @@
 <Project>
   <!--
-    See _Directory.Build.props for why this imports Xamarin.Forms.Build.Tasks\build\ directly
+    See _Directory.Build.props for why this imports Gtk4.Forms.Build.Tasks\build\ directly
     instead of the .gitignore'd .nuspec\ forwarding stub, and where $(XFRepoRoot) comes from.
+    DIRECTORY renamed to Gtk4.Forms.Build.Tasks; the targets FILE keeps the Xamarin.Forms.* name
+    (as does the build-tasks assembly, Xamarin.Forms.Build.Tasks.dll, in the Exists() check).
   -->
   <PropertyGroup>
     <XFRepoRoot Condition="'$(XFRepoRoot)' == ''">$(MSBuildThisFileDirectory)..\..\..\..\..\..\</XFRepoRoot>
   </PropertyGroup>
-  <Import Project="$(XFRepoRoot)Xamarin.Forms.Build.Tasks\build\Gtk4.Forms.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(__XFBuildTasksLocation)Xamarin.Forms.Build.Tasks.dll')" />
-  <Import Project="$(XFRepoRoot)Xamarin.Forms.Build.Tasks\build\Gtk4.Forms.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
+  <Import Project="$(XFRepoRoot)Gtk4.Forms.Build.Tasks\build\Xamarin.Forms.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(__XFBuildTasksLocation)Xamarin.Forms.Build.Tasks.dll')" />
+  <Import Project="$(XFRepoRoot)Gtk4.Forms.Build.Tasks\build\Xamarin.Forms.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
 </Project>

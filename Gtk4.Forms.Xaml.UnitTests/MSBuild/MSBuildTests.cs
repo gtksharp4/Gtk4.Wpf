@@ -179,7 +179,32 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			// rather than of the machine, on every OS.
 			var nugetConfig = IOPath.Combine(repoRoot, "NuGet.config");
 			if (File.Exists(nugetConfig))
-				File.Copy(nugetConfig, IOPath.Combine(tempDirectory, "NuGet.config"), true);
+				CopyNuGetConfigWithAbsoluteSources(nugetConfig, IOPath.Combine(tempDirectory, "NuGet.config"), repoRoot);
+		}
+
+		// The repo NuGet.config declares its local feeds ("Local" -> Packages, "GtkSharp4Vendored"
+		// -> build/gtksharp4-packages) with paths RELATIVE to the repo root. A plain File.Copy into
+		// the per-test temp directory makes NuGet resolve those relative paths against the temp dir,
+		// where they do not exist:
+		//     error NU1301: The local source '...\<test>\Packages' doesn't exist.
+		// (Only the SDK-style half of the matrix restores, so only those 14 cases hit it.) Rewrite
+		// each relative local source to an absolute path rooted at the repo root while copying, so
+		// restore finds the feeds from the temp directory. URL sources (nuget.org, dotnet-eng) are
+		// left untouched.
+		static void CopyNuGetConfigWithAbsoluteSources(string sourceConfig, string destConfig, string repoRoot)
+		{
+			var doc = XDocument.Load(sourceConfig);
+			foreach (var add in doc.Descendants("packageSources").Elements("add"))
+			{
+				var value = add.Attribute("value")?.Value;
+				if (string.IsNullOrEmpty(value) || IOPath.IsPathRooted(value))
+					continue;
+				// Leave remote URLs alone; only absolutise local relative directory feeds.
+				if (Uri.TryCreate(value, UriKind.Absolute, out var uri) && uri.Scheme != Uri.UriSchemeFile)
+					continue;
+				add.SetAttributeValue("value", IOPath.GetFullPath(IOPath.Combine(repoRoot, value)));
+			}
+			doc.Save(destConfig);
 		}
 
 		public void Dispose()
@@ -526,7 +551,10 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
-		const string BuildTasksPackageId = "Gtk4.Xamarin.Forms.Build.Tasks";
+		// The build-tasks NuGet package id (Gtk4.Forms.Build.Tasks.csproj <PackageId>). The
+		// directory/project/package names were renamed Xamarin.Forms.* -> Gtk4.Forms.*; the
+		// assemblies packed inside keep the Xamarin.Forms.* names.
+		const string BuildTasksPackageId = "Gtk4.Forms.Build.Tasks";
 
 		/// <summary>
 		/// The one thing every other test in this class cannot see: whether the PACKAGE works.

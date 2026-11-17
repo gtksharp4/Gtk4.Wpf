@@ -22,11 +22,14 @@
     <XFRepoRoot Condition="'$(XFRepoRoot)' == ''">$(MSBuildThisFileDirectory)..\..\..\..\..\..\</XFRepoRoot>
   </PropertyGroup>
   <!--
-    Imported from Xamarin.Forms.Build.Tasks\build\ - where the real files live - and not through
+    Imported from Gtk4.Forms.Build.Tasks\build\ - where the real files live - and not through
     the .nuspec\ forwarding stubs. The .nuspec directory is in .gitignore, so those stubs exist
     only in a working tree that has already been built by hand: on a fresh clone every one of
     these tests failed with "The imported project .../.nuspec/Xamarin.Forms.props was not found".
+    Note the rename: the DIRECTORY is Gtk4.Forms.Build.Tasks (projects/dirs were renamed
+    Xamarin.Forms.* -> Gtk4.Forms.*) while the props/targets FILE keeps the Xamarin.Forms.* name
+    (assembly names/namespaces are deliberately unchanged).
   -->
-  <Import Project="$(XFRepoRoot)Xamarin.Forms.Build.Tasks\build\Gtk4.Forms.props" />
+  <Import Project="$(XFRepoRoot)Gtk4.Forms.Build.Tasks\build\Xamarin.Forms.props" />
   <Import Project="$(XFRepoRoot)Directory.Build.props" />
 </Project>
