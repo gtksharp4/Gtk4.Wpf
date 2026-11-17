@@ -213,19 +213,19 @@ build target cannot retarget the build in progress — the first build rewrites,
 `SkipGtkConvert`/`SkipGtkHost` opt out. Still open: `Gtk4.Forms.Build.Tasks` must expose its XAML
 targets via `buildTransitive/` for a fully hands-off XAML consumer.
 
-**WPF-on-GTK compatibility layer (`Gtk.Forms.*`, Phase 1).** A separate, in-progress effort to run an
+**WPF-on-GTK compatibility layer (`Gtk4.Forms.*`, Phase 1).** A separate, in-progress effort to run an
 **unmodified WPF** app (its `System.Windows.*` code and WPF XAML) on the GTK engine — no namespace or
 XAML changes. The types are reimplemented in the real `System.Windows.*` namespaces (projects named
-`Gtk.Forms.*`, own assembly names): `Gtk.Forms.WindowsBase` (the `DependencyObject`/`DependencyProperty`
-property + routed-event system, pure netstandard2.0), `Gtk.Forms.PresentationFramework`
+`Gtk4.Forms.*`, own assembly names): `Gtk4.Forms.WindowsBase` (the `DependencyObject`/`DependencyProperty`
+property + routed-event system, pure netstandard2.0), `Gtk4.Forms.PresentationFramework`
 (`UIElement`→`Window`/controls + a one-way binding engine, rendering on GtkSharp 4, net10.0), and
-`Gtk.Forms.MarkupCompiler` (a build-time, System.Xaml-free MSBuild task that generates
+`Gtk4.Forms.MarkupCompiler` (a build-time, System.Xaml-free MSBuild task that generates
 `InitializeComponent` from the untouched presentation-namespace XAML — `[assembly: XmlnsDefinition]`
-makes the WPF xmlns resolve to our types). `Gtk.Forms.Wpf` is the one-package drop-in (+ a WPF
-`Gtk.Forms.ProjectConverter`: strip `UseWPF`, `net*-windows`→`net10.0`, `OutputType=Exe`).
-`Gtk.Forms.WpfSample` is an unmodified-WPF app that compiles through the compiler as the end-to-end
+makes the WPF xmlns resolve to our types). `Gtk4.Forms.Wpf` is the one-package drop-in (+ a WPF
+`Gtk4.Forms.Wpf.ProjectConverter`: strip `UseWPF`, `net*-windows`→`net10.0`, `OutputType=Exe`).
+`Gtk4.Forms.WpfSample` is an unmodified-WPF app that compiles through the compiler as the end-to-end
 proof. **Phase 0** proved the architecture (four controls, one-way binding, ~104 tests). **Phase 1**
-adds the core WPF control set under `Gtk.Forms.PresentationFramework/Controls/`:
+adds the core WPF control set under `Gtk4.Forms.PresentationFramework/Controls/`:
 
 | Control | GTK backing | Notes |
 |---|---|---|
@@ -249,7 +249,7 @@ DP on `FrameworkElement`, `OverridesDefaultStyle` flag, `System.Windows.Themes.T
 (ControlBrush, WindowBrush, HighlightBrush, ControlTextBrush), and `Control.Properties.cs`
 (Padding, HorizontalContentAlignment, VerticalContentAlignment DPs on `Control`).  Default-style
 resolution is the lowest precedence: explicit Style > implicit TargetType style > theme default.
-`Application` ctor calls `Generic.Register()`. Total `Gtk.Forms.PresentationFramework.Tests`: 961 (1098 including WebBrowser + later rounds).
+`Application` ctor calls `Generic.Register()`. Total `Gtk4.Forms.PresentationFramework.Tests`: 961 (1098 including WebBrowser + later rounds).
 
 ## Coding style
 

@@ -1,4 +1,4 @@
-# Plan — `Gtk.Forms`: run **unmodified WPF** on the Gtk4.Forms GTK engine (aim 1:1)
+# Plan — `Gtk4.Forms`: run **unmodified WPF** on the Gtk4.Forms GTK engine (aim 1:1)
 
 **Goal.** An existing WPF application — its `System.Windows.*` code, its WPF XAML (the
 `…/winfx/2006/xaml/presentation` namespace), its `App.xaml`/`Window.xaml` — compiles and runs on
@@ -15,7 +15,7 @@ XAML stack, the property system, templates, triggers and the binding engine.
 | XAML → objects | **Build-time markup compiler** (like WPF's `PresentationBuildTasks`), not runtime loading |
 | Rendering substrate | **Hybrid** — reuse Gtk4.Forms GTK plumbing + control mappings; implement WPF-faithful layout/templating on GtkSharp 4 where the Forms model cannot express it |
 | Location | **This repo** (the Xamarin.Forms→GTK fork), next to the engine it depends on |
-| Delivery | A one-package drop-in, **`Gtk.Forms.Wpf`**, reusing the `Gtk4.Forms.Base` pattern just built |
+| Delivery | A one-package drop-in, **`Gtk4.Forms.Wpf`**, reusing the `Gtk4.Forms.Base` pattern just built |
 
 ## Reality check — 1:1 is a program, not a task
 
@@ -49,17 +49,17 @@ provable, and architecturally load-bearing so the rest is fill-in, not rework.
 Own assembly names, **real `System.Windows.*` namespaces**. Mirroring WPF's split keeps the layering
 honest and the dependency graph acyclic:
 
-| Our assembly (package `Gtk.Forms`) | Mirrors | Holds (namespaces) |
+| Our assembly (package `Gtk4.Forms`) | Mirrors | Holds (namespaces) |
 |---|---|---|
-| `Gtk.Forms.WindowsBase` | `WindowsBase.dll` | `System.Windows` base (`DependencyObject`, `DependencyProperty`, `PropertyMetadata`, `Freezable`, `DispatcherObject`), `System.Windows.Threading` (`Dispatcher`), `System.Windows.Markup` base, primitives (`Point`/`Rect`/`Size`/`Thickness`/`Duration`) |
-| `Gtk.Forms.PresentationCore` | `PresentationCore.dll` | `System.Windows` (`UIElement`, `FrameworkPropertyMetadata`, `RoutedEvent`, input), `System.Windows.Media` (`Brush`, `Pen`, `Geometry`, `Color`, `Visual`), `System.Windows.Input` |
-| `Gtk.Forms.PresentationFramework` | `PresentationFramework.dll` | `System.Windows` (`FrameworkElement`, `Window`, `Application`, `Style`, `ResourceDictionary`), `System.Windows.Controls`, `System.Windows.Controls.Primitives`, `System.Windows.Data` (`Binding`), `System.Windows.Shapes`, `System.Windows.Documents` |
-| `Gtk.Forms.MarkupCompiler` | `PresentationBuildTasks.dll` | The build task + `Gtk.Forms.props/.targets` (packed, consumer-imported) |
+| `Gtk4.Forms.WindowsBase` | `WindowsBase.dll` | `System.Windows` base (`DependencyObject`, `DependencyProperty`, `PropertyMetadata`, `Freezable`, `DispatcherObject`), `System.Windows.Threading` (`Dispatcher`), `System.Windows.Markup` base, primitives (`Point`/`Rect`/`Size`/`Thickness`/`Duration`) |
+| `Gtk4.Forms.PresentationCore` | `PresentationCore.dll` | `System.Windows` (`UIElement`, `FrameworkPropertyMetadata`, `RoutedEvent`, input), `System.Windows.Media` (`Brush`, `Pen`, `Geometry`, `Color`, `Visual`), `System.Windows.Input` |
+| `Gtk4.Forms.PresentationFramework` | `PresentationFramework.dll` | `System.Windows` (`FrameworkElement`, `Window`, `Application`, `Style`, `ResourceDictionary`), `System.Windows.Controls`, `System.Windows.Controls.Primitives`, `System.Windows.Data` (`Binding`), `System.Windows.Shapes`, `System.Windows.Documents` |
+| `Gtk4.Forms.MarkupCompiler` | `PresentationBuildTasks.dll` | The build task + `Gtk4.Forms.props/.targets` (packed, consumer-imported) |
 
 Carrying our own assembly names avoids an identity clash with the real WPF assemblies if a developer
 builds on Windows; the `System.Windows.*` namespaces are what the app actually binds to.
 
-### B. The property & event system (`Gtk.Forms.WindowsBase`)
+### B. The property & event system (`Gtk4.Forms.WindowsBase`)
 
 The backbone — every WPF semantic rests on it, so it is Phase-0 work and must be faithful:
 `DependencyObject` + `DependencyProperty` (registration, attached properties, value precedence,
@@ -69,7 +69,7 @@ The backbone — every WPF semantic rests on it, so it is Phase-0 work and must 
 **not** reuse Gtk4.Forms' `BindableProperty` (different precedence/inheritance rules), though that code
 is a useful reference for the mechanics.
 
-### C. The build-time markup compiler (`Gtk.Forms.MarkupCompiler`) — **fork, don't reinvent**
+### C. The build-time markup compiler (`Gtk4.Forms.MarkupCompiler`) — **fork, don't reinvent**
 
 Fork `Gtk4.Forms.Build.Tasks` and retarget it to the WPF dialect. The whole shape transfers:
 
@@ -110,11 +110,11 @@ Reimplement per WPF semantics: the `Binding` engine (`Path`, `Mode`, `Converter`
 `Trigger`/`DataTrigger`/`MultiTrigger`/`EventTrigger`. Gtk4.Forms has analogues to study but different
 semantics; this is new code.
 
-### F. Drop-in delivery (`Gtk.Forms.Wpf`)
+### F. Drop-in delivery (`Gtk4.Forms.Wpf`)
 
 Reuse the pattern shipped in `Gtk4.Forms.Base` (see `Gtk4.Forms.Base/` + `Gtk4.Forms.ProjectConverter/`):
 one `PackageReference` that (1) rewrites the consumer `.csproj` — strip `<UseWPF>`/`net*-windows`,
-set `OutputType=Exe`/`net10.0`, reference the `Gtk.Forms.*` assemblies + markup compiler — and (2)
+set `OutputType=Exe`/`net10.0`, reference the `Gtk4.Forms.*` assemblies + markup compiler — and (2)
 needs no injected `Main` (WPF's `Main` comes from the compiled `ApplicationDefinition`, which the
 markup compiler emits). The converter's `CsprojConverter` gains WPF rules alongside its existing ones.
 
@@ -140,16 +140,16 @@ control library.
 | B1 | `[assembly: XmlnsDefinition]` + the forked compiler resolves **unmodified** presentation-namespace XAML to our `System.Windows.Controls.*` types | A `<Window><Grid><TextBlock Text="hi"/></Grid></Window>` (verbatim WPF XAML, WPF `x:Class` code-behind) compiles with our markup task — `InitializeComponent` generated, no XAML edits |
 | B2 | `DependencyObject`/`DependencyProperty` carries a bound value with inheritance + change notification | A `{Binding}` on `TextBlock.Text` to an `INotifyPropertyChanged` VM updates the widget |
 | B3 | The hybrid bridge paints on GTK via the engine | That window shows a GTK label reading "hi" on Windows **and** headless Linux (Xvfb) |
-| B4 | The drop-in works | A stock WPF project + `<PackageReference Include="Gtk.Forms.Wpf">` builds to a cross-platform exe (two-build conversion) and runs |
+| B4 | The drop-in works | A stock WPF project + `<PackageReference Include="Gtk4.Forms.Wpf">` builds to a cross-platform exe (two-build conversion) and runs |
 
-Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (minimal) + `Window`/`Grid`/`TextBlock`/`Button` on Tier 1 + a one-way `Binding` + `Gtk.Forms.Wpf`. One window, one binding, running on two OSes.
+Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (minimal) + `Window`/`Grid`/`TextBlock`/`Button` on Tier 1 + a one-way `Binding` + `Gtk4.Forms.Wpf`. One window, one binding, running on two OSes.
 
 ## Progress (living)
 
-- **Phase 0 — DONE.** `Gtk.Forms.WindowsBase` (property/event system), `Gtk.Forms.MarkupCompiler`
-  (build-time compiler), `Gtk.Forms.PresentationFramework` (`UIElement`→`Window`/`Grid`/`StackPanel`/
-  `TextBlock`/`Button` + one-way binding on GtkSharp 4), `Gtk.Forms.ProjectConverter` + `Gtk.Forms.Wpf`
-  (drop-in), and `Gtk.Forms.WpfSample` (unmodified WPF, compiles through the compiler). ~104 tests;
+- **Phase 0 — DONE.** `Gtk4.Forms.WindowsBase` (property/event system), `Gtk4.Forms.MarkupCompiler`
+  (build-time compiler), `Gtk4.Forms.PresentationFramework` (`UIElement`→`Window`/`Grid`/`StackPanel`/
+  `TextBlock`/`Button` + one-way binding on GtkSharp 4), `Gtk4.Forms.Wpf.ProjectConverter` + `Gtk4.Forms.Wpf`
+  (drop-in), and `Gtk4.Forms.WpfSample` (unmodified WPF, compiles through the compiler). ~104 tests;
   blocking checks B1–B4 pass. Reviewed (no foundational defect); inheritance-on-reparent, leaks and
   compile-compat fixed.
 - **Phase 1 Round 1 — DONE** (binding + controls + layout; **203 tests total**, sample still compiles):
@@ -164,7 +164,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
     is a later refinement.
 - **Phase 2 Kickoff — DONE** (templating + items controls; **232 tests total**, all pass):
   - `FrameworkTemplate` (abstract) + `ControlTemplate` (`TargetType`, `Factory`) + `DataTemplate`
-    (`ItemFactory`) in `Gtk.Forms.PresentationFramework/Templates/`.
+    (`ItemFactory`) in `Gtk4.Forms.PresentationFramework/Templates/`.
   - `ContentPresenter` — hosts `UIElement` directly, applies `DataTemplate`, or falls back to
     string label; backed by `Gtk.Box`.
   - `ItemsControl` — `ItemsSource` (IEnumerable, INCC-reactive), `ItemTemplate`, `Items` snapshot;
@@ -195,7 +195,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   programmatic `SelectedItem` syncs the GTK row; style precedence below local with un-apply on change;
   `BasedOn` cycle guard + `ReadLocalValue`-based implicit-style guard. **304 tests total** across the
   four suites (35 WindowsBase + 213 PresentationFramework + 40 MarkupCompiler + 16 ProjectConverter),
-  all pass; `Gtk.Forms.WpfSample` (unmodified WPF) still compiles through the compiler.
+  all pass; `Gtk4.Forms.WpfSample` (unmodified WPF) still compiles through the compiler.
 - **Round 3 — triggers + commands/input (DONE).**
   - *Track A — triggers*: `TriggerBase`/`Trigger` (property), `DataTrigger` (binding+INPC), `MultiTrigger`
     (`Condition` set), `EventTrigger` (+`TriggerAction`/`SetPropertyAction`); `Style.Triggers` and
@@ -220,7 +220,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   for a `RoutedCommand` with no binding and a null target (unconditional `command.CanExecute` fallback) —
   now a RoutedCommand with no matching binding is simply non-executable (WPF semantics). **368 tests total**
   (40 WindowsBase + 265 PresentationFramework + 47 MarkupCompiler + 16 ProjectConverter), all pass, PF full
-  run completes with no stack overflow; `Gtk.Forms.WpfSample` (unmodified WPF) still compiles.
+  run completes with no stack overflow; `Gtk4.Forms.WpfSample` (unmodified WPF) still compiles.
 - **Round 4 Track B — shapes & media primitives (DONE).** `System.Windows.Media`: `Color` (ARGB bytes +
   scaled floats, `ToGdkRgba`/`ToCairoColor`), `Colors`/`Brushes` (named statics), `Brush` (abstract,
   `Opacity`) + `SolidColorBrush` (`ToGdkRgba` + Cairo `SetSourceRGBA`), `GradientBrush`/`LinearGradientBrush`/
@@ -257,7 +257,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   - `Window.Owner`/`Window.DialogResult`/`Window.ShowDialog()`/`Window.Close(bool?)` — modal semantics
     via nested `GLib.MainLoop` (GTK 4 equivalent of `gtk_dialog_run`).
   - **Root cause of the long investigation**: `Gtk.Window` exists in GtkSharp4; inside namespace
-    `Gtk.Forms.PresentationFramework.Tests` Roslyn resolves bare `Window` to `Gtk.Window` (namespace
+    `Gtk4.Forms.PresentationFramework.Tests` Roslyn resolves bare `Window` to `Gtk.Window` (namespace
     chain lookup beats using-directive lookup). Fix: `using WpfWindow = System.Windows.Window;` in
     affected test files, matching the pattern already used in `GtkSmokeTests.cs`.
   - New tests: 10 `NavigationJournalTests` + 13 `NavigationServiceTests` + 7 `NavigationWindowTests`
@@ -276,7 +276,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   vertically (were both `ry`); `GoBack`/`GoForward` now raise the `Navigating`/`NavigationStopped` pipeline
   with `NavigationMode` and honour `Cancel`; `Color.Sc*` documented as normalized bytes (not linear-light
   scRGB). **Round 4 totals: 556 tests** (40 WindowsBase + 453 PresentationFramework + 47 MarkupCompiler +
-  16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample` (unmodified WPF) still
+  16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk4.Forms.WpfSample` (unmodified WPF) still
   compiles.
 - **Round 5 Track B — common WPF controls (DONE).** `HeaderedContentControl` (base for `Expander`/`GroupBox`/`TabItem`);
   `ScrollViewer` (`Gtk.ScrolledWindow`, `HorizontalScrollBarVisibility`/`VerticalScrollBarVisibility` → `PolicyType`);
@@ -298,8 +298,8 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
     `Brush`/`SolidColorBrush` (named + hex), `Point`/`Size`/`Rect` (comma-separated pairs/quads),
     `double`/`float`/`int`/`long`/`bool`, arbitrary `Enum` (case-insensitive), `string` passthrough.
     `PrimitiveConverters` (internal, WindowsBase) + `MediaConverters` (internal, PresentationFramework).
-  - `CornerRadius` struct added to `Gtk.Forms.WindowsBase`.
-  - `Visibility` enum added to `Gtk.Forms.PresentationFramework`.
+  - `CornerRadius` struct added to `Gtk4.Forms.WindowsBase`.
+  - `Visibility` enum added to `Gtk4.Forms.PresentationFramework`.
   - `Setter.CoerceValue`: string values converted to target DP type at apply time (style, trigger, direct).
   - Compiler (`XamlCodeGenerator`): plain DP attributes emit
     `SetValue(T.PropProperty, XamlValueConverter.Convert(typeof(T), T.PropProperty, "raw"))` instead of
@@ -316,14 +316,14 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   - **G3** (attached-property attributes emit invalid C#): `EmitChildren` now detects `Owner.Prop`
     dotted attr names and emits `OwnerType.SetProp(el, (castType)XamlValueConverter.Convert(...))`;
     runtime form is the static setter (`Grid.SetRow`, `Canvas.SetLeft`, `DockPanel.SetDock`).
-    `InternalsVisibleTo` added to `Gtk.Forms.MarkupCompiler.csproj`.
+    `InternalsVisibleTo` added to `Gtk4.Forms.MarkupCompiler.csproj`.
   - **G4** (`EscapeString` omits `\n`/`\r`/`\t`): all three added. `EscapeString` made `internal`
     for direct unit testing (XML parsers normalize whitespace in attribute values before the generator
     sees them, making XAML-round-trip tests impossible).
   - **+18 PF tests** (3 Slider, 10 TabControl, 5 GTK smoke); **+8 MarkupCompiler tests**
     (12 attached-prop / escape). **Round 5 totals: 682 tests** (40 WindowsBase + 558 PresentationFramework
     + 68 MarkupCompiler + 16 ProjectConverter), all pass timeboxed with no hang/crash;
-    `Gtk.Forms.WpfSample` (unmodified WPF) still compiles.
+    `Gtk4.Forms.WpfSample` (unmodified WPF) still compiles.
 - **Round 6 Track B — hierarchical & popup controls (DONE).** Runtime only; no compiler changes.
   - `HeaderedItemsControl : ItemsControl` base class (`Header` DP; base for `ToolBar`/`TreeViewItem`).
   - `MenuItem` extended: `Items` (sub-menu list; parent items backed by `Gtk.MenuButton`+`Gtk.Popover`,
@@ -376,7 +376,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `MenuItem.Commanding.cs` (≤200 lines); `FrameworkTemplate.HasContent` and `UIElement.IsWidgetCreated`
   converted from `new`-shadows to `virtual`/`override` so a base-typed reference sees the correct value.
   **Round 6 totals: 787 tests** (40 WindowsBase + 642 PresentationFramework + 89 MarkupCompiler +
-  16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample` (unmodified WPF) compiles.
+  16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk4.Forms.WpfSample` (unmodified WPF) compiles.
 - **Round 7 Track A — advanced data binding (DONE).**
   - `RelativeSource` (`RelativeSourceMode.Self`, `FindAncestor`+`AncestorType`+`AncestorLevel`,
     `TemplatedParent` declared with limitation, `PreviousData` stub); `Binding.RelativeSource`; engine
@@ -430,7 +430,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   clamps overflow; **R8** `DataGrid` observes `INotifyCollectionChanged` (split into `DataGrid.cs` +
   `DataGrid.Columns.cs`, ≤200 lines); **R9** MultiBinding child `<Binding>` emits `Converter`/`StringFormat`,
   `Binding.DoNothing` sentinel added. **Round 7 totals: 901 tests** (40 WindowsBase + 741 PresentationFramework
-  + 104 MarkupCompiler + 16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample`
+  + 104 MarkupCompiler + 16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk4.Forms.WpfSample`
   (unmodified WPF) still compiles.
 - **Round 8 Track B — animation & storyboards runtime (DONE).** `System.Windows.Media.Animation`:
   - `Duration` (finite/Forever/Automatic), `RepeatBehavior` (count/duration/Forever), `FillBehavior` (HoldEnd/Stop).
@@ -438,7 +438,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
     `AnimationTimeline` (abstract; `GetCurrentValue(origin, dest, clock)`).
   - **Animation value layer** added to `DependencyObject` (D10) above local in
     `ResolveEffectiveValue`: `SetAnimationValue(dp,v)` / `ClearAnimationValue(dp)` in
-    `Gtk.Forms.WindowsBase/DependencyObject.Animation.cs` (new partial file).
+    `Gtk4.Forms.WindowsBase/DependencyObject.Animation.cs` (new partial file).
   - `AnimationClock` — per-timeline-per-target clock; `Tick(TimeSpan)` test seam (no GLib loop required);
     handles `BeginTime`, finite/Forever repeat, `AutoReverse`, `FillBehavior.HoldEnd`/`Stop`, `Pause`/`Resume`/`Stop`.
   - `AnimationScheduler` — single `GLib.Timeout` at ~16ms/60fps; registers/unregisters clocks;
@@ -488,7 +488,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   reports the previous state; **T6** `Duration.Automatic` resolves to 1 s (a `DoubleAnimation` with no explicit
   Duration now animates); **T7** `{TemplateBinding Prop, …}` uses only the property path + stale doc fixed.
   **Round 8 totals: 961 tests** (40 WindowsBase + 786 PresentationFramework + 119 MarkupCompiler +
-  16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample` (unmodified WPF) compiles.
+  16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk4.Forms.WpfSample` (unmodified WPF) compiles.
 - **Round 9 Track B — data validation + CollectionView runtime (DONE).** No compiler changes.
   - **Validation**:
     - `ValidationRule` (abstract; `Validate(value, culture) → ValidationResult`), `ValidationResult`
@@ -556,7 +556,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
     `<VisualState><Storyboard>` XAML compilation is not wired — VSM groups must be built in code-behind.
     Runtime (programmatic) storyboard-based states work. Deferred to a future round.
 - **Round 9 totals (both tracks merged): 1008 tests** (40 WindowsBase + 820 PresentationFramework +
-  132 MarkupCompiler + 16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample`
+  132 MarkupCompiler + 16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk4.Forms.WpfSample`
   (unmodified WPF) still compiles.
 - **Round 9 review (Opus) + fixes — DONE.** 2 High + Mediums (regressions the CollectionView wiring and
   string-target storyboards introduced), all fixed with pins on the real runtime path: **U1** `ListBox`/
@@ -569,7 +569,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `HasError` every write-back); **U5** `ListCollectionView` keeps null items (WPF parity); **U6**
   `CollectionViewSource` instance `SortDescriptions`/`GroupDescriptions` forwarded into its `View`; **U7** nits.
   **Round 9 totals: 1024 tests** (40 WindowsBase + 836 PresentationFramework + 132 MarkupCompiler +
-  16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample` (unmodified WPF) compiles.
+  16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk4.Forms.WpfSample` (unmodified WPF) compiles.
 - **Round 10 Track B — Dispatcher/DispatcherTimer + TextBlock inlines (DONE).** Runtime only; no compiler changes.
   - **`Dispatcher`** extended (`System.Windows.Threading`): `CurrentDispatcher` per-thread singleton, `Invoke(Action)`/`Invoke<T>(Func<T>)` (sync, marshals via `InvokeAction` delegate), `BeginInvoke(Action, DispatcherPriority)` (async via `BeginInvokeAction`), `CheckAccess()`/`VerifyAccess()` (via `IsOnDispatcherThread` predicate), `Thread` property. `DispatcherObject` base in `Threading/DispatcherObject.cs`. `DispatcherPriority` enum (Invalid→Send, 12 values). All bridge delegates replaced with real GLib calls in `Application.Run()`.
   - **`DispatcherTimer`**: `Interval`, `Tick`, `IsEnabled`/`Start`/`Stop`, `Priority`, `Tag`. Backed by pluggable `ScheduleAction`/`RemoveSourceAction` delegates (wired to `GLib.Timeout.Add`/`GLib.Source.Remove` in `Application.Run`). **Test seam**: `FireActionOverride` (internal static) + `FireForTest()` (internal instance) allow firing without a GLib loop. Stop calls `RemoveSourceAction` before clearing `_isEnabled` so no post-stop fire occurs.
@@ -586,7 +586,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
     base types), caches results in a `ConcurrentDictionary`. Falls back to the previous name heuristic
     when no reference paths are supplied (all existing tests keep passing unchanged).
   - **Reference threading**: `MarkupCompileTask` gains an optional `ReferencePaths` task property
-    (`ITaskItem[]`); `Gtk.Forms.MarkupCompiler.targets` passes `@(ReferencePath)` to it; the task
+    (`ITaskItem[]`); `Gtk4.Forms.MarkupCompiler.targets` passes `@(ReferencePath)` to it; the task
     calls `generator.SetReferencePaths(paths)` before processing. `XamlCodeGenerator` implements
     `IDisposable` (disposes the resolver's loaded assembly list).
   - **`IsKnownDp` replaced**: now delegates to `_resolver.IsDP(fqType, propName)` instead of the
@@ -609,7 +609,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
     `XamlCodeGeneratorXExtensionTests` (x:Null ×3, x:Type ×5, x:Static ×5, x:Array ×2, dispatch ×2).
   - **+26 MarkupCompiler tests.**
 - **Round 10 totals (both tracks merged): 1094 tests** (60 WindowsBase + 860 PresentationFramework +
-  158 MarkupCompiler + 16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample`
+  158 MarkupCompiler + 16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk4.Forms.WpfSample`
   (unmodified WPF) still compiles.
 - **Round 10 review (Opus) + fixes — DONE.** 2 High + Mediums, all fixed with pins: **V1** the
   `DpSymbolResolver` **locked consumer DLLs** (`Assembly.LoadFrom` holds a file lock for the MSBuild-node
@@ -622,7 +622,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `{x:Null}` on a non-nullable value-type CLR property emits `default(T)` (was `= null` → CS0037); **V5** three
   oversized test files split to ≤200 lines; **V6** non-Bold font weights emit a Pango weight span. **Round 10
   totals: 1108 tests** (60 WindowsBase + 863 PresentationFramework + 169 MarkupCompiler + 16 ProjectConverter),
-  all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample` (unmodified WPF) compiles through the lock-free
+  all pass timeboxed with no hang/crash; `Gtk4.Forms.WpfSample` (unmodified WPF) compiles through the lock-free
   real-symbol-resolution compiler.
 - **Round 11 Track B — FlowDocument + RichTextBox + block documents (DONE).** Runtime only; no compiler changes.
   - **Block hierarchy** (`System.Windows.Documents`): `Block : TextElement` (base; `Margin`/`Padding`/`TextAlignment`/`LineHeight`),
@@ -695,7 +695,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
     contract + tests; native GTK containers still render — wiring the computed arrange rects onto a `Gtk.Fixed`
     is a later refinement (carry-over).
 - **Round 11 totals (both tracks merged): 1180 tests** (60 WindowsBase + 935 PresentationFramework +
-  169 MarkupCompiler + 16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk.Forms.WpfSample`
+  169 MarkupCompiler + 16 ProjectConverter), all pass timeboxed with no hang/crash; `Gtk4.Forms.WpfSample`
   (unmodified WPF) still compiles.
 - **Round 11 review (Opus) + fixes — DONE.** 2 High correctness bugs in the new layout contract (hidden by
   constant-size test children) + 2 medium WPF-fidelity gaps, implemented faithfully (not just documented):
@@ -708,7 +708,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   **W5** `RichTextBox.cs` split into `RichTextBox.cs` + `RichTextBox.Buffer.cs` (≤200 lines); **W6** the
   managed-layout-vs-live-GTK gap documented on `UIElement.UpdateLayout` + carry-over. **Round 11 totals:
   1187 tests** (60 WindowsBase + 942 PresentationFramework + 169 MarkupCompiler + 16 ProjectConverter),
-  all pass timeboxed; `Gtk.Forms.WpfSample` (unmodified WPF) still compiles.
+  all pass timeboxed; `Gtk4.Forms.WpfSample` (unmodified WPF) still compiles.
 - **Round 12 Track A — input system + TextBox completeness (DONE).** No compiler changes.
   - **`UIElement` focus + input** (`UIElement.Input.cs` new partial):
     `Focusable`/`IsFocused` (read-only) DPs; `IsKeyboardFocused` alias; `Focus()` (→ `GrabFocus` when
@@ -770,7 +770,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
     theme query deferred); `Control.Padding`/`HorizontalContentAlignment`/`VerticalContentAlignment` DPs.
   - **+19 tests** (8 precedence + 11 Generic/SystemColors).
 - **Round 12 totals (both tracks merged): 1242 tests** (60 WindowsBase + 997 PresentationFramework +
-  169 MarkupCompiler + 16 ProjectConverter), all pass timeboxed; `Gtk.Forms.WpfSample` (unmodified WPF) compiles.
+  169 MarkupCompiler + 16 ProjectConverter), all pass timeboxed; `Gtk4.Forms.WpfSample` (unmodified WPF) compiles.
 - **Round 12 review (Opus) + fixes — DONE.** 2 Critical + Highs, all fixed with pins driving the real path:
   **X1** the theme/default-style mechanism was **inert** (nothing called it) — `Control`'s ctor now applies the
   default style and `Button`/`CheckBox`/`RadioButton`/`Label` set `DefaultStyleKey` via `OverrideMetadata`
@@ -783,7 +783,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `SelectionLength`, `SelectedText` setter leaves a consistent caret); **X7** oversized files split to ≤200 lines.
   Full-suite total now **1289 tests** (60 WindowsBase + 1041 PresentationFramework + 173 MarkupCompiler +
   15 ProjectConverter — the tree also compiles concurrent imaging/markup-NuGet work landed in `7a0e25e1`),
-  all pass timeboxed; `Gtk.Forms.WpfSample` (unmodified WPF) still compiles.
+  all pass timeboxed; `Gtk4.Forms.WpfSample` (unmodified WPF) still compiles.
 - **`WebBrowser` control — DONE (Photino.NET).** `System.Windows.Controls.WebBrowser : Control` with the full
   WPF surface: `Source` DP, read-only `CanGoBack`/`CanGoForward`, `Navigate`/`NavigateToString`/`GoBack`/
   `GoForward`/`Refresh`/`InvokeScript`, `Navigating`(cancelable, with `NavigationMode`)/`Navigated`/
@@ -886,7 +886,7 @@ regression suite.
   routed-event tunnel/bubble — fail-before/pass-after, no GTK needed.
 - **Markup-compiler unit tests**: given WPF XAML in, assert the generated `InitializeComponent`/IL
   (mirror how `Gtk4.Forms.Xaml.UnitTests` drives `XamlCTask` in-process via `MockCompiler`).
-- **Drop-in e2e**: a stock WPF repo + `Gtk.Forms.Wpf` → cross-platform exe, no source edits.
+- **Drop-in e2e**: a stock WPF repo + `Gtk4.Forms.Wpf` → cross-platform exe, no source edits.
 
 ## Risks
 
@@ -897,12 +897,12 @@ regression suite.
 | WPF markup extensions + `System.Xaml` divergence | Compiler is `System.Xaml`-free (Cecil + `XmlReader`), so no Windows-only `System.Xaml` dependency; extension set grows per phase. |
 | Tier-1/Tier-2 seam leaks | Keep `UIElement`→`Gtk.Widget` the single boundary; a control can move Tier 1→2 without API change. |
 | `ControlTemplate`/triggers/`RichTextBox` | The genuinely hard long tail — scheduled late, flagged as "redesign, not 1:1" if a feature proves intractable on GTK. |
-| Fights the active packaging refactor | New `Gtk.Forms.*` projects are additive (own dirs); touch shared `Directory.Build.*` minimally. |
+| Fights the active packaging refactor | New `Gtk4.Forms.*` projects are additive (own dirs); touch shared `Directory.Build.*` minimally. |
 
 ## Recommendation
 
 Approve **Phase 0 only** first: the `WindowsBase` property-system subset + the forked markup compiler
-(minimal) + four controls on Tier 1 + one binding + `Gtk.Forms.Wpf`, proving **B1–B4**. That slice
+(minimal) + four controls on Tier 1 + one binding + `Gtk4.Forms.Wpf`, proving **B1–B4**. That slice
 is small, fully testable, and settles every architectural unknown (xmlns binding, the compiler fork,
 the hybrid bridge, the drop-in). Only after it runs a real one-window WPF app unmodified on two OSes
 is it worth committing to the multi-phase build toward 1:1.

@@ -19,7 +19,7 @@ $env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
 # process"). Building one consumer with -maxcpucount:1 installs it once; the solution build below
 # then finds it present and skips the download, so there is nothing to race on.
 Write-Host '== warm up the gvsbuild GTK 4 runtime (serial, avoids the parallel download race) =='
-dotnet build Gtk.Forms.PresentationFramework/Gtk.Forms.PresentationFramework.csproj -c Debug -maxcpucount:1 -p:GeneratePackageOnBuild=false
+dotnet build Gtk4.Forms.PresentationFramework/Gtk4.Forms.PresentationFramework.csproj -c Debug -maxcpucount:1 -p:GeneratePackageOnBuild=false
 if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
 Write-Host '== build (Debug; installs the gvsbuild GTK 4 runtime via GtkSharp4.targets) =='

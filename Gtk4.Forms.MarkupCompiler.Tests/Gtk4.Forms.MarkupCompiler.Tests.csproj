@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Gtk4.Forms.MarkupCompiler.Tests</AssemblyName>
+    <RootNamespace>Gtk4.Forms.MarkupCompiler.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <LangVersion>latest</LangVersion>
+    <OutputType>Exe</OutputType>
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk"       Version="17.11.1" />
+    <PackageReference Include="xunit.v3"                     Version="3.2.2" />
+    <PackageReference Include="xunit.runner.visualstudio"    Version="3.1.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gtk4.Forms.MarkupCompiler\Gtk4.Forms.MarkupCompiler.csproj" />
+    <!-- Referenced so DpSymbolResolver tests can supply the built PresentationFramework DLL path.
+         ReferenceOutputAssembly=false avoids a compile-time type conflict (System.Windows.* namespaces);
+         CopyToOutputDirectory copies the DLL so tests can load it via its filename. -->
+    <ProjectReference Include="..\Gtk4.Forms.PresentationFramework\Gtk4.Forms.PresentationFramework.csproj"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+</Project>

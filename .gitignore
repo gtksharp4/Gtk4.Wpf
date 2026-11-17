@@ -86,5 +86,5 @@ WriteDevopsVariables.csproj
 # Build tasks published for in-tree consumption (see Directory.Build.props)
 artifacts/
 
-# Gtk.Forms markup-compiler generated sources (emitted under obj at build time)
+# Gtk4.Forms markup-compiler generated sources (emitted under obj at build time)
 gf-wpf-generated/

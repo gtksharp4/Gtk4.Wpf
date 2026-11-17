@@ -57,27 +57,27 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk4.Forms.Host", "Gtk4.For
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk4.Forms.Base", "Gtk4.Forms.Base\Gtk4.Forms.Base.csproj", "{91549437-9E45-4E94-953B-C2BFA06F524B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk.Forms.WindowsBase", "Gtk.Forms.WindowsBase\Gtk.Forms.WindowsBase.csproj", "{FB1B7FE7-01F1-42CC-BCC2-E91C5AC0530C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk4.Forms.WindowsBase", "Gtk4.Forms.WindowsBase\Gtk4.Forms.WindowsBase.csproj", "{FB1B7FE7-01F1-42CC-BCC2-E91C5AC0530C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk.Forms.WindowsBase.Tests", "Gtk.Forms.WindowsBase.Tests\Gtk.Forms.WindowsBase.Tests.csproj", "{70ACC05C-7745-45E9-90D3-E3EBCC975A93}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk4.Forms.WindowsBase.Tests", "Gtk4.Forms.WindowsBase.Tests\Gtk4.Forms.WindowsBase.Tests.csproj", "{70ACC05C-7745-45E9-90D3-E3EBCC975A93}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk.Forms.MarkupCompiler", "Gtk.Forms.MarkupCompiler\Gtk.Forms.MarkupCompiler.csproj", "{52D1A416-2CFB-47B1-B1BF-5C7D9CC5CB14}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk4.Forms.MarkupCompiler", "Gtk4.Forms.MarkupCompiler\Gtk4.Forms.MarkupCompiler.csproj", "{52D1A416-2CFB-47B1-B1BF-5C7D9CC5CB14}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk.Forms.MarkupCompiler.Tests", "Gtk.Forms.MarkupCompiler.Tests\Gtk.Forms.MarkupCompiler.Tests.csproj", "{685808CC-C8D1-4DAE-9C05-079CE6720A70}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk4.Forms.MarkupCompiler.Tests", "Gtk4.Forms.MarkupCompiler.Tests\Gtk4.Forms.MarkupCompiler.Tests.csproj", "{685808CC-C8D1-4DAE-9C05-079CE6720A70}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk.Forms.PresentationFramework", "Gtk.Forms.PresentationFramework\Gtk.Forms.PresentationFramework.csproj", "{F769638B-486B-4E8A-B67F-1802BA47671D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk4.Forms.PresentationFramework", "Gtk4.Forms.PresentationFramework\Gtk4.Forms.PresentationFramework.csproj", "{F769638B-486B-4E8A-B67F-1802BA47671D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk.Forms.PresentationFramework.Tests", "Gtk.Forms.PresentationFramework.Tests\Gtk.Forms.PresentationFramework.Tests.csproj", "{8C9D04BA-18A5-4271-9C39-DC2CAC365112}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk4.Forms.PresentationFramework.Tests", "Gtk4.Forms.PresentationFramework.Tests\Gtk4.Forms.PresentationFramework.Tests.csproj", "{8C9D04BA-18A5-4271-9C39-DC2CAC365112}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk.Forms.ProjectConverter", "Gtk.Forms.ProjectConverter\Gtk.Forms.ProjectConverter.csproj", "{08764805-1DCF-4CE5-BC8E-AB2453571111}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk4.Forms.Wpf.ProjectConverter", "Gtk4.Forms.Wpf.ProjectConverter\Gtk4.Forms.Wpf.ProjectConverter.csproj", "{08764805-1DCF-4CE5-BC8E-AB2453571111}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk.Forms.ProjectConverter.Tests", "Gtk.Forms.ProjectConverter.Tests\Gtk.Forms.ProjectConverter.Tests.csproj", "{2AA1C21D-567A-4CF0-A718-A0DCAAB871D3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk4.Forms.Wpf.ProjectConverter.Tests", "Gtk4.Forms.Wpf.ProjectConverter.Tests\Gtk4.Forms.Wpf.ProjectConverter.Tests.csproj", "{2AA1C21D-567A-4CF0-A718-A0DCAAB871D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk.Forms.Wpf", "Gtk.Forms.Wpf\Gtk.Forms.Wpf.csproj", "{AED658D7-9E85-4E55-9564-A66395C5B02D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk4.Forms.Wpf", "Gtk4.Forms.Wpf\Gtk4.Forms.Wpf.csproj", "{AED658D7-9E85-4E55-9564-A66395C5B02D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk.Forms.WpfSample", "Gtk.Forms.WpfSample\Gtk.Forms.WpfSample.csproj", "{A5724D86-3A93-46E1-8257-4D72FD5C5F16}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk4.Forms.WpfSample", "Gtk4.Forms.WpfSample\Gtk4.Forms.WpfSample.csproj", "{A5724D86-3A93-46E1-8257-4D72FD5C5F16}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk.Forms.Integration.Tests", "Gtk.Forms.Integration.Tests\Gtk.Forms.Integration.Tests.csproj", "{94DD8146-CB1D-4EE7-A32E-409EA04CD1BE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk4.Forms.Integration.Tests", "Gtk4.Forms.Integration.Tests\Gtk4.Forms.Integration.Tests.csproj", "{94DD8146-CB1D-4EE7-A32E-409EA04CD1BE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
