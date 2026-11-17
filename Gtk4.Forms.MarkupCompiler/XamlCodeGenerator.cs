@@ -625,8 +625,9 @@ namespace Gtk4.Forms.MarkupCompiler
 
 		/// <summary>
 		/// Handles property-element children whose property name contains a dot
-		/// (e.g. <c>&lt;Button.Template&gt;</c>, <c>&lt;ListBox.ItemTemplate&gt;</c>).
-		/// Only template-typed properties are emitted; everything else is skipped.
+		/// (e.g. <c>&lt;Button.Template&gt;</c>, <c>&lt;ListBox.ItemTemplate&gt;</c>,
+		/// <c>&lt;VisualStateManager.VisualStateGroups&gt;</c>).
+		/// Only template-typed properties and VSM groups are emitted; everything else is skipped.
 		/// </summary>
 		void EmitPropertyElement(
 			IndentedWriter w,
@@ -646,10 +647,17 @@ namespace Gtk4.Forms.MarkupCompiler
 			// re-emitting only the first template child.
 			if (propName == "Resources") return;
 
+			// VisualStateManager.VisualStateGroups attached-property form.
+			string ownerLocalName = localName.Substring(0, dot);
+			if (ownerLocalName == "VisualStateManager" && propName == "VisualStateGroups")
+			{
+				EmitVisualStateGroups(w, propEl, xNs, parentVar, ref counter);
+				return;
+			}
+
 			// Template and ContentTemplate property elements contain a ControlTemplate child.
 			// ItemTemplate property elements contain a DataTemplate child.
 			// MultiBinding property elements contain a MultiBinding child.
-			string ownerLocalName = localName.Substring(0, dot);
 			string ownerFqType = WpfXmlnsMap.Resolve(ownerLocalName) ?? ownerLocalName;
 
 			foreach (XElement child in propEl.Elements())

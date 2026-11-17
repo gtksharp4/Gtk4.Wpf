@@ -32,6 +32,10 @@ namespace Gtk4.Forms.MarkupCompiler
 			{ "Application",        "System.Windows.Application" },
 			{ "ResourceDictionary", "System.Windows.ResourceDictionary" },
 			{ "Style",              "System.Windows.Style" },
+			// VisualStateManager
+			{ "VisualStateManager", "System.Windows.VisualStateManager" },
+			{ "VisualStateGroup",   "System.Windows.VisualStateGroup" },
+			{ "VisualState",        "System.Windows.VisualState" },
 			// Triggers
 			{ "Trigger",            "System.Windows.Trigger" },
 			{ "DataTrigger",        "System.Windows.DataTrigger" },
