@@ -784,6 +784,20 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   Full-suite total now **1289 tests** (60 WindowsBase + 1041 PresentationFramework + 173 MarkupCompiler +
   15 ProjectConverter — the tree also compiles concurrent imaging/markup-NuGet work landed in `7a0e25e1`),
   all pass timeboxed; `Gtk.Forms.WpfSample` (unmodified WPF) still compiles.
+- **`WebBrowser` control — DONE (Photino.NET).** `System.Windows.Controls.WebBrowser : Control` with the full
+  WPF surface: `Source` DP, read-only `CanGoBack`/`CanGoForward`, `Navigate`/`NavigateToString`/`GoBack`/
+  `GoForward`/`Refresh`/`InvokeScript`, `Navigating`(cancelable, with `NavigationMode`)/`Navigated`/
+  `LoadCompleted` (fires exactly once), and a back/forward journal. Backed by **Photino.NET 4.0.16**
+  (WebView2/WebKitGTK/WKWebView) via an injectable **`IWebBrowserHost`** seam (`PhotinoWebBrowserHost`
+  default; tests inject a fake — **no native window is ever created headless**). Native-absent / no-`DISPLAY`
+  degradation is handled by the `new PhotinoWindow(...)` try/catch. **Windowing limitation**: Photino owns a
+  native top-level window (no public API to embed as a child GTK widget), so the in-GTK area is a
+  placeholder/launcher and the page renders in Photino's own window — true in-widget embedding is a later
+  refinement. `InvokeScript` JSON-encodes args and sends a web message (Photino has no synchronous JS-eval,
+  so it is best-effort/returns null). Opus-reviewed + fixed (single-fire `LoadCompleted`, dead native-probe
+  removed, cancelable `Navigating` on journal navigations, files split ≤200 lines). **39 tests**
+  (model + history + InvokeScript + GTK smoke); PF suite **1111 pass**, warning-clean; sample + the
+  build-and-run integration test still pass with the transitive Photino dependency.
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
   true `{DynamicResource}` change-tracking;
   `Gtk.PopoverMenu` integration for `MenuItem`; element-level `FrameworkElement.Triggers` auto-attach on
