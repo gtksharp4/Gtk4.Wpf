@@ -54,13 +54,14 @@ namespace Gtk4.Forms.MarkupCompiler
 			var generated = new List<ITaskItem>();
 			var generator = new XamlCodeGenerator();
 
-			// Thread reference paths into the DP symbol resolver when available.
+			// Thread reference paths into the DP symbol resolver and xmlns-definition source.
 			if (ReferencePaths != null && ReferencePaths.Length > 0)
 			{
 				var paths = new List<string>(ReferencePaths.Length);
 				foreach (ITaskItem item in ReferencePaths)
 					paths.Add(item.ItemSpec);
 				generator.SetReferencePaths(paths);
+				generator.SetXmlnsDefinitionSource(new AssemblyXmlnsDefinitionSource(paths));
 			}
 
 			foreach (ITaskItem item in XamlFiles)
