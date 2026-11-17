@@ -100,6 +100,8 @@ public partial class RichTextBox : Control
 			}
 			finally { _updating = false; }
 		}
+
+		RaiseTextChanged();
 	}
 
 	// ── Internal helper used by TextRange/TextSelection ───────────────────────
@@ -118,6 +120,7 @@ public partial class RichTextBox : Control
 			para.Inlines.Add(new Run { Text = text });
 		Document.Blocks.Add(para);
 		SyncBufferFromDocument();
+		RaiseTextChanged();
 	}
 
 	/// <summary>Initialises the selection lazily.</summary>

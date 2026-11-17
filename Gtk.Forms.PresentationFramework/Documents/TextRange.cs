@@ -20,6 +20,9 @@ public class TextRange
 		get => _owner.Document?.GetAllText() ?? string.Empty;
 		set => _owner.SetDocumentText(value);
 	}
+
+	/// <summary>True when the range covers no text.</summary>
+	public bool IsEmpty => Text.Length == 0;
 }
 
 /// <summary>
