@@ -9,6 +9,13 @@ namespace System.Windows;
 /// Manages the visual states of a <see cref="Controls.Control"/> by transitioning
 /// between <see cref="VisualState"/>s within <see cref="VisualStateGroup"/>s.
 /// <para>
+/// <c>GetVisualStateGroups</c> and <c>SetVisualStateGroups</c> operate on any
+/// <see cref="FrameworkElement"/> (WPF semantics: VSM groups may be declared on
+/// any element, not only <see cref="Controls.Control"/>).
+/// <c>GoToState</c> still requires a <see cref="Controls.Control"/> because setter
+/// application and storyboard Begin use the control's dependency-object identity.
+/// </para>
+/// <para>
 /// Storyboard application is deferred to the animation track (a future round).
 /// This implementation: records the current state, raises
 /// <see cref="VisualStateGroup.CurrentStateChanging"/> and
@@ -21,32 +28,32 @@ public class VisualStateManager
 {
 	// ── VisualStateGroups attached property ────────────────────────────────
 
-	// ConditionalWeakTable: control is the key; no strong ref kept, so controls
+	// ConditionalWeakTable: element is the key; no strong ref kept, so elements
 	// are eligible for GC once they are unreachable from the app side.
 	// Value type is ObservableCollection<VisualStateGroup> which has a public
 	// parameterless constructor, satisfying ConditionalWeakTable's constraint.
-	static readonly ConditionalWeakTable<Controls.Control, ObservableCollection<VisualStateGroup>> _groups =
-		new ConditionalWeakTable<Controls.Control, ObservableCollection<VisualStateGroup>>();
+	static readonly ConditionalWeakTable<FrameworkElement, ObservableCollection<VisualStateGroup>> _groups =
+		new ConditionalWeakTable<FrameworkElement, ObservableCollection<VisualStateGroup>>();
 
 	/// <summary>
-	/// Returns the <see cref="VisualStateGroup"/>s attached to <paramref name="control"/>,
+	/// Returns the <see cref="VisualStateGroup"/>s attached to <paramref name="element"/>,
 	/// or an empty list when none have been set.
 	/// </summary>
-	public static IList<VisualStateGroup> GetVisualStateGroups(Controls.Control control)
+	public static IList<VisualStateGroup> GetVisualStateGroups(FrameworkElement element)
 	{
-		if (control == null) throw new ArgumentNullException(nameof(control));
-		return _groups.GetOrCreateValue(control);
+		if (element == null) throw new ArgumentNullException(nameof(element));
+		return _groups.GetOrCreateValue(element);
 	}
 
 	/// <summary>
 	/// Replaces the <see cref="VisualStateGroup"/> list attached to
-	/// <paramref name="control"/>.
+	/// <paramref name="element"/>.
 	/// </summary>
 	public static void SetVisualStateGroups(
-		Controls.Control control,
+		FrameworkElement element,
 		IList<VisualStateGroup> groups)
 	{
-		if (control == null) throw new ArgumentNullException(nameof(control));
+		if (element == null) throw new ArgumentNullException(nameof(element));
 
 		// Normalise to ObservableCollection<VisualStateGroup> so it fits the table value type.
 		var collection = groups as ObservableCollection<VisualStateGroup>
@@ -54,8 +61,8 @@ public class VisualStateManager
 			                 groups ?? (IEnumerable<VisualStateGroup>)Array.Empty<VisualStateGroup>());
 
 		// ConditionalWeakTable: remove any existing entry then add the new one.
-		_groups.Remove(control);
-		_groups.Add(control, collection);
+		_groups.Remove(element);
+		_groups.Add(element, collection);
 	}
 
 	// ── GoToState ─────────────────────────────────────────────────────────
