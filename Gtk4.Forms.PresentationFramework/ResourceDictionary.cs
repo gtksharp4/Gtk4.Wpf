@@ -13,12 +13,23 @@ public class ResourceDictionary : IDictionary<object, object?>
 	readonly Dictionary<object, object?> _inner = new Dictionary<object, object?>();
 
 	/// <summary>
+	/// Weak-reference subscriber list backing <see cref="ResourceChanged"/>.
+	/// </summary>
+	readonly WeakResourceChangedHandlers _resourceChangedHandlers = new();
+
+	/// <summary>
 	/// Fired when an entry is added, replaced, removed (<paramref name="newValue"/> is
 	/// <see cref="DependencyProperty.UnsetValue"/>), or the dictionary is cleared
 	/// (<paramref name="key"/> is <c>null</c>).  Live <c>{DynamicResource}</c> references
 	/// subscribe here to re-resolve when their key changes.
+	/// Subscribers are held as <em>weak</em> references, so a collected element is
+	/// automatically skipped; the dictionary does not pin it alive.
 	/// </summary>
-	internal event Action<object?, object?>? ResourceChanged;
+	internal event Action<object?, object?> ResourceChanged
+	{
+		add => _resourceChangedHandlers.Add(value);
+		remove => _resourceChangedHandlers.Remove(value);
+	}
 
 	/// <summary>
 	/// Merged resource dictionaries. Resources in merged dictionaries are consulted
@@ -40,7 +51,7 @@ public class ResourceDictionary : IDictionary<object, object?>
 		set
 		{
 			_inner[key] = value;
-			ResourceChanged?.Invoke(key, value);
+			_resourceChangedHandlers.Raise(key, value);
 		}
 	}
 
@@ -66,7 +77,7 @@ public class ResourceDictionary : IDictionary<object, object?>
 	public void Add(object key, object? value)
 	{
 		_inner.Add(key, value);
-		ResourceChanged?.Invoke(key, value);
+		_resourceChangedHandlers.Raise(key, value);
 	}
 
 	/// <inheritdoc/>
@@ -74,7 +85,7 @@ public class ResourceDictionary : IDictionary<object, object?>
 	{
 		bool removed = _inner.Remove(key);
 		if (removed)
-			ResourceChanged?.Invoke(key, DependencyProperty.UnsetValue);
+			_resourceChangedHandlers.Raise(key, DependencyProperty.UnsetValue);
 		return removed;
 	}
 
@@ -82,7 +93,7 @@ public class ResourceDictionary : IDictionary<object, object?>
 	public void Clear()
 	{
 		_inner.Clear();
-		ResourceChanged?.Invoke(null, DependencyProperty.UnsetValue);
+		_resourceChangedHandlers.Raise(null, DependencyProperty.UnsetValue);
 	}
 
 	/// <inheritdoc/>
@@ -101,7 +112,7 @@ public class ResourceDictionary : IDictionary<object, object?>
 	public void Add(KeyValuePair<object, object?> item)
 	{
 		_inner.Add(item.Key, item.Value);
-		ResourceChanged?.Invoke(item.Key, item.Value);
+		_resourceChangedHandlers.Raise(item.Key, item.Value);
 	}
 
 	/// <inheritdoc/>
@@ -117,7 +128,7 @@ public class ResourceDictionary : IDictionary<object, object?>
 	{
 		bool removed = ((ICollection<KeyValuePair<object, object?>>)_inner).Remove(item);
 		if (removed)
-			ResourceChanged?.Invoke(item.Key, DependencyProperty.UnsetValue);
+			_resourceChangedHandlers.Raise(item.Key, DependencyProperty.UnsetValue);
 		return removed;
 	}
 
