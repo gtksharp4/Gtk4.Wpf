@@ -30,9 +30,13 @@ public class Popup : FrameworkElement
 	{
 		var p = (Popup)d;
 		if (p._updating) return;
-		// Only interact with GTK when the widget is already materialised.
-		if (!p.IsWidgetCreated) return;
 		var open = (bool?)e.NewValue == true;
+		// Widget not yet materialised: remember intent; replay at OnWidgetCreated.
+		if (!p.IsWidgetCreated)
+		{
+			p._pendingOpen = open;
+			return;
+		}
 		if (open) p.DoOpen(); else p.DoClose();
 	}
 
@@ -99,6 +103,11 @@ public class Popup : FrameworkElement
 
 	Gtk.Popover? _popover;
 	bool _updating;
+	/// <summary>
+	/// Remembers an <see cref="IsOpen"/> assignment made before the backing widget was
+	/// created. Consumed and cleared in <see cref="OnWidgetCreated"/>.
+	/// </summary>
+	internal bool _pendingOpen;
 
 	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
@@ -137,6 +146,18 @@ public class Popup : FrameworkElement
 		_updating = true;
 		try { SetValue(IsOpenProperty, false); }
 		finally { _updating = false; }
+	}
+
+	/// <inheritdoc/>
+	protected override void OnWidgetCreated(Gtk.Widget widget)
+	{
+		base.OnWidgetCreated(widget);
+		// Replay any IsOpen assignment that arrived before the backing widget existed.
+		if (_pendingOpen)
+		{
+			_pendingOpen = false;
+			DoOpen();
+		}
 	}
 
 	/// <summary>Returns the underlying <see cref="Gtk.Popover"/> (for GTK smoke tests).</summary>

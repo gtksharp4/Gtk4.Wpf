@@ -27,9 +27,13 @@ public class ContextMenu : ItemsControl
 	{
 		var cm = (ContextMenu)d;
 		if (cm._updating) return;
-		// Only interact with GTK when the widget is already materialised.
-		if (!cm.IsWidgetCreated) return;
 		var open = (bool?)e.NewValue == true;
+		// Widget not yet materialised: remember intent; replay at OnWidgetCreated.
+		if (!cm.IsWidgetCreated)
+		{
+			cm._pendingOpen = open;
+			return;
+		}
 		if (open) cm.ShowPopover(); else cm.HidePopover();
 	}
 
@@ -62,6 +66,11 @@ public class ContextMenu : ItemsControl
 	Gtk.Box? _itemsBox;
 	Gtk.Popover? _popover;
 	bool _updating;
+	/// <summary>
+	/// Remembers an <see cref="IsOpen"/> assignment made before the backing widget was
+	/// created. Consumed and cleared in <see cref="OnWidgetCreated"/>.
+	/// </summary>
+	internal bool _pendingOpen;
 
 	/// <inheritdoc/>
 	protected override Gtk.Widget CreateItemsWidget()
@@ -115,6 +124,18 @@ public class ContextMenu : ItemsControl
 		_updating = true;
 		try { SetValue(IsOpenProperty, false); }
 		finally { _updating = false; }
+	}
+
+	/// <inheritdoc/>
+	protected override void OnWidgetCreated(Gtk.Widget widget)
+	{
+		base.OnWidgetCreated(widget);
+		// Replay any IsOpen=true assignment that arrived before the backing widget existed.
+		if (_pendingOpen)
+		{
+			_pendingOpen = false;
+			ShowPopover();
+		}
 	}
 }
 
