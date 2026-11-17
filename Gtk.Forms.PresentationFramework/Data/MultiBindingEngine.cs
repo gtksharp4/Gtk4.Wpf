@@ -9,6 +9,11 @@ namespace System.Windows.Data;
 /// Manages <see cref="MultiBinding"/> instances on target <see cref="FrameworkElement"/>s.
 /// Resolves each child <see cref="Binding"/>, subscribes to source INPC, and calls the
 /// <see cref="IMultiValueConverter"/> to push a combined value to the target DP.
+/// <para>
+/// TwoWay note: a converter-less TwoWay <see cref="MultiBinding"/> does not write back —
+/// there is no <see cref="IMultiValueConverter.ConvertBack"/> to call.  The target-change
+/// subscription is skipped when <see cref="MultiBinding.Converter"/> is <c>null</c>.
+/// </para>
 /// </summary>
 internal static class MultiBindingEngine
 {
@@ -120,7 +125,9 @@ internal static class MultiBindingEngine
 			Push(target);
 
 			// TwoWay: subscribe to target DP changes and write-back via ConvertBack.
-			if (_mb.Mode == BindingMode.TwoWay)
+			// A converter-less TwoWay MultiBinding cannot write back (no ConvertBack target),
+			// so skip registering the dead listener entirely.
+			if (_mb.Mode == BindingMode.TwoWay && _mb.Converter != null)
 			{
 				_targetChangedCallback = OnTargetPropertyChanged;
 				TargetChangeTracker.Subscribe(target, _dp, _targetChangedCallback);

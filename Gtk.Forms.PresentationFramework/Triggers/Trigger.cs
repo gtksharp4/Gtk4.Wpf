@@ -85,7 +85,7 @@ public class Trigger : TriggerBase
 			bool match = IsMatch(_target.GetValue(_dp));
 			bool active = _appliedDps != null;
 			if (match && !active) Apply();
-			else if (!match && active) UnApply();
+			else if (!match && active) UnApply(runActions: true);
 		}
 
 		bool IsMatch(object? current) =>
@@ -100,20 +100,28 @@ public class Trigger : TriggerBase
 				action.Invoke(_target);
 		}
 
-		void UnApply()
+		/// <param name="runActions">
+		/// <c>true</c> on a genuine active→inactive condition transition;
+		/// <c>false</c> on style teardown (Dispose/Detach) — setters are removed
+		/// silently without running ExitActions (mirrors WPF behaviour).
+		/// </param>
+		void UnApply(bool runActions)
 		{
 			if (_appliedDps == null) return;
 			var dps = _appliedDps;
 			_appliedDps = null;
 			_target.ClearTriggerValues(dps, this);
-			foreach (var action in _trigger.ExitActions)
-				action.Invoke(_target);
+			if (runActions)
+			{
+				foreach (var action in _trigger.ExitActions)
+					action.Invoke(_target);
+			}
 		}
 
 		internal void Dispose()
 		{
 			_target.RemoveChangeHook(_dp, _hook);
-			UnApply();
+			UnApply(runActions: false);
 		}
 	}
 }

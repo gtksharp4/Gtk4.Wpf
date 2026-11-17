@@ -66,6 +66,7 @@ public class XmlDataProvider : DataSourceProvider
 		if (!string.IsNullOrEmpty(_inlineXml))
 		{
 			doc = new XmlDocument();
+			doc.XmlResolver = null; // defence-in-depth: no XXE
 			doc.LoadXml(_inlineXml!);
 		}
 		else if (_document != null)
@@ -75,6 +76,7 @@ public class XmlDataProvider : DataSourceProvider
 		else if (_source != null)
 		{
 			doc = new XmlDocument();
+			doc.XmlResolver = null; // defence-in-depth: no XXE
 			try { doc.Load(_source.ToString()); }
 			catch (Exception ex) { OnQueryFinished(ex); return; }
 		}

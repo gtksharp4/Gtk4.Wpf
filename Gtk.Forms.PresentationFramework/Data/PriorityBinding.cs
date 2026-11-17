@@ -47,6 +47,18 @@ internal static class PriorityBindingEngine
 		if (idx >= 0) { list[idx].Deactivate(); list.RemoveAt(idx); }
 	}
 
+	/// <summary>
+	/// Deactivates all priority-binding records on <paramref name="target"/>,
+	/// detaching their INPC subscriptions.  Called by
+	/// <see cref="BindingEngine.ClearAllBindings"/>.
+	/// </summary>
+	internal static void ClearAll(FrameworkElement target)
+	{
+		if (!_records.TryGetValue(target, out var list)) return;
+		foreach (var r in list) r.Deactivate();
+		list.Clear();
+	}
+
 	// ── Record ───────────────────────────────────────────────────────────────
 
 	internal sealed class PriorityRecord
@@ -83,6 +95,11 @@ internal static class PriorityBindingEngine
 
 		internal void Push(FrameworkElement target)
 		{
+			// Re-subscribe sources so a source that changed identity (e.g. DataContext swap)
+			// gets its new INPC wired up before we evaluate the chain.
+			Detach();
+			SubscribeSources(target);
+
 			foreach (var b in _pb.Bindings)
 			{
 				var src = ResolveSource(target, b);
@@ -106,8 +123,17 @@ internal static class PriorityBindingEngine
 				var src = ResolveSource(target, b);
 				if (src is INotifyPropertyChanged inpc)
 				{
+					// Filter by first path segment so only the relevant property
+					// triggers a re-push (mirrors BindingRecord / DataTriggerState).
+					string? watchedProp = string.IsNullOrEmpty(b.Path)
+						? null
+						: b.Path!.Split('.')[0];
+
 					PropertyChangedEventHandler handler = (s, e) =>
 					{
+						if (watchedProp != null
+						    && e.PropertyName != null
+						    && e.PropertyName != watchedProp) return;
 						if (_targetRef.TryGetTarget(out var t)) Push(t);
 					};
 					inpc.PropertyChanged += handler;

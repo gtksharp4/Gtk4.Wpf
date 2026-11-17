@@ -98,7 +98,7 @@ public class MultiDataTrigger : TriggerBase
 			bool allMatch = AllConditionsMet();
 			bool active = _appliedDps != null;
 			if (allMatch && !active) Apply();
-			else if (!allMatch && active) UnApply();
+			else if (!allMatch && active) UnApply(runActions: true);
 		}
 
 		bool AllConditionsMet()
@@ -127,14 +127,21 @@ public class MultiDataTrigger : TriggerBase
 				action.Invoke(_target);
 		}
 
-		void UnApply()
+		/// <param name="runActions">
+		/// <c>true</c> on a genuine active→inactive condition transition;
+		/// <c>false</c> on style teardown — setters removed silently, no ExitActions.
+		/// </param>
+		void UnApply(bool runActions)
 		{
 			if (_appliedDps == null) return;
 			var dps = _appliedDps;
 			_appliedDps = null;
 			_target.ClearTriggerValues(dps, this);
-			foreach (var action in _trigger.ExitActions)
-				action.Invoke(_target);
+			if (runActions)
+			{
+				foreach (var action in _trigger.ExitActions)
+					action.Invoke(_target);
+			}
 		}
 
 		internal void Dispose()
@@ -142,7 +149,7 @@ public class MultiDataTrigger : TriggerBase
 			if (_dcHook != null)
 				_target.RemoveChangeHook(FrameworkElement.DataContextProperty, _dcHook);
 			UnsubscribeSources();
-			UnApply();
+			UnApply(runActions: false);
 		}
 	}
 

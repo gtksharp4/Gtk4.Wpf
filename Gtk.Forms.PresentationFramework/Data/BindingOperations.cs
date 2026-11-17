@@ -41,9 +41,9 @@ public static class BindingOperations
 		if (dp == null) throw new ArgumentNullException(nameof(dp));
 		if (target is not FrameworkElement fe) return;
 
+		// BindingEngine.ClearBinding is the single authority: it clears simple,
+		// multi, and priority records plus the expression map entry.
 		BindingEngine.ClearBinding(fe, dp);
-		MultiBindingEngine.ClearForDp(fe, dp);
-		PriorityBindingEngine.ClearForDp(fe, dp);
 	}
 
 	/// <summary>Removes all bindings on <paramref name="target"/>.</summary>

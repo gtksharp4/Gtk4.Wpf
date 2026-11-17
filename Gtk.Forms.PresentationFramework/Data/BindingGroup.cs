@@ -61,6 +61,11 @@ public class BindingGroup
 	/// Runs <see cref="ValidationRules"/> and, if all pass, writes staged values
 	/// to sources via each expression's <see cref="BindingExpression.UpdateSource"/>.
 	/// Returns <c>true</c> on success.
+	/// <para>
+	/// Exception note: the write loop is not transactional — an exception thrown by a
+	/// mid-loop source write is not caught and will leave subsequent expressions unwritten.
+	/// Callers that require all-or-nothing semantics must wrap this call themselves.
+	/// </para>
 	/// </summary>
 	public bool CommitEdit()
 	{

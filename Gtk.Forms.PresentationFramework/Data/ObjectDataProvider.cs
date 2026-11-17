@@ -6,6 +6,11 @@ namespace System.Windows.Data;
 /// <summary>
 /// Creates an object from a CLR type (or uses an existing instance) and optionally
 /// invokes a named method, exposing the result as <see cref="DataSourceProvider.Data"/>.
+/// <para>
+/// Auto-refresh note: <see cref="ObjectDataProvider"/> does not monitor property changes on
+/// the underlying object or its method parameters.  Call <see cref="DataSourceProvider.Refresh"/>
+/// explicitly when the source data changes and a fresh query is needed.
+/// </para>
 /// </summary>
 public class ObjectDataProvider : DataSourceProvider
 {

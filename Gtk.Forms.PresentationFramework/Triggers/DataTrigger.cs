@@ -132,7 +132,7 @@ public class DataTrigger : TriggerBase
 			bool match = Equals(current, _trigger.Value);
 			bool active = _appliedDps != null;
 			if (match && !active) Apply();
-			else if (!match && active) UnApply();
+			else if (!match && active) UnApply(runActions: true);
 		}
 
 		void Apply()
@@ -144,14 +144,21 @@ public class DataTrigger : TriggerBase
 				action.Invoke(_target);
 		}
 
-		void UnApply()
+		/// <param name="runActions">
+		/// <c>true</c> on a genuine active→inactive condition transition;
+		/// <c>false</c> on style teardown — setters removed silently, no ExitActions.
+		/// </param>
+		void UnApply(bool runActions)
 		{
 			if (_appliedDps == null) return;
 			var dps = _appliedDps;
 			_appliedDps = null;
 			_target.ClearTriggerValues(dps, this);
-			foreach (var action in _trigger.ExitActions)
-				action.Invoke(_target);
+			if (runActions)
+			{
+				foreach (var action in _trigger.ExitActions)
+					action.Invoke(_target);
+			}
 		}
 
 		internal void Dispose()
@@ -159,7 +166,7 @@ public class DataTrigger : TriggerBase
 			if (_dcHook != null)
 				_target.RemoveChangeHook(FrameworkElement.DataContextProperty, _dcHook);
 			UnsubscribeSource();
-			UnApply();
+			UnApply(runActions: false);
 		}
 	}
 }
