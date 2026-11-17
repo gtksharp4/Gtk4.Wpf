@@ -51,7 +51,14 @@ public partial class FrameworkElement
 
 	internal static void ApplyTooltipToWidget(Gtk.Widget widget, object? tip)
 	{
-		widget.TooltipText = tip?.ToString() ?? string.Empty;
+		// Extract the display text. For a ToolTip control, prefer its Content; otherwise ToString().
+		string text;
+		if (tip is Controls.ToolTip tt)
+			text = tt.Content?.ToString() ?? string.Empty;
+		else
+			text = tip?.ToString() ?? string.Empty;
+
+		widget.TooltipText = text;
 		widget.HasTooltip = tip != null;
 	}
 
