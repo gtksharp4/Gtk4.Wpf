@@ -100,90 +100,6 @@ namespace System.Windows.Controls
 		/// <summary>True when <see cref="GoForward"/> is possible.</summary>
 		public bool CanGoForward => (bool)(GetValue(CanGoForwardProperty) ?? false);
 
-		// ── Events ────────────────────────────────────────────────────────────────
-
-		/// <summary>Raised before navigation; set <c>Cancel = true</c> to abort.</summary>
-		public event EventHandler<NavigatingCancelEventArgs>? Navigating;
-
-		/// <summary>Raised after the host accepts the navigation request.</summary>
-		public event EventHandler<NavigatedEventArgs>? Navigated;
-
-		/// <summary>Raised when the page finishes loading.</summary>
-		public event EventHandler<NavigatedEventArgs>? LoadCompleted;
-
-		// ── Navigation methods ────────────────────────────────────────────────────
-
-		/// <summary>Navigates to <paramref name="source"/>.</summary>
-		public void Navigate(Uri source)
-		{
-			if (source == null) throw new ArgumentNullException(nameof(source));
-			NavigateCore(source);
-		}
-
-		/// <summary>
-		/// WPF overload with extra parameters accepted for source compatibility.
-		/// <paramref name="targetFrameName"/>, <paramref name="postData"/> and
-		/// <paramref name="additionalHeaders"/> are ignored; only the URI is acted upon.
-		/// </summary>
-		public void Navigate(
-			Uri source,
-			string? targetFrameName,
-			byte[]? postData,
-			string? additionalHeaders)
-		{
-			Navigate(source);
-		}
-
-		/// <summary>Loads raw <paramref name="html"/>; fires <see cref="LoadCompleted"/>.</summary>
-		public void NavigateToString(string html)
-		{
-			if (html == null) throw new ArgumentNullException(nameof(html));
-			Host.NavigateToString(html);
-			// Best-effort: fire LoadCompleted immediately (no URI for string navigations).
-			LoadCompleted?.Invoke(this, new NavigatedEventArgs(null, null));
-		}
-
-		/// <summary>Navigates back; does nothing when <see cref="CanGoBack"/> is false.</summary>
-		public void GoBack()
-		{
-			if (!CanGoBack) return;
-			var uri = HistoryGoBack();
-			Host.GoBack();
-			CommitNavigation(uri, fromJournal: true);
-		}
-
-		/// <summary>Navigates forward; does nothing when <see cref="CanGoForward"/> is false.</summary>
-		public void GoForward()
-		{
-			if (!CanGoForward) return;
-			var uri = HistoryGoForward();
-			Host.GoForward();
-			CommitNavigation(uri, fromJournal: true);
-		}
-
-		/// <summary>Reloads the current source URI.</summary>
-		public void Refresh()
-		{
-			var uri = HistoryCurrent();
-			if (uri == null) return;
-			Host.Refresh();
-			// Re-fire events for the same URI.
-			CommitNavigation(uri, fromJournal: true);
-		}
-
-		/// <summary>
-		/// Evaluates <paramref name="scriptName"/> in the current page.
-		/// Routes to <see cref="IWebBrowserHost.ExecuteScript"/>; through the default
-		/// Photino host this returns <c>null</c> (see <see cref="IWebBrowserHost"/>).
-		/// </summary>
-		public object? InvokeScript(string scriptName, params object[] args)
-		{
-			var script = args.Length == 0
-				? scriptName
-				: $"{scriptName}({string.Join(",", args)})";
-			return Host.ExecuteScript(script);
-		}
-
 		// ── GTK backing widget ────────────────────────────────────────────────────
 
 		Gtk.Box? _container;
@@ -198,7 +114,7 @@ namespace System.Windows.Controls
 			return _container;
 		}
 
-		void UpdatePlaceholder()
+		internal void UpdatePlaceholder()
 		{
 			if (_placeholder == null) return;
 			var uri = HistoryCurrent();
@@ -218,53 +134,6 @@ namespace System.Windows.Controls
 				_host.Dispose();
 				_host = null;
 			}
-		}
-
-		// ── Internal helpers ──────────────────────────────────────────────────────
-
-		void NavigateCore(Uri uri)
-		{
-			var args = new NavigatingCancelEventArgs(null, uri, NavigationMode.New);
-			Navigating?.Invoke(this, args);
-			if (args.Cancel) return;
-
-			HistoryPush(uri);
-			Host.Navigate(uri);
-
-			// Write Source DP without re-triggering OnSourceDpChanged.
-			_suppressSourceCallback = true;
-			try { SetValue(SourceProperty, uri); }
-			finally { _suppressSourceCallback = false; }
-
-			UpdatePlaceholder();
-			Navigated?.Invoke(this, new NavigatedEventArgs(null, uri));
-
-			// Best-effort immediate LoadCompleted — the host also raises it via
-			// OnHostLoadCompleted when the page actually finishes loading.
-			LoadCompleted?.Invoke(this, new NavigatedEventArgs(null, uri));
-		}
-
-		void CommitNavigation(Uri uri, bool fromJournal)
-		{
-			_suppressSourceCallback = true;
-			try { SetValue(SourceProperty, uri); }
-			finally { _suppressSourceCallback = false; }
-
-			UpdatePlaceholder();
-
-			if (!fromJournal)
-				return;
-
-			Navigated?.Invoke(this, new NavigatedEventArgs(null, uri));
-			LoadCompleted?.Invoke(this, new NavigatedEventArgs(null, uri));
-		}
-
-		void OnHostLoadCompleted(Uri? uri)
-		{
-			// Host signalled page load; fire LoadCompleted with the host-reported URI.
-			// NavigateCore already fired it optimistically, but this confirms real completion.
-			var effective = uri ?? HistoryCurrent();
-			LoadCompleted?.Invoke(this, new NavigatedEventArgs(null, effective));
 		}
 	}
 }

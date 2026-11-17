@@ -51,6 +51,14 @@ namespace System.Windows.Controls
 		Uri? HistoryCurrent() =>
 			_cursor >= 0 && _cursor < _history.Count ? _history[_cursor] : null;
 
+		/// <summary>Returns the entry one step back without moving the cursor, or <c>null</c>.</summary>
+		Uri? PeekBack() =>
+			_cursor > 0 ? _history[_cursor - 1] : null;
+
+		/// <summary>Returns the entry one step forward without moving the cursor, or <c>null</c>.</summary>
+		Uri? PeekForward() =>
+			_cursor < _history.Count - 1 ? _history[_cursor + 1] : null;
+
 		void UpdateJournalDPs()
 		{
 			SetValue(CanGoBackPropertyKey, _cursor > 0);

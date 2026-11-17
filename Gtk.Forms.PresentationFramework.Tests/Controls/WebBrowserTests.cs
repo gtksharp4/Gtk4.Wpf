@@ -7,8 +7,8 @@ using Xunit;
 namespace Gtk.Forms.PresentationFramework.Tests.Controls
 {
 	/// <summary>
-	/// Pure model tests for <see cref="WebBrowser"/>. No GTK, no Photino, no display needed.
-	/// A <see cref="FakeWebBrowserHost"/> is injected so all tests run in process.
+	/// Navigation, event-ordering, InvokeScript and Refresh tests for <see cref="WebBrowser"/>.
+	/// No GTK, no Photino.  <see cref="FakeWebBrowserHost"/> is injected.
 	/// </summary>
 	public class WebBrowserTests : IDisposable
 	{
@@ -97,7 +97,6 @@ namespace Gtk.Forms.PresentationFramework.Tests.Controls
 			var uri = new Uri("https://example.com/");
 			_wb.Navigate(uri);
 
-			// Source unchanged, host not called.
 			Assert.Null(_wb.Source);
 			Assert.Null(_fake.LastNavigatedUri);
 		}
@@ -130,76 +129,6 @@ namespace Gtk.Forms.PresentationFramework.Tests.Controls
 			Assert.True(fired);
 		}
 
-		// ── Back/forward history ──────────────────────────────────────────────────
-
-		[Fact]
-		public void CanGoBack_false_before_navigation()
-		{
-			Assert.False(_wb.CanGoBack);
-		}
-
-		[Fact]
-		public void CanGoBack_false_after_one_navigation()
-		{
-			_wb.Navigate(new Uri("https://a.com/"));
-			Assert.False(_wb.CanGoBack);
-		}
-
-		[Fact]
-		public void CanGoBack_true_after_two_navigations()
-		{
-			_wb.Navigate(new Uri("https://a.com/"));
-			_wb.Navigate(new Uri("https://b.com/"));
-			Assert.True(_wb.CanGoBack);
-		}
-
-		[Fact]
-		public void GoBack_moves_cursor_to_previous()
-		{
-			var a = new Uri("https://a.com/");
-			var b = new Uri("https://b.com/");
-			var c = new Uri("https://c.com/");
-			_wb.Navigate(a);
-			_wb.Navigate(b);
-			_wb.Navigate(c);
-
-			_wb.GoBack();
-
-			Assert.Equal(b, _wb.Source);
-		}
-
-		[Fact]
-		public void GoBack_sets_CanGoForward_true()
-		{
-			_wb.Navigate(new Uri("https://a.com/"));
-			_wb.Navigate(new Uri("https://b.com/"));
-			_wb.GoBack();
-			Assert.True(_wb.CanGoForward);
-		}
-
-		[Fact]
-		public void Navigate_after_GoBack_trims_forward_history()
-		{
-			_wb.Navigate(new Uri("https://a.com/"));
-			_wb.Navigate(new Uri("https://b.com/"));
-			_wb.Navigate(new Uri("https://c.com/"));
-			_wb.GoBack(); // current=b
-			_wb.Navigate(new Uri("https://d.com/")); // trims c
-			Assert.False(_wb.CanGoForward);
-		}
-
-		[Fact]
-		public void GoBack_then_GoForward_returns_to_original()
-		{
-			var a = new Uri("https://a.com/");
-			var b = new Uri("https://b.com/");
-			_wb.Navigate(a);
-			_wb.Navigate(b);
-			_wb.GoBack();
-			_wb.GoForward();
-			Assert.Equal(b, _wb.Source);
-		}
-
 		// ── InvokeScript ─────────────────────────────────────────────────────────
 
 		[Fact]
@@ -210,10 +139,18 @@ namespace Gtk.Forms.PresentationFramework.Tests.Controls
 			Assert.Equal("42", result);
 		}
 
+		/// <summary>B6: string args must be JSON-quoted.</summary>
 		[Fact]
-		public void InvokeScript_with_args_builds_call_expression()
+		public void InvokeScript_with_string_args_json_encodes_them()
 		{
-			_wb.InvokeScript("setVal", "1", "2");
+			_wb.InvokeScript("setVal", "a", "b");
+			Assert.Equal("setVal(\"a\",\"b\")", _fake.LastExecutedScript);
+		}
+
+		[Fact]
+		public void InvokeScript_with_numeric_args_passes_literals()
+		{
+			_wb.InvokeScript("setVal", 1, 2);
 			Assert.Equal("setVal(1,2)", _fake.LastExecutedScript);
 		}
 
@@ -230,43 +167,9 @@ namespace Gtk.Forms.PresentationFramework.Tests.Controls
 		[Fact]
 		public void Refresh_does_nothing_before_any_navigation()
 		{
-			_wb.Refresh(); // must not throw
+			_wb.Refresh();
 			Assert.False(_fake.RefreshCalled);
 		}
 	}
 
-	// ── Fake host ─────────────────────────────────────────────────────────────────
-
-	/// <summary>
-	/// In-process stand-in for <see cref="IWebBrowserHost"/>. No native window, no Photino.
-	/// </summary>
-	sealed class FakeWebBrowserHost : IWebBrowserHost
-	{
-		public event Action<Uri?>? LoadCompleted;
-
-		public Uri? LastNavigatedUri { get; private set; }
-		public string? LastHtml { get; private set; }
-		public string? LastExecutedScript { get; private set; }
-		public string? ExecuteScriptResult { get; set; }
-		public bool GoBackCalled { get; private set; }
-		public bool GoForwardCalled { get; private set; }
-		public bool RefreshCalled { get; private set; }
-		public bool IsDisposed { get; private set; }
-
-		public void Navigate(Uri source) => LastNavigatedUri = source;
-		public void NavigateToString(string html) => LastHtml = html;
-		public string? ExecuteScript(string script)
-		{
-			LastExecutedScript = script;
-			return ExecuteScriptResult;
-		}
-		public void GoBack() => GoBackCalled = true;
-		public void GoForward() => GoForwardCalled = true;
-		public void Refresh() => RefreshCalled = true;
-
-		/// <summary>Triggers the load-completed callback (simulates page finish).</summary>
-		public void SimulateLoadCompleted(Uri? uri) => LoadCompleted?.Invoke(uri);
-
-		public void Dispose() => IsDisposed = true;
-	}
 }

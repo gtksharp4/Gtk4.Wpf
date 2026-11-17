@@ -11,18 +11,21 @@ namespace System.Windows.Controls
 	/// (headless CI, missing native DLL) the host degrades to a no-op placeholder so the
 	/// rest of the <see cref="WebBrowser"/> control still builds and loads without hanging.
 	///
+	/// <b>Availability probe:</b> the <c>new PhotinoWindow(…)</c> constructor is the real
+	/// guard — it is the first P/Invoke that loads <c>Photino.Native</c> and will throw
+	/// <see cref="DllNotFoundException"/> when the native library is absent.
+	///
 	/// <b>JS eval limitation:</b> Photino provides only <c>SendWebMessage</c> (fire-and-
 	/// forget).  <see cref="ExecuteScript"/> fires the message and immediately returns
 	/// <c>null</c>; callers that need a return value must register a web-message handler
 	/// on the Photino window directly (not supported through this seam).
 	///
 	/// <b>WebMessageReceived:</b> Photino fires page → host messages via
-	/// <c>RegisterWebMessageReceivedHandler</c>.  This host synthesises a
-	/// <see cref="LoadCompleted"/> event from a well-known <c>__loaded__</c> message; a
-	/// real app can inject a small bootstrap script to send it.  Without the script the
-	/// event is never raised through this channel — the <see cref="WebBrowser"/> control
-	/// fires <see cref="LoadCompleted"/> immediately on <see cref="Navigate"/> as a
-	/// best-effort fallback.
+	/// <c>RegisterWebMessageReceivedHandler</c>.  This host raises <see cref="LoadCompleted"/>
+	/// when a well-known <c>__loaded__</c> web-message arrives; a real app injects a small
+	/// bootstrap script to send it.  Without the script the event is never raised through
+	/// this channel; <see cref="WebBrowser"/> fires <see cref="LoadCompleted"/> immediately
+	/// as a best-effort fallback when the host does not confirm.
 	/// </remarks>
 	sealed class PhotinoWebBrowserHost : IWebBrowserHost
 	{
@@ -97,13 +100,32 @@ namespace System.Windows.Controls
 		/// Returns the existing window or creates one.  Returns <c>null</c> when the
 		/// Photino native library is unavailable or no display is accessible.
 		/// </summary>
+		/// <remarks>
+		/// The <c>new PhotinoWindow(…)</c> constructor call is the real native-lib guard:
+		/// it triggers the P/Invoke that loads <c>Photino.Native</c> and throws
+		/// <see cref="DllNotFoundException"/> if the library is absent.  The earlier
+		/// headless check avoids opening a window when no display is configured on Linux.
+		/// No other probe is needed — reflection on the managed type never triggers the
+		/// native load, so a <c>typeof(PhotinoWindow).FullName</c>-style check is a no-op.
+		/// </remarks>
 		Photino.NET.PhotinoWindow? EnsureWindow()
 		{
 			if (_window != null) return _window;
-			if (!IsPhotinoAvailable()) return null;
+
+			// On Linux, skip when no display is reachable (avoids a hang inside GDK).
+			if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+					System.Runtime.InteropServices.OSPlatform.Linux))
+			{
+				var display = Environment.GetEnvironmentVariable("DISPLAY");
+				var wayland = Environment.GetEnvironmentVariable("WAYLAND_DISPLAY");
+				if (string.IsNullOrEmpty(display) && string.IsNullOrEmpty(wayland))
+					return null;
+			}
 
 			try
 			{
+				// This ctor is the first P/Invoke into Photino.Native; DllNotFoundException
+				// here means the native library is absent — degrade to no-op.
 				var win = new Photino.NET.PhotinoWindow(null!)
 				{
 					Title = "WebBrowser",
@@ -114,7 +136,8 @@ namespace System.Windows.Controls
 			}
 			catch (Exception)
 			{
-				// Native lib present but window creation failed (e.g. no display on Linux).
+				// Native lib absent, or window creation failed (e.g. no display on Linux
+				// that slipped past the check above).  Degrade to no-op placeholder.
 				return null;
 			}
 		}
@@ -123,36 +146,6 @@ namespace System.Windows.Controls
 		{
 			if (message == "__loaded__")
 				LoadCompleted?.Invoke(_currentUri);
-		}
-
-		/// <summary>
-		/// Returns <c>false</c> in headless environments where the Photino native DLL is
-		/// absent or no display is configured.
-		/// </summary>
-		static bool IsPhotinoAvailable()
-		{
-			// On Linux, refuse to create a Photino window when no display is available.
-			if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
-					System.Runtime.InteropServices.OSPlatform.Linux))
-			{
-				var display = Environment.GetEnvironmentVariable("DISPLAY");
-				var wayland = Environment.GetEnvironmentVariable("WAYLAND_DISPLAY");
-				if (string.IsNullOrEmpty(display) && string.IsNullOrEmpty(wayland))
-					return false;
-			}
-
-			// Quick native-lib probe: if the Photino DLL is not on PATH/rpath, skip.
-			try
-			{
-				// Touch a static member that forces the native bridge to load.
-				// If it throws DllNotFoundException the runtime is absent.
-				_ = typeof(Photino.NET.PhotinoWindow).FullName;
-				return true;
-			}
-			catch (Exception)
-			{
-				return false;
-			}
 		}
 	}
 }
