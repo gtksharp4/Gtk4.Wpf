@@ -123,8 +123,15 @@ public partial class DependencyObject
 
 	// ── Internal helpers ─────────────────────────────────────────────────────────
 
+	/// <summary>
+	/// Called by <see cref="SetValueCore"/> before writing a new local value.
+	/// Override (e.g. in <see cref="Freezable"/>) to enforce mutation guards.
+	/// </summary>
+	protected virtual void OnBeforeSetValue(DependencyProperty dp) { }
+
 	void SetValueCore(DependencyProperty dp, object? value)
 	{
+		OnBeforeSetValue(dp);
 		var meta = dp.GetMetadata(GetType());
 
 		// Coerce against the proposed local value before storing.

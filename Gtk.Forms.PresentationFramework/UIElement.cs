@@ -7,7 +7,7 @@ namespace System.Windows;
 /// Base class for all WPF visual elements. Each UIElement owns a backing
 /// <see cref="Gtk.Widget"/> created on first access via <see cref="CreateWidget"/>.
 /// </summary>
-public abstract partial class UIElement : DependencyObject
+public abstract partial class UIElement : Media.Visual
 {
 	Gtk.Widget? _widget;
 
@@ -102,6 +102,29 @@ public abstract partial class UIElement : DependencyObject
 	internal virtual IEnumerable<UIElement> VisualChildren =>
 		System.Linq.Enumerable.Empty<UIElement>();
 
+	/// <inheritdoc/>
+	protected internal override int VisualChildrenCount
+	{
+		get
+		{
+			int count = 0;
+			foreach (var _ in VisualChildren) count++;
+			return count;
+		}
+	}
+
+	/// <inheritdoc/>
+	protected internal override Media.Visual GetVisualChild(int index)
+	{
+		int i = 0;
+		foreach (var child in VisualChildren)
+		{
+			if (i == index) return child;
+			i++;
+		}
+		throw new ArgumentOutOfRangeException(nameof(index));
+	}
+
 	// ── Logical parent ───────────────────────────────────────────────────────────
 
 	UIElement? _logicalParent;
@@ -109,6 +132,7 @@ public abstract partial class UIElement : DependencyObject
 	/// <summary>
 	/// Logical parent; setting this also updates the DP inheritance parent so
 	/// inheriting properties (e.g. DataContext) propagate automatically.
+	/// Also updates <see cref="Media.Visual.VisualParent"/> so <see cref="Media.VisualTreeHelper"/> can walk up.
 	/// </summary>
 	internal UIElement? LogicalParent
 	{
@@ -117,6 +141,8 @@ public abstract partial class UIElement : DependencyObject
 		{
 			if (ReferenceEquals(_logicalParent, value)) return;
 			_logicalParent = value;
+			// Keep Visual.VisualParent in sync.
+			VisualParent = value;
 			// Wire DP inheritance through the same parent.
 			InheritanceParent = value;
 		}
