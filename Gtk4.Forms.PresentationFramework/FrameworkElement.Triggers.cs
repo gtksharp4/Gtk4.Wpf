@@ -7,32 +7,29 @@ public abstract partial class FrameworkElement
 	readonly TriggerCollection _triggers = new TriggerCollection();
 
 	/// <summary>
-	/// Element-level trigger collection. WPF restricts these to <see cref="EventTrigger"/>
-	/// only; non-EventTrigger entries are ignored at attach time.
+	/// Element-level trigger collection. This implementation attaches all
+	/// <see cref="TriggerBase"/> subtypes (not only <see cref="EventTrigger"/>), mirroring
+	/// the runtime capability that <see cref="Style"/> triggers already provide.
 	/// </summary>
 	public TriggerCollection Triggers => _triggers;
 
 	/// <summary>
-	/// Attaches all <see cref="EventTrigger"/> entries in <see cref="Triggers"/>.
+	/// Attaches all triggers in <see cref="Triggers"/> to this element.
+	/// WPF restricts element-level triggers to <see cref="EventTrigger"/> only, but this
+	/// implementation supports all <see cref="TriggerBase"/> subtypes so that property
+	/// triggers declared on an element (not in a Style) work at runtime.
 	/// Call from <c>InitializeComponent</c> or after the element is added to the tree.
 	/// </summary>
 	internal void AttachElementTriggers()
 	{
 		foreach (var t in _triggers)
-		{
-			// WPF restriction: element-level triggers may only be EventTrigger.
-			if (t is EventTrigger et)
-				et.Attach(this);
-		}
+			t.Attach(this);
 	}
 
 	/// <summary>Detaches all element-level triggers. Call on unload/dispose.</summary>
 	internal void DetachElementTriggers()
 	{
 		foreach (var t in _triggers)
-		{
-			if (t is EventTrigger et)
-				et.Detach(this);
-		}
+			t.Detach(this);
 	}
 }

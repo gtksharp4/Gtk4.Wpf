@@ -626,8 +626,10 @@ namespace Gtk4.Forms.MarkupCompiler
 		/// <summary>
 		/// Handles property-element children whose property name contains a dot
 		/// (e.g. <c>&lt;Button.Template&gt;</c>, <c>&lt;ListBox.ItemTemplate&gt;</c>,
-		/// <c>&lt;VisualStateManager.VisualStateGroups&gt;</c>).
-		/// Only template-typed properties and VSM groups are emitted; everything else is skipped.
+		/// <c>&lt;VisualStateManager.VisualStateGroups&gt;</c>,
+		/// <c>&lt;Button.Triggers&gt;</c> / <c>&lt;FrameworkElement.Triggers&gt;</c>).
+		/// Only template-typed properties, VSM groups, and Triggers blocks are emitted;
+		/// everything else is skipped.
 		/// </summary>
 		void EmitPropertyElement(
 			IndentedWriter w,
@@ -652,6 +654,13 @@ namespace Gtk4.Forms.MarkupCompiler
 			if (ownerLocalName == "VisualStateManager" && propName == "VisualStateGroups")
 			{
 				EmitVisualStateGroups(w, propEl, xNs, parentVar, ref counter);
+				return;
+			}
+
+			// {AnyElement}.Triggers — element-level trigger block.
+			if (propName == "Triggers")
+			{
+				EmitElementTriggers(w, propEl, xNs, parentVar, ref counter);
 				return;
 			}
 
@@ -926,13 +935,13 @@ namespace Gtk4.Forms.MarkupCompiler
 				switch (ch.Name.LocalName)
 				{
 					case "Trigger":
-						EmitPropertyTrigger(w, ch, trigVar, styleVar);
+						EmitTriggerToCollection(w, ch, trigVar, styleVar);
 						break;
 					case "DataTrigger":
-						EmitDataTrigger(w, ch, trigVar, styleVar);
+						EmitDataTriggerToCollection(w, ch, trigVar, styleVar);
 						break;
 					case "MultiTrigger":
-						EmitMultiTrigger(w, ch, xNs, trigVar, styleVar, ref counter);
+						EmitMultiTriggerToCollection(w, ch, xNs, trigVar, styleVar, ref counter);
 						break;
 					case "EventTrigger":
 						EmitEventTrigger(w, ch, xNs, trigVar, styleVar, ref counter);
@@ -941,7 +950,12 @@ namespace Gtk4.Forms.MarkupCompiler
 			}
 		}
 
-		void EmitPropertyTrigger(IndentedWriter w, XElement el, string trigVar, string styleVar)
+		/// <summary>
+		/// Emits a <see cref="System.Windows.Trigger"/> and adds it to
+		/// <paramref name="containerVar"/>.Triggers.
+		/// Used by both <c>Style.Triggers</c> and element-level trigger blocks.
+		/// </summary>
+		void EmitTriggerToCollection(IndentedWriter w, XElement el, string trigVar, string containerVar)
 		{
 			string propAttr = (string)el.Attribute("Property") ?? string.Empty;
 			string valAttr = (string)el.Attribute("Value") ?? string.Empty;
@@ -954,10 +968,15 @@ namespace Gtk4.Forms.MarkupCompiler
 				string vExpr = v != null ? $"\"{EscapeString(v)}\"" : "null";
 				w.Line($"{trigVar}.Setters.Add(new System.Windows.Setter {{ PropertyName = \"{EscapeString(p)}\", Value = {vExpr} }});");
 			}
-			w.Line($"{styleVar}.Triggers.Add({trigVar});");
+			w.Line($"{containerVar}.Triggers.Add({trigVar});");
 		}
 
-		void EmitDataTrigger(IndentedWriter w, XElement el, string trigVar, string styleVar)
+		/// <summary>
+		/// Emits a <see cref="System.Windows.DataTrigger"/> and adds it to
+		/// <paramref name="containerVar"/>.Triggers.
+		/// Used by both <c>Style.Triggers</c> and element-level trigger blocks.
+		/// </summary>
+		void EmitDataTriggerToCollection(IndentedWriter w, XElement el, string trigVar, string containerVar)
 		{
 			string bindingAttr = (string)el.Attribute("Binding") ?? string.Empty;
 			string valAttr = (string)el.Attribute("Value") ?? string.Empty;
@@ -973,15 +992,20 @@ namespace Gtk4.Forms.MarkupCompiler
 				string vExpr = v != null ? $"\"{EscapeString(v)}\"" : "null";
 				w.Line($"{trigVar}.Setters.Add(new System.Windows.Setter {{ PropertyName = \"{EscapeString(p)}\", Value = {vExpr} }});");
 			}
-			w.Line($"{styleVar}.Triggers.Add({trigVar});");
+			w.Line($"{containerVar}.Triggers.Add({trigVar});");
 		}
 
-		void EmitMultiTrigger(
+		/// <summary>
+		/// Emits a <see cref="System.Windows.MultiTrigger"/> and adds it to
+		/// <paramref name="containerVar"/>.Triggers.
+		/// Used by both <c>Style.Triggers</c> and element-level trigger blocks.
+		/// </summary>
+		void EmitMultiTriggerToCollection(
 			IndentedWriter w,
 			XElement el,
 			XNamespace xNs,
 			string trigVar,
-			string styleVar,
+			string containerVar,
 			ref int counter)
 		{
 			w.Line($"var {trigVar} = new System.Windows.MultiTrigger();");
@@ -1005,7 +1029,7 @@ namespace Gtk4.Forms.MarkupCompiler
 					w.Line($"{trigVar}.Setters.Add(new System.Windows.Setter {{ PropertyName = \"{EscapeString(p)}\", Value = {vExpr} }});");
 				}
 			}
-			w.Line($"{styleVar}.Triggers.Add({trigVar});");
+			w.Line($"{containerVar}.Triggers.Add({trigVar});");
 		}
 
 		void EmitEventTrigger(
@@ -1013,10 +1037,10 @@ namespace Gtk4.Forms.MarkupCompiler
 			XElement el,
 			XNamespace xNs,
 			string trigVar,
-			string styleVar,
+			string containerVar,
 			ref int counter)
 		{
-			EmitEventTriggerFull(w, el, xNs, trigVar, styleVar, true, ref counter);
+			EmitEventTriggerFull(w, el, xNs, trigVar, containerVar, true, ref counter);
 		}
 
 		/// <summary>
