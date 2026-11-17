@@ -51,7 +51,8 @@ public abstract partial class UIElement
 		}
 	}
 
-	void RaiseDragEnterPair(Point pos)
+	/// <summary>Raises PreviewDragEnter (tunnel) then DragEnter (bubble) unless the preview is handled.</summary>
+	internal void RaiseDragEnterPair(Point pos)
 	{
 		var data   = new DataObject();
 		var tunnel = new DragEventArgs(PreviewDragEnterEvent, data,
@@ -62,7 +63,8 @@ public abstract partial class UIElement
 			DragDropEffects.All, DragDropKeyStates.None, pos));
 	}
 
-	void RaiseDragOverPair(Point pos)
+	/// <summary>Raises PreviewDragOver (tunnel) then DragOver (bubble) unless the preview is handled.</summary>
+	internal void RaiseDragOverPair(Point pos)
 	{
 		var data   = new DataObject();
 		var tunnel = new DragEventArgs(PreviewDragOverEvent, data,
@@ -73,7 +75,8 @@ public abstract partial class UIElement
 			DragDropEffects.All, DragDropKeyStates.None, pos));
 	}
 
-	void RaiseDragLeavePair(Point pos)
+	/// <summary>Raises PreviewDragLeave (tunnel) then DragLeave (bubble) unless the preview is handled.</summary>
+	internal void RaiseDragLeavePair(Point pos)
 	{
 		var data   = new DataObject();
 		var tunnel = new DragEventArgs(PreviewDragLeaveEvent, data,
@@ -84,7 +87,8 @@ public abstract partial class UIElement
 			DragDropEffects.None, DragDropKeyStates.None, pos));
 	}
 
-	void RaiseDropPair(Point pos)
+	/// <summary>Raises PreviewDrop (tunnel) then Drop (bubble) unless the preview is handled.</summary>
+	internal void RaiseDropPair(Point pos)
 	{
 		var data   = new DataObject();
 		var tunnel = new DragEventArgs(PreviewDropEvent, data,

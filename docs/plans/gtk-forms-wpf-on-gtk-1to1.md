@@ -970,7 +970,31 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   added before realize are tracked logically but not placed until a rendering adorner + realized overlay exist).
   **Round 19 totals: 1732 tests** (89 WindowsBase + 1424 PresentationFramework + 204 MarkupCompiler +
   15 ProjectConverter), all pass; warning-clean.
-- **Carry-over**: `DataFormats.StringFormat`↔UnicodeText auto-convert (**A2**); deferred adorner-overlay
+- **Round 20 Track A — DragDrop (DONE).** New `System.Windows.DragDropEffects`/`DragDropKeyStates` ([Flags]),
+  `DragEventArgs : RoutedEventArgs` (+`QueryContinueDragEventArgs`/`GiveFeedbackEventArgs`), static `DragDrop`
+  behind an internal `IDragDropBackend` seam (`InProcessDragDropBackend` default-for-tests, `GtkDragDropBackend`
+  degrades to in-process when no `Gdk.Display.Default`). `UIElement.AllowDrop` DP + the four tunnel/bubble drag
+  routed-event pairs (`UIElement.DragDrop.cs`); GTK `Gtk.DropTarget` wiring (`UIElement.GtkDragDrop.cs`) attached
+  only when a display exists. **+46 tests** (incl. 6 pinning the production tunnel-then-bubble raisers directly).
+- **Round 20 Track B — ToolTip control (DONE).** New `System.Windows.Controls.ToolTip : ContentControl`
+  (`IsOpen`/`Placement`/`PlacementTarget`/`StaysOpen`). `FrameworkElement.Popups.cs` wires the tooltip to
+  `Gtk.Widget.TooltipText`+`HasTooltip` (string value, or a `ToolTip` whose `Content` stringifies); headless
+  stores the value and applies it on realize. **+24 tests** (DP + GTK smoke). Rich-content (UIElement) tooltip
+  rendering falls back to text; `IsOpen`/`Placement` are object-model-only for now.
+- **Round 20 review (Opus) + fixes — DONE.** Investigated a reported intermittent native AV
+  (`0xC0000005`) in GTK smoke tests: Opus confirmed the diff is **not implicated** (GTK calls are thread-confined
+  via the fixture and guarded by `HasGtkDisplay()`/`AllowDrop`; the crashing ToolTip run does no drag wiring) —
+  pre-existing flakiness; the authoritative combined run was clean. Fixed **Medium** test gap: the production
+  `Raise*Pair` methods were untested (tests re-implemented the sequence) — made `internal` and pinned with 6
+  tests asserting preview→bubble ordering + Handled-suppression. Carried over (Low): `Gtk.DropTarget` is not
+  detached on widget teardown (leak when a realized `AllowDrop` element is destroyed); `GtkDragDropBackend`'s
+  synchronous `DoDragDrop` returns `None` (GTK4 drag is async — full sync needs a nested main loop).
+  **Round 20 totals: 1804 tests** (89 WindowsBase + 1496 PresentationFramework + 204 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean.
+- **Carry-over**: detach `Gtk.DropTarget` on widget teardown (drag lifecycle leak); synchronous `DoDragDrop`
+  result on the GTK path (needs a nested GLib main loop for async drag);
+  rich-content ToolTip custom-widget rendering + `ToolTip.IsOpen`/`Placement` honoured natively;
+  `DataFormats.StringFormat`↔UnicodeText auto-convert (**A2**); deferred adorner-overlay
   placement on realize (**B2**);
   compiler diagnostic/warning for a non-`EventTrigger` placed in `FrameworkElement.Triggers`
   (match WPF's compile-time rejection; runtime superset stays); positive Popup/ContextMenu open-replay GTK test
