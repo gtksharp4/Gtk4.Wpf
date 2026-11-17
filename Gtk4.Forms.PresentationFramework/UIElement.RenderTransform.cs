@@ -79,6 +79,9 @@ public abstract partial class UIElement
 	/// CSS priority used for render-transform providers (just above application level).
 	const uint _cssPriority = 600;
 
+	// Process-wide monotonic source of unique render-transform CSS widget names.
+	static int _rtNameCounter;
+
 	/// Per-widget CssProvider; null until the first transform is applied.
 	Gtk.CssProvider? _transformCssProvider;
 
@@ -98,9 +101,11 @@ public abstract partial class UIElement
 		Transform? t = GetValue(RenderTransformProperty) as Transform;
 		Point origin = (Point)(GetValue(RenderTransformOriginProperty) ?? new Point(0, 0));
 
-		// Assign a unique widget name so the CSS selector targets only this widget.
+		// Assign a process-unique widget name so the CSS selector targets only this
+		// widget. A monotonic counter (not GetHashCode) avoids a hash collision where a
+		// parent's "#rt-X" rule would also cascade onto a same-named descendant.
 		if (string.IsNullOrEmpty(widget.Name))
-			widget.Name = $"rt-{GetHashCode():x8}";
+			widget.Name = $"rt-{System.Threading.Interlocked.Increment(ref _rtNameCounter):x8}";
 
 		string selector = $"#{widget.Name}";
 		string css = RenderTransformCss.BuildCssSnippet(selector, t, origin);

@@ -991,7 +991,27 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   synchronous `DoDragDrop` returns `None` (GTK4 drag is async — full sync needs a nested main loop).
   **Round 20 totals: 1804 tests** (89 WindowsBase + 1496 PresentationFramework + 204 MarkupCompiler +
   15 ProjectConverter), all pass; warning-clean.
-- **Carry-over**: detach `Gtk.DropTarget` on widget teardown (drag lifecycle leak); synchronous `DoDragDrop`
+- **Round 21 Track A — RenderTransform (DONE).** Added `SkewTransform`/`TransformGroup`/`TransformCollection`
+  (`Media/Transform.Group.cs`), `UIElement.RenderTransform` (default `Transform.Identity`) + `RenderTransformOrigin`
+  DPs, and a GTK application via a per-widget `Gtk.CssProvider` (`transform: matrix(...)`/`transform-origin`, a
+  unique `#rt-N` selector). The matrix math + CSS mapping are extracted into testable pure functions
+  (`internal RenderTransformCss`). CSS `transform` renders on GTK 4.14+; the object model (`Transform.Value`
+  matrix + DP) is always correct. **+28 tests** (matrix composition order, center rotation/scale/skew, CSS
+  mapping, headless).
+- **Round 21 Track B — `Primitives.ScrollBar` (DONE).** New `System.Windows.Controls.Primitives.ScrollBar`
+  (Orientation [default Vertical], Minimum/Maximum/Value[coerced into range, re-coerced on Min/Max change]/
+  ViewportSize/SmallChange/LargeChange, `Scroll`/`ValueChanged` events, `ScrollEventArgs`/`ScrollEventType`),
+  backed by `Gtk.Scrollbar`+`Gtk.Adjustment` (`Upper = Maximum + ViewportSize`) with a `_updating` reentrancy
+  guard both directions. No `RangeBase` exists — owns its DPs directly like `Slider`. **+43 tests**.
+- **Round 21 review (Opus) + fixes — DONE.** Both tracks correct (matrix composition order = WPF first-child-
+  first, CSS element order right, coercion + no adjustment feedback loop verified). No Critical/High/Medium.
+  Two **Low** fixes: **A1** the `#rt-<hashcode>` widget name could cascade a parent's rule onto a same-hash
+  descendant — switched to a process-wide `Interlocked` monotonic counter; **B** split the 222-line
+  `ScrollBarDpTests.cs` into defaults/roundtrips + behavior files (both ≤120).
+  **Round 21 totals: 1869 tests** (89 WindowsBase + 1561 PresentationFramework + 204 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean.
+- **Carry-over**: `RenderTransform` on pre-4.14 GTK renders nothing (object-model only); `LayoutTransform`
+  (affects measure/arrange) not yet implemented; detach `Gtk.DropTarget` on widget teardown (drag lifecycle leak); synchronous `DoDragDrop`
   result on the GTK path (needs a nested GLib main loop for async drag);
   rich-content ToolTip custom-widget rendering + `ToolTip.IsOpen`/`Placement` honoured natively;
   `DataFormats.StringFormat`↔UnicodeText auto-convert (**A2**); deferred adorner-overlay
