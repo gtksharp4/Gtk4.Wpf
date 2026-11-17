@@ -3,10 +3,11 @@ using System.Collections.Generic;
 namespace Gtk4.Forms.MarkupCompiler
 {
 	/// <summary>
-	/// Phase-0 built-in map from local element name to fully-qualified CLR type for the
+	/// Built-in fast-path map from local element name to fully-qualified CLR type for the
 	/// WPF presentation namespace (http://schemas.microsoft.com/winfx/2006/xaml/presentation).
-	/// TODO: later phases resolve this from the referenced assemblies'
-	/// [assembly: XmlnsDefinition] attributes instead of this hard-coded table.
+	/// Covers all known WPF types; unknown types fall through to the
+	/// <c>[assembly: XmlnsDefinition]</c>-driven resolver (<see cref="AssemblyXmlnsDefinitionSource"/>)
+	/// injected into <see cref="XamlCodeGenerator"/>.
 	/// </summary>
 	static class WpfXmlnsMap
 	{

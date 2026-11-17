@@ -15,6 +15,7 @@ namespace Gtk4.Forms.MarkupCompiler
 	public partial class XamlCodeGenerator : IDisposable
 	{
 		DpSymbolResolver _resolver = new DpSymbolResolver(null);
+		IXmlnsDefinitionSource _xmlnsSource = EmptyXmlnsDefinitionSource.Instance;
 
 		/// <summary>
 		/// Supplies the reference-assembly search paths that the resolver uses to
@@ -25,6 +26,17 @@ namespace Gtk4.Forms.MarkupCompiler
 		{
 			_resolver?.Dispose();
 			_resolver = new DpSymbolResolver(paths);
+		}
+
+		/// <summary>
+		/// Supplies the XML-namespace→CLR-namespace mapping read from the referenced assemblies'
+		/// <c>[assembly: XmlnsDefinition]</c> attributes.  When set, element types are resolved
+		/// via the xmlns-definition source (with <see cref="WpfXmlnsMap"/> as fallback for known
+		/// WPF types).  Call before <see cref="Generate"/>.
+		/// </summary>
+		internal void SetXmlnsDefinitionSource(IXmlnsDefinitionSource source)
+		{
+			_xmlnsSource = source ?? EmptyXmlnsDefinitionSource.Instance;
 		}
 
 		/// <inheritdoc />
@@ -206,17 +218,51 @@ namespace Gtk4.Forms.MarkupCompiler
 			return root.Name.LocalName == "Application";
 		}
 
-		static string ResolveType(XElement element)
+		/// <summary>
+		/// Resolves an XAML element to its fully-qualified CLR type name.
+		/// <para>
+		/// Resolution order:
+		/// <list type="number">
+		/// <item>The built-in <see cref="WpfXmlnsMap"/> (fast path for all known WPF types).</item>
+		/// <item>The xmlns-definition source injected via <see cref="SetXmlnsDefinitionSource"/>:
+		///       each <c>(xmlnsUri, clrNamespace)</c> entry that matches the element's XML namespace
+		///       is probed as <c>{clrNamespace}.{localName}</c>; when reference assemblies are
+		///       available the probe is verified with a type-existence check so the correct namespace
+		///       is chosen when the same local name appears in multiple CLR namespaces.</item>
+		/// </list>
+		/// </para>
+		/// </summary>
+		string ResolveType(XElement element)
 		{
 			string localName = element.Name.LocalName;
-			string ns = element.Name.NamespaceName;
-			if (ns == WpfXmlnsMap.PresentationNs)
-				return WpfXmlnsMap.Resolve(localName);
+			string xmlNs = element.Name.NamespaceName;
+
+			// Fast path: built-in presentation-namespace map covers all known WPF types.
+			if (xmlNs == WpfXmlnsMap.PresentationNs)
+			{
+				string builtin = WpfXmlnsMap.Resolve(localName);
+				if (builtin != null) return builtin;
+			}
+
+			// Xmlns-definition source: probe each matching CLR namespace in order.
+			IReadOnlyList<XmlnsDefinitionEntry> entries = _xmlnsSource.GetEntries();
+			for (int i = 0; i < entries.Count; i++)
+			{
+				XmlnsDefinitionEntry entry = entries[i];
+				if (!string.Equals(entry.XmlNamespace, xmlNs, StringComparison.Ordinal)) continue;
+				string candidate = entry.ClrNamespace + "." + localName;
+				// When reference assemblies are loaded, verify the type actually exists in that
+				// namespace before committing to it (avoids ambiguity when several CLR namespaces
+				// map to the same xmlns URI, e.g. System.Windows and System.Windows.Controls).
+				if (_resolver.TypeExists(candidate) || !_resolver.HasReferences)
+					return candidate;
+			}
+
 			return null;
 		}
 
 		/// <summary>Collects all elements that carry <c>x:Name</c> or <c>Name</c>.</summary>
-		static void CollectNamedElements(
+		void CollectNamedElements(
 			XElement parent,
 			XNamespace xNs,
 			List<(string, string)> results)

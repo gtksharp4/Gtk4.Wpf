@@ -29,6 +29,12 @@ namespace Gtk4.Forms.MarkupCompiler
 		readonly List<Assembly> _loaded = new List<Assembly>();
 		readonly bool _hasReferences;
 
+		/// <summary>
+		/// <c>true</c> when at least one reference assembly path was supplied to the constructor
+		/// (regardless of how many paths were successfully loaded).
+		/// </summary>
+		internal bool HasReferences => _hasReferences;
+
 		// simple-name → Assembly lookup for the AssemblyResolve handler.
 		readonly Dictionary<string, Assembly> _byName =
 			new Dictionary<string, Assembly>(StringComparer.OrdinalIgnoreCase);
@@ -217,6 +223,19 @@ namespace Gtk4.Forms.MarkupCompiler
 				// Never let a load/resolution failure abort the compile — fall back.
 				return FallbackHeuristic(typeFullName, propName);
 			}
+		}
+
+		/// <summary>
+		/// Returns <c>true</c> when <paramref name="typeFullName"/> can be found in any of the
+		/// loaded assemblies.  Used by the xmlns-definition resolver to disambiguate when the
+		/// same local name might exist in several CLR namespaces.
+		/// Always returns <c>false</c> when no reference assemblies were supplied.
+		/// </summary>
+		internal bool TypeExists(string typeFullName)
+		{
+			if (!_hasReferences) return false;
+			try { return FindType(typeFullName) != null; }
+			catch { return false; }
 		}
 
 		/// <summary>
