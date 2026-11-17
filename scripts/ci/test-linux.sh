@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# CI (Linux): build the GTK 4 backend and run all three unit-test suites headlessly.
+# CI (Linux): build the WPF-on-GTK 4 backend and run its unit-test suites headlessly.
 #
 # Unlike Windows (gvsbuild) the Linux GTK 4 runtime comes from the distro: Ubuntu 24.04 ships
 # libgtk-4-1. The renderer tests are real GTK 4 widgets, so they run under Xvfb with GDK_BACKEND=x11
@@ -27,18 +27,20 @@ dpkg -s libgtk-4-1 2>/dev/null | grep -i '^Version' || true
 echo "== build (Debug; GeneratePackageOnBuild off - CI tests, it does not pack) =="
 dotnet build Gtk4.Forms.sln -c Debug -p:GeneratePackageOnBuild=false
 
-echo "== Core unit tests =="
-dotnet test Gtk4.Forms.Core.UnitTests -c Debug --no-build --logger trx
+# The logic suites (WindowsBase DP/dispatcher, MarkupCompiler XAML->code, Wpf.ProjectConverter) need
+# no GTK runtime or display.
+echo "== WindowsBase unit tests =="
+dotnet test Gtk4.Forms.WindowsBase.Tests -c Debug --no-build --logger trx
 
-# Category!=LongRunning drops the MSBuildTests (build-integration tests that restore generated
-# projects from an OS-temp dir, where the relative "Local" feed cannot resolve - a pre-existing
-# NU1301 unrelated to the GTK backend). Every XAML loader / XamlC compiler test runs.
-echo "== XAML unit tests (excluding LongRunning MSBuild integration tests) =="
-dotnet test Gtk4.Forms.Xaml.UnitTests -c Debug --no-build --logger trx --filter 'Category!=LongRunning'
+echo "== MarkupCompiler unit tests =="
+dotnet test Gtk4.Forms.MarkupCompiler.Tests -c Debug --no-build --logger trx
+
+echo "== Wpf.ProjectConverter unit tests =="
+dotnet test Gtk4.Forms.Wpf.ProjectConverter.Tests -c Debug --no-build --logger trx
 
 # XF_GTK_REQUIRE_NATIVE turns "no display / no GTK runtime" from a skip into a failure: both are
 # installed above, so an unusable environment means the apt or Xvfb step silently broke.
-echo "== GTK renderer tests (real GTK 4 widgets, headless under Xvfb) =="
+echo "== PresentationFramework tests (real GTK 4 widgets, headless under Xvfb) =="
 GDK_BACKEND=x11 XF_GTK_REQUIRE_NATIVE=1 GSETTINGS_BACKEND=memory \
   xvfb-run -a --server-args="-screen 0 1280x1024x24" \
-    dotnet test Gtk4.Forms.Platform.Gtk.UnitTests -c Debug --no-build --logger trx
+    dotnet test Gtk4.Forms.PresentationFramework.Tests -c Debug --no-build --logger trx

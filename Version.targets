@@ -63,12 +63,12 @@
       <!--
         Four components, $(VersionPrefix).$(VersionSuffix), not the three GitSemVer* supplies.
 
-        The other six packable projects import Net4x.NuGetUtility, whose PrepareGenerateNuspecPack
+        Packable projects that import Net4x.NuGetUtility hit its PrepareGenerateNuspecPack, which
         runs BeforeTargets="GenerateNuspec" - i.e. after this target - and overwrote PackageVersion
         with exactly $(VersionPrefix).$(VersionSuffix). The result was that the same commit packed
-        three different ways: six packages as 1.0.0.<yyddd> on Windows, Gtk4.Forms.Platform.GTK
-        (which deliberately does not import that tooling) as 1.0.0, and on Linux - where the
-        tooling is skipped by its own '$(OS)' == 'Windows_NT' condition - all seven as 1.0.0.
+        three different ways: the tooling-importing packages as 1.0.0.<yyddd> on Windows, a project
+        that deliberately does not import that tooling as 1.0.0, and on Linux - where the tooling is
+        skipped by its own '$(OS)' == 'Windows_NT' condition - every package as 1.0.0.
         Computing the same value here makes that overwrite a no-op rather than the thing that
         decides the version, so every project agrees and both OSes produce the same file names.
 

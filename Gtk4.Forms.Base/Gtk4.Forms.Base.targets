@@ -1,6 +1,0 @@
-<Project>
-  <Target Name="GtkConvertProject" BeforeTargets="BeforeBuild"
-          Condition="'$(DesignTimeBuild)' != 'true' and '$(SkipGtkConvert)' != 'true'">
-    <Exec Command='dotnet "$(MSBuildThisFileDirectory)../tools/Gtk4.Forms.ProjectConverter.dll" --convert-project "$(MSBuildProjectFullPath)"' />
-  </Target>
-</Project>

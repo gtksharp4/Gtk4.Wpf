@@ -59,7 +59,7 @@
   </Target>
 
   <ItemGroup>
-    <!-- Same versions as Gtk4.Forms.Build.Tasks.csproj. -->
+    <!-- MSBuild task assemblies: reference-only (ExcludeAssets="runtime"), host supplies them at runtime. -->
     <PackageReference Include="Microsoft.Build.Framework"
                       Version="17.14.28"
                       ExcludeAssets="runtime" />
