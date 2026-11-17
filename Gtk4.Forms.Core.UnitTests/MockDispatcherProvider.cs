@@ -7,13 +7,12 @@ using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
 [assembly: Dependency(typeof(MockDispatcherProvider))]
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class MockDispatcherProvider : IDispatcherProvider
 {
-	public class MockDispatcherProvider : IDispatcherProvider
+	public IDispatcher GetDispatcher(object context)
 	{
-		public IDispatcher GetDispatcher(object context)
-		{
-			return new MockDispatcher();
-		}
+		return new MockDispatcher();
 	}
 }

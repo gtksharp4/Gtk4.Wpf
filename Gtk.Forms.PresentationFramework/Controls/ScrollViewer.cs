@@ -1,118 +1,117 @@
 using System.Windows.Markup;
 
-namespace System.Windows.Controls
+namespace System.Windows.Controls;
+
+/// <summary>Specifies when a scroll bar is shown.</summary>
+public enum ScrollBarVisibility
 {
-	/// <summary>Specifies when a scroll bar is shown.</summary>
-	public enum ScrollBarVisibility
+	/// <summary>The scroll bar is not shown; content clips.</summary>
+	Disabled,
+	/// <summary>The scroll bar is shown only when needed.</summary>
+	Auto,
+	/// <summary>The scroll bar is always hidden (but content may still scroll).</summary>
+	Hidden,
+	/// <summary>The scroll bar is always visible.</summary>
+	Visible,
+}
+
+/// <summary>
+/// A control that provides a scrollable view of its content, backed by
+/// <see cref="Gtk.ScrolledWindow"/>.
+/// </summary>
+[ContentProperty("Content")]
+public class ScrollViewer : ContentControl
+{
+	// ── HorizontalScrollBarVisibility DP ────────────────────────────────────
+
+	/// <summary>Visibility of the horizontal scroll bar.</summary>
+	public static readonly DependencyProperty HorizontalScrollBarVisibilityProperty =
+		DependencyProperty.Register(
+			nameof(HorizontalScrollBarVisibility),
+			typeof(ScrollBarVisibility),
+			typeof(ScrollViewer),
+			new PropertyMetadata(ScrollBarVisibility.Auto, OnScrollBarVisibilityChanged));
+
+	/// <summary>Gets or sets the horizontal scroll bar visibility.</summary>
+	public ScrollBarVisibility HorizontalScrollBarVisibility
 	{
-		/// <summary>The scroll bar is not shown; content clips.</summary>
-		Disabled,
-		/// <summary>The scroll bar is shown only when needed.</summary>
-		Auto,
-		/// <summary>The scroll bar is always hidden (but content may still scroll).</summary>
-		Hidden,
-		/// <summary>The scroll bar is always visible.</summary>
-		Visible,
+		get => (ScrollBarVisibility?)GetValue(HorizontalScrollBarVisibilityProperty)
+		       ?? ScrollBarVisibility.Auto;
+		set => SetValue(HorizontalScrollBarVisibilityProperty, value);
 	}
 
-	/// <summary>
-	/// A control that provides a scrollable view of its content, backed by
-	/// <see cref="Gtk.ScrolledWindow"/>.
-	/// </summary>
-	[ContentProperty("Content")]
-	public class ScrollViewer : ContentControl
+	// ── VerticalScrollBarVisibility DP ──────────────────────────────────────
+
+	/// <summary>Visibility of the vertical scroll bar.</summary>
+	public static readonly DependencyProperty VerticalScrollBarVisibilityProperty =
+		DependencyProperty.Register(
+			nameof(VerticalScrollBarVisibility),
+			typeof(ScrollBarVisibility),
+			typeof(ScrollViewer),
+			new PropertyMetadata(ScrollBarVisibility.Auto, OnScrollBarVisibilityChanged));
+
+	/// <summary>Gets or sets the vertical scroll bar visibility.</summary>
+	public ScrollBarVisibility VerticalScrollBarVisibility
 	{
-		// ── HorizontalScrollBarVisibility DP ────────────────────────────────────
-
-		/// <summary>Visibility of the horizontal scroll bar.</summary>
-		public static readonly DependencyProperty HorizontalScrollBarVisibilityProperty =
-			DependencyProperty.Register(
-				nameof(HorizontalScrollBarVisibility),
-				typeof(ScrollBarVisibility),
-				typeof(ScrollViewer),
-				new PropertyMetadata(ScrollBarVisibility.Auto, OnScrollBarVisibilityChanged));
-
-		/// <summary>Gets or sets the horizontal scroll bar visibility.</summary>
-		public ScrollBarVisibility HorizontalScrollBarVisibility
-		{
-			get => (ScrollBarVisibility?)GetValue(HorizontalScrollBarVisibilityProperty)
-				   ?? ScrollBarVisibility.Auto;
-			set => SetValue(HorizontalScrollBarVisibilityProperty, value);
-		}
-
-		// ── VerticalScrollBarVisibility DP ──────────────────────────────────────
-
-		/// <summary>Visibility of the vertical scroll bar.</summary>
-		public static readonly DependencyProperty VerticalScrollBarVisibilityProperty =
-			DependencyProperty.Register(
-				nameof(VerticalScrollBarVisibility),
-				typeof(ScrollBarVisibility),
-				typeof(ScrollViewer),
-				new PropertyMetadata(ScrollBarVisibility.Auto, OnScrollBarVisibilityChanged));
-
-		/// <summary>Gets or sets the vertical scroll bar visibility.</summary>
-		public ScrollBarVisibility VerticalScrollBarVisibility
-		{
-			get => (ScrollBarVisibility?)GetValue(VerticalScrollBarVisibilityProperty)
-				   ?? ScrollBarVisibility.Auto;
-			set => SetValue(VerticalScrollBarVisibilityProperty, value);
-		}
-
-		static void OnScrollBarVisibilityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			((ScrollViewer)d).ApplyScrollPolicy();
-		}
-
-		// ── GTK backing ──────────────────────────────────────────────────────────
-
-		Gtk.ScrolledWindow _scroll = null!;
-
-		/// <inheritdoc/>
-		protected override Gtk.Widget CreateWidget()
-		{
-			_scroll = new Gtk.ScrolledWindow();
-			ApplyScrollPolicy();
-			if (Content is UIElement child)
-				_scroll.Child = child.Widget;
-			return _scroll;
-		}
-
-		/// <inheritdoc/>
-		protected override Gtk.Box ContentContainer =>
-			throw new InvalidOperationException("ScrollViewer manages its own content.");
-
-		/// <inheritdoc/>
-		protected override Gtk.Label ContentLabel =>
-			throw new InvalidOperationException("ScrollViewer manages its own content.");
-
-		/// <inheritdoc/>
-		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
-		{
-			base.OnPropertyChanged(e);
-			if (e.Property == ContentProperty && _scroll != null)
-			{
-				// Remove old child.
-				if (e.OldValue is UIElement old && _scroll.Child != null)
-					_scroll.Child = null;
-				// Add new child.
-				if (e.NewValue is UIElement newEl)
-					_scroll.Child = newEl.Widget;
-			}
-		}
-
-		void ApplyScrollPolicy()
-		{
-			if (_scroll == null) return;
-			_scroll.HscrollbarPolicy = ToGtkPolicy(HorizontalScrollBarVisibility);
-			_scroll.VscrollbarPolicy = ToGtkPolicy(VerticalScrollBarVisibility);
-		}
-
-		static Gtk.PolicyType ToGtkPolicy(ScrollBarVisibility v) => v switch
-		{
-			ScrollBarVisibility.Disabled => Gtk.PolicyType.Never,
-			ScrollBarVisibility.Hidden   => Gtk.PolicyType.External,
-			ScrollBarVisibility.Visible  => Gtk.PolicyType.Always,
-			_                            => Gtk.PolicyType.Automatic,
-		};
+		get => (ScrollBarVisibility?)GetValue(VerticalScrollBarVisibilityProperty)
+		       ?? ScrollBarVisibility.Auto;
+		set => SetValue(VerticalScrollBarVisibilityProperty, value);
 	}
+
+	static void OnScrollBarVisibilityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		((ScrollViewer)d).ApplyScrollPolicy();
+	}
+
+	// ── GTK backing ──────────────────────────────────────────────────────────
+
+	Gtk.ScrolledWindow _scroll = null!;
+
+	/// <inheritdoc/>
+	protected override Gtk.Widget CreateWidget()
+	{
+		_scroll = new Gtk.ScrolledWindow();
+		ApplyScrollPolicy();
+		if (Content is UIElement child)
+			_scroll.Child = child.Widget;
+		return _scroll;
+	}
+
+	/// <inheritdoc/>
+	protected override Gtk.Box ContentContainer =>
+		throw new InvalidOperationException("ScrollViewer manages its own content.");
+
+	/// <inheritdoc/>
+	protected override Gtk.Label ContentLabel =>
+		throw new InvalidOperationException("ScrollViewer manages its own content.");
+
+	/// <inheritdoc/>
+	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+	{
+		base.OnPropertyChanged(e);
+		if (e.Property == ContentProperty && _scroll != null)
+		{
+			// Remove old child.
+			if (e.OldValue is UIElement old && _scroll.Child != null)
+				_scroll.Child = null;
+			// Add new child.
+			if (e.NewValue is UIElement newEl)
+				_scroll.Child = newEl.Widget;
+		}
+	}
+
+	void ApplyScrollPolicy()
+	{
+		if (_scroll == null) return;
+		_scroll.HscrollbarPolicy = ToGtkPolicy(HorizontalScrollBarVisibility);
+		_scroll.VscrollbarPolicy = ToGtkPolicy(VerticalScrollBarVisibility);
+	}
+
+	static Gtk.PolicyType ToGtkPolicy(ScrollBarVisibility v) => v switch
+	{
+		ScrollBarVisibility.Disabled => Gtk.PolicyType.Never,
+		ScrollBarVisibility.Hidden   => Gtk.PolicyType.External,
+		ScrollBarVisibility.Visible  => Gtk.PolicyType.Always,
+		_                            => Gtk.PolicyType.Automatic,
+	};
 }

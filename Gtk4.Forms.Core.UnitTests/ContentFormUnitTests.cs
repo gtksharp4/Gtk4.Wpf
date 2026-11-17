@@ -4,81 +4,80 @@ using System.Linq;
 using Xunit;
 
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class ContentPageUnitTests : BaseTestFixture
 {
-	public class ContentPageUnitTests : BaseTestFixture
+	[Fact]
+	public void PropagateBindingContextBefore()
 	{
-		[Fact]
-		public void PropagateBindingContextBefore()
-		{
-			var stack = new StackLayout();
+		var stack = new StackLayout();
 
-			var content = new ContentPage();
-			content.Content = stack;
+		var content = new ContentPage();
+		content.Content = stack;
 
-			object context = new object();
-			content.BindingContext = context;
+		object context = new object();
+		content.BindingContext = context;
 
-			Assert.Same(context, stack.BindingContext);
-		}
+		Assert.Same(context, stack.BindingContext);
+	}
 
-		[Fact]
-		public void PropagateBindingContextAfter()
-		{
-			var stack = new StackLayout();
+	[Fact]
+	public void PropagateBindingContextAfter()
+	{
+		var stack = new StackLayout();
 
-			var content = new ContentPage();
+		var content = new ContentPage();
 
-			object context = new object();
-			content.BindingContext = context;
+		object context = new object();
+		content.BindingContext = context;
 
-			content.Content = stack;
+		content.Content = stack;
 
-			Assert.Same(context, stack.BindingContext);
-		}
+		Assert.Same(context, stack.BindingContext);
+	}
 
-		[Fact]
-		public void PropagateToolbarItemBindingContextPreAdd()
-		{
-			var page = new ContentPage();
-			object context = "hello";
+	[Fact]
+	public void PropagateToolbarItemBindingContextPreAdd()
+	{
+		var page = new ContentPage();
+		object context = "hello";
 
-			var toolbarItem = new ToolbarItem();
-			page.ToolbarItems.Add(toolbarItem);
+		var toolbarItem = new ToolbarItem();
+		page.ToolbarItems.Add(toolbarItem);
 
-			page.BindingContext = context;
+		page.BindingContext = context;
 
-			Assert.Equal(context, toolbarItem.BindingContext);
-		}
+		Assert.Equal(context, toolbarItem.BindingContext);
+	}
 
-		[Fact]
-		public void PropagateToolbarItemBindingContextPostAdd()
-		{
-			var page = new ContentPage();
-			object context = "hello";
+	[Fact]
+	public void PropagateToolbarItemBindingContextPostAdd()
+	{
+		var page = new ContentPage();
+		object context = "hello";
 
-			var toolbarItem = new ToolbarItem();
-			page.BindingContext = context;
+		var toolbarItem = new ToolbarItem();
+		page.BindingContext = context;
 
-			page.ToolbarItems.Add(toolbarItem);
+		page.ToolbarItems.Add(toolbarItem);
 
-			Assert.Equal(context, toolbarItem.BindingContext);
-		}
+		Assert.Equal(context, toolbarItem.BindingContext);
+	}
 
-		[Fact]
-		public void ContentPage_should_have_the_InternalChildren_correctly_when_Content_changed()
-		{
-			var sut = new ContentPage();
-			IList<Element> internalChildren = ((IControlTemplated)sut).InternalChildren;
-			internalChildren.Add(new VisualElement());
-			internalChildren.Add(new VisualElement());
-			internalChildren.Add(new VisualElement());
+	[Fact]
+	public void ContentPage_should_have_the_InternalChildren_correctly_when_Content_changed()
+	{
+		var sut = new ContentPage();
+		IList<Element> internalChildren = ((IControlTemplated)sut).InternalChildren;
+		internalChildren.Add(new VisualElement());
+		internalChildren.Add(new VisualElement());
+		internalChildren.Add(new VisualElement());
 
-			var expected = new View();
-			sut.Content = expected;
+		var expected = new View();
+		sut.Content = expected;
 
-			Assert.Equal(1, internalChildren.Count);
-			Assert.Same(expected, internalChildren[0]);
-		}
+		Assert.Equal(1, internalChildren.Count);
+		Assert.Same(expected, internalChildren[0]);
 	}
 }

@@ -2,52 +2,51 @@
 using Xunit;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class InlineCSS : ContentPage
 {
-	public partial class InlineCSS : ContentPage
+	public InlineCSS()
 	{
-		public InlineCSS()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public InlineCSS(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public InlineCSS(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
 		: IDisposable{
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-				Xamarin.Forms.Internals.Registrar.RegisterAll(new Type[0]);
-			}
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+			Xamarin.Forms.Internals.Registrar.RegisterAll(new Type[0]);
+		}
 
-			public void Dispose()
-{
-				Device.PlatformServices = null;
-			}
+		public void Dispose()
+		{
+			Device.PlatformServices = null;
+		}
 
-			[Theory]
-			[InlineData(false), InlineData(true)]
-			public void InlineCSSParsed(bool useCompiledXaml)
-			{
-				var layout = new InlineCSS(useCompiledXaml);
-				Assert.Equal(Color.Pink, layout.label.TextColor);
-			}
+		[Theory]
+		[InlineData(false), InlineData(true)]
+		public void InlineCSSParsed(bool useCompiledXaml)
+		{
+			var layout = new InlineCSS(useCompiledXaml);
+			Assert.Equal(Color.Pink, layout.label.TextColor);
+		}
 
-			[Theory]
-			[InlineData(false), InlineData(true)]
-			public void InitialValue(bool useCompiledXaml)
-			{
-				var layout = new InlineCSS(useCompiledXaml);
-				Assert.Equal(Color.Green, layout.BackgroundColor);
-				Assert.Equal(Color.Green, layout.stack.BackgroundColor);
-				Assert.Equal(Color.Green, layout.button.BackgroundColor);
-				Assert.Equal(VisualElement.BackgroundColorProperty.DefaultValue, layout.label.BackgroundColor);
-				Assert.Equal(TextTransform.Uppercase, layout.label.TextTransform);
-			}
+		[Theory]
+		[InlineData(false), InlineData(true)]
+		public void InitialValue(bool useCompiledXaml)
+		{
+			var layout = new InlineCSS(useCompiledXaml);
+			Assert.Equal(Color.Green, layout.BackgroundColor);
+			Assert.Equal(Color.Green, layout.stack.BackgroundColor);
+			Assert.Equal(Color.Green, layout.button.BackgroundColor);
+			Assert.Equal(VisualElement.BackgroundColorProperty.DefaultValue, layout.label.BackgroundColor);
+			Assert.Equal(TextTransform.Uppercase, layout.label.TextTransform);
 		}
 	}
 }

@@ -5,38 +5,37 @@ using Xamarin.Forms.Maps;
 using Xunit;
 
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class GeocoderUnitTests : BaseTestFixture
 {
-	public class GeocoderUnitTests : BaseTestFixture
+	[Fact]
+	public async Task AddressesForPosition()
 	{
-		[Fact]
-		public async Task AddressesForPosition()
-		{
-			Geocoder.GetAddressesForPositionFuncAsync = GetAddressesForPositionFuncAsync;
-			var geocoder = new Geocoder();
-			var result = await geocoder.GetAddressesForPositionAsync(new Position(1, 2));
-			Assert.Equal(new String[] { "abc", "def" }, result);
-		}
+		Geocoder.GetAddressesForPositionFuncAsync = GetAddressesForPositionFuncAsync;
+		var geocoder = new Geocoder();
+		var result = await geocoder.GetAddressesForPositionAsync(new Position(1, 2));
+		Assert.Equal(new String[] { "abc", "def" }, result);
+	}
 
-		async Task<IEnumerable<string>> GetAddressesForPositionFuncAsync(Position position)
-		{
-			Assert.Equal(new Position(1, 2), position);
-			return new string[] { "abc", "def" };
-		}
+	async Task<IEnumerable<string>> GetAddressesForPositionFuncAsync(Position position)
+	{
+		Assert.Equal(new Position(1, 2), position);
+		return new string[] { "abc", "def" };
+	}
 
-		[Fact]
-		public async Task PositionsForAddress()
-		{
-			Geocoder.GetPositionsForAddressAsyncFunc = GetPositionsForAddressAsyncFunc;
-			var geocoder = new Geocoder();
-			var result = await geocoder.GetPositionsForAddressAsync("quux");
-			Assert.Equal(new Position[] { new Position(1, 2), new Position(3, 4) }, result);
-		}
+	[Fact]
+	public async Task PositionsForAddress()
+	{
+		Geocoder.GetPositionsForAddressAsyncFunc = GetPositionsForAddressAsyncFunc;
+		var geocoder = new Geocoder();
+		var result = await geocoder.GetPositionsForAddressAsync("quux");
+		Assert.Equal(new Position[] { new Position(1, 2), new Position(3, 4) }, result);
+	}
 
-		async Task<IEnumerable<Position>> GetPositionsForAddressAsyncFunc(string address)
-		{
-			Assert.Equal("quux", address);
-			return new Position[] { new Position(1, 2), new Position(3, 4) };
-		}
+	async Task<IEnumerable<Position>> GetPositionsForAddressAsyncFunc(string address)
+	{
+		Assert.Equal("quux", address);
+		return new Position[] { new Position(1, 2), new Position(3, 4) };
 	}
 }

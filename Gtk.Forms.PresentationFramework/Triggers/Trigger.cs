@@ -1,110 +1,109 @@
 using System.Collections.Generic;
 
-namespace System.Windows
+namespace System.Windows;
+
+/// <summary>
+/// Property trigger: when <see cref="Property"/> equals <see cref="Value"/> on the target,
+/// applies <see cref="Setters"/> into the trigger-value layer (D8 — above style, below local).
+/// Un-applies when the condition is no longer met.
+/// </summary>
+public class Trigger : TriggerBase
 {
-	/// <summary>
-	/// Property trigger: when <see cref="Property"/> equals <see cref="Value"/> on the target,
-	/// applies <see cref="Setters"/> into the trigger-value layer (D8 — above style, below local).
-	/// Un-applies when the condition is no longer met.
-	/// </summary>
-	public class Trigger : TriggerBase
+	/// <summary>The dependency property to watch.</summary>
+	public DependencyProperty? Property { get; set; }
+
+	/// <summary>String property name, resolved at attach time when <see cref="Property"/> is null.</summary>
+	public string? PropertyName { get; set; }
+
+	/// <summary>The value that activates this trigger.</summary>
+	public object? Value { get; set; }
+
+	/// <summary>Setters applied when the condition is active.</summary>
+	public SetterBaseCollection Setters { get; } = new SetterBaseCollection();
+
+	// Per-target state so the same Trigger object can attach to multiple elements.
+	readonly Dictionary<FrameworkElement, TriggerState> _states =
+		new Dictionary<FrameworkElement, TriggerState>();
+
+	/// <inheritdoc/>
+	internal override void Attach(FrameworkElement target)
 	{
-		/// <summary>The dependency property to watch.</summary>
-		public DependencyProperty? Property { get; set; }
+		var dp = ResolveProperty(target);
+		if (dp == null) return;
 
-		/// <summary>String property name, resolved at attach time when <see cref="Property"/> is null.</summary>
-		public string? PropertyName { get; set; }
+		var state = new TriggerState(this, target, dp);
+		_states[target] = state;
+		state.Evaluate();
+	}
 
-		/// <summary>The value that activates this trigger.</summary>
-		public object? Value { get; set; }
+	/// <inheritdoc/>
+	internal override void Detach(FrameworkElement target)
+	{
+		if (!_states.TryGetValue(target, out var state)) return;
+		_states.Remove(target);
+		state.Dispose();
+	}
 
-		/// <summary>Setters applied when the condition is active.</summary>
-		public SetterBaseCollection Setters { get; } = new SetterBaseCollection();
+	DependencyProperty? ResolveProperty(FrameworkElement target)
+	{
+		if (Property != null) return Property;
+		if (PropertyName != null)
+			return DependencyProperty.FindByName(PropertyName, target.GetType());
+		return null;
+	}
 
-		// Per-target state so the same Trigger object can attach to multiple elements.
-		readonly Dictionary<FrameworkElement, TriggerState> _states =
-			new Dictionary<FrameworkElement, TriggerState>();
+	sealed class TriggerState
+	{
+		readonly Trigger _trigger;
+		readonly FrameworkElement _target;
+		readonly DependencyProperty _dp;
+		// E1: use this TriggerState instance as the contributor key.
+		List<DependencyProperty>? _appliedDps;
 
-		/// <inheritdoc/>
-		internal override void Attach(FrameworkElement target)
+		readonly PropertyChangedCallback _hook;
+
+		internal TriggerState(Trigger trigger, FrameworkElement target, DependencyProperty dp)
 		{
-			var dp = ResolveProperty(target);
-			if (dp == null) return;
-
-			var state = new TriggerState(this, target, dp);
-			_states[target] = state;
-			state.Evaluate();
+			_trigger = trigger;
+			_target = target;
+			_dp = dp;
+			_hook = OnPropertyChanged;
+			_target.AddChangeHook(_dp, _hook);
 		}
 
-		/// <inheritdoc/>
-		internal override void Detach(FrameworkElement target)
+		void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) =>
+			Evaluate();
+
+		internal void Evaluate()
 		{
-			if (!_states.TryGetValue(target, out var state)) return;
-			_states.Remove(target);
-			state.Dispose();
+			bool match = IsMatch(_target.GetValue(_dp));
+			bool active = _appliedDps != null;
+			if (match && !active) Apply();
+			else if (!match && active) UnApply();
 		}
 
-		DependencyProperty? ResolveProperty(FrameworkElement target)
+		bool IsMatch(object? current) =>
+			Equals(current, _trigger.Value);
+
+		void Apply()
 		{
-			if (Property != null) return Property;
-			if (PropertyName != null)
-				return DependencyProperty.FindByName(PropertyName, target.GetType());
-			return null;
+			_appliedDps = new List<DependencyProperty>();
+			foreach (var setter in _trigger.Setters)
+				setter.ApplyToTriggerLayer(_target, this, _appliedDps);
 		}
 
-		sealed class TriggerState
+		void UnApply()
 		{
-			readonly Trigger _trigger;
-			readonly FrameworkElement _target;
-			readonly DependencyProperty _dp;
-			// E1: use this TriggerState instance as the contributor key.
-			List<DependencyProperty>? _appliedDps;
+			if (_appliedDps == null) return;
+			var dps = _appliedDps;
+			_appliedDps = null;
+			_target.ClearTriggerValues(dps, this);
+		}
 
-			readonly PropertyChangedCallback _hook;
-
-			internal TriggerState(Trigger trigger, FrameworkElement target, DependencyProperty dp)
-			{
-				_trigger = trigger;
-				_target = target;
-				_dp = dp;
-				_hook = OnPropertyChanged;
-				_target.AddChangeHook(_dp, _hook);
-			}
-
-			void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) =>
-				Evaluate();
-
-			internal void Evaluate()
-			{
-				bool match = IsMatch(_target.GetValue(_dp));
-				bool active = _appliedDps != null;
-				if (match && !active) Apply();
-				else if (!match && active) UnApply();
-			}
-
-			bool IsMatch(object? current) =>
-				Equals(current, _trigger.Value);
-
-			void Apply()
-			{
-				_appliedDps = new List<DependencyProperty>();
-				foreach (var setter in _trigger.Setters)
-					setter.ApplyToTriggerLayer(_target, this, _appliedDps);
-			}
-
-			void UnApply()
-			{
-				if (_appliedDps == null) return;
-				var dps = _appliedDps;
-				_appliedDps = null;
-				_target.ClearTriggerValues(dps, this);
-			}
-
-			internal void Dispose()
-			{
-				_target.RemoveChangeHook(_dp, _hook);
-				UnApply();
-			}
+		internal void Dispose()
+		{
+			_target.RemoveChangeHook(_dp, _hook);
+			UnApply();
 		}
 	}
 }

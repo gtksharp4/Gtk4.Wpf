@@ -4,53 +4,52 @@ using Xunit;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
-{
-	public class Gh2508FlashingTriggerAction : TriggerAction<VisualElement>
-	{
-		public uint Duration { get; set; } = 1000;
+namespace Xamarin.Forms.Xaml.UnitTests;
 
-		protected override void Invoke(VisualElement sender)
-		{
-			new Animation {
-					{ 0.0, 0.5, new Animation(v => sender.Opacity = v)},
-					{0.5, 1.0, new Animation(v => sender.Opacity = 1.0 - v) },
-				}.Commit(sender, "FlashingAnimation", 16U, Duration, Easing.Linear, null, () => true);
-		}
+public class Gh2508FlashingTriggerAction : TriggerAction<VisualElement>
+{
+	public uint Duration { get; set; } = 1000;
+
+	protected override void Invoke(VisualElement sender)
+	{
+		new Animation {
+			{ 0.0, 0.5, new Animation(v => sender.Opacity = v)},
+			{0.5, 1.0, new Animation(v => sender.Opacity = 1.0 - v) },
+		}.Commit(sender, "FlashingAnimation", 16U, Duration, Easing.Linear, null, () => true);
+	}
+}
+
+public partial class Gh2508 : ContentPage
+{
+	public Gh2508()
+	{
+		InitializeComponent();
 	}
 
-	public partial class Gh2508 : ContentPage
+	public Gh2508(bool useCompiledXaml)
 	{
-		public Gh2508()
-		{
-			InitializeComponent();
-		}
+		//this stub will be replaced at compile time
+	}
 
-		public Gh2508(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		public class Tests
+	public class Tests
 		: IDisposable{
 
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-			}
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+		}
 
-			public void Dispose()
-{
-				Device.PlatformServices = null;
-			}
+		public void Dispose()
+		{
+			Device.PlatformServices = null;
+		}
 
-			[Theory]
-			[InlineData(true), InlineData(false)]
-			public void UintProperties(bool useCompiledXaml)
-			{
-				var layout = new Gh2508(useCompiledXaml);
-				Assert.Equal(2000u, ((layout.entry.Triggers[0] as Trigger).EnterActions[0] as Gh2508FlashingTriggerAction).Duration);
-			}
+		[Theory]
+		[InlineData(true), InlineData(false)]
+		public void UintProperties(bool useCompiledXaml)
+		{
+			var layout = new Gh2508(useCompiledXaml);
+			Assert.Equal(2000u, ((layout.entry.Triggers[0] as Trigger).EnterActions[0] as Gh2508FlashingTriggerAction).Duration);
 		}
 	}
 }

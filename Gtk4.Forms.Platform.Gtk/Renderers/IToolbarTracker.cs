@@ -1,7 +1,6 @@
-﻿namespace Xamarin.Forms.Platform.GTK.Renderers
+﻿namespace Xamarin.Forms.Platform.GTK.Renderers;
+
+public interface IToolbarTracker
 {
-	public interface IToolbarTracker
-	{
-		GtkToolbarTracker NativeToolbarTracker { get; }
-	}
+	GtkToolbarTracker NativeToolbarTracker { get; }
 }

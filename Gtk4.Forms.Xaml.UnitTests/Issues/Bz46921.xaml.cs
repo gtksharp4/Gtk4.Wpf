@@ -3,36 +3,35 @@ using System.Collections.Generic;
 using Xunit;
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class Bz46921 : ContentPage
 {
-	public partial class Bz46921 : ContentPage
+	public Bz46921()
 	{
-		public Bz46921()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Bz46921(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Bz46921(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
+	{
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void MultipleWaysToCreateAThicknessResource(bool useCompiledXaml)
 		{
-			[Theory]
-			[InlineData(true)]
-			[InlineData(false)]
-			public void MultipleWaysToCreateAThicknessResource(bool useCompiledXaml)
+			var page = new Bz46921(useCompiledXaml);
+			foreach (var resname in new string[] { "thickness0", "thickness1", "thickness2", "thickness3", })
 			{
-				var page = new Bz46921(useCompiledXaml);
-				foreach (var resname in new string[] { "thickness0", "thickness1", "thickness2", "thickness3", })
-				{
-					var resource = page.Resources[resname];
-					Assert.IsType<Thickness>(resource);
-					var thickness = (Thickness)resource;
-					Assert.Equal(new Thickness(4, 20, 4, 20), thickness);
+				var resource = page.Resources[resname];
+				Assert.IsType<Thickness>(resource);
+				var thickness = (Thickness)resource;
+				Assert.Equal(new Thickness(4, 20, 4, 20), thickness);
 
-				}
 			}
 		}
 	}

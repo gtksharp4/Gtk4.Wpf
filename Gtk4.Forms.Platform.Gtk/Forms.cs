@@ -6,75 +6,74 @@ using System.Reflection;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.GTK;
 
-namespace Xamarin.Forms
+namespace Xamarin.Forms;
+
+public static class Forms
 {
-	public static class Forms
+	internal static string BarTextColor = "Xamarin.BarTextColor";
+	internal static string BarBackgroundColor = "Xamarin.BarBackgroundColor";
+
+	const string LogFormat = "[{0}] {1}";
+
+	public static bool IsInitialized { get; private set; }
+	static bool FlagsSet { get; set; }
+
+	static IReadOnlyList<string> s_flags;
+	public static IReadOnlyList<string> Flags => s_flags ?? (s_flags = new List<string>().AsReadOnly());
+
+	/// <summary>
+	/// The thread that called <see cref="Init"/>, which is the thread running the GTK main
+	/// loop. GTK is not thread-safe, so every widget touch has to happen here; this is what
+	/// <c>IPlatformServices.IsInvokeRequired</c> compares against.
+	/// </summary>
+	internal static System.Threading.Thread MainThread { get; private set; }
+
+	public static void Init(IEnumerable<Assembly> rendererAssemblies = null)
 	{
-		internal static string BarTextColor = "Xamarin.BarTextColor";
-		internal static string BarBackgroundColor = "Xamarin.BarBackgroundColor";
+		if (IsInitialized)
+			return;
 
-		const string LogFormat = "[{0}] {1}";
+		MainThread = System.Threading.Thread.CurrentThread;
 
-		public static bool IsInitialized { get; private set; }
-		static bool FlagsSet { get; set; }
+		Log.Listeners.Add(new DelegateLogListener((c, m) => Debug.WriteLine(LogFormat, c, m)));
 
-		static IReadOnlyList<string> s_flags;
-		public static IReadOnlyList<string> Flags => s_flags ?? (s_flags = new List<string>().AsReadOnly());
+		Registrar.ExtraAssemblies = rendererAssemblies?.ToArray();
 
-		/// <summary>
-		/// The thread that called <see cref="Init"/>, which is the thread running the GTK main
-		/// loop. GTK is not thread-safe, so every widget touch has to happen here; this is what
-		/// <c>IPlatformServices.IsInvokeRequired</c> compares against.
-		/// </summary>
-		internal static System.Threading.Thread MainThread { get; private set; }
+		Device.SetIdiom(TargetIdiom.Desktop);
+		Device.SetFlags(s_flags);
+		Device.PlatformServices = new GtkPlatformServices();
+		Device.Info = new GtkDeviceInfo();
+		Color.SetAccent(Color.FromHex("#3498DB"));
+		ExpressionSearch.Default = new GtkExpressionSearch();
 
-		public static void Init(IEnumerable<Assembly> rendererAssemblies = null)
+		GtkPlatformServices.TrackThemeChanges();
+
+		Registrar.RegisterAll(new[]
 		{
-			if (IsInitialized)
-				return;
+			typeof(ExportCellAttribute),
+			typeof(ExportImageSourceHandlerAttribute),
+			typeof(ExportRendererAttribute),
+			// Without this, Registrar never scans for [assembly: ExportFont(...)] and
+			// FontRegistrar stays empty - custom fonts fail silently.
+			typeof(ExportFontAttribute)
+		});
 
-			MainThread = System.Threading.Thread.CurrentThread;
+		IsInitialized = true;
+	}
 
-			Log.Listeners.Add(new DelegateLogListener((c, m) => Debug.WriteLine(LogFormat, c, m)));
-
-			Registrar.ExtraAssemblies = rendererAssemblies?.ToArray();
-
-			Device.SetIdiom(TargetIdiom.Desktop);
-			Device.SetFlags(s_flags);
-			Device.PlatformServices = new GtkPlatformServices();
-			Device.Info = new GtkDeviceInfo();
-			Color.SetAccent(Color.FromHex("#3498DB"));
-			ExpressionSearch.Default = new GtkExpressionSearch();
-
-			GtkPlatformServices.TrackThemeChanges();
-
-			Registrar.RegisterAll(new[]
-			{
-				typeof(ExportCellAttribute),
-				typeof(ExportImageSourceHandlerAttribute),
-				typeof(ExportRendererAttribute),
-				// Without this, Registrar never scans for [assembly: ExportFont(...)] and
-				// FontRegistrar stays empty - custom fonts fail silently.
-				typeof(ExportFontAttribute)
-			});
-
-			IsInitialized = true;
+	public static void SetFlags(params string[] flags)
+	{
+		if (FlagsSet)
+		{
+			return;
 		}
 
-		public static void SetFlags(params string[] flags)
+		if (IsInitialized)
 		{
-			if (FlagsSet)
-			{
-				return;
-			}
-
-			if (IsInitialized)
-			{
-				throw new InvalidOperationException($"{nameof(SetFlags)} must be called before {nameof(Init)}");
-			}
-
-			s_flags = flags.ToList().AsReadOnly();
-			FlagsSet = true;
+			throw new InvalidOperationException($"{nameof(SetFlags)} must be called before {nameof(Init)}");
 		}
+
+		s_flags = flags.ToList().AsReadOnly();
+		FlagsSet = true;
 	}
 }

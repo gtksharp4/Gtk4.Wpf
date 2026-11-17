@@ -6,36 +6,35 @@ using Xunit;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+[ContentProperty(nameof(Text))]
+public class Gh9212MarkupExtension : IMarkupExtension
 {
-	[ContentProperty(nameof(Text))]
-	public class Gh9212MarkupExtension : IMarkupExtension
+	public string Text { get; set; }
+	public object ProvideValue(IServiceProvider serviceProvider) => Text;
+}
+
+public partial class Gh9212 : ContentPage
+{
+	public Gh9212() => InitializeComponent();
+	public Gh9212(bool useCompiledXaml)
 	{
-		public string Text { get; set; }
-		public object ProvideValue(IServiceProvider serviceProvider) => Text;
+		//this stub will be replaced at compile time
 	}
 
-	public partial class Gh9212 : ContentPage
+	public class Tests: IDisposable
 	{
-		public Gh9212() => InitializeComponent();
-		public Gh9212(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+		public Tests() => Device.PlatformServices = new MockPlatformServices();
+		public void Dispose() => Device.PlatformServices = null;
 
-		public class Tests: IDisposable
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void SingleQuoteAndTrailingSpaceInMarkupValue(bool useCompiledXaml)
 		{
-			public Tests() => Device.PlatformServices = new MockPlatformServices();
-			public void Dispose() => Device.PlatformServices = null;
-
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void SingleQuoteAndTrailingSpaceInMarkupValue(bool useCompiledXaml)
-			{
-				var layout = new Gh9212(useCompiledXaml);
-				Assert.Equal("Foo, Bar", layout.label.Text);
-			}
+			var layout = new Gh9212(useCompiledXaml);
+			Assert.Equal("Foo, Bar", layout.label.Text);
 		}
 	}
 }

@@ -3,38 +3,37 @@ using Cairo;
 using Xamarin.Forms.Platform.GTK.Extensions;
 using Xamarin.Forms.Shapes;
 
-namespace Xamarin.Forms.Platform.GTK.Controls
+namespace Xamarin.Forms.Platform.GTK.Controls;
+
+public class PolylineView : ShapeView
 {
-	public class PolylineView : ShapeView
+	PointCollection _points;
+	bool _fillMode;
+
+	protected override void Draw(Gdk.Rectangle area, Context cr)
 	{
-		PointCollection _points;
-		bool _fillMode;
+		cr.FillRule = _fillMode ? Cairo.FillRule.Winding : Cairo.FillRule.EvenOdd;
 
-		protected override void Draw(Gdk.Rectangle area, Context cr)
+		if (_points != null && _points.Count > 1)
 		{
-			cr.FillRule = _fillMode ? Cairo.FillRule.Winding : Cairo.FillRule.EvenOdd;
+			cr.MoveTo(_points[0].X, _points[0].Y);
 
-			if (_points != null && _points.Count > 1)
-			{
-				cr.MoveTo(_points[0].X, _points[0].Y);
-
-				for (int index = 1; index < _points.Count; index++)
-					cr.LineTo((float)_points[index].X, (float)_points[index].Y);
-			}
-
-			base.Draw(area, cr);
+			for (int index = 1; index < _points.Count; index++)
+				cr.LineTo((float)_points[index].X, (float)_points[index].Y);
 		}
 
-		public void UpdatePoints(PointCollection points)
-		{
-			_points = points;
-			QueueDraw();
-		}
+		base.Draw(area, cr);
+	}
 
-		public void UpdateFillMode(bool fillMode)
-		{
-			_fillMode = fillMode;
-			QueueDraw();
-		}
+	public void UpdatePoints(PointCollection points)
+	{
+		_points = points;
+		QueueDraw();
+	}
+
+	public void UpdateFillMode(bool fillMode)
+	{
+		_fillMode = fillMode;
+		QueueDraw();
 	}
 }

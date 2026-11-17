@@ -4,55 +4,54 @@ using Xunit;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
-{
-	public class Gh2632Base : ContentPage
-	{
-		public new Gh2632Context BindingContext
-		{
-			get => base.BindingContext as Gh2632Context;
-			set => base.BindingContext = value;
-		}
+namespace Xamarin.Forms.Xaml.UnitTests;
 
-		public class Gh2632Context
-		{
-			public string Foo { get; set; }
-		}
+public class Gh2632Base : ContentPage
+{
+	public new Gh2632Context BindingContext
+	{
+		get => base.BindingContext as Gh2632Context;
+		set => base.BindingContext = value;
 	}
 
-	public partial class Gh2632 : Gh2632Base
+	public class Gh2632Context
 	{
-		public Gh2632()
-		{
-			InitializeComponent();
-		}
+		public string Foo { get; set; }
+	}
+}
 
-		public Gh2632(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+public partial class Gh2632 : Gh2632Base
+{
+	public Gh2632()
+	{
+		InitializeComponent();
+	}
+
+	public Gh2632(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
 
-		public class Tests
+	public class Tests
 		: IDisposable{
 
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-			}
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+		}
 
-			public void Dispose()
-{
-				Device.PlatformServices = null;
-			}
+		public void Dispose()
+		{
+			Device.PlatformServices = null;
+		}
 
-			[Theory]
-			[InlineData(false), InlineData(true)]
-			public void BindingDoesNotThrowOnRedefinedProperty(bool useCompiledXaml)
-			{
-				var layout = new Gh2632(useCompiledXaml);
-				layout.BindingContext = new Gh2632Base.Gh2632Context { Foo = "foo" };
-			}
+		[Theory]
+		[InlineData(false), InlineData(true)]
+		public void BindingDoesNotThrowOnRedefinedProperty(bool useCompiledXaml)
+		{
+			var layout = new Gh2632(useCompiledXaml);
+			layout.BindingContext = new Gh2632Base.Gh2632Context { Foo = "foo" };
 		}
 	}
 }

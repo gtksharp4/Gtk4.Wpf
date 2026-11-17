@@ -2,62 +2,61 @@
 using System.Globalization;
 using Xunit;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public class Bz47703Converter : IValueConverter
 {
-	public class Bz47703Converter : IValueConverter
+	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 	{
-		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			if (value != null)
-				return "Label:" + value;
-			return value;
-		}
-
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			return value;
-		}
+		if (value != null)
+			return "Label:" + value;
+		return value;
 	}
 
-	public class Bz47703View : Label
+	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 	{
-		BindingBase displayBinding;
+		return value;
+	}
+}
 
-		public BindingBase DisplayBinding
+public class Bz47703View : Label
+{
+	BindingBase displayBinding;
+
+	public BindingBase DisplayBinding
+	{
+		get { return displayBinding; }
+		set
 		{
-			get { return displayBinding; }
-			set
-			{
-				displayBinding = value;
-				if (displayBinding != null)
-					this.SetBinding(TextProperty, DisplayBinding);
-			}
+			displayBinding = value;
+			if (displayBinding != null)
+				this.SetBinding(TextProperty, DisplayBinding);
 		}
 	}
+}
 
-	public partial class Bz47703 : ContentPage
+public partial class Bz47703 : ContentPage
+{
+	public Bz47703()
 	{
-		public Bz47703()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Bz47703(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Bz47703(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
+	{
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void IValueConverterOnBindings(bool useCompiledXaml)
 		{
-			[Theory]
-			[InlineData(true)]
-			[InlineData(false)]
-			public void IValueConverterOnBindings(bool useCompiledXaml)
-			{
-				var page = new Bz47703(useCompiledXaml);
-				page.BindingContext = new { Name = "Foo" };
-				Assert.Equal("Label:Foo", page.view.Text);
-			}
+			var page = new Bz47703(useCompiledXaml);
+			page.BindingContext = new { Name = "Foo" };
+			Assert.Equal("Label:Foo", page.view.Text);
 		}
 	}
 }

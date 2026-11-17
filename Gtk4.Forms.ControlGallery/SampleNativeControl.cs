@@ -4,16 +4,15 @@ using Xamarin.Forms.Controls.Issues.Helpers;
 using Xamarin.Forms.Platform.GTK;
 
 [assembly: Dependency(typeof(SampleNativeControl))]
-namespace Xamarin.Forms.ControlGallery.GTK
+namespace Xamarin.Forms.ControlGallery.GTK;
+
+public class SampleNativeControl : ISampleNativeControl
 {
-	public class SampleNativeControl : ISampleNativeControl
+	public View View
 	{
-		public View View
+		get
 		{
-			get
-			{
-				return new Label { Text = "NativeViews not supported on GTK" };
-			}
+			return new Label { Text = "NativeViews not supported on GTK" };
 		}
 	}
 }

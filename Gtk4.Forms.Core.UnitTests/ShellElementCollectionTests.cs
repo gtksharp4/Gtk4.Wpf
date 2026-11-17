@@ -5,30 +5,29 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class ShellElementCollection : ShellTestBase
 {
-	public class ShellElementCollection : ShellTestBase
+	[Fact]
+	public void ClearFiresOnlyOneRemovedEvent()
 	{
-		[Fact]
-		public void ClearFiresOnlyOneRemovedEvent()
+		Shell shell = new Shell();
+		shell.Items.Add(CreateShellItem());
+		shell.Items.Add(CreateShellItem());
+		shell.Items.Add(CreateShellItem());
+		shell.Items.Add(CreateShellItem());
+		var shellSection = shell.CurrentItem.CurrentItem;
+
+		int firedCount = 0;
+
+		(shellSection as IShellSectionController).ItemsCollectionChanged += (_, e) =>
 		{
-			Shell shell = new Shell();
-			shell.Items.Add(CreateShellItem());
-			shell.Items.Add(CreateShellItem());
-			shell.Items.Add(CreateShellItem());
-			shell.Items.Add(CreateShellItem());
-			var shellSection = shell.CurrentItem.CurrentItem;
+			if (e.OldItems != null)
+				firedCount++;
+		};
 
-			int firedCount = 0;
-
-			(shellSection as IShellSectionController).ItemsCollectionChanged += (_, e) =>
-			{
-				if (e.OldItems != null)
-					firedCount++;
-			};
-
-			shellSection.Items.Clear();
-			Assert.Equal(1, firedCount);
-		}
+		shellSection.Items.Clear();
+		Assert.Equal(1, firedCount);
 	}
 }

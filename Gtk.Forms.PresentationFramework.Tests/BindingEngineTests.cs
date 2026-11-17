@@ -3,132 +3,131 @@ using System.Windows.Data;
 using Xunit;
 using WpfTextBlock = System.Windows.Controls.TextBlock;
 
-namespace Gtk.Forms.PresentationFramework.Tests
+namespace Gtk.Forms.PresentationFramework.Tests;
+
+/// <summary>
+/// Pure tests (no GTK) for the Phase-0 one-way binding engine.
+/// </summary>
+public class BindingEngineTests
 {
-	/// <summary>
-	/// Pure tests (no GTK) for the Phase-0 one-way binding engine.
-	/// </summary>
-	public class BindingEngineTests
+	// ── Helpers ─────────────────────────────────────────────────────────────
+
+	sealed class ViewModel : INotifyPropertyChanged
 	{
-		// ── Helpers ─────────────────────────────────────────────────────────────
+		string _greeting = "Hello";
 
-		sealed class ViewModel : INotifyPropertyChanged
+		public string Greeting
 		{
-			string _greeting = "Hello";
-
-			public string Greeting
+			get => _greeting;
+			set
 			{
-				get => _greeting;
-				set
-				{
-					if (_greeting == value) return;
-					_greeting = value;
-					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Greeting)));
-				}
+				if (_greeting == value) return;
+				_greeting = value;
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Greeting)));
 			}
-
-			public event PropertyChangedEventHandler? PropertyChanged;
 		}
 
-		// ── Tests ────────────────────────────────────────────────────────────────
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
 
-		[Fact]
-		public void Binding_pushes_initial_value_from_DataContext()
-		{
-			var tb = new WpfTextBlock();
-			var vm = new ViewModel { Greeting = "Hi" };
+	// ── Tests ────────────────────────────────────────────────────────────────
 
-			tb.DataContext = vm;
-			tb.SetBinding(WpfTextBlock.TextProperty, new Binding("Greeting"));
+	[Fact]
+	public void Binding_pushes_initial_value_from_DataContext()
+	{
+		var tb = new WpfTextBlock();
+		var vm = new ViewModel { Greeting = "Hi" };
 
-			Assert.Equal("Hi", tb.Text);
-		}
+		tb.DataContext = vm;
+		tb.SetBinding(WpfTextBlock.TextProperty, new Binding("Greeting"));
 
-		[Fact]
-		public void Binding_updates_on_INPC_change()
-		{
-			var tb = new WpfTextBlock();
-			var vm = new ViewModel { Greeting = "Before" };
+		Assert.Equal("Hi", tb.Text);
+	}
 
-			tb.DataContext = vm;
-			tb.SetBinding(WpfTextBlock.TextProperty, new Binding("Greeting"));
+	[Fact]
+	public void Binding_updates_on_INPC_change()
+	{
+		var tb = new WpfTextBlock();
+		var vm = new ViewModel { Greeting = "Before" };
 
-			vm.Greeting = "After";
+		tb.DataContext = vm;
+		tb.SetBinding(WpfTextBlock.TextProperty, new Binding("Greeting"));
 
-			Assert.Equal("After", tb.Text);
-		}
+		vm.Greeting = "After";
 
-		[Fact]
-		public void Binding_with_explicit_Source()
-		{
-			var tb = new WpfTextBlock();
-			var vm = new ViewModel { Greeting = "Direct" };
+		Assert.Equal("After", tb.Text);
+	}
 
-			tb.SetBinding(WpfTextBlock.TextProperty,
-				new Binding("Greeting") { Source = vm });
+	[Fact]
+	public void Binding_with_explicit_Source()
+	{
+		var tb = new WpfTextBlock();
+		var vm = new ViewModel { Greeting = "Direct" };
 
-			Assert.Equal("Direct", tb.Text);
-		}
+		tb.SetBinding(WpfTextBlock.TextProperty,
+			new Binding("Greeting") { Source = vm });
 
-		[Fact]
-		public void Binding_with_explicit_Source_updates_on_INPC()
-		{
-			var tb = new WpfTextBlock();
-			var vm = new ViewModel { Greeting = "A" };
+		Assert.Equal("Direct", tb.Text);
+	}
 
-			tb.SetBinding(WpfTextBlock.TextProperty,
-				new Binding("Greeting") { Source = vm });
+	[Fact]
+	public void Binding_with_explicit_Source_updates_on_INPC()
+	{
+		var tb = new WpfTextBlock();
+		var vm = new ViewModel { Greeting = "A" };
 
-			vm.Greeting = "B";
-			Assert.Equal("B", tb.Text);
-		}
+		tb.SetBinding(WpfTextBlock.TextProperty,
+			new Binding("Greeting") { Source = vm });
 
-		[Fact]
-		public void Binding_refreshes_on_DataContext_change()
-		{
-			var tb = new WpfTextBlock();
-			tb.SetBinding(WpfTextBlock.TextProperty, new Binding("Greeting"));
+		vm.Greeting = "B";
+		Assert.Equal("B", tb.Text);
+	}
 
-			var vm1 = new ViewModel { Greeting = "First" };
-			tb.DataContext = vm1;
+	[Fact]
+	public void Binding_refreshes_on_DataContext_change()
+	{
+		var tb = new WpfTextBlock();
+		tb.SetBinding(WpfTextBlock.TextProperty, new Binding("Greeting"));
 
-			var vm2 = new ViewModel { Greeting = "Second" };
-			tb.DataContext = vm2;
+		var vm1 = new ViewModel { Greeting = "First" };
+		tb.DataContext = vm1;
 
-			Assert.Equal("Second", tb.Text);
-		}
+		var vm2 = new ViewModel { Greeting = "Second" };
+		tb.DataContext = vm2;
 
-		[Fact]
-		public void Binding_null_path_binds_to_source_itself()
-		{
-			var tb = new WpfTextBlock();
-			tb.DataContext = "direct-string";
-			tb.SetBinding(WpfTextBlock.TextProperty, new Binding());
+		Assert.Equal("Second", tb.Text);
+	}
 
-			Assert.Equal("direct-string", tb.Text);
-		}
+	[Fact]
+	public void Binding_null_path_binds_to_source_itself()
+	{
+		var tb = new WpfTextBlock();
+		tb.DataContext = "direct-string";
+		tb.SetBinding(WpfTextBlock.TextProperty, new Binding());
 
-		[Fact]
-		public void Binding_with_converter()
-		{
-			var tb = new WpfTextBlock();
-			var vm = new ViewModel { Greeting = "hello" };
-			tb.DataContext = vm;
-			tb.SetBinding(WpfTextBlock.TextProperty,
-				new Binding("Greeting") { Converter = new UpperCaseConverter() });
+		Assert.Equal("direct-string", tb.Text);
+	}
 
-			Assert.Equal("HELLO", tb.Text);
-		}
+	[Fact]
+	public void Binding_with_converter()
+	{
+		var tb = new WpfTextBlock();
+		var vm = new ViewModel { Greeting = "hello" };
+		tb.DataContext = vm;
+		tb.SetBinding(WpfTextBlock.TextProperty,
+			new Binding("Greeting") { Converter = new UpperCaseConverter() });
 
-		sealed class UpperCaseConverter : IValueConverter
-		{
-			public object? Convert(object? value, System.Type targetType, object? parameter,
-				System.Globalization.CultureInfo culture)
-				=> (value as string)?.ToUpperInvariant();
+		Assert.Equal("HELLO", tb.Text);
+	}
 
-			public object? ConvertBack(object? value, System.Type targetType, object? parameter,
-				System.Globalization.CultureInfo culture)
-				=> throw new System.NotSupportedException("TwoWay is Phase-1");
-		}
+	sealed class UpperCaseConverter : IValueConverter
+	{
+		public object? Convert(object? value, System.Type targetType, object? parameter,
+			System.Globalization.CultureInfo culture)
+			=> (value as string)?.ToUpperInvariant();
+
+		public object? ConvertBack(object? value, System.Type targetType, object? parameter,
+			System.Globalization.CultureInfo culture)
+			=> throw new System.NotSupportedException("TwoWay is Phase-1");
 	}
 }

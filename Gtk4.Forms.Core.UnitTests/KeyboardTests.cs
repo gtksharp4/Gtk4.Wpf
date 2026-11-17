@@ -5,46 +5,45 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class KeyboardTests : BaseTestFixture
 {
-	public class KeyboardTests : BaseTestFixture
+	[Fact]
+	public void KeyboardTypesAreCorrect()
 	{
-		[Fact]
-		public void KeyboardTypesAreCorrect()
-		{
-			Assert.True(Keyboard.Chat is ChatKeyboard);
-			Assert.True(Keyboard.Email is EmailKeyboard);
-			Assert.True(Keyboard.Numeric is NumericKeyboard);
-			Assert.True(Keyboard.Telephone is TelephoneKeyboard);
-			Assert.True(Keyboard.Text is TextKeyboard);
-			Assert.True(Keyboard.Url is UrlKeyboard);
-		}
+		Assert.True(Keyboard.Chat is ChatKeyboard);
+		Assert.True(Keyboard.Email is EmailKeyboard);
+		Assert.True(Keyboard.Numeric is NumericKeyboard);
+		Assert.True(Keyboard.Telephone is TelephoneKeyboard);
+		Assert.True(Keyboard.Text is TextKeyboard);
+		Assert.True(Keyboard.Url is UrlKeyboard);
+	}
+}
+
+public class KeyboardTypeConverterTests : BaseTestFixture
+{
+	[Fact]
+	public void ConversionConvert()
+	{
+
+		var converter = new KeyboardTypeConverter();
+		Assert.True(converter.CanConvertFrom(typeof(string)));
+		foreach (var kvp in new Dictionary<string, Keyboard> {
+			         {"Keyboard.Default", Keyboard.Default},
+			         {"Keyboard.Email", Keyboard.Email},
+			         {"Keyboard.Text", Keyboard.Text},
+			         {"Keyboard.Url", Keyboard.Url},
+			         {"Keyboard.Telephone", Keyboard.Telephone},
+			         {"Keyboard.Chat", Keyboard.Chat},
+		         })
+			Assert.Same(kvp.Value, converter.ConvertFromInvariantString(kvp.Key));
 	}
 
-	public class KeyboardTypeConverterTests : BaseTestFixture
+	[Fact]
+	public void ConversionFail()
 	{
-		[Fact]
-		public void ConversionConvert()
-		{
-
-			var converter = new KeyboardTypeConverter();
-			Assert.True(converter.CanConvertFrom(typeof(string)));
-			foreach (var kvp in new Dictionary<string, Keyboard> {
-				{"Keyboard.Default", Keyboard.Default},
-				{"Keyboard.Email", Keyboard.Email},
-				{"Keyboard.Text", Keyboard.Text},
-				{"Keyboard.Url", Keyboard.Url},
-				{"Keyboard.Telephone", Keyboard.Telephone},
-				{"Keyboard.Chat", Keyboard.Chat},
-			})
-				Assert.Same(kvp.Value, converter.ConvertFromInvariantString(kvp.Key));
-		}
-
-		[Fact]
-		public void ConversionFail()
-		{
-			var converter = new KeyboardTypeConverter();
-			Assert.Throws<InvalidOperationException>(() => converter.ConvertFromInvariantString("Foo"));
-		}
+		var converter = new KeyboardTypeConverter();
+		Assert.Throws<InvalidOperationException>(() => converter.ConvertFromInvariantString("Foo"));
 	}
 }

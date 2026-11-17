@@ -3,208 +3,207 @@ using System.Linq;
 using Xunit;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class VisualStateManagerTests : ContentPage
 {
-	public partial class VisualStateManagerTests : ContentPage
+	public VisualStateManagerTests()
 	{
-		public VisualStateManagerTests()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public VisualStateManagerTests(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public VisualStateManagerTests(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
 		: IDisposable{
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-				Application.Current = new MockApplication();
-			}
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+			Application.Current = new MockApplication();
+		}
 
-			public void Dispose()
-{
-				Device.PlatformServices = null;
-				Application.Current = null;
-			}
+		public void Dispose()
+		{
+			Device.PlatformServices = null;
+			Application.Current = null;
+		}
 
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void VisualStatesFromStyleXaml(bool useCompiledXaml)
-			{
-				var layout = new VisualStateManagerTests(useCompiledXaml);
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void VisualStatesFromStyleXaml(bool useCompiledXaml)
+		{
+			var layout = new VisualStateManagerTests(useCompiledXaml);
 
-				var entry0 = layout.Entry0;
+			var entry0 = layout.Entry0;
 
-				// Verify that Entry0 has no VisualStateGroups
-				Assert.False(entry0.HasVisualStateGroups());
-				Assert.Equal(entry0.TextColor, Color.Default);
-				Assert.Equal(entry0.PlaceholderColor, Color.Default);
+			// Verify that Entry0 has no VisualStateGroups
+			Assert.False(entry0.HasVisualStateGroups());
+			Assert.Equal(entry0.TextColor, Color.Default);
+			Assert.Equal(entry0.PlaceholderColor, Color.Default);
 
-				var entry1 = layout.Entry1;
+			var entry1 = layout.Entry1;
 
-				// Verify that the correct groups are set up for Entry1
-				var groups = VisualStateManager.GetVisualStateGroups(entry1);
-				Assert.Equal(3, groups.Count);
-				Assert.Equal("CommonStates", groups[0].Name);
-				Assert.Contains("Normal", groups[0].States.Select(state => state.Name).ToList());
-				Assert.Contains("Disabled", groups[0].States.Select(state => state.Name).ToList());
+			// Verify that the correct groups are set up for Entry1
+			var groups = VisualStateManager.GetVisualStateGroups(entry1);
+			Assert.Equal(3, groups.Count);
+			Assert.Equal("CommonStates", groups[0].Name);
+			Assert.Contains("Normal", groups[0].States.Select(state => state.Name).ToList());
+			Assert.Contains("Disabled", groups[0].States.Select(state => state.Name).ToList());
 
-				Assert.Equal(Color.Default, entry1.TextColor);
-				Assert.Equal(Color.Default, entry1.PlaceholderColor);
+			Assert.Equal(Color.Default, entry1.TextColor);
+			Assert.Equal(Color.Default, entry1.PlaceholderColor);
 
-				// Change the state of Entry1
-				Assert.True(VisualStateManager.GoToState(entry1, "Disabled"));
+			// Change the state of Entry1
+			Assert.True(VisualStateManager.GoToState(entry1, "Disabled"));
 
-				// And verify that the changes took
-				Assert.Equal(Color.Gray, entry1.TextColor);
-				Assert.Equal(Color.LightGray, entry1.PlaceholderColor);
+			// And verify that the changes took
+			Assert.Equal(Color.Gray, entry1.TextColor);
+			Assert.Equal(Color.LightGray, entry1.PlaceholderColor);
 
-				// Verify that Entry0 was unaffected
-				Assert.Equal(Color.Default, entry0.TextColor);
-				Assert.Equal(Color.Default, entry0.PlaceholderColor);
-			}
+			// Verify that Entry0 was unaffected
+			Assert.Equal(Color.Default, entry0.TextColor);
+			Assert.Equal(Color.Default, entry0.PlaceholderColor);
+		}
 
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void UnapplyVisualState(bool useCompiledXaml)
-			{
-				var layout = new VisualStateManagerTests(useCompiledXaml);
-				var entry1 = layout.Entry1;
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void UnapplyVisualState(bool useCompiledXaml)
+		{
+			var layout = new VisualStateManagerTests(useCompiledXaml);
+			var entry1 = layout.Entry1;
 
-				Assert.Equal(Color.Default, entry1.TextColor);
-				Assert.Equal(Color.Default, entry1.PlaceholderColor);
+			Assert.Equal(Color.Default, entry1.TextColor);
+			Assert.Equal(Color.Default, entry1.PlaceholderColor);
 
-				// Change the state of Entry1
-				var groups = VisualStateManager.GetVisualStateGroups(entry1);
-				Assert.True(VisualStateManager.GoToState(entry1, "Disabled"));
+			// Change the state of Entry1
+			var groups = VisualStateManager.GetVisualStateGroups(entry1);
+			Assert.True(VisualStateManager.GoToState(entry1, "Disabled"));
 
-				// And verify that the changes took
-				Assert.Equal(Color.Gray, entry1.TextColor);
-				Assert.Equal(Color.LightGray, entry1.PlaceholderColor);
+			// And verify that the changes took
+			Assert.Equal(Color.Gray, entry1.TextColor);
+			Assert.Equal(Color.LightGray, entry1.PlaceholderColor);
 
-				// Now change it to Normal
-				Assert.True(VisualStateManager.GoToState(entry1, "Normal"));
+			// Now change it to Normal
+			Assert.True(VisualStateManager.GoToState(entry1, "Normal"));
 
-				// And verify that the changes reverted
-				Assert.Equal(Color.Default, entry1.TextColor);
-				Assert.Equal(Color.Default, entry1.PlaceholderColor);
-			}
+			// And verify that the changes reverted
+			Assert.Equal(Color.Default, entry1.TextColor);
+			Assert.Equal(Color.Default, entry1.PlaceholderColor);
+		}
 
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void VisualStateGroupsDirectlyOnElement(bool useCompiledXaml)
-			{
-				var layout = new VisualStateManagerTests(useCompiledXaml);
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void VisualStateGroupsDirectlyOnElement(bool useCompiledXaml)
+		{
+			var layout = new VisualStateManagerTests(useCompiledXaml);
 
-				var entry = layout.Entry2;
+			var entry = layout.Entry2;
 
-				var groups = VisualStateManager.GetVisualStateGroups(entry);
+			var groups = VisualStateManager.GetVisualStateGroups(entry);
 
-				Assert.NotNull(groups);
-				Assert.Equal(2, groups.Count);
-			}
+			Assert.NotNull(groups);
+			Assert.Equal(2, groups.Count);
+		}
 
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void EmptyGroupDirectlyOnElement(bool useCompiledXaml)
-			{
-				var layout = new VisualStateManagerTests(useCompiledXaml);
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void EmptyGroupDirectlyOnElement(bool useCompiledXaml)
+		{
+			var layout = new VisualStateManagerTests(useCompiledXaml);
 
-				var entry3 = layout.Entry3;
+			var entry3 = layout.Entry3;
 
-				var groups = VisualStateManager.GetVisualStateGroups(entry3);
+			var groups = VisualStateManager.GetVisualStateGroups(entry3);
 
-				Assert.NotNull(groups);
-				Assert.True(groups.Count == 1);
-			}
+			Assert.NotNull(groups);
+			Assert.True(groups.Count == 1);
+		}
 
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void VisualStateGroupsFromStylesAreDistinct(bool useCompiledXaml)
-			{
-				var layout = new VisualStateManagerTests(useCompiledXaml);
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void VisualStateGroupsFromStylesAreDistinct(bool useCompiledXaml)
+		{
+			var layout = new VisualStateManagerTests(useCompiledXaml);
 
-				var label1 = layout.ErrorLabel1;
-				var label2 = layout.ErrorLabel2;
+			var label1 = layout.ErrorLabel1;
+			var label2 = layout.ErrorLabel2;
 
-				var groups1 = VisualStateManager.GetVisualStateGroups(label1);
-				var groups2 = VisualStateManager.GetVisualStateGroups(label2);
+			var groups1 = VisualStateManager.GetVisualStateGroups(label1);
+			var groups2 = VisualStateManager.GetVisualStateGroups(label2);
 
-				Assert.NotSame(groups1, groups2);
+			Assert.NotSame(groups1, groups2);
 
-				var currentState1 = groups1[0].CurrentState;
-				var currentState2 = groups2[0].CurrentState;
+			var currentState1 = groups1[0].CurrentState;
+			var currentState2 = groups2[0].CurrentState;
 
-				Assert.Equal("Normal", currentState1.Name);
-				Assert.Equal("Normal", currentState2.Name);
+			Assert.Equal("Normal", currentState1.Name);
+			Assert.Equal("Normal", currentState2.Name);
 
-				VisualStateManager.GoToState(label1, "Invalid");
+			VisualStateManager.GoToState(label1, "Invalid");
 
-				Assert.Equal("Invalid", groups1[0].CurrentState.Name);
-				Assert.Equal("Normal", groups2[0].CurrentState.Name);
-			}
+			Assert.Equal("Invalid", groups1[0].CurrentState.Name);
+			Assert.Equal("Normal", groups2[0].CurrentState.Name);
+		}
 
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void SettersAreAddedToCorrectState(bool useCompiledXaml)
-			{
-				var layout = new VisualStateManagerTests(useCompiledXaml);
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void SettersAreAddedToCorrectState(bool useCompiledXaml)
+		{
+			var layout = new VisualStateManagerTests(useCompiledXaml);
 
-				var entry = layout.Entry4;
+			var entry = layout.Entry4;
 
-				var groups = VisualStateManager.GetVisualStateGroups(entry);
+			var groups = VisualStateManager.GetVisualStateGroups(entry);
 
-				Assert.Single(groups);
+			Assert.Single(groups);
 
-				var common = groups[0];
+			var common = groups[0];
 
-				var normal = common.States.Single(state => state.Name == "Normal");
-				var disabled = common.States.Single(state => state.Name == "Disabled");
+			var normal = common.States.Single(state => state.Name == "Normal");
+			var disabled = common.States.Single(state => state.Name == "Disabled");
 
-				Assert.Empty(normal.Setters);
-				Assert.Equal(2, disabled.Setters.Count);
-			}
+			Assert.Empty(normal.Setters);
+			Assert.Equal(2, disabled.Setters.Count);
+		}
 
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void VisualElementGoesToCorrectStateWhenAvailable(bool useCompiledXaml)
-			{
-				var layout = new VisualStateManagerTests(useCompiledXaml);
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void VisualElementGoesToCorrectStateWhenAvailable(bool useCompiledXaml)
+		{
+			var layout = new VisualStateManagerTests(useCompiledXaml);
 
-				var button = layout.Button1;
+			var button = layout.Button1;
 
-				Assert.Equal(Color.Lime, button.BackgroundColor);
-			}
+			Assert.Equal(Color.Lime, button.BackgroundColor);
+		}
 
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void TargetedVisualElementGoesToCorrectState(bool useCompiledXaml)
-			{
-				var layout = new VisualStateManagerTests(useCompiledXaml);
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void TargetedVisualElementGoesToCorrectState(bool useCompiledXaml)
+		{
+			var layout = new VisualStateManagerTests(useCompiledXaml);
 
-				var label1 = layout.TargetLabel1;
+			var label1 = layout.TargetLabel1;
 
-				VisualStateManager.GoToState(layout, "Red");
+			VisualStateManager.GoToState(layout, "Red");
 
-				Assert.Equal("Red", label1.Text);
+			Assert.Equal("Red", label1.Text);
 
-				VisualStateManager.GoToState(layout, "Blue");
+			VisualStateManager.GoToState(layout, "Blue");
 
-				Assert.Equal("Blue", label1.Text);
+			Assert.Equal("Blue", label1.Text);
 
-			}
 		}
 	}
 }

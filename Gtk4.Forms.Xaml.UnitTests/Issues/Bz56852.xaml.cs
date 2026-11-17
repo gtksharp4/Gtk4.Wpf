@@ -2,41 +2,40 @@
 using Xunit;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class Bz56852
 {
-	public partial class Bz56852
+	public Bz56852()
 	{
-		public Bz56852()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Bz56852(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Bz56852(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
 		: IDisposable{
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-			}
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+		}
 
-			public void Dispose()
-{
-				Device.PlatformServices = null;
-				Application.Current = null;
-			}
+		public void Dispose()
+		{
+			Device.PlatformServices = null;
+			Application.Current = null;
+		}
 
-			[Theory]
-			[InlineData(true)]
-			[InlineData(false)]
-			public void DynamicResourceApplyingOrder(bool useCompiledXaml)
-			{
-				var layout = new Bz56852(useCompiledXaml);
-				Assert.Equal(50, layout.label.FontSize);
-			}
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void DynamicResourceApplyingOrder(bool useCompiledXaml)
+		{
+			var layout = new Bz56852(useCompiledXaml);
+			Assert.Equal(50, layout.label.FontSize);
 		}
 	}
 }

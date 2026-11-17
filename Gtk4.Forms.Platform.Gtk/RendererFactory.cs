@@ -1,10 +1,9 @@
-﻿namespace Xamarin.Forms.Platform.GTK
+﻿namespace Xamarin.Forms.Platform.GTK;
+
+public static class RendererFactory
 {
-	public static class RendererFactory
+	public static IVisualElementRenderer CreateRenderer(VisualElement element)
 	{
-		public static IVisualElementRenderer CreateRenderer(VisualElement element)
-		{
-			return Platform.CreateRenderer(element);
-		}
+		return Platform.CreateRenderer(element);
 	}
 }

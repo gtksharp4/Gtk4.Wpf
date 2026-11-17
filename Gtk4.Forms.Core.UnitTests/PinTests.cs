@@ -1,115 +1,114 @@
 ﻿using Xamarin.Forms.Maps;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class PinTests : BaseTestFixture
 {
-	public class PinTests : BaseTestFixture
+	[Fact]
+	public void Constructor()
 	{
-		[Fact]
-		public void Constructor()
+		Pin pin = new Pin
 		{
-			Pin pin = new Pin
-			{
-				Type = PinType.SavedPin,
-				Position = new Position(-92, 178),
-				Label = "My Desktop",
-				Address = "123 Hello World Street"
-			};
+			Type = PinType.SavedPin,
+			Position = new Position(-92, 178),
+			Label = "My Desktop",
+			Address = "123 Hello World Street"
+		};
 
-			Assert.Equal(pin.Type, PinType.SavedPin);
-			Assert.Equal(pin.Position.Latitude, -90);
-			Assert.Equal(pin.Label, "My Desktop");
-			Assert.Equal(pin.Address, "123 Hello World Street");
-		}
+		Assert.Equal(pin.Type, PinType.SavedPin);
+		Assert.Equal(pin.Position.Latitude, -90);
+		Assert.Equal(pin.Label, "My Desktop");
+		Assert.Equal(pin.Address, "123 Hello World Street");
+	}
 
-		[Fact]
-		public void EqualsTest()
+	[Fact]
+	public void EqualsTest()
+	{
+		Pin pin1 = new Pin();
+		Pin pin2 = new Pin();
+		Pin pin3 = new Pin
 		{
-			Pin pin1 = new Pin();
-			Pin pin2 = new Pin();
-			Pin pin3 = new Pin
-			{
-				Type = PinType.Place,
-				Position = new Position(12, -24),
-				Label = "Test",
-				Address = "123 Test street"
-			};
+			Type = PinType.Place,
+			Position = new Position(12, -24),
+			Label = "Test",
+			Address = "123 Test street"
+		};
 
-			Pin pin4 = new Pin
-			{
-				Type = PinType.Place,
-				Position = new Position(12, -24),
-				Label = "Test",
-				Address = "123 Test street"
-			};
-
-			Assert.True(pin1.Equals(pin2));
-			Assert.True(pin3.Equals(pin4));
-			Assert.False(pin1.Equals(pin3));
-		}
-
-		[Fact]
-		public void EqualsOp()
+		Pin pin4 = new Pin
 		{
-			var pin1 = new Pin
-			{
-				Type = PinType.Place,
-				Position = new Position(12, -24),
-				Label = "Test",
-				Address = "123 Test street"
-			};
+			Type = PinType.Place,
+			Position = new Position(12, -24),
+			Label = "Test",
+			Address = "123 Test street"
+		};
 
-			var pin2 = new Pin
-			{
-				Type = PinType.Place,
-				Position = new Position(12, -24),
-				Label = "Test",
-				Address = "123 Test street"
-			};
+		Assert.True(pin1.Equals(pin2));
+		Assert.True(pin3.Equals(pin4));
+		Assert.False(pin1.Equals(pin3));
+	}
 
-			Assert.True(pin1 == pin2);
-		}
-
-		[Fact]
-		public void InEqualsOp()
+	[Fact]
+	public void EqualsOp()
+	{
+		var pin1 = new Pin
 		{
-			var pin1 = new Pin
-			{
-				Type = PinType.Place,
-				Position = new Position(11.9, -24),
-				Label = "Test",
-				Address = "123 Test street"
-			};
+			Type = PinType.Place,
+			Position = new Position(12, -24),
+			Label = "Test",
+			Address = "123 Test street"
+		};
 
-			var pin2 = new Pin
-			{
-				Type = PinType.Place,
-				Position = new Position(12, -24),
-				Label = "Test",
-				Address = "123 Test street"
-			};
-
-			Assert.True(pin1 != pin2);
-		}
-
-		[Fact]
-		public void Label()
+		var pin2 = new Pin
 		{
-			var pin = new Pin
-			{
-				Label = "OriginalLabel"
-			};
+			Type = PinType.Place,
+			Position = new Position(12, -24),
+			Label = "Test",
+			Address = "123 Test street"
+		};
 
-			bool signaled = false;
-			pin.PropertyChanged += (sender, args) =>
-			{
-				if (args.PropertyName == "Label")
-					signaled = true;
-			};
+		Assert.True(pin1 == pin2);
+	}
 
-			pin.Label = "Should Signal";
+	[Fact]
+	public void InEqualsOp()
+	{
+		var pin1 = new Pin
+		{
+			Type = PinType.Place,
+			Position = new Position(11.9, -24),
+			Label = "Test",
+			Address = "123 Test street"
+		};
 
-			Assert.True(signaled);
-		}
+		var pin2 = new Pin
+		{
+			Type = PinType.Place,
+			Position = new Position(12, -24),
+			Label = "Test",
+			Address = "123 Test street"
+		};
+
+		Assert.True(pin1 != pin2);
+	}
+
+	[Fact]
+	public void Label()
+	{
+		var pin = new Pin
+		{
+			Label = "OriginalLabel"
+		};
+
+		bool signaled = false;
+		pin.PropertyChanged += (sender, args) =>
+		{
+			if (args.PropertyName == "Label")
+				signaled = true;
+		};
+
+		pin.Label = "Should Signal";
+
+		Assert.True(signaled);
 	}
 }

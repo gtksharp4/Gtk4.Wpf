@@ -2,41 +2,40 @@
 using System.Reflection;
 using Xunit;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class FieldModifier : ContentPage
 {
-	public partial class FieldModifier : ContentPage
+	public FieldModifier()
 	{
-		public FieldModifier()
+		InitializeComponent();
+	}
+
+	public FieldModifier(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
+
+	public class FindByNameTests
+	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void TestFieldModifier(bool useCompiledXaml)
 		{
-			InitializeComponent();
-		}
+			var layout = new FieldModifier();
+			Assert.NotNull(layout.privateLabel);
+			Assert.NotNull(layout.internalLabel);
+			Assert.NotNull(layout.publicLabel);
 
-		public FieldModifier(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+			var fields = typeof(FieldModifier).GetTypeInfo().DeclaredFields;
 
-		public class FindByNameTests
-		{
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void TestFieldModifier(bool useCompiledXaml)
-			{
-				var layout = new FieldModifier();
-				Assert.NotNull(layout.privateLabel);
-				Assert.NotNull(layout.internalLabel);
-				Assert.NotNull(layout.publicLabel);
+			Assert.True(fields.First(fi => fi.Name == "privateLabel").IsPrivate);
 
-				var fields = typeof(FieldModifier).GetTypeInfo().DeclaredFields;
+			Assert.False(fields.First(fi => fi.Name == "internalLabel").IsPrivate);
+			Assert.False(fields.First(fi => fi.Name == "internalLabel").IsPublic);
 
-				Assert.True(fields.First(fi => fi.Name == "privateLabel").IsPrivate);
-
-				Assert.False(fields.First(fi => fi.Name == "internalLabel").IsPrivate);
-				Assert.False(fields.First(fi => fi.Name == "internalLabel").IsPublic);
-
-				Assert.True(fields.First(fi => fi.Name == "publicLabel").IsPublic);
-			}
+			Assert.True(fields.First(fi => fi.Name == "publicLabel").IsPublic);
 		}
 	}
 }

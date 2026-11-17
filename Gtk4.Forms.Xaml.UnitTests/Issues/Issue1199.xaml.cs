@@ -3,32 +3,31 @@ using System.Collections.Generic;
 using Xunit;
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class Issue1199 : ContentPage
 {
-	public partial class Issue1199 : ContentPage
+	public Issue1199()
 	{
-		public Issue1199()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Issue1199(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Issue1199(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
+	{
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void AllowCreationOfTypesFromString(bool useCompiledXaml)
 		{
-			[Theory]
-			[InlineData(true)]
-			[InlineData(false)]
-			public void AllowCreationOfTypesFromString(bool useCompiledXaml)
-			{
-				var layout = new Issue1199(useCompiledXaml);
-				var res = (Color)layout.Resources["AlmostSilver"];
+			var layout = new Issue1199(useCompiledXaml);
+			var res = (Color)layout.Resources["AlmostSilver"];
 
-				Assert.Equal(Color.FromHex("#FFCCCCCC"), res);
-			}
+			Assert.Equal(Color.FromHex("#FFCCCCCC"), res);
 		}
 	}
 }

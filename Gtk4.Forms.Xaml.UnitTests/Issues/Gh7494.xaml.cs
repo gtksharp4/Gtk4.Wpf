@@ -6,43 +6,42 @@ using Xunit;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class Gh7494 : ContentPage
 {
-	public partial class Gh7494 : ContentPage
+	public Gh7494() => InitializeComponent();
+	public Gh7494(bool useCompiledXaml)
 	{
-		public Gh7494() => InitializeComponent();
-		public Gh7494(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		public class Tests: IDisposable
-		{
-			public Tests() => Device.PlatformServices = new MockPlatformServices();
-			public void Dispose() => Device.PlatformServices = null;
-
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void TemplateBindingInSpans(bool useCompiledXaml)
-			{
-				var layout = new Gh7494(useCompiledXaml);
-				var view = layout.Content as Gh7494Content;
-				var templatedLabel = ((StackLayout)view.Children[0]).Children[0] as Label;
-
-				Assert.Equal(view.Title, templatedLabel.FormattedText.Spans[0].Text);
-			}
-		}
+		//this stub will be replaced at compile time
 	}
 
-	public class Gh7494Content : ContentView
+	public class Tests: IDisposable
 	{
-		public static readonly BindableProperty TitleProperty = BindableProperty.Create(nameof(Title), typeof(string), typeof(Gh7494Content), default(string));
+		public Tests() => Device.PlatformServices = new MockPlatformServices();
+		public void Dispose() => Device.PlatformServices = null;
 
-		public string Title
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void TemplateBindingInSpans(bool useCompiledXaml)
 		{
-			get => (string)GetValue(TitleProperty);
-			set => SetValue(TitleProperty, value);
+			var layout = new Gh7494(useCompiledXaml);
+			var view = layout.Content as Gh7494Content;
+			var templatedLabel = ((StackLayout)view.Children[0]).Children[0] as Label;
+
+			Assert.Equal(view.Title, templatedLabel.FormattedText.Spans[0].Text);
 		}
+	}
+}
+
+public class Gh7494Content : ContentView
+{
+	public static readonly BindableProperty TitleProperty = BindableProperty.Create(nameof(Title), typeof(string), typeof(Gh7494Content), default(string));
+
+	public string Title
+	{
+		get => (string)GetValue(TitleProperty);
+		set => SetValue(TitleProperty, value);
 	}
 }

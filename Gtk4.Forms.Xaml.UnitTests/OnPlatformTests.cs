@@ -2,25 +2,25 @@
 using Xunit;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public class OnPlatformTests : BaseTestFixture
 {
-	public class OnPlatformTests : BaseTestFixture
+	public OnPlatformTests()
 	{
-		public OnPlatformTests()
-{
-			Device.PlatformServices = new MockPlatformServices();
-		}
+		Device.PlatformServices = new MockPlatformServices();
+	}
 
-		public override void Dispose()
-{
-			Device.PlatformServices = null;
-			base.Dispose();
-		}
+	public override void Dispose()
+	{
+		Device.PlatformServices = null;
+		base.Dispose();
+	}
 
-		[Fact]
-		public void ApplyToProperty()
-		{
-			var xaml = @"
+	[Fact]
+	public void ApplyToProperty()
+	{
+		var xaml = @"
 			<ContentPage 
 			xmlns=""http://xamarin.com/schemas/2014/forms""
 			xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
@@ -31,14 +31,14 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					<OnPlatform.WinPhone><Button Text=""WinPhone""/></OnPlatform.WinPhone>
 				</OnPlatform>
 			</ContentPage>";
-			var layout = new ContentPage().LoadFromXaml(xaml);
-			Assert.NotNull(layout.Content);
-		}
+		var layout = new ContentPage().LoadFromXaml(xaml);
+		Assert.NotNull(layout.Content);
+	}
 
-		[Fact]
-		public void UseTypeConverters()
-		{
-			var xaml = @"
+	[Fact]
+	public void UseTypeConverters()
+	{
+		var xaml = @"
 			<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
              xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
              Title=""Grid Demo Page"">
@@ -57,26 +57,26 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			  </ContentPage.Padding>  
 			</ContentPage>";
 
-			ContentPage layout;
+		ContentPage layout;
 
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
-			layout = new ContentPage().LoadFromXaml(xaml);
-			Assert.Equal(new Thickness(0, 20, 0, 0), layout.Padding);
+		((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
+		layout = new ContentPage().LoadFromXaml(xaml);
+		Assert.Equal(new Thickness(0, 20, 0, 0), layout.Padding);
 
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
-			layout = new ContentPage().LoadFromXaml(xaml);
-			Assert.Equal(new Thickness(0, 0, 10, 0), layout.Padding);
+		((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
+		layout = new ContentPage().LoadFromXaml(xaml);
+		Assert.Equal(new Thickness(0, 0, 10, 0), layout.Padding);
 
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.UWP;
-			layout = new ContentPage().LoadFromXaml(xaml);
-			Assert.Equal(new Thickness(0, 20, 0, 20), layout.Padding);
-		}
+		((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.UWP;
+		layout = new ContentPage().LoadFromXaml(xaml);
+		Assert.Equal(new Thickness(0, 20, 0, 20), layout.Padding);
+	}
 
-		[Fact]
-		//Issue 1480
-		public void TypeConverterAndDerivedTypes()
-		{
-			var xaml = @"
+	[Fact]
+	//Issue 1480
+	public void TypeConverterAndDerivedTypes()
+	{
+		var xaml = @"
 			<Image xmlns=""http://xamarin.com/schemas/2014/forms""
              xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"">
 				<Image.Source>
@@ -88,20 +88,20 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	            </Image.Source>
 			</Image>";
 
-			Image image;
+		Image image;
 
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
-			image = new Image().LoadFromXaml(xaml);
-			Assert.Equal("icon_twitter.png", (image.Source as FileImageSource).File);
-		}
+		((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
+		image = new Image().LoadFromXaml(xaml);
+		Assert.Equal("icon_twitter.png", (image.Source as FileImageSource).File);
 	}
+}
 
-	public class OnIdiomTests : BaseTestFixture
+public class OnIdiomTests : BaseTestFixture
+{
+	[Fact]
+	public void StackLayoutOrientation()
 	{
-		[Fact]
-		public void StackLayoutOrientation()
-		{
-			var xaml = @"
+		var xaml = @"
 			<StackLayout 
 			xmlns=""http://xamarin.com/schemas/2014/forms""
 			xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"">
@@ -114,13 +114,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				<Label Text=""child0""/>
 				<Label Text=""child1""/>			
 			</StackLayout>";
-			Device.Idiom = TargetIdiom.Phone;
-			var layout = new StackLayout().LoadFromXaml(xaml);
-			Assert.Equal(StackOrientation.Vertical, layout.Orientation);
+		Device.Idiom = TargetIdiom.Phone;
+		var layout = new StackLayout().LoadFromXaml(xaml);
+		Assert.Equal(StackOrientation.Vertical, layout.Orientation);
 
-			Device.Idiom = TargetIdiom.Tablet;
-			layout = new StackLayout().LoadFromXaml(xaml);
-			Assert.Equal(StackOrientation.Horizontal, layout.Orientation);
-		}
+		Device.Idiom = TargetIdiom.Tablet;
+		layout = new StackLayout().LoadFromXaml(xaml);
+		Assert.Equal(StackOrientation.Horizontal, layout.Orientation);
 	}
 }

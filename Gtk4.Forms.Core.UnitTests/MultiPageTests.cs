@@ -5,836 +5,835 @@ using System.Collections.Specialized;
 using System.Linq;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public abstract class MultiPageTests<T> : BaseTestFixture
+	where T : Page
 {
-	public abstract class MultiPageTests<T> : BaseTestFixture
-		where T : Page
+	protected abstract MultiPage<T> CreateMultiPage();
+	protected abstract T CreateContainedPage();
+	protected abstract int GetIndex(T page);
+
+	public MultiPageTests()
 	{
-		protected abstract MultiPage<T> CreateMultiPage();
-		protected abstract T CreateContainedPage();
-		protected abstract int GetIndex(T page);
+		Device.PlatformServices = new MockPlatformServices();
+	}
 
-		public MultiPageTests()
+	public override void Dispose()
+	{
+		base.Dispose();
+		Device.PlatformServices = null;
+	}
+
+	[Fact]
+	public void TestSetChildren()
+	{
+		var container = CreateMultiPage();
+		var page = (Page)container;
+
+		int childCount = 0;
+		page.ChildAdded += (sender, args) => childCount++;
+
+		int pagesAdded = 0;
+		container.PagesChanged += (sender, args) =>
 		{
-			Device.PlatformServices = new MockPlatformServices();
-		}
+			if (args.Action == NotifyCollectionChangedAction.Add)
+				pagesAdded++;
+		};
 
-		public override void Dispose()
+		container.Children.Add(CreateContainedPage());
+		container.Children.Add(CreateContainedPage());
+
+		Assert.Equal(2, childCount);
+		Assert.Equal(2, ((IElementController)page).LogicalChildren.Count);
+		Assert.Equal(2, pagesAdded);
+	}
+
+	[Fact]
+	public void TestOverwriteChildren()
+	{
+		var page = CreateMultiPage();
+		page.Children.Add(CreateContainedPage());
+		page.Children.Add(CreateContainedPage());
+
+		int childCount = 0;
+		int removeCount = 0;
+		page.ChildAdded += (sender, args) => childCount++;
+		page.ChildRemoved += (sender, args) => removeCount++;
+
+		foreach (var child in page.Children.ToArray())
+			page.Children.Remove((T)child);
+
+		page.Children.Add(CreateContainedPage());
+		page.Children.Add(CreateContainedPage());
+
+		Assert.Equal(2, removeCount);
+		Assert.Equal(2, childCount);
+		Assert.Equal(2, ((IElementController)page).LogicalChildren.Count);
+	}
+
+	[Fact]
+	public void CurrentPageSetAfterAdd()
+	{
+		var page = CreateMultiPage();
+		Assert.Null(page.CurrentPage);
+
+		var child = CreateContainedPage();
+
+		bool property = false;
+		page.PropertyChanged += (o, e) =>
 		{
-			base.Dispose();
-			Device.PlatformServices = null;
-		}
+			if (e.PropertyName == "CurrentPage")
+				property = true;
+		};
 
-		[Fact]
-		public void TestSetChildren()
+		page.Children.Add(child);
+
+		Assert.Same(child, page.CurrentPage);
+		Assert.True(property, "CurrentPage property change did not fire");
+	}
+
+	[Fact]
+	public void CurrentPageChangedAfterRemove()
+	{
+		var page = CreateMultiPage();
+		var child = CreateContainedPage();
+		var child2 = CreateContainedPage();
+		page.Children.Add(child);
+		page.Children.Add(child2);
+
+		bool property = false;
+		page.PropertyChanged += (o, e) =>
 		{
-			var container = CreateMultiPage();
-			var page = (Page)container;
+			if (e.PropertyName == "CurrentPage")
+				property = true;
+		};
 
-			int childCount = 0;
-			page.ChildAdded += (sender, args) => childCount++;
+		page.Children.Remove(child);
 
-			int pagesAdded = 0;
-			container.PagesChanged += (sender, args) =>
-			{
-				if (args.Action == NotifyCollectionChangedAction.Add)
-					pagesAdded++;
-			};
+		Assert.Same(child2, page.CurrentPage);
+		Assert.True(property, "CurrentPage property change did not fire");
+	}
 
-			container.Children.Add(CreateContainedPage());
-			container.Children.Add(CreateContainedPage());
+	[Fact]
+	public void CurrentPageNullAfterRemove()
+	{
+		var page = CreateMultiPage();
+		var child = CreateContainedPage();
+		page.Children.Add(child);
 
-			Assert.Equal(2, childCount);
-			Assert.Equal(2, ((IElementController)page).LogicalChildren.Count);
-			Assert.Equal(2, pagesAdded);
-		}
-
-		[Fact]
-		public void TestOverwriteChildren()
+		bool property = false;
+		page.PropertyChanged += (o, e) =>
 		{
-			var page = CreateMultiPage();
-			page.Children.Add(CreateContainedPage());
-			page.Children.Add(CreateContainedPage());
+			if (e.PropertyName == "CurrentPage")
+				property = true;
+		};
 
-			int childCount = 0;
-			int removeCount = 0;
-			page.ChildAdded += (sender, args) => childCount++;
-			page.ChildRemoved += (sender, args) => removeCount++;
+		page.Children.Remove(child);
 
-			foreach (var child in page.Children.ToArray())
-				page.Children.Remove((T)child);
+		Assert.Null(page.CurrentPage);
+		Assert.True(property, "CurrentPage property change did not fire");
+	}
 
-			page.Children.Add(CreateContainedPage());
-			page.Children.Add(CreateContainedPage());
+	[Fact]
+	public void TemplatedPage()
+	{
+		var page = CreateMultiPage();
 
-			Assert.Equal(2, removeCount);
-			Assert.Equal(2, childCount);
-			Assert.Equal(2, ((IElementController)page).LogicalChildren.Count);
-		}
-
-		[Fact]
-		public void CurrentPageSetAfterAdd()
+		page.ItemTemplate = new DataTemplate(() =>
 		{
-			var page = CreateMultiPage();
-			Assert.Null(page.CurrentPage);
+			var p = new ContentPage();
+			p.Content = new Label();
+			p.Content.SetBinding(Label.TextProperty, new Binding("."));
+			return p;
+		});
 
-			var child = CreateContainedPage();
+		page.ItemsSource = new[] { "Foo", "Bar" };
 
-			bool property = false;
-			page.PropertyChanged += (o, e) =>
-			{
-				if (e.PropertyName == "CurrentPage")
-					property = true;
-			};
-
-			page.Children.Add(child);
-
-			Assert.Same(child, page.CurrentPage);
-			Assert.True(property, "CurrentPage property change did not fire");
-		}
-
-		[Fact]
-		public void CurrentPageChangedAfterRemove()
+		Action<Page, string> assertPage = (p, s) =>
 		{
-			var page = CreateMultiPage();
-			var child = CreateContainedPage();
-			var child2 = CreateContainedPage();
-			page.Children.Add(child);
-			page.Children.Add(child2);
+			Assert.IsAssignableFrom<ContentPage>(p);
 
-			bool property = false;
-			page.PropertyChanged += (o, e) =>
-			{
-				if (e.PropertyName == "CurrentPage")
-					property = true;
-			};
+			var cp = (ContentPage)p;
+			Assert.IsAssignableFrom<Label>(cp.Content);
+			Assert.Equal(s, ((Label)cp.Content).Text);
+		};
 
-			page.Children.Remove(child);
+		var pages = page.Children.ToArray();
+		Assert.Equal(2, pages.Length);
+		assertPage((Page)pages[0], "Foo");
+		assertPage((Page)pages[1], "Bar");
+	}
 
-			Assert.Same(child2, page.CurrentPage);
-			Assert.True(property, "CurrentPage property change did not fire");
-		}
+	[Fact]
+	public void SelectedItemSetAfterAdd()
+	{
+		var page = CreateMultiPage();
+		Assert.Null(page.CurrentPage);
 
-		[Fact]
-		public void CurrentPageNullAfterRemove()
+		var items = new ObservableCollection<string>();
+
+		page.ItemsSource = items;
+
+		bool selected = false;
+		bool current = false;
+		page.PropertyChanged += (o, e) =>
 		{
-			var page = CreateMultiPage();
-			var child = CreateContainedPage();
-			page.Children.Add(child);
+			if (e.PropertyName == "CurrentPage")
+				current = true;
+			else if (e.PropertyName == "SelectedItem")
+				selected = true;
+		};
 
-			bool property = false;
-			page.PropertyChanged += (o, e) =>
-			{
-				if (e.PropertyName == "CurrentPage")
-					property = true;
-			};
+		items.Add("foo");
 
-			page.Children.Remove(child);
+		Assert.Same(items.First(), page.SelectedItem);
+		Assert.Same(page.SelectedItem, page.CurrentPage.BindingContext);
+		Assert.True(current, "CurrentPage property change did not fire");
+		Assert.True(selected, "SelectedItem property change did not fire");
+	}
 
-			Assert.Null(page.CurrentPage);
-			Assert.True(property, "CurrentPage property change did not fire");
-		}
+	[Fact]
+	public void SelectedItemNullAfterRemove()
+	{
+		var page = CreateMultiPage();
+		Assert.Null(page.CurrentPage);
 
-		[Fact]
-		public void TemplatedPage()
+		var items = new ObservableCollection<string> { "foo" };
+		page.ItemsSource = items;
+
+		bool selected = false;
+		bool current = false;
+		page.PropertyChanged += (o, e) =>
 		{
-			var page = CreateMultiPage();
+			if (e.PropertyName == "CurrentPage")
+				current = true;
+			else if (e.PropertyName == "SelectedItem")
+				selected = true;
+		};
 
-			page.ItemTemplate = new DataTemplate(() =>
-			{
-				var p = new ContentPage();
-				p.Content = new Label();
-				p.Content.SetBinding(Label.TextProperty, new Binding("."));
-				return p;
-			});
+		items.Remove("foo");
 
-			page.ItemsSource = new[] { "Foo", "Bar" };
+		Assert.Null(page.SelectedItem);
+		Assert.Null(page.CurrentPage);
+		Assert.True(current, "CurrentPage property change did not fire");
+		Assert.True(selected, "SelectedItem property change did not fire");
+	}
 
-			Action<Page, string> assertPage = (p, s) =>
-			{
-				Assert.IsAssignableFrom<ContentPage>(p);
+	[Fact]
+	[Trait("Description", "When ItemsSource is set with items, the first item should automatically be selected")]
+	public void SelectedItemSetAfterItemsSourceSet()
+	{
+		var page = CreateMultiPage();
 
-				var cp = (ContentPage)p;
-				Assert.IsAssignableFrom<Label>(cp.Content);
-				Assert.Equal(s, ((Label)cp.Content).Text);
-			};
-
-			var pages = page.Children.ToArray();
-			Assert.Equal(2, pages.Length);
-			assertPage((Page)pages[0], "Foo");
-			assertPage((Page)pages[1], "Bar");
-		}
-
-		[Fact]
-		public void SelectedItemSetAfterAdd()
+		bool selected = false;
+		bool current = false;
+		page.PropertyChanged += (o, e) =>
 		{
-			var page = CreateMultiPage();
-			Assert.Null(page.CurrentPage);
+			if (e.PropertyName == "CurrentPage")
+				current = true;
+			else if (e.PropertyName == "SelectedItem")
+				selected = true;
+		};
 
-			var items = new ObservableCollection<string>();
+		page.ItemsSource = new[] { "foo" };
 
-			page.ItemsSource = items;
+		Assert.Same(((string[])page.ItemsSource)[0], page.SelectedItem);
+		Assert.Same(page.SelectedItem, page.CurrentPage.BindingContext);
+		Assert.True(current, "CurrentPage property change did not fire");
+		Assert.True(selected, "SelectedItem property change did not fire");
+	}
 
-			bool selected = false;
-			bool current = false;
-			page.PropertyChanged += (o, e) =>
-			{
-				if (e.PropertyName == "CurrentPage")
-					current = true;
-				else if (e.PropertyName == "SelectedItem")
-					selected = true;
-			};
+	[Fact]
+	public void SelectedItemNoLongerPresent()
+	{
+		var page = CreateMultiPage();
 
-			items.Add("foo");
+		string[] items = new[] { "foo", "bar" };
+		page.ItemsSource = items;
+		page.SelectedItem = items[1];
 
-			Assert.Same(items.First(), page.SelectedItem);
-			Assert.Same(page.SelectedItem, page.CurrentPage.BindingContext);
-			Assert.True(current, "CurrentPage property change did not fire");
-			Assert.True(selected, "SelectedItem property change did not fire");
-		}
+		items = new[] { "fad", "baz" };
+		page.ItemsSource = items;
 
-		[Fact]
-		public void SelectedItemNullAfterRemove()
+		Assert.Same(items[0], page.SelectedItem);
+	}
+
+	[Fact]
+	public void SelectedItemAfterMove()
+	{
+		var page = CreateMultiPage();
+
+		var items = new ObservableCollection<string> { "foo", "bar" };
+		page.ItemsSource = items;
+
+		Assert.Same(items[0], page.SelectedItem);
+		Assert.NotNull(page.CurrentPage);
+		Assert.Same(items[0], page.CurrentPage.BindingContext);
+
+		page.SelectedItem = items[1];
+		Assert.Same(items[1], page.CurrentPage.BindingContext);
+
+		items.Move(1, 0);
+
+		Assert.Same(items[0], page.SelectedItem);
+		Assert.NotNull(page.CurrentPage);
+		Assert.Same(items[0], page.CurrentPage.BindingContext);
+	}
+
+	[Fact]
+	public void UntemplatedItemsSourcePage()
+	{
+		var page = CreateMultiPage();
+
+		page.ItemsSource = new[] { "Foo", "Bar" };
+
+		var pages = page.Children.ToArray();
+		Assert.Equal(2, pages.Length);
+		Assert.Equal("Foo", ((Page)pages[0]).Title);
+		Assert.Equal("Bar", ((Page)pages[1]).Title);
+	}
+
+	[Fact]
+	public void TemplatePagesAdded()
+	{
+		var page = CreateMultiPage();
+
+		page.ItemTemplate = new DataTemplate(() =>
 		{
-			var page = CreateMultiPage();
-			Assert.Null(page.CurrentPage);
+			var p = new ContentPage();
+			p.Content = new Label();
+			p.Content.SetBinding(Label.TextProperty, new Binding("."));
+			return p;
+		});
 
-			var items = new ObservableCollection<string> { "foo" };
-			page.ItemsSource = items;
+		var items = new ObservableCollection<string> { "Foo", "Bar" };
+		page.ItemsSource = items;
 
-			bool selected = false;
-			bool current = false;
-			page.PropertyChanged += (o, e) =>
-			{
-				if (e.PropertyName == "CurrentPage")
-					current = true;
-				else if (e.PropertyName == "SelectedItem")
-					selected = true;
-			};
-
-			items.Remove("foo");
-
-			Assert.Null(page.SelectedItem);
-			Assert.Null(page.CurrentPage);
-			Assert.True(current, "CurrentPage property change did not fire");
-			Assert.True(selected, "SelectedItem property change did not fire");
-		}
-
-		[Fact]
-		[Trait("Description", "When ItemsSource is set with items, the first item should automatically be selected")]
-		public void SelectedItemSetAfterItemsSourceSet()
+		Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
 		{
-			var page = CreateMultiPage();
+			Page p = (Page)ps[index];
+			Assert.IsAssignableFrom<ContentPage>(p);
+			Assert.Equal(index, GetIndex((T)p));
 
-			bool selected = false;
-			bool current = false;
-			page.PropertyChanged += (o, e) =>
-			{
-				if (e.PropertyName == "CurrentPage")
-					current = true;
-				else if (e.PropertyName == "SelectedItem")
-					selected = true;
-			};
+			var cp = (ContentPage)p;
+			Assert.IsAssignableFrom<Label>(cp.Content);
+			Assert.Equal(s, ((Label)cp.Content).Text);
+		};
 
-			page.ItemsSource = new[] { "foo" };
+		items.Add("Baz");
 
-			Assert.Same(((string[])page.ItemsSource)[0], page.SelectedItem);
-			Assert.Same(page.SelectedItem, page.CurrentPage.BindingContext);
-			Assert.True(current, "CurrentPage property change did not fire");
-			Assert.True(selected, "SelectedItem property change did not fire");
-		}
+		var pages = page.Children.ToArray();
+		Assert.Equal(3, pages.Length);
+		assertPage(pages, 0, "Foo");
+		assertPage(pages, 1, "Bar");
+		assertPage(pages, 2, "Baz");
+	}
 
-		[Fact]
-		public void SelectedItemNoLongerPresent()
+	[Fact]
+	public void TemplatePagesRangeAdded()
+	{
+		var page = CreateMultiPage();
+
+		page.ItemTemplate = new DataTemplate(() =>
 		{
-			var page = CreateMultiPage();
+			var p = new ContentPage();
+			p.Content = new Label();
+			p.Content.SetBinding(Label.TextProperty, new Binding("."));
+			return p;
+		});
 
-			string[] items = new[] { "foo", "bar" };
-			page.ItemsSource = items;
-			page.SelectedItem = items[1];
+		var items = new ObservableList<string> { "Foo", "Bar" };
+		page.ItemsSource = items;
 
-			items = new[] { "fad", "baz" };
-			page.ItemsSource = items;
-
-			Assert.Same(items[0], page.SelectedItem);
-		}
-
-		[Fact]
-		public void SelectedItemAfterMove()
+		Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
 		{
-			var page = CreateMultiPage();
+			Page p = (Page)ps[index];
+			Assert.IsAssignableFrom<ContentPage>(p);
+			Assert.Equal(index, GetIndex((T)p));
 
-			var items = new ObservableCollection<string> { "foo", "bar" };
-			page.ItemsSource = items;
+			var cp = (ContentPage)p;
+			Assert.IsAssignableFrom<Label>(cp.Content);
+			Assert.Equal(s, ((Label)cp.Content).Text);
+		};
 
-			Assert.Same(items[0], page.SelectedItem);
-			Assert.NotNull(page.CurrentPage);
-			Assert.Same(items[0], page.CurrentPage.BindingContext);
-
-			page.SelectedItem = items[1];
-			Assert.Same(items[1], page.CurrentPage.BindingContext);
-
-			items.Move(1, 0);
-
-			Assert.Same(items[0], page.SelectedItem);
-			Assert.NotNull(page.CurrentPage);
-			Assert.Same(items[0], page.CurrentPage.BindingContext);
-		}
-
-		[Fact]
-		public void UntemplatedItemsSourcePage()
+		int addedCount = 0;
+		page.PagesChanged += (sender, e) =>
 		{
-			var page = CreateMultiPage();
+			if (e.Action != NotifyCollectionChangedAction.Add)
+				return;
 
-			page.ItemsSource = new[] { "Foo", "Bar" };
+			addedCount++;
+			Assert.Equal(2, e.NewItems.Count);
+		};
 
-			var pages = page.Children.ToArray();
-			Assert.Equal(2, pages.Length);
-			Assert.Equal("Foo", ((Page)pages[0]).Title);
-			Assert.Equal("Bar", ((Page)pages[1]).Title);
-		}
+		items.AddRange(new[] { "Baz", "Bam" });
 
-		[Fact]
-		public void TemplatePagesAdded()
+		Assert.Equal(1, addedCount);
+
+		var pages = page.Children.ToArray();
+		Assert.Equal(4, pages.Length);
+		assertPage(pages, 0, "Foo");
+		assertPage(pages, 1, "Bar");
+		assertPage(pages, 2, "Baz");
+		assertPage(pages, 3, "Bam");
+	}
+
+	[Fact]
+	public void TemplatePagesInserted()
+	{
+		var page = CreateMultiPage();
+
+		page.ItemTemplate = new DataTemplate(() =>
 		{
-			var page = CreateMultiPage();
+			var p = new ContentPage();
+			p.Content = new Label();
+			p.Content.SetBinding(Label.TextProperty, new Binding("."));
+			return p;
+		});
 
-			page.ItemTemplate = new DataTemplate(() =>
-			{
-				var p = new ContentPage();
-				p.Content = new Label();
-				p.Content.SetBinding(Label.TextProperty, new Binding("."));
-				return p;
-			});
+		var items = new ObservableCollection<string> { "Foo", "Bar" };
+		page.ItemsSource = items;
 
-			var items = new ObservableCollection<string> { "Foo", "Bar" };
-			page.ItemsSource = items;
-
-			Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
-			{
-				Page p = (Page)ps[index];
-				Assert.IsAssignableFrom<ContentPage>(p);
-				Assert.Equal(index, GetIndex((T)p));
-
-				var cp = (ContentPage)p;
-				Assert.IsAssignableFrom<Label>(cp.Content);
-				Assert.Equal(s, ((Label)cp.Content).Text);
-			};
-
-			items.Add("Baz");
-
-			var pages = page.Children.ToArray();
-			Assert.Equal(3, pages.Length);
-			assertPage(pages, 0, "Foo");
-			assertPage(pages, 1, "Bar");
-			assertPage(pages, 2, "Baz");
-		}
-
-		[Fact]
-		public void TemplatePagesRangeAdded()
+		Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
 		{
-			var page = CreateMultiPage();
+			Page p = (Page)ps[index];
+			Assert.IsAssignableFrom<ContentPage>(p);
+			Assert.Equal(index, GetIndex((T)p));
 
-			page.ItemTemplate = new DataTemplate(() =>
-			{
-				var p = new ContentPage();
-				p.Content = new Label();
-				p.Content.SetBinding(Label.TextProperty, new Binding("."));
-				return p;
-			});
+			var cp = (ContentPage)p;
+			Assert.IsAssignableFrom<Label>(cp.Content);
+			Assert.Equal(s, ((Label)cp.Content).Text);
+		};
 
-			var items = new ObservableList<string> { "Foo", "Bar" };
-			page.ItemsSource = items;
+		items.Insert(1, "Baz");
 
-			Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
-			{
-				Page p = (Page)ps[index];
-				Assert.IsAssignableFrom<ContentPage>(p);
-				Assert.Equal(index, GetIndex((T)p));
+		var pages = page.Children.ToArray();
+		Assert.Equal(3, pages.Length);
+		assertPage(pages, 0, "Foo");
+		assertPage(pages, 1, "Baz");
+		assertPage(pages, 2, "Bar");
+	}
 
-				var cp = (ContentPage)p;
-				Assert.IsAssignableFrom<Label>(cp.Content);
-				Assert.Equal(s, ((Label)cp.Content).Text);
-			};
+	[Fact]
+	public void TemplatePagesRangeInserted()
+	{
+		var page = CreateMultiPage();
 
-			int addedCount = 0;
-			page.PagesChanged += (sender, e) =>
-			{
-				if (e.Action != NotifyCollectionChangedAction.Add)
-					return;
-
-				addedCount++;
-				Assert.Equal(2, e.NewItems.Count);
-			};
-
-			items.AddRange(new[] { "Baz", "Bam" });
-
-			Assert.Equal(1, addedCount);
-
-			var pages = page.Children.ToArray();
-			Assert.Equal(4, pages.Length);
-			assertPage(pages, 0, "Foo");
-			assertPage(pages, 1, "Bar");
-			assertPage(pages, 2, "Baz");
-			assertPage(pages, 3, "Bam");
-		}
-
-		[Fact]
-		public void TemplatePagesInserted()
+		page.ItemTemplate = new DataTemplate(() =>
 		{
-			var page = CreateMultiPage();
+			var p = new ContentPage();
+			p.Content = new Label();
+			p.Content.SetBinding(Label.TextProperty, new Binding("."));
+			return p;
+		});
 
-			page.ItemTemplate = new DataTemplate(() =>
-			{
-				var p = new ContentPage();
-				p.Content = new Label();
-				p.Content.SetBinding(Label.TextProperty, new Binding("."));
-				return p;
-			});
+		var items = new ObservableList<string> { "Foo", "Bar" };
+		page.ItemsSource = items;
 
-			var items = new ObservableCollection<string> { "Foo", "Bar" };
-			page.ItemsSource = items;
-
-			Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
-			{
-				Page p = (Page)ps[index];
-				Assert.IsAssignableFrom<ContentPage>(p);
-				Assert.Equal(index, GetIndex((T)p));
-
-				var cp = (ContentPage)p;
-				Assert.IsAssignableFrom<Label>(cp.Content);
-				Assert.Equal(s, ((Label)cp.Content).Text);
-			};
-
-			items.Insert(1, "Baz");
-
-			var pages = page.Children.ToArray();
-			Assert.Equal(3, pages.Length);
-			assertPage(pages, 0, "Foo");
-			assertPage(pages, 1, "Baz");
-			assertPage(pages, 2, "Bar");
-		}
-
-		[Fact]
-		public void TemplatePagesRangeInserted()
+		Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
 		{
-			var page = CreateMultiPage();
+			Page p = (Page)ps[index];
+			Assert.IsAssignableFrom<ContentPage>(p);
+			Assert.Equal(index, GetIndex((T)p));
 
-			page.ItemTemplate = new DataTemplate(() =>
-			{
-				var p = new ContentPage();
-				p.Content = new Label();
-				p.Content.SetBinding(Label.TextProperty, new Binding("."));
-				return p;
-			});
+			var cp = (ContentPage)p;
+			Assert.IsAssignableFrom<Label>(cp.Content);
+			Assert.Equal(s, ((Label)cp.Content).Text);
+		};
 
-			var items = new ObservableList<string> { "Foo", "Bar" };
-			page.ItemsSource = items;
+		items.InsertRange(1, new[] { "Baz", "Bam" });
 
-			Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
-			{
-				Page p = (Page)ps[index];
-				Assert.IsAssignableFrom<ContentPage>(p);
-				Assert.Equal(index, GetIndex((T)p));
+		var pages = page.Children.ToArray();
+		Assert.Equal(4, pages.Length);
+		assertPage(pages, 0, "Foo");
+		assertPage(pages, 1, "Baz");
+		assertPage(pages, 2, "Bam");
+		assertPage(pages, 3, "Bar");
+	}
 
-				var cp = (ContentPage)p;
-				Assert.IsAssignableFrom<Label>(cp.Content);
-				Assert.Equal(s, ((Label)cp.Content).Text);
-			};
+	[Fact]
+	public void TemplatePagesRemoved()
+	{
+		var page = CreateMultiPage();
 
-			items.InsertRange(1, new[] { "Baz", "Bam" });
-
-			var pages = page.Children.ToArray();
-			Assert.Equal(4, pages.Length);
-			assertPage(pages, 0, "Foo");
-			assertPage(pages, 1, "Baz");
-			assertPage(pages, 2, "Bam");
-			assertPage(pages, 3, "Bar");
-		}
-
-		[Fact]
-		public void TemplatePagesRemoved()
+		page.ItemTemplate = new DataTemplate(() =>
 		{
-			var page = CreateMultiPage();
+			var p = new ContentPage();
+			p.Content = new Label();
+			p.Content.SetBinding(Label.TextProperty, new Binding("."));
+			return p;
+		});
 
-			page.ItemTemplate = new DataTemplate(() =>
-			{
-				var p = new ContentPage();
-				p.Content = new Label();
-				p.Content.SetBinding(Label.TextProperty, new Binding("."));
-				return p;
-			});
+		var items = new ObservableCollection<string> { "Foo", "Bar" };
+		page.ItemsSource = items;
 
-			var items = new ObservableCollection<string> { "Foo", "Bar" };
-			page.ItemsSource = items;
-
-			Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
-			{
-				Page p = (Page)ps[index];
-				Assert.IsAssignableFrom<ContentPage>(p);
-				Assert.Equal(index, GetIndex((T)p));
-
-				var cp = (ContentPage)p;
-				Assert.IsAssignableFrom<Label>(cp.Content);
-				Assert.Equal(s, ((Label)cp.Content).Text);
-			};
-
-			items.Remove("Foo");
-
-			var pages = page.Children.ToArray();
-			Assert.Equal(1, pages.Length);
-			assertPage(pages, 0, "Bar");
-		}
-
-		[Fact]
-		public void TemplatePagesRangeRemoved()
+		Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
 		{
-			var page = CreateMultiPage();
+			Page p = (Page)ps[index];
+			Assert.IsAssignableFrom<ContentPage>(p);
+			Assert.Equal(index, GetIndex((T)p));
 
-			page.ItemTemplate = new DataTemplate(() =>
-			{
-				var p = new ContentPage();
-				p.Content = new Label();
-				p.Content.SetBinding(Label.TextProperty, new Binding("."));
-				return p;
-			});
+			var cp = (ContentPage)p;
+			Assert.IsAssignableFrom<Label>(cp.Content);
+			Assert.Equal(s, ((Label)cp.Content).Text);
+		};
 
-			var items = new ObservableList<string> { "Foo", "Bar", "Baz", "Bam", "Who" };
-			page.ItemsSource = items;
+		items.Remove("Foo");
 
-			Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
-			{
-				Page p = (Page)ps[index];
-				Assert.IsAssignableFrom<ContentPage>(p);
-				Assert.Equal(index, GetIndex((T)p));
+		var pages = page.Children.ToArray();
+		Assert.Equal(1, pages.Length);
+		assertPage(pages, 0, "Bar");
+	}
 
-				var cp = (ContentPage)p;
-				Assert.IsAssignableFrom<Label>(cp.Content);
-				Assert.Equal(s, ((Label)cp.Content).Text);
-			};
+	[Fact]
+	public void TemplatePagesRangeRemoved()
+	{
+		var page = CreateMultiPage();
 
-			items.RemoveAt(1, 2);
-
-			var pages = page.Children.ToArray();
-			Assert.Equal(3, pages.Length);
-			assertPage(pages, 0, "Foo");
-			assertPage(pages, 1, "Bam");
-			assertPage(pages, 2, "Who");
-		}
-
-		[Fact]
-		public void TemplatePagesReordered()
+		page.ItemTemplate = new DataTemplate(() =>
 		{
-			var page = CreateMultiPage();
+			var p = new ContentPage();
+			p.Content = new Label();
+			p.Content.SetBinding(Label.TextProperty, new Binding("."));
+			return p;
+		});
 
-			page.ItemTemplate = new DataTemplate(() =>
-			{
-				var p = new ContentPage();
-				p.Content = new Label();
-				p.Content.SetBinding(Label.TextProperty, new Binding("."));
-				return p;
-			});
+		var items = new ObservableList<string> { "Foo", "Bar", "Baz", "Bam", "Who" };
+		page.ItemsSource = items;
 
-			var items = new ObservableCollection<string> { "Foo", "Bar" };
-			page.ItemsSource = items;
-
-			Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
-			{
-				Page p = (Page)ps[index];
-				Assert.IsAssignableFrom<ContentPage>(p);
-				Assert.Equal(index, GetIndex((T)p));
-
-				var cp = (ContentPage)p;
-				Assert.IsAssignableFrom<Label>(cp.Content);
-				Assert.Equal(s, ((Label)cp.Content).Text);
-			};
-
-			items.Move(0, 1);
-
-			var pages = page.Children.ToArray();
-			Assert.Equal(2, pages.Length);
-			assertPage(pages, 0, "Bar");
-			assertPage(pages, 1, "Foo");
-		}
-
-		[Fact]
-		public void TemplatePagesRangeReorderedForward()
+		Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
 		{
-			var page = CreateMultiPage();
+			Page p = (Page)ps[index];
+			Assert.IsAssignableFrom<ContentPage>(p);
+			Assert.Equal(index, GetIndex((T)p));
 
-			page.ItemTemplate = new DataTemplate(() =>
-			{
-				var p = new ContentPage();
-				p.Content = new Label();
-				p.Content.SetBinding(Label.TextProperty, new Binding("."));
-				return p;
-			});
+			var cp = (ContentPage)p;
+			Assert.IsAssignableFrom<Label>(cp.Content);
+			Assert.Equal(s, ((Label)cp.Content).Text);
+		};
 
-			var items = new ObservableList<string> { "Foo", "Bar", "Baz", "Bam", "Who", "Where" };
-			page.ItemsSource = items;
+		items.RemoveAt(1, 2);
 
-			Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
-			{
-				Page p = (Page)ps[index];
-				Assert.IsAssignableFrom<ContentPage>(p);
-				Assert.Equal(index, GetIndex((T)p));
+		var pages = page.Children.ToArray();
+		Assert.Equal(3, pages.Length);
+		assertPage(pages, 0, "Foo");
+		assertPage(pages, 1, "Bam");
+		assertPage(pages, 2, "Who");
+	}
 
-				var cp = (ContentPage)p;
-				Assert.IsAssignableFrom<Label>(cp.Content);
-				Assert.Equal(s, ((Label)cp.Content).Text);
-			};
+	[Fact]
+	public void TemplatePagesReordered()
+	{
+		var page = CreateMultiPage();
 
-			items.Move(1, 4, 2);
-
-			var pages = page.Children.ToArray();
-			Assert.Equal(6, pages.Length);
-			assertPage(pages, 0, "Foo");
-			assertPage(pages, 1, "Bam");
-			assertPage(pages, 2, "Who");
-			assertPage(pages, 3, "Bar");
-			assertPage(pages, 4, "Baz");
-			assertPage(pages, 5, "Where");
-		}
-
-		[Fact]
-		public void TemplatePagesRangeReorderedBackward()
+		page.ItemTemplate = new DataTemplate(() =>
 		{
-			var page = CreateMultiPage();
+			var p = new ContentPage();
+			p.Content = new Label();
+			p.Content.SetBinding(Label.TextProperty, new Binding("."));
+			return p;
+		});
 
-			page.ItemTemplate = new DataTemplate(() =>
-			{
-				var p = new ContentPage();
-				p.Content = new Label();
-				p.Content.SetBinding(Label.TextProperty, new Binding("."));
-				return p;
-			});
+		var items = new ObservableCollection<string> { "Foo", "Bar" };
+		page.ItemsSource = items;
 
-			var items = new ObservableList<string> { "Foo", "Bar", "Baz", "Bam", "Who", "Where", "When" };
-			page.ItemsSource = items;
-
-			Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
-			{
-				Page p = (Page)ps[index];
-				Assert.IsAssignableFrom<ContentPage>(p);
-				Assert.Equal(index, GetIndex((T)p));
-
-				var cp = (ContentPage)p;
-				Assert.IsAssignableFrom<Label>(cp.Content);
-				Assert.Equal(s, ((Label)cp.Content).Text);
-			};
-
-			items.Move(4, 1, 2);
-
-			var pages = page.Children.ToArray();
-			Assert.Equal(7, pages.Length);
-			assertPage(pages, 0, "Foo");
-			assertPage(pages, 1, "Who");
-			assertPage(pages, 2, "Where");
-			assertPage(pages, 3, "Bar");
-			assertPage(pages, 4, "Baz");
-			assertPage(pages, 5, "Bam");
-			assertPage(pages, 6, "When");
-		}
-
-		[Fact]
-		public void TemplatePagesReplaced()
+		Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
 		{
-			var page = CreateMultiPage();
+			Page p = (Page)ps[index];
+			Assert.IsAssignableFrom<ContentPage>(p);
+			Assert.Equal(index, GetIndex((T)p));
 
-			page.ItemTemplate = new DataTemplate(() =>
-			{
-				var p = new ContentPage();
-				p.Content = new Label();
-				p.Content.SetBinding(Label.TextProperty, new Binding("."));
-				return p;
-			});
+			var cp = (ContentPage)p;
+			Assert.IsAssignableFrom<Label>(cp.Content);
+			Assert.Equal(s, ((Label)cp.Content).Text);
+		};
 
-			var items = new ObservableCollection<string> { "Foo", "Bar" };
-			page.ItemsSource = items;
+		items.Move(0, 1);
 
-			Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
-			{
-				Page p = (Page)ps[index];
-				Assert.IsAssignableFrom<ContentPage>(p);
-				Assert.Equal(index, GetIndex((T)p));
+		var pages = page.Children.ToArray();
+		Assert.Equal(2, pages.Length);
+		assertPage(pages, 0, "Bar");
+		assertPage(pages, 1, "Foo");
+	}
 
-				var cp = (ContentPage)p;
-				Assert.IsAssignableFrom<Label>(cp.Content);
-				Assert.Equal(s, ((Label)cp.Content).Text);
-			};
+	[Fact]
+	public void TemplatePagesRangeReorderedForward()
+	{
+		var page = CreateMultiPage();
 
-			items[0] = "Baz";
-
-			var pages = page.Children.ToArray();
-			Assert.Equal(2, pages.Length);
-			assertPage(pages, 0, "Baz");
-			assertPage(pages, 1, "Bar");
-		}
-
-		[Fact]
-		public void TemplatedPagesSourceReplaced()
+		page.ItemTemplate = new DataTemplate(() =>
 		{
-			var page = CreateMultiPage();
+			var p = new ContentPage();
+			p.Content = new Label();
+			p.Content.SetBinding(Label.TextProperty, new Binding("."));
+			return p;
+		});
 
-			page.ItemTemplate = new DataTemplate(() =>
-			{
-				var p = new ContentPage();
-				p.Content = new Label();
-				p.Content.SetBinding(Label.TextProperty, new Binding("."));
-				return p;
-			});
+		var items = new ObservableList<string> { "Foo", "Bar", "Baz", "Bam", "Who", "Where" };
+		page.ItemsSource = items;
 
-			page.ItemsSource = new ObservableCollection<string> { "Foo", "Bar" };
-
-			Action<Page, string> assertPage = (p, s) =>
-			{
-				Assert.IsAssignableFrom<ContentPage>(p);
-
-				var cp = (ContentPage)p;
-				Assert.IsAssignableFrom<Label>(cp.Content);
-				Assert.Equal(s, ((Label)cp.Content).Text);
-			};
-
-			page.ItemsSource = new ObservableCollection<string> { "Baz", "Bar" };
-
-			var pages = page.Children.ToArray();
-			Assert.Equal(2, pages.Length);
-			assertPage((Page)pages[0], "Baz");
-			assertPage((Page)pages[1], "Bar");
-		}
-
-		[Fact]
-		[Trait("Description", "If you have a templated set of items, setting CurrentPage (usually from renderers) should update SelectedItem properly")]
-		public void SettingCurrentPageWithTemplatesUpdatesSelectedItem()
+		Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
 		{
-			var page = CreateMultiPage();
+			Page p = (Page)ps[index];
+			Assert.IsAssignableFrom<ContentPage>(p);
+			Assert.Equal(index, GetIndex((T)p));
 
-			var items = new[] { "Foo", "Bar" };
-			page.ItemsSource = items;
+			var cp = (ContentPage)p;
+			Assert.IsAssignableFrom<Label>(cp.Content);
+			Assert.Equal(s, ((Label)cp.Content).Text);
+		};
 
-			// If these aren't correct, the rest of the test is invalid
-			Assert.Same(page.Children[0], page.CurrentPage);
-			Assert.Same(items[0], page.SelectedItem);
+		items.Move(1, 4, 2);
 
-			page.CurrentPage = (T)page.Children[1];
+		var pages = page.Children.ToArray();
+		Assert.Equal(6, pages.Length);
+		assertPage(pages, 0, "Foo");
+		assertPage(pages, 1, "Bam");
+		assertPage(pages, 2, "Who");
+		assertPage(pages, 3, "Bar");
+		assertPage(pages, 4, "Baz");
+		assertPage(pages, 5, "Where");
+	}
 
-			Assert.Same(items[1], page.SelectedItem);
-		}
+	[Fact]
+	public void TemplatePagesRangeReorderedBackward()
+	{
+		var page = CreateMultiPage();
 
-		[Fact]
-		public void PagesChangedOnItemsSourceChange()
+		page.ItemTemplate = new DataTemplate(() =>
 		{
-			var page = CreateMultiPage();
+			var p = new ContentPage();
+			p.Content = new Label();
+			p.Content.SetBinding(Label.TextProperty, new Binding("."));
+			return p;
+		});
 
-			page.ItemsSource = new[] { "Baz", "Bam" };
+		var items = new ObservableList<string> { "Foo", "Bar", "Baz", "Bam", "Who", "Where", "When" };
+		page.ItemsSource = items;
 
-			int fail = 0;
-			int reset = 0;
-			page.PagesChanged += (sender, args) =>
-			{
-				if (args.Action == NotifyCollectionChangedAction.Reset)
-					reset++;
-				else
-					fail++;
-			};
-
-			page.ItemsSource = new[] { "Foo", "Bar" };
-
-			Assert.Equal(1, reset);
-			Assert.Equal(0, fail);
-		}
-
-		[Fact]
-		public void PagesChangedOnTemplateChange()
+		Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
 		{
-			var page = CreateMultiPage();
+			Page p = (Page)ps[index];
+			Assert.IsAssignableFrom<ContentPage>(p);
+			Assert.Equal(index, GetIndex((T)p));
 
-			page.ItemsSource = new[] { "Foo", "Bar" };
+			var cp = (ContentPage)p;
+			Assert.IsAssignableFrom<Label>(cp.Content);
+			Assert.Equal(s, ((Label)cp.Content).Text);
+		};
 
-			int fail = 0;
-			int reset = 0;
-			page.PagesChanged += (sender, args) =>
-			{
-				if (args.Action == NotifyCollectionChangedAction.Reset)
-					reset++;
-				else
-					fail++;
-			};
+		items.Move(4, 1, 2);
 
-			page.ItemTemplate = new DataTemplate(() => new ContentPage
-			{
-				Content = new Label { Text = "Content" }
-			});
+		var pages = page.Children.ToArray();
+		Assert.Equal(7, pages.Length);
+		assertPage(pages, 0, "Foo");
+		assertPage(pages, 1, "Who");
+		assertPage(pages, 2, "Where");
+		assertPage(pages, 3, "Bar");
+		assertPage(pages, 4, "Baz");
+		assertPage(pages, 5, "Bam");
+		assertPage(pages, 6, "When");
+	}
 
-			Assert.Equal(1, reset);
-			Assert.Equal(0, fail);
-		}
+	[Fact]
+	public void TemplatePagesReplaced()
+	{
+		var page = CreateMultiPage();
 
-		[Fact]
-		public void SelectedItemSetBeforeTemplate()
+		page.ItemTemplate = new DataTemplate(() =>
 		{
-			var page = CreateMultiPage();
+			var p = new ContentPage();
+			p.Content = new Label();
+			p.Content.SetBinding(Label.TextProperty, new Binding("."));
+			return p;
+		});
 
-			string[] items = new[] { "foo", "bar" };
-			page.ItemsSource = items;
-			page.SelectedItem = items[1];
+		var items = new ObservableCollection<string> { "Foo", "Bar" };
+		page.ItemsSource = items;
 
-			var template = new DataTemplate(typeof(ContentPage));
-			template.SetBinding(ContentPage.TitleProperty, ".");
-			page.ItemTemplate = template;
-
-			Assert.Same(items[1], page.SelectedItem);
-		}
-
-		[Fact]
-		public void CurrentPageUpdatedWithTemplate()
+		Action<IList<Element>, int, string> assertPage = (ps, index, s) =>
 		{
-			var page = CreateMultiPage();
-			string[] items = new[] { "foo", "bar" };
-			page.ItemsSource = items;
+			Page p = (Page)ps[index];
+			Assert.IsAssignableFrom<ContentPage>(p);
+			Assert.Equal(index, GetIndex((T)p));
 
-			var untemplated = page.CurrentPage;
+			var cp = (ContentPage)p;
+			Assert.IsAssignableFrom<Label>(cp.Content);
+			Assert.Equal(s, ((Label)cp.Content).Text);
+		};
 
-			bool raised = false;
-			page.PropertyChanged += (sender, e) =>
-			{
-				if (e.PropertyName == "CurrentPage")
-					raised = true;
-			};
+		items[0] = "Baz";
 
-			var template = new DataTemplate(() =>
-			{
-				var p = new ContentPage { Content = new Label() };
-				p.Content.SetBinding(Label.TextProperty, ".");
-				return p;
-			});
+		var pages = page.Children.ToArray();
+		Assert.Equal(2, pages.Length);
+		assertPage(pages, 0, "Baz");
+		assertPage(pages, 1, "Bar");
+	}
 
-			page.ItemTemplate = template;
+	[Fact]
+	public void TemplatedPagesSourceReplaced()
+	{
+		var page = CreateMultiPage();
 
-			Assert.True(raised, "CurrentPage did not change with the template");
-			Assert.NotSame(untemplated, page.CurrentPage);
-		}
-
-		[Fact]
-		public void CurrentPageChanged()
+		page.ItemTemplate = new DataTemplate(() =>
 		{
-			var page = CreateMultiPage();
-			page.Children.Add(CreateContainedPage());
-			page.Children.Add(CreateContainedPage());
+			var p = new ContentPage();
+			p.Content = new Label();
+			p.Content.SetBinding(Label.TextProperty, new Binding("."));
+			return p;
+		});
 
-			bool raised = false;
-			page.CurrentPageChanged += (sender, e) =>
-			{
+		page.ItemsSource = new ObservableCollection<string> { "Foo", "Bar" };
+
+		Action<Page, string> assertPage = (p, s) =>
+		{
+			Assert.IsAssignableFrom<ContentPage>(p);
+
+			var cp = (ContentPage)p;
+			Assert.IsAssignableFrom<Label>(cp.Content);
+			Assert.Equal(s, ((Label)cp.Content).Text);
+		};
+
+		page.ItemsSource = new ObservableCollection<string> { "Baz", "Bar" };
+
+		var pages = page.Children.ToArray();
+		Assert.Equal(2, pages.Length);
+		assertPage((Page)pages[0], "Baz");
+		assertPage((Page)pages[1], "Bar");
+	}
+
+	[Fact]
+	[Trait("Description", "If you have a templated set of items, setting CurrentPage (usually from renderers) should update SelectedItem properly")]
+	public void SettingCurrentPageWithTemplatesUpdatesSelectedItem()
+	{
+		var page = CreateMultiPage();
+
+		var items = new[] { "Foo", "Bar" };
+		page.ItemsSource = items;
+
+		// If these aren't correct, the rest of the test is invalid
+		Assert.Same(page.Children[0], page.CurrentPage);
+		Assert.Same(items[0], page.SelectedItem);
+
+		page.CurrentPage = (T)page.Children[1];
+
+		Assert.Same(items[1], page.SelectedItem);
+	}
+
+	[Fact]
+	public void PagesChangedOnItemsSourceChange()
+	{
+		var page = CreateMultiPage();
+
+		page.ItemsSource = new[] { "Baz", "Bam" };
+
+		int fail = 0;
+		int reset = 0;
+		page.PagesChanged += (sender, args) =>
+		{
+			if (args.Action == NotifyCollectionChangedAction.Reset)
+				reset++;
+			else
+				fail++;
+		};
+
+		page.ItemsSource = new[] { "Foo", "Bar" };
+
+		Assert.Equal(1, reset);
+		Assert.Equal(0, fail);
+	}
+
+	[Fact]
+	public void PagesChangedOnTemplateChange()
+	{
+		var page = CreateMultiPage();
+
+		page.ItemsSource = new[] { "Foo", "Bar" };
+
+		int fail = 0;
+		int reset = 0;
+		page.PagesChanged += (sender, args) =>
+		{
+			if (args.Action == NotifyCollectionChangedAction.Reset)
+				reset++;
+			else
+				fail++;
+		};
+
+		page.ItemTemplate = new DataTemplate(() => new ContentPage
+		{
+			Content = new Label { Text = "Content" }
+		});
+
+		Assert.Equal(1, reset);
+		Assert.Equal(0, fail);
+	}
+
+	[Fact]
+	public void SelectedItemSetBeforeTemplate()
+	{
+		var page = CreateMultiPage();
+
+		string[] items = new[] { "foo", "bar" };
+		page.ItemsSource = items;
+		page.SelectedItem = items[1];
+
+		var template = new DataTemplate(typeof(ContentPage));
+		template.SetBinding(ContentPage.TitleProperty, ".");
+		page.ItemTemplate = template;
+
+		Assert.Same(items[1], page.SelectedItem);
+	}
+
+	[Fact]
+	public void CurrentPageUpdatedWithTemplate()
+	{
+		var page = CreateMultiPage();
+		string[] items = new[] { "foo", "bar" };
+		page.ItemsSource = items;
+
+		var untemplated = page.CurrentPage;
+
+		bool raised = false;
+		page.PropertyChanged += (sender, e) =>
+		{
+			if (e.PropertyName == "CurrentPage")
 				raised = true;
-			};
+		};
 
-			page.CurrentPage = page.Children[0];
+		var template = new DataTemplate(() =>
+		{
+			var p = new ContentPage { Content = new Label() };
+			p.Content.SetBinding(Label.TextProperty, ".");
+			return p;
+		});
 
-			Assert.False(raised);
+		page.ItemTemplate = template;
 
-			page.CurrentPage = page.Children[1];
+		Assert.True(raised, "CurrentPage did not change with the template");
+		Assert.NotSame(untemplated, page.CurrentPage);
+	}
 
-			Assert.True(raised);
-		}
+	[Fact]
+	public void CurrentPageChanged()
+	{
+		var page = CreateMultiPage();
+		page.Children.Add(CreateContainedPage());
+		page.Children.Add(CreateContainedPage());
+
+		bool raised = false;
+		page.CurrentPageChanged += (sender, e) =>
+		{
+			raised = true;
+		};
+
+		page.CurrentPage = page.Children[0];
+
+		Assert.False(raised);
+
+		page.CurrentPage = page.Children[1];
+
+		Assert.True(raised);
 	}
 }

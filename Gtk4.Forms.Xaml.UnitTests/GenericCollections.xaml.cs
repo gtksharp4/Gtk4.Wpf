@@ -4,48 +4,47 @@ using System.Collections.ObjectModel;
 using Xunit;
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public class AttachedBP
 {
-	public class AttachedBP
-	{
-		public static readonly BindableProperty AttachedBPProperty = BindableProperty.CreateAttached(
-			"AttachedBP",
-			typeof(GenericCollection),
-			typeof(AttachedBP),
-			null);
+	public static readonly BindableProperty AttachedBPProperty = BindableProperty.CreateAttached(
+		"AttachedBP",
+		typeof(GenericCollection),
+		typeof(AttachedBP),
+		null);
 
-		public static GenericCollection GetAttachedBP(BindableObject bindable)
-		{
-			throw new NotImplementedException();
-		}
+	public static GenericCollection GetAttachedBP(BindableObject bindable)
+	{
+		throw new NotImplementedException();
+	}
+}
+
+public class GenericCollection : ObservableCollection<object>
+{
+}
+
+public partial class GenericCollections : ContentPage
+{
+	public GenericCollections()
+	{
+		InitializeComponent();
 	}
 
-	public class GenericCollection : ObservableCollection<object>
+	public GenericCollections(bool useCompiledXaml)
 	{
+		//this stub will be replaced at compile time
 	}
 
-	public partial class GenericCollections : ContentPage
+	public class Tests
 	{
-		public GenericCollections()
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void SupportsCrookedGenericScenarios(bool useCompiledXaml)
 		{
-			InitializeComponent();
-		}
-
-		public GenericCollections(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		public class Tests
-		{
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void SupportsCrookedGenericScenarios(bool useCompiledXaml)
-			{
-				var p = new GenericCollections();
-				Assert.Equal("Foo", (p.label0.GetValue(AttachedBP.AttachedBPProperty) as GenericCollection)[0]);
-			}
+			var p = new GenericCollections();
+			Assert.Equal("Foo", (p.label0.GetValue(AttachedBP.AttachedBPProperty) as GenericCollection)[0]);
 		}
 	}
 }

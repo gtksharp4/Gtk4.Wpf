@@ -3,41 +3,40 @@ using System.Collections.Generic;
 using Xunit;
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+[ContentProperty("Content")]
+public class MockBindableForArray : View
 {
-	[ContentProperty("Content")]
-	public class MockBindableForArray : View
+	public object Content { get; set; }
+}
+
+public partial class XArray : MockBindableForArray
+{
+	public XArray()
 	{
-		public object Content { get; set; }
+		InitializeComponent();
 	}
 
-	public partial class XArray : MockBindableForArray
+	public XArray(bool useCompiledXaml)
 	{
-		public XArray()
-		{
-			InitializeComponent();
-		}
+		//this stub will be replaced at compile time
+	}
 
-		public XArray(bool useCompiledXaml)
+	public class Tests
+	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void SupportsXArray(bool useCompiledXaml)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		public class Tests
-		{
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void SupportsXArray(bool useCompiledXaml)
-			{
-				var layout = new XArray(useCompiledXaml);
-				var array = layout.Content;
-				Assert.NotNull(array);
-				Assert.IsType<string[]>(array);
-				Assert.Equal(2, ((string[])layout.Content).Length);
-				Assert.Equal("Hello", ((string[])layout.Content)[0]);
-				Assert.Equal("World", ((string[])layout.Content)[1]);
-			}
+			var layout = new XArray(useCompiledXaml);
+			var array = layout.Content;
+			Assert.NotNull(array);
+			Assert.IsType<string[]>(array);
+			Assert.Equal(2, ((string[])layout.Content).Length);
+			Assert.Equal("Hello", ((string[])layout.Content)[0]);
+			Assert.Equal("World", ((string[])layout.Content)[1]);
 		}
 	}
 }

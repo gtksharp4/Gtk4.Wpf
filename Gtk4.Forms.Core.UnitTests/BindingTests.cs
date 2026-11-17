@@ -2,71 +2,70 @@
 using System.Collections.Generic;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class BindingSystemTests : BaseTestFixture
 {
-	public class BindingSystemTests : BaseTestFixture
+	public BindingSystemTests()
 	{
-		public BindingSystemTests()
+		Device.PlatformServices = new MockPlatformServices();
+	}
+
+	public override void Dispose()
+	{
+		base.Dispose();
+		Device.PlatformServices = null;
+	}
+
+	class BindableViewCell : ViewCell
+	{
+		public static readonly BindableProperty NameProperty =
+			BindableProperty.Create<BindableViewCell, string>(w => w.Name, "");
+
+		public Label NameLabel { get; set; }
+
+		public string Name
 		{
-			Device.PlatformServices = new MockPlatformServices();
+			get { return (string)GetValue(NameProperty); }
+			set { SetValue(NameProperty, value); }
 		}
 
-		public override void Dispose()
+		public BindableViewCell()
 		{
-			base.Dispose();
-			Device.PlatformServices = null;
+			NameLabel = new Label { BindingContext = this };
+			NameLabel.SetBinding(Label.TextProperty, new Binding("Name"));
+			View = NameLabel;
 		}
+	}
 
-		class BindableViewCell : ViewCell
+	[Fact]
+	public void RecursiveSettingInSystem()
+	{
+		var tempObjects = new[] {
+			new {Name = "Test1"},
+			new {Name = "Test2"}
+		};
+
+		var template = new DataTemplate(typeof(BindableViewCell))
 		{
-			public static readonly BindableProperty NameProperty =
-				BindableProperty.Create<BindableViewCell, string>(w => w.Name, "");
+			Bindings = { { BindableViewCell.NameProperty, new Binding("Name") } }
+		};
 
-			public Label NameLabel { get; set; }
+		var cell1 = (Cell)template.CreateContent();
+		cell1.BindingContext = tempObjects[0];
+		cell1.Parent = new ListView();
 
-			public string Name
-			{
-				get { return (string)GetValue(NameProperty); }
-				set { SetValue(NameProperty, value); }
-			}
+		var cell2 = (Cell)template.CreateContent();
+		cell2.BindingContext = tempObjects[1];
+		cell2.Parent = new ListView();
 
-			public BindableViewCell()
-			{
-				NameLabel = new Label { BindingContext = this };
-				NameLabel.SetBinding(Label.TextProperty, new Binding("Name"));
-				View = NameLabel;
-			}
-		}
+		var viewCell1 = (BindableViewCell)cell1;
+		var viewCell2 = (BindableViewCell)cell2;
 
-		[Fact]
-		public void RecursiveSettingInSystem()
-		{
-			var tempObjects = new[] {
-				new {Name = "Test1"},
-				new {Name = "Test2"}
-			};
+		Assert.Equal("Test1", viewCell1.Name);
+		Assert.Equal("Test2", viewCell2.Name);
 
-			var template = new DataTemplate(typeof(BindableViewCell))
-			{
-				Bindings = { { BindableViewCell.NameProperty, new Binding("Name") } }
-			};
-
-			var cell1 = (Cell)template.CreateContent();
-			cell1.BindingContext = tempObjects[0];
-			cell1.Parent = new ListView();
-
-			var cell2 = (Cell)template.CreateContent();
-			cell2.BindingContext = tempObjects[1];
-			cell2.Parent = new ListView();
-
-			var viewCell1 = (BindableViewCell)cell1;
-			var viewCell2 = (BindableViewCell)cell2;
-
-			Assert.Equal("Test1", viewCell1.Name);
-			Assert.Equal("Test2", viewCell2.Name);
-
-			Assert.Equal("Test1", viewCell1.NameLabel.Text);
-			Assert.Equal("Test2", viewCell2.NameLabel.Text);
-		}
+		Assert.Equal("Test1", viewCell1.NameLabel.Text);
+		Assert.Equal("Test2", viewCell2.NameLabel.Text);
 	}
 }

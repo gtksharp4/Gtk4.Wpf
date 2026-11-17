@@ -3,56 +3,55 @@
 using Xunit;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class BuiltInConversions : ContentPage
 {
-	public partial class BuiltInConversions : ContentPage
+	public BuiltInConversions()
 	{
-		public BuiltInConversions()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public BuiltInConversions(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public BuiltInConversions(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
 		: IDisposable{
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-			}
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+		}
 
-			public void Dispose()
-{
-				Device.PlatformServices = null;
-			}
+		public void Dispose()
+		{
+			Device.PlatformServices = null;
+		}
 
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void Datetime(bool useCompiledXaml)
-			{
-				var layout = new BuiltInConversions(useCompiledXaml);
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void Datetime(bool useCompiledXaml)
+		{
+			var layout = new BuiltInConversions(useCompiledXaml);
 
-				Assert.Equal(new DateTime(2015, 01, 16), layout.datetime0.Date);
-				Assert.Equal(new DateTime(2015, 01, 16), layout.datetime1.Date);
-			}
+			Assert.Equal(new DateTime(2015, 01, 16), layout.datetime0.Date);
+			Assert.Equal(new DateTime(2015, 01, 16), layout.datetime1.Date);
+		}
 
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void String(bool useCompiledXaml)
-			{
-				var layout = new BuiltInConversions(useCompiledXaml);
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void String(bool useCompiledXaml)
+		{
+			var layout = new BuiltInConversions(useCompiledXaml);
 
-				Assert.Equal("foobar", layout.label0.Text);
-				Assert.Equal("foobar", layout.label1.Text);
+			Assert.Equal("foobar", layout.label0.Text);
+			Assert.Equal("foobar", layout.label1.Text);
 
-				//Issue #2122, implicit content property not trimmed
-				Assert.Equal("foobar", layout.label2.Text);
-			}
+			//Issue #2122, implicit content property not trimmed
+			Assert.Equal("foobar", layout.label2.Text);
 		}
 	}
 }

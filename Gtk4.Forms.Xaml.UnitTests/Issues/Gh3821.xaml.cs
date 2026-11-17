@@ -4,53 +4,52 @@ using Xunit;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+//[XamlCompilation(XamlCompilationOptions.Skip)]
+public partial class Gh3821 : ContentPage
 {
-	//[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class Gh3821 : ContentPage
+	public Gh3821()
 	{
-		public Gh3821()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Gh3821(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Gh3821(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		string _text;
-		public string Text
+	string _text;
+	public string Text
+	{
+		get => _text;
+		set
 		{
-			get => _text;
-			set
-			{
-				_text = value;
-				OnPropertyChanged();
-			}
+			_text = value;
+			OnPropertyChanged();
 		}
+	}
 
-		public class Tests
+	public class Tests
 		: IDisposable{
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-			}
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+		}
 
-			public void Dispose()
-{
-				Device.PlatformServices = null;
-			}
+		public void Dispose()
+		{
+			Device.PlatformServices = null;
+		}
 
-			[Theory]
-			[InlineData(true), InlineData(false)]
-			public void NoConflictsInNamescopes(bool useCompiledXaml)
-			{
-				var layout = new Gh3821(useCompiledXaml) { Text = "root" };
-				var view = ((Gh3821View)((StackLayout)layout.Content).Children[0]);
-				var label0 = ((Label)((Gh3821View)((StackLayout)layout.Content).Children[0]).Content);
-				Assert.Equal("root", label0.Text);
-			}
+		[Theory]
+		[InlineData(true), InlineData(false)]
+		public void NoConflictsInNamescopes(bool useCompiledXaml)
+		{
+			var layout = new Gh3821(useCompiledXaml) { Text = "root" };
+			var view = ((Gh3821View)((StackLayout)layout.Content).Children[0]);
+			var label0 = ((Label)((Gh3821View)((StackLayout)layout.Content).Children[0]).Content);
+			Assert.Equal("root", label0.Text);
 		}
 	}
 }

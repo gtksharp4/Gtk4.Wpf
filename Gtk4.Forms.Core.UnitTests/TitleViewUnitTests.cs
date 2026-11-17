@@ -3,63 +3,62 @@ using System.Linq;
 using Xunit;
 
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class TitleViewUnitTests : BaseTestFixture
 {
-	public class TitleViewUnitTests : BaseTestFixture
+	public TitleViewUnitTests()
 	{
-		public TitleViewUnitTests()
-		{
-			Device.PlatformServices = new MockPlatformServices();
-		}
+		Device.PlatformServices = new MockPlatformServices();
+	}
 
-		public override void Dispose()
-		{
-			base.Dispose();
-			Device.PlatformServices = null;
-		}
+	public override void Dispose()
+	{
+		base.Dispose();
+		Device.PlatformServices = null;
+	}
 
-		[Fact]
-		public void BindingContextPropagatesFromParent()
+	[Fact]
+	public void BindingContextPropagatesFromParent()
+	{
+		NavigationPage navigationPage = new NavigationPage();
+		var image1 = new Image();
+		image1.SetBinding(Image.SourceProperty, "ImageSource");
+		var page = new ContentPage()
 		{
-			NavigationPage navigationPage = new NavigationPage();
-			var image1 = new Image();
-			image1.SetBinding(Image.SourceProperty, "ImageSource");
-			var page = new ContentPage()
+			Content = new Label()
+		};
+
+		var title = new Label() { Text = "Failed" };
+		title.SetBinding(Label.TextProperty, "Title");
+
+		var layout = new StackLayout()
+		{
+			Orientation = StackOrientation.Horizontal,
+			Children =
 			{
-				Content = new Label()
-			};
+				title,
+				image1
+			}
+		};
 
-			var title = new Label() { Text = "Failed" };
-			title.SetBinding(Label.TextProperty, "Title");
+		page.SetValue(NavigationPage.TitleViewProperty, layout);
+		navigationPage.PushAsync(page);
 
-			var layout = new StackLayout()
-			{
-				Orientation = StackOrientation.Horizontal,
-				Children =
-					{
-						title,
-						image1
-					}
-			};
+		var model = new Model();
+		navigationPage.BindingContext = new Model();
+		Assert.Equal(model.Title, title.Text);
 
-			page.SetValue(NavigationPage.TitleViewProperty, layout);
-			navigationPage.PushAsync(page);
+		string success = "Success";
+		page.BindingContext = new Model() { Title = success };
+		Assert.Equal(success, title.Text);
+		navigationPage.BindingContext = new Model() { Title = "Failed" };
+		Assert.Equal(success, title.Text);
+	}
 
-			var model = new Model();
-			navigationPage.BindingContext = new Model();
-			Assert.Equal(model.Title, title.Text);
-
-			string success = "Success";
-			page.BindingContext = new Model() { Title = success };
-			Assert.Equal(success, title.Text);
-			navigationPage.BindingContext = new Model() { Title = "Failed" };
-			Assert.Equal(success, title.Text);
-		}
-
-		public class Model
-		{
-			public string Title { get; set; } = "Binding Working";
-			public string ImageSource { get; } = "coffee.png";
-		}
+	public class Model
+	{
+		public string Title { get; set; } = "Binding Working";
+		public string ImageSource { get; } = "coffee.png";
 	}
 }

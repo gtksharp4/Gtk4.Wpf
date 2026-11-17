@@ -3,516 +3,515 @@ using System.Globalization;
 using System.Threading;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class FlexLayoutTests : BaseTestFixture
 {
-	public class FlexLayoutTests : BaseTestFixture
+	[Fact]
+	public void TestBasicLayout()
 	{
-		[Fact]
-		public void TestBasicLayout()
+		var label1 = new Label { IsPlatformEnabled = true };
+		var label2 = new Label { IsPlatformEnabled = true };
+
+		var layout = new FlexLayout
 		{
-			var label1 = new Label { IsPlatformEnabled = true };
-			var label2 = new Label { IsPlatformEnabled = true };
-
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
-				Children = {
-					label1,
-					label2,
-				}
-			};
-
-			layout.Layout(new Rectangle(0, 0, 912, 912));
-
-			Assert.Equal(new Rectangle(0, 0, 912, 912), layout.Bounds);
-			Assert.Equal(new Rectangle(0, 0, 100, 912), label1.Bounds);
-			Assert.Equal(new Rectangle(100, 0, 100, 912), label2.Bounds);
-		}
-
-		[Fact]
-		public void TestBasicLayoutWithElementsWidth()
-		{
-			var label1 = new Label { IsPlatformEnabled = true, WidthRequest = 120 };
-			var label2 = new Label { IsPlatformEnabled = true, WidthRequest = 120 };
-
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
-				Children = {
-					label1,
-					label2,
-				}
-			};
-
-			layout.Layout(new Rectangle(0, 0, 912, 912));
-
-			Assert.Equal(new Rectangle(0, 0, 912, 912), layout.Bounds);
-			Assert.Equal(new Rectangle(0, 0, 120, 912), label1.Bounds);
-			Assert.Equal(new Rectangle(120, 0, 120, 912), label2.Bounds);
-
-		}
-
-		[Fact]
-		public void TestBasicLayoutWithElementsWidthAndMargin()
-		{
-			var label1 = new Label { IsPlatformEnabled = true, WidthRequest = 100, Margin = new Thickness(5, 0, 0, 0) };
-			var label2 = new Label { IsPlatformEnabled = true, WidthRequest = 100, Margin = new Thickness(5, 0, 0, 0) };
-
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
-				Children = {
-					label1,
-					label2,
-				}
-			};
-
-			layout.Layout(new Rectangle(0, 0, 912, 912));
-
-			Assert.Equal(912, layout.Width);
-			Assert.Equal(912, layout.Height);
-
-			Assert.Equal(new Rectangle(5, 0, 100, 912), label1.Bounds);
-			Assert.Equal(new Rectangle(110, 0, 100, 912), label2.Bounds);
-		}
-
-		[Fact]
-		public void TestSetBounds()
-		{
-			var layoutSize = new Size(320, 50);
-
-			var layout = new FlexLayout
-			{
-				Direction = FlexDirection.Row,
-				AlignItems = FlexAlignItems.Start,
-				IsPlatformEnabled = true
-			};
-
-			var label1 = new Label { IsPlatformEnabled = true };
-			FlexLayout.SetGrow(label1, 1);
-			layout.Children.Add(label1);
-
-			var label2 = new Label { IsPlatformEnabled = true };
-			FlexLayout.SetGrow(label2, 1);
-			layout.Children.Add(label2);
-
-			var label3 = new Label { IsPlatformEnabled = true };
-			FlexLayout.SetGrow(label3, 1);
-			layout.Children.Add(label3);
-
-			layout.Layout(new Rectangle(0, 0, layoutSize.Width, layoutSize.Height));
-
-			Assert.Equal(label2.Bounds.Left, Math.Max(label1.Bounds.Left, label1.Bounds.Right), 1);
-			Assert.Equal(label3.Bounds.Left, Math.Max(label2.Bounds.Left, label2.Bounds.Right), 1);
-
-			double totalWidth = 0;
-			foreach (var view in layout.Children)
-			{
-				totalWidth += view.Bounds.Width;
+			IsPlatformEnabled = true,
+			Children = {
+				label1,
+				label2,
 			}
+		};
 
-			Assert.Equal(layoutSize.Width, totalWidth, 2);
+		layout.Layout(new Rectangle(0, 0, 912, 912));
+
+		Assert.Equal(new Rectangle(0, 0, 912, 912), layout.Bounds);
+		Assert.Equal(new Rectangle(0, 0, 100, 912), label1.Bounds);
+		Assert.Equal(new Rectangle(100, 0, 100, 912), label2.Bounds);
+	}
+
+	[Fact]
+	public void TestBasicLayoutWithElementsWidth()
+	{
+		var label1 = new Label { IsPlatformEnabled = true, WidthRequest = 120 };
+		var label2 = new Label { IsPlatformEnabled = true, WidthRequest = 120 };
+
+		var layout = new FlexLayout
+		{
+			IsPlatformEnabled = true,
+			Children = {
+				label1,
+				label2,
+			}
+		};
+
+		layout.Layout(new Rectangle(0, 0, 912, 912));
+
+		Assert.Equal(new Rectangle(0, 0, 912, 912), layout.Bounds);
+		Assert.Equal(new Rectangle(0, 0, 120, 912), label1.Bounds);
+		Assert.Equal(new Rectangle(120, 0, 120, 912), label2.Bounds);
+
+	}
+
+	[Fact]
+	public void TestBasicLayoutWithElementsWidthAndMargin()
+	{
+		var label1 = new Label { IsPlatformEnabled = true, WidthRequest = 100, Margin = new Thickness(5, 0, 0, 0) };
+		var label2 = new Label { IsPlatformEnabled = true, WidthRequest = 100, Margin = new Thickness(5, 0, 0, 0) };
+
+		var layout = new FlexLayout
+		{
+			IsPlatformEnabled = true,
+			Children = {
+				label1,
+				label2,
+			}
+		};
+
+		layout.Layout(new Rectangle(0, 0, 912, 912));
+
+		Assert.Equal(912, layout.Width);
+		Assert.Equal(912, layout.Height);
+
+		Assert.Equal(new Rectangle(5, 0, 100, 912), label1.Bounds);
+		Assert.Equal(new Rectangle(110, 0, 100, 912), label2.Bounds);
+	}
+
+	[Fact]
+	public void TestSetBounds()
+	{
+		var layoutSize = new Size(320, 50);
+
+		var layout = new FlexLayout
+		{
+			Direction = FlexDirection.Row,
+			AlignItems = FlexAlignItems.Start,
+			IsPlatformEnabled = true
+		};
+
+		var label1 = new Label { IsPlatformEnabled = true };
+		FlexLayout.SetGrow(label1, 1);
+		layout.Children.Add(label1);
+
+		var label2 = new Label { IsPlatformEnabled = true };
+		FlexLayout.SetGrow(label2, 1);
+		layout.Children.Add(label2);
+
+		var label3 = new Label { IsPlatformEnabled = true };
+		FlexLayout.SetGrow(label3, 1);
+		layout.Children.Add(label3);
+
+		layout.Layout(new Rectangle(0, 0, layoutSize.Width, layoutSize.Height));
+
+		Assert.Equal(label2.Bounds.Left, Math.Max(label1.Bounds.Left, label1.Bounds.Right), 1);
+		Assert.Equal(label3.Bounds.Left, Math.Max(label2.Bounds.Left, label2.Bounds.Right), 1);
+
+		double totalWidth = 0;
+		foreach (var view in layout.Children)
+		{
+			totalWidth += view.Bounds.Width;
 		}
 
-		[Fact]
-		public void TestRelayoutOnChildrenRemoved()
+		Assert.Equal(layoutSize.Width, totalWidth, 2);
+	}
+
+	[Fact]
+	public void TestRelayoutOnChildrenRemoved()
+	{
+		var layoutSize = new Size(300, 50);
+
+		var layout = new FlexLayout
 		{
-			var layoutSize = new Size(300, 50);
+			IsPlatformEnabled = true,
+			Direction = FlexDirection.Row
+		};
 
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
-				Direction = FlexDirection.Row
-			};
+		var label1 = new Label { IsPlatformEnabled = true };
+		FlexLayout.SetGrow(label1, 1);
+		layout.Children.Add(label1);
 
-			var label1 = new Label { IsPlatformEnabled = true };
-			FlexLayout.SetGrow(label1, 1);
-			layout.Children.Add(label1);
+		var label2 = new Label { IsPlatformEnabled = true };
+		FlexLayout.SetGrow(label2, 1);
+		layout.Children.Add(label2);
 
-			var label2 = new Label { IsPlatformEnabled = true };
-			FlexLayout.SetGrow(label2, 1);
-			layout.Children.Add(label2);
+		var label3 = new Label { IsPlatformEnabled = true };
+		FlexLayout.SetGrow(label3, 1);
+		layout.Children.Add(label3);
 
-			var label3 = new Label { IsPlatformEnabled = true };
-			FlexLayout.SetGrow(label3, 1);
-			layout.Children.Add(label3);
+		layout.Layout(new Rectangle(0, 0, layoutSize.Width, layoutSize.Height));
 
-			layout.Layout(new Rectangle(0, 0, layoutSize.Width, layoutSize.Height));
+		foreach (var view in layout.Children)
+			Assert.Equal(100, view.Bounds.Width);
 
-			foreach (var view in layout.Children)
-				Assert.Equal(100, view.Bounds.Width);
+		layout.Children.Remove(label3);
 
-			layout.Children.Remove(label3);
+		Assert.Equal(150, label1.Bounds.Width);
+		Assert.Equal(150, label2.Bounds.Width);
+		Assert.Equal(100, label3.Bounds.Width);
+	}
 
-			Assert.Equal(150, label1.Bounds.Width);
-			Assert.Equal(150, label2.Bounds.Width);
-			Assert.Equal(100, label3.Bounds.Width);
-		}
-
-		[Fact]
-		public void TestFlexLayoutIsIncludeChangeWorksOnSecondPass()
+	[Fact]
+	public void TestFlexLayoutIsIncludeChangeWorksOnSecondPass()
+	{
+		var layoutSize = new Size(300, 50);
+		var layout = new FlexLayout
 		{
-			var layoutSize = new Size(300, 50);
-			var layout = new FlexLayout
-			{
-				Direction = FlexDirection.Row,
-				IsPlatformEnabled = true,
-			};
+			Direction = FlexDirection.Row,
+			IsPlatformEnabled = true,
+		};
 
-			var label1 = new Label { IsPlatformEnabled = true };
-			FlexLayout.SetGrow(label1, 1);
-			layout.Children.Add(label1);
+		var label1 = new Label { IsPlatformEnabled = true };
+		FlexLayout.SetGrow(label1, 1);
+		layout.Children.Add(label1);
 
-			var label2 = new Label { IsPlatformEnabled = true };
-			FlexLayout.SetGrow(label2, 1);
-			layout.Children.Add(label2);
+		var label2 = new Label { IsPlatformEnabled = true };
+		FlexLayout.SetGrow(label2, 1);
+		layout.Children.Add(label2);
 
-			var label3 = new Label { IsPlatformEnabled = true };
-			FlexLayout.SetGrow(label3, 1);
+		var label3 = new Label { IsPlatformEnabled = true };
+		FlexLayout.SetGrow(label3, 1);
 
-			layout.Layout(new Rectangle(0, 0, layoutSize.Width, layoutSize.Height));
+		layout.Layout(new Rectangle(0, 0, layoutSize.Width, layoutSize.Height));
 
-			Assert.Equal(150, label1.Bounds.Width);
-			Assert.Equal(150, label2.Bounds.Width);
-			Assert.Equal(-1, label3.Bounds.Width);
+		Assert.Equal(150, label1.Bounds.Width);
+		Assert.Equal(150, label2.Bounds.Width);
+		Assert.Equal(-1, label3.Bounds.Width);
 
-			layout.Children.Add(label3);
+		layout.Children.Add(label3);
 
-			layout.Layout(new Rectangle(0, 0, layoutSize.Width, layoutSize.Height));
-			Assert.Equal(100, label1.Bounds.Width);
-			Assert.Equal(100, label2.Bounds.Width);
-			Assert.Equal(100, label3.Bounds.Width);
-		}
+		layout.Layout(new Rectangle(0, 0, layoutSize.Width, layoutSize.Height));
+		Assert.Equal(100, label1.Bounds.Width);
+		Assert.Equal(100, label2.Bounds.Width);
+		Assert.Equal(100, label3.Bounds.Width);
+	}
 
-		[Fact]
-		// fixed at https://github.com/pieroviano/flex/commit/0ccb9f1625abdc5400def29651373937bf6610cd
-		public void TestSwapChildrenOrder()
+	[Fact]
+	// fixed at https://github.com/pieroviano/flex/commit/0ccb9f1625abdc5400def29651373937bf6610cd
+	public void TestSwapChildrenOrder()
+	{
+		var layoutSize = new Size(300, 50);
+
+		var layout = new FlexLayout
 		{
-			var layoutSize = new Size(300, 50);
+			Direction = FlexDirection.Row,
+			IsPlatformEnabled = true,
+		};
 
-			var layout = new FlexLayout
-			{
-				Direction = FlexDirection.Row,
-				IsPlatformEnabled = true,
-			};
+		var label0 = new Label { IsPlatformEnabled = true, Text = "Label0" };
+		FlexLayout.SetGrow(label0, 1);
+		layout.Children.Add(label0);
 
-			var label0 = new Label { IsPlatformEnabled = true, Text = "Label0" };
-			FlexLayout.SetGrow(label0, 1);
-			layout.Children.Add(label0);
+		var label1 = new Label { IsPlatformEnabled = true, Text = "Label1" };
+		FlexLayout.SetGrow(label1, 1);
+		layout.Children.Add(label1);
 
-			var label1 = new Label { IsPlatformEnabled = true, Text = "Label1" };
-			FlexLayout.SetGrow(label1, 1);
-			layout.Children.Add(label1);
+		var label2 = new Label { IsPlatformEnabled = true, Text = "Label2" };
+		FlexLayout.SetGrow(label2, 1);
+		layout.Children.Add(label2);
 
-			var label2 = new Label { IsPlatformEnabled = true, Text = "Label2" };
-			FlexLayout.SetGrow(label2, 1);
-			layout.Children.Add(label2);
+		layout.Layout(new Rectangle(0, 0, layoutSize.Width, layoutSize.Height));
 
-			layout.Layout(new Rectangle(0, 0, layoutSize.Width, layoutSize.Height));
+		Assert.Equal(new Rectangle(0, 0, 100, 50), label0.Bounds);
+		Assert.Equal(new Rectangle(100, 0, 100, 50), label1.Bounds);
+		Assert.Equal(new Rectangle(200, 0, 100, 50), label2.Bounds);
 
-			Assert.Equal(new Rectangle(0, 0, 100, 50), label0.Bounds);
-			Assert.Equal(new Rectangle(100, 0, 100, 50), label1.Bounds);
-			Assert.Equal(new Rectangle(200, 0, 100, 50), label2.Bounds);
+		var lastItem = layout.Children[2];
+		Assert.Same(label2, lastItem);
 
-			var lastItem = layout.Children[2];
-			Assert.Same(label2, lastItem);
+		layout.Children.Remove(lastItem);
+		Assert.Equal(new Rectangle(0, 0, 150, 50), label0.Bounds);
+		Assert.Equal(new Rectangle(150, 0, 150, 50), label1.Bounds);
 
-			layout.Children.Remove(lastItem);
-			Assert.Equal(new Rectangle(0, 0, 150, 50), label0.Bounds);
-			Assert.Equal(new Rectangle(150, 0, 150, 50), label1.Bounds);
+		layout.Children.Insert(0, lastItem);
 
-			layout.Children.Insert(0, lastItem);
+		Assert.Equal(new Rectangle(0, 0, 100, 50), label2.Bounds);
+		Assert.Equal(new Rectangle(100, 0, 100, 50), label0.Bounds);
+		Assert.Equal(new Rectangle(200, 0, 100, 50), label1.Bounds);
+	}
 
-			Assert.Equal(new Rectangle(0, 0, 100, 50), label2.Bounds);
-			Assert.Equal(new Rectangle(100, 0, 100, 50), label0.Bounds);
-			Assert.Equal(new Rectangle(200, 0, 100, 50), label1.Bounds);
-		}
+	[Fact]
+	public void TestSizeThatFits()
+	{
+		Device.PlatformServices = new MockPlatformServices(useRealisticLabelMeasure: true);
 
-		[Fact]
-		public void TestSizeThatFits()
+		var layout = new FlexLayout
 		{
-			Device.PlatformServices = new MockPlatformServices(useRealisticLabelMeasure: true);
+			Direction = FlexDirection.Row,
+			AlignItems = FlexAlignItems.Start,
+			IsPlatformEnabled = true
+		};
 
-			var layout = new FlexLayout
-			{
-				Direction = FlexDirection.Row,
-				AlignItems = FlexAlignItems.Start,
-				IsPlatformEnabled = true
-			};
-
-			var label1 = new Label
-			{
-				IsPlatformEnabled = true,
-				LineBreakMode = LineBreakMode.TailTruncation,
-				Text = @"This is a very very very very very very very very long piece of text."
-			};
-			FlexLayout.SetShrink(label1, 1);
-			layout.Children.Add(label1);
-
-			var label2 = new Label
-			{
-				Text = "",
-				IsPlatformEnabled = true,
-				WidthRequest = 10,
-				HeightRequest = 10
-			};
-			layout.Children.Add(label2);
-			layout.Layout(new Rectangle(0, 0, 320, 50));
-
-			var label2Size = label2.Measure(double.PositiveInfinity, double.PositiveInfinity);
-			Assert.Equal(10, label2Size.Request.Height);
-			Assert.Equal(10, label2Size.Request.Width);
-
-			var label1Size = label1.Measure(double.PositiveInfinity, double.PositiveInfinity);
-			//	var layoutSize = layout.Measure(-1, -1);
-		}
-
-		[Fact]
-		public void TestNesting()
+		var label1 = new Label
 		{
-			var header = new View { HeightRequest = 50, IsPlatformEnabled = true, };
-			var footer = new View { HeightRequest = 50, IsPlatformEnabled = true, };
-			Func<View> createItem = () =>
-			{
-				var v = new View { WidthRequest = 50, Margin = 5, IsPlatformEnabled = true, };
-				FlexLayout.SetGrow(v, 1);
-				return v;
-			};
+			IsPlatformEnabled = true,
+			LineBreakMode = LineBreakMode.TailTruncation,
+			Text = @"This is a very very very very very very very very long piece of text."
+		};
+		FlexLayout.SetShrink(label1, 1);
+		layout.Children.Add(label1);
 
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
-				Children = {
-					header,
-					new FlexLayout{
-						Direction = FlexDirection.Row,
-						IsPlatformEnabled = true,
-						Children = {
-							createItem(),
-							createItem(),
-							createItem(),
-							createItem(),
-							createItem(),
-						}
-					},
-					footer,
-				},
-				Direction = FlexDirection.Column,
-			};
-
-			var inner = layout.Children[1] as FlexLayout;
-			FlexLayout.SetGrow(inner, 1);
-
-			layout.Layout(new Rectangle(0, 0, 300, 600));
-			Assert.Equal(new Rectangle(0, 0, 300, 600), layout.Bounds);
-			Assert.Equal(new Rectangle(0, 0, 300, 50), header.Bounds);
-			Assert.Equal(new Rectangle(0, 50, 300, 500), inner.Bounds);
-			Assert.Equal(new Rectangle(5, 5, 50, 490), inner.Children[0].Bounds);
-			Assert.Equal(new Rectangle(65, 5, 50, 490), inner.Children[1].Bounds);
-			Assert.Equal(new Rectangle(125, 5, 50, 490), inner.Children[2].Bounds);
-			Assert.Equal(new Rectangle(185, 5, 50, 490), inner.Children[3].Bounds);
-			Assert.Equal(new Rectangle(245, 5, 50, 490), inner.Children[4].Bounds);
-
-			Assert.Equal(new Rectangle(0, 550, 300, 50), footer.Bounds);
-		}
-
-		[Fact]
-		public void TestMeasuring()
+		var label2 = new Label
 		{
-			var label = new Label
-			{
-				IsPlatformEnabled = true,
-			};
-			var Layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
-				Direction = FlexDirection.Row,
-				Wrap = FlexWrap.Wrap,
-				Children = {
-					label,
-				}
-			};
+			Text = "",
+			IsPlatformEnabled = true,
+			WidthRequest = 10,
+			HeightRequest = 10
+		};
+		layout.Children.Add(label2);
+		layout.Layout(new Rectangle(0, 0, 320, 50));
 
-			//measure sith +inf as main-axis
-			var measure = Layout.Measure(double.PositiveInfinity, 40);
-			Assert.Equal(new Size(100, 40), measure.Request);
+		var label2Size = label2.Measure(double.PositiveInfinity, double.PositiveInfinity);
+		Assert.Equal(10, label2Size.Request.Height);
+		Assert.Equal(10, label2Size.Request.Width);
 
-			//measure sith +inf as cross-axis
-			measure = Layout.Measure(200, double.PositiveInfinity);
-			Assert.Equal(new Size(200, 20), measure.Request);
+		var label1Size = label1.Measure(double.PositiveInfinity, double.PositiveInfinity);
+		//	var layoutSize = layout.Measure(-1, -1);
+	}
 
-			//measure with +inf as both axis
-			measure = Layout.Measure(double.PositiveInfinity, double.PositiveInfinity);
-			Assert.Equal(new Size(100, 20), measure.Request);
-
-		}
-
-		[Fact]
-		public void TestMarginsWithWrap()
+	[Fact]
+	public void TestNesting()
+	{
+		var header = new View { HeightRequest = 50, IsPlatformEnabled = true, };
+		var footer = new View { HeightRequest = 50, IsPlatformEnabled = true, };
+		Func<View> createItem = () =>
 		{
-			var label0 = new Label
-			{
-				IsPlatformEnabled = true,
-				Margin = 6,
-			};
-			var label1 = new Label
-			{
-				IsPlatformEnabled = true,
-				Margin = 6,
-			};
-			var label2 = new Label
-			{
-				IsPlatformEnabled = true,
-			};
-			FlexLayout.SetGrow(label0, 0);
-			FlexLayout.SetBasis(label0, new FlexBasis(.5f, true));
-			FlexLayout.SetGrow(label1, 0);
-			FlexLayout.SetBasis(label1, new FlexBasis(.5f, true));
-			FlexLayout.SetGrow(label2, 0);
-			FlexLayout.SetBasis(label2, new FlexBasis(1f, true));
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
-				Direction = FlexDirection.Row,
-				Wrap = FlexWrap.Wrap,
-				AlignItems = FlexAlignItems.Start,
-				AlignContent = FlexAlignContent.Start,
-				Children = {
-					label0,
-					label1,
-					label2,
-				}
-			};
+			var v = new View { WidthRequest = 50, Margin = 5, IsPlatformEnabled = true, };
+			FlexLayout.SetGrow(v, 1);
+			return v;
+		};
 
-			var measure = layout.Measure(300, double.PositiveInfinity);
-			Assert.Equal(new Size(300, 52), measure.Request);
-			layout.Layout(new Rectangle(0, 0, 300, 300));
-			Assert.Equal(new Rectangle(6, 6, 138, 20), label0.Bounds);
-			Assert.Equal(new Rectangle(156, 6, 138, 20), label1.Bounds);
-			Assert.Equal(new Rectangle(0, 32, 300, 20), label2.Bounds);
-		}
-
-		[Fact]
-		//https://github.com/pieroviano/Xamarin.Forms/issues/2551
-		public void TestReverseWithGrow()
+		var layout = new FlexLayout
 		{
-			var label0 = new Label
-			{
-				IsPlatformEnabled = true,
-			};
-			FlexLayout.SetGrow(label0, 1);
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
-				Direction = FlexDirection.ColumnReverse,
-				Children = {
-					label0,
-				}
-			};
-
-			layout.Layout(new Rectangle(0, 0, 300, 300));
-			Assert.Equal(new Rectangle(0, 0, 300, 300), label0.Bounds);
-		}
-
-		[Fact]
-		public void TestIsVisible()
-		//https://github.com/pieroviano/Xamarin.Forms/issues/2593
-		{
-			var label0 = new Label
-			{
-				IsPlatformEnabled = true,
-			};
-			var label1 = new Label
-			{
-				IsPlatformEnabled = true,
-			};
-			var label2 = new Label
-			{
-				IsPlatformEnabled = true,
-			};
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
-				Direction = FlexDirection.Column,
-				Children = {
-					label0,
-					label1,
-					label2,
-				}
-			};
-
-			layout.Layout(new Rectangle(0, 0, 300, 300));
-			Assert.Equal(new Rectangle(0, 0, 300, 20), label0.Bounds);
-			Assert.Equal(new Rectangle(0, 20, 300, 20), label1.Bounds);
-			Assert.Equal(new Rectangle(0, 40, 300, 20), label2.Bounds);
-
-			label1.IsVisible = false;
-			Assert.Equal(new Rectangle(0, 0, 300, 20), label0.Bounds);
-			Assert.Equal(new Rectangle(0, 20, 300, 20), label2.Bounds);
-
-			label0.IsVisible = false;
-			label1.IsVisible = true;
-			Assert.Equal(new Rectangle(0, 0, 300, 20), label1.Bounds);
-			Assert.Equal(new Rectangle(0, 20, 300, 20), label2.Bounds);
-		}
-
-		[Fact]
-		public void ChangingGrowTriggersLayout()
-		//https://github.com/pieroviano/Xamarin.Forms/issues/2821
-		{
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
-				Direction = FlexDirection.Column,
-			};
-
-			layout.Layout(new Rectangle(0, 0, 300, 300));
-			for (var i = 0; i < 3; i++)
-			{
-				var box = new BoxView
-				{
+			IsPlatformEnabled = true,
+			Children = {
+				header,
+				new FlexLayout{
+					Direction = FlexDirection.Row,
 					IsPlatformEnabled = true,
-				};
-				layout.Children.Add(box);
-				FlexLayout.SetGrow(box, 1f);
-			}
+					Children = {
+						createItem(),
+						createItem(),
+						createItem(),
+						createItem(),
+						createItem(),
+					}
+				},
+				footer,
+			},
+			Direction = FlexDirection.Column,
+		};
 
-			Assert.Equal(new Rectangle(0, 200, 300, 100), layout.Children[2].Bounds);
-		}
+		var inner = layout.Children[1] as FlexLayout;
+		FlexLayout.SetGrow(inner, 1);
 
-		[Fact]
-		public void PaddingOnLayout()
-		//https://github.com/pieroviano/Xamarin.Forms/issues/2663
+		layout.Layout(new Rectangle(0, 0, 300, 600));
+		Assert.Equal(new Rectangle(0, 0, 300, 600), layout.Bounds);
+		Assert.Equal(new Rectangle(0, 0, 300, 50), header.Bounds);
+		Assert.Equal(new Rectangle(0, 50, 300, 500), inner.Bounds);
+		Assert.Equal(new Rectangle(5, 5, 50, 490), inner.Children[0].Bounds);
+		Assert.Equal(new Rectangle(65, 5, 50, 490), inner.Children[1].Bounds);
+		Assert.Equal(new Rectangle(125, 5, 50, 490), inner.Children[2].Bounds);
+		Assert.Equal(new Rectangle(185, 5, 50, 490), inner.Children[3].Bounds);
+		Assert.Equal(new Rectangle(245, 5, 50, 490), inner.Children[4].Bounds);
+
+		Assert.Equal(new Rectangle(0, 550, 300, 50), footer.Bounds);
+	}
+
+	[Fact]
+	public void TestMeasuring()
+	{
+		var label = new Label
 		{
-			var label0 = new Label
-			{
-				IsPlatformEnabled = true,
-			};
-			var label1 = new Label
-			{
-				IsPlatformEnabled = true,
-			};
-			var label2 = new Label
-			{
-				IsPlatformEnabled = true,
-			};
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
-				JustifyContent = FlexJustify.SpaceBetween,
-				AlignItems = FlexAlignItems.Start,
+			IsPlatformEnabled = true,
+		};
+		var Layout = new FlexLayout
+		{
+			IsPlatformEnabled = true,
+			Direction = FlexDirection.Row,
+			Wrap = FlexWrap.Wrap,
+			Children = {
+				label,
+			}
+		};
 
-				Padding = new Thickness(20, 10, 20, 0),
-				Children = {
-					label0,
-					label1,
-					label2,
-				}
-			};
+		//measure sith +inf as main-axis
+		var measure = Layout.Measure(double.PositiveInfinity, 40);
+		Assert.Equal(new Size(100, 40), measure.Request);
 
-			layout.Layout(new Rectangle(0, 0, 500, 300));
-			Assert.Equal(new Rectangle(20, 10, 100, 20), layout.Children[0].Bounds);
-			Assert.Equal(new Rectangle(380, 10, 100, 20), layout.Children[2].Bounds);
+		//measure sith +inf as cross-axis
+		measure = Layout.Measure(200, double.PositiveInfinity);
+		Assert.Equal(new Size(200, 20), measure.Request);
+
+		//measure with +inf as both axis
+		measure = Layout.Measure(double.PositiveInfinity, double.PositiveInfinity);
+		Assert.Equal(new Size(100, 20), measure.Request);
+
+	}
+
+	[Fact]
+	public void TestMarginsWithWrap()
+	{
+		var label0 = new Label
+		{
+			IsPlatformEnabled = true,
+			Margin = 6,
+		};
+		var label1 = new Label
+		{
+			IsPlatformEnabled = true,
+			Margin = 6,
+		};
+		var label2 = new Label
+		{
+			IsPlatformEnabled = true,
+		};
+		FlexLayout.SetGrow(label0, 0);
+		FlexLayout.SetBasis(label0, new FlexBasis(.5f, true));
+		FlexLayout.SetGrow(label1, 0);
+		FlexLayout.SetBasis(label1, new FlexBasis(.5f, true));
+		FlexLayout.SetGrow(label2, 0);
+		FlexLayout.SetBasis(label2, new FlexBasis(1f, true));
+		var layout = new FlexLayout
+		{
+			IsPlatformEnabled = true,
+			Direction = FlexDirection.Row,
+			Wrap = FlexWrap.Wrap,
+			AlignItems = FlexAlignItems.Start,
+			AlignContent = FlexAlignContent.Start,
+			Children = {
+				label0,
+				label1,
+				label2,
+			}
+		};
+
+		var measure = layout.Measure(300, double.PositiveInfinity);
+		Assert.Equal(new Size(300, 52), measure.Request);
+		layout.Layout(new Rectangle(0, 0, 300, 300));
+		Assert.Equal(new Rectangle(6, 6, 138, 20), label0.Bounds);
+		Assert.Equal(new Rectangle(156, 6, 138, 20), label1.Bounds);
+		Assert.Equal(new Rectangle(0, 32, 300, 20), label2.Bounds);
+	}
+
+	[Fact]
+	//https://github.com/pieroviano/Xamarin.Forms/issues/2551
+	public void TestReverseWithGrow()
+	{
+		var label0 = new Label
+		{
+			IsPlatformEnabled = true,
+		};
+		FlexLayout.SetGrow(label0, 1);
+		var layout = new FlexLayout
+		{
+			IsPlatformEnabled = true,
+			Direction = FlexDirection.ColumnReverse,
+			Children = {
+				label0,
+			}
+		};
+
+		layout.Layout(new Rectangle(0, 0, 300, 300));
+		Assert.Equal(new Rectangle(0, 0, 300, 300), label0.Bounds);
+	}
+
+	[Fact]
+	public void TestIsVisible()
+		//https://github.com/pieroviano/Xamarin.Forms/issues/2593
+	{
+		var label0 = new Label
+		{
+			IsPlatformEnabled = true,
+		};
+		var label1 = new Label
+		{
+			IsPlatformEnabled = true,
+		};
+		var label2 = new Label
+		{
+			IsPlatformEnabled = true,
+		};
+		var layout = new FlexLayout
+		{
+			IsPlatformEnabled = true,
+			Direction = FlexDirection.Column,
+			Children = {
+				label0,
+				label1,
+				label2,
+			}
+		};
+
+		layout.Layout(new Rectangle(0, 0, 300, 300));
+		Assert.Equal(new Rectangle(0, 0, 300, 20), label0.Bounds);
+		Assert.Equal(new Rectangle(0, 20, 300, 20), label1.Bounds);
+		Assert.Equal(new Rectangle(0, 40, 300, 20), label2.Bounds);
+
+		label1.IsVisible = false;
+		Assert.Equal(new Rectangle(0, 0, 300, 20), label0.Bounds);
+		Assert.Equal(new Rectangle(0, 20, 300, 20), label2.Bounds);
+
+		label0.IsVisible = false;
+		label1.IsVisible = true;
+		Assert.Equal(new Rectangle(0, 0, 300, 20), label1.Bounds);
+		Assert.Equal(new Rectangle(0, 20, 300, 20), label2.Bounds);
+	}
+
+	[Fact]
+	public void ChangingGrowTriggersLayout()
+		//https://github.com/pieroviano/Xamarin.Forms/issues/2821
+	{
+		var layout = new FlexLayout
+		{
+			IsPlatformEnabled = true,
+			Direction = FlexDirection.Column,
+		};
+
+		layout.Layout(new Rectangle(0, 0, 300, 300));
+		for (var i = 0; i < 3; i++)
+		{
+			var box = new BoxView
+			{
+				IsPlatformEnabled = true,
+			};
+			layout.Children.Add(box);
+			FlexLayout.SetGrow(box, 1f);
 		}
+
+		Assert.Equal(new Rectangle(0, 200, 300, 100), layout.Children[2].Bounds);
+	}
+
+	[Fact]
+	public void PaddingOnLayout()
+		//https://github.com/pieroviano/Xamarin.Forms/issues/2663
+	{
+		var label0 = new Label
+		{
+			IsPlatformEnabled = true,
+		};
+		var label1 = new Label
+		{
+			IsPlatformEnabled = true,
+		};
+		var label2 = new Label
+		{
+			IsPlatformEnabled = true,
+		};
+		var layout = new FlexLayout
+		{
+			IsPlatformEnabled = true,
+			JustifyContent = FlexJustify.SpaceBetween,
+			AlignItems = FlexAlignItems.Start,
+
+			Padding = new Thickness(20, 10, 20, 0),
+			Children = {
+				label0,
+				label1,
+				label2,
+			}
+		};
+
+		layout.Layout(new Rectangle(0, 0, 500, 300));
+		Assert.Equal(new Rectangle(20, 10, 100, 20), layout.Children[0].Bounds);
+		Assert.Equal(new Rectangle(380, 10, 100, 20), layout.Children[2].Bounds);
 	}
 }

@@ -2,90 +2,89 @@
 using Xamarin.Forms.Internals;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class TableModelTests : BaseTestFixture
 {
-	public class TableModelTests : BaseTestFixture
+	class TestModel : TableModel
 	{
-		class TestModel : TableModel
+		public override int GetRowCount(int section)
 		{
-			public override int GetRowCount(int section)
-			{
-				return 10;
-			}
-
-			public override int GetSectionCount()
-			{
-				return 1;
-			}
-
-			public override object GetItem(int section, int row)
-			{
-				return "Foo";
-			}
-
-			public string ProtectedSectionTitle()
-			{
-				return GetSectionTitle(0);
-			}
+			return 10;
 		}
 
-		[Fact]
-		public void DefaultSectionTitle()
+		public override int GetSectionCount()
 		{
-			Assert.Null(new TestModel().ProtectedSectionTitle());
+			return 1;
 		}
 
-		[Fact]
-		public void DefualtSectionIndexTitles()
+		public override object GetItem(int section, int row)
 		{
-			Assert.Null(new TestModel().GetSectionIndexTitles());
+			return "Foo";
 		}
 
-		[Fact]
-		public void DefaultHeaderCell()
+		public string ProtectedSectionTitle()
 		{
-			Assert.Null(new TestModel().GetHeaderCell(0));
+			return GetSectionTitle(0);
 		}
+	}
 
-		[Fact]
-		public void DefaultCellFromObject()
+	[Fact]
+	public void DefaultSectionTitle()
+	{
+		Assert.Null(new TestModel().ProtectedSectionTitle());
+	}
+
+	[Fact]
+	public void DefualtSectionIndexTitles()
+	{
+		Assert.Null(new TestModel().GetSectionIndexTitles());
+	}
+
+	[Fact]
+	public void DefaultHeaderCell()
+	{
+		Assert.Null(new TestModel().GetHeaderCell(0));
+	}
+
+	[Fact]
+	public void DefaultCellFromObject()
+	{
+		var model = new TestModel();
+		var cell = model.GetCell(0, 5);
+
+		Assert.IsType<TextCell>(cell);
+
+		var textCell = (TextCell)cell;
+		Assert.Equal("Foo", textCell.Text);
+	}
+
+	[Fact]
+	public void RowLongPressed()
+	{
+		var model = new TestModel();
+
+		string longPressedItem = null;
+		model.ItemLongPressed += (sender, arg) =>
 		{
-			var model = new TestModel();
-			var cell = model.GetCell(0, 5);
+			longPressedItem = (string)arg.Data;
+		};
 
-			Assert.IsType<TextCell>(cell);
+		// RowLongPressed(section, row) forwards GetItem(section, row), which TestModel
+		// answers with "Foo" for every cell. Without this assert the test passed even if
+		// ItemLongPressed was never raised at all.
+		model.RowLongPressed(0, 5);
+		Assert.Equal("Foo", longPressedItem);
+	}
 
-			var textCell = (TextCell)cell;
-			Assert.Equal("Foo", textCell.Text);
-		}
+	[Fact]
+	public void RowSelectedForObject()
+	{
+		var model = new TestModel();
+		string result = null;
+		model.ItemSelected += (sender, arg) => result = (string)arg.Data;
 
-		[Fact]
-		public void RowLongPressed()
-		{
-			var model = new TestModel();
-
-			string longPressedItem = null;
-			model.ItemLongPressed += (sender, arg) =>
-			{
-				longPressedItem = (string)arg.Data;
-			};
-
-			// RowLongPressed(section, row) forwards GetItem(section, row), which TestModel
-			// answers with "Foo" for every cell. Without this assert the test passed even if
-			// ItemLongPressed was never raised at all.
-			model.RowLongPressed(0, 5);
-			Assert.Equal("Foo", longPressedItem);
-		}
-
-		[Fact]
-		public void RowSelectedForObject()
-		{
-			var model = new TestModel();
-			string result = null;
-			model.ItemSelected += (sender, arg) => result = (string)arg.Data;
-
-			model.RowSelected("Foobar");
-			Assert.Equal("Foobar", result);
-		}
+		model.RowSelected("Foobar");
+		Assert.Equal("Foobar", result);
 	}
 }

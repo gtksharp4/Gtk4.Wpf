@@ -1,60 +1,59 @@
 using System;
 using System.Collections.Generic;
 
-namespace System.Windows
+namespace System.Windows;
+
+/// <summary>
+/// Animation-value layer for <see cref="DependencyObject"/>.
+/// Priority: animation > local > trigger > style > inherited > default.
+/// Animations write through <see cref="SetAnimationValue"/> / <see cref="ClearAnimationValue"/>
+/// and sit ABOVE local in the resolution chain.
+/// </summary>
+public partial class DependencyObject
 {
+	// Animation value store: keyed by DP, one value per animator clock (last-writer wins).
+	// A null entry is valid (animation to null/default).
+	readonly Dictionary<DependencyProperty, object?> _animationValues =
+		new Dictionary<DependencyProperty, object?>();
+
 	/// <summary>
-	/// Animation-value layer for <see cref="DependencyObject"/>.
-	/// Priority: animation > local > trigger > style > inherited > default.
-	/// Animations write through <see cref="SetAnimationValue"/> / <see cref="ClearAnimationValue"/>
-	/// and sit ABOVE local in the resolution chain.
+	/// Sets an animation-layer value. This is the highest-priority layer, sitting
+	/// above the local value. Fires change notifications when the effective value
+	/// differs from the previous effective value.
 	/// </summary>
-	public partial class DependencyObject
+	internal void SetAnimationValue(DependencyProperty dp, object? value)
 	{
-		// Animation value store: keyed by DP, one value per animator clock (last-writer wins).
-		// A null entry is valid (animation to null/default).
-		readonly Dictionary<DependencyProperty, object?> _animationValues =
-			new Dictionary<DependencyProperty, object?>();
+		if (dp == null) throw new ArgumentNullException(nameof(dp));
 
-		/// <summary>
-		/// Sets an animation-layer value. This is the highest-priority layer, sitting
-		/// above the local value. Fires change notifications when the effective value
-		/// differs from the previous effective value.
-		/// </summary>
-		internal void SetAnimationValue(DependencyProperty dp, object? value)
-		{
-			if (dp == null) throw new ArgumentNullException(nameof(dp));
+		var meta = dp.GetMetadata(GetType());
+		if (meta.CoerceValueCallback != null)
+			value = meta.CoerceValueCallback(this, value);
 
-			var meta = dp.GetMetadata(GetType());
-			if (meta.CoerceValueCallback != null)
-				value = meta.CoerceValueCallback(this, value);
-
-			var oldEffective = ResolveEffectiveValue(dp);
-			_animationValues[dp] = value;
-			var newEffective = ResolveEffectiveValue(dp);
-			FireChangeIfDifferent(dp, oldEffective, newEffective);
-		}
-
-		/// <summary>
-		/// Removes the animation-layer value for <paramref name="dp"/>.
-		/// The effective value reverts to local/trigger/style/inherited/default.
-		/// </summary>
-		internal void ClearAnimationValue(DependencyProperty dp)
-		{
-			if (dp == null) throw new ArgumentNullException(nameof(dp));
-			if (!_animationValues.ContainsKey(dp)) return;
-
-			var oldEffective = ResolveEffectiveValue(dp);
-			_animationValues.Remove(dp);
-			var newEffective = ResolveEffectiveValue(dp);
-			FireChangeIfDifferent(dp, oldEffective, newEffective);
-		}
-
-		/// <summary>
-		/// Returns <c>true</c> when an animation value is currently active for
-		/// <paramref name="dp"/>.
-		/// </summary>
-		internal bool HasAnimationValue(DependencyProperty dp) =>
-			_animationValues.ContainsKey(dp);
+		var oldEffective = ResolveEffectiveValue(dp);
+		_animationValues[dp] = value;
+		var newEffective = ResolveEffectiveValue(dp);
+		FireChangeIfDifferent(dp, oldEffective, newEffective);
 	}
+
+	/// <summary>
+	/// Removes the animation-layer value for <paramref name="dp"/>.
+	/// The effective value reverts to local/trigger/style/inherited/default.
+	/// </summary>
+	internal void ClearAnimationValue(DependencyProperty dp)
+	{
+		if (dp == null) throw new ArgumentNullException(nameof(dp));
+		if (!_animationValues.ContainsKey(dp)) return;
+
+		var oldEffective = ResolveEffectiveValue(dp);
+		_animationValues.Remove(dp);
+		var newEffective = ResolveEffectiveValue(dp);
+		FireChangeIfDifferent(dp, oldEffective, newEffective);
+	}
+
+	/// <summary>
+	/// Returns <c>true</c> when an animation value is currently active for
+	/// <paramref name="dp"/>.
+	/// </summary>
+	internal bool HasAnimationValue(DependencyProperty dp) =>
+		_animationValues.ContainsKey(dp);
 }

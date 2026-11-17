@@ -1,83 +1,82 @@
 ﻿using Xunit;
 
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class SpanTests : BaseTestFixture
 {
-	public class SpanTests : BaseTestFixture
+	public SpanTests()
 	{
-		public SpanTests()
+		Device.PlatformServices = new MockPlatformServices();
+	}
+
+	public override void Dispose()
+	{
+		base.Dispose();
+		Device.PlatformServices = null;
+	}
+
+	[Fact]
+	public void StyleApplied()
+	{
+		var pinkStyle = new Style(typeof(Span))
 		{
-			Device.PlatformServices = new MockPlatformServices();
-		}
+			Setters = {
+				new Setter { Property = Span.TextColorProperty, Value = Color.Pink },
+			},
+			Class = "pink",
+			ApplyToDerivedTypes = true,
+		};
 
-		public override void Dispose()
+		var span = new Span
 		{
-			base.Dispose();
-			Device.PlatformServices = null;
-		}
+			Style = pinkStyle
+		};
 
-		[Fact]
-		public void StyleApplied()
+		var formattedText = new FormattedString();
+		formattedText.Spans.Add(span);
+
+		var label = new Label()
 		{
-			var pinkStyle = new Style(typeof(Span))
-			{
-				Setters = {
-					new Setter { Property = Span.TextColorProperty, Value = Color.Pink },
-				},
-				Class = "pink",
-				ApplyToDerivedTypes = true,
-			};
+			FormattedText = formattedText
+		};
 
-			var span = new Span
-			{
-				Style = pinkStyle
-			};
-
-			var formattedText = new FormattedString();
-			formattedText.Spans.Add(span);
-
-			var label = new Label()
-			{
-				FormattedText = formattedText
-			};
-
-			new ContentView
-			{
-				Resources = new ResourceDictionary { pinkStyle },
-				Content = label
-			};
-
-			Assert.Equal(Color.Pink, span.TextColor);
-		}
-
-		[Fact]
-		public void BindingApplied()
+		new ContentView
 		{
-			var vm = new ViewModel()
-			{
-				Text = "CheckBindingWorked"
-			};
+			Resources = new ResourceDictionary { pinkStyle },
+			Content = label
+		};
 
-			var formattedText = new FormattedString();
+		Assert.Equal(Color.Pink, span.TextColor);
+	}
 
-			var label = new Label()
-			{
-				FormattedText = formattedText
-			};
-
-			var span = new Span();
-			span.SetBinding(Span.TextProperty, "Text");
-
-			formattedText.Spans.Add(span);
-
-			label.BindingContext = vm;
-
-			Assert.Equal(vm.Text, span.Text);
-		}
-
-		class ViewModel
+	[Fact]
+	public void BindingApplied()
+	{
+		var vm = new ViewModel()
 		{
-			public string Text { get; set; }
-		}
+			Text = "CheckBindingWorked"
+		};
+
+		var formattedText = new FormattedString();
+
+		var label = new Label()
+		{
+			FormattedText = formattedText
+		};
+
+		var span = new Span();
+		span.SetBinding(Span.TextProperty, "Text");
+
+		formattedText.Spans.Add(span);
+
+		label.BindingContext = vm;
+
+		Assert.Equal(vm.Text, span.Text);
+	}
+
+	class ViewModel
+	{
+		public string Text { get; set; }
 	}
 }

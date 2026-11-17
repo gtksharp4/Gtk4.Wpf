@@ -7,50 +7,49 @@ using Xamarin.Forms;
 using Xamarin.Forms.Build.Tasks;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+[XamlCompilation(XamlCompilationOptions.Skip)]
+public partial class Gh4099 : ContentPage
 {
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class Gh4099 : ContentPage
+	public Gh4099()
 	{
-		public Gh4099()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Gh4099(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Gh4099(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
 		: IDisposable{
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-			}
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+		}
 
-			public void Dispose()
-{
-				Device.PlatformServices = null;
-			}
+		public void Dispose()
+		{
+			Device.PlatformServices = null;
+		}
 
-			[Theory]
-			[InlineData(true)]
-			public void BetterExceptionReport(bool useCompiledXaml)
+		[Theory]
+		[InlineData(true)]
+		public void BetterExceptionReport(bool useCompiledXaml)
+		{
+			if (useCompiledXaml)
 			{
-				if (useCompiledXaml)
+				try
 				{
-					try
-					{
-						MockCompiler.Compile(typeof(Gh4099));
-					}
-					catch (BuildException xpe)
-					{
-						Assert.Equal(5, xpe.XmlInfo.LineNumber);
-						return;
-					}
-					Assert.Fail();
+					MockCompiler.Compile(typeof(Gh4099));
 				}
+				catch (BuildException xpe)
+				{
+					Assert.Equal(5, xpe.XmlInfo.LineNumber);
+					return;
+				}
+				Assert.Fail();
 			}
 		}
 	}

@@ -1,31 +1,30 @@
 ﻿using System.Linq;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class TabbedPageTests : MultiPageTests<Page>
 {
-	public class TabbedPageTests : MultiPageTests<Page>
+	protected override MultiPage<Page> CreateMultiPage()
 	{
-		protected override MultiPage<Page> CreateMultiPage()
-		{
-			return new TabbedPage();
-		}
+		return new TabbedPage();
+	}
 
-		protected override Page CreateContainedPage()
-		{
-			return new ContentPage { Content = new View() };
-		}
+	protected override Page CreateContainedPage()
+	{
+		return new ContentPage { Content = new View() };
+	}
 
-		protected override int GetIndex(Page page)
-		{
-			return TabbedPage.GetIndex(page);
-		}
+	protected override int GetIndex(Page page)
+	{
+		return TabbedPage.GetIndex(page);
+	}
 
-		[Fact]
-		public void TestConstructor()
-		{
-			TabbedPage page = new TabbedPage();
+	[Fact]
+	public void TestConstructor()
+	{
+		TabbedPage page = new TabbedPage();
 
-			Assert.Empty(page.Children);
-		}
+		Assert.Empty(page.Children);
 	}
 }

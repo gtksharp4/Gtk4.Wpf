@@ -1,63 +1,62 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace Xamarin.Forms.Platform.GTK.Helpers
+namespace Xamarin.Forms.Platform.GTK.Helpers;
+
+public enum GTKPlatform
 {
-	public enum GTKPlatform
+	Linux,
+	MacOS,
+	Windows
+}
+
+public class PlatformHelper
+{
+	public static GTKPlatform GetGTKPlatform()
 	{
-		Linux,
-		MacOS,
-		Windows
+		OperatingSystem os = Environment.OSVersion;
+		PlatformID pid = os.Platform;
+
+		switch (pid)
+		{
+			case PlatformID.Win32NT:
+			case PlatformID.Win32S:
+			case PlatformID.Win32Windows:
+			case PlatformID.WinCE:
+				return GTKPlatform.Windows;
+			case PlatformID.Unix:
+				if (GetCommandExecutionOutput("uname", string.Empty) == "Darwin\n")
+				{
+					return GTKPlatform.MacOS;
+				}
+				else
+				{
+					return GTKPlatform.Linux;
+				}
+			case PlatformID.MacOSX:
+				return GTKPlatform.MacOS;
+			default:
+				return GTKPlatform.Windows;
+
+		}
 	}
 
-	public class PlatformHelper
+	internal static string GetCommandExecutionOutput(string command, string arguments)
 	{
-		public static GTKPlatform GetGTKPlatform()
+		var process = new Process();
+		process.StartInfo.UseShellExecute = false;
+		process.StartInfo.RedirectStandardOutput = true;
+		process.StartInfo.RedirectStandardError = true;
+		process.StartInfo.FileName = command;
+		process.StartInfo.Arguments = arguments;
+		process.Start();
+		string output = process.StandardOutput.ReadToEnd();
+
+		if (string.IsNullOrEmpty(output))
 		{
-			OperatingSystem os = Environment.OSVersion;
-			PlatformID pid = os.Platform;
-
-			switch (pid)
-			{
-				case PlatformID.Win32NT:
-				case PlatformID.Win32S:
-				case PlatformID.Win32Windows:
-				case PlatformID.WinCE:
-					return GTKPlatform.Windows;
-				case PlatformID.Unix:
-					if (GetCommandExecutionOutput("uname", string.Empty) == "Darwin\n")
-					{
-						return GTKPlatform.MacOS;
-					}
-					else
-					{
-						return GTKPlatform.Linux;
-					}
-				case PlatformID.MacOSX:
-					return GTKPlatform.MacOS;
-				default:
-					return GTKPlatform.Windows;
-
-			}
+			output = process.StandardError.ReadToEnd();
 		}
 
-		internal static string GetCommandExecutionOutput(string command, string arguments)
-		{
-			var process = new Process();
-			process.StartInfo.UseShellExecute = false;
-			process.StartInfo.RedirectStandardOutput = true;
-			process.StartInfo.RedirectStandardError = true;
-			process.StartInfo.FileName = command;
-			process.StartInfo.Arguments = arguments;
-			process.Start();
-			string output = process.StandardOutput.ReadToEnd();
-
-			if (string.IsNullOrEmpty(output))
-			{
-				output = process.StandardError.ReadToEnd();
-			}
-
-			return output;
-		}
+		return output;
 	}
 }

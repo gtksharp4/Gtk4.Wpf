@@ -6,48 +6,47 @@ using Xamarin.Forms;
 using Xamarin.Forms.Build.Tasks;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+[XamlCompilation(XamlCompilationOptions.Skip)]
+public partial class Gh3082 : ContentPage
 {
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class Gh3082 : ContentPage
+	public Gh3082()
 	{
-		public Gh3082()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Gh3082(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Gh3082(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		async Task OnClicked(object sender, EventArgs e)
-		{
-			await Task.Delay(1000);
-		}
+	async Task OnClicked(object sender, EventArgs e)
+	{
+		await Task.Delay(1000);
+	}
 
 
-		public class Tests
+	public class Tests
 		: IDisposable{
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-			}
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+		}
 
-			public void Dispose()
-{
-				Device.PlatformServices = null;
-			}
+		public void Dispose()
+		{
+			Device.PlatformServices = null;
+		}
 
-			[Theory]
-			[InlineData(false), InlineData(true)]
-			public void ThrowsOnWrongEventHandlerSignature(bool useCompiledXaml)
-			{
-				if (useCompiledXaml)
-					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh3082)));
-				else
-					Assert.Throws<XamlParseException>(() => new Gh3082(false));
-			}
+		[Theory]
+		[InlineData(false), InlineData(true)]
+		public void ThrowsOnWrongEventHandlerSignature(bool useCompiledXaml)
+		{
+			if (useCompiledXaml)
+				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh3082)));
+			else
+				Assert.Throws<XamlParseException>(() => new Gh3082(false));
 		}
 	}
 }

@@ -2,105 +2,103 @@
 using Xamarin.Forms.Internals;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class PanGestureRecognizerUnitTests : BaseTestFixture
 {
-
-	public class PanGestureRecognizerUnitTests : BaseTestFixture
+	[Fact]
+	public void PanRaisesStartedEventTest()
 	{
-		[Fact]
-		public void PanRaisesStartedEventTest()
+		var view = new View();
+		var pan = new PanGestureRecognizer();
+
+		GestureStatus target = GestureStatus.Canceled;
+		pan.PanUpdated += (object sender, PanUpdatedEventArgs e) =>
 		{
-			var view = new View();
-			var pan = new PanGestureRecognizer();
+			target = e.StatusType;
+		};
 
-			GestureStatus target = GestureStatus.Canceled;
-			pan.PanUpdated += (object sender, PanUpdatedEventArgs e) =>
-			{
-				target = e.StatusType;
-			};
+		((IPanGestureController)pan).SendPanStarted(view, 0);
+		Assert.Equal(GestureStatus.Started, target);
+	}
 
-			((IPanGestureController)pan).SendPanStarted(view, 0);
-			Assert.Equal(GestureStatus.Started, target);
-		}
+	[Fact]
+	public void PanRaisesRunningEventTest()
+	{
+		var view = new View();
+		var pan = new PanGestureRecognizer();
 
-		[Fact]
-		public void PanRaisesRunningEventTest()
+		GestureStatus target = GestureStatus.Canceled;
+		pan.PanUpdated += (object sender, PanUpdatedEventArgs e) =>
 		{
-			var view = new View();
-			var pan = new PanGestureRecognizer();
+			target = e.StatusType;
+		};
 
-			GestureStatus target = GestureStatus.Canceled;
-			pan.PanUpdated += (object sender, PanUpdatedEventArgs e) =>
-			{
-				target = e.StatusType;
-			};
+		((IPanGestureController)pan).SendPan(view, gestureId: 0, totalX: 5, totalY: 10);
+		Assert.Equal(GestureStatus.Running, target);
+	}
 
-			((IPanGestureController)pan).SendPan(view, gestureId: 0, totalX: 5, totalY: 10);
-			Assert.Equal(GestureStatus.Running, target);
-		}
+	[Fact]
+	public void PanRunningEventContainsTotalXTest()
+	{
+		var view = new View();
+		var pan = new PanGestureRecognizer();
 
-		[Fact]
-		public void PanRunningEventContainsTotalXTest()
+		double target = 0;
+		pan.PanUpdated += (object sender, PanUpdatedEventArgs e) =>
 		{
-			var view = new View();
-			var pan = new PanGestureRecognizer();
+			target = e.TotalX;
+		};
 
-			double target = 0;
-			pan.PanUpdated += (object sender, PanUpdatedEventArgs e) =>
-			{
-				target = e.TotalX;
-			};
+		((IPanGestureController)pan).SendPan(view, gestureId: 0, totalX: 5, totalY: 10);
+		Assert.Equal(5, target);
+	}
 
-			((IPanGestureController)pan).SendPan(view, gestureId: 0, totalX: 5, totalY: 10);
-			Assert.Equal(5, target);
-		}
+	[Fact]
+	public void PanRunningEventContainsTotalYTest()
+	{
+		var view = new View();
+		var pan = new PanGestureRecognizer();
 
-		[Fact]
-		public void PanRunningEventContainsTotalYTest()
+		double target = 0;
+		pan.PanUpdated += (object sender, PanUpdatedEventArgs e) =>
 		{
-			var view = new View();
-			var pan = new PanGestureRecognizer();
+			target = e.TotalY;
+		};
 
-			double target = 0;
-			pan.PanUpdated += (object sender, PanUpdatedEventArgs e) =>
-			{
-				target = e.TotalY;
-			};
+		((IPanGestureController)pan).SendPan(view, gestureId: 0, totalX: 5, totalY: 10);
+		Assert.Equal(10, target);
+	}
 
-			((IPanGestureController)pan).SendPan(view, gestureId: 0, totalX: 5, totalY: 10);
-			Assert.Equal(10, target);
-		}
+	[Fact]
+	public void PanRaisesCompletedEventTest()
+	{
+		var view = new View();
+		var pan = new PanGestureRecognizer();
 
-		[Fact]
-		public void PanRaisesCompletedEventTest()
+		GestureStatus target = GestureStatus.Canceled;
+		pan.PanUpdated += (object sender, PanUpdatedEventArgs e) =>
 		{
-			var view = new View();
-			var pan = new PanGestureRecognizer();
+			target = e.StatusType;
+		};
 
-			GestureStatus target = GestureStatus.Canceled;
-			pan.PanUpdated += (object sender, PanUpdatedEventArgs e) =>
-			{
-				target = e.StatusType;
-			};
+		((IPanGestureController)pan).SendPanCompleted(view, 0);
+		Assert.Equal(GestureStatus.Completed, target);
+	}
 
-			((IPanGestureController)pan).SendPanCompleted(view, 0);
-			Assert.Equal(GestureStatus.Completed, target);
-		}
+	[Fact]
+	public void PanRaisesCanceledEventTest()
+	{
+		var view = new View();
+		var pan = new PanGestureRecognizer();
 
-		[Fact]
-		public void PanRaisesCanceledEventTest()
+		GestureStatus target = GestureStatus.Started;
+		pan.PanUpdated += (object sender, PanUpdatedEventArgs e) =>
 		{
-			var view = new View();
-			var pan = new PanGestureRecognizer();
+			target = e.StatusType;
+		};
 
-			GestureStatus target = GestureStatus.Started;
-			pan.PanUpdated += (object sender, PanUpdatedEventArgs e) =>
-			{
-				target = e.StatusType;
-			};
-
-			((IPanGestureController)pan).SendPanCanceled(view, 0);
-			Assert.Equal(GestureStatus.Canceled, target);
-		}
+		((IPanGestureController)pan).SendPanCanceled(view, 0);
+		Assert.Equal(GestureStatus.Canceled, target);
 	}
 }

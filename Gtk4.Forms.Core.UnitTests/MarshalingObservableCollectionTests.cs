@@ -9,332 +9,331 @@ using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class MarshalingObservableCollectionTests : IDisposable
 {
-	public class MarshalingObservableCollectionTests : IDisposable
+	MarshalingTestPlatformServices _services;
+
+	public MarshalingObservableCollectionTests()
 	{
-		MarshalingTestPlatformServices _services;
+		_services = new MarshalingTestPlatformServices();
+		Device.PlatformServices = _services;
+		_services.Start();
+	}
 
-		public MarshalingObservableCollectionTests()
+	public void Dispose()
+	{
+		_services.Stop();
+		_services = null;
+	}
+
+	[Fact]
+	[Trait("Description", "Added items don't show up until they've been processed on the UI thread")]
+	public async Task AddOffUIThread()
+	{
+		int insertCount = 0;
+		var countFromThreadPool = -1;
+
+		var source = new ObservableCollection<int>();
+		var moc = new MarshalingObservableCollection(source);
+
+		moc.CollectionChanged += (sender, args) =>
 		{
-			_services = new MarshalingTestPlatformServices();
-			Device.PlatformServices = _services;
-			_services.Start();
-		}
-
-		public void Dispose()
-		{
-			_services.Stop();
-			_services = null;
-		}
-
-		[Fact]
-		[Trait("Description", "Added items don't show up until they've been processed on the UI thread")]
-		public async Task AddOffUIThread()
-		{
-			int insertCount = 0;
-			var countFromThreadPool = -1;
-
-			var source = new ObservableCollection<int>();
-			var moc = new MarshalingObservableCollection(source);
-
-			moc.CollectionChanged += (sender, args) =>
+			if (args.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
 			{
-				if (args.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
+				insertCount += 1;
+			}
+		};
+
+		// Add an item from a threadpool thread
+		await Task.Run(() =>
+		{
+			source.Add(1);
+			countFromThreadPool = moc.Count;
+		});
+
+		// Check the result on the main thread
+		var onMainThreadCount = await Device.InvokeOnMainThreadAsync<int>(() =>
+		{
+			return moc.Count;
+		});
+
+		Assert.Equal(0, countFromThreadPool);
+		Assert.Equal(1, onMainThreadCount);
+		Assert.Equal(1, insertCount);
+	}
+
+	[Fact]
+	[Trait("Description", "Intial item count should match wrapped collection.")]
+	public async Task InitialItemCountsMatch()
+	{
+		var source = new ObservableCollection<int> { 1, 2 };
+
+		var moc = new MarshalingObservableCollection(source);
+
+		Assert.Equal(moc.Count, source.Count);
+	}
+
+	[Fact]
+	[Trait("Description", "Clears don't show up until they've been processed on the UI thread")]
+	public async Task ClearOnUIThread()
+	{
+		var countFromThreadPool = -1;
+
+		var source = new ObservableCollection<int>
+		{
+			1,
+			2
+		};
+
+		var moc = new MarshalingObservableCollection(source);
+
+		// Call Clear from a threadpool thread
+		await Task.Run(() =>
+		{
+			source.Clear();
+			countFromThreadPool = moc.Count;
+		});
+
+		// Check the result on the main thread
+		var onMainThreadCount = await Device.InvokeOnMainThreadAsync<int>(() => moc.Count);
+
+		Assert.Equal(2, countFromThreadPool);
+		Assert.Equal(0, onMainThreadCount);
+	}
+
+	[Fact]
+	[Trait("Description", "A Reset should reflect the state at the time of the Reset")]
+	public async Task ClearAndAddOffUIThread()
+	{
+		var countFromThreadPool = -1;
+
+		var source = new ObservableCollection<int>
+		{
+			1,
+			2
+		};
+
+		var moc = new MarshalingObservableCollection(source);
+
+		// Call Clear from a threadpool thread
+		await Task.Run(() =>
+		{
+			source.Clear();
+			source.Add(4);
+			countFromThreadPool = moc.Count;
+		});
+
+		// Check the result on the main thread
+		var onMainThreadCount = await Device.InvokeOnMainThreadAsync<int>(() => moc.Count);
+
+		Assert.Equal(2, countFromThreadPool);
+		Assert.Equal(1, onMainThreadCount);
+	}
+
+	[Fact]
+	[Trait("Description", "Removed items are still there until they're removed on the UI thread")]
+	public async Task RemoveOffUIThread()
+	{
+		var countFromThreadPool = -1;
+
+		var source = new ObservableCollection<int> { 1, 2 };
+
+		var moc = new MarshalingObservableCollection(source);
+
+		// Call Clear from a threadpool thread
+		await Task.Run(() =>
+		{
+			source.Remove(1);
+			countFromThreadPool = moc.Count;
+		});
+
+		// Check the result on the main thread
+		var onMainThreadCount = await Device.InvokeOnMainThreadAsync<int>(() => moc.Count);
+
+		Assert.Equal(2, countFromThreadPool);
+		Assert.Equal(1, onMainThreadCount);
+	}
+
+	[Fact]
+	[Trait("Description", "Until the UI thread processes a change, the indexer should remain consistent")]
+	public async Task IndexerConsistent()
+	{
+		int itemFromThreadPool = -1;
+
+		var source = new ObservableCollection<int> { 1, 2 };
+
+		var moc = new MarshalingObservableCollection(source);
+
+		// Call Remove from a threadpool thread
+		await Task.Run(() =>
+		{
+			source.Remove(1);
+			itemFromThreadPool = (int)moc[1];
+		});
+
+		Assert.Equal(2, itemFromThreadPool);
+	}
+
+	[Fact]
+	[Trait("Description", "Don't show replacements until the UI thread has processed them")]
+	public async Task ReplaceOffUIThread()
+	{
+		int itemFromThreadPool = -1;
+
+		var source = new ObservableCollection<int> { 1, 2 };
+
+		var moc = new MarshalingObservableCollection(source);
+
+		// Replace a value from a threadpool thread
+		await Task.Run(() =>
+		{
+			source[0] = 42;
+			itemFromThreadPool = (int)moc[0];
+		});
+
+		// Check the result on the main thread
+		var onMainThreadValue = await Device.InvokeOnMainThreadAsync(() => moc[0]);
+
+		Assert.Equal(1, itemFromThreadPool);
+		Assert.Equal(42, onMainThreadValue);
+	}
+
+	[Fact]
+	[Trait("Description", "Don't show moves until the UI thread has processed them")]
+	public async Task MoveOffUIThread()
+	{
+		int itemFromThreadPool = -1;
+
+		var source = new ObservableCollection<int> { 1, 2 };
+
+		var moc = new MarshalingObservableCollection(source);
+
+		// Replace a value from a threadpool thread
+		await Task.Run(() =>
+		{
+			source.Move(1, 0);
+			itemFromThreadPool = (int)moc[0];
+		});
+
+		// Check the result on the main thread
+		var onMainThreadValue = await Device.InvokeOnMainThreadAsync(() => moc[0]);
+
+		Assert.Equal(1, itemFromThreadPool);
+		Assert.Equal(2, onMainThreadValue);
+	}
+
+	// This class simulates running a single UI thread with a queue and non-UI threads;
+	// this allows us to test IsInvokeRequired/BeginInvoke without having to be on an actual device
+	class MarshalingTestPlatformServices : IPlatformServices
+	{
+		int _threadId;
+		bool _running;
+		Queue<Action> _todo = new Queue<Action>();
+
+		public void Stop()
+		{
+			_running = false;
+		}
+
+		public void Start()
+		{
+			_running = true;
+			Task.Run(() =>
+			{
+
+				if (_threadId == 0)
 				{
-					insertCount += 1;
+					_threadId = Thread.CurrentThread.ManagedThreadId;
 				}
-			};
 
-			// Add an item from a threadpool thread
-			await Task.Run(() =>
-			{
-				source.Add(1);
-				countFromThreadPool = moc.Count;
-			});
-
-			// Check the result on the main thread
-			var onMainThreadCount = await Device.InvokeOnMainThreadAsync<int>(() =>
-			{
-				return moc.Count;
-			});
-
-			Assert.Equal(0, countFromThreadPool);
-			Assert.Equal(1, onMainThreadCount);
-			Assert.Equal(1, insertCount);
-		}
-
-		[Fact]
-		[Trait("Description", "Intial item count should match wrapped collection.")]
-		public async Task InitialItemCountsMatch()
-		{
-			var source = new ObservableCollection<int> { 1, 2 };
-
-			var moc = new MarshalingObservableCollection(source);
-
-			Assert.Equal(moc.Count, source.Count);
-		}
-
-		[Fact]
-		[Trait("Description", "Clears don't show up until they've been processed on the UI thread")]
-		public async Task ClearOnUIThread()
-		{
-			var countFromThreadPool = -1;
-
-			var source = new ObservableCollection<int>
-			{
-				1,
-				2
-			};
-
-			var moc = new MarshalingObservableCollection(source);
-
-			// Call Clear from a threadpool thread
-			await Task.Run(() =>
-			{
-				source.Clear();
-				countFromThreadPool = moc.Count;
-			});
-
-			// Check the result on the main thread
-			var onMainThreadCount = await Device.InvokeOnMainThreadAsync<int>(() => moc.Count);
-
-			Assert.Equal(2, countFromThreadPool);
-			Assert.Equal(0, onMainThreadCount);
-		}
-
-		[Fact]
-		[Trait("Description", "A Reset should reflect the state at the time of the Reset")]
-		public async Task ClearAndAddOffUIThread()
-		{
-			var countFromThreadPool = -1;
-
-			var source = new ObservableCollection<int>
-			{
-				1,
-				2
-			};
-
-			var moc = new MarshalingObservableCollection(source);
-
-			// Call Clear from a threadpool thread
-			await Task.Run(() =>
-			{
-				source.Clear();
-				source.Add(4);
-				countFromThreadPool = moc.Count;
-			});
-
-			// Check the result on the main thread
-			var onMainThreadCount = await Device.InvokeOnMainThreadAsync<int>(() => moc.Count);
-
-			Assert.Equal(2, countFromThreadPool);
-			Assert.Equal(1, onMainThreadCount);
-		}
-
-		[Fact]
-		[Trait("Description", "Removed items are still there until they're removed on the UI thread")]
-		public async Task RemoveOffUIThread()
-		{
-			var countFromThreadPool = -1;
-
-			var source = new ObservableCollection<int> { 1, 2 };
-
-			var moc = new MarshalingObservableCollection(source);
-
-			// Call Clear from a threadpool thread
-			await Task.Run(() =>
-			{
-				source.Remove(1);
-				countFromThreadPool = moc.Count;
-			});
-
-			// Check the result on the main thread
-			var onMainThreadCount = await Device.InvokeOnMainThreadAsync<int>(() => moc.Count);
-
-			Assert.Equal(2, countFromThreadPool);
-			Assert.Equal(1, onMainThreadCount);
-		}
-
-		[Fact]
-		[Trait("Description", "Until the UI thread processes a change, the indexer should remain consistent")]
-		public async Task IndexerConsistent()
-		{
-			int itemFromThreadPool = -1;
-
-			var source = new ObservableCollection<int> { 1, 2 };
-
-			var moc = new MarshalingObservableCollection(source);
-
-			// Call Remove from a threadpool thread
-			await Task.Run(() =>
-			{
-				source.Remove(1);
-				itemFromThreadPool = (int)moc[1];
-			});
-
-			Assert.Equal(2, itemFromThreadPool);
-		}
-
-		[Fact]
-		[Trait("Description", "Don't show replacements until the UI thread has processed them")]
-		public async Task ReplaceOffUIThread()
-		{
-			int itemFromThreadPool = -1;
-
-			var source = new ObservableCollection<int> { 1, 2 };
-
-			var moc = new MarshalingObservableCollection(source);
-
-			// Replace a value from a threadpool thread
-			await Task.Run(() =>
-			{
-				source[0] = 42;
-				itemFromThreadPool = (int)moc[0];
-			});
-
-			// Check the result on the main thread
-			var onMainThreadValue = await Device.InvokeOnMainThreadAsync(() => moc[0]);
-
-			Assert.Equal(1, itemFromThreadPool);
-			Assert.Equal(42, onMainThreadValue);
-		}
-
-		[Fact]
-		[Trait("Description", "Don't show moves until the UI thread has processed them")]
-		public async Task MoveOffUIThread()
-		{
-			int itemFromThreadPool = -1;
-
-			var source = new ObservableCollection<int> { 1, 2 };
-
-			var moc = new MarshalingObservableCollection(source);
-
-			// Replace a value from a threadpool thread
-			await Task.Run(() =>
-			{
-				source.Move(1, 0);
-				itemFromThreadPool = (int)moc[0];
-			});
-
-			// Check the result on the main thread
-			var onMainThreadValue = await Device.InvokeOnMainThreadAsync(() => moc[0]);
-
-			Assert.Equal(1, itemFromThreadPool);
-			Assert.Equal(2, onMainThreadValue);
-		}
-
-		// This class simulates running a single UI thread with a queue and non-UI threads;
-		// this allows us to test IsInvokeRequired/BeginInvoke without having to be on an actual device
-		class MarshalingTestPlatformServices : IPlatformServices
-		{
-			int _threadId;
-			bool _running;
-			Queue<Action> _todo = new Queue<Action>();
-
-			public void Stop()
-			{
-				_running = false;
-			}
-
-			public void Start()
-			{
-				_running = true;
-				Task.Run(() =>
+				while (_running)
 				{
-
-					if (_threadId == 0)
+					try
 					{
-						_threadId = Thread.CurrentThread.ManagedThreadId;
-					}
-
-					while (_running)
-					{
-						try
+						Thread.Sleep(100);
+						while (_todo.Count > 0)
 						{
-							Thread.Sleep(100);
-							while (_todo.Count > 0)
-							{
-								_todo.Dequeue().Invoke();
-							}
-						}
-						catch (Exception ex)
-						{
-							Stop();
+							_todo.Dequeue().Invoke();
 						}
 					}
-				});
-			}
+					catch (Exception ex)
+					{
+						Stop();
+					}
+				}
+			});
+		}
 
-			public bool IsInvokeRequired => Thread.CurrentThread.ManagedThreadId != _threadId;
+		public bool IsInvokeRequired => Thread.CurrentThread.ManagedThreadId != _threadId;
 
-			public void BeginInvokeOnMainThread(Action action)
-			{
-				_todo.Enqueue(action);
-			}
+		public void BeginInvokeOnMainThread(Action action)
+		{
+			_todo.Enqueue(action);
+		}
 
-			public OSAppTheme RequestedTheme { get; }
-			public string RuntimePlatform { get; }
+		public OSAppTheme RequestedTheme { get; }
+		public string RuntimePlatform { get; }
 
-			public Ticker CreateTicker()
-			{
-				throw new NotImplementedException();
-			}
+		public Ticker CreateTicker()
+		{
+			throw new NotImplementedException();
+		}
 
-			public Assembly[] GetAssemblies()
-			{
-				throw new NotImplementedException();
-			}
+		public Assembly[] GetAssemblies()
+		{
+			throw new NotImplementedException();
+		}
 
-			public Color GetNamedColor(string name)
-			{
-				throw new NotImplementedException();
-			}
+		public Color GetNamedColor(string name)
+		{
+			throw new NotImplementedException();
+		}
 
-			public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
-			{
-				throw new NotImplementedException();
-			}
+		public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
+		{
+			throw new NotImplementedException();
+		}
 
-			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
-			{
-				throw new NotImplementedException();
-			}
+		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
+		{
+			throw new NotImplementedException();
+		}
 
-			public Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
-			{
-				throw new NotImplementedException();
-			}
+		public Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
+		{
+			throw new NotImplementedException();
+		}
 
-			public IIsolatedStorageFile GetUserStoreForApplication()
-			{
-				throw new NotImplementedException();
-			}
+		public IIsolatedStorageFile GetUserStoreForApplication()
+		{
+			throw new NotImplementedException();
+		}
 
-			public void OpenUriAction(Uri uri)
-			{
-				throw new NotImplementedException();
-			}
+		public void OpenUriAction(Uri uri)
+		{
+			throw new NotImplementedException();
+		}
 
-			public void QuitApplication()
-			{
-				throw new NotImplementedException();
-			}
+		public void QuitApplication()
+		{
+			throw new NotImplementedException();
+		}
 
-			public void StartTimer(TimeSpan interval, Func<bool> callback)
-			{
-				throw new NotImplementedException();
-			}
+		public void StartTimer(TimeSpan interval, Func<bool> callback)
+		{
+			throw new NotImplementedException();
+		}
 
-			public string GetHash(string input)
-			{
-				throw new NotImplementedException();
-			}
+		public string GetHash(string input)
+		{
+			throw new NotImplementedException();
+		}
 
-			public string GetMD5Hash(string input)
-			{
-				throw new NotImplementedException();
-			}
+		public string GetMD5Hash(string input)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

@@ -1,112 +1,111 @@
-namespace System.Windows.Data
+namespace System.Windows.Data;
+
+/// <summary>Specifies the source of a binding relative to the target element.</summary>
+public enum RelativeSourceMode
 {
-	/// <summary>Specifies the source of a binding relative to the target element.</summary>
-	public enum RelativeSourceMode
-	{
-		/// <summary>The binding source is the element itself.</summary>
-		Self,
-		/// <summary>Walk the logical tree for the nearest ancestor of a given type.</summary>
-		FindAncestor,
-		/// <summary>The element that applied the template containing the bound element.</summary>
-		TemplatedParent,
-		/// <summary>The item before the current item in a data-bound collection.</summary>
-		PreviousData,
-	}
+	/// <summary>The binding source is the element itself.</summary>
+	Self,
+	/// <summary>Walk the logical tree for the nearest ancestor of a given type.</summary>
+	FindAncestor,
+	/// <summary>The element that applied the template containing the bound element.</summary>
+	TemplatedParent,
+	/// <summary>The item before the current item in a data-bound collection.</summary>
+	PreviousData,
+}
+
+/// <summary>
+/// Describes the source of a <see cref="Binding"/> relative to the binding target.
+/// Supports <see cref="RelativeSourceMode.Self"/>, <see cref="RelativeSourceMode.FindAncestor"/>
+/// (with <see cref="AncestorType"/> and <see cref="AncestorLevel"/>),
+/// <see cref="RelativeSourceMode.TemplatedParent"/>, and
+/// <see cref="RelativeSourceMode.PreviousData"/>.
+/// </summary>
+public sealed class RelativeSource
+{
+	/// <summary>Mode used by this instance.</summary>
+	public RelativeSourceMode Mode { get; }
 
 	/// <summary>
-	/// Describes the source of a <see cref="Binding"/> relative to the binding target.
-	/// Supports <see cref="RelativeSourceMode.Self"/>, <see cref="RelativeSourceMode.FindAncestor"/>
-	/// (with <see cref="AncestorType"/> and <see cref="AncestorLevel"/>),
-	/// <see cref="RelativeSourceMode.TemplatedParent"/>, and
-	/// <see cref="RelativeSourceMode.PreviousData"/>.
+	/// For <see cref="RelativeSourceMode.FindAncestor"/>: the type to search for.
 	/// </summary>
-	public sealed class RelativeSource
+	public Type? AncestorType { get; set; }
+
+	/// <summary>
+	/// For <see cref="RelativeSourceMode.FindAncestor"/>: 1-based level among matching
+	/// ancestors (1 = nearest, default).
+	/// </summary>
+	public int AncestorLevel { get; set; } = 1;
+
+	/// <summary>Creates a <see cref="RelativeSource"/> with the given mode.</summary>
+	public RelativeSource(RelativeSourceMode mode) { Mode = mode; }
+
+	/// <summary>
+	/// Creates a <see cref="RelativeSourceMode.FindAncestor"/> source for the given type.
+	/// </summary>
+	public RelativeSource(RelativeSourceMode mode, Type ancestorType, int ancestorLevel)
 	{
-		/// <summary>Mode used by this instance.</summary>
-		public RelativeSourceMode Mode { get; }
+		Mode = mode;
+		AncestorType = ancestorType;
+		AncestorLevel = ancestorLevel;
+	}
 
-		/// <summary>
-		/// For <see cref="RelativeSourceMode.FindAncestor"/>: the type to search for.
-		/// </summary>
-		public Type? AncestorType { get; set; }
+	/// <summary>Singleton for <see cref="RelativeSourceMode.Self"/>.</summary>
+	public static readonly RelativeSource Self =
+		new RelativeSource(RelativeSourceMode.Self);
 
-		/// <summary>
-		/// For <see cref="RelativeSourceMode.FindAncestor"/>: 1-based level among matching
-		/// ancestors (1 = nearest, default).
-		/// </summary>
-		public int AncestorLevel { get; set; } = 1;
+	/// <summary>Singleton for <see cref="RelativeSourceMode.TemplatedParent"/>.</summary>
+	public static readonly RelativeSource TemplatedParent =
+		new RelativeSource(RelativeSourceMode.TemplatedParent);
 
-		/// <summary>Creates a <see cref="RelativeSource"/> with the given mode.</summary>
-		public RelativeSource(RelativeSourceMode mode) { Mode = mode; }
+	/// <summary>Singleton for <see cref="RelativeSourceMode.PreviousData"/>.</summary>
+	public static readonly RelativeSource PreviousData =
+		new RelativeSource(RelativeSourceMode.PreviousData);
 
-		/// <summary>
-		/// Creates a <see cref="RelativeSourceMode.FindAncestor"/> source for the given type.
-		/// </summary>
-		public RelativeSource(RelativeSourceMode mode, Type ancestorType, int ancestorLevel)
+	/// <summary>
+	/// Resolves the source object for a binding given the binding target element.
+	/// Returns <c>null</c> when the source cannot be resolved.
+	/// </summary>
+	internal object? Resolve(FrameworkElement target)
+	{
+		switch (Mode)
 		{
-			Mode = mode;
-			AncestorType = ancestorType;
-			AncestorLevel = ancestorLevel;
+			case RelativeSourceMode.Self:
+				return target;
+
+			case RelativeSourceMode.FindAncestor:
+				return FindAncestor(target);
+
+			case RelativeSourceMode.TemplatedParent:
+				return target.TemplatedParent;
+
+			case RelativeSourceMode.PreviousData:
+				// PreviousData requires collection context; not implemented.
+				return null;
+
+			default:
+				return null;
 		}
+	}
 
-		/// <summary>Singleton for <see cref="RelativeSourceMode.Self"/>.</summary>
-		public static readonly RelativeSource Self =
-			new RelativeSource(RelativeSourceMode.Self);
+	object? FindAncestor(FrameworkElement target)
+	{
+		if (AncestorType == null) return null;
 
-		/// <summary>Singleton for <see cref="RelativeSourceMode.TemplatedParent"/>.</summary>
-		public static readonly RelativeSource TemplatedParent =
-			new RelativeSource(RelativeSourceMode.TemplatedParent);
+		int level = AncestorLevel < 1 ? 1 : AncestorLevel;
+		int found = 0;
 
-		/// <summary>Singleton for <see cref="RelativeSourceMode.PreviousData"/>.</summary>
-		public static readonly RelativeSource PreviousData =
-			new RelativeSource(RelativeSourceMode.PreviousData);
+		DependencyObject? current =
+			(target as UIElement)?.LogicalParent ?? target.InheritanceParent;
 
-		/// <summary>
-		/// Resolves the source object for a binding given the binding target element.
-		/// Returns <c>null</c> when the source cannot be resolved.
-		/// </summary>
-		internal object? Resolve(FrameworkElement target)
+		while (current != null)
 		{
-			switch (Mode)
+			if (AncestorType.IsInstanceOfType(current))
 			{
-				case RelativeSourceMode.Self:
-					return target;
-
-				case RelativeSourceMode.FindAncestor:
-					return FindAncestor(target);
-
-				case RelativeSourceMode.TemplatedParent:
-					return target.TemplatedParent;
-
-				case RelativeSourceMode.PreviousData:
-					// PreviousData requires collection context; not implemented.
-					return null;
-
-				default:
-					return null;
+				found++;
+				if (found >= level) return current;
 			}
+			current = (current as UIElement)?.LogicalParent ?? current.InheritanceParent;
 		}
-
-		object? FindAncestor(FrameworkElement target)
-		{
-			if (AncestorType == null) return null;
-
-			int level = AncestorLevel < 1 ? 1 : AncestorLevel;
-			int found = 0;
-
-			DependencyObject? current =
-				(target as UIElement)?.LogicalParent ?? target.InheritanceParent;
-
-			while (current != null)
-			{
-				if (AncestorType.IsInstanceOfType(current))
-				{
-					found++;
-					if (found >= level) return current;
-				}
-				current = (current as UIElement)?.LogicalParent ?? current.InheritanceParent;
-			}
-			return null;
-		}
+		return null;
 	}
 }

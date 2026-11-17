@@ -6,31 +6,30 @@ using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class PlatformSpecific : FlyoutPage
 {
-	public partial class PlatformSpecific : FlyoutPage
+	public PlatformSpecific()
 	{
-		public PlatformSpecific()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public PlatformSpecific(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public PlatformSpecific(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
+	{
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void PlatformSpecificPropertyIsSet(bool useCompiledXaml)
 		{
-			[Theory]
-			[InlineData(true)]
-			[InlineData(false)]
-			public void PlatformSpecificPropertyIsSet(bool useCompiledXaml)
-			{
-				var layout = new PlatformSpecific(useCompiledXaml);
-				Assert.Equal(layout.On<WindowsOS>().GetCollapseStyle(), CollapseStyle.Partial);
-				Assert.Equal(layout.On<WindowsOS>().CollapsedPaneWidth(), 96d);
-			}
+			var layout = new PlatformSpecific(useCompiledXaml);
+			Assert.Equal(layout.On<WindowsOS>().GetCollapseStyle(), CollapseStyle.Partial);
+			Assert.Equal(layout.On<WindowsOS>().CollapsedPaneWidth(), 96d);
 		}
 	}
 }

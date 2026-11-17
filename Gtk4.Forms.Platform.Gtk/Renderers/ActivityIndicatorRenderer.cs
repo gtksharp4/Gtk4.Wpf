@@ -1,55 +1,54 @@
 ﻿using System.ComponentModel;
 using Xamarin.Forms.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers
+namespace Xamarin.Forms.Platform.GTK.Renderers;
+
+public class ActivityIndicatorRenderer : ViewRenderer<ActivityIndicator, Controls.ActivityIndicator>
 {
-	public class ActivityIndicatorRenderer : ViewRenderer<ActivityIndicator, Controls.ActivityIndicator>
+	protected override void OnElementChanged(ElementChangedEventArgs<ActivityIndicator> e)
 	{
-		protected override void OnElementChanged(ElementChangedEventArgs<ActivityIndicator> e)
+		if (e.NewElement != null)
 		{
-			if (e.NewElement != null)
+			if (Control == null)
 			{
-				if (Control == null)
-				{
-					Controls.ActivityIndicator activityIndicator = new Controls.ActivityIndicator();
+				Controls.ActivityIndicator activityIndicator = new Controls.ActivityIndicator();
 
-					SetNativeControl(activityIndicator);
-				}
-
-				UpdateColor();
-				UpdateIsRunning();
+				SetNativeControl(activityIndicator);
 			}
 
-			base.OnElementChanged(e);
+			UpdateColor();
+			UpdateIsRunning();
 		}
 
-		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			base.OnElementPropertyChanged(sender, e);
+		base.OnElementChanged(e);
+	}
 
-			if (e.PropertyName == ActivityIndicator.ColorProperty.PropertyName)
-				UpdateColor();
-			else if (e.PropertyName == ActivityIndicator.IsRunningProperty.PropertyName)
-				UpdateIsRunning();
-		}
+	protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+	{
+		base.OnElementPropertyChanged(sender, e);
 
-		private void UpdateColor()
-		{
-			if (Element == null || Control == null)
-				return;
+		if (e.PropertyName == ActivityIndicator.ColorProperty.PropertyName)
+			UpdateColor();
+		else if (e.PropertyName == ActivityIndicator.IsRunningProperty.PropertyName)
+			UpdateIsRunning();
+	}
 
-			Control.UpdateColor(Element.Color);
-		}
+	private void UpdateColor()
+	{
+		if (Element == null || Control == null)
+			return;
 
-		private void UpdateIsRunning()
-		{
-			if (Element == null || Control == null)
-				return;
+		Control.UpdateColor(Element.Color);
+	}
 
-			if (Element.IsRunning)
-				Control.Start();
-			else
-				Control.Stop();
-		}
+	private void UpdateIsRunning()
+	{
+		if (Element == null || Control == null)
+			return;
+
+		if (Element.IsRunning)
+			Control.Start();
+		else
+			Control.Stop();
 	}
 }

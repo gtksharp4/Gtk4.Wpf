@@ -4,40 +4,39 @@ using Xunit;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class SharedResourceDictionary : ResourceDictionary
 {
-	public partial class SharedResourceDictionary : ResourceDictionary
+	public SharedResourceDictionary()
 	{
-		public SharedResourceDictionary()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public SharedResourceDictionary(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public SharedResourceDictionary(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
 		: IDisposable{
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-			}
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+		}
 
-			public void Dispose()
-{
-				Device.PlatformServices = null;
-			}
+		public void Dispose()
+		{
+			Device.PlatformServices = null;
+		}
 
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void ResourcesDirectoriesCanBeXamlRoots(bool useCompiledXaml)
-			{
-				var layout = new SharedResourceDictionary(useCompiledXaml);
-				Assert.Equal(5, layout.Count);
-			}
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void ResourcesDirectoriesCanBeXamlRoots(bool useCompiledXaml)
+		{
+			var layout = new SharedResourceDictionary(useCompiledXaml);
+			Assert.Equal(5, layout.Count);
 		}
 	}
 }

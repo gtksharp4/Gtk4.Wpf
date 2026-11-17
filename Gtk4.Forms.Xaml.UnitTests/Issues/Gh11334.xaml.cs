@@ -5,65 +5,64 @@ using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 using Xamarin.Forms.Xaml.Diagnostics;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class Gh11334 : ContentPage
 {
-	public partial class Gh11334 : ContentPage
+	public Gh11334()
 	{
-		public Gh11334()
-		{
-			InitializeComponent();
-		}
-		public Gh11334(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+		InitializeComponent();
+	}
+	public Gh11334(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		void Remove(object sender, EventArgs e) => stack.Children.Remove(label);
+	void Remove(object sender, EventArgs e) => stack.Children.Remove(label);
 
-		void Add(object sender, EventArgs e)
-		{
-			int index = stack.Children.IndexOf(label);
-			Label newLabel = new Label { Text = "New Inserted Label" };
-			stack.Children.Insert(index + 1, newLabel);
-		}
+	void Add(object sender, EventArgs e)
+	{
+		int index = stack.Children.IndexOf(label);
+		Label newLabel = new Label { Text = "New Inserted Label" };
+		stack.Children.Insert(index + 1, newLabel);
+	}
 
-		public class Tests
+	public class Tests
 		: IDisposable{
-			bool _debuggerinitialstate;
+		bool _debuggerinitialstate;
 
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-				_debuggerinitialstate = Xamarin.Forms.Xaml.Diagnostics.DebuggerHelper._mockDebuggerIsAttached;
-				DebuggerHelper._mockDebuggerIsAttached = true;
-			}
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+			_debuggerinitialstate = Xamarin.Forms.Xaml.Diagnostics.DebuggerHelper._mockDebuggerIsAttached;
+			DebuggerHelper._mockDebuggerIsAttached = true;
+		}
 
-			public void Dispose()
-{
-				DebuggerHelper._mockDebuggerIsAttached = _debuggerinitialstate;
-				Device.PlatformServices = null;
-				VisualDiagnostics.VisualTreeChanged -= OnVTChanged;
-			}
+		public void Dispose()
+		{
+			DebuggerHelper._mockDebuggerIsAttached = _debuggerinitialstate;
+			Device.PlatformServices = null;
+			VisualDiagnostics.VisualTreeChanged -= OnVTChanged;
+		}
 
-			bool _visualTreeChanged;
+		bool _visualTreeChanged;
 
-			void OnVTChanged(object sender, VisualTreeChangeEventArgs e)
-			{
-				Assert.Equal(VisualTreeChangeType.Remove, e.ChangeType);
-				Assert.Equal(0, e.ChildIndex);
-				_visualTreeChanged = true;
-			}
+		void OnVTChanged(object sender, VisualTreeChangeEventArgs e)
+		{
+			Assert.Equal(VisualTreeChangeType.Remove, e.ChangeType);
+			Assert.Equal(0, e.ChildIndex);
+			_visualTreeChanged = true;
+		}
 
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void ChildIndexOnRemove(bool useCompiledXaml)
-			{
-				var layout = new Gh11334(useCompiledXaml);
-				VisualDiagnostics.VisualTreeChanged += OnVTChanged;
-				layout.Remove(null, EventArgs.Empty);
-				Assert.True(_visualTreeChanged, "VisualTreeChanged was never raised");
-			}
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void ChildIndexOnRemove(bool useCompiledXaml)
+		{
+			var layout = new Gh11334(useCompiledXaml);
+			VisualDiagnostics.VisualTreeChanged += OnVTChanged;
+			layout.Remove(null, EventArgs.Empty);
+			Assert.True(_visualTreeChanged, "VisualTreeChanged was never raised");
 		}
 	}
 }

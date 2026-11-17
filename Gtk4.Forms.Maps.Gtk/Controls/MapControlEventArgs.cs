@@ -1,24 +1,23 @@
 using System;
 
-namespace Xamarin.Forms.Maps.GTK.Controls
+namespace Xamarin.Forms.Maps.GTK.Controls;
+
+public class MapPositionEventArgs : EventArgs
 {
-	public class MapPositionEventArgs : EventArgs
+	public MapPositionEventArgs(Position position)
 	{
-		public MapPositionEventArgs(Position position)
-		{
-			Position = position;
-		}
-
-		public Position Position { get; }
+		Position = position;
 	}
 
-	public class MapPinEventArgs : EventArgs
-	{
-		public MapPinEventArgs(Pin pin)
-		{
-			Pin = pin;
-		}
+	public Position Position { get; }
+}
 
-		public Pin Pin { get; }
+public class MapPinEventArgs : EventArgs
+{
+	public MapPinEventArgs(Pin pin)
+	{
+		Pin = pin;
 	}
+
+	public Pin Pin { get; }
 }

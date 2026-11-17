@@ -3,112 +3,111 @@ using System.ComponentModel;
 using Gtk;
 using Xamarin.Forms.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers
+namespace Xamarin.Forms.Platform.GTK.Renderers;
+
+public class StepperRenderer : ViewRenderer<Stepper, SpinButton>
 {
-	public class StepperRenderer : ViewRenderer<Stepper, SpinButton>
+	private double _minimum;
+	private double _maximum;
+
+	protected override bool PreventGestureBubbling { get; set; } = true;
+
+	protected override void Dispose(bool disposing)
 	{
-		private double _minimum;
-		private double _maximum;
+		if (Control != null)
+			Control.ValueChanged -= OnValueChanged;
 
-		protected override bool PreventGestureBubbling { get; set; } = true;
+		base.Dispose(disposing);
+	}
 
-		protected override void Dispose(bool disposing)
+	protected override void OnElementChanged(ElementChangedEventArgs<Stepper> e)
+	{
+		if (e.NewElement != null)
 		{
-			if (Control != null)
-				Control.ValueChanged -= OnValueChanged;
-
-			base.Dispose(disposing);
-		}
-
-		protected override void OnElementChanged(ElementChangedEventArgs<Stepper> e)
-		{
-			if (e.NewElement != null)
+			if (Control == null)
 			{
-				if (Control == null)
-				{
-					_minimum = 0;
-					_maximum = 100;
+				_minimum = 0;
+				_maximum = 100;
 
-					// Use Gtk.SpinButton. This Widget retrieve an integer or floating-point number from the user.
-					SetNativeControl(new SpinButton(_minimum, _maximum, 1));
-				}
-
-				// Detach change event until new element properties are initialized
-				Control.ValueChanged -= OnValueChanged;
-
-				UpdateMinimum();
-				UpdateMaximum();
-				UpdateValue();
-				UpdateIncrement();
-
-				Control.ValueChanged += OnValueChanged;
+				// Use Gtk.SpinButton. This Widget retrieve an integer or floating-point number from the user.
+				SetNativeControl(new SpinButton(_minimum, _maximum, 1));
 			}
 
-			base.OnElementChanged(e);
+			// Detach change event until new element properties are initialized
+			Control.ValueChanged -= OnValueChanged;
+
+			UpdateMinimum();
+			UpdateMaximum();
+			UpdateValue();
+			UpdateIncrement();
+
+			Control.ValueChanged += OnValueChanged;
 		}
 
-		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		base.OnElementChanged(e);
+	}
+
+	protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+	{
+		base.OnElementPropertyChanged(sender, e);
+
+		if (e.PropertyName == Stepper.MinimumProperty.PropertyName)
+			UpdateMinimum();
+		else if (e.PropertyName == Stepper.MaximumProperty.PropertyName)
+			UpdateMaximum();
+		else if (e.PropertyName == Stepper.ValueProperty.PropertyName)
+			UpdateValue();
+		else if (e.PropertyName == Stepper.IncrementProperty.PropertyName)
+			UpdateIncrement();
+		else if (e.PropertyName == Stepper.BackgroundColorProperty.PropertyName)
+			UpdateBackgroundColor();
+	}
+
+	protected override void UpdateBackgroundColor()
+	{
+		if (!Element.BackgroundColor.IsDefaultOrTransparent())
 		{
-			base.OnElementPropertyChanged(sender, e);
-
-			if (e.PropertyName == Stepper.MinimumProperty.PropertyName)
-				UpdateMinimum();
-			else if (e.PropertyName == Stepper.MaximumProperty.PropertyName)
-				UpdateMaximum();
-			else if (e.PropertyName == Stepper.ValueProperty.PropertyName)
-				UpdateValue();
-			else if (e.PropertyName == Stepper.IncrementProperty.PropertyName)
-				UpdateIncrement();
-			else if (e.PropertyName == Stepper.BackgroundColorProperty.PropertyName)
-				UpdateBackgroundColor();
+			Control.SetBaseColor(Element.BackgroundColor.ToGtkColor());
 		}
+	}
 
-		protected override void UpdateBackgroundColor()
+	private void OnValueChanged(object sender, EventArgs e)
+	{
+		ElementController.SetValueFromRenderer(Stepper.ValueProperty, Control.Value);
+	}
+
+	private void UpdateIncrement()
+	{
+		var increment = Element.Increment;
+
+		var decimalPart = increment - Math.Truncate(increment);
+
+		if (decimalPart != 0)
 		{
-			if (!Element.BackgroundColor.IsDefaultOrTransparent())
-			{
-				Control.SetBaseColor(Element.BackgroundColor.ToGtkColor());
-			}
+			var digits = decimalPart.ToString().Length - 2;
+			Control.Digits = (uint)digits;
 		}
 
-		private void OnValueChanged(object sender, EventArgs e)
-		{
-			ElementController.SetValueFromRenderer(Stepper.ValueProperty, Control.Value);
-		}
+		Control.SetIncrements(increment, 0);
+	}
 
-		private void UpdateIncrement()
-		{
-			var increment = Element.Increment;
+	private void UpdateMaximum()
+	{
+		_maximum = Element.Maximum;
 
-			var decimalPart = increment - Math.Truncate(increment);
+		Control.SetRange(_minimum, _maximum);
+	}
 
-			if (decimalPart != 0)
-			{
-				var digits = decimalPart.ToString().Length - 2;
-				Control.Digits = (uint)digits;
-			}
+	private void UpdateMinimum()
+	{
+		_minimum = Element.Minimum;
 
-			Control.SetIncrements(increment, 0);
-		}
+		Control.SetRange(_minimum, _maximum);
+	}
 
-		private void UpdateMaximum()
-		{
-			_maximum = Element.Maximum;
-
-			Control.SetRange(_minimum, _maximum);
-		}
-
-		private void UpdateMinimum()
-		{
-			_minimum = Element.Minimum;
-
-			Control.SetRange(_minimum, _maximum);
-		}
-
-		private void UpdateValue()
-		{
-			if (Control.Value != Element.Value)
-				Control.Value = Element.Value;
-		}
+	private void UpdateValue()
+	{
+		if (Control.Value != Element.Value)
+			Control.Value = Element.Value;
 	}
 }

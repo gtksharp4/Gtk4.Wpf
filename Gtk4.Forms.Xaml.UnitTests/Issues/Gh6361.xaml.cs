@@ -4,33 +4,32 @@ using Xunit;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class Gh6361 : ContentPage
 {
-	public partial class Gh6361 : ContentPage
+	public Gh6361() => InitializeComponent();
+	public Gh6361(bool useCompiledXaml)
 	{
-		public Gh6361() => InitializeComponent();
-		public Gh6361(bool useCompiledXaml)
+		//this stub will be replaced at compile time
+	}
+
+	public class Tests: IDisposable
+	{
+		public Tests()
 		{
-			//this stub will be replaced at compile time
+			Device.PlatformServices = new MockPlatformServices();
+			Xamarin.Forms.Internals.Registrar.RegisterAll(new Type[0]);
 		}
 
-		public class Tests: IDisposable
+		public void Dispose() => Device.PlatformServices = null;
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void CSSBorderRadiusDoesNotFail(bool useCompiledXaml)
 		{
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-				Xamarin.Forms.Internals.Registrar.RegisterAll(new Type[0]);
-			}
-
-			public void Dispose() => Device.PlatformServices = null;
-
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void CSSBorderRadiusDoesNotFail(bool useCompiledXaml)
-			{
-				var layout = new Gh6361(useCompiledXaml);
-			}
+			var layout = new Gh6361(useCompiledXaml);
 		}
 	}
 }

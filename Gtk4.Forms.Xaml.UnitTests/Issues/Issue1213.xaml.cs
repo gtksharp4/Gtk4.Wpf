@@ -3,30 +3,29 @@ using System.Collections.Generic;
 using Xunit;
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class Issue1213 : TabbedPage
 {
-	public partial class Issue1213 : TabbedPage
+	public Issue1213()
 	{
-		public Issue1213()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Issue1213(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Issue1213(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
+	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void MultiPageAsContentPropertyAttribute(bool useCompiledXaml)
 		{
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void MultiPageAsContentPropertyAttribute(bool useCompiledXaml)
-			{
-				var page = new Issue1213(useCompiledXaml);
-				Assert.Equal(2, page.Children.Count);
-			}
+			var page = new Issue1213(useCompiledXaml);
+			Assert.Equal(2, page.Children.Count);
 		}
 	}
 }

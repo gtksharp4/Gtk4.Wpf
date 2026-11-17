@@ -5,37 +5,36 @@ using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 using Xamarin.Forms.Xaml;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public class Bz53318ListView : ListView
 {
-	public class Bz53318ListView : ListView
+}
+
+[XamlCompilation(XamlCompilationOptions.Skip)]
+public partial class Bz53318 : ContentPage
+{
+	public Bz53318()
 	{
+		InitializeComponent();
 	}
 
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class Bz53318 : ContentPage
-	{
-		public Bz53318()
+	public class Tests
+		: IDisposable{
+		public Tests()
 		{
-			InitializeComponent();
+			Device.PlatformServices = new MockPlatformServices();
 		}
 
-		public class Tests
-		: IDisposable{
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-			}
+		public void Dispose()
+		{
+			Device.PlatformServices = null;
+		}
 
-			public void Dispose()
-{
-				Device.PlatformServices = null;
-			}
-
-			[Fact]
-			public void DoesCompilesArgsInsideDataTemplate()
-			{
-				AssertEx.DoesNotThrow(() => MockCompiler.Compile(typeof(Bz53318)));
-			}
+		[Fact]
+		public void DoesCompilesArgsInsideDataTemplate()
+		{
+			AssertEx.DoesNotThrow(() => MockCompiler.Compile(typeof(Bz53318)));
 		}
 	}
 }

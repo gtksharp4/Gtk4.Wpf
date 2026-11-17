@@ -1,7 +1,6 @@
-﻿namespace Xamarin.Forms.Platform.GTK.Renderers
+﻿namespace Xamarin.Forms.Platform.GTK.Renderers;
+
+public interface IPageControl
 {
-	public interface IPageControl
-	{
-		Controls.Page Control { get; }
-	}
+	Controls.Page Control { get; }
 }

@@ -2,43 +2,42 @@
 using Xunit;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class MergedResourceDictionaries : ContentPage
 {
-	public partial class MergedResourceDictionaries : ContentPage
+	public MergedResourceDictionaries()
 	{
-		public MergedResourceDictionaries()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public MergedResourceDictionaries(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public MergedResourceDictionaries(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
 		: IDisposable{
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-			}
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+		}
 
-			public void Dispose()
-{
-				Device.PlatformServices = null;
-			}
+		public void Dispose()
+		{
+			Device.PlatformServices = null;
+		}
 
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void MergedResourcesAreFound(bool useCompiledXaml)
-			{
-				MockCompiler.Compile(typeof(MergedResourceDictionaries));
-				var layout = new MergedResourceDictionaries(useCompiledXaml);
-				Assert.Equal("Foo", layout.label0.Text);
-				Assert.Equal(Color.Pink, layout.label0.TextColor);
-				Assert.Equal(Color.FromHex("#111"), layout.label0.BackgroundColor);
-			}
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void MergedResourcesAreFound(bool useCompiledXaml)
+		{
+			MockCompiler.Compile(typeof(MergedResourceDictionaries));
+			var layout = new MergedResourceDictionaries(useCompiledXaml);
+			Assert.Equal("Foo", layout.label0.Text);
+			Assert.Equal(Color.Pink, layout.label0.TextColor);
+			Assert.Equal(Color.FromHex("#111"), layout.label0.BackgroundColor);
 		}
 	}
 }

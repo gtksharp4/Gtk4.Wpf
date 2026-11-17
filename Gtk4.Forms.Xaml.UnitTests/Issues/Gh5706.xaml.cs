@@ -4,52 +4,51 @@ using Xunit;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class Gh5706 : Shell
 {
-	public partial class Gh5706 : Shell
+	class VM
 	{
-		class VM
+		public VM()
 		{
-			public VM()
-			{
-				FilterCommand = new Command((p) => Param = p);
-			}
-
-			public Command FilterCommand { get; set; }
-
-			public object Param { get; set; }
+			FilterCommand = new Command((p) => Param = p);
 		}
 
-		public Gh5706() => InitializeComponent();
-		public Gh5706(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+		public Command FilterCommand { get; set; }
 
-		public class Tests
+		public object Param { get; set; }
+	}
+
+	public Gh5706() => InitializeComponent();
+	public Gh5706(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
+
+	public class Tests
 		: IDisposable{
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-			}
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+		}
 
-			public void Dispose()
-{
-				Device.PlatformServices = null;
-			}
+		public void Dispose()
+		{
+			Device.PlatformServices = null;
+		}
 
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void ReportSyntaxError(bool useCompiledXaml)
-			{
-				var layout = new Gh5706(useCompiledXaml);
-				layout.searchHandler.BindingContext = new VM();
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void ReportSyntaxError(bool useCompiledXaml)
+		{
+			var layout = new Gh5706(useCompiledXaml);
+			layout.searchHandler.BindingContext = new VM();
 
-				Assert.Null(layout.searchHandler.CommandParameter);
-				layout.searchHandler.Query = "Foo";
-				Assert.Equal("Foo", layout.searchHandler.CommandParameter);
-			}
+			Assert.Null(layout.searchHandler.CommandParameter);
+			layout.searchHandler.Query = "Foo";
+			Assert.Equal("Foo", layout.searchHandler.CommandParameter);
 		}
 	}
 }

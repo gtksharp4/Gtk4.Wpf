@@ -3,53 +3,52 @@ using System.Reflection;
 using Xunit;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public class TargetPropertyExtension : IMarkupExtension
 {
-	public class TargetPropertyExtension : IMarkupExtension
+	public object ProvideValue(IServiceProvider serviceProvider)
 	{
-		public object ProvideValue(IServiceProvider serviceProvider)
-		{
-			var targetProperty = (serviceProvider?.GetService(typeof(IProvideValueTarget)) as IProvideValueTarget)?.TargetProperty;
-			return (targetProperty as BindableProperty)?.PropertyName ?? (targetProperty as PropertyInfo)?.Name;
-		}
+		var targetProperty = (serviceProvider?.GetService(typeof(IProvideValueTarget)) as IProvideValueTarget)?.TargetProperty;
+		return (targetProperty as BindableProperty)?.PropertyName ?? (targetProperty as PropertyInfo)?.Name;
+	}
+}
+
+public partial class Bz53275 : ContentPage
+{
+	public Bz53275()
+	{
+		InitializeComponent();
 	}
 
-	public partial class Bz53275 : ContentPage
+	public Bz53275(bool useCompiledXaml)
 	{
-		public Bz53275()
-		{
-			InitializeComponent();
-		}
+		//this stub will be replaced at compile time
+	}
 
-		public Bz53275(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public string ANonBindableProperty { get; set; }
 
-		public string ANonBindableProperty { get; set; }
-
-		public class Tests
+	public class Tests
 		: IDisposable{
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-			}
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+		}
 
-			public void Dispose()
-{
-				Device.PlatformServices = null;
-			}
+		public void Dispose()
+		{
+			Device.PlatformServices = null;
+		}
 
-			[Theory]
-			[InlineData(true)]
-			[InlineData(false)]
-			public void TargetPropertyIsSetOnMarkups(bool useCompiledXaml)
-			{
-				var page = new Bz53275(useCompiledXaml);
-				Assert.Equal("ANonBindableProperty", page.ANonBindableProperty);
-				var l0 = page.label;
-				Assert.Equal("Text", l0.Text);
-			}
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void TargetPropertyIsSetOnMarkups(bool useCompiledXaml)
+		{
+			var page = new Bz53275(useCompiledXaml);
+			Assert.Equal("ANonBindableProperty", page.ANonBindableProperty);
+			var l0 = page.label;
+			Assert.Equal("Text", l0.Text);
 		}
 	}
 }

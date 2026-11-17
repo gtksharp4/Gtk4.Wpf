@@ -2,178 +2,177 @@
 using Xunit;
 
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class EntryUnitTests : BaseTestFixture
 {
-	public class EntryUnitTests : BaseTestFixture
+	[Fact]
+	public void ValueChangedFromSetValue()
 	{
-		[Fact]
-		public void ValueChangedFromSetValue()
+		var entry = new Entry();
+
+		const string value = "Foo";
+
+		bool signaled = false;
+		entry.TextChanged += (sender, args) =>
 		{
-			var entry = new Entry();
+			signaled = true;
+			Assert.Equal(value, args.NewTextValue);
+		};
 
-			const string value = "Foo";
+		entry.SetValue(Entry.TextProperty, value);
 
-			bool signaled = false;
-			entry.TextChanged += (sender, args) =>
-			{
-				signaled = true;
-				Assert.Equal(value, args.NewTextValue);
-			};
+		Assert.True(signaled, "ValueChanged did not fire");
+	}
 
-			entry.SetValue(Entry.TextProperty, value);
-
-			Assert.True(signaled, "ValueChanged did not fire");
-		}
-
-		[Theory]
-		[InlineData(null, "foo")]
-		[InlineData("foo", "bar")]
-		[InlineData("foo", null)]
-		public void ValueChangedArgs(string initial, string final)
+	[Theory]
+	[InlineData(null, "foo")]
+	[InlineData("foo", "bar")]
+	[InlineData("foo", null)]
+	public void ValueChangedArgs(string initial, string final)
+	{
+		var entry = new Entry
 		{
-			var entry = new Entry
-			{
-				Text = initial
-			};
+			Text = initial
+		};
 
-			string oldValue = null;
-			string newValue = null;
+		string oldValue = null;
+		string newValue = null;
 
-			Entry entryFromSender = null;
+		Entry entryFromSender = null;
 
-			entry.TextChanged += (s, e) =>
-			{
-				entryFromSender = (Entry)s;
-				oldValue = e.OldTextValue;
-				newValue = e.NewTextValue;
-			};
-
-			entry.Text = final;
-
-			Assert.Equal(entry, entryFromSender);
-			Assert.Equal(initial, oldValue);
-			Assert.Equal(final, newValue);
-		}
-
-
-		[Theory]
-		[InlineData(1)]
-		[InlineData(0)]
-		[InlineData(9999)]
-		public void CursorPositionValid(int val)
+		entry.TextChanged += (s, e) =>
 		{
-			var entry = new Entry
-			{
-				CursorPosition = val
-			};
+			entryFromSender = (Entry)s;
+			oldValue = e.OldTextValue;
+			newValue = e.NewTextValue;
+		};
 
-			var target = entry.CursorPosition;
+		entry.Text = final;
 
-			Assert.Equal(target, val);
-		}
+		Assert.Equal(entry, entryFromSender);
+		Assert.Equal(initial, oldValue);
+		Assert.Equal(final, newValue);
+	}
 
-		[Fact]
-		public void CursorPositionInvalid()
+
+	[Theory]
+	[InlineData(1)]
+	[InlineData(0)]
+	[InlineData(9999)]
+	public void CursorPositionValid(int val)
+	{
+		var entry = new Entry
 		{
-			Assert.Throws<System.ArgumentException>(() =>
-			{
-				var entry = new Entry
-				{
-					CursorPosition = -1
-				};
-			});
-		}
+			CursorPosition = val
+		};
 
-		[Theory]
-		[InlineData(1)]
-		[InlineData(0)]
-		[InlineData(9999)]
-		public void SelectionLengthValid(int val)
+		var target = entry.CursorPosition;
+
+		Assert.Equal(target, val);
+	}
+
+	[Fact]
+	public void CursorPositionInvalid()
+	{
+		Assert.Throws<System.ArgumentException>(() =>
 		{
 			var entry = new Entry
 			{
-				SelectionLength = val
+				CursorPosition = -1
 			};
+		});
+	}
 
-			var target = entry.SelectionLength;
-
-			Assert.Equal(target, val);
-		}
-
-		[Fact]
-		public void SelectionLengthInvalid()
+	[Theory]
+	[InlineData(1)]
+	[InlineData(0)]
+	[InlineData(9999)]
+	public void SelectionLengthValid(int val)
+	{
+		var entry = new Entry
 		{
-			Assert.Throws<System.ArgumentException>(() =>
-			{
-				var entry = new Entry
-				{
-					SelectionLength = -1
-				};
-			});
-		}
+			SelectionLength = val
+		};
 
-		[Theory]
-		[InlineData(true)]
-		[InlineData(false)]
-		public void ReturnTypeCommand(bool isEnabled)
+		var target = entry.SelectionLength;
+
+		Assert.Equal(target, val);
+	}
+
+	[Fact]
+	public void SelectionLengthInvalid()
+	{
+		Assert.Throws<System.ArgumentException>(() =>
 		{
-			var entry = new Entry()
+			var entry = new Entry
 			{
-				IsEnabled = isEnabled,
+				SelectionLength = -1
 			};
+		});
+	}
 
-			bool result = false;
-
-			var bindingContext = new
-			{
-				Command = new Command(() => { result = true; }, () => true)
-			};
-
-			entry.SetBinding(Entry.ReturnCommandProperty, "Command");
-			entry.BindingContext = bindingContext;
-
-			entry.SendCompleted();
-
-			Assert.True(result == isEnabled ? true : false);
-		}
-
-		[Theory]
-		[InlineData(true)]
-		[InlineData(false)]
-		public void ReturnTypeCommandNullTestIsEnabled(bool isEnabled)
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public void ReturnTypeCommand(bool isEnabled)
+	{
+		var entry = new Entry()
 		{
-			var entry = new Entry()
-			{
-				IsEnabled = isEnabled,
-			};
+			IsEnabled = isEnabled,
+		};
 
-			bool result = false;
+		bool result = false;
 
-			entry.SetBinding(Entry.ReturnCommandProperty, "Command");
-			entry.BindingContext = null;
-			entry.Completed += (s, e) =>
-			{
-				result = true;
-			};
-			entry.SendCompleted();
-
-			Assert.True(result == isEnabled ? true : false);
-		}
-
-		[Theory]
-		[InlineData(true)]
-		public void IsReadOnlyTest(bool isReadOnly)
+		var bindingContext = new
 		{
-			Entry entry = new Entry();
-			entry.SetValue(InputView.IsReadOnlyProperty, isReadOnly);
-			Assert.Equal(isReadOnly, entry.IsReadOnly);
-		}
+			Command = new Command(() => { result = true; }, () => true)
+		};
 
-		[Fact]
-		public void IsReadOnlyDefaultValueTest()
+		entry.SetBinding(Entry.ReturnCommandProperty, "Command");
+		entry.BindingContext = bindingContext;
+
+		entry.SendCompleted();
+
+		Assert.True(result == isEnabled ? true : false);
+	}
+
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public void ReturnTypeCommandNullTestIsEnabled(bool isEnabled)
+	{
+		var entry = new Entry()
 		{
-			Entry entry = new Entry();
-			Assert.Equal(entry.IsReadOnly, false);
-		}
+			IsEnabled = isEnabled,
+		};
+
+		bool result = false;
+
+		entry.SetBinding(Entry.ReturnCommandProperty, "Command");
+		entry.BindingContext = null;
+		entry.Completed += (s, e) =>
+		{
+			result = true;
+		};
+		entry.SendCompleted();
+
+		Assert.True(result == isEnabled ? true : false);
+	}
+
+	[Theory]
+	[InlineData(true)]
+	public void IsReadOnlyTest(bool isReadOnly)
+	{
+		Entry entry = new Entry();
+		entry.SetValue(InputView.IsReadOnlyProperty, isReadOnly);
+		Assert.Equal(isReadOnly, entry.IsReadOnly);
+	}
+
+	[Fact]
+	public void IsReadOnlyDefaultValueTest()
+	{
+		Entry entry = new Entry();
+		Assert.Equal(entry.IsReadOnly, false);
 	}
 }

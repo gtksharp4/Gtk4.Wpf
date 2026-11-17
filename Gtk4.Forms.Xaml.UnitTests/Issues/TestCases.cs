@@ -5,51 +5,51 @@ using System.Linq;
 using Xunit;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
-{
-	public class BasePage : ContentPage
-	{
+namespace Xamarin.Forms.Xaml.UnitTests;
 
+public class BasePage : ContentPage
+{
+
+}
+
+public class TestCases
+	: IDisposable{
+	CultureInfo _defaultCulture;
+
+	public TestCases()
+	{
+		_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
+		Device.PlatformServices = new MockPlatformServices();
 	}
 
-	public class TestCases
-	: IDisposable{
-		CultureInfo _defaultCulture;
-
-		public TestCases()
-{
-			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		public void Dispose()
-{
-			Device.PlatformServices = null;
-			System.Threading.Thread.CurrentThread.CurrentCulture = _defaultCulture;
-		}
+	public void Dispose()
+	{
+		Device.PlatformServices = null;
+		System.Threading.Thread.CurrentThread.CurrentCulture = _defaultCulture;
+	}
 
 
-		public static readonly BindableProperty InnerViewProperty =
+	public static readonly BindableProperty InnerViewProperty =
 #pragma warning disable 618
-			BindableProperty.CreateAttached<TestCases, View>(bindable => GetInnerView(bindable), default(View));
+		BindableProperty.CreateAttached<TestCases, View>(bindable => GetInnerView(bindable), default(View));
 #pragma warning restore 618
 
-		public static View GetInnerView(BindableObject bindable)
-		{
-			return (View)bindable.GetValue(InnerViewProperty);
-		}
+	public static View GetInnerView(BindableObject bindable)
+	{
+		return (View)bindable.GetValue(InnerViewProperty);
+	}
 
 #pragma warning disable xUnit1013 // BindableProperty accessor, not a test method
-		public static void SetInnerView(BindableObject bindable, View value)
-		{
-			bindable.SetValue(InnerViewProperty, value);
-		}
+	public static void SetInnerView(BindableObject bindable, View value)
+	{
+		bindable.SetValue(InnerViewProperty, value);
+	}
 #pragma warning restore xUnit1013
 
-		[Fact]
-		public void TestCase001()
-		{
-			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
+	[Fact]
+	public void TestCase001()
+	{
+		var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
 			<ContentPage
 			xmlns=""http://xamarin.com/schemas/2014/forms""
 			xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
@@ -69,23 +69,23 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					</Grid>
 				</ContentPage.Content>
 			</ContentPage>";
-			var contentPage = new ContentPage().LoadFromXaml(xaml);
-			var label0 = contentPage.FindByName<Label>("label0");
-			var label1 = contentPage.FindByName<Label>("label1");
+		var contentPage = new ContentPage().LoadFromXaml(xaml);
+		var label0 = contentPage.FindByName<Label>("label0");
+		var label1 = contentPage.FindByName<Label>("label1");
 
-			Assert.NotNull(GetInnerView(contentPage));
-			//			Assert.Equal ("innerView", GetInnerView (contentPage).Name);
-			Assert.Equal(GetInnerView(contentPage), ((Forms.Internals.INameScope)contentPage).FindByName("innerView"));
-			Assert.NotNull(label0);
-			Assert.NotNull(label1);
-			Assert.Equal(4, contentPage.Content.Descendants().Count());
-		}
+		Assert.NotNull(GetInnerView(contentPage));
+		//			Assert.Equal ("innerView", GetInnerView (contentPage).Name);
+		Assert.Equal(GetInnerView(contentPage), ((Forms.Internals.INameScope)contentPage).FindByName("innerView"));
+		Assert.NotNull(label0);
+		Assert.NotNull(label1);
+		Assert.Equal(4, contentPage.Content.Descendants().Count());
+	}
 
 
-		[Fact]
-		public void TestCase002()
-		{
-			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
+	[Fact]
+	public void TestCase002()
+	{
+		var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
             <local:BasePage
                 xmlns=""http://xamarin.com/schemas/2014/forms""
                 xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
@@ -95,14 +95,14 @@ namespace Xamarin.Forms.Xaml.UnitTests
                   <Label Text=""Hi There!"" />
                 </local:BasePage.Content>
            </local:BasePage>";
-			var contentPage = new ContentPage().LoadFromXaml(xaml);
-			Assert.IsAssignableFrom<Label>(contentPage.Content);
-		}
+		var contentPage = new ContentPage().LoadFromXaml(xaml);
+		Assert.IsAssignableFrom<Label>(contentPage.Content);
+	}
 
-		[Fact]
-		public void TestCase003()
-		{
-			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
+	[Fact]
+	public void TestCase003()
+	{
+		var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
 				<ContentPage
 					xmlns=""http://xamarin.com/schemas/2014/forms""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
@@ -136,27 +136,27 @@ namespace Xamarin.Forms.Xaml.UnitTests
 						</ListView>
 					</StackLayout>
 				</ContentPage>";
-			var page = new ContentPage().LoadFromXaml(xaml);
-			var model = new List<object> {
-				new {FirstName = "John", LastName="Lennon", Picture="http://www.johnlennon.com/wp-content/themes/jl/images/home-gallery/2.jpg"},
-				new {FirstName = "Paul", LastName="McCartney", Picture="http://t0.gstatic.com/images?q=tbn:ANd9GcRjNUGJ00Mt85n2XDu8CZM0w1em0Wv4ZaemLuIVmLCMwPMOLUO1SQ"},
-				new {FirstName = "George", LastName="Harisson", Picture="http://cdn.riffraf.net/wp-content/uploads/2013/02/george-harrison-living.jpg"},
-				new {FirstName = "Ringo", LastName="Starr", Picture="http://www.biography.com/imported/images/Biography/Images/Profiles/S/Ringo-Starr-306872-1-402.jpg"},
-			};
-			page.BindingContext = model;
+		var page = new ContentPage().LoadFromXaml(xaml);
+		var model = new List<object> {
+			new {FirstName = "John", LastName="Lennon", Picture="http://www.johnlennon.com/wp-content/themes/jl/images/home-gallery/2.jpg"},
+			new {FirstName = "Paul", LastName="McCartney", Picture="http://t0.gstatic.com/images?q=tbn:ANd9GcRjNUGJ00Mt85n2XDu8CZM0w1em0Wv4ZaemLuIVmLCMwPMOLUO1SQ"},
+			new {FirstName = "George", LastName="Harisson", Picture="http://cdn.riffraf.net/wp-content/uploads/2013/02/george-harrison-living.jpg"},
+			new {FirstName = "Ringo", LastName="Starr", Picture="http://www.biography.com/imported/images/Biography/Images/Profiles/S/Ringo-Starr-306872-1-402.jpg"},
+		};
+		page.BindingContext = model;
 
-			var listview = page.FindByName<ListView>("listview");
-			Cell cell = null;
-			AssertEx.DoesNotThrow(() => { cell = listview.TemplatedItems[0]; });
-			Assert.NotNull(cell);
-			Assert.IsType<ViewCell>(cell);
-			Assert.Same(model[0], cell.BindingContext);
-		}
+		var listview = page.FindByName<ListView>("listview");
+		Cell cell = null;
+		AssertEx.DoesNotThrow(() => { cell = listview.TemplatedItems[0]; });
+		Assert.NotNull(cell);
+		Assert.IsType<ViewCell>(cell);
+		Assert.Same(model[0], cell.BindingContext);
+	}
 
-		[Fact]
-		public void TestCase004()
-		{
-			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
+	[Fact]
+	public void TestCase004()
+	{
+		var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
 				<ContentPage
 					xmlns=""http://xamarin.com/schemas/2014/forms""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
@@ -179,43 +179,42 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					</ContentPage.Content>
 				</ContentPage>";
 
-			var page = new ContentPage();
-			AssertEx.DoesNotThrow(() => page.LoadFromXaml(xaml));
-		}
+		var page = new ContentPage();
+		AssertEx.DoesNotThrow(() => page.LoadFromXaml(xaml));
+	}
 
-		[Fact]
-		public void Issue1415()
-		{
-			var xaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
+	[Fact]
+	public void Issue1415()
+	{
+		var xaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
 						<ContentPage 
 							xmlns=""http://xamarin.com/schemas/2014/forms"" 
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"">
 							<Label x:Name=""label"" Text=""{Binding Converter={x:Static local:ReverseConverter.Instance}, Mode=TwoWay}""/>
 						</ContentPage>";
-			var page = new ContentPage().LoadFromXaml(xaml);
-			var label = page.FindByName<Label>("label");
-			Assert.NotNull(label);
-			label.BindingContext = "foo";
-			Assert.Equal("oof", label.Text);
-		}
+		var page = new ContentPage().LoadFromXaml(xaml);
+		var label = page.FindByName<Label>("label");
+		Assert.NotNull(label);
+		label.BindingContext = "foo";
+		Assert.Equal("oof", label.Text);
+	}
 
-		[Theory]
-		[InlineData("en-US"), InlineData("tr-TR"), InlineData("fr-FR")]
-		//only happens in european cultures
-		public void Issue1493(string culture)
-		{
-			System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(culture);
+	[Theory]
+	[InlineData("en-US"), InlineData("tr-TR"), InlineData("fr-FR")]
+	//only happens in european cultures
+	public void Issue1493(string culture)
+	{
+		System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(culture);
 
-			var xaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
+		var xaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
 						<View 
 							xmlns=""http://xamarin.com/schemas/2014/forms"" 
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							RelativeLayout.HeightConstraint=""{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=0.25}""
 							RelativeLayout.WidthConstraint=""{ConstraintExpression Type=RelativeToParent, Property=Width, Factor=0.6}""/>";
-			View view = new View();
-			view.LoadFromXaml(xaml);
-			AssertEx.DoesNotThrow(() => view.LoadFromXaml(xaml));
-		}
+		View view = new View();
+		view.LoadFromXaml(xaml);
+		AssertEx.DoesNotThrow(() => view.LoadFromXaml(xaml));
 	}
 }

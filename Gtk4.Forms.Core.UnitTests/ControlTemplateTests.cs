@@ -4,185 +4,184 @@ using System.Runtime.CompilerServices;
 using Xamarin.Forms;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class ControlTemplateTests : BaseTestFixture
 {
-	public class ControlTemplateTests : BaseTestFixture
+	public ControlTemplateTests()
 	{
-		public ControlTemplateTests()
+		Device.PlatformServices = new MockPlatformServices();
+	}
+
+	public override void Dispose()
+	{
+		base.Dispose();
+		Device.PlatformServices = null;
+	}
+
+	public class ContentControl : StackLayout
+	{
+		public ContentControl()
 		{
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		public override void Dispose()
-		{
-			base.Dispose();
-			Device.PlatformServices = null;
-		}
-
-		public class ContentControl : StackLayout
-		{
-			public ContentControl()
-			{
-				var label = new Label();
-				label.SetBinding(Label.TextProperty, new Binding("Name", source: RelativeBindingSource.TemplatedParent));
-
-				Children.Add(label);
-				Children.Add(new ContentPresenter());
-			}
-		}
-
-		public class PresenterWrapper : ContentView
-		{
-			public PresenterWrapper()
-			{
-				Content = new ContentPresenter();
-			}
-		}
-
-		public class TestView : ContentView
-		{
-			public static readonly BindableProperty NameProperty =
-				BindableProperty.Create(nameof(Name), typeof(string), typeof(TestView), default(string));
-
-			public string Name
-			{
-				get { return (string)GetValue(NameProperty); }
-				set { SetValue(NameProperty, value); }
-			}
-
-			public TestView()
-			{
-				ControlTemplate = new ControlTemplate(typeof(ContentControl));
-			}
-		}
-
-		[Fact]
-		public void ResettingControlTemplateNullsPresenterContent()
-		{
-			var testView = new TestView
-			{
-				ControlTemplate = new ControlTemplate(typeof(PresenterWrapper))
-			};
-
 			var label = new Label();
-			testView.Content = label;
+			label.SetBinding(Label.TextProperty, new Binding("Name", source: RelativeBindingSource.TemplatedParent));
 
-			var child1 = ((IElementController)testView).LogicalChildren[0];
-			var child2 = ((IElementController)child1).LogicalChildren[0];
+			Children.Add(label);
+			Children.Add(new ContentPresenter());
+		}
+	}
 
-			var originalPresenter = (ContentPresenter)child2;
+	public class PresenterWrapper : ContentView
+	{
+		public PresenterWrapper()
+		{
+			Content = new ContentPresenter();
+		}
+	}
 
-			Assert.Equal(label, originalPresenter.Content);
+	public class TestView : ContentView
+	{
+		public static readonly BindableProperty NameProperty =
+			BindableProperty.Create(nameof(Name), typeof(string), typeof(TestView), default(string));
 
-			testView.ControlTemplate = new ControlTemplate(typeof(PresenterWrapper));
-
-			Assert.Null(originalPresenter.Content);
+		public string Name
+		{
+			get { return (string)GetValue(NameProperty); }
+			set { SetValue(NameProperty, value); }
 		}
 
-		[Fact]
-		public void NestedTemplateBindings()
+		public TestView()
 		{
-			var testView = new TestView();
-
-			var child1 = ((IElementController)testView).LogicalChildren[0];
-			var child2 = ((IElementController)child1).LogicalChildren[0];
-
-			var label = (Label)child2;
-
-			Assert.Null(label.Text);
-
-			testView.Name = "Bar";
-			Assert.Equal("Bar", label.Text);
+			ControlTemplate = new ControlTemplate(typeof(ContentControl));
 		}
+	}
 
-		[Fact]
-		public void ParentControlTemplateDoesNotClearChildTemplate()
+	[Fact]
+	public void ResettingControlTemplateNullsPresenterContent()
+	{
+		var testView = new TestView
 		{
-			var parentView = new TestView();
-			var childView = new TestView();
+			ControlTemplate = new ControlTemplate(typeof(PresenterWrapper))
+		};
 
-			parentView.Content = childView;
-			childView.Content = new Button();
+		var label = new Label();
+		testView.Content = label;
 
-			var child1 = ((IElementController)childView).LogicalChildren[0];
-			var child2 = ((IElementController)child1).LogicalChildren[1];
+		var child1 = ((IElementController)testView).LogicalChildren[0];
+		var child2 = ((IElementController)child1).LogicalChildren[0];
 
-			var childPresenter = (ContentPresenter)child2;
+		var originalPresenter = (ContentPresenter)child2;
 
-			parentView.ControlTemplate = new ControlTemplate(typeof(ContentControl));
-			Assert.NotNull(childPresenter.Content);
+		Assert.Equal(label, originalPresenter.Content);
+
+		testView.ControlTemplate = new ControlTemplate(typeof(PresenterWrapper));
+
+		Assert.Null(originalPresenter.Content);
+	}
+
+	[Fact]
+	public void NestedTemplateBindings()
+	{
+		var testView = new TestView();
+
+		var child1 = ((IElementController)testView).LogicalChildren[0];
+		var child2 = ((IElementController)child1).LogicalChildren[0];
+
+		var label = (Label)child2;
+
+		Assert.Null(label.Text);
+
+		testView.Name = "Bar";
+		Assert.Equal("Bar", label.Text);
+	}
+
+	[Fact]
+	public void ParentControlTemplateDoesNotClearChildTemplate()
+	{
+		var parentView = new TestView();
+		var childView = new TestView();
+
+		parentView.Content = childView;
+		childView.Content = new Button();
+
+		var child1 = ((IElementController)childView).LogicalChildren[0];
+		var child2 = ((IElementController)child1).LogicalChildren[1];
+
+		var childPresenter = (ContentPresenter)child2;
+
+		parentView.ControlTemplate = new ControlTemplate(typeof(ContentControl));
+		Assert.NotNull(childPresenter.Content);
+	}
+
+	[Fact]
+	public void NullConstructor()
+	{
+		Func<object> func = null;
+		Assert.Throws<ArgumentNullException>(() => new ControlTemplate(func));
+	}
+
+	class TestPage : ContentPage
+	{
+		public static readonly BindableProperty NameProperty =
+			BindableProperty.Create(nameof(Name), typeof(string), typeof(TestPage), null);
+
+		public string Name
+		{
+			get { return (string)GetValue(NameProperty); }
+			set { SetValue(NameProperty, value); }
 		}
+	}
 
-		[Fact]
-		public void NullConstructor()
+	class TestContent : ContentView
+	{
+		public TestContent()
 		{
-			Func<object> func = null;
-			Assert.Throws<ArgumentNullException>(() => new ControlTemplate(func));
+			Content = new Entry();
+			Content.SetBinding(Entry.TextProperty, new Binding("Name", BindingMode.TwoWay, source: RelativeBindingSource.TemplatedParent));
 		}
+	}
 
-		class TestPage : ContentPage
+	class ViewModel : INotifyPropertyChanged
+	{
+		string name;
+
+		public string Name
 		{
-			public static readonly BindableProperty NameProperty =
-				BindableProperty.Create(nameof(Name), typeof(string), typeof(TestPage), null);
-
-			public string Name
+			get { return name; }
+			set
 			{
-				get { return (string)GetValue(NameProperty); }
-				set { SetValue(NameProperty, value); }
+				if (name == value)
+					return;
+				name = value;
+				OnPropertyChanged();
 			}
 		}
 
-		class TestContent : ContentView
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
-			public TestContent()
-			{
-				Content = new Entry();
-				Content.SetBinding(Entry.TextProperty, new Binding("Name", BindingMode.TwoWay, source: RelativeBindingSource.TemplatedParent));
-			}
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
+	}
 
-		class ViewModel : INotifyPropertyChanged
+	[Fact]
+	public void DoubleTwoWayBindingWorks()
+	{
+		var page = new TestPage();
+		var viewModel = new ViewModel
 		{
-			string name;
+			Name = "Jason"
+		};
+		page.BindingContext = viewModel;
 
-			public string Name
-			{
-				get { return name; }
-				set
-				{
-					if (name == value)
-						return;
-					name = value;
-					OnPropertyChanged();
-				}
-			}
+		page.ControlTemplate = new ControlTemplate(typeof(TestContent));
+		page.SetBinding(TestPage.NameProperty, "Name");
 
-			public event PropertyChangedEventHandler PropertyChanged;
+		var entry = ((ContentView)((IElementController)page).LogicalChildren[0]).Content as Entry;
+		((IElementController)entry).SetValueFromRenderer(Entry.TextProperty, "Bar");
+		viewModel.Name = "Raz";
 
-			protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-			{
-				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-			}
-		}
-
-		[Fact]
-		public void DoubleTwoWayBindingWorks()
-		{
-			var page = new TestPage();
-			var viewModel = new ViewModel
-			{
-				Name = "Jason"
-			};
-			page.BindingContext = viewModel;
-
-			page.ControlTemplate = new ControlTemplate(typeof(TestContent));
-			page.SetBinding(TestPage.NameProperty, "Name");
-
-			var entry = ((ContentView)((IElementController)page).LogicalChildren[0]).Content as Entry;
-			((IElementController)entry).SetValueFromRenderer(Entry.TextProperty, "Bar");
-			viewModel.Name = "Raz";
-
-			Assert.Equal("Raz", entry.Text);
-		}
+		Assert.Equal("Raz", entry.Text);
 	}
 }

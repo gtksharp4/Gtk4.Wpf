@@ -6,79 +6,78 @@ using System.Threading.Tasks;
 using Xamarin.Forms.Core.UnitTests;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class FlexLayoutAlignItemsTests : BaseTestFixture
 {
-	public class FlexLayoutAlignItemsTests : BaseTestFixture
+	[Fact]
+	public void TestAlignItemsStretch()
 	{
-		[Fact]
-		public void TestAlignItemsStretch()
+		var layout = new FlexLayout
 		{
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
+			IsPlatformEnabled = true,
 
-				Direction = FlexDirection.Column,
-			};
-			var view0 = new View { IsPlatformEnabled = true, HeightRequest = 10, };
-			layout.Children.Add(view0);
+			Direction = FlexDirection.Column,
+		};
+		var view0 = new View { IsPlatformEnabled = true, HeightRequest = 10, };
+		layout.Children.Add(view0);
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
-			Assert.Equal(new Rectangle(0, 0, 100, 10), view0.Bounds);
-		}
+		layout.Layout(new Rectangle(0, 0, 100, 100));
+		Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
+		Assert.Equal(new Rectangle(0, 0, 100, 10), view0.Bounds);
+	}
 
-		[Fact]
-		public void TestAlignItemsCenter()
+	[Fact]
+	public void TestAlignItemsCenter()
+	{
+		var layout = new FlexLayout
 		{
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
+			IsPlatformEnabled = true,
 
-				AlignItems = FlexAlignItems.Center,
-				Direction = FlexDirection.Column,
-			};
-			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, HeightRequest = 10 };
-			layout.Children.Add(view0);
+			AlignItems = FlexAlignItems.Center,
+			Direction = FlexDirection.Column,
+		};
+		var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, HeightRequest = 10 };
+		layout.Children.Add(view0);
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
-			Assert.Equal(new Rectangle(45, 0, 10, 10), view0.Bounds);
-		}
+		layout.Layout(new Rectangle(0, 0, 100, 100));
+		Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
+		Assert.Equal(new Rectangle(45, 0, 10, 10), view0.Bounds);
+	}
 
-		[Fact]
-		public void TestAlignItemsFlexStart()
+	[Fact]
+	public void TestAlignItemsFlexStart()
+	{
+		var layout = new FlexLayout
 		{
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
+			IsPlatformEnabled = true,
 
-				AlignItems = FlexAlignItems.Start,
-				Direction = FlexDirection.Column,
-			};
-			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, HeightRequest = 10 };
-			layout.Children.Add(view0);
+			AlignItems = FlexAlignItems.Start,
+			Direction = FlexDirection.Column,
+		};
+		var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, HeightRequest = 10 };
+		layout.Children.Add(view0);
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
-			Assert.Equal(new Rectangle(0, 0, 10, 10), view0.Bounds);
-		}
+		layout.Layout(new Rectangle(0, 0, 100, 100));
+		Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
+		Assert.Equal(new Rectangle(0, 0, 10, 10), view0.Bounds);
+	}
 
-		[Fact]
-		public void TestAlignItemsFlexEnd()
+	[Fact]
+	public void TestAlignItemsFlexEnd()
+	{
+		var layout = new FlexLayout
 		{
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
+			IsPlatformEnabled = true,
 
-				AlignItems = FlexAlignItems.End,
-				Direction = FlexDirection.Column,
-			};
-			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, HeightRequest = 10 };
-			layout.Children.Add(view0);
+			AlignItems = FlexAlignItems.End,
+			Direction = FlexDirection.Column,
+		};
+		var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, HeightRequest = 10 };
+		layout.Children.Add(view0);
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
-			Assert.Equal(new Rectangle(90, 0, 10, 10), view0.Bounds);
-		}
+		layout.Layout(new Rectangle(0, 0, 100, 100));
+		Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
+		Assert.Equal(new Rectangle(90, 0, 10, 10), view0.Bounds);
 	}
 }

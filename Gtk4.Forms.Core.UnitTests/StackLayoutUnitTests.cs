@@ -3,699 +3,698 @@ using System.Linq;
 using Xunit;
 
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class StackLayoutUnitTests : BaseTestFixture
 {
-	public class StackLayoutUnitTests : BaseTestFixture
+	public StackLayoutUnitTests()
 	{
-		public StackLayoutUnitTests()
+		Device.PlatformServices = new MockPlatformServices();
+	}
+
+	public override void Dispose()
+	{
+		base.Dispose();
+		Device.PlatformServices = null;
+	}
+
+	[Fact]
+	public void EmptyLayoutDoesntCrash()
+	{
+		var stackLayout = new StackLayout();
+		stackLayout.Layout(new Rectangle(0, 0, 200, 200));
+	}
+
+	[Fact]
+	public void TestLastChildNotVisible()
+	{
+		View child1, child2;
+		var stack = new StackLayout
 		{
-			Device.PlatformServices = new MockPlatformServices();
-		}
+			IsPlatformEnabled = true,
+			Children = {
+				(child1 = new View {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true}),
+				(child2 = new View {WidthRequest = 30, HeightRequest = 30, IsPlatformEnabled = true, IsVisible = false})
+			}
+		};
 
-		public override void Dispose()
+		var r = stack.GetSizeRequest(100, 100);
+
+		Assert.Equal(new SizeRequest(new Size(20, 20)), r);
+	}
+
+	[Fact]
+	public void TestLayoutVertical()
+	{
+		View child1, child2;
+		var stack = new StackLayout
 		{
-			base.Dispose();
-			Device.PlatformServices = null;
-		}
+			IsPlatformEnabled = true,
+			Children = {
+				(child1 = new View {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true}),
+				(child2 = new View {WidthRequest = 30, HeightRequest = 30, IsPlatformEnabled = true})
+			}
+		};
 
-		[Fact]
-		public void EmptyLayoutDoesntCrash()
+		stack.Layout(new Rectangle(0, 0, 100, 100));
+
+		Assert.Equal(new Rectangle(0, 0, 100, 20), child1.Bounds);
+		Assert.Equal(new Rectangle(0, 26, 100, 30), child2.Bounds);
+	}
+
+	[Fact]
+	public void ReinflatesViewsCorrectly()
+	{
+		var child1 = new BoxView
 		{
-			var stackLayout = new StackLayout();
-			stackLayout.Layout(new Rectangle(0, 0, 200, 200));
-		}
+			IsPlatformEnabled = true,
+			VerticalOptions = LayoutOptions.FillAndExpand,
+			HeightRequest = 400,
+			MinimumHeightRequest = 10
+		};
 
-		[Fact]
-		public void TestLastChildNotVisible()
+		var child2 = new BoxView
 		{
-			View child1, child2;
-			var stack = new StackLayout
-			{
-				IsPlatformEnabled = true,
-				Children = {
-					(child1 = new View {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true}),
-					(child2 = new View {WidthRequest = 30, HeightRequest = 30, IsPlatformEnabled = true, IsVisible = false})
-				}
-			};
+			IsPlatformEnabled = true,
+			HeightRequest = 40,
+			MinimumHeightRequest = 40
+		};
 
-			var r = stack.GetSizeRequest(100, 100);
-
-			Assert.Equal(new SizeRequest(new Size(20, 20)), r);
-		}
-
-		[Fact]
-		public void TestLayoutVertical()
+		var stack = new StackLayout
 		{
-			View child1, child2;
-			var stack = new StackLayout
-			{
-				IsPlatformEnabled = true,
-				Children = {
-					(child1 = new View {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true}),
-					(child2 = new View {WidthRequest = 30, HeightRequest = 30, IsPlatformEnabled = true})
-				}
-			};
+			Spacing = 0,
+			IsPlatformEnabled = true,
+			Children = { child1, child2 }
+		};
 
-			stack.Layout(new Rectangle(0, 0, 100, 100));
+		stack.Layout(new Rectangle(0, 0, 100, 100));
 
-			Assert.Equal(new Rectangle(0, 0, 100, 20), child1.Bounds);
-			Assert.Equal(new Rectangle(0, 26, 100, 30), child2.Bounds);
-		}
+		Assert.Equal(new Rectangle(0, 0, 100, 60), child1.Bounds);
+		Assert.Equal(new Rectangle(0, 60, 100, 40), child2.Bounds);
 
-		[Fact]
-		public void ReinflatesViewsCorrectly()
+		stack.GetSizeRequest(100, 100);
+		stack.Layout(new Rectangle(0, 0, 100, 500));
+
+		Assert.Equal(new Rectangle(0, 0, 100, 460), child1.Bounds);
+		Assert.Equal(new Rectangle(0, 460, 100, 40), child2.Bounds);
+	}
+
+	[Fact]
+	public void TestLayoutHorizontal()
+	{
+		View child1, child2;
+		var stack = new StackLayout
 		{
-			var child1 = new BoxView
-			{
-				IsPlatformEnabled = true,
-				VerticalOptions = LayoutOptions.FillAndExpand,
-				HeightRequest = 400,
-				MinimumHeightRequest = 10
-			};
+			Orientation = StackOrientation.Horizontal,
+			IsPlatformEnabled = true,
+			Children = {
+				(child1 = new View {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true}),
+				(child2 = new View {WidthRequest = 30, HeightRequest = 30, IsPlatformEnabled = true})
+			}
+		};
 
-			var child2 = new BoxView
-			{
-				IsPlatformEnabled = true,
-				HeightRequest = 40,
-				MinimumHeightRequest = 40
-			};
+		stack.Layout(new Rectangle(0, 0, 100, 100));
 
-			var stack = new StackLayout
-			{
-				Spacing = 0,
-				IsPlatformEnabled = true,
-				Children = { child1, child2 }
-			};
+		Assert.Equal(new Rectangle(0, 0, 20, 100), child1.Bounds);
+		Assert.Equal(new Rectangle(26, 0, 30, 100), child2.Bounds);
+	}
 
-			stack.Layout(new Rectangle(0, 0, 100, 100));
-
-			Assert.Equal(new Rectangle(0, 0, 100, 60), child1.Bounds);
-			Assert.Equal(new Rectangle(0, 60, 100, 40), child2.Bounds);
-
-			stack.GetSizeRequest(100, 100);
-			stack.Layout(new Rectangle(0, 0, 100, 500));
-
-			Assert.Equal(new Rectangle(0, 0, 100, 460), child1.Bounds);
-			Assert.Equal(new Rectangle(0, 460, 100, 40), child2.Bounds);
-		}
-
-		[Fact]
-		public void TestLayoutHorizontal()
+	[Fact]
+	public void TestExpandVertical()
+	{
+		View child1, child2, child3;
+		var stack = new StackLayout
 		{
-			View child1, child2;
-			var stack = new StackLayout
-			{
-				Orientation = StackOrientation.Horizontal,
-				IsPlatformEnabled = true,
-				Children = {
-					(child1 = new View {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true}),
-					(child2 = new View {WidthRequest = 30, HeightRequest = 30, IsPlatformEnabled = true})
-				}
-			};
+			IsPlatformEnabled = true,
+			Orientation = StackOrientation.Vertical,
+			Children = {
+				(child1 = new View {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true}),
+				(child2 = new View {
+					WidthRequest = 20,
+					HeightRequest = 20,
+					IsPlatformEnabled = true,
+					VerticalOptions = LayoutOptions.FillAndExpand
+				}),
+				(child3 = new View {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true})
+			}
+		};
 
-			stack.Layout(new Rectangle(0, 0, 100, 100));
+		stack.Padding = new Thickness(10, 5);
+		stack.Layout(new Rectangle(0, 0, 100, 100));
 
-			Assert.Equal(new Rectangle(0, 0, 20, 100), child1.Bounds);
-			Assert.Equal(new Rectangle(26, 0, 30, 100), child2.Bounds);
-		}
+		Assert.Equal(new Rectangle(10, 5, 80, 20), child1.Bounds);
+		Assert.Equal(new Rectangle(10, 31, 80, 100 - 2 * 31), child2.Bounds);
+		Assert.Equal(new Rectangle(10, 75, 80, 20), child3.Bounds);
+	}
 
-		[Fact]
-		public void TestExpandVertical()
+	[Fact]
+	public void TestExpandHorizontal()
+	{
+		View child1, child2, child3;
+		var stack = new StackLayout
 		{
-			View child1, child2, child3;
-			var stack = new StackLayout
-			{
-				IsPlatformEnabled = true,
-				Orientation = StackOrientation.Vertical,
-				Children = {
-					(child1 = new View {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true}),
-					(child2 = new View {
-						 WidthRequest = 20,
-						 HeightRequest = 20,
-						 IsPlatformEnabled = true,
-						 VerticalOptions = LayoutOptions.FillAndExpand
-					 }),
-					(child3 = new View {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true})
-				}
-			};
+			IsPlatformEnabled = true,
+			Orientation = StackOrientation.Horizontal,
+			Children = {
+				(child1 = new View {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true}),
+				(child2 = new View {
+					WidthRequest = 20,
+					HeightRequest = 20,
+					IsPlatformEnabled = true,
+					HorizontalOptions = LayoutOptions.FillAndExpand
+				}),
+				(child3 = new View {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true})
+			}
+		};
 
-			stack.Padding = new Thickness(10, 5);
-			stack.Layout(new Rectangle(0, 0, 100, 100));
+		stack.Layout(new Rectangle(0, 0, 100, 100));
 
-			Assert.Equal(new Rectangle(10, 5, 80, 20), child1.Bounds);
-			Assert.Equal(new Rectangle(10, 31, 80, 100 - 2 * 31), child2.Bounds);
-			Assert.Equal(new Rectangle(10, 75, 80, 20), child3.Bounds);
-		}
+		Assert.Equal(new Rectangle(0, 0, 20, 100), child1.Bounds);
+		Assert.Equal(new Rectangle(26, 0, 100 - 2 * 26, 100), child2.Bounds);
+		Assert.Equal(new Rectangle(80, 0, 20, 100), child3.Bounds);
+	}
 
-		[Fact]
-		public void TestExpandHorizontal()
+	[Fact]
+	public void TestSizeRequestVertical()
+	{
+		var stack = new StackLayout
 		{
-			View child1, child2, child3;
-			var stack = new StackLayout
-			{
-				IsPlatformEnabled = true,
-				Orientation = StackOrientation.Horizontal,
-				Children = {
-					(child1 = new View {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true}),
-					(child2 = new View {
-						 WidthRequest = 20,
-						 HeightRequest = 20,
-						 IsPlatformEnabled = true,
-						 HorizontalOptions = LayoutOptions.FillAndExpand
-					 }),
-					(child3 = new View {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true})
-				}
-			};
+			IsPlatformEnabled = true,
+			Children = {
+				new View {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true},
+				new View {WidthRequest = 30, HeightRequest = 30, IsPlatformEnabled = true}
+			}
+		};
 
-			stack.Layout(new Rectangle(0, 0, 100, 100));
+		var size = stack.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request;
+		Assert.Equal(new Size(30, 56), size);
+	}
 
-			Assert.Equal(new Rectangle(0, 0, 20, 100), child1.Bounds);
-			Assert.Equal(new Rectangle(26, 0, 100 - 2 * 26, 100), child2.Bounds);
-			Assert.Equal(new Rectangle(80, 0, 20, 100), child3.Bounds);
-		}
-
-		[Fact]
-		public void TestSizeRequestVertical()
+	[Fact]
+	public void TestSizeRequestHorizontal()
+	{
+		var stack = new StackLayout
 		{
-			var stack = new StackLayout
-			{
-				IsPlatformEnabled = true,
-				Children = {
-					new View {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true},
-					new View {WidthRequest = 30, HeightRequest = 30, IsPlatformEnabled = true}
-				}
-			};
+			Orientation = StackOrientation.Horizontal,
+			IsPlatformEnabled = true,
+			Children = {
+				new View {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true},
+				new View {WidthRequest = 30, HeightRequest = 30, IsPlatformEnabled = true}
+			}
+		};
 
-			var size = stack.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request;
-			Assert.Equal(new Size(30, 56), size);
-		}
+		var size = stack.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request;
+		Assert.Equal(new Size(56, 30), size);
+	}
 
-		[Fact]
-		public void TestSizeRequestHorizontal()
+	[Fact]
+	public void HorizontalRequestInVerticalLayout()
+	{
+		var stack = new StackLayout
 		{
-			var stack = new StackLayout
-			{
-				Orientation = StackOrientation.Horizontal,
-				IsPlatformEnabled = true,
-				Children = {
-					new View {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true},
-					new View {WidthRequest = 30, HeightRequest = 30, IsPlatformEnabled = true}
-				}
-			};
+			IsPlatformEnabled = true,
+			Children = {
+				new View {WidthRequest = 20, HeightRequest = 30, IsPlatformEnabled = true, HorizontalOptions = LayoutOptions.Start},
+				new View {
+					WidthRequest = 20,
+					HeightRequest = 30,
+					IsPlatformEnabled = true,
+					HorizontalOptions = LayoutOptions.Center
+				},
+				new View {WidthRequest = 20, HeightRequest = 30, IsPlatformEnabled = true, HorizontalOptions = LayoutOptions.End}
+			}
+		};
 
-			var size = stack.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request;
-			Assert.Equal(new Size(56, 30), size);
-		}
+		stack.Layout(new Rectangle(0, 0, 200, 200));
 
-		[Fact]
-		public void HorizontalRequestInVerticalLayout()
+		Assert.Equal(new Rectangle(0, 0, 20, 30), stack.Children[0].Bounds);
+		Assert.Equal(new Rectangle(90, 36, 20, 30), stack.Children[1].Bounds);
+		Assert.Equal(new Rectangle(180, 72, 20, 30), stack.Children[2].Bounds);
+	}
+
+	[Fact]
+	public void VerticalRequestInHorizontalLayout()
+	{
+		var stack = new StackLayout
 		{
-			var stack = new StackLayout
-			{
-				IsPlatformEnabled = true,
-				Children = {
-					new View {WidthRequest = 20, HeightRequest = 30, IsPlatformEnabled = true, HorizontalOptions = LayoutOptions.Start},
-					new View {
-						WidthRequest = 20,
-						HeightRequest = 30,
-						IsPlatformEnabled = true,
-						HorizontalOptions = LayoutOptions.Center
-					},
-					new View {WidthRequest = 20, HeightRequest = 30, IsPlatformEnabled = true, HorizontalOptions = LayoutOptions.End}
-				}
-			};
+			IsPlatformEnabled = true,
+			Orientation = StackOrientation.Horizontal,
+			Children = {
+				new View {WidthRequest = 20, HeightRequest = 30, IsPlatformEnabled = true, VerticalOptions = LayoutOptions.Start},
+				new View {WidthRequest = 20, HeightRequest = 30, IsPlatformEnabled = true, VerticalOptions = LayoutOptions.Center},
+				new View {WidthRequest = 20, HeightRequest = 30, IsPlatformEnabled = true, VerticalOptions = LayoutOptions.End}
+			}
+		};
 
-			stack.Layout(new Rectangle(0, 0, 200, 200));
+		stack.Layout(new Rectangle(0, 0, 200, 200));
 
-			Assert.Equal(new Rectangle(0, 0, 20, 30), stack.Children[0].Bounds);
-			Assert.Equal(new Rectangle(90, 36, 20, 30), stack.Children[1].Bounds);
-			Assert.Equal(new Rectangle(180, 72, 20, 30), stack.Children[2].Bounds);
-		}
+		Assert.Equal(new Rectangle(0, 0, 20, 30), stack.Children.Cast<View>().ToArray()[0].Bounds);
+		Assert.Equal(new Rectangle(26, 85, 20, 30), stack.Children.Cast<View>().ToArray()[1].Bounds);
+		Assert.Equal(new Rectangle(52, 170, 20, 30), stack.Children.Cast<View>().ToArray()[2].Bounds);
+	}
 
-		[Fact]
-		public void VerticalRequestInHorizontalLayout()
+	[Fact]
+	public void RespectMinimumHeightRequest()
+	{
+		var stack = new StackLayout
 		{
-			var stack = new StackLayout
-			{
-				IsPlatformEnabled = true,
-				Orientation = StackOrientation.Horizontal,
-				Children = {
-					new View {WidthRequest = 20, HeightRequest = 30, IsPlatformEnabled = true, VerticalOptions = LayoutOptions.Start},
-					new View {WidthRequest = 20, HeightRequest = 30, IsPlatformEnabled = true, VerticalOptions = LayoutOptions.Center},
-					new View {WidthRequest = 20, HeightRequest = 30, IsPlatformEnabled = true, VerticalOptions = LayoutOptions.End}
-				}
-			};
+			IsPlatformEnabled = true,
+			Spacing = 10,
+			Children = {
+				new View {WidthRequest = 100, HeightRequest = 100, IsPlatformEnabled = true},
+				new View {WidthRequest = 100, HeightRequest = 100, IsPlatformEnabled = true},
+				new View {WidthRequest = 100, HeightRequest = 100, MinimumHeightRequest = 10, IsPlatformEnabled = true}
+			}
+		};
 
-			stack.Layout(new Rectangle(0, 0, 200, 200));
+		stack.Layout(new Rectangle(0, 0, 100, 250));
 
-			Assert.Equal(new Rectangle(0, 0, 20, 30), stack.Children.Cast<View>().ToArray()[0].Bounds);
-			Assert.Equal(new Rectangle(26, 85, 20, 30), stack.Children.Cast<View>().ToArray()[1].Bounds);
-			Assert.Equal(new Rectangle(52, 170, 20, 30), stack.Children.Cast<View>().ToArray()[2].Bounds);
-		}
+		Assert.Equal(new Rectangle(0, 0, 100, 100), stack.Children.ToArray()[0].Bounds);
+		Assert.Equal(new Rectangle(0, 110, 100, 100), stack.Children.ToArray()[1].Bounds);
+		Assert.Equal(new Rectangle(0, 220, 100, 30), stack.Children.ToArray()[2].Bounds);
+	}
 
-		[Fact]
-		public void RespectMinimumHeightRequest()
+	[Fact]
+	public void RespectMinimumWidthRequest()
+	{
+		var stack = new StackLayout
 		{
-			var stack = new StackLayout
-			{
-				IsPlatformEnabled = true,
-				Spacing = 10,
-				Children = {
-					new View {WidthRequest = 100, HeightRequest = 100, IsPlatformEnabled = true},
-					new View {WidthRequest = 100, HeightRequest = 100, IsPlatformEnabled = true},
-					new View {WidthRequest = 100, HeightRequest = 100, MinimumHeightRequest = 10, IsPlatformEnabled = true}
-				}
-			};
+			IsPlatformEnabled = true,
+			Orientation = StackOrientation.Horizontal,
+			Spacing = 10,
+			Children = {
+				new View {WidthRequest = 100, HeightRequest = 100, IsPlatformEnabled = true},
+				new View {WidthRequest = 100, HeightRequest = 100, IsPlatformEnabled = true},
+				new View {WidthRequest = 100, HeightRequest = 100, MinimumWidthRequest = 10, IsPlatformEnabled = true}
+			}
+		};
 
-			stack.Layout(new Rectangle(0, 0, 100, 250));
+		stack.Layout(new Rectangle(0, 0, 250, 100));
 
-			Assert.Equal(new Rectangle(0, 0, 100, 100), stack.Children.ToArray()[0].Bounds);
-			Assert.Equal(new Rectangle(0, 110, 100, 100), stack.Children.ToArray()[1].Bounds);
-			Assert.Equal(new Rectangle(0, 220, 100, 30), stack.Children.ToArray()[2].Bounds);
-		}
+		Assert.Equal(new Rectangle(0, 0, 100, 100), stack.Children.ToArray()[0].Bounds);
+		Assert.Equal(new Rectangle(110, 0, 100, 100), stack.Children.ToArray()[1].Bounds);
+		Assert.Equal(new Rectangle(220, 0, 30, 100), stack.Children.ToArray()[2].Bounds);
+	}
 
-		[Fact]
-		public void RespectMinimumWidthRequest()
+	[Fact]
+	public void GetMinimumSizeVertical()
+	{
+		var stack = new StackLayout
 		{
-			var stack = new StackLayout
-			{
-				IsPlatformEnabled = true,
-				Orientation = StackOrientation.Horizontal,
-				Spacing = 10,
-				Children = {
-					new View {WidthRequest = 100, HeightRequest = 100, IsPlatformEnabled = true},
-					new View {WidthRequest = 100, HeightRequest = 100, IsPlatformEnabled = true},
-					new View {WidthRequest = 100, HeightRequest = 100, MinimumWidthRequest = 10, IsPlatformEnabled = true}
-				}
-			};
+			IsPlatformEnabled = true,
+			Spacing = 10,
+			Children = {
+				new View {WidthRequest = 100, HeightRequest = 100, IsPlatformEnabled = true},
+				new View {WidthRequest = 100, HeightRequest = 100, IsPlatformEnabled = true},
+				new View {WidthRequest = 100, HeightRequest = 100, MinimumHeightRequest = 10, IsPlatformEnabled = true}
+			}
+		};
 
-			stack.Layout(new Rectangle(0, 0, 250, 100));
+		var result = stack.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+		Assert.Equal(new Size(100, 230), result.Minimum);
+	}
 
-			Assert.Equal(new Rectangle(0, 0, 100, 100), stack.Children.ToArray()[0].Bounds);
-			Assert.Equal(new Rectangle(110, 0, 100, 100), stack.Children.ToArray()[1].Bounds);
-			Assert.Equal(new Rectangle(220, 0, 30, 100), stack.Children.ToArray()[2].Bounds);
-		}
-
-		[Fact]
-		public void GetMinimumSizeVertical()
+	[Fact]
+	public void GetMinimumSizeHorizontal()
+	{
+		var stack = new StackLayout
 		{
-			var stack = new StackLayout
-			{
-				IsPlatformEnabled = true,
-				Spacing = 10,
-				Children = {
-					new View {WidthRequest = 100, HeightRequest = 100, IsPlatformEnabled = true},
-					new View {WidthRequest = 100, HeightRequest = 100, IsPlatformEnabled = true},
-					new View {WidthRequest = 100, HeightRequest = 100, MinimumHeightRequest = 10, IsPlatformEnabled = true}
-				}
-			};
+			IsPlatformEnabled = true,
+			Spacing = 10,
+			Orientation = StackOrientation.Horizontal,
+			Children = {
+				new View {WidthRequest = 100, HeightRequest = 100, IsPlatformEnabled = true},
+				new View {WidthRequest = 100, HeightRequest = 100, IsPlatformEnabled = true},
+				new View {WidthRequest = 100, HeightRequest = 100, MinimumWidthRequest = 10, IsPlatformEnabled = true}
+			}
+		};
 
-			var result = stack.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
-			Assert.Equal(new Size(100, 230), result.Minimum);
-		}
+		var result = stack.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+		Assert.Equal(new Size(230, 100), result.Minimum);
+	}
 
-		[Fact]
-		public void GetMinimumSizeHorizontal()
+	[Fact]
+	public void TestVisibility()
+	{
+		View child1, child2;
+		var stack = new StackLayout
 		{
-			var stack = new StackLayout
-			{
-				IsPlatformEnabled = true,
-				Spacing = 10,
-				Orientation = StackOrientation.Horizontal,
-				Children = {
-					new View {WidthRequest = 100, HeightRequest = 100, IsPlatformEnabled = true},
-					new View {WidthRequest = 100, HeightRequest = 100, IsPlatformEnabled = true},
-					new View {WidthRequest = 100, HeightRequest = 100, MinimumWidthRequest = 10, IsPlatformEnabled = true}
-				}
-			};
+			IsPlatformEnabled = true,
+			Children = {
+				(child1 = new View {IsPlatformEnabled = true}),
+				(child2 = new View {IsPlatformEnabled = true})
+			}
+		};
 
-			var result = stack.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
-			Assert.Equal(new Size(230, 100), result.Minimum);
-		}
+		stack.Layout(new Rectangle(0, 0, 100, 100));
 
-		[Fact]
-		public void TestVisibility()
+		var size = stack.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request;
+		Assert.Equal(new Rectangle(0, 0, 100, 20), child1.Bounds);
+		Assert.Equal(new Rectangle(0, 26, 100, 20), child2.Bounds);
+		Assert.Equal(new Size(100, 46), size);
+
+		child1.IsVisible = false;
+		Assert.False(child1.IsVisible);
+		Assert.Equal(new Rectangle(0, 0, 100, 20), child2.Bounds);
+		size = stack.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request;
+		Assert.Equal(new Size(100, 20), size);
+
+	}
+
+	[Fact]
+	public void OffOrientationMinimumSize()
+	{
+		var stack = new StackLayout
 		{
-			View child1, child2;
-			var stack = new StackLayout
-			{
-				IsPlatformEnabled = true,
-				Children = {
-					(child1 = new View {IsPlatformEnabled = true}),
-					(child2 = new View {IsPlatformEnabled = true})
-				}
-			};
+			IsPlatformEnabled = true,
+			Spacing = 0
+		};
 
-			stack.Layout(new Rectangle(0, 0, 100, 100));
-
-			var size = stack.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request;
-			Assert.Equal(new Rectangle(0, 0, 100, 20), child1.Bounds);
-			Assert.Equal(new Rectangle(0, 26, 100, 20), child2.Bounds);
-			Assert.Equal(new Size(100, 46), size);
-
-			child1.IsVisible = false;
-			Assert.False(child1.IsVisible);
-			Assert.Equal(new Rectangle(0, 0, 100, 20), child2.Bounds);
-			size = stack.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request;
-			Assert.Equal(new Size(100, 20), size);
-
-		}
-
-		[Fact]
-		public void OffOrientationMinimumSize()
+		stack.Children.Add(new View
 		{
-			var stack = new StackLayout
-			{
-				IsPlatformEnabled = true,
-				Spacing = 0
-			};
+			IsPlatformEnabled = true,
+			WidthRequest = 100,
+			HeightRequest = 100,
+			MinimumWidthRequest = 10,
+			MinimumHeightRequest = 10
+		});
 
-			stack.Children.Add(new View
-			{
-				IsPlatformEnabled = true,
-				WidthRequest = 100,
-				HeightRequest = 100,
-				MinimumWidthRequest = 10,
-				MinimumHeightRequest = 10
-			});
+		var result = stack.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+		Assert.Equal(new Size(10, 10), result.Minimum);
+	}
 
-			var result = stack.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
-			Assert.Equal(new Size(10, 10), result.Minimum);
-		}
-
-		[Fact]
-		public void NestedMinimumSizeOverflow()
+	[Fact]
+	public void NestedMinimumSizeOverflow()
+	{
+		var stack = new StackLayout
 		{
-			var stack = new StackLayout
-			{
-				IsPlatformEnabled = true,
-				Spacing = 0
-			};
+			IsPlatformEnabled = true,
+			Spacing = 0
+		};
 
-			var hbox = new StackLayout
-			{
-				IsPlatformEnabled = true,
-				Spacing = 0,
-				Orientation = StackOrientation.Horizontal
-			};
-
-			View child1, child2;
-			hbox.Children.Add(child1 = new View
-			{
-				IsPlatformEnabled = true,
-				WidthRequest = 100,
-				HeightRequest = 100,
-				MinimumWidthRequest = 10,
-				MinimumHeightRequest = 10
-			});
-
-			hbox.Children.Add(child2 = new View
-			{
-				IsPlatformEnabled = true,
-				WidthRequest = 100,
-				HeightRequest = 100,
-				MinimumWidthRequest = 10,
-				MinimumHeightRequest = 10
-			});
-
-			stack.Children.Add(hbox);
-
-			stack.Layout(new Rectangle(0, 0, 70, 70));
-			Assert.Equal(new Rectangle(0, 0, 70, 70), stack.Bounds);
-			Assert.Equal(new Rectangle(0, 0, 35, 70), child1.Bounds);
-			Assert.Equal(new Rectangle(35, 0, 35, 70), child2.Bounds);
-		}
-
-		[Theory]
-		[InlineData(StackOrientation.Vertical, LayoutAlignment.Start, false, 0, 0, 200, 100, 0, 100, 200, 10)]
-		[InlineData(StackOrientation.Vertical, LayoutAlignment.Start, true, 0, 0, 200, 100, 0, 190, 200, 10)]
-		[InlineData(StackOrientation.Vertical, LayoutAlignment.Center, false, 0, 0, 200, 100, 0, 100, 200, 10)]
-		[InlineData(StackOrientation.Vertical, LayoutAlignment.Center, true, 0, 45, 200, 100, 0, 190, 200, 10)]
-		[InlineData(StackOrientation.Vertical, LayoutAlignment.End, false, 0, 0, 200, 100, 0, 100, 200, 10)]
-		[InlineData(StackOrientation.Vertical, LayoutAlignment.End, true, 0, 90, 200, 100, 0, 190, 200, 10)]
-		[InlineData(StackOrientation.Horizontal, LayoutAlignment.Start, false, 0, 0, 100, 200, 100, 0, 10, 200)]
-		[InlineData(StackOrientation.Horizontal, LayoutAlignment.Start, true, 0, 0, 100, 200, 190, 0, 10, 200)]
-		[InlineData(StackOrientation.Horizontal, LayoutAlignment.Center, false, 0, 0, 100, 200, 100, 0, 10, 200)]
-		[InlineData(StackOrientation.Horizontal, LayoutAlignment.Center, true, 45, 0, 100, 200, 190, 0, 10, 200)]
-		[InlineData(StackOrientation.Horizontal, LayoutAlignment.End, false, 0, 0, 100, 200, 100, 0, 10, 200)]
-		[InlineData(StackOrientation.Horizontal, LayoutAlignment.End, true, 90, 0, 100, 200, 190, 0, 10, 200)]
-		public void LayoutExpansion(StackOrientation orientation, LayoutAlignment align, bool expand, double x1, double y1, double w1, double h1, double x2, double y2, double w2, double h2)
+		var hbox = new StackLayout
 		{
-			var options = new LayoutOptions(align, expand);
-			var stack = new StackLayout
-			{
-				IsPlatformEnabled = true,
-				Spacing = 0,
-				Orientation = orientation
-			};
+			IsPlatformEnabled = true,
+			Spacing = 0,
+			Orientation = StackOrientation.Horizontal
+		};
 
-			View child1, child2;
-			stack.Children.Add(child1 = new View
-			{
-				IsPlatformEnabled = true,
-				WidthRequest = 100,
-				HeightRequest = 100
-			});
-
-			if (orientation == StackOrientation.Vertical)
-				child1.VerticalOptions = options;
-			else
-				child1.HorizontalOptions = options;
-
-			stack.Children.Add(child2 = new View
-			{
-				IsPlatformEnabled = true,
-				WidthRequest = 10,
-				HeightRequest = 10
-			});
-
-			stack.Layout(new Rectangle(0, 0, 200, 200));
-
-			Assert.Equal(new Rectangle(x1, y1, w1, h1), child1.Bounds);
-			Assert.Equal(new Rectangle(x2, y2, w2, h2), child2.Bounds);
-		}
-
-		[Fact]
-		public void RelayoutOnRemove()
+		View child1, child2;
+		hbox.Children.Add(child1 = new View
 		{
-			var child1 = new BoxView
-			{
-				IsPlatformEnabled = true,
-			};
+			IsPlatformEnabled = true,
+			WidthRequest = 100,
+			HeightRequest = 100,
+			MinimumWidthRequest = 10,
+			MinimumHeightRequest = 10
+		});
 
-			var child2 = new BoxView
-			{
-				IsPlatformEnabled = true,
-			};
-
-			var stack = new StackLayout
-			{
-				IsPlatformEnabled = true,
-				Children = { child1, child2 }
-			};
-
-			stack.Layout(new Rectangle(0, 0, 200, 200));
-
-			Assert.Equal(new Rectangle(0, 0, 200, 40), child1.Bounds);
-			Assert.Equal(new Rectangle(0, 46, 200, 40), child2.Bounds);
-
-			stack.Children.RemoveAt(0);
-
-			Assert.Equal(new Rectangle(0, 0, 200, 40), child2.Bounds);
-		}
-
-		[Fact]
-		public void FixedVerticalStackFixesExpander()
+		hbox.Children.Add(child2 = new View
 		{
-			var child1 = new BoxView
-			{
-				IsPlatformEnabled = true,
-			};
+			IsPlatformEnabled = true,
+			WidthRequest = 100,
+			HeightRequest = 100,
+			MinimumWidthRequest = 10,
+			MinimumHeightRequest = 10
+		});
 
-			var child2 = new BoxView
-			{
-				IsPlatformEnabled = true,
-				VerticalOptions = LayoutOptions.FillAndExpand
-			};
+		stack.Children.Add(hbox);
 
-			var stack = new StackLayout
-			{
-				ComputedConstraint = LayoutConstraint.Fixed,
-				IsPlatformEnabled = true,
-				Children = { child1, child2 }
-			};
+		stack.Layout(new Rectangle(0, 0, 70, 70));
+		Assert.Equal(new Rectangle(0, 0, 70, 70), stack.Bounds);
+		Assert.Equal(new Rectangle(0, 0, 35, 70), child1.Bounds);
+		Assert.Equal(new Rectangle(35, 0, 35, 70), child2.Bounds);
+	}
 
-			stack.Layout(new Rectangle(0, 0, 200, 200));
-
-			Assert.Equal(LayoutConstraint.Fixed, child2.Constraint);
-		}
-
-		[Fact]
-		public void HFixedVerticalStackFixesExpander()
+	[Theory]
+	[InlineData(StackOrientation.Vertical, LayoutAlignment.Start, false, 0, 0, 200, 100, 0, 100, 200, 10)]
+	[InlineData(StackOrientation.Vertical, LayoutAlignment.Start, true, 0, 0, 200, 100, 0, 190, 200, 10)]
+	[InlineData(StackOrientation.Vertical, LayoutAlignment.Center, false, 0, 0, 200, 100, 0, 100, 200, 10)]
+	[InlineData(StackOrientation.Vertical, LayoutAlignment.Center, true, 0, 45, 200, 100, 0, 190, 200, 10)]
+	[InlineData(StackOrientation.Vertical, LayoutAlignment.End, false, 0, 0, 200, 100, 0, 100, 200, 10)]
+	[InlineData(StackOrientation.Vertical, LayoutAlignment.End, true, 0, 90, 200, 100, 0, 190, 200, 10)]
+	[InlineData(StackOrientation.Horizontal, LayoutAlignment.Start, false, 0, 0, 100, 200, 100, 0, 10, 200)]
+	[InlineData(StackOrientation.Horizontal, LayoutAlignment.Start, true, 0, 0, 100, 200, 190, 0, 10, 200)]
+	[InlineData(StackOrientation.Horizontal, LayoutAlignment.Center, false, 0, 0, 100, 200, 100, 0, 10, 200)]
+	[InlineData(StackOrientation.Horizontal, LayoutAlignment.Center, true, 45, 0, 100, 200, 190, 0, 10, 200)]
+	[InlineData(StackOrientation.Horizontal, LayoutAlignment.End, false, 0, 0, 100, 200, 100, 0, 10, 200)]
+	[InlineData(StackOrientation.Horizontal, LayoutAlignment.End, true, 90, 0, 100, 200, 190, 0, 10, 200)]
+	public void LayoutExpansion(StackOrientation orientation, LayoutAlignment align, bool expand, double x1, double y1, double w1, double h1, double x2, double y2, double w2, double h2)
+	{
+		var options = new LayoutOptions(align, expand);
+		var stack = new StackLayout
 		{
-			var child1 = new BoxView
-			{
-				IsPlatformEnabled = true,
-			};
+			IsPlatformEnabled = true,
+			Spacing = 0,
+			Orientation = orientation
+		};
 
-			var child2 = new BoxView
-			{
-				IsPlatformEnabled = true,
-				VerticalOptions = LayoutOptions.FillAndExpand
-			};
-
-			var stack = new StackLayout
-			{
-				ComputedConstraint = LayoutConstraint.HorizontallyFixed,
-				IsPlatformEnabled = true,
-				Children = { child1, child2 }
-			};
-
-			stack.Layout(new Rectangle(0, 0, 200, 200));
-
-			Assert.Equal(LayoutConstraint.HorizontallyFixed, child2.Constraint);
-		}
-
-		[Fact]
-		public void FixedHorizontalStackFixesExpander()
+		View child1, child2;
+		stack.Children.Add(child1 = new View
 		{
-			var child1 = new BoxView
-			{
-				IsPlatformEnabled = true,
-			};
+			IsPlatformEnabled = true,
+			WidthRequest = 100,
+			HeightRequest = 100
+		});
 
-			var child2 = new BoxView
-			{
-				IsPlatformEnabled = true,
-				HorizontalOptions = LayoutOptions.FillAndExpand
-			};
+		if (orientation == StackOrientation.Vertical)
+			child1.VerticalOptions = options;
+		else
+			child1.HorizontalOptions = options;
 
-			var stack = new StackLayout
-			{
-				ComputedConstraint = LayoutConstraint.Fixed,
-				Orientation = StackOrientation.Horizontal,
-				IsPlatformEnabled = true,
-				Children = { child1, child2 }
-			};
-
-			stack.Layout(new Rectangle(0, 0, 200, 200));
-
-			Assert.Equal(LayoutConstraint.Fixed, child2.Constraint);
-		}
-
-		[Fact]
-		public void HFixedHorizontalStackFixesExpander()
+		stack.Children.Add(child2 = new View
 		{
-			var child1 = new BoxView
-			{
-				IsPlatformEnabled = true,
-			};
+			IsPlatformEnabled = true,
+			WidthRequest = 10,
+			HeightRequest = 10
+		});
 
-			var child2 = new BoxView
-			{
-				IsPlatformEnabled = true,
-				HorizontalOptions = LayoutOptions.FillAndExpand
-			};
+		stack.Layout(new Rectangle(0, 0, 200, 200));
 
-			var stack = new StackLayout
-			{
-				ComputedConstraint = LayoutConstraint.VerticallyFixed,
-				Orientation = StackOrientation.Horizontal,
-				IsPlatformEnabled = true,
-				Children = { child1, child2 }
-			};
+		Assert.Equal(new Rectangle(x1, y1, w1, h1), child1.Bounds);
+		Assert.Equal(new Rectangle(x2, y2, w2, h2), child2.Bounds);
+	}
 
-			stack.Layout(new Rectangle(0, 0, 200, 200));
-
-			Assert.Equal(LayoutConstraint.VerticallyFixed, child2.Constraint);
-		}
-
-		[Fact(Skip = "This test intended to test bz38416 however I just for the life of me cant figure it out in simplified form. I am failure.")]
-		public void TheWTFTest()
+	[Fact]
+	public void RelayoutOnRemove()
+	{
+		var child1 = new BoxView
 		{
-			var child1 = new BoxView
-			{
-				IsPlatformEnabled = true,
-				WidthRequest = 20,
-				HeightRequest = 20,
-				MinimumWidthRequest = 10,
-				MinimumHeightRequest = 10,
-				VerticalOptions = LayoutOptions.FillAndExpand
-			};
+			IsPlatformEnabled = true,
+		};
 
-			var stack = new StackLayout
-			{
-				IsPlatformEnabled = true,
-				Children = { child1 }
-			};
-
-			stack.Layout(new Rectangle(0, 0, 100, 100));
-		}
-
-		[Fact]
-		public void PaddingResizeTest()
+		var child2 = new BoxView
 		{
-			var child = new BoxView
-			{
-				IsPlatformEnabled = true,
-				WidthRequest = 20,
-				HeightRequest = 20,
-			};
+			IsPlatformEnabled = true,
+		};
 
-			var innerStack = new StackLayout
-			{
-				HorizontalOptions = LayoutOptions.Center,
-				VerticalOptions = LayoutOptions.Center,
-				IsPlatformEnabled = true,
-				Children = { child }
-			};
-
-			var outterLayout = new StackLayout
-			{
-				HorizontalOptions = LayoutOptions.FillAndExpand,
-				VerticalOptions = LayoutOptions.FillAndExpand,
-				IsPlatformEnabled = true,
-				Children = { innerStack }
-			};
-
-			outterLayout.Layout(new Rectangle(0, 0, 100, 100));
-			var beforeSize = innerStack.Bounds.Size;
-			innerStack.Padding = new Thickness(30);
-			var afterSize = innerStack.Bounds.Size;
-			Assert.NotEqual(beforeSize, afterSize);
-		}
-
-		[Fact]
-		public void PaddingChildRelayoutTest()
+		var stack = new StackLayout
 		{
-			var child = new BoxView
-			{
-				IsPlatformEnabled = true,
-				WidthRequest = 20,
-				HeightRequest = 20,
-			};
+			IsPlatformEnabled = true,
+			Children = { child1, child2 }
+		};
 
-			var innerStack = new StackLayout
-			{
-				HorizontalOptions = LayoutOptions.FillAndExpand,
-				VerticalOptions = LayoutOptions.FillAndExpand,
-				IsPlatformEnabled = true,
-				Children = { child }
-			};
+		stack.Layout(new Rectangle(0, 0, 200, 200));
 
-			var outterLayout = new StackLayout
-			{
-				HorizontalOptions = LayoutOptions.FillAndExpand,
-				VerticalOptions = LayoutOptions.FillAndExpand,
-				IsPlatformEnabled = true,
-				Children = { innerStack }
-			};
+		Assert.Equal(new Rectangle(0, 0, 200, 40), child1.Bounds);
+		Assert.Equal(new Rectangle(0, 46, 200, 40), child2.Bounds);
 
-			outterLayout.Layout(new Rectangle(0, 0, 100, 100));
-			var before = child.Bounds;
-			innerStack.Padding = new Thickness(30);
-			var after = child.Bounds;
-			Assert.NotEqual(before, after);
-		}
+		stack.Children.RemoveAt(0);
+
+		Assert.Equal(new Rectangle(0, 0, 200, 40), child2.Bounds);
+	}
+
+	[Fact]
+	public void FixedVerticalStackFixesExpander()
+	{
+		var child1 = new BoxView
+		{
+			IsPlatformEnabled = true,
+		};
+
+		var child2 = new BoxView
+		{
+			IsPlatformEnabled = true,
+			VerticalOptions = LayoutOptions.FillAndExpand
+		};
+
+		var stack = new StackLayout
+		{
+			ComputedConstraint = LayoutConstraint.Fixed,
+			IsPlatformEnabled = true,
+			Children = { child1, child2 }
+		};
+
+		stack.Layout(new Rectangle(0, 0, 200, 200));
+
+		Assert.Equal(LayoutConstraint.Fixed, child2.Constraint);
+	}
+
+	[Fact]
+	public void HFixedVerticalStackFixesExpander()
+	{
+		var child1 = new BoxView
+		{
+			IsPlatformEnabled = true,
+		};
+
+		var child2 = new BoxView
+		{
+			IsPlatformEnabled = true,
+			VerticalOptions = LayoutOptions.FillAndExpand
+		};
+
+		var stack = new StackLayout
+		{
+			ComputedConstraint = LayoutConstraint.HorizontallyFixed,
+			IsPlatformEnabled = true,
+			Children = { child1, child2 }
+		};
+
+		stack.Layout(new Rectangle(0, 0, 200, 200));
+
+		Assert.Equal(LayoutConstraint.HorizontallyFixed, child2.Constraint);
+	}
+
+	[Fact]
+	public void FixedHorizontalStackFixesExpander()
+	{
+		var child1 = new BoxView
+		{
+			IsPlatformEnabled = true,
+		};
+
+		var child2 = new BoxView
+		{
+			IsPlatformEnabled = true,
+			HorizontalOptions = LayoutOptions.FillAndExpand
+		};
+
+		var stack = new StackLayout
+		{
+			ComputedConstraint = LayoutConstraint.Fixed,
+			Orientation = StackOrientation.Horizontal,
+			IsPlatformEnabled = true,
+			Children = { child1, child2 }
+		};
+
+		stack.Layout(new Rectangle(0, 0, 200, 200));
+
+		Assert.Equal(LayoutConstraint.Fixed, child2.Constraint);
+	}
+
+	[Fact]
+	public void HFixedHorizontalStackFixesExpander()
+	{
+		var child1 = new BoxView
+		{
+			IsPlatformEnabled = true,
+		};
+
+		var child2 = new BoxView
+		{
+			IsPlatformEnabled = true,
+			HorizontalOptions = LayoutOptions.FillAndExpand
+		};
+
+		var stack = new StackLayout
+		{
+			ComputedConstraint = LayoutConstraint.VerticallyFixed,
+			Orientation = StackOrientation.Horizontal,
+			IsPlatformEnabled = true,
+			Children = { child1, child2 }
+		};
+
+		stack.Layout(new Rectangle(0, 0, 200, 200));
+
+		Assert.Equal(LayoutConstraint.VerticallyFixed, child2.Constraint);
+	}
+
+	[Fact(Skip = "This test intended to test bz38416 however I just for the life of me cant figure it out in simplified form. I am failure.")]
+	public void TheWTFTest()
+	{
+		var child1 = new BoxView
+		{
+			IsPlatformEnabled = true,
+			WidthRequest = 20,
+			HeightRequest = 20,
+			MinimumWidthRequest = 10,
+			MinimumHeightRequest = 10,
+			VerticalOptions = LayoutOptions.FillAndExpand
+		};
+
+		var stack = new StackLayout
+		{
+			IsPlatformEnabled = true,
+			Children = { child1 }
+		};
+
+		stack.Layout(new Rectangle(0, 0, 100, 100));
+	}
+
+	[Fact]
+	public void PaddingResizeTest()
+	{
+		var child = new BoxView
+		{
+			IsPlatformEnabled = true,
+			WidthRequest = 20,
+			HeightRequest = 20,
+		};
+
+		var innerStack = new StackLayout
+		{
+			HorizontalOptions = LayoutOptions.Center,
+			VerticalOptions = LayoutOptions.Center,
+			IsPlatformEnabled = true,
+			Children = { child }
+		};
+
+		var outterLayout = new StackLayout
+		{
+			HorizontalOptions = LayoutOptions.FillAndExpand,
+			VerticalOptions = LayoutOptions.FillAndExpand,
+			IsPlatformEnabled = true,
+			Children = { innerStack }
+		};
+
+		outterLayout.Layout(new Rectangle(0, 0, 100, 100));
+		var beforeSize = innerStack.Bounds.Size;
+		innerStack.Padding = new Thickness(30);
+		var afterSize = innerStack.Bounds.Size;
+		Assert.NotEqual(beforeSize, afterSize);
+	}
+
+	[Fact]
+	public void PaddingChildRelayoutTest()
+	{
+		var child = new BoxView
+		{
+			IsPlatformEnabled = true,
+			WidthRequest = 20,
+			HeightRequest = 20,
+		};
+
+		var innerStack = new StackLayout
+		{
+			HorizontalOptions = LayoutOptions.FillAndExpand,
+			VerticalOptions = LayoutOptions.FillAndExpand,
+			IsPlatformEnabled = true,
+			Children = { child }
+		};
+
+		var outterLayout = new StackLayout
+		{
+			HorizontalOptions = LayoutOptions.FillAndExpand,
+			VerticalOptions = LayoutOptions.FillAndExpand,
+			IsPlatformEnabled = true,
+			Children = { innerStack }
+		};
+
+		outterLayout.Layout(new Rectangle(0, 0, 100, 100));
+		var before = child.Bounds;
+		innerStack.Padding = new Thickness(30);
+		var after = child.Bounds;
+		Assert.NotEqual(before, after);
 	}
 }

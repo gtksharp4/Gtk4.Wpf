@@ -3,244 +3,243 @@ using System.ComponentModel;
 using Gtk;
 using Xamarin.Forms.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers
+namespace Xamarin.Forms.Platform.GTK.Renderers;
+
+public class ScrollViewRenderer : ViewRenderer<ScrollView, ScrolledWindow>
 {
-	public class ScrollViewRenderer : ViewRenderer<ScrollView, ScrolledWindow>
+	private VisualElement _currentView;
+	private Viewport _viewPort;
+
+	protected IScrollViewController Controller
 	{
-		private VisualElement _currentView;
-		private Viewport _viewPort;
+		get { return Element; }
+	}
 
-		protected IScrollViewController Controller
+	protected override void OnElementChanged(ElementChangedEventArgs<ScrollView> e)
+	{
+		base.OnElementChanged(e);
+
+		if (e.OldElement != null)
 		{
-			get { return Element; }
+			e.OldElement.ScrollToRequested -= OnScrollToRequested;
 		}
 
-		protected override void OnElementChanged(ElementChangedEventArgs<ScrollView> e)
+		if (e.NewElement != null)
 		{
-			base.OnElementChanged(e);
-
-			if (e.OldElement != null)
+			if (Control == null)
 			{
-				e.OldElement.ScrollToRequested -= OnScrollToRequested;
-			}
-
-			if (e.NewElement != null)
-			{
-				if (Control == null)
+				// Use Gtk.ScrolledWindow that adds scrollbars to its child widget.
+				Control = new ScrolledWindow
 				{
-					// Use Gtk.ScrolledWindow that adds scrollbars to its child widget.
-					Control = new ScrolledWindow
-					{
-						CanFocus = true,
-						ShadowType = ShadowType.None,
-						BorderWidth = 0,
-						HscrollbarPolicy = ScrollBarVisibilityToGtk(Element.HorizontalScrollBarVisibility),
-						VscrollbarPolicy = ScrollBarVisibilityToGtk(Element.VerticalScrollBarVisibility)
-					};
+					CanFocus = true,
+					ShadowType = ShadowType.None,
+					BorderWidth = 0,
+					HscrollbarPolicy = ScrollBarVisibilityToGtk(Element.HorizontalScrollBarVisibility),
+					VscrollbarPolicy = ScrollBarVisibilityToGtk(Element.VerticalScrollBarVisibility)
+				};
 
-					_viewPort = new Viewport();
-					_viewPort.ShadowType = ShadowType.None;
-					_viewPort.BorderWidth = 0;
+				_viewPort = new Viewport();
+				_viewPort.ShadowType = ShadowType.None;
+				_viewPort.BorderWidth = 0;
 
-					Control.Add(_viewPort);
-					SetNativeControl(Control);
+				Control.Add(_viewPort);
+				SetNativeControl(Control);
 
-					Control.Hadjustment.ValueChanged += OnScrollEvent;
-					Control.Vadjustment.ValueChanged += OnScrollEvent;
-				}
-
-				Element.ScrollToRequested += OnScrollToRequested;
-
-				UpdateOrientation();
-				LoadContent();
-				UpdateContentSize();
-				UpdateVerticalScrollBarVisibility();
-				UpdateHorizontalScrollBarVisibility();
+				Control.Hadjustment.ValueChanged += OnScrollEvent;
+				Control.Vadjustment.ValueChanged += OnScrollEvent;
 			}
+
+			Element.ScrollToRequested += OnScrollToRequested;
+
+			UpdateOrientation();
+			LoadContent();
+			UpdateContentSize();
+			UpdateVerticalScrollBarVisibility();
+			UpdateHorizontalScrollBarVisibility();
+		}
+	}
+
+	protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+	{
+		base.OnElementPropertyChanged(sender, e);
+
+		if (e.PropertyName == ScrollView.ContentSizeProperty.PropertyName)
+			UpdateContentSize();
+		else if (e.PropertyName == nameof(ScrollView.Content))
+			LoadContent();
+		else if (e.PropertyName == ScrollView.OrientationProperty.PropertyName)
+			UpdateOrientation();
+		else if (e.PropertyName == ScrollView.VerticalScrollBarVisibilityProperty.PropertyName)
+			UpdateVerticalScrollBarVisibility();
+		else if (e.PropertyName == ScrollView.HorizontalScrollBarVisibilityProperty.PropertyName)
+			UpdateHorizontalScrollBarVisibility();
+	}
+
+	protected override void Dispose(bool disposing)
+	{
+		// The Forms-side handler, which nothing else removes: OnElementChanged only detaches it
+		// from e.OldElement. Left attached, the ScrollView element keeps the disposed renderer
+		// alive and a later ScrollToAsync re-enters OnScrollToRequested, which dereferences the
+		// Control that base.Dispose has already nulled.
+		if (Element != null)
+		{
+			Element.ScrollToRequested -= OnScrollToRequested;
 		}
 
-		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		if (Control != null)
 		{
-			base.OnElementPropertyChanged(sender, e);
+			Control.ScrollEvent -= OnScrollEvent;
 
-			if (e.PropertyName == ScrollView.ContentSizeProperty.PropertyName)
-				UpdateContentSize();
-			else if (e.PropertyName == nameof(ScrollView.Content))
-				LoadContent();
-			else if (e.PropertyName == ScrollView.OrientationProperty.PropertyName)
-				UpdateOrientation();
-			else if (e.PropertyName == ScrollView.VerticalScrollBarVisibilityProperty.PropertyName)
-				UpdateVerticalScrollBarVisibility();
-			else if (e.PropertyName == ScrollView.HorizontalScrollBarVisibilityProperty.PropertyName)
-				UpdateHorizontalScrollBarVisibility();
+			if (Control.Hadjustment != null)
+				Control.Hadjustment.ValueChanged -= OnScrollEvent;
+
+			if (Control.Vadjustment != null)
+				Control.Vadjustment.ValueChanged -= OnScrollEvent;
+		}
+		if (_viewPort != null)
+		{
+			_viewPort.Destroy();
+			_viewPort = null;
 		}
 
-		protected override void Dispose(bool disposing)
+		base.Dispose(disposing);
+	}
+
+	protected override void UpdateBackgroundColor()
+	{
+		if (Element.BackgroundColor.IsDefaultOrTransparent())
 		{
-			// The Forms-side handler, which nothing else removes: OnElementChanged only detaches it
-			// from e.OldElement. Left attached, the ScrollView element keeps the disposed renderer
-			// alive and a later ScrollToAsync re-enters OnScrollToRequested, which dereferences the
-			// Control that base.Dispose has already nulled.
-			if (Element != null)
-			{
-				Element.ScrollToRequested -= OnScrollToRequested;
-			}
-
-			if (Control != null)
-			{
-				Control.ScrollEvent -= OnScrollEvent;
-
-				if (Control.Hadjustment != null)
-					Control.Hadjustment.ValueChanged -= OnScrollEvent;
-
-				if (Control.Vadjustment != null)
-					Control.Vadjustment.ValueChanged -= OnScrollEvent;
-			}
-			if (_viewPort != null)
-			{
-				_viewPort.Destroy();
-				_viewPort = null;
-			}
-
-			base.Dispose(disposing);
+			return;
 		}
 
-		protected override void UpdateBackgroundColor()
+		var backgroundColor = Element.BackgroundColor;
+
+		if (Control != null)
 		{
-			if (Element.BackgroundColor.IsDefaultOrTransparent())
-			{
-				return;
-			}
-
-			var backgroundColor = Element.BackgroundColor;
-
-			if (Control != null)
-			{
-				Control.SetBackgroundColor(backgroundColor.ToGtkColor(), StateType.Normal);
-			}
-
-			if (_viewPort != null)
-			{
-				_viewPort.SetBackgroundColor(backgroundColor.ToGtkColor(), StateType.Normal);
-			}
-
-			base.UpdateBackgroundColor();
+			Control.SetBackgroundColor(backgroundColor.ToGtkColor(), StateType.Normal);
 		}
 
-		private void OnScrollEvent(object o, EventArgs args)
+		if (_viewPort != null)
 		{
-			Controller.SetScrolledPosition(Control.Hadjustment.Value, Control.Vadjustment.Value);
+			_viewPort.SetBackgroundColor(backgroundColor.ToGtkColor(), StateType.Normal);
 		}
 
-		private void LoadContent()
+		base.UpdateBackgroundColor();
+	}
+
+	private void OnScrollEvent(object o, EventArgs args)
+	{
+		Controller.SetScrolledPosition(Control.Hadjustment.Value, Control.Vadjustment.Value);
+	}
+
+	private void LoadContent()
+	{
+		if (_currentView != null)
 		{
-			if (_currentView != null)
-			{
-				_currentView.Cleanup();
-			}
-
-			_currentView = Element.Content;
-
-			IVisualElementRenderer renderer = null;
-
-			if (_currentView != null)
-			{
-				renderer = _currentView.GetOrCreateRenderer();
-				renderer.Container.Unparent();
-			}
-
-			if (renderer != null)
-			{
-				var content = renderer.Container;
-				_viewPort.Add(content);
-			}
+			_currentView.Cleanup();
 		}
 
-		private void UpdateOrientation()
-		{
-			if (Control == null)
-				return;
+		_currentView = Element.Content;
 
-			switch (Element.Orientation)
-			{
-				case ScrollOrientation.Vertical:
-					Control.HscrollbarPolicy = PolicyType.Never;
-					Control.VscrollbarPolicy = ScrollBarVisibilityToGtk(Element.VerticalScrollBarVisibility);
-					break;
-				case ScrollOrientation.Horizontal:
-					Control.HscrollbarPolicy = ScrollBarVisibilityToGtk(Element.HorizontalScrollBarVisibility);
-					Control.VscrollbarPolicy = PolicyType.Never;
-					break;
-				case ScrollOrientation.Both:
-					Control.HscrollbarPolicy = ScrollBarVisibilityToGtk(Element.HorizontalScrollBarVisibility);
-					Control.VscrollbarPolicy = ScrollBarVisibilityToGtk(Element.VerticalScrollBarVisibility);
-					break;
-				default:
-					throw new ArgumentOutOfRangeException(nameof(Element.Orientation));
-			}
+		IVisualElementRenderer renderer = null;
+
+		if (_currentView != null)
+		{
+			renderer = _currentView.GetOrCreateRenderer();
+			renderer.Container.Unparent();
 		}
 
-		private void OnScrollToRequested(object sender, ScrollToRequestedEventArgs e)
+		if (renderer != null)
 		{
-			double x = e.ScrollX, y = e.ScrollY;
-
-			ScrollToMode mode = e.Mode;
-
-			if (mode == ScrollToMode.Element)
-			{
-				Point pos = Controller.GetScrollPositionForElement((VisualElement)e.Element, e.Position);
-				x = pos.X;
-				y = pos.Y;
-				mode = ScrollToMode.Position;
-			}
-
-			if (mode == ScrollToMode.Position)
-			{
-				Control.Hadjustment.Value = x;
-				Control.Vadjustment.Value = y;
-			}
-
-			Controller.SendScrollFinished();
+			var content = renderer.Container;
+			_viewPort.Add(content);
 		}
+	}
 
-		private void UpdateContentSize()
+	private void UpdateOrientation()
+	{
+		if (Control == null)
+			return;
+
+		switch (Element.Orientation)
 		{
-			if (Control == null)
-				return;
-
-			var contentSize = Element.ContentSize;
-
-			var height = Convert.ToInt32(contentSize.Height);
-			var width = Convert.ToInt32(contentSize.Width);
-
-			Control.SetSizeRequest(width, height);
-		}
-
-		void UpdateVerticalScrollBarVisibility()
-		{
-			Control.VscrollbarPolicy = ScrollBarVisibilityToGtk(Element.VerticalScrollBarVisibility);
-		}
-
-		void UpdateHorizontalScrollBarVisibility()
-		{
-			var orientation = Element.Orientation;
-			if (orientation == ScrollOrientation.Horizontal || orientation == ScrollOrientation.Both)
+			case ScrollOrientation.Vertical:
+				Control.HscrollbarPolicy = PolicyType.Never;
+				Control.VscrollbarPolicy = ScrollBarVisibilityToGtk(Element.VerticalScrollBarVisibility);
+				break;
+			case ScrollOrientation.Horizontal:
 				Control.HscrollbarPolicy = ScrollBarVisibilityToGtk(Element.HorizontalScrollBarVisibility);
+				Control.VscrollbarPolicy = PolicyType.Never;
+				break;
+			case ScrollOrientation.Both:
+				Control.HscrollbarPolicy = ScrollBarVisibilityToGtk(Element.HorizontalScrollBarVisibility);
+				Control.VscrollbarPolicy = ScrollBarVisibilityToGtk(Element.VerticalScrollBarVisibility);
+				break;
+			default:
+				throw new ArgumentOutOfRangeException(nameof(Element.Orientation));
+		}
+	}
+
+	private void OnScrollToRequested(object sender, ScrollToRequestedEventArgs e)
+	{
+		double x = e.ScrollX, y = e.ScrollY;
+
+		ScrollToMode mode = e.Mode;
+
+		if (mode == ScrollToMode.Element)
+		{
+			Point pos = Controller.GetScrollPositionForElement((VisualElement)e.Element, e.Position);
+			x = pos.X;
+			y = pos.Y;
+			mode = ScrollToMode.Position;
 		}
 
-		PolicyType ScrollBarVisibilityToGtk(ScrollBarVisibility visibility)
+		if (mode == ScrollToMode.Position)
 		{
-			switch (visibility)
-			{
-				case ScrollBarVisibility.Default:
-					return PolicyType.Automatic;
-				case ScrollBarVisibility.Always:
-					return PolicyType.Always;
-				case ScrollBarVisibility.Never:
-					return PolicyType.Never;
-				default:
-					return PolicyType.Automatic;
-			}
+			Control.Hadjustment.Value = x;
+			Control.Vadjustment.Value = y;
+		}
+
+		Controller.SendScrollFinished();
+	}
+
+	private void UpdateContentSize()
+	{
+		if (Control == null)
+			return;
+
+		var contentSize = Element.ContentSize;
+
+		var height = Convert.ToInt32(contentSize.Height);
+		var width = Convert.ToInt32(contentSize.Width);
+
+		Control.SetSizeRequest(width, height);
+	}
+
+	void UpdateVerticalScrollBarVisibility()
+	{
+		Control.VscrollbarPolicy = ScrollBarVisibilityToGtk(Element.VerticalScrollBarVisibility);
+	}
+
+	void UpdateHorizontalScrollBarVisibility()
+	{
+		var orientation = Element.Orientation;
+		if (orientation == ScrollOrientation.Horizontal || orientation == ScrollOrientation.Both)
+			Control.HscrollbarPolicy = ScrollBarVisibilityToGtk(Element.HorizontalScrollBarVisibility);
+	}
+
+	PolicyType ScrollBarVisibilityToGtk(ScrollBarVisibility visibility)
+	{
+		switch (visibility)
+		{
+			case ScrollBarVisibility.Default:
+				return PolicyType.Automatic;
+			case ScrollBarVisibility.Always:
+				return PolicyType.Always;
+			case ScrollBarVisibility.Never:
+				return PolicyType.Never;
+			default:
+				return PolicyType.Automatic;
 		}
 	}
 }

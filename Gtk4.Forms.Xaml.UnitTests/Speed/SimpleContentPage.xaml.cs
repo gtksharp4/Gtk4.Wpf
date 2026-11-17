@@ -5,80 +5,79 @@ using Xunit;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
-{
-	public class SimpleContentPageCode : ContentPage
-	{
-		public SimpleContentPageCode()
-		{
-			Content = new Label
-			{
-				Text = "Hello, Xamarin.Forms!",
-				VerticalOptions = LayoutOptions.CenterAndExpand,
-				HorizontalOptions = LayoutOptions.CenterAndExpand
-			};
-		}
+namespace Xamarin.Forms.Xaml.UnitTests;
 
-		public SimpleContentPageCode(bool useCompiledXaml) : this()
+public class SimpleContentPageCode : ContentPage
+{
+	public SimpleContentPageCode()
+	{
+		Content = new Label
 		{
-		}
+			Text = "Hello, Xamarin.Forms!",
+			VerticalOptions = LayoutOptions.CenterAndExpand,
+			HorizontalOptions = LayoutOptions.CenterAndExpand
+		};
 	}
-	public partial class SimpleContentPage : ContentPage
+
+	public SimpleContentPageCode(bool useCompiledXaml) : this()
 	{
-		public SimpleContentPage()
-		{
-			InitializeComponent();
-		}
-
-		public SimpleContentPage(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		public class Tests
-		{
-			public Tests()
+	}
+}
+public partial class SimpleContentPage : ContentPage
 {
-				Device.PlatformServices = new MockPlatformServices();
-			}
+	public SimpleContentPage()
+	{
+		InitializeComponent();
+	}
 
-			[Fact(Skip = "Benchmark, not a unit test: it measures elapsed milliseconds and reports them via Assert.Fail, so it has no pass condition and would be non-deterministic on CI hardware. Kept as a manually-runnable micro-benchmark.")]
-			public void XamlCIs20TimesFasterThanXaml()
-			{
-				var swXamlC = new Stopwatch();
-				var swXaml = new Stopwatch();
+	public SimpleContentPage(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-				swXamlC.Start();
-				for (var i = 0; i < 1000; i++)
-					new SimpleContentPage(true);
-				swXamlC.Stop();
+	public class Tests
+	{
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+		}
 
-				swXaml.Start();
-				for (var i = 0; i < 1000; i++)
-					new SimpleContentPage(false);
-				swXaml.Stop();
+		[Fact(Skip = "Benchmark, not a unit test: it measures elapsed milliseconds and reports them via Assert.Fail, so it has no pass condition and would be non-deterministic on CI hardware. Kept as a manually-runnable micro-benchmark.")]
+		public void XamlCIs20TimesFasterThanXaml()
+		{
+			var swXamlC = new Stopwatch();
+			var swXaml = new Stopwatch();
 
-				Assert.True(swXamlC.ElapsedMilliseconds * 20 < swXaml.ElapsedMilliseconds);
-			}
+			swXamlC.Start();
+			for (var i = 0; i < 1000; i++)
+				new SimpleContentPage(true);
+			swXamlC.Stop();
 
-			[Fact(Skip = "Benchmark, not a unit test: it measures elapsed milliseconds and reports them via Assert.Fail, so it has no pass condition and would be non-deterministic on CI hardware. Kept as a manually-runnable micro-benchmark.")]
-			public void XamlCIsNotMuchSlowerThanCode()
-			{
-				var swXamlC = new Stopwatch();
-				var swCode = new Stopwatch();
+			swXaml.Start();
+			for (var i = 0; i < 1000; i++)
+				new SimpleContentPage(false);
+			swXaml.Stop();
 
-				swXamlC.Start();
-				for (var i = 0; i < 1000; i++)
-					new SimpleContentPage(true);
-				swXamlC.Stop();
+			Assert.True(swXamlC.ElapsedMilliseconds * 20 < swXaml.ElapsedMilliseconds);
+		}
 
-				swCode.Start();
-				for (var i = 0; i < 1000; i++)
-					new SimpleContentPageCode(false);
-				swCode.Stop();
+		[Fact(Skip = "Benchmark, not a unit test: it measures elapsed milliseconds and reports them via Assert.Fail, so it has no pass condition and would be non-deterministic on CI hardware. Kept as a manually-runnable micro-benchmark.")]
+		public void XamlCIsNotMuchSlowerThanCode()
+		{
+			var swXamlC = new Stopwatch();
+			var swCode = new Stopwatch();
 
-				Assert.True(swXamlC.ElapsedMilliseconds * .2 <= swCode.ElapsedMilliseconds);
-			}
+			swXamlC.Start();
+			for (var i = 0; i < 1000; i++)
+				new SimpleContentPage(true);
+			swXamlC.Stop();
+
+			swCode.Start();
+			for (var i = 0; i < 1000; i++)
+				new SimpleContentPageCode(false);
+			swCode.Stop();
+
+			Assert.True(swXamlC.ElapsedMilliseconds * .2 <= swCode.ElapsedMilliseconds);
 		}
 	}
 }

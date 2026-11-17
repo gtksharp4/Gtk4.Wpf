@@ -10,23 +10,23 @@ using Xamarin.Forms.Core.UnitTests;
 using Xamarin.Forms.MSBuild.UnitTests;
 using IOPath = System.IO.Path;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class Gh2691 : ContentPage
 {
-	public partial class Gh2691 : ContentPage
+	public Gh2691()
 	{
-		public Gh2691()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Gh2691(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Gh2691(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
-		{
-			const string c_xaml = @"
+	public class Tests
+	{
+		const string c_xaml = @"
 				<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 							 xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 							 xmlns:test=""http://xamarin.com/schemas/2014/forms/customurl1""
@@ -53,99 +53,98 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					</ContentPage.Content>
 				</ContentPage>";
 
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-				GH2691.Init();  // only to make sure compiler pulls in Controls assembly
-			}
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+			GH2691.Init();  // only to make sure compiler pulls in Controls assembly
+		}
 
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void TestXamlParserAndGenerator(bool useCompiledXaml)
-			{
-				Gh2691 issue2691 = new Gh2691(useCompiledXaml);
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void TestXamlParserAndGenerator(bool useCompiledXaml)
+		{
+			Gh2691 issue2691 = new Gh2691(useCompiledXaml);
 
-				// http://xamarin.com/schemas/2014/forms/customurl1 -> Xamarin.Forms.Controls.CustomNamespace1
-				var button = issue2691.FindByName("_testButton1") as Controls.CustomNamespace1.CustomButton;
-				Assert.NotNull(button);
+			// http://xamarin.com/schemas/2014/forms/customurl1 -> Xamarin.Forms.Controls.CustomNamespace1
+			var button = issue2691.FindByName("_testButton1") as Controls.CustomNamespace1.CustomButton;
+			Assert.NotNull(button);
 
-				// http://xamarin.com/schemas/2014/forms/customurl1 -> Xamarin.Forms.Controls.CustomNamespace2
-				var label1 = issue2691.FindByName("_testLabel1") as Controls.CustomNamespace2.CustomLabel;
-				Assert.NotNull(label1);
+			// http://xamarin.com/schemas/2014/forms/customurl1 -> Xamarin.Forms.Controls.CustomNamespace2
+			var label1 = issue2691.FindByName("_testLabel1") as Controls.CustomNamespace2.CustomLabel;
+			Assert.NotNull(label1);
 
-				// http://xamarin.com/schemas/2014/forms/customurl2 -> Xamarin.Forms.Controls.CustomNamespace3
-				var label2 = issue2691.FindByName("_testLabel2") as Controls.CustomNamespace3.CustomLabel;
-				Assert.NotNull(label2);
+			// http://xamarin.com/schemas/2014/forms/customurl2 -> Xamarin.Forms.Controls.CustomNamespace3
+			var label2 = issue2691.FindByName("_testLabel2") as Controls.CustomNamespace3.CustomLabel;
+			Assert.NotNull(label2);
 
-				// http://xamarin.com/schemas/2014/forms/customurl2 -> Xamarin.Forms.Controls.CustomNamespace3
-				var stack = issue2691.FindByName("_testStackLayout") as Controls.CustomNamespace3.CustomStackLayout;
-				Assert.NotNull(stack);
+			// http://xamarin.com/schemas/2014/forms/customurl2 -> Xamarin.Forms.Controls.CustomNamespace3
+			var stack = issue2691.FindByName("_testStackLayout") as Controls.CustomNamespace3.CustomStackLayout;
+			Assert.NotNull(stack);
 
-				// clr-namespace:Xamarin.Forms.Controls.CustomNamespace1;assembly=Xamarin.Forms.Controls
-				var button2 = issue2691.FindByName("_testButton2") as Controls.CustomNamespace1.CustomButton;
-				Assert.NotNull(button2);
+			// clr-namespace:Xamarin.Forms.Controls.CustomNamespace1;assembly=Xamarin.Forms.Controls
+			var button2 = issue2691.FindByName("_testButton2") as Controls.CustomNamespace1.CustomButton;
+			Assert.NotNull(button2);
 
-				// using:Xamarin.Forms.Xaml.UnitTests
-				var label3 = issue2691.FindByName("_testLabel3") as Gh2691TestUsingSyntaxLabel;
-				Assert.NotNull(label3);
-			}
+			// using:Xamarin.Forms.Xaml.UnitTests
+			var label3 = issue2691.FindByName("_testLabel3") as Gh2691TestUsingSyntaxLabel;
+			Assert.NotNull(label3);
+		}
 
-			[Fact]
-			public void TestXamlCompiler()
-			{
-				MockCompiler.Compile(typeof(Gh2691));
-			}
+		[Fact]
+		public void TestXamlCompiler()
+		{
+			MockCompiler.Compile(typeof(Gh2691));
+		}
 
-			[Fact]
-			public void TestXamlGenerator()
-			{
-				string xamlInputFile = CreateXamlInputFile();
-				string xamlOutputFile = IOPath.GetTempFileName();
-				var item = new TaskItem(xamlInputFile);
-				item.SetMetadata("TargetPath", xamlInputFile);
+		[Fact]
+		public void TestXamlGenerator()
+		{
+			string xamlInputFile = CreateXamlInputFile();
+			string xamlOutputFile = IOPath.GetTempFileName();
+			var item = new TaskItem(xamlInputFile);
+			item.SetMetadata("TargetPath", xamlInputFile);
 
-				string testAssemblyBinPath =
+			string testAssemblyBinPath =
 #if DEBUG
-					"Debug";
+				"Debug";
 #else
 					"Release";
 #endif
 
-				var references = string.Join(";",
-					IOPath.GetFullPath(
-						IOPath.Combine(
-							AppContext.BaseDirectory, "Xamarin.Forms.Controls.dll")),
-					IOPath.GetFullPath(
-						IOPath.Combine(
-							AppContext.BaseDirectory, "Xamarin.Forms.Core.dll"))
-					);
-				var xamlg = new XamlGTask()
-				{
-					BuildEngine = new DummyBuildEngine(),
-					AssemblyName = "test",
-					Language = "C#",
-					XamlFiles = new[] { item },
-					OutputFiles = new[] { new TaskItem(xamlOutputFile) },
-					References = references
-				};
-
-				var generator = new XamlGenerator(item, xamlg.Language, xamlg.AssemblyName, xamlOutputFile, xamlg.References, null);
-				Assert.True(generator.Execute());
-
-				Assert.True(xamlg.Execute());
-			}
-
-			string CreateXamlInputFile()
+			var references = string.Join(";",
+				IOPath.GetFullPath(
+					IOPath.Combine(
+						AppContext.BaseDirectory, "Xamarin.Forms.Controls.dll")),
+				IOPath.GetFullPath(
+					IOPath.Combine(
+						AppContext.BaseDirectory, "Xamarin.Forms.Core.dll"))
+			);
+			var xamlg = new XamlGTask()
 			{
-				string fileName = IOPath.GetTempFileName();
-				File.WriteAllText(fileName, c_xaml);
-				return fileName;
-			}
+				BuildEngine = new DummyBuildEngine(),
+				AssemblyName = "test",
+				Language = "C#",
+				XamlFiles = new[] { item },
+				OutputFiles = new[] { new TaskItem(xamlOutputFile) },
+				References = references
+			};
+
+			var generator = new XamlGenerator(item, xamlg.Language, xamlg.AssemblyName, xamlOutputFile, xamlg.References, null);
+			Assert.True(generator.Execute());
+
+			Assert.True(xamlg.Execute());
+		}
+
+		string CreateXamlInputFile()
+		{
+			string fileName = IOPath.GetTempFileName();
+			File.WriteAllText(fileName, c_xaml);
+			return fileName;
 		}
 	}
+}
 
-	public class Gh2691TestUsingSyntaxLabel : Label
-	{
-	}
+public class Gh2691TestUsingSyntaxLabel : Label
+{
 }

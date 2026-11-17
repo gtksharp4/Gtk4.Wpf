@@ -5,93 +5,92 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class MenuItemTests
+	: MenuItemTests<MenuItem>
 {
-	public class MenuItemTests
-		: MenuItemTests<MenuItem>
+}
+
+public abstract class MenuItemTests<T>
+	: CommandSourceTests<T>
+	where T : MenuItem, new()
+{
+	[Fact]
+	public void Activated()
 	{
+		var item = new MenuItem();
+
+		bool activated = false;
+		item.Clicked += (sender, args) => activated = true;
+
+		((IMenuItemController)item).Activate();
+
+		Assert.True(activated);
 	}
 
-	public abstract class MenuItemTests<T>
-		: CommandSourceTests<T>
-		where T : MenuItem, new()
+	[Fact]
+	public void Command()
 	{
-		[Fact]
-		public void Activated()
+		bool executed = false;
+		var param = new object();
+
+		var c = new Command(o =>
 		{
-			var item = new MenuItem();
+			Assert.Same(param, o);
+			executed = true;
+		});
 
-			bool activated = false;
-			item.Clicked += (sender, args) => activated = true;
+		var item = new MenuItem { Command = c, CommandParameter = param };
+		((IMenuItemController)item).Activate();
 
-			((IMenuItemController)item).Activate();
+		Assert.True(executed);
+	}
 
-			Assert.True(activated);
-		}
+	[Fact]
+	public void Accelerator()
+	{
+		var item = new MenuItem();
+		string shourtCutKeyBinding = "ctrl+A";
+		MenuItem.SetAccelerator(item, Xamarin.Forms.Accelerator.FromString(shourtCutKeyBinding));
 
-		[Fact]
-		public void Command()
-		{
-			bool executed = false;
-			var param = new object();
+		Assert.Equal(MenuItem.GetAccelerator(item).ToString(), shourtCutKeyBinding);
+	}
 
-			var c = new Command(o =>
-			{
-				Assert.Same(param, o);
-				executed = true;
-			});
+	[Fact]
+	public void AcceleratorPlus()
+	{
+		var item = new MenuItem();
+		string shourtCutKeyLikeSeparator = "+";
+		MenuItem.SetAccelerator(item, Xamarin.Forms.Accelerator.FromString(shourtCutKeyLikeSeparator));
 
-			var item = new MenuItem { Command = c, CommandParameter = param };
-			((IMenuItemController)item).Activate();
+		var accelerator = MenuItem.GetAccelerator(item);
+		Assert.Equal(accelerator.ToString(), shourtCutKeyLikeSeparator);
+		Assert.Equal(accelerator.Keys.FirstOrDefault(), shourtCutKeyLikeSeparator);
+	}
 
-			Assert.True(executed);
-		}
+	protected override T CreateSource()
+	{
+		return new T();
+	}
 
-		[Fact]
-		public void Accelerator()
-		{
-			var item = new MenuItem();
-			string shourtCutKeyBinding = "ctrl+A";
-			MenuItem.SetAccelerator(item, Xamarin.Forms.Accelerator.FromString(shourtCutKeyBinding));
+	protected override void Activate(T source)
+	{
+		((IMenuItemController)source).Activate();
+	}
 
-			Assert.Equal(MenuItem.GetAccelerator(item).ToString(), shourtCutKeyBinding);
-		}
+	protected override BindableProperty IsEnabledProperty
+	{
+		get { return MenuItem.IsEnabledProperty; }
+	}
 
-		[Fact]
-		public void AcceleratorPlus()
-		{
-			var item = new MenuItem();
-			string shourtCutKeyLikeSeparator = "+";
-			MenuItem.SetAccelerator(item, Xamarin.Forms.Accelerator.FromString(shourtCutKeyLikeSeparator));
+	protected override BindableProperty CommandProperty
+	{
+		get { return MenuItem.CommandProperty; }
+	}
 
-			var accelerator = MenuItem.GetAccelerator(item);
-			Assert.Equal(accelerator.ToString(), shourtCutKeyLikeSeparator);
-			Assert.Equal(accelerator.Keys.FirstOrDefault(), shourtCutKeyLikeSeparator);
-		}
-
-		protected override T CreateSource()
-		{
-			return new T();
-		}
-
-		protected override void Activate(T source)
-		{
-			((IMenuItemController)source).Activate();
-		}
-
-		protected override BindableProperty IsEnabledProperty
-		{
-			get { return MenuItem.IsEnabledProperty; }
-		}
-
-		protected override BindableProperty CommandProperty
-		{
-			get { return MenuItem.CommandProperty; }
-		}
-
-		protected override BindableProperty CommandParameterProperty
-		{
-			get { return MenuItem.CommandParameterProperty; }
-		}
+	protected override BindableProperty CommandParameterProperty
+	{
+		get { return MenuItem.CommandParameterProperty; }
 	}
 }

@@ -3,223 +3,222 @@ using System.Collections.Generic;
 using System.Linq;
 using Gtk;
 
-namespace Xamarin.Forms.Platform.GTK.Extensions
+namespace Xamarin.Forms.Platform.GTK.Extensions;
+
+public static class WidgetExtensions
 {
-	public static class WidgetExtensions
+	public static SizeRequest GetDesiredSize(
+		this Widget self,
+		double widthConstraint,
+		double heightConstraint)
 	{
-		public static SizeRequest GetDesiredSize(
-			this Widget self,
-			double widthConstraint,
-			double heightConstraint)
+		Gdk.Size desiredSize;
+
+		if (self is IDesiredSizeProvider)
 		{
-			Gdk.Size desiredSize;
-
-			if (self is IDesiredSizeProvider)
-			{
-				desiredSize = ((IDesiredSizeProvider)self).GetDesiredSize();
-			}
-			else
-			{
-				self.GetPreferredSize(out _, out var req); // GTK3 replacement for gtk_widget_size_request
-				desiredSize = new Gdk.Size(
-					req.Width > 0 ? req.Width : 0,
-					req.Height > 0 ? req.Height : 0);
-			}
-
-			var widthFits = widthConstraint >= desiredSize.Width;
-			var heightFits = heightConstraint >= desiredSize.Height;
-
-			if (widthFits && heightFits) // Enough space with given constraints
-			{
-				return new SizeRequest(new Size(desiredSize.Width, desiredSize.Height));
-			}
-
-			if (!widthFits)
-			{
-				self.SetSize((int)widthConstraint, -1);
-
-				self.GetPreferredSize(out _, out var req); // GTK3 replacement for gtk_widget_size_request
-				desiredSize = new Gdk.Size(
-					req.Width > 0 ? req.Width : 0,
-					req.Height > 0 ? req.Height : 0);
-				heightFits = heightConstraint >= desiredSize.Height;
-			}
-
-			var size = new Size(desiredSize.Width, heightFits ? desiredSize.Height : (int)heightConstraint);
-
-			return new SizeRequest(size);
+			desiredSize = ((IDesiredSizeProvider)self).GetDesiredSize();
+		}
+		else
+		{
+			self.GetPreferredSize(out _, out var req); // GTK3 replacement for gtk_widget_size_request
+			desiredSize = new Gdk.Size(
+				req.Width > 0 ? req.Width : 0,
+				req.Height > 0 ? req.Height : 0);
 		}
 
-		public static void MoveTo(this Widget self, double x, double y)
+		var widthFits = widthConstraint >= desiredSize.Width;
+		var heightFits = heightConstraint >= desiredSize.Height;
+
+		if (widthFits && heightFits) // Enough space with given constraints
 		{
-			if (self.Parent is Fixed)
+			return new SizeRequest(new Size(desiredSize.Width, desiredSize.Height));
+		}
+
+		if (!widthFits)
+		{
+			self.SetSize((int)widthConstraint, -1);
+
+			self.GetPreferredSize(out _, out var req); // GTK3 replacement for gtk_widget_size_request
+			desiredSize = new Gdk.Size(
+				req.Width > 0 ? req.Width : 0,
+				req.Height > 0 ? req.Height : 0);
+			heightFits = heightConstraint >= desiredSize.Height;
+		}
+
+		var size = new Size(desiredSize.Width, heightFits ? desiredSize.Height : (int)heightConstraint);
+
+		return new SizeRequest(size);
+	}
+
+	public static void MoveTo(this Widget self, double x, double y)
+	{
+		if (self.Parent is Fixed)
+		{
+			var container = self.Parent as Fixed;
+			var calcX = (int)Math.Round(x);
+			var calcY = (int)Math.Round(y);
+
+			int containerChildX, containerChildY;
+			GetContainerChildXY(container, self, out containerChildX, out containerChildY);
+
+			if (containerChildX != calcX || containerChildY != calcY)
 			{
-				var container = self.Parent as Fixed;
-				var calcX = (int)Math.Round(x);
-				var calcY = (int)Math.Round(y);
+				container.Move(self, calcX, calcY);
+			}
+		}
+	}
 
-				int containerChildX, containerChildY;
-				GetContainerChildXY(container, self, out containerChildX, out containerChildY);
+	static void GetContainerChildXY(Fixed parent, Widget child, out int x, out int y)
+	{
+		// GTK4: child properties removed; use gtk_fixed_get_child_position instead.
+		// Fixed.cs:118 — GetChildPosition(Widget, out double x, out double y)
+		parent.GetChildPosition(child, out double dx, out double dy);
+		x = (int)dx;
+		y = (int)dy;
+	}
 
-				if (containerChildX != calcX || containerChildY != calcY)
+	public static void SetSize(this Widget self, double width, double height)
+	{
+		int calcWidth = (int)Math.Round(width);
+		int calcHeight = (int)Math.Round(height);
+
+		// Avoid negative values
+		if (calcWidth < -1)
+		{
+			calcWidth = -1;
+		}
+
+		if (calcHeight < -1)
+		{
+			calcHeight = -1;
+		}
+
+		if (calcWidth != self.WidthRequest || calcHeight != self.HeightRequest)
+		{
+			self.SetSizeRequest(calcWidth, calcHeight);
+			return;
+		}
+
+		// The request already IS what we want, yet the widget is allocated smaller than it. That
+		// means the resize gtk_widget_set_size_request queued the first time round was lost, and
+		// it will not queue another one for an unchanged value - so without this the widget stays
+		// pinned at its natural size for the lifetime of the window, however many layout passes
+		// Forms runs.
+		//
+		// The guard is what keeps this from becoming a resize storm: inside a Gtk.Fixed - which
+		// is what every Forms layout and every page's content sits in - a child is allocated its
+		// PREFERRED size, i.e. never less than its request, so "allocated smaller than requested"
+		// is not a state that occurs in steady operation. It is only ever the lost-resize
+		// signature. Measured on the ControlGallery's detail page: request (500,528) with the
+		// allocation still at the natural 257x230, no wedge (a bare QueueResize() fixed it
+		// immediately, and so did nudging the request to a different value and back) - see
+		// scratchpad/m3-wedge.log.
+		if (self.Parent is Fixed
+		    && ((calcWidth >= 0 && self.Allocation.Width < calcWidth)
+		        || (calcHeight >= 0 && self.Allocation.Height < calcHeight)))
+		{
+			self.QueueResize();
+		}
+	}
+
+	public static void RemoveFromContainer(this Widget self, Widget child)
+	{
+		var container = self as Container;
+
+		if (child != null && child.Parent != null)
+		{
+			if (container != null && container.HasChild(child))
+			{
+				container.Remove(child);
+			}
+		}
+	}
+
+	public static bool HasChild(this Container self, Widget child)
+	{
+		return self.Children.Contains(child);
+	}
+
+	public static Size GetMaxChildDesiredSize(this Widget self, double widthConstraint, double heightConstraint)
+	{
+		var container = self as Container;
+		var childReq = Size.Zero;
+
+		if (container != null)
+		{
+			foreach (var child in container.Children)
+			{
+				var currentChildReq = child.GetMaxChildDesiredSize(widthConstraint, heightConstraint);
+
+				if (currentChildReq.Height > childReq.Height)
 				{
-					container.Move(self, calcX, calcY);
+					childReq = currentChildReq;
 				}
 			}
 		}
 
-		static void GetContainerChildXY(Fixed parent, Widget child, out int x, out int y)
+		self.SetSize((int)widthConstraint - 1, -1);
+		var desiredSize = self.GetDesiredSize(widthConstraint, heightConstraint);
+
+		return childReq.Height > desiredSize.Request.Height
+			? childReq
+			: desiredSize.Request;
+	}
+
+	public static IEnumerable<Widget> GetDescendants(this Widget self)
+	{
+		var descendants = new List<Widget>();
+		var container = self as Container;
+
+		if (container != null)
 		{
-			// GTK4: child properties removed; use gtk_fixed_get_child_position instead.
-			// Fixed.cs:118 — GetChildPosition(Widget, out double x, out double y)
-			parent.GetChildPosition(child, out double dx, out double dy);
-			x = (int)dx;
-			y = (int)dy;
-		}
-
-		public static void SetSize(this Widget self, double width, double height)
-		{
-			int calcWidth = (int)Math.Round(width);
-			int calcHeight = (int)Math.Round(height);
-
-			// Avoid negative values
-			if (calcWidth < -1)
+			foreach (var child in container.Children)
 			{
-				calcWidth = -1;
-			}
-
-			if (calcHeight < -1)
-			{
-				calcHeight = -1;
-			}
-
-			if (calcWidth != self.WidthRequest || calcHeight != self.HeightRequest)
-			{
-				self.SetSizeRequest(calcWidth, calcHeight);
-				return;
-			}
-
-			// The request already IS what we want, yet the widget is allocated smaller than it. That
-			// means the resize gtk_widget_set_size_request queued the first time round was lost, and
-			// it will not queue another one for an unchanged value - so without this the widget stays
-			// pinned at its natural size for the lifetime of the window, however many layout passes
-			// Forms runs.
-			//
-			// The guard is what keeps this from becoming a resize storm: inside a Gtk.Fixed - which
-			// is what every Forms layout and every page's content sits in - a child is allocated its
-			// PREFERRED size, i.e. never less than its request, so "allocated smaller than requested"
-			// is not a state that occurs in steady operation. It is only ever the lost-resize
-			// signature. Measured on the ControlGallery's detail page: request (500,528) with the
-			// allocation still at the natural 257x230, no wedge (a bare QueueResize() fixed it
-			// immediately, and so did nudging the request to a different value and back) - see
-			// scratchpad/m3-wedge.log.
-			if (self.Parent is Fixed
-				&& ((calcWidth >= 0 && self.Allocation.Width < calcWidth)
-					|| (calcHeight >= 0 && self.Allocation.Height < calcHeight)))
-			{
-				self.QueueResize();
+				descendants.Add(child);
+				descendants.AddRange(child.GetDescendants());
 			}
 		}
 
-		public static void RemoveFromContainer(this Widget self, Widget child)
-		{
-			var container = self as Container;
+		return descendants;
+	}
 
-			if (child != null && child.Parent != null)
+	public static void PrintTree(this Widget widget)
+	{
+		const char indent = '-';
+		int level = CalculateDepthLevel(widget);
+
+		Console.WriteLine(
+			string.Format(
+				"({0}) {1} Name: {2} ({3})",
+				level,
+				new String(indent, level * 2),
+				widget.Name,
+				widget.GetType()));
+
+		Console.WriteLine(string.Format("{0} Size: {1}", new String('\t', level), widget.Allocation.Size));
+		Console.WriteLine(string.Format("{0} Location: {1}", new String('\t', level), widget.Allocation.Location));
+
+		if (widget is Container)
+		{
+			var container = widget as Container;
+
+			foreach (Widget child in container.Children)
 			{
-				if (container != null && container.HasChild(child))
-				{
-					container.Remove(child);
-				}
+				PrintTree(child);
 			}
 		}
+	}
 
-		public static bool HasChild(this Container self, Widget child)
+	private static int CalculateDepthLevel(Widget widget)
+	{
+		int level = 0;
+		Widget current = widget;
+
+		while ((current = current.Parent) != null)
 		{
-			return self.Children.Contains(child);
+			level++;
 		}
 
-		public static Size GetMaxChildDesiredSize(this Widget self, double widthConstraint, double heightConstraint)
-		{
-			var container = self as Container;
-			var childReq = Size.Zero;
-
-			if (container != null)
-			{
-				foreach (var child in container.Children)
-				{
-					var currentChildReq = child.GetMaxChildDesiredSize(widthConstraint, heightConstraint);
-
-					if (currentChildReq.Height > childReq.Height)
-					{
-						childReq = currentChildReq;
-					}
-				}
-			}
-
-			self.SetSize((int)widthConstraint - 1, -1);
-			var desiredSize = self.GetDesiredSize(widthConstraint, heightConstraint);
-
-			return childReq.Height > desiredSize.Request.Height
-				? childReq
-				: desiredSize.Request;
-		}
-
-		public static IEnumerable<Widget> GetDescendants(this Widget self)
-		{
-			var descendants = new List<Widget>();
-			var container = self as Container;
-
-			if (container != null)
-			{
-				foreach (var child in container.Children)
-				{
-					descendants.Add(child);
-					descendants.AddRange(child.GetDescendants());
-				}
-			}
-
-			return descendants;
-		}
-
-		public static void PrintTree(this Widget widget)
-		{
-			const char indent = '-';
-			int level = CalculateDepthLevel(widget);
-
-			Console.WriteLine(
-				string.Format(
-					"({0}) {1} Name: {2} ({3})",
-					level,
-					new String(indent, level * 2),
-					widget.Name,
-					widget.GetType()));
-
-			Console.WriteLine(string.Format("{0} Size: {1}", new String('\t', level), widget.Allocation.Size));
-			Console.WriteLine(string.Format("{0} Location: {1}", new String('\t', level), widget.Allocation.Location));
-
-			if (widget is Container)
-			{
-				var container = widget as Container;
-
-				foreach (Widget child in container.Children)
-				{
-					PrintTree(child);
-				}
-			}
-		}
-
-		private static int CalculateDepthLevel(Widget widget)
-		{
-			int level = 0;
-			Widget current = widget;
-
-			while ((current = current.Parent) != null)
-			{
-				level++;
-			}
-
-			return level;
-		}
+		return level;
 	}
 }

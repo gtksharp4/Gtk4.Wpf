@@ -2,27 +2,26 @@
 using System.Collections.Generic;
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class Gh3821View : ContentView
 {
-	public partial class Gh3821View : ContentView
+	public Gh3821View()
 	{
-		public Gh3821View()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Gh3821View(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Gh3821View(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public static readonly BindableProperty TextProperty =
-			BindableProperty.Create("Text", typeof(string), typeof(Gh3821View), default(string));
+	public static readonly BindableProperty TextProperty =
+		BindableProperty.Create("Text", typeof(string), typeof(Gh3821View), default(string));
 
-		public string Text
-		{
-			get { return (string)GetValue(TextProperty); }
-			set { SetValue(TextProperty, value); }
-		}
+	public string Text
+	{
+		get { return (string)GetValue(TextProperty); }
+		set { SetValue(TextProperty, value); }
 	}
 }

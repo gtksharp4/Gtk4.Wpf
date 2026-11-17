@@ -1,18 +1,17 @@
-namespace System.Windows.Media.Animation
+namespace System.Windows.Media.Animation;
+
+/// <summary>
+/// Specifies how a <see cref="Timeline"/> behaves once it reaches the end of its active period.
+/// </summary>
+public enum FillBehavior
 {
 	/// <summary>
-	/// Specifies how a <see cref="Timeline"/> behaves once it reaches the end of its active period.
+	/// The timeline holds the final value at the end of its active period (default).
 	/// </summary>
-	public enum FillBehavior
-	{
-		/// <summary>
-		/// The timeline holds the final value at the end of its active period (default).
-		/// </summary>
-		HoldEnd,
+	HoldEnd,
 
-		/// <summary>
-		/// The animation is deactivated and the base (pre-animation) value is restored.
-		/// </summary>
-		Stop
-	}
+	/// <summary>
+	/// The animation is deactivated and the base (pre-animation) value is restored.
+	/// </summary>
+	Stop
 }

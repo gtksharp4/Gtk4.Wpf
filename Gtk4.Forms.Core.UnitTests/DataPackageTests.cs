@@ -6,73 +6,72 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class DataPackageTests : BaseTestFixture
 {
-	public class DataPackageTests : BaseTestFixture
+	public DataPackageTests()
 	{
-		public DataPackageTests()
-		{
-			Device.PlatformServices = new MockPlatformServices();
-		}
+		Device.PlatformServices = new MockPlatformServices();
+	}
 
-		public override void Dispose()
-		{
-			base.Dispose();
-			Device.PlatformServices = null;
-		}
+	public override void Dispose()
+	{
+		base.Dispose();
+		Device.PlatformServices = null;
+	}
 
-		[Fact]
-		public void PropertySetters()
-		{
-			var dataPackage = new DataPackage();
+	[Fact]
+	public void PropertySetters()
+	{
+		var dataPackage = new DataPackage();
 
-			ImageSource imageSource = "somefile.jpg";
-			dataPackage.Text = "text";
-			dataPackage.Image = imageSource;
-			dataPackage.Properties["key"] = "value";
+		ImageSource imageSource = "somefile.jpg";
+		dataPackage.Text = "text";
+		dataPackage.Image = imageSource;
+		dataPackage.Properties["key"] = "value";
 
-			Assert.Equal("text", dataPackage.Text);
-			Assert.Equal(imageSource, dataPackage.Image);
-			Assert.Equal(dataPackage.Properties["key"], "value");
-		}
+		Assert.Equal("text", dataPackage.Text);
+		Assert.Equal(imageSource, dataPackage.Image);
+		Assert.Equal(dataPackage.Properties["key"], "value");
+	}
 
-		[Fact]
-		public async Task DataPackageViewGetters()
-		{
-			var dataPackage = new DataPackage();
+	[Fact]
+	public async Task DataPackageViewGetters()
+	{
+		var dataPackage = new DataPackage();
 
-			ImageSource imageSource = "somefile.jpg";
-			dataPackage.Text = "text";
-			dataPackage.Image = imageSource;
-			dataPackage.Properties["key"] = "value";
-			var dataView = dataPackage.View;
+		ImageSource imageSource = "somefile.jpg";
+		dataPackage.Text = "text";
+		dataPackage.Image = imageSource;
+		dataPackage.Properties["key"] = "value";
+		var dataView = dataPackage.View;
 
-			Assert.Equal("text", await dataView.GetTextAsync());
-			Assert.Equal(imageSource, await dataView.GetImageAsync());
-			Assert.Equal(dataView.Properties["key"], "value");
-		}
+		Assert.Equal("text", await dataView.GetTextAsync());
+		Assert.Equal(imageSource, await dataView.GetImageAsync());
+		Assert.Equal(dataView.Properties["key"], "value");
+	}
 
 
-		[Fact]
-		public async Task DataPackageViewGettersArentTiedToInitialDataPackage()
-		{
-			var dataPackage = new DataPackage();
+	[Fact]
+	public async Task DataPackageViewGettersArentTiedToInitialDataPackage()
+	{
+		var dataPackage = new DataPackage();
 
-			ImageSource imageSource = "somefile.jpg";
-			dataPackage.Text = "text";
-			dataPackage.Image = imageSource;
-			dataPackage.Properties["key"] = "value";
-			var dataView = dataPackage.View;
-
-
-			dataPackage.Text = "fail";
-			dataPackage.Image = "differentfile.jpg";
-			dataPackage.Properties["key"] = "fail";
+		ImageSource imageSource = "somefile.jpg";
+		dataPackage.Text = "text";
+		dataPackage.Image = imageSource;
+		dataPackage.Properties["key"] = "value";
+		var dataView = dataPackage.View;
 
 
-			Assert.Equal("text", await dataView.GetTextAsync());
-			Assert.Equal(imageSource, await dataView.GetImageAsync());
-			Assert.Equal(dataView.Properties["key"], "value");
-		}
+		dataPackage.Text = "fail";
+		dataPackage.Image = "differentfile.jpg";
+		dataPackage.Properties["key"] = "fail";
+
+
+		Assert.Equal("text", await dataView.GetTextAsync());
+		Assert.Equal(imageSource, await dataView.GetImageAsync());
+		Assert.Equal(dataView.Properties["key"], "value");
 	}
 }

@@ -4,62 +4,61 @@ using System.Globalization;
 using Xunit;
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public class GrialIssue02Converter : IValueConverter
 {
-	public class GrialIssue02Converter : IValueConverter
+	public object FalseValue
 	{
-		public object FalseValue
-		{
-			get;
-			set;
-		}
-
-		public object TrueValue
-		{
-			get;
-			set;
-		}
-
-		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			if (!(value is bool))
-			{
-				return null;
-			}
-			bool flag = (bool)value;
-			return (!flag) ? FalseValue : TrueValue;
-		}
-
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			throw new NotImplementedException();
-		}
+		get;
+		set;
 	}
 
-	public partial class GrialIssue02 : ContentPage
+	public object TrueValue
 	{
-		public GrialIssue02()
-		{
-			InitializeComponent();
-		}
-		public GrialIssue02(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+		get;
+		set;
+	}
 
-		public class Tests
+	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+	{
+		if (!(value is bool))
 		{
-			[Theory]
-			[InlineData(true)]
-			[InlineData(false)]
-			public void BoxValueTypes(bool useCompiledXaml)
-			{
-				var layout = new GrialIssue02(useCompiledXaml);
-				var res = (GrialIssue02Converter)layout.Resources["converter"];
+			return null;
+		}
+		bool flag = (bool)value;
+		return (!flag) ? FalseValue : TrueValue;
+	}
 
-				Assert.Equal(FontAttributes.None, res.TrueValue);
-				Assert.Equal(FontAttributes.Bold, res.FalseValue);
-			}
+	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+	{
+		throw new NotImplementedException();
+	}
+}
+
+public partial class GrialIssue02 : ContentPage
+{
+	public GrialIssue02()
+	{
+		InitializeComponent();
+	}
+	public GrialIssue02(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
+
+	public class Tests
+	{
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void BoxValueTypes(bool useCompiledXaml)
+		{
+			var layout = new GrialIssue02(useCompiledXaml);
+			var res = (GrialIssue02Converter)layout.Resources["converter"];
+
+			Assert.Equal(FontAttributes.None, res.TrueValue);
+			Assert.Equal(FontAttributes.Bold, res.FalseValue);
 		}
 	}
 }

@@ -7,45 +7,44 @@ using Xunit;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public class Gh4446Item
 {
-	public class Gh4446Item
+	public string Id { get; set; }
+	public string Text { get; set; }
+	public string Description { get; set; }
+}
+
+public partial class Gh4446 : ContentPage
+{
+	public Gh4446()
 	{
-		public string Id { get; set; }
-		public string Text { get; set; }
-		public string Description { get; set; }
+		InitializeComponent();
 	}
 
-	public partial class Gh4446 : ContentPage
+	public Gh4446(bool useCompiledXaml)
 	{
-		public Gh4446()
-		{
-			InitializeComponent();
-		}
+		//this stub will be replaced at compile time
+	}
 
-		public Gh4446(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		public class Tests
+	public class Tests
 		: IDisposable{
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-			}
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+		}
 
-			public void Dispose()
-{
-				Device.PlatformServices = null;
-			}
+		public void Dispose()
+		{
+			Device.PlatformServices = null;
+		}
 
-			[Theory]
-			[InlineData(true), InlineData(false)]
-			public void BindingThrowsOnWrongConverterParameter(bool useCompiledXaml)
-			{
-				AssertEx.DoesNotThrow(() => new Gh4446(useCompiledXaml) { BindingContext = new Gh4446Item { Text = null } });
-			}
+		[Theory]
+		[InlineData(true), InlineData(false)]
+		public void BindingThrowsOnWrongConverterParameter(bool useCompiledXaml)
+		{
+			AssertEx.DoesNotThrow(() => new Gh4446(useCompiledXaml) { BindingContext = new Gh4446Item { Text = null } });
 		}
 	}
 }

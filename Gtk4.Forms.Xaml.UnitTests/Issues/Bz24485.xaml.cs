@@ -4,51 +4,50 @@ using System.Globalization;
 using Xunit;
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public class Bz24485Converter : IValueConverter
 {
-	public class Bz24485Converter : IValueConverter
+	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 	{
-		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			if (value == null)
-				return null;
+		if (value == null)
+			return null;
 
-			return new
-			{
-				Date = DateTime.Now.ToString("dd MMMM yyyy"),
-				Object = new object()
-			};
-		}
-
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		return new
 		{
-			throw new NotImplementedException();
-		}
+			Date = DateTime.Now.ToString("dd MMMM yyyy"),
+			Object = new object()
+		};
 	}
 
-	public partial class Bz24485 : ContentPage
+	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 	{
-		public Bz24485()
-		{
-			InitializeComponent();
-		}
+		throw new NotImplementedException();
+	}
+}
 
-		public Bz24485(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+public partial class Bz24485 : ContentPage
+{
+	public Bz24485()
+	{
+		InitializeComponent();
+	}
 
-		public class Tests
+	public Bz24485(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
+
+	public class Tests
+	{
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void BindingContextWithConverter(bool useCompiledXaml)
 		{
-			[Theory]
-			[InlineData(true)]
-			[InlineData(false)]
-			public void BindingContextWithConverter(bool useCompiledXaml)
-			{
-				var layout = new Bz24485(useCompiledXaml);
-				layout.BindingContext = new { Data1 = new object() };
-				return;
-			}
+			var layout = new Bz24485(useCompiledXaml);
+			layout.BindingContext = new { Data1 = new object() };
+			return;
 		}
 	}
 }

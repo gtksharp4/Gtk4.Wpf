@@ -6,214 +6,213 @@ using Xamarin.Forms.Platform.GTK.Controls;
 using Xamarin.Forms.Platform.GTK.Extensions;
 using Xamarin.Forms.Platform.GTK.Helpers;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers
+namespace Xamarin.Forms.Platform.GTK.Renderers;
+
+public class EditorRenderer : ViewRenderer<Editor, ScrolledTextView>
 {
-	public class EditorRenderer : ViewRenderer<Editor, ScrolledTextView>
+	private const string TextColorTagName = "text-color";
+
+	private bool _disposed;
+
+	/// <summary>
+	/// True while <see cref="UpdateText"/> is pushing the element's text into the buffer, so
+	/// the buffer's own change notifications are not mistaken for the user typing.
+	/// </summary>
+	private bool _updatingTextFromElement;
+
+	protected IEditorController EditorController => Element as IEditorController;
+
+	protected override void UpdateBackgroundColor()
 	{
-		private const string TextColorTagName = "text-color";
-
-		private bool _disposed;
-
-		/// <summary>
-		/// True while <see cref="UpdateText"/> is pushing the element's text into the buffer, so
-		/// the buffer's own change notifications are not mistaken for the user typing.
-		/// </summary>
-		private bool _updatingTextFromElement;
-
-		protected IEditorController EditorController => Element as IEditorController;
-
-		protected override void UpdateBackgroundColor()
+		if (!Element.BackgroundColor.IsDefaultOrTransparent())
 		{
-			if (!Element.BackgroundColor.IsDefaultOrTransparent())
-			{
-				var backgroundColor = Element.BackgroundColor.ToGtkColor();
+			var backgroundColor = Element.BackgroundColor.ToGtkColor();
 
-				Control.SetBackgroundColor(backgroundColor);
-			}
+			Control.SetBackgroundColor(backgroundColor);
+		}
+	}
+
+	protected override void OnElementChanged(ElementChangedEventArgs<Editor> e)
+	{
+		if (Control == null)
+		{
+			var scrolled = new ScrolledTextView();
+
+			scrolled.TextView.Buffer.TagTable.Add(new TextTag(TextColorTagName));
+
+			scrolled.TextView.Buffer.Changed += TextViewBufferChanged;
+			scrolled.TextView.Focused += TextViewFocused;
+			scrolled.TextView.FocusOutEvent += TextViewFocusedOut;
+
+			SetNativeControl(scrolled);
+			AdjustMinimumHeight(scrolled.TextView);
 		}
 
-		protected override void OnElementChanged(ElementChangedEventArgs<Editor> e)
+		if (e.NewElement != null)
 		{
-			if (Control == null)
-			{
-				var scrolled = new ScrolledTextView();
-
-				scrolled.TextView.Buffer.TagTable.Add(new TextTag(TextColorTagName));
-
-				scrolled.TextView.Buffer.Changed += TextViewBufferChanged;
-				scrolled.TextView.Focused += TextViewFocused;
-				scrolled.TextView.FocusOutEvent += TextViewFocusedOut;
-
-				SetNativeControl(scrolled);
-				AdjustMinimumHeight(scrolled.TextView);
-			}
-
-			if (e.NewElement != null)
-			{
-				UpdateText();
-				UpdateFont();
-				UpdateTextColor();
-				UpdatePlaceholder();
-				UpdatePlaceholderColor();
-				UpdateMaxLength();
-			}
-
-			base.OnElementChanged(e);
-		}
-
-		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			base.OnElementPropertyChanged(sender, e);
-
-			if (e.PropertyName == Editor.TextProperty.PropertyName ||
-				e.PropertyName == Editor.TextTransformProperty.PropertyName)
-				UpdateText();
-			else if (e.PropertyName == Editor.TextColorProperty.PropertyName)
-				UpdateTextColor();
-			else if (e.PropertyName == Editor.PlaceholderProperty.PropertyName)
-				UpdatePlaceholder();
-			else if (e.PropertyName == Editor.PlaceholderColorProperty.PropertyName)
-				UpdatePlaceholderColor();
-			else if (e.PropertyName == Editor.FontAttributesProperty.PropertyName)
-				UpdateFont();
-			else if (e.PropertyName == Editor.FontFamilyProperty.PropertyName)
-				UpdateFont();
-			else if (e.PropertyName == Editor.FontSizeProperty.PropertyName)
-				UpdateFont();
-			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
-				UpdateMaxLength();
-		}
-
-		protected override void Dispose(bool disposing)
-		{
-			if (disposing && !_disposed)
-			{
-				_disposed = true;
-
-				if (Control != null)
-				{
-					Control.TextView.Buffer.Changed -= TextViewBufferChanged;
-					Control.TextView.Focused -= TextViewFocused;
-					// -=, not +=. This subscribed a SECOND handler while disposing, so a focused
-					// Editor being torn down raised Completed twice instead of not at all.
-					Control.TextView.FocusOutEvent -= TextViewFocusedOut;
-				}
-			}
-
-			base.Dispose(disposing);
-		}
-
-		private void UpdateText()
-		{
-			TextBuffer buffer = Control.TextView.Buffer;
-
-			var text = Element.UpdateFormsText(Element.Text, Element.TextTransform);
-			if (buffer.Text == text)
-				return;
-
-			// gtk_text_buffer_set_text deletes the existing contents and then inserts the new
-			// ones, and BOTH steps raise Changed. Without this guard the delete's notification
-			// reaches TextViewBufferChanged while the buffer is momentarily empty, which writes
-			// "" back into Element.Text - so a programmatic `editor.Text = "x"` ends with an
-			// empty control, and any binding on Text observes a spurious empty value first.
-			_updatingTextFromElement = true;
-
-			try
-			{
-				buffer.Text = text;
-			}
-			finally
-			{
-				_updatingTextFromElement = false;
-			}
-
+			UpdateText();
+			UpdateFont();
 			UpdateTextColor();
+			UpdatePlaceholder();
+			UpdatePlaceholderColor();
+			UpdateMaxLength();
 		}
 
-		private void UpdateFont()
-		{
-			FontDescription fontDescription = FontDescriptionHelper.CreateFontDescription(
-				Element.FontSize, Element.FontFamily, Element.FontAttributes);
-			Control.TextView.SetFont(fontDescription);
+		base.OnElementChanged(e);
+	}
 
-			AdjustMinimumHeight(Control.TextView, fontDescription);
-		}
+	protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+	{
+		base.OnElementPropertyChanged(sender, e);
 
-		private void UpdateTextColor()
+		if (e.PropertyName == Editor.TextProperty.PropertyName ||
+		    e.PropertyName == Editor.TextTransformProperty.PropertyName)
+			UpdateText();
+		else if (e.PropertyName == Editor.TextColorProperty.PropertyName)
+			UpdateTextColor();
+		else if (e.PropertyName == Editor.PlaceholderProperty.PropertyName)
+			UpdatePlaceholder();
+		else if (e.PropertyName == Editor.PlaceholderColorProperty.PropertyName)
+			UpdatePlaceholderColor();
+		else if (e.PropertyName == Editor.FontAttributesProperty.PropertyName)
+			UpdateFont();
+		else if (e.PropertyName == Editor.FontFamilyProperty.PropertyName)
+			UpdateFont();
+		else if (e.PropertyName == Editor.FontSizeProperty.PropertyName)
+			UpdateFont();
+		else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
+			UpdateMaxLength();
+	}
+
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing && !_disposed)
 		{
-			if (!Element.TextColor.IsDefaultOrTransparent())
+			_disposed = true;
+
+			if (Control != null)
 			{
-				var textColor = Element.TextColor.ToGtkColor();
-
-				TextBuffer buffer = Control.TextView.Buffer;
-				TextTag tag = buffer.TagTable.Lookup(TextColorTagName);
-				tag.ForegroundGdk = Element.IsEnabled ? textColor : Control.GetDefaultForegroundColor(Gtk.StateFlags.Normal);
-				Control.TextView.Buffer.ApplyTag(tag, buffer.StartIter, buffer.EndIter);
+				Control.TextView.Buffer.Changed -= TextViewBufferChanged;
+				Control.TextView.Focused -= TextViewFocused;
+				// -=, not +=. This subscribed a SECOND handler while disposing, so a focused
+				// Editor being torn down raised Completed twice instead of not at all.
+				Control.TextView.FocusOutEvent -= TextViewFocusedOut;
 			}
 		}
 
-		private void TextViewBufferChanged(object sender, EventArgs e)
+		base.Dispose(disposing);
+	}
+
+	private void UpdateText()
+	{
+		TextBuffer buffer = Control.TextView.Buffer;
+
+		var text = Element.UpdateFormsText(Element.Text, Element.TextTransform);
+		if (buffer.Text == text)
+			return;
+
+		// gtk_text_buffer_set_text deletes the existing contents and then inserts the new
+		// ones, and BOTH steps raise Changed. Without this guard the delete's notification
+		// reaches TextViewBufferChanged while the buffer is momentarily empty, which writes
+		// "" back into Element.Text - so a programmatic `editor.Text = "x"` ends with an
+		// empty control, and any binding on Text observes a spurious empty value first.
+		_updatingTextFromElement = true;
+
+		try
 		{
-			if (_updatingTextFromElement)
-				return;
+			buffer.Text = text;
+		}
+		finally
+		{
+			_updatingTextFromElement = false;
+		}
+
+		UpdateTextColor();
+	}
+
+	private void UpdateFont()
+	{
+		FontDescription fontDescription = FontDescriptionHelper.CreateFontDescription(
+			Element.FontSize, Element.FontFamily, Element.FontAttributes);
+		Control.TextView.SetFont(fontDescription);
+
+		AdjustMinimumHeight(Control.TextView, fontDescription);
+	}
+
+	private void UpdateTextColor()
+	{
+		if (!Element.TextColor.IsDefaultOrTransparent())
+		{
+			var textColor = Element.TextColor.ToGtkColor();
 
 			TextBuffer buffer = Control.TextView.Buffer;
-
-			if (Element.Text != buffer.Text)
-				ElementController.SetValueFromRenderer(Editor.TextProperty, buffer.Text);
-
-			UpdateTextColor();
+			TextTag tag = buffer.TagTable.Lookup(TextColorTagName);
+			tag.ForegroundGdk = Element.IsEnabled ? textColor : Control.GetDefaultForegroundColor(Gtk.StateFlags.Normal);
+			Control.TextView.Buffer.ApplyTag(tag, buffer.StartIter, buffer.EndIter);
 		}
+	}
 
-		private void TextViewFocused(object o, FocusedArgs args)
+	private void TextViewBufferChanged(object sender, EventArgs e)
+	{
+		if (_updatingTextFromElement)
+			return;
+
+		TextBuffer buffer = Control.TextView.Buffer;
+
+		if (Element.Text != buffer.Text)
+			ElementController.SetValueFromRenderer(Editor.TextProperty, buffer.Text);
+
+		UpdateTextColor();
+	}
+
+	private void TextViewFocused(object o, FocusedArgs args)
+	{
+		ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
+	}
+
+	private void TextViewFocusedOut(object o, FocusOutEventArgs args)
+	{
+		ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
+		EditorController.SendCompleted();
+	}
+
+	private static void AdjustMinimumHeight(TextView textView, FontDescription font = null)
+	{
+		var fDescr = font != null ? font : textView.GetDefaultFont(Gtk.StateFlags.Normal);
+		var metrics = textView.PangoContext.GetMetrics(font, Language.Default);
+		var pangoUnits = (metrics.Ascent + metrics.Descent) / Pango.Scale.PangoScale;
+
+		// GTK4: GdkScreen (and its Resolution property) is removed. Fall back to 96 DPI,
+		// the CSS standard that GTK4 itself uses when no Xsettings override is present.
+		const double resolution = 96.0;
+		var minHeight = (int)(pangoUnits * (resolution / 72.0));
+
+		if (textView.HeightRequest < minHeight)
 		{
-			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
+			textView.HeightRequest = minHeight;
 		}
+	}
 
-		private void TextViewFocusedOut(object o, FocusOutEventArgs args)
+	private void UpdateMaxLength()
+	{
+		Control.SetMaxLength(Element.MaxLength);
+	}
+
+	private void UpdatePlaceholder()
+	{
+		if (Element.Placeholder != Control.PlaceholderText)
 		{
-			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
-			EditorController.SendCompleted();
+			Control.PlaceholderText = Element.Placeholder;
 		}
+	}
 
-		private static void AdjustMinimumHeight(TextView textView, FontDescription font = null)
+	private void UpdatePlaceholderColor()
+	{
+		if (!Element.PlaceholderColor.IsDefaultOrTransparent())
 		{
-			var fDescr = font != null ? font : textView.GetDefaultFont(Gtk.StateFlags.Normal);
-			var metrics = textView.PangoContext.GetMetrics(font, Language.Default);
-			var pangoUnits = (metrics.Ascent + metrics.Descent) / Pango.Scale.PangoScale;
+			var placeholderColor = Element.PlaceholderColor.ToGtkColor();
 
-			// GTK4: GdkScreen (and its Resolution property) is removed. Fall back to 96 DPI,
-			// the CSS standard that GTK4 itself uses when no Xsettings override is present.
-			const double resolution = 96.0;
-			var minHeight = (int)(pangoUnits * (resolution / 72.0));
-
-			if (textView.HeightRequest < minHeight)
-			{
-				textView.HeightRequest = minHeight;
-			}
-		}
-
-		private void UpdateMaxLength()
-		{
-			Control.SetMaxLength(Element.MaxLength);
-		}
-
-		private void UpdatePlaceholder()
-		{
-			if (Element.Placeholder != Control.PlaceholderText)
-			{
-				Control.PlaceholderText = Element.Placeholder;
-			}
-		}
-
-		private void UpdatePlaceholderColor()
-		{
-			if (!Element.PlaceholderColor.IsDefaultOrTransparent())
-			{
-				var placeholderColor = Element.PlaceholderColor.ToGtkColor();
-
-				Control.SetPlaceholderTextColor(placeholderColor);
-			}
+			Control.SetPlaceholderTextColor(placeholderColor);
 		}
 	}
 }

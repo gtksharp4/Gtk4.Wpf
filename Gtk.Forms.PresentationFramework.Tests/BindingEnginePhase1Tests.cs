@@ -5,207 +5,206 @@ using System.Windows.Data;
 using Xunit;
 using WpfTextBlock = System.Windows.Controls.TextBlock;
 
-namespace Gtk.Forms.PresentationFramework.Tests
+namespace Gtk.Forms.PresentationFramework.Tests;
+
+/// <summary>
+/// Pure tests (no GTK) for Phase-1 binding features:
+/// TwoWay, OneTime, OneWayToSource, ElementName, ConvertBack, no-feedback loop.
+/// </summary>
+public class BindingEnginePhase1Tests
 {
-	/// <summary>
-	/// Pure tests (no GTK) for Phase-1 binding features:
-	/// TwoWay, OneTime, OneWayToSource, ElementName, ConvertBack, no-feedback loop.
-	/// </summary>
-	public class BindingEnginePhase1Tests
+	// ── Helpers ─────────────────────────────────────────────────────────────
+
+	sealed class ViewModel : INotifyPropertyChanged
 	{
-		// ── Helpers ─────────────────────────────────────────────────────────────
+		string _text = string.Empty;
 
-		sealed class ViewModel : INotifyPropertyChanged
+		public string Text
 		{
-			string _text = string.Empty;
-
-			public string Text
+			get => _text;
+			set
 			{
-				get => _text;
-				set
-				{
-					if (_text == value) return;
-					_text = value;
-					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Text)));
-				}
-			}
-
-			public event PropertyChangedEventHandler? PropertyChanged;
-		}
-
-		/// Converter that appends/removes a suffix so ConvertBack is distinguishable.
-		sealed class SuffixConverter : IValueConverter
-		{
-			public object? Convert(object? value, System.Type t, object? param, CultureInfo c)
-				=> value is string s ? s + "_fwd" : value;
-
-			public object? ConvertBack(object? value, System.Type t, object? param, CultureInfo c)
-			{
-				if (value is string s && s.EndsWith("_fwd"))
-					return s.Substring(0, s.Length - 4);
-				return value;
+				if (_text == value) return;
+				_text = value;
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Text)));
 			}
 		}
 
-		// Minimal FrameworkElement subclass that exposes a writable DP for testing.
-		sealed class TestElement : FrameworkElement
+		public event PropertyChangedEventHandler? PropertyChanged;
+	}
+
+	/// Converter that appends/removes a suffix so ConvertBack is distinguishable.
+	sealed class SuffixConverter : IValueConverter
+	{
+		public object? Convert(object? value, System.Type t, object? param, CultureInfo c)
+			=> value is string s ? s + "_fwd" : value;
+
+		public object? ConvertBack(object? value, System.Type t, object? param, CultureInfo c)
 		{
-			public static readonly DependencyProperty ValueProperty =
-				DependencyProperty.Register(nameof(Value), typeof(string), typeof(TestElement),
-					new PropertyMetadata(null));
+			if (value is string s && s.EndsWith("_fwd"))
+				return s.Substring(0, s.Length - 4);
+			return value;
+		}
+	}
 
-			public string? Value
-			{
-				get => (string?)GetValue(ValueProperty);
-				set => SetValue(ValueProperty, value);
-			}
+	// Minimal FrameworkElement subclass that exposes a writable DP for testing.
+	sealed class TestElement : FrameworkElement
+	{
+		public static readonly DependencyProperty ValueProperty =
+			DependencyProperty.Register(nameof(Value), typeof(string), typeof(TestElement),
+				new PropertyMetadata(null));
 
-			protected override Gtk.Widget CreateWidget() => throw new System.NotSupportedException();
+		public string? Value
+		{
+			get => (string?)GetValue(ValueProperty);
+			set => SetValue(ValueProperty, value);
 		}
 
-		// ── TwoWay: source -> target ─────────────────────────────────────────────
+		protected override Gtk.Widget CreateWidget() => throw new System.NotSupportedException();
+	}
 
-		[Fact]
-		public void TwoWay_source_change_updates_target()
-		{
-			var vm = new ViewModel { Text = "initial" };
-			var tb = new WpfTextBlock();
-			tb.DataContext = vm;
-			tb.SetBinding(WpfTextBlock.TextProperty,
-				new Binding("Text") { Mode = BindingMode.TwoWay });
+	// ── TwoWay: source -> target ─────────────────────────────────────────────
 
-			Assert.Equal("initial", tb.Text);
+	[Fact]
+	public void TwoWay_source_change_updates_target()
+	{
+		var vm = new ViewModel { Text = "initial" };
+		var tb = new WpfTextBlock();
+		tb.DataContext = vm;
+		tb.SetBinding(WpfTextBlock.TextProperty,
+			new Binding("Text") { Mode = BindingMode.TwoWay });
 
-			vm.Text = "updated";
-			Assert.Equal("updated", tb.Text);
-		}
+		Assert.Equal("initial", tb.Text);
 
-		// ── TwoWay: target -> source (write-back) ────────────────────────────────
+		vm.Text = "updated";
+		Assert.Equal("updated", tb.Text);
+	}
 
-		[Fact]
-		public void TwoWay_target_change_writes_back_to_source()
-		{
-			var vm = new ViewModel { Text = "original" };
-			var el = new TestElement();
-			el.DataContext = vm;
-			el.SetBinding(TestElement.ValueProperty,
-				new Binding("Text") { Mode = BindingMode.TwoWay });
+	// ── TwoWay: target -> source (write-back) ────────────────────────────────
 
-			Assert.Equal("original", el.Value);
+	[Fact]
+	public void TwoWay_target_change_writes_back_to_source()
+	{
+		var vm = new ViewModel { Text = "original" };
+		var el = new TestElement();
+		el.DataContext = vm;
+		el.SetBinding(TestElement.ValueProperty,
+			new Binding("Text") { Mode = BindingMode.TwoWay });
 
-			el.Value = "edited";
+		Assert.Equal("original", el.Value);
 
-			Assert.Equal("edited", vm.Text);
-		}
+		el.Value = "edited";
 
-		// ── TwoWay no feedback loop ───────────────────────────────────────────────
+		Assert.Equal("edited", vm.Text);
+	}
 
-		[Fact]
-		public void TwoWay_no_feedback_loop()
-		{
-			var vm = new ViewModel { Text = "start" };
-			var el = new TestElement();
-			el.DataContext = vm;
-			el.SetBinding(TestElement.ValueProperty,
-				new Binding("Text") { Mode = BindingMode.TwoWay });
+	// ── TwoWay no feedback loop ───────────────────────────────────────────────
 
-			int inpcCount = 0;
-			vm.PropertyChanged += (_, _) => inpcCount++;
+	[Fact]
+	public void TwoWay_no_feedback_loop()
+	{
+		var vm = new ViewModel { Text = "start" };
+		var el = new TestElement();
+		el.DataContext = vm;
+		el.SetBinding(TestElement.ValueProperty,
+			new Binding("Text") { Mode = BindingMode.TwoWay });
 
-			// Set via DP — write-back fires INPC once, which re-pushes to target.
-			// Without the guard this would loop.
-			el.Value = "loop-test";
+		int inpcCount = 0;
+		vm.PropertyChanged += (_, _) => inpcCount++;
 
-			// INPC fires exactly once (the write-back): no infinite loop.
-			Assert.Equal(1, inpcCount);
-			Assert.Equal("loop-test", vm.Text);
-		}
+		// Set via DP — write-back fires INPC once, which re-pushes to target.
+		// Without the guard this would loop.
+		el.Value = "loop-test";
 
-		// ── ConvertBack on TwoWay write-back ─────────────────────────────────────
+		// INPC fires exactly once (the write-back): no infinite loop.
+		Assert.Equal(1, inpcCount);
+		Assert.Equal("loop-test", vm.Text);
+	}
 
-		[Fact]
-		public void TwoWay_ConvertBack_applied_on_writeback()
-		{
-			var vm = new ViewModel { Text = "hello" };
-			var el = new TestElement();
-			el.DataContext = vm;
-			el.SetBinding(TestElement.ValueProperty,
-				new Binding("Text") { Mode = BindingMode.TwoWay, Converter = new SuffixConverter() });
+	// ── ConvertBack on TwoWay write-back ─────────────────────────────────────
 
-			// Forward: "hello" -> "hello_fwd"
-			Assert.Equal("hello_fwd", el.Value);
+	[Fact]
+	public void TwoWay_ConvertBack_applied_on_writeback()
+	{
+		var vm = new ViewModel { Text = "hello" };
+		var el = new TestElement();
+		el.DataContext = vm;
+		el.SetBinding(TestElement.ValueProperty,
+			new Binding("Text") { Mode = BindingMode.TwoWay, Converter = new SuffixConverter() });
 
-			// Write-back: "world_fwd" -> ConvertBack -> "world"
-			el.Value = "world_fwd";
-			Assert.Equal("world", vm.Text);
-		}
+		// Forward: "hello" -> "hello_fwd"
+		Assert.Equal("hello_fwd", el.Value);
 
-		// ── OneTime ──────────────────────────────────────────────────────────────
+		// Write-back: "world_fwd" -> ConvertBack -> "world"
+		el.Value = "world_fwd";
+		Assert.Equal("world", vm.Text);
+	}
 
-		[Fact]
-		public void OneTime_pushes_initial_value()
-		{
-			var vm = new ViewModel { Text = "once" };
-			var tb = new WpfTextBlock();
-			tb.DataContext = vm;
-			tb.SetBinding(WpfTextBlock.TextProperty,
-				new Binding("Text") { Mode = BindingMode.OneTime });
+	// ── OneTime ──────────────────────────────────────────────────────────────
 
-			Assert.Equal("once", tb.Text);
-		}
+	[Fact]
+	public void OneTime_pushes_initial_value()
+	{
+		var vm = new ViewModel { Text = "once" };
+		var tb = new WpfTextBlock();
+		tb.DataContext = vm;
+		tb.SetBinding(WpfTextBlock.TextProperty,
+			new Binding("Text") { Mode = BindingMode.OneTime });
 
-		[Fact]
-		public void OneTime_does_not_update_after_source_changes()
-		{
-			var vm = new ViewModel { Text = "first" };
-			var tb = new WpfTextBlock();
-			tb.DataContext = vm;
-			tb.SetBinding(WpfTextBlock.TextProperty,
-				new Binding("Text") { Mode = BindingMode.OneTime });
+		Assert.Equal("once", tb.Text);
+	}
 
-			vm.Text = "second";
-			Assert.Equal("first", tb.Text); // must not have updated
-		}
+	[Fact]
+	public void OneTime_does_not_update_after_source_changes()
+	{
+		var vm = new ViewModel { Text = "first" };
+		var tb = new WpfTextBlock();
+		tb.DataContext = vm;
+		tb.SetBinding(WpfTextBlock.TextProperty,
+			new Binding("Text") { Mode = BindingMode.OneTime });
 
-		// ── ElementName resolution ────────────────────────────────────────────────
+		vm.Text = "second";
+		Assert.Equal("first", tb.Text); // must not have updated
+	}
 
-		[Fact]
-		public void ElementName_resolves_named_sibling_as_source()
-		{
-			// source element registered in a name scope on the root.
-			var root = new TestElement();
-			var source = new TestElement { Value = "from-sibling" };
-			root.RegisterName("sibling", source);
+	// ── ElementName resolution ────────────────────────────────────────────────
 
-			// target element: FindName walks up to root via InheritanceParent.
-			var target = new TestElement();
-			target.InheritanceParent = root;
+	[Fact]
+	public void ElementName_resolves_named_sibling_as_source()
+	{
+		// source element registered in a name scope on the root.
+		var root = new TestElement();
+		var source = new TestElement { Value = "from-sibling" };
+		root.RegisterName("sibling", source);
 
-			target.SetBinding(TestElement.ValueProperty,
-				new Binding("Value") { ElementName = "sibling" });
+		// target element: FindName walks up to root via InheritanceParent.
+		var target = new TestElement();
+		target.InheritanceParent = root;
 
-			Assert.Equal("from-sibling", target.Value);
-		}
+		target.SetBinding(TestElement.ValueProperty,
+			new Binding("Value") { ElementName = "sibling" });
 
-		[Fact]
-		public void ElementName_updates_target_when_source_dp_changes()
-		{
-			var root = new TestElement();
-			var source = new TestElement { Value = "initial" };
-			root.RegisterName("src", source);
+		Assert.Equal("from-sibling", target.Value);
+	}
 
-			var target = new TestElement();
-			target.InheritanceParent = root;
-			target.SetBinding(TestElement.ValueProperty,
-				new Binding("Value") { ElementName = "src" });
+	[Fact]
+	public void ElementName_updates_target_when_source_dp_changes()
+	{
+		var root = new TestElement();
+		var source = new TestElement { Value = "initial" };
+		root.RegisterName("src", source);
 
-			Assert.Equal("initial", target.Value);
+		var target = new TestElement();
+		target.InheritanceParent = root;
+		target.SetBinding(TestElement.ValueProperty,
+			new Binding("Value") { ElementName = "src" });
 
-			// Source is not INPC, so changing Value directly does NOT auto-update target.
-			// This documents the current behaviour: ElementName only hooks INPC sources.
-			source.Value = "changed";
-			// target was not updated because TestElement is not INotifyPropertyChanged.
-			Assert.Equal("initial", target.Value);
-		}
+		Assert.Equal("initial", target.Value);
+
+		// Source is not INPC, so changing Value directly does NOT auto-update target.
+		// This documents the current behaviour: ElementName only hooks INPC sources.
+		source.Value = "changed";
+		// target was not updated because TestElement is not INotifyPropertyChanged.
+		Assert.Equal("initial", target.Value);
 	}
 }

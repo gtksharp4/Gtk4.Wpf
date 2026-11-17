@@ -5,214 +5,213 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class FlexLayoutMarginTests : BaseTestFixture
 {
-	public class FlexLayoutMarginTests : BaseTestFixture
+	[Fact]
+	public void TestMarginLeft()
 	{
-		[Fact]
-		public void TestMarginLeft()
+		var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, Margin = new Thickness(10, 0, 0, 0), };
+		var layout = new FlexLayout
 		{
-			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, Margin = new Thickness(10, 0, 0, 0), };
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
-				Children = {
-					view0,
-				},
-				Direction = FlexDirection.Row,
-			};
+			IsPlatformEnabled = true,
+			Children = {
+				view0,
+			},
+			Direction = FlexDirection.Row,
+		};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
-			Assert.Equal(new Rectangle(10, 0, 10, 100), view0.Bounds);
-		}
+		layout.Layout(new Rectangle(0, 0, 100, 100));
+		Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
+		Assert.Equal(new Rectangle(10, 0, 10, 100), view0.Bounds);
+	}
 
-		[Fact]
-		public void TestMarginTop()
+	[Fact]
+	public void TestMarginTop()
+	{
+		var view0 = new View { IsPlatformEnabled = true, HeightRequest = 10, Margin = new Thickness(0, 10, 0, 0), };
+		var layout = new FlexLayout
 		{
-			var view0 = new View { IsPlatformEnabled = true, HeightRequest = 10, Margin = new Thickness(0, 10, 0, 0), };
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
-				Children = {
-					view0,
-				},
+			IsPlatformEnabled = true,
+			Children = {
+				view0,
+			},
 
-				Direction = FlexDirection.Column,
-			};
+			Direction = FlexDirection.Column,
+		};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
-			Assert.Equal(new Rectangle(0, 10, 100, 10), view0.Bounds);
-		}
+		layout.Layout(new Rectangle(0, 0, 100, 100));
+		Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
+		Assert.Equal(new Rectangle(0, 10, 100, 10), view0.Bounds);
+	}
 
-		[Fact]
-		public void TestMarginRight()
+	[Fact]
+	public void TestMarginRight()
+	{
+		var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, Margin = new Thickness(0, 0, 10, 0), };
+		var layout = new FlexLayout
 		{
-			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, Margin = new Thickness(0, 0, 10, 0), };
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
-				Children = {
-					view0,
-				},
+			IsPlatformEnabled = true,
+			Children = {
+				view0,
+			},
 
-				Direction = FlexDirection.Row,
-				JustifyContent = FlexJustify.End,
-			};
+			Direction = FlexDirection.Row,
+			JustifyContent = FlexJustify.End,
+		};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
-			Assert.Equal(new Rectangle(80, 0, 10, 100), view0.Bounds);
-		}
+		layout.Layout(new Rectangle(0, 0, 100, 100));
+		Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
+		Assert.Equal(new Rectangle(80, 0, 10, 100), view0.Bounds);
+	}
 
-		[Fact]
-		public void TestMarginBottom()
+	[Fact]
+	public void TestMarginBottom()
+	{
+		var view0 = new View { IsPlatformEnabled = true, HeightRequest = 10, Margin = new Thickness(0, 0, 0, 10), };
+		var layout = new FlexLayout
 		{
-			var view0 = new View { IsPlatformEnabled = true, HeightRequest = 10, Margin = new Thickness(0, 0, 0, 10), };
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
-				Children = {
-					view0,
-				},
+			IsPlatformEnabled = true,
+			Children = {
+				view0,
+			},
 
-				Direction = FlexDirection.Column,
-				JustifyContent = FlexJustify.End,
-			};
+			Direction = FlexDirection.Column,
+			JustifyContent = FlexJustify.End,
+		};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
-			Assert.Equal(new Rectangle(0, 80, 100, 10), view0.Bounds);
-		}
+		layout.Layout(new Rectangle(0, 0, 100, 100));
+		Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
+		Assert.Equal(new Rectangle(0, 80, 100, 10), view0.Bounds);
+	}
 
-		[Fact]
-		public void TestMarginAndFlexRow()
+	[Fact]
+	public void TestMarginAndFlexRow()
+	{
+		var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(10, 0, 10, 0), };
+		FlexLayout.SetGrow(view0, 1);
+		var layout = new FlexLayout
 		{
-			var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(10, 0, 10, 0), };
-			FlexLayout.SetGrow(view0, 1);
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
-				Children = {
-					view0,
-				},
+			IsPlatformEnabled = true,
+			Children = {
+				view0,
+			},
 
-				Direction = FlexDirection.Row,
-			};
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
-			Assert.Equal(new Rectangle(10, 0, 80, 100), view0.Bounds);
-		}
+			Direction = FlexDirection.Row,
+		};
+		layout.Layout(new Rectangle(0, 0, 100, 100));
+		Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
+		Assert.Equal(new Rectangle(10, 0, 80, 100), view0.Bounds);
+	}
 
-		[Fact]
-		public void TestMarginAndFlexColumn()
+	[Fact]
+	public void TestMarginAndFlexColumn()
+	{
+		var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(0, 10, 0, 10), };
+		FlexLayout.SetGrow(view0, 1);
+		var layout = new FlexLayout
 		{
-			var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(0, 10, 0, 10), };
-			FlexLayout.SetGrow(view0, 1);
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
-				Children = {
-					view0,
-				},
+			IsPlatformEnabled = true,
+			Children = {
+				view0,
+			},
 
-				Direction = FlexDirection.Column,
-			};
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
-			Assert.Equal(new Rectangle(0, 10, 100, 80), view0.Bounds);
-		}
+			Direction = FlexDirection.Column,
+		};
+		layout.Layout(new Rectangle(0, 0, 100, 100));
+		Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
+		Assert.Equal(new Rectangle(0, 10, 100, 80), view0.Bounds);
+	}
 
-		[Fact]
-		public void TestMarginAndStretchRow()
+	[Fact]
+	public void TestMarginAndStretchRow()
+	{
+		var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(0, 10, 0, 10), };
+		FlexLayout.SetGrow(view0, 1);
+		var layout = new FlexLayout
 		{
-			var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(0, 10, 0, 10), };
-			FlexLayout.SetGrow(view0, 1);
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
-				Children = {
-					view0,
-				},
+			IsPlatformEnabled = true,
+			Children = {
+				view0,
+			},
 
-				Direction = FlexDirection.Row,
-			};
+			Direction = FlexDirection.Row,
+		};
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
-			Assert.Equal(new Rectangle(0, 10, 100, 80), view0.Bounds);
-		}
+		layout.Layout(new Rectangle(0, 0, 100, 100));
+		Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
+		Assert.Equal(new Rectangle(0, 10, 100, 80), view0.Bounds);
+	}
 
-		[Fact]
-		public void TestMarginAndStretchColumn()
+	[Fact]
+	public void TestMarginAndStretchColumn()
+	{
+
+		var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(10, 0, 10, 0) };
+		FlexLayout.SetGrow(view0, 1);
+		var layout = new FlexLayout
 		{
+			IsPlatformEnabled = true,
+			Children = {
+				view0,
+			},
+			Direction = FlexDirection.Column,
+		};
 
-			var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(10, 0, 10, 0) };
-			FlexLayout.SetGrow(view0, 1);
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
-				Children = {
-					view0,
-				},
-				Direction = FlexDirection.Column,
-			};
+		layout.Layout(new Rectangle(0, 0, 100, 100));
+		Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
+		Assert.Equal(new Rectangle(10, 0, 80, 100), view0.Bounds);
+	}
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
-			Assert.Equal(new Rectangle(10, 0, 80, 100), view0.Bounds);
-		}
+	[Fact]
+	public void TestMarginWithSiblingRow()
+	{
+		Device.PlatformServices = new MockPlatformServices(getNativeSizeFunc: (visual, width, height) => new SizeRequest(new Size(0, 0)));
 
-		[Fact]
-		public void TestMarginWithSiblingRow()
+		var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(0, 0, 10, 0) };
+		FlexLayout.SetGrow(view0, 1);
+		var view1 = new View { IsPlatformEnabled = true };
+		FlexLayout.SetGrow(view1, 1);
+		var layout = new FlexLayout
 		{
-			Device.PlatformServices = new MockPlatformServices(getNativeSizeFunc: (visual, width, height) => new SizeRequest(new Size(0, 0)));
+			IsPlatformEnabled = true,
+			Children = {
+				view0,
+				view1,
+			},
 
-			var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(0, 0, 10, 0) };
-			FlexLayout.SetGrow(view0, 1);
-			var view1 = new View { IsPlatformEnabled = true };
-			FlexLayout.SetGrow(view1, 1);
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
-				Children = {
-					view0,
-					view1,
-				},
+			Direction = FlexDirection.Row,
+		};
 
-				Direction = FlexDirection.Row,
-			};
+		layout.Layout(new Rectangle(0, 0, 100, 100));
+		Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
+		Assert.Equal(new Rectangle(0, 0, 45, 100), view0.Bounds);
+		Assert.Equal(new Rectangle(55, 0, 45, 100), view1.Bounds);
+	}
 
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
-			Assert.Equal(new Rectangle(0, 0, 45, 100), view0.Bounds);
-			Assert.Equal(new Rectangle(55, 0, 45, 100), view1.Bounds);
-		}
+	[Fact]
+	public void TestMarginWithSiblingColumn()
+	{
+		var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(0, 0, 0, 10) };
+		FlexLayout.SetGrow(view0, 1);
+		var view1 = new View { IsPlatformEnabled = true };
+		FlexLayout.SetGrow(view1, 1);
 
-		[Fact]
-		public void TestMarginWithSiblingColumn()
+		var layout = new FlexLayout
 		{
-			var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(0, 0, 0, 10) };
-			FlexLayout.SetGrow(view0, 1);
-			var view1 = new View { IsPlatformEnabled = true };
-			FlexLayout.SetGrow(view1, 1);
+			IsPlatformEnabled = true,
+			Children = {
+				view0,
+				view1,
+			},
 
-			var layout = new FlexLayout
-			{
-				IsPlatformEnabled = true,
-				Children = {
-					view0,
-					view1,
-				},
+			Direction = FlexDirection.Column,
+		};
 
-				Direction = FlexDirection.Column,
-			};
-
-			layout.Layout(new Rectangle(0, 0, 100, 100));
-			Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
-			Assert.Equal(new Rectangle(0, 0, 100, 45), view0.Bounds);
-			Assert.Equal(new Rectangle(0, 55, 100, 45), view1.Bounds);
-		}
+		layout.Layout(new Rectangle(0, 0, 100, 100));
+		Assert.Equal(new Rectangle(0, 0, 100, 100), layout.Bounds);
+		Assert.Equal(new Rectangle(0, 0, 100, 45), view0.Bounds);
+		Assert.Equal(new Rectangle(0, 55, 100, 45), view1.Bounds);
 	}
 }

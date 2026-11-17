@@ -6,32 +6,31 @@ using Xunit;
 using Xamarin.Forms;
 using Xamarin.Forms.Build.Tasks;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+[XamlCompilation(XamlCompilationOptions.Skip)]
+public partial class Gh2064 : ContentPage
 {
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class Gh2064 : ContentPage
+	public Gh2064()
 	{
-		public Gh2064()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Gh2064(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Gh2064(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
+	{
+		[Theory]
+		[InlineData(false), InlineData(true)]
+		public void ReportMissingTargetTypeOnStyle(bool useCompiledXaml)
 		{
-			[Theory]
-			[InlineData(false), InlineData(true)]
-			public void ReportMissingTargetTypeOnStyle(bool useCompiledXaml)
-			{
-				if (useCompiledXaml)
-					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh2064)));
-				else
-					Assert.Throws<XamlParseException>(() => new Gh2064(useCompiledXaml));
-			}
+			if (useCompiledXaml)
+				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh2064)));
+			else
+				Assert.Throws<XamlParseException>(() => new Gh2064(useCompiledXaml));
 		}
 	}
 }

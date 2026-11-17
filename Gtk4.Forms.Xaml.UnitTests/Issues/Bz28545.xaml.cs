@@ -3,32 +3,31 @@ using System.Collections.Generic;
 using Xunit;
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class Bz28545 : ContentPage
 {
-	public partial class Bz28545 : ContentPage
+	public Bz28545()
 	{
-		public Bz28545()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Bz28545(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Bz28545(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
+	{
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void TypeConverterAreAppliedForSettersToAttachedBP(bool useCompiledXaml)
 		{
-			[Theory]
-			[InlineData(true)]
-			[InlineData(false)]
-			public void TypeConverterAreAppliedForSettersToAttachedBP(bool useCompiledXaml)
-			{
-				var layout = new Bz28545(useCompiledXaml);
-				Assert.Equal(Color.Pink, layout.label.TextColor);
-				Assert.Equal(AbsoluteLayoutFlags.PositionProportional, AbsoluteLayout.GetLayoutFlags(layout.label));
-				Assert.Equal(new Rectangle(1, 1, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), AbsoluteLayout.GetLayoutBounds(layout.label));
-			}
+			var layout = new Bz28545(useCompiledXaml);
+			Assert.Equal(Color.Pink, layout.label.TextColor);
+			Assert.Equal(AbsoluteLayoutFlags.PositionProportional, AbsoluteLayout.GetLayoutFlags(layout.label));
+			Assert.Equal(new Rectangle(1, 1, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), AbsoluteLayout.GetLayoutBounds(layout.label));
 		}
 	}
 }

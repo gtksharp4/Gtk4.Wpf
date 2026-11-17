@@ -5,16 +5,15 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class AcceleratorTypeConverterUnitTests : BaseTestFixture
 {
-	public class AcceleratorTypeConverterUnitTests : BaseTestFixture
+	[Fact]
+	public void TestAcceleratorTypeConverter()
 	{
-		[Fact]
-		public void TestAcceleratorTypeConverter()
-		{
-			var converter = new AcceleratorTypeConverter();
-			string shourtCutKeyBinding = "ctrl+A";
-			Assert.Equal(Accelerator.FromString(shourtCutKeyBinding), (Accelerator)converter.ConvertFromInvariantString(shourtCutKeyBinding));
-		}
+		var converter = new AcceleratorTypeConverter();
+		string shourtCutKeyBinding = "ctrl+A";
+		Assert.Equal(Accelerator.FromString(shourtCutKeyBinding), (Accelerator)converter.ConvertFromInvariantString(shourtCutKeyBinding));
 	}
 }

@@ -4,31 +4,30 @@ using Xunit;
 using Xamarin.Forms;
 using Xamarin.Forms.Build.Tasks;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+[XamlCompilation(XamlCompilationOptions.Skip)]
+public partial class Gh1978 : ContentPage
 {
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class Gh1978 : ContentPage
+	public Gh1978()
 	{
-		public Gh1978()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Gh1978(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Gh1978(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
+	{
+		[Theory]
+		[InlineData(true)]
+		public void ReportError(bool useCompiledXaml)
 		{
-			[Theory]
-			[InlineData(true)]
-			public void ReportError(bool useCompiledXaml)
-			{
-				if (!useCompiledXaml)
-					return;
-				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh1978)));
-			}
+			if (!useCompiledXaml)
+				return;
+			Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh1978)));
 		}
 	}
 }

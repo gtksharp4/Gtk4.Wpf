@@ -4,43 +4,42 @@ using Xunit;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class Gh3280 : ContentPage
 {
-	public partial class Gh3280 : ContentPage
+	public Gh3280()
 	{
-		public Gh3280()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Size Foo { get; set; }
+	public Size Foo { get; set; }
 
-		public Gh3280(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Gh3280(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
 
-		public class Tests
+	public class Tests
 		: IDisposable{
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-			}
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+		}
 
-			public void Dispose()
-{
-				Device.PlatformServices = null;
-			}
+		public void Dispose()
+		{
+			Device.PlatformServices = null;
+		}
 
-			[Theory]
-			[InlineData(false), InlineData(true)]
-			public void SizeHasConverter(bool useCompiledXaml)
-			{
-				Gh3280 layout = null;
-				AssertEx.DoesNotThrow(() => layout = new Gh3280(useCompiledXaml));
-				Assert.Equal(new Size(15, 25), layout.Foo);
-			}
+		[Theory]
+		[InlineData(false), InlineData(true)]
+		public void SizeHasConverter(bool useCompiledXaml)
+		{
+			Gh3280 layout = null;
+			AssertEx.DoesNotThrow(() => layout = new Gh3280(useCompiledXaml));
+			Assert.Equal(new Size(15, 25), layout.Foo);
 		}
 	}
 }

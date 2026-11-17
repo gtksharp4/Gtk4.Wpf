@@ -4,258 +4,257 @@ using System.Xml;
 using Xunit;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public class FooConverter : TypeConverter
 {
-	public class FooConverter : TypeConverter
+	public override object ConvertFromInvariantString(string value)
 	{
-		public override object ConvertFromInvariantString(string value)
-		{
-			return new Foo { Value = value };
-		}
+		return new Foo { Value = value };
 	}
+}
 
-	public class BarConverter : TypeConverter
+public class BarConverter : TypeConverter
+{
+	public override object ConvertFromInvariantString(string value)
 	{
-		public override object ConvertFromInvariantString(string value)
-		{
-			return new Bar { Value = (string)value };
-		}
+		return new Bar { Value = (string)value };
 	}
+}
 
-	public class QuxConverter : TypeConverter
+public class QuxConverter : TypeConverter
+{
+	public override object ConvertFromInvariantString(string value)
 	{
-		public override object ConvertFromInvariantString(string value)
-		{
-			return new Qux { Value = (string)value };
-		}
+		return new Qux { Value = (string)value };
 	}
+}
 
-	public class FooBarConverter : TypeConverter
+public class FooBarConverter : TypeConverter
+{
+	public override object ConvertFromInvariantString(string value)
 	{
-		public override object ConvertFromInvariantString(string value)
-		{
-			return new FooBar { Value = (string)value };
-		}
+		return new FooBar { Value = (string)value };
 	}
+}
 
-	public class Foo
-	{
-		public string Value { get; set; }
-	}
-	public class Bar
-	{
-		public string Value { get; set; }
-	}
-	public class Baz
-	{
-		public string Value { get; set; }
-	}
-	public class Qux
-	{
-		public string Value { get; set; }
-	}
+public class Foo
+{
+	public string Value { get; set; }
+}
+public class Bar
+{
+	public string Value { get; set; }
+}
+public class Baz
+{
+	public string Value { get; set; }
+}
+public class Qux
+{
+	public string Value { get; set; }
+}
 
-	[TypeConverter(typeof(FooBarConverter))]
-	public class FooBar
-	{
-		public string Value { get; set; }
-	}
+[TypeConverter(typeof(FooBarConverter))]
+public class FooBar
+{
+	public string Value { get; set; }
+}
 
-	public class Bindable : BindableObject
-	{
-		[TypeConverter(typeof(FooConverter))]
-		public Foo Foo { get; set; }
+public class Bindable : BindableObject
+{
+	[TypeConverter(typeof(FooConverter))]
+	public Foo Foo { get; set; }
 
-		public static readonly BindableProperty BarProperty =
+	public static readonly BindableProperty BarProperty =
 #pragma warning disable 618
-			BindableProperty.Create<Bindable, Bar>(w => w.Bar, default(Bar));
+		BindableProperty.Create<Bindable, Bar>(w => w.Bar, default(Bar));
 #pragma warning restore 618
 
-		[TypeConverter(typeof(BarConverter))]
-		public Bar Bar
-		{
-			get { return (Bar)GetValue(BarProperty); }
-			set { SetValue(BarProperty, value); }
-		}
+	[TypeConverter(typeof(BarConverter))]
+	public Bar Bar
+	{
+		get { return (Bar)GetValue(BarProperty); }
+		set { SetValue(BarProperty, value); }
+	}
 
-		public Baz Baz { get; set; }
+	public Baz Baz { get; set; }
 
-		public static readonly BindableProperty QuxProperty =
+	public static readonly BindableProperty QuxProperty =
 #pragma warning disable 618
-			BindableProperty.CreateAttached<Bindable, Qux>(bindable => GetQux(bindable), default(Qux));
+		BindableProperty.CreateAttached<Bindable, Qux>(bindable => GetQux(bindable), default(Qux));
 #pragma warning restore 618
 
-		[TypeConverter(typeof(QuxConverter))]
-		public static Qux GetQux(BindableObject bindable)
-		{
-			return (Qux)bindable.GetValue(QuxProperty);
-		}
-
-		public static void SetQux(BindableObject bindable, Qux value)
-		{
-			bindable.SetValue(QuxProperty, value);
-		}
-
-		public FooBar FooBar { get; set; }
+	[TypeConverter(typeof(QuxConverter))]
+	public static Qux GetQux(BindableObject bindable)
+	{
+		return (Qux)bindable.GetValue(QuxProperty);
 	}
 
-	internal class MockNameSpaceResolver : IXmlNamespaceResolver
+	public static void SetQux(BindableObject bindable, Qux value)
 	{
-		public System.Collections.Generic.IDictionary<string, string> GetNamespacesInScope(XmlNamespaceScope scope)
-		{
-			throw new NotImplementedException();
-		}
-
-		public string LookupNamespace(string prefix)
-		{
-			return "";
-		}
-
-		public string LookupPrefix(string namespaceName)
-		{
-			return "";
-		}
+		bindable.SetValue(QuxProperty, value);
 	}
 
-	public class TypeConverterTestsLegacy : BaseTestFixture
+	public FooBar FooBar { get; set; }
+}
+
+internal class MockNameSpaceResolver : IXmlNamespaceResolver
+{
+	public System.Collections.Generic.IDictionary<string, string> GetNamespacesInScope(XmlNamespaceScope scope)
 	{
-		[Fact]
-		public void TestSetPropertyWithoutConverter()
+		throw new NotImplementedException();
+	}
+
+	public string LookupNamespace(string prefix)
+	{
+		return "";
+	}
+
+	public string LookupPrefix(string namespaceName)
+	{
+		return "";
+	}
+}
+
+public class TypeConverterTestsLegacy : BaseTestFixture
+{
+	[Fact]
+	public void TestSetPropertyWithoutConverter()
+	{
+		var baz = new Baz();
+		var node = new ValueNode(baz, new MockNameSpaceResolver());
+		var bindable = new Bindable();
+
+		Assert.Null(bindable.Baz);
+		var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
 		{
-			var baz = new Baz();
-			var node = new ValueNode(baz, new MockNameSpaceResolver());
-			var bindable = new Bindable();
+			Properties = {
+				{ new XmlName (null, "Baz"), node },
+			}
+		};
+		var context = new HydrationContext { RootElement = new Label() };
+		rootNode.Accept(new CreateValuesVisitor(context), null);
+		node.Accept(new ApplyPropertiesVisitor(context), rootNode);
+		Assert.Equal(baz, bindable.Baz);
 
-			Assert.Null(bindable.Baz);
-			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
-			{
-				Properties = {
-					{ new XmlName (null, "Baz"), node },
-				}
-			};
-			var context = new HydrationContext { RootElement = new Label() };
-			rootNode.Accept(new CreateValuesVisitor(context), null);
-			node.Accept(new ApplyPropertiesVisitor(context), rootNode);
-			Assert.Equal(baz, bindable.Baz);
+	}
 
-		}
+	[Fact]
+	public void TestFailOnMissingOrWrongConverter()
+	{
+		var node = new ValueNode("baz", new MockNameSpaceResolver());
+		var bindable = new Bindable();
 
-		[Fact]
-		public void TestFailOnMissingOrWrongConverter()
+		Assert.Null(bindable.Baz);
+		var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
 		{
-			var node = new ValueNode("baz", new MockNameSpaceResolver());
-			var bindable = new Bindable();
+			Properties = {
+				{ new XmlName (null, "Baz"), node },
+			}
+		};
+		var context = new HydrationContext { RootElement = new Label() };
+		rootNode.Accept(new CreateValuesVisitor(context), null);
+		Assert.Throws<XamlParseException>(() => node.Accept(new ApplyPropertiesVisitor(context), rootNode));
+	}
 
-			Assert.Null(bindable.Baz);
-			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
-			{
-				Properties = {
-					{ new XmlName (null, "Baz"), node },
-				}
-			};
-			var context = new HydrationContext { RootElement = new Label() };
-			rootNode.Accept(new CreateValuesVisitor(context), null);
-			Assert.Throws<XamlParseException>(() => node.Accept(new ApplyPropertiesVisitor(context), rootNode));
-		}
+	[Fact]
+	public void TestConvertNonBindableProperty()
+	{
+		var node = new ValueNode("foo", new MockNameSpaceResolver());
+		var bindable = new Bindable();
 
-		[Fact]
-		public void TestConvertNonBindableProperty()
+		Assert.Null(bindable.Foo);
+		var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
 		{
-			var node = new ValueNode("foo", new MockNameSpaceResolver());
-			var bindable = new Bindable();
+			Properties = {
+				{ new XmlName (null, "Foo"), node },
+			}
+		};
 
-			Assert.Null(bindable.Foo);
-			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
-			{
-				Properties = {
-					{ new XmlName (null, "Foo"), node },
-				}
-			};
+		var context = new HydrationContext { RootElement = new Label() };
+		rootNode.Accept(new CreateValuesVisitor(context), null);
+		node.Accept(new ApplyPropertiesVisitor(context), rootNode);
+		Assert.NotNull(bindable.Foo);
+		Assert.IsType<Foo>(bindable.Foo);
+		Assert.Equal("foo", bindable.Foo.Value);
+	}
 
-			var context = new HydrationContext { RootElement = new Label() };
-			rootNode.Accept(new CreateValuesVisitor(context), null);
-			node.Accept(new ApplyPropertiesVisitor(context), rootNode);
-			Assert.NotNull(bindable.Foo);
-			Assert.IsType<Foo>(bindable.Foo);
-			Assert.Equal("foo", bindable.Foo.Value);
-		}
+	[Fact]
+	public void TestConvertBindableProperty()
+	{
+		var node = new ValueNode("bar", new MockNameSpaceResolver());
+		var bindable = new Bindable();
 
-		[Fact]
-		public void TestConvertBindableProperty()
+		Assert.Null(bindable.Bar);
+		var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
 		{
-			var node = new ValueNode("bar", new MockNameSpaceResolver());
-			var bindable = new Bindable();
+			Properties = {
+				{ new XmlName (null, "Bar"), node },
+			}
+		};
+		var context = new HydrationContext { RootElement = new Label() };
+		rootNode.Accept(new CreateValuesVisitor(context), null);
+		node.Accept(new ApplyPropertiesVisitor(context), rootNode);
+		Assert.NotNull(bindable.Bar);
+		Assert.IsType<Bar>(bindable.Bar);
+		Assert.Equal("bar", bindable.Bar.Value);
+	}
 
-			Assert.Null(bindable.Bar);
-			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
-			{
-				Properties = {
-					{ new XmlName (null, "Bar"), node },
-				}
-			};
-			var context = new HydrationContext { RootElement = new Label() };
-			rootNode.Accept(new CreateValuesVisitor(context), null);
-			node.Accept(new ApplyPropertiesVisitor(context), rootNode);
-			Assert.NotNull(bindable.Bar);
-			Assert.IsType<Bar>(bindable.Bar);
-			Assert.Equal("bar", bindable.Bar.Value);
-		}
+	[Fact]
+	public void TestConvertAttachedBindableProperty()
+	{
+		var node = new ValueNode("qux", new MockNameSpaceResolver());
+		var bindable = new Bindable();
 
-		[Fact]
-		public void TestConvertAttachedBindableProperty()
+		Assert.Null(Bindable.GetQux(bindable));
+		var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
 		{
-			var node = new ValueNode("qux", new MockNameSpaceResolver());
-			var bindable = new Bindable();
+			Properties = {
+				{ new XmlName ("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable.Qux"), node },
+			}
+		};
+		var context = new HydrationContext { RootElement = new Label() };
+		rootNode.Accept(new CreateValuesVisitor(context), null);
+		node.Accept(new ApplyPropertiesVisitor(context), rootNode);
+		Assert.NotNull(Bindable.GetQux(bindable));
+		Assert.IsType<Qux>(Bindable.GetQux(bindable));
+		Assert.Equal("qux", Bindable.GetQux(bindable).Value);
+	}
 
-			Assert.Null(Bindable.GetQux(bindable));
-			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
-			{
-				Properties = {
-					{ new XmlName ("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable.Qux"), node },
-				}
-			};
-			var context = new HydrationContext { RootElement = new Label() };
-			rootNode.Accept(new CreateValuesVisitor(context), null);
-			node.Accept(new ApplyPropertiesVisitor(context), rootNode);
-			Assert.NotNull(Bindable.GetQux(bindable));
-			Assert.IsType<Qux>(Bindable.GetQux(bindable));
-			Assert.Equal("qux", Bindable.GetQux(bindable).Value);
-		}
+	[Fact]
+	public void TestConvertWithAttributeOnType()
+	{
+		var node = new ValueNode("foobar", new MockNameSpaceResolver());
+		var bindable = new Bindable();
 
-		[Fact]
-		public void TestConvertWithAttributeOnType()
+		Assert.Null(bindable.FooBar);
+		var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
 		{
-			var node = new ValueNode("foobar", new MockNameSpaceResolver());
-			var bindable = new Bindable();
+			Properties = {
+				{ new XmlName (null, "FooBar"), node },
+			}
+		};
+		var context = new HydrationContext { RootElement = new Label() };
+		rootNode.Accept(new CreateValuesVisitor(context), null);
+		node.Accept(new ApplyPropertiesVisitor(context), rootNode);
 
-			Assert.Null(bindable.FooBar);
-			var rootNode = new XamlLoader.RuntimeRootNode(new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable", null), bindable, null)
-			{
-				Properties = {
-					{ new XmlName (null, "FooBar"), node },
-				}
-			};
-			var context = new HydrationContext { RootElement = new Label() };
-			rootNode.Accept(new CreateValuesVisitor(context), null);
-			node.Accept(new ApplyPropertiesVisitor(context), rootNode);
-
-			Assert.NotNull(bindable.FooBar);
-			Assert.IsType<FooBar>(bindable.FooBar);
-			Assert.Equal("foobar", bindable.FooBar.Value);
-		}
+		Assert.NotNull(bindable.FooBar);
+		Assert.IsType<FooBar>(bindable.FooBar);
+		Assert.Equal("foobar", bindable.FooBar.Value);
+	}
 
 
 #if !WINDOWS_PHONE
-		[Theory]
-		[InlineData("en-GB"), InlineData("fr-FR")]
-		public void TestCultureOnThickness(string culture)
-		{
-			System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(culture);
+	[Theory]
+	[InlineData("en-GB"), InlineData("fr-FR")]
+	public void TestCultureOnThickness(string culture)
+	{
+		System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(culture);
 
-			var xaml = @"<Page Padding=""1.1, 2""/>";
-			var page = new Page().LoadFromXaml(xaml);
-			Assert.Equal(new Thickness(1.1, 2), page.Padding);
-		}
-#endif
+		var xaml = @"<Page Padding=""1.1, 2""/>";
+		var page = new Page().LoadFromXaml(xaml);
+		Assert.Equal(new Thickness(1.1, 2), page.Padding);
 	}
+#endif
 }

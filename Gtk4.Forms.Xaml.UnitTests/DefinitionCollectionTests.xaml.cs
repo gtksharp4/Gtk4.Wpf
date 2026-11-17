@@ -6,46 +6,45 @@ using Xunit;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class DefinitionCollectionTests : ContentPage
 {
-	public partial class DefinitionCollectionTests : ContentPage
+	public DefinitionCollectionTests() => InitializeComponent();
+	public DefinitionCollectionTests(bool useCompiledXaml)
 	{
-		public DefinitionCollectionTests() => InitializeComponent();
-		public DefinitionCollectionTests(bool useCompiledXaml)
+		//this stub will be replaced at compile time
+	}
+
+	public class Tests: IDisposable
+	{
+		public Tests() => Device.PlatformServices = new MockPlatformServices();
+		public void Dispose() => Device.PlatformServices = null;
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void DefinitionCollectionsParsedFromMarkup(bool useCompiledXaml)
 		{
-			//this stub will be replaced at compile time
-		}
+			var layout = new DefinitionCollectionTests(useCompiledXaml);
+			var coldef = layout.grid.ColumnDefinitions;
+			var rowdef = layout.grid.RowDefinitions;
 
-		public class Tests: IDisposable
-		{
-			public Tests() => Device.PlatformServices = new MockPlatformServices();
-			public void Dispose() => Device.PlatformServices = null;
+			Assert.Equal(5, coldef.Count);
 
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void DefinitionCollectionsParsedFromMarkup(bool useCompiledXaml)
-			{
-				var layout = new DefinitionCollectionTests(useCompiledXaml);
-				var coldef = layout.grid.ColumnDefinitions;
-				var rowdef = layout.grid.RowDefinitions;
+			Assert.Equal(new GridLength(1, GridUnitType.Star), coldef[0].Width);
+			Assert.Equal(new GridLength(2, GridUnitType.Star), coldef[1].Width);
+			Assert.Equal(new GridLength(1, GridUnitType.Auto), coldef[2].Width);
+			Assert.Equal(new GridLength(1, GridUnitType.Star), coldef[3].Width);
+			Assert.Equal(new GridLength(300, GridUnitType.Absolute), coldef[4].Width);
 
-				Assert.Equal(5, coldef.Count);
+			Assert.Equal(5, rowdef.Count);
+			Assert.Equal(new GridLength(1, GridUnitType.Star), rowdef[0].Height);
+			Assert.Equal(new GridLength(1, GridUnitType.Auto), rowdef[1].Height);
+			Assert.Equal(new GridLength(25, GridUnitType.Absolute), rowdef[2].Height);
+			Assert.Equal(new GridLength(14, GridUnitType.Absolute), rowdef[3].Height);
+			Assert.Equal(new GridLength(20, GridUnitType.Absolute), rowdef[4].Height);
 
-				Assert.Equal(new GridLength(1, GridUnitType.Star), coldef[0].Width);
-				Assert.Equal(new GridLength(2, GridUnitType.Star), coldef[1].Width);
-				Assert.Equal(new GridLength(1, GridUnitType.Auto), coldef[2].Width);
-				Assert.Equal(new GridLength(1, GridUnitType.Star), coldef[3].Width);
-				Assert.Equal(new GridLength(300, GridUnitType.Absolute), coldef[4].Width);
-
-				Assert.Equal(5, rowdef.Count);
-				Assert.Equal(new GridLength(1, GridUnitType.Star), rowdef[0].Height);
-				Assert.Equal(new GridLength(1, GridUnitType.Auto), rowdef[1].Height);
-				Assert.Equal(new GridLength(25, GridUnitType.Absolute), rowdef[2].Height);
-				Assert.Equal(new GridLength(14, GridUnitType.Absolute), rowdef[3].Height);
-				Assert.Equal(new GridLength(20, GridUnitType.Absolute), rowdef[4].Height);
-
-			}
 		}
 	}
 }

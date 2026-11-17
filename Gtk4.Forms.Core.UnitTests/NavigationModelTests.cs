@@ -6,299 +6,298 @@ using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class NavigationModelTests : BaseTestFixture
 {
-	public class NavigationModelTests : BaseTestFixture
+	[Fact]
+	public void CurrentNullWhenEmpty()
 	{
-		[Fact]
-		public void CurrentNullWhenEmpty()
-		{
-			var navModel = new NavigationModel();
-			Assert.Null(navModel.CurrentPage);
-		}
+		var navModel = new NavigationModel();
+		Assert.Null(navModel.CurrentPage);
+	}
 
-		[Fact]
-		public void CurrentGivesLastViewWithoutModal()
-		{
-			var navModel = new NavigationModel();
+	[Fact]
+	public void CurrentGivesLastViewWithoutModal()
+	{
+		var navModel = new NavigationModel();
 
-			var page1 = new ContentPage();
-			var page2 = new ContentPage();
+		var page1 = new ContentPage();
+		var page2 = new ContentPage();
 
-			navModel.Push(page1, null);
-			navModel.Push(page2, page1);
+		navModel.Push(page1, null);
+		navModel.Push(page2, page1);
 
-			Assert.Equal(page2, navModel.CurrentPage);
-		}
+		Assert.Equal(page2, navModel.CurrentPage);
+	}
 
-		[Fact]
-		public void CurrentGivesLastViewWithModal()
-		{
-			var navModel = new NavigationModel();
+	[Fact]
+	public void CurrentGivesLastViewWithModal()
+	{
+		var navModel = new NavigationModel();
 
-			var page1 = new ContentPage();
-			var page2 = new ContentPage();
+		var page1 = new ContentPage();
+		var page2 = new ContentPage();
 
-			var modal1 = new ContentPage();
-			var modal2 = new ContentPage();
+		var modal1 = new ContentPage();
+		var modal2 = new ContentPage();
 
-			navModel.Push(page1, null);
-			navModel.Push(page2, page1);
+		navModel.Push(page1, null);
+		navModel.Push(page2, page1);
 
-			navModel.PushModal(modal1);
-			navModel.Push(modal2, modal1);
+		navModel.PushModal(modal1);
+		navModel.Push(modal2, modal1);
 
-			Assert.Equal(modal2, navModel.CurrentPage);
-		}
+		Assert.Equal(modal2, navModel.CurrentPage);
+	}
 
-		[Fact]
-		public void Roots()
-		{
-			var navModel = new NavigationModel();
+	[Fact]
+	public void Roots()
+	{
+		var navModel = new NavigationModel();
 
-			var page1 = new ContentPage();
-			var page2 = new ContentPage();
+		var page1 = new ContentPage();
+		var page2 = new ContentPage();
 
-			var modal1 = new ContentPage();
-			var modal2 = new ContentPage();
+		var modal1 = new ContentPage();
+		var modal2 = new ContentPage();
 
-			navModel.Push(page1, null);
-			navModel.Push(page2, page1);
+		navModel.Push(page1, null);
+		navModel.Push(page2, page1);
 
-			navModel.PushModal(modal1);
-			navModel.Push(modal2, modal1);
+		navModel.PushModal(modal1);
+		navModel.Push(modal2, modal1);
 
-			Assert.True(navModel.Roots.SequenceEqual(new[] { page1, modal1 }));
-		}
+		Assert.True(navModel.Roots.SequenceEqual(new[] { page1, modal1 }));
+	}
 
-		[Fact]
-		public void PushFirstItem()
-		{
-			var navModel = new NavigationModel();
+	[Fact]
+	public void PushFirstItem()
+	{
+		var navModel = new NavigationModel();
 
-			var page1 = new ContentPage();
-			navModel.Push(page1, null);
+		var page1 = new ContentPage();
+		navModel.Push(page1, null);
 
-			Assert.Equal(page1, navModel.CurrentPage);
-			Assert.Equal(page1, navModel.Roots.First());
-		}
+		Assert.Equal(page1, navModel.CurrentPage);
+		Assert.Equal(page1, navModel.Roots.First());
+	}
 
-		[Fact]
-		public void ThrowsWhenPushingWithoutAncestor()
-		{
-			var navModel = new NavigationModel();
+	[Fact]
+	public void ThrowsWhenPushingWithoutAncestor()
+	{
+		var navModel = new NavigationModel();
 
-			var page1 = new ContentPage();
-			var page2 = new ContentPage();
+		var page1 = new ContentPage();
+		var page2 = new ContentPage();
 
-			navModel.Push(page1, null);
-			Assert.Throws<InvalidNavigationException>(() => navModel.Push(page2, null));
-		}
+		navModel.Push(page1, null);
+		Assert.Throws<InvalidNavigationException>(() => navModel.Push(page2, null));
+	}
 
-		[Fact]
-		public void PushFromNonRootAncestor()
-		{
-			var navModel = new NavigationModel();
+	[Fact]
+	public void PushFromNonRootAncestor()
+	{
+		var navModel = new NavigationModel();
 
-			var page1 = new ContentPage();
-			var page2 = new ContentPage();
-			var page3 = new ContentPage();
+		var page1 = new ContentPage();
+		var page2 = new ContentPage();
+		var page3 = new ContentPage();
 
-			page2.Parent = page1;
-			page3.Parent = page2;
+		page2.Parent = page1;
+		page3.Parent = page2;
 
-			navModel.Push(page1, null);
-			navModel.Push(page2, page1);
-			navModel.Push(page3, page2);
+		navModel.Push(page1, null);
+		navModel.Push(page2, page1);
+		navModel.Push(page3, page2);
 
-			Assert.Equal(page3, navModel.CurrentPage);
-		}
+		Assert.Equal(page3, navModel.CurrentPage);
+	}
 
-		[Fact]
-		public void ThrowsWhenPushFromInvalidAncestor()
-		{
-			var navModel = new NavigationModel();
+	[Fact]
+	public void ThrowsWhenPushFromInvalidAncestor()
+	{
+		var navModel = new NavigationModel();
 
-			var page1 = new ContentPage();
-			var page2 = new ContentPage();
+		var page1 = new ContentPage();
+		var page2 = new ContentPage();
 
-			Assert.Throws<InvalidNavigationException>(() => navModel.Push(page2, page1));
-		}
+		Assert.Throws<InvalidNavigationException>(() => navModel.Push(page2, page1));
+	}
 
-		[Fact]
-		public void Pop()
-		{
-			var navModel = new NavigationModel();
+	[Fact]
+	public void Pop()
+	{
+		var navModel = new NavigationModel();
 
-			var page1 = new ContentPage();
-			var page2 = new ContentPage();
+		var page1 = new ContentPage();
+		var page2 = new ContentPage();
 
-			navModel.Push(page1, null);
-			navModel.Push(page2, page1);
+		navModel.Push(page1, null);
+		navModel.Push(page2, page1);
 
-			navModel.Pop(page1);
+		navModel.Pop(page1);
 
-			Assert.Equal(page1, navModel.CurrentPage);
-		}
+		Assert.Equal(page1, navModel.CurrentPage);
+	}
 
-		[Fact]
-		public void ThrowsPoppingRootItem()
-		{
-			var navModel = new NavigationModel();
+	[Fact]
+	public void ThrowsPoppingRootItem()
+	{
+		var navModel = new NavigationModel();
 
-			var page1 = new ContentPage();
+		var page1 = new ContentPage();
 
-			navModel.Push(page1, null);
+		navModel.Push(page1, null);
 
-			Assert.Throws<InvalidNavigationException>(() => navModel.Pop(page1));
-		}
+		Assert.Throws<InvalidNavigationException>(() => navModel.Pop(page1));
+	}
 
-		[Fact]
-		public void ThrowsPoppingRootOfModal()
-		{
-			var navModel = new NavigationModel();
+	[Fact]
+	public void ThrowsPoppingRootOfModal()
+	{
+		var navModel = new NavigationModel();
 
-			var page1 = new ContentPage();
-			var page2 = new ContentPage();
+		var page1 = new ContentPage();
+		var page2 = new ContentPage();
 
-			var modal1 = new ContentPage();
+		var modal1 = new ContentPage();
 
-			navModel.Push(page1, null);
-			navModel.Push(page2, page1);
+		navModel.Push(page1, null);
+		navModel.Push(page2, page1);
 
-			navModel.PushModal(modal1);
-			Assert.Throws<InvalidNavigationException>(() => navModel.Pop(modal1));
-		}
+		navModel.PushModal(modal1);
+		Assert.Throws<InvalidNavigationException>(() => navModel.Pop(modal1));
+	}
 
-		[Fact]
-		public void ThrowsPoppingWithInvalidAncestor()
-		{
-			var navModel = new NavigationModel();
+	[Fact]
+	public void ThrowsPoppingWithInvalidAncestor()
+	{
+		var navModel = new NavigationModel();
 
-			var page1 = new ContentPage();
+		var page1 = new ContentPage();
 
-			navModel.Push(page1, null);
+		navModel.Push(page1, null);
 
-			Assert.Throws<InvalidNavigationException>(() => navModel.Pop(new ContentPage()));
-		}
+		Assert.Throws<InvalidNavigationException>(() => navModel.Pop(new ContentPage()));
+	}
 
-		[Fact]
-		public void PopToRoot()
-		{
-			var navModel = new NavigationModel();
+	[Fact]
+	public void PopToRoot()
+	{
+		var navModel = new NavigationModel();
 
-			var page1 = new ContentPage();
-			var page2 = new ContentPage();
-			var page3 = new ContentPage();
+		var page1 = new ContentPage();
+		var page2 = new ContentPage();
+		var page3 = new ContentPage();
 
-			page2.Parent = page1;
-			page3.Parent = page2;
+		page2.Parent = page1;
+		page3.Parent = page2;
 
-			navModel.Push(page1, null);
-			navModel.Push(page2, page1);
-			navModel.Push(page3, page2);
+		navModel.Push(page1, null);
+		navModel.Push(page2, page1);
+		navModel.Push(page3, page2);
 
-			navModel.PopToRoot(page2);
+		navModel.PopToRoot(page2);
 
-			Assert.Equal(page1, navModel.CurrentPage);
-		}
+		Assert.Equal(page1, navModel.CurrentPage);
+	}
 
-		[Fact]
-		public void ThrowsWhenPopToRootOnRoot()
-		{
-			var navModel = new NavigationModel();
+	[Fact]
+	public void ThrowsWhenPopToRootOnRoot()
+	{
+		var navModel = new NavigationModel();
 
-			var page1 = new ContentPage();
+		var page1 = new ContentPage();
 
-			navModel.Push(page1, null);
-			Assert.Throws<InvalidNavigationException>(() => navModel.PopToRoot(page1));
-		}
+		navModel.Push(page1, null);
+		Assert.Throws<InvalidNavigationException>(() => navModel.PopToRoot(page1));
+	}
 
-		[Fact]
-		public void ThrowsWhenPopToRootWithInvalidAncestor()
-		{
-			var navModel = new NavigationModel();
+	[Fact]
+	public void ThrowsWhenPopToRootWithInvalidAncestor()
+	{
+		var navModel = new NavigationModel();
 
-			var page1 = new ContentPage();
-			var page2 = new ContentPage();
+		var page1 = new ContentPage();
+		var page2 = new ContentPage();
 
-			navModel.Push(page1, null);
-			navModel.Push(page2, page1);
+		navModel.Push(page1, null);
+		navModel.Push(page2, page1);
 
-			Assert.Throws<InvalidNavigationException>(() => navModel.PopToRoot(new ContentPage()));
-		}
+		Assert.Throws<InvalidNavigationException>(() => navModel.PopToRoot(new ContentPage()));
+	}
 
-		[Fact]
-		public void PopModal()
-		{
-			var navModel = new NavigationModel();
+	[Fact]
+	public void PopModal()
+	{
+		var navModel = new NavigationModel();
 
-			var child1 = new ContentPage();
-			var modal1 = new ContentPage();
+		var child1 = new ContentPage();
+		var modal1 = new ContentPage();
 
-			navModel.Push(child1, null);
-			navModel.PushModal(modal1);
+		navModel.Push(child1, null);
+		navModel.PushModal(modal1);
 
-			navModel.PopModal();
+		navModel.PopModal();
 
-			Assert.Equal(child1, navModel.CurrentPage);
-			Assert.Equal(1, navModel.Roots.Count());
-		}
+		Assert.Equal(child1, navModel.CurrentPage);
+		Assert.Equal(1, navModel.Roots.Count());
+	}
 
-		[Fact]
-		public void ReturnsCorrectModal()
-		{
-			var navModel = new NavigationModel();
+	[Fact]
+	public void ReturnsCorrectModal()
+	{
+		var navModel = new NavigationModel();
 
-			var child1 = new ContentPage();
-			var modal1 = new ContentPage();
-			var modal2 = new ContentPage();
+		var child1 = new ContentPage();
+		var modal1 = new ContentPage();
+		var modal2 = new ContentPage();
 
-			navModel.Push(child1, null);
-			navModel.PushModal(modal1);
-			navModel.PushModal(modal2);
+		navModel.Push(child1, null);
+		navModel.PushModal(modal1);
+		navModel.PushModal(modal2);
 
-			Assert.Equal(modal2, navModel.PopModal());
-		}
+		Assert.Equal(modal2, navModel.PopModal());
+	}
 
-		[Fact]
-		public void PopTopPageWithoutModals()
-		{
-			var navModel = new NavigationModel();
+	[Fact]
+	public void PopTopPageWithoutModals()
+	{
+		var navModel = new NavigationModel();
 
-			var page1 = new ContentPage();
-			var page2 = new ContentPage();
+		var page1 = new ContentPage();
+		var page2 = new ContentPage();
 
-			navModel.Push(page1, null);
-			navModel.Push(page2, page1);
+		navModel.Push(page1, null);
+		navModel.Push(page2, page1);
 
-			Assert.Equal(page2, navModel.PopTopPage());
-		}
+		Assert.Equal(page2, navModel.PopTopPage());
+	}
 
-		[Fact]
-		public void PopTopPageWithSinglePage()
-		{
-			var navModel = new NavigationModel();
+	[Fact]
+	public void PopTopPageWithSinglePage()
+	{
+		var navModel = new NavigationModel();
 
-			var page1 = new ContentPage();
+		var page1 = new ContentPage();
 
-			navModel.Push(page1, null);
+		navModel.Push(page1, null);
 
-			Assert.Null(navModel.PopTopPage());
-		}
+		Assert.Null(navModel.PopTopPage());
+	}
 
-		[Fact]
-		public void PopTopPageWithModal()
-		{
-			var navModel = new NavigationModel();
+	[Fact]
+	public void PopTopPageWithModal()
+	{
+		var navModel = new NavigationModel();
 
-			var page1 = new ContentPage();
-			var modal1 = new ContentPage();
+		var page1 = new ContentPage();
+		var modal1 = new ContentPage();
 
-			navModel.Push(page1, null);
-			navModel.PushModal(modal1);
+		navModel.Push(page1, null);
+		navModel.PushModal(modal1);
 
-			Assert.Equal(modal1, navModel.PopTopPage());
-		}
+		Assert.Equal(modal1, navModel.PopTopPage());
 	}
 }

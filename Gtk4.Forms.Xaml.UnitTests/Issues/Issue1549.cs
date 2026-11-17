@@ -3,74 +3,73 @@ using System.Collections.ObjectModel;
 using Xunit;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public class SeverityColorConverter : IValueConverter
 {
 
-	public class SeverityColorConverter : IValueConverter
+	public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 	{
-
-		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-		{
-			count++;
-			return Color.Blue;
-		}
-
-		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-		{
-			throw new NotImplementedException();
-		}
-
-
-		public static int count = 0;
+		count++;
+		return Color.Blue;
 	}
 
-	public class InvertBoolenConverter : IValueConverter
+	public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 	{
-		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-		{
-			count++;
-			if (value is bool)
-			{
-
-				return !(bool)value;
-			}
-			return value;
-		}
-
-		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-		{
-			throw new NotImplementedException();
-		}
-		public static int count = 0;
+		throw new NotImplementedException();
 	}
 
-	public class Item
+
+	public static int count = 0;
+}
+
+public class InvertBoolenConverter : IValueConverter
+{
+	public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 	{
-		public bool IsLocked
+		count++;
+		if (value is bool)
 		{
-			get;
-			set;
+
+			return !(bool)value;
 		}
+		return value;
 	}
 
-	public class Issue1549
+	public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+	{
+		throw new NotImplementedException();
+	}
+	public static int count = 0;
+}
+
+public class Item
+{
+	public bool IsLocked
+	{
+		get;
+		set;
+	}
+}
+
+public class Issue1549
 	: IDisposable{
-		public Issue1549()
-{
-			SeverityColorConverter.count = 0;
-			InvertBoolenConverter.count = 0;
-			Device.PlatformServices = new MockPlatformServices();
-		}
+	public Issue1549()
+	{
+		SeverityColorConverter.count = 0;
+		InvertBoolenConverter.count = 0;
+		Device.PlatformServices = new MockPlatformServices();
+	}
 
-		public void Dispose()
-{
-			Device.PlatformServices = null;
-		}
+	public void Dispose()
+	{
+		Device.PlatformServices = null;
+	}
 
-		[Fact]
-		public void ConverterIsInvoked()
-		{
-			var xaml = @"
+	[Fact]
+	public void ConverterIsInvoked()
+	{
+		var xaml = @"
 <ContentPage 							
 xmlns=""http://xamarin.com/schemas/2014/forms"" 
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
@@ -89,17 +88,17 @@ xmlns=""http://xamarin.com/schemas/2014/forms""
 					XAlign=""Center"" YAlign=""Center""/>
 </ContentPage>";
 
-			var layout = new ContentPage().LoadFromXaml(xaml);
-			layout.BindingContext = new { Value = "Foo", Severity = "Bar" };
-			var label = layout.FindByName<Label>("label");
-			Assert.Equal(Color.Blue, label.BackgroundColor);
-			Assert.Equal(1, SeverityColorConverter.count);
-		}
+		var layout = new ContentPage().LoadFromXaml(xaml);
+		layout.BindingContext = new { Value = "Foo", Severity = "Bar" };
+		var label = layout.FindByName<Label>("label");
+		Assert.Equal(Color.Blue, label.BackgroundColor);
+		Assert.Equal(1, SeverityColorConverter.count);
+	}
 
-		[Fact]
-		public void ConverterIsInvoked_Escaped()
-		{
-			var xaml = @"
+	[Fact]
+	public void ConverterIsInvoked_Escaped()
+	{
+		var xaml = @"
 <ContentPage 							
 xmlns=""http://xamarin.com/schemas/2014/forms"" 
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
@@ -118,17 +117,17 @@ xmlns=""http://xamarin.com/schemas/2014/forms""
 					XAlign=""Center"" YAlign=""Center""/>
 </ContentPage>";
 
-			var layout = new ContentPage().LoadFromXaml(xaml);
-			layout.BindingContext = new { Value = "Foo", Severity = "Bar" };
-			var label = layout.FindByName<Label>("label");
-			Assert.Equal(Color.Blue, label.BackgroundColor);
-			Assert.Equal(1, SeverityColorConverter.count);
-		}
+		var layout = new ContentPage().LoadFromXaml(xaml);
+		layout.BindingContext = new { Value = "Foo", Severity = "Bar" };
+		var label = layout.FindByName<Label>("label");
+		Assert.Equal(Color.Blue, label.BackgroundColor);
+		Assert.Equal(1, SeverityColorConverter.count);
+	}
 
-		[Fact]
-		public void ResourcesInNonXFBaseClassesAreFound()
-		{
-			var xaml = @"<local:BaseView 
+	[Fact]
+	public void ResourcesInNonXFBaseClassesAreFound()
+	{
+		var xaml = @"<local:BaseView 
 	xmlns=""http://xamarin.com/schemas/2014/forms"" 
 	xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"" 
   	xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests""
@@ -160,44 +159,42 @@ xmlns=""http://xamarin.com/schemas/2014/forms""
 		</ListView>
 	</local:BaseView.Content>
 </local:BaseView>";
-			var page = new Issue1549Page().LoadFromXaml(xaml);
-			var lst = page.FindByName<ListView>("lst");
-			ObservableCollection<Item> items;
-			lst.BindingContext = new
-			{
-				Items = items = new ObservableCollection<Item> {
-					new Item { IsLocked = true},
-					new Item { IsLocked = false},
-					new Item { IsLocked = true},
-					new Item { IsLocked = true},
-				},
-			};
+		var page = new Issue1549Page().LoadFromXaml(xaml);
+		var lst = page.FindByName<ListView>("lst");
+		ObservableCollection<Item> items;
+		lst.BindingContext = new
+		{
+			Items = items = new ObservableCollection<Item> {
+				new Item { IsLocked = true},
+				new Item { IsLocked = false},
+				new Item { IsLocked = true},
+				new Item { IsLocked = true},
+			},
+		};
 
-			var cell0 = (ViewCell)lst.TemplatedItems.GetOrCreateContent(0, items[0]);
-			var cell1 = (ViewCell)lst.TemplatedItems.GetOrCreateContent(1, items[1]);
-			var cell2 = (ViewCell)lst.TemplatedItems.GetOrCreateContent(2, items[2]);
-			var cell3 = (ViewCell)lst.TemplatedItems.GetOrCreateContent(3, items[3]);
+		var cell0 = (ViewCell)lst.TemplatedItems.GetOrCreateContent(0, items[0]);
+		var cell1 = (ViewCell)lst.TemplatedItems.GetOrCreateContent(1, items[1]);
+		var cell2 = (ViewCell)lst.TemplatedItems.GetOrCreateContent(2, items[2]);
+		var cell3 = (ViewCell)lst.TemplatedItems.GetOrCreateContent(3, items[3]);
 
-			var label00 = (cell0.View as Grid).Children[0] as Label;
-			var label01 = (cell0.View as Grid).Children[1] as Label;
+		var label00 = (cell0.View as Grid).Children[0] as Label;
+		var label01 = (cell0.View as Grid).Children[1] as Label;
 
-			Assert.Equal("Show Is Locked", label00.Text);
-			Assert.Equal("Show Is Not locked", label01.Text);
+		Assert.Equal("Show Is Locked", label00.Text);
+		Assert.Equal("Show Is Not locked", label01.Text);
 
-			Assert.True(label00.IsVisible);
-			Assert.False(label01.IsVisible);
+		Assert.True(label00.IsVisible);
+		Assert.False(label01.IsVisible);
 
-			Assert.Equal(4, InvertBoolenConverter.count);
+		Assert.Equal(4, InvertBoolenConverter.count);
 
-		}
-	}
-
-	public class BaseView : ContentPage
-	{
-	}
-
-	public partial class Issue1549Page : BaseView
-	{
 	}
 }
 
+public class BaseView : ContentPage
+{
+}
+
+public partial class Issue1549Page : BaseView
+{
+}

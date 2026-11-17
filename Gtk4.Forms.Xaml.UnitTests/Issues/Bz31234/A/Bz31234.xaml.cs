@@ -3,29 +3,28 @@ using System.Collections.Generic;
 using Xunit;
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests.A
+namespace Xamarin.Forms.Xaml.UnitTests.A;
+
+public partial class Bz31234 : ContentPage
 {
-	public partial class Bz31234 : ContentPage
+	public Bz31234()
 	{
-		public Bz31234()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Bz31234(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Bz31234(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
+	{
+		[Theory]
+		[InlineData(true), InlineData(false)]
+		public void ShouldPass(bool useCompiledXaml)
 		{
-			[Theory]
-			[InlineData(true), InlineData(false)]
-			public void ShouldPass(bool useCompiledXaml)
-			{
-				new Bz31234(useCompiledXaml);
-				return;
-			}
+			new Bz31234(useCompiledXaml);
+			return;
 		}
 	}
 }

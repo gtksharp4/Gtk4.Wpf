@@ -5,58 +5,57 @@ using Xunit;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public static class Gh2130Behavior
 {
-	public static class Gh2130Behavior
+	public static readonly BindableProperty AppearingProperty =
+		BindableProperty.Create("Appearing", typeof(bool), typeof(Gh2130Behavior), default(bool));
+
+	public static bool GetAppearing(BindableObject bindable)
 	{
-		public static readonly BindableProperty AppearingProperty =
-			BindableProperty.Create("Appearing", typeof(bool), typeof(Gh2130Behavior), default(bool));
-
-		public static bool GetAppearing(BindableObject bindable)
-		{
-			return (bool)bindable.GetValue(AppearingProperty);
-		}
-
-		public static void SetAppearing(BindableObject bindable, bool value)
-		{
-			bindable.SetValue(AppearingProperty, value);
-		}
-
+		return (bool)bindable.GetValue(AppearingProperty);
 	}
 
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class Gh2130 : ContentPage
+	public static void SetAppearing(BindableObject bindable, bool value)
 	{
-		public Gh2130()
-		{
-			InitializeComponent();
-		}
+		bindable.SetValue(AppearingProperty, value);
+	}
 
-		public Gh2130(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+}
 
-		public class Tests
+[XamlCompilation(XamlCompilationOptions.Skip)]
+public partial class Gh2130 : ContentPage
+{
+	public Gh2130()
+	{
+		InitializeComponent();
+	}
+
+	public Gh2130(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
+
+	public class Tests
 		: IDisposable{
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-			}
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+		}
 
-			public void Dispose()
-{
-				Device.PlatformServices = null;
-			}
+		public void Dispose()
+		{
+			Device.PlatformServices = null;
+		}
 
-			[Theory]
-			[InlineData(false), InlineData(true)]
-			public void AttachedBPWithEventName(bool useCompiledXaml)
-			{
-				if (useCompiledXaml)
-					MockCompiler.Compile(typeof(Gh2130));
-				new Gh2130(useCompiledXaml);
-			}
+		[Theory]
+		[InlineData(false), InlineData(true)]
+		public void AttachedBPWithEventName(bool useCompiledXaml)
+		{
+			if (useCompiledXaml)
+				MockCompiler.Compile(typeof(Gh2130));
+			new Gh2130(useCompiledXaml);
 		}
 	}
 }

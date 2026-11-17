@@ -1,9 +1,8 @@
 ﻿
-namespace Xamarin.Forms.Core.UnitTests
-{
-	public class ToolbarItemTests
-		: MenuItemTests
-	{
+namespace Xamarin.Forms.Core.UnitTests;
 
-	}
+public class ToolbarItemTests
+	: MenuItemTests
+{
+
 }

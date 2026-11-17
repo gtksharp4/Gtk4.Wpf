@@ -5,39 +5,38 @@ using Xunit;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class Issue1438 : ContentPage
 {
-	public partial class Issue1438 : ContentPage
+	public Issue1438()
 	{
-		public Issue1438()
+		InitializeComponent();
+	}
+
+	public Issue1438(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
+
+	public class Tests
+	{
+		public Tests()
 		{
-			InitializeComponent();
+			Device.PlatformServices = new MockPlatformServices();
 		}
 
-		public Issue1438(bool useCompiledXaml)
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void XNameForwardDeclaration(bool useCompiledXaml)
 		{
-			//this stub will be replaced at compile time
-		}
+			var page = new Issue1438(useCompiledXaml);
 
-		public class Tests
-		{
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-			}
-
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void XNameForwardDeclaration(bool useCompiledXaml)
-			{
-				var page = new Issue1438(useCompiledXaml);
-
-				var slider = page.FindByName<Slider>("slider");
-				var label = page.FindByName<Label>("label");
-				Assert.Same(slider, label.BindingContext);
-				Assert.IsType<StackLayout>(slider.Parent);
-			}
+			var slider = page.FindByName<Slider>("slider");
+			var label = page.FindByName<Label>("label");
+			Assert.Same(slider, label.BindingContext);
+			Assert.IsType<StackLayout>(slider.Parent);
 		}
 	}
 }

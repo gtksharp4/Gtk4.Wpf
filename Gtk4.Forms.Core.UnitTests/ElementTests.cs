@@ -3,183 +3,182 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class TestElement
+	: Element
 {
-	public class TestElement
-		: Element
+	public TestElement()
 	{
-		public TestElement()
-		{
-			internalChildren.CollectionChanged += OnChildrenChanged;
-		}
-
-		void OnChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
-		{
-			if (e.NewItems != null)
-			{
-				foreach (Element element in e.NewItems)
-					OnChildAdded(element);
-			}
-
-			if (e.OldItems != null)
-			{
-				foreach (Element element in e.OldItems)
-					OnChildRemoved(element);
-			}
-		}
-
-		public IList<Element> Children
-		{
-			get { return internalChildren; }
-		}
-
-		internal override ReadOnlyCollection<Element> LogicalChildrenInternal
-		{
-			get { return new ReadOnlyCollection<Element>(internalChildren); }
-		}
-
-		readonly ObservableCollection<Element> internalChildren = new ObservableCollection<Element>();
+		internalChildren.CollectionChanged += OnChildrenChanged;
 	}
 
-	public class ElementTests
-		: BaseTestFixture
+	void OnChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
 	{
-		[Fact]
-		public void DescendantAddedLevel1()
+		if (e.NewItems != null)
 		{
-			var root = new TestElement();
-
-			var child = new TestElement();
-
-			bool added = false;
-			root.DescendantAdded += (sender, args) =>
-			{
-				Assert.Same(child, args.Element);
-				added = true;
-			};
-
-			root.Children.Add(child);
+			foreach (Element element in e.NewItems)
+				OnChildAdded(element);
 		}
 
-		[Fact]
-		public void DescendantAddedLevel2()
+		if (e.OldItems != null)
 		{
-			var root = new TestElement();
-
-			var child = new TestElement();
-			root.Children.Add(child);
-
-			var child2 = new TestElement();
-
-			bool added = false;
-			root.DescendantAdded += (sender, args) =>
-			{
-				Assert.Same(child2, args.Element);
-				added = true;
-			};
-
-			child.Children.Add(child2);
+			foreach (Element element in e.OldItems)
+				OnChildRemoved(element);
 		}
+	}
 
-		[Fact]
-		public void DescendantAddedExistingChildren()
+	public IList<Element> Children
+	{
+		get { return internalChildren; }
+	}
+
+	internal override ReadOnlyCollection<Element> LogicalChildrenInternal
+	{
+		get { return new ReadOnlyCollection<Element>(internalChildren); }
+	}
+
+	readonly ObservableCollection<Element> internalChildren = new ObservableCollection<Element>();
+}
+
+public class ElementTests
+	: BaseTestFixture
+{
+	[Fact]
+	public void DescendantAddedLevel1()
+	{
+		var root = new TestElement();
+
+		var child = new TestElement();
+
+		bool added = false;
+		root.DescendantAdded += (sender, args) =>
 		{
-			var root = new TestElement();
+			Assert.Same(child, args.Element);
+			added = true;
+		};
 
-			var tier2 = new TestElement();
+		root.Children.Add(child);
+	}
 
-			var child = new TestElement
-			{
-				Children = {
-					tier2
-				}
-			};
+	[Fact]
+	public void DescendantAddedLevel2()
+	{
+		var root = new TestElement();
 
-			bool tier1added = false;
-			bool tier2added = false;
-			root.DescendantAdded += (sender, args) =>
-			{
-				if (!tier1added)
-					tier1added = ReferenceEquals(child, args.Element);
-				if (!tier2added)
-					tier2added = ReferenceEquals(tier2, args.Element);
-			};
+		var child = new TestElement();
+		root.Children.Add(child);
 
-			root.Children.Add(child);
+		var child2 = new TestElement();
 
-			Assert.True(tier1added);
-			Assert.True(tier2added);
-		}
-
-		[Fact]
-		public void DescendantRemovedLevel1()
+		bool added = false;
+		root.DescendantAdded += (sender, args) =>
 		{
-			var root = new TestElement();
+			Assert.Same(child2, args.Element);
+			added = true;
+		};
 
-			var child = new TestElement();
-			root.Children.Add(child);
+		child.Children.Add(child2);
+	}
 
-			bool removed = false;
-			root.DescendantRemoved += (sender, args) =>
-			{
-				Assert.Same(child, args.Element);
-				removed = true;
-			};
+	[Fact]
+	public void DescendantAddedExistingChildren()
+	{
+		var root = new TestElement();
 
-			root.Children.Remove(child);
-		}
+		var tier2 = new TestElement();
 
-		[Fact]
-		public void DescendantRemovedLevel2()
+		var child = new TestElement
 		{
-			var root = new TestElement();
+			Children = {
+				tier2
+			}
+		};
 
-			var child = new TestElement();
-			root.Children.Add(child);
-
-			var child2 = new TestElement();
-			child.Children.Add(child2);
-
-			bool removed = false;
-			root.DescendantRemoved += (sender, args) =>
-			{
-				Assert.Same(child2, args.Element);
-				removed = true;
-			};
-
-			child.Children.Remove(child2);
-		}
-
-		[Fact]
-		public void DescendantRemovedWithChildren()
+		bool tier1added = false;
+		bool tier2added = false;
+		root.DescendantAdded += (sender, args) =>
 		{
-			var root = new TestElement();
+			if (!tier1added)
+				tier1added = ReferenceEquals(child, args.Element);
+			if (!tier2added)
+				tier2added = ReferenceEquals(tier2, args.Element);
+		};
 
-			var tier2 = new TestElement();
+		root.Children.Add(child);
 
-			var child = new TestElement
-			{
-				Children = {
-					tier2
-				}
-			};
+		Assert.True(tier1added);
+		Assert.True(tier2added);
+	}
 
-			root.Children.Add(child);
+	[Fact]
+	public void DescendantRemovedLevel1()
+	{
+		var root = new TestElement();
 
-			bool tier1removed = false;
-			bool tier2removed = false;
-			root.DescendantRemoved += (sender, args) =>
-			{
-				if (!tier1removed)
-					tier1removed = ReferenceEquals(child, args.Element);
-				if (!tier2removed)
-					tier2removed = ReferenceEquals(tier2, args.Element);
-			};
+		var child = new TestElement();
+		root.Children.Add(child);
 
-			root.Children.Remove(child);
+		bool removed = false;
+		root.DescendantRemoved += (sender, args) =>
+		{
+			Assert.Same(child, args.Element);
+			removed = true;
+		};
 
-			Assert.True(tier1removed);
-			Assert.True(tier2removed);
-		}
+		root.Children.Remove(child);
+	}
+
+	[Fact]
+	public void DescendantRemovedLevel2()
+	{
+		var root = new TestElement();
+
+		var child = new TestElement();
+		root.Children.Add(child);
+
+		var child2 = new TestElement();
+		child.Children.Add(child2);
+
+		bool removed = false;
+		root.DescendantRemoved += (sender, args) =>
+		{
+			Assert.Same(child2, args.Element);
+			removed = true;
+		};
+
+		child.Children.Remove(child2);
+	}
+
+	[Fact]
+	public void DescendantRemovedWithChildren()
+	{
+		var root = new TestElement();
+
+		var tier2 = new TestElement();
+
+		var child = new TestElement
+		{
+			Children = {
+				tier2
+			}
+		};
+
+		root.Children.Add(child);
+
+		bool tier1removed = false;
+		bool tier2removed = false;
+		root.DescendantRemoved += (sender, args) =>
+		{
+			if (!tier1removed)
+				tier1removed = ReferenceEquals(child, args.Element);
+			if (!tier2removed)
+				tier2removed = ReferenceEquals(tier2, args.Element);
+		};
+
+		root.Children.Remove(child);
+
+		Assert.True(tier1removed);
+		Assert.True(tier2removed);
 	}
 }

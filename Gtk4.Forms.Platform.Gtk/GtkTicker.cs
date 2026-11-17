@@ -1,26 +1,25 @@
 ﻿using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms.Platform.GTK
+namespace Xamarin.Forms.Platform.GTK;
+
+public class GtkTicker : Ticker
 {
-	public class GtkTicker : Ticker
+	private uint _timerId;
+
+	protected override void DisableTimer()
 	{
-		private uint _timerId;
+		GLib.Source.Remove(_timerId);
+	}
 
-		protected override void DisableTimer()
-		{
-			GLib.Source.Remove(_timerId);
-		}
+	protected override void EnableTimer()
+	{
+		_timerId = GLib.Timeout.Add(15, new GLib.TimeoutHandler(OnSendSignals));
+	}
 
-		protected override void EnableTimer()
-		{
-			_timerId = GLib.Timeout.Add(15, new GLib.TimeoutHandler(OnSendSignals));
-		}
+	private bool OnSendSignals()
+	{
+		SendSignals();
 
-		private bool OnSendSignals()
-		{
-			SendSignals();
-
-			return true;
-		}
+		return true;
 	}
 }

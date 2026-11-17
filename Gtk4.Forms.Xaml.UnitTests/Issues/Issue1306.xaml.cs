@@ -3,37 +3,35 @@ using System.Collections.Generic;
 using Xunit;
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class Issue1306 : ListView
 {
-	public partial class Issue1306 : ListView
+	public Issue1306()
 	{
-		public Issue1306()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Issue1306(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Issue1306(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
+	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void AssignBindingMarkupToBindingBase(bool useCompiledXaml)
 		{
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void AssignBindingMarkupToBindingBase(bool useCompiledXaml)
-			{
-				var listView = new Issue1306(useCompiledXaml);
+			var listView = new Issue1306(useCompiledXaml);
 
-				Assert.NotNull(listView.GroupDisplayBinding);
-				Assert.NotNull(listView.GroupShortNameBinding);
-				Assert.IsType<Binding>(listView.GroupDisplayBinding);
-				Assert.IsType<Binding>(listView.GroupShortNameBinding);
-				Assert.Equal("Key", (listView.GroupDisplayBinding as Binding).Path);
-				Assert.Equal("Key", (listView.GroupShortNameBinding as Binding).Path);
-			}
+			Assert.NotNull(listView.GroupDisplayBinding);
+			Assert.NotNull(listView.GroupShortNameBinding);
+			Assert.IsType<Binding>(listView.GroupDisplayBinding);
+			Assert.IsType<Binding>(listView.GroupShortNameBinding);
+			Assert.Equal("Key", (listView.GroupDisplayBinding as Binding).Path);
+			Assert.Equal("Key", (listView.GroupShortNameBinding as Binding).Path);
 		}
 	}
 }
-

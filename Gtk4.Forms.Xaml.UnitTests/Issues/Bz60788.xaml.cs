@@ -2,42 +2,41 @@
 using Xunit;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class Bz60788 : ContentPage
 {
-	public partial class Bz60788 : ContentPage
+	public Bz60788()
 	{
-		public Bz60788()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Bz60788(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Bz60788(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
 		: IDisposable{
 
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-			}
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+		}
 
-			public void Dispose()
-{
-				Device.PlatformServices = null;
-			}
+		public void Dispose()
+		{
+			Device.PlatformServices = null;
+		}
 
-			[Theory]
-			[InlineData(true), InlineData(false)]
-			public void KeyedRDWithImplicitStyles(bool useCompiledXaml)
-			{
-				var layout = new Bz60788(useCompiledXaml);
-				Assert.Equal(2, layout.Resources.Count);
-				Assert.Equal(3, ((ResourceDictionary)layout.Resources["RedTextBlueBackground"]).Count);
-				Assert.Equal(3, ((ResourceDictionary)layout.Resources["BlueTextRedBackground"]).Count);
-			}
+		[Theory]
+		[InlineData(true), InlineData(false)]
+		public void KeyedRDWithImplicitStyles(bool useCompiledXaml)
+		{
+			var layout = new Bz60788(useCompiledXaml);
+			Assert.Equal(2, layout.Resources.Count);
+			Assert.Equal(3, ((ResourceDictionary)layout.Resources["RedTextBlueBackground"]).Count);
+			Assert.Equal(3, ((ResourceDictionary)layout.Resources["BlueTextRedBackground"]).Count);
 		}
 	}
 }

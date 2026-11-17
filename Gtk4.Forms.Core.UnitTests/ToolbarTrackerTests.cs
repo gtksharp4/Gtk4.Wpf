@@ -3,203 +3,202 @@ using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class ToolbarTrackerTests : BaseTestFixture
 {
-	public class ToolbarTrackerTests : BaseTestFixture
+	[Fact]
+	public void Constructor()
 	{
-		[Fact]
-		public void Constructor()
+		var tracker = new ToolbarTracker();
+		Assert.Null(tracker.Target);
+		Assert.False(tracker.ToolbarItems.Any());
+	}
+
+	[Fact]
+	public void SimpleTrackEmpty()
+	{
+		var tracker = new ToolbarTracker();
+
+		var page = new ContentPage();
+		tracker.Target = page;
+
+		Assert.False(tracker.ToolbarItems.Any());
+	}
+
+	[Fact]
+	public void SimpleTrackWithItems()
+	{
+		var tracker = new ToolbarTracker();
+
+		ToolbarItem item1, item2;
+		var page = new ContentPage
 		{
-			var tracker = new ToolbarTracker();
-			Assert.Null(tracker.Target);
-			Assert.False(tracker.ToolbarItems.Any());
-		}
+			ToolbarItems = {
+				new ToolbarItem ("Foo", "Foo.png", () => {}),
+				new ToolbarItem ("Bar", "Bar.png", () => {})
+			}
+		};
+		tracker.Target = page;
 
-		[Fact]
-		public void SimpleTrackEmpty()
+		Assert.True(tracker.ToolbarItems.Contains(page.ToolbarItems[0]));
+		Assert.True(tracker.ToolbarItems.Contains(page.ToolbarItems[1]));
+	}
+
+	[Fact]
+	public void TrackPreConstructedTabbedPage()
+	{
+		var tracker = new ToolbarTracker();
+
+		var toolbarItem1 = new ToolbarItem("Foo", "Foo.png", () => { });
+		var toolbarItem2 = new ToolbarItem("Foo", "Foo.png", () => { });
+		var toolbarItem3 = new ToolbarItem("Foo", "Foo.png", () => { });
+
+		var subPage1 = new ContentPage
 		{
-			var tracker = new ToolbarTracker();
+			ToolbarItems = { toolbarItem1 }
+		};
 
-			var page = new ContentPage();
-			tracker.Target = page;
-
-			Assert.False(tracker.ToolbarItems.Any());
-		}
-
-		[Fact]
-		public void SimpleTrackWithItems()
+		var subPage2 = new ContentPage
 		{
-			var tracker = new ToolbarTracker();
+			ToolbarItems = { toolbarItem2, toolbarItem3 }
+		};
 
-			ToolbarItem item1, item2;
-			var page = new ContentPage
-			{
-				ToolbarItems = {
-					new ToolbarItem ("Foo", "Foo.png", () => {}),
-					new ToolbarItem ("Bar", "Bar.png", () => {})
-				}
-			};
-			tracker.Target = page;
-
-			Assert.True(tracker.ToolbarItems.Contains(page.ToolbarItems[0]));
-			Assert.True(tracker.ToolbarItems.Contains(page.ToolbarItems[1]));
-		}
-
-		[Fact]
-		public void TrackPreConstructedTabbedPage()
+		var tabbedpage = new TabbedPage
 		{
-			var tracker = new ToolbarTracker();
+			Children = {
+				subPage1,
+				subPage2
+			}
+		};
 
-			var toolbarItem1 = new ToolbarItem("Foo", "Foo.png", () => { });
-			var toolbarItem2 = new ToolbarItem("Foo", "Foo.png", () => { });
-			var toolbarItem3 = new ToolbarItem("Foo", "Foo.png", () => { });
+		tabbedpage.CurrentPage = subPage1;
 
-			var subPage1 = new ContentPage
-			{
-				ToolbarItems = { toolbarItem1 }
-			};
+		tracker.Target = tabbedpage;
 
-			var subPage2 = new ContentPage
-			{
-				ToolbarItems = { toolbarItem2, toolbarItem3 }
-			};
+		Assert.True(tracker.ToolbarItems.Count() == 1);
+		Assert.True(tracker.ToolbarItems.First() == subPage1.ToolbarItems[0]);
 
-			var tabbedpage = new TabbedPage
-			{
-				Children = {
-					subPage1,
-					subPage2
-				}
-			};
+		bool changed = false;
+		tracker.CollectionChanged += (sender, args) => changed = true;
 
-			tabbedpage.CurrentPage = subPage1;
+		tabbedpage.CurrentPage = subPage2;
 
-			tracker.Target = tabbedpage;
+		Assert.True(tracker.ToolbarItems.Count() == 2);
+		Assert.True(tracker.ToolbarItems.First() == subPage2.ToolbarItems[0]);
+		Assert.True(tracker.ToolbarItems.Last() == subPage2.ToolbarItems[1]);
+	}
 
-			Assert.True(tracker.ToolbarItems.Count() == 1);
-			Assert.True(tracker.ToolbarItems.First() == subPage1.ToolbarItems[0]);
+	[Fact]
+	public void AdditionalTargets()
+	{
+		var tracker = new ToolbarTracker();
 
-			bool changed = false;
-			tracker.CollectionChanged += (sender, args) => changed = true;
+		var toolbarItem1 = new ToolbarItem("Foo", "Foo.png", () => { });
+		var toolbarItem2 = new ToolbarItem("Foo", "Foo.png", () => { });
 
-			tabbedpage.CurrentPage = subPage2;
-
-			Assert.True(tracker.ToolbarItems.Count() == 2);
-			Assert.True(tracker.ToolbarItems.First() == subPage2.ToolbarItems[0]);
-			Assert.True(tracker.ToolbarItems.Last() == subPage2.ToolbarItems[1]);
-		}
-
-		[Fact]
-		public void AdditionalTargets()
+		var page = new ContentPage
 		{
-			var tracker = new ToolbarTracker();
+			ToolbarItems = {
+				toolbarItem1
+			}
+		};
 
-			var toolbarItem1 = new ToolbarItem("Foo", "Foo.png", () => { });
-			var toolbarItem2 = new ToolbarItem("Foo", "Foo.png", () => { });
-
-			var page = new ContentPage
-			{
-				ToolbarItems = {
-					toolbarItem1
-				}
-			};
-
-			var additionalPage = new ContentPage
-			{
-				ToolbarItems = { toolbarItem2 }
-			};
-
-			tracker.Target = page;
-			tracker.AdditionalTargets = new[] { additionalPage };
-
-			Assert.True(tracker.ToolbarItems.Contains(toolbarItem1));
-			Assert.True(tracker.ToolbarItems.Contains(toolbarItem2));
-		}
-
-		[Fact]
-		public async Task PushAfterTrackingStarted()
+		var additionalPage = new ContentPage
 		{
-			var tracker = new ToolbarTracker();
+			ToolbarItems = { toolbarItem2 }
+		};
 
-			var toolbarItem1 = new ToolbarItem("Foo", "Foo.png", () => { });
-			var toolbarItem2 = new ToolbarItem("Foo", "Foo.png", () => { });
+		tracker.Target = page;
+		tracker.AdditionalTargets = new[] { additionalPage };
 
-			var page = new NavigationPage
-			{
-				ToolbarItems = {
-					toolbarItem1
-				}
-			};
+		Assert.True(tracker.ToolbarItems.Contains(toolbarItem1));
+		Assert.True(tracker.ToolbarItems.Contains(toolbarItem2));
+	}
 
-			var firstPage = new ContentPage
-			{
-				ToolbarItems = { toolbarItem2 }
-			};
+	[Fact]
+	public async Task PushAfterTrackingStarted()
+	{
+		var tracker = new ToolbarTracker();
 
-			tracker.Target = page;
+		var toolbarItem1 = new ToolbarItem("Foo", "Foo.png", () => { });
+		var toolbarItem2 = new ToolbarItem("Foo", "Foo.png", () => { });
 
-			Assert.True(tracker.ToolbarItems.Contains(toolbarItem1));
-			Assert.False(tracker.ToolbarItems.Contains(toolbarItem2));
-
-			await page.Navigation.PushAsync(firstPage);
-
-			Assert.True(tracker.ToolbarItems.Contains(toolbarItem1));
-			Assert.True(tracker.ToolbarItems.Contains(toolbarItem2));
-		}
-
-		[Fact]
-		public async Task PopAfterTrackingStarted()
+		var page = new NavigationPage
 		{
-			var tracker = new ToolbarTracker();
+			ToolbarItems = {
+				toolbarItem1
+			}
+		};
 
-			var toolbarItem1 = new ToolbarItem("Foo", "Foo.png", () => { });
-			var toolbarItem2 = new ToolbarItem("Foo", "Foo.png", () => { });
-
-			var page = new NavigationPage(new ContentPage())
-			{
-				ToolbarItems = {
-					toolbarItem1
-				}
-			};
-
-			var firstPage = new ContentPage
-			{
-				ToolbarItems = { toolbarItem2 }
-			};
-
-			tracker.Target = page;
-
-			await page.Navigation.PushAsync(firstPage);
-
-			Assert.True(tracker.ToolbarItems.Contains(toolbarItem1));
-			Assert.True(tracker.ToolbarItems.Contains(toolbarItem2));
-
-			await page.Navigation.PopAsync();
-
-			Assert.True(tracker.ToolbarItems.Contains(toolbarItem1));
-			Assert.False(tracker.ToolbarItems.Contains(toolbarItem2));
-		}
-
-		[Fact]
-		public void UnsetTarget()
+		var firstPage = new ContentPage
 		{
-			var tracker = new ToolbarTracker();
+			ToolbarItems = { toolbarItem2 }
+		};
 
-			ToolbarItem item1, item2;
-			var page = new ContentPage
-			{
-				ToolbarItems = {
-					new ToolbarItem ("Foo", "Foo.png", () => {}),
-					new ToolbarItem ("Bar", "Bar.png", () => {})
-				}
-			};
-			tracker.Target = page;
+		tracker.Target = page;
 
-			Assert.True(tracker.ToolbarItems.Count() == 2);
+		Assert.True(tracker.ToolbarItems.Contains(toolbarItem1));
+		Assert.False(tracker.ToolbarItems.Contains(toolbarItem2));
 
-			tracker.Target = null;
+		await page.Navigation.PushAsync(firstPage);
 
-			Assert.False(tracker.ToolbarItems.Any());
-		}
+		Assert.True(tracker.ToolbarItems.Contains(toolbarItem1));
+		Assert.True(tracker.ToolbarItems.Contains(toolbarItem2));
+	}
+
+	[Fact]
+	public async Task PopAfterTrackingStarted()
+	{
+		var tracker = new ToolbarTracker();
+
+		var toolbarItem1 = new ToolbarItem("Foo", "Foo.png", () => { });
+		var toolbarItem2 = new ToolbarItem("Foo", "Foo.png", () => { });
+
+		var page = new NavigationPage(new ContentPage())
+		{
+			ToolbarItems = {
+				toolbarItem1
+			}
+		};
+
+		var firstPage = new ContentPage
+		{
+			ToolbarItems = { toolbarItem2 }
+		};
+
+		tracker.Target = page;
+
+		await page.Navigation.PushAsync(firstPage);
+
+		Assert.True(tracker.ToolbarItems.Contains(toolbarItem1));
+		Assert.True(tracker.ToolbarItems.Contains(toolbarItem2));
+
+		await page.Navigation.PopAsync();
+
+		Assert.True(tracker.ToolbarItems.Contains(toolbarItem1));
+		Assert.False(tracker.ToolbarItems.Contains(toolbarItem2));
+	}
+
+	[Fact]
+	public void UnsetTarget()
+	{
+		var tracker = new ToolbarTracker();
+
+		ToolbarItem item1, item2;
+		var page = new ContentPage
+		{
+			ToolbarItems = {
+				new ToolbarItem ("Foo", "Foo.png", () => {}),
+				new ToolbarItem ("Bar", "Bar.png", () => {})
+			}
+		};
+		tracker.Target = page;
+
+		Assert.True(tracker.ToolbarItems.Count() == 2);
+
+		tracker.Target = null;
+
+		Assert.False(tracker.ToolbarItems.Any());
 	}
 }

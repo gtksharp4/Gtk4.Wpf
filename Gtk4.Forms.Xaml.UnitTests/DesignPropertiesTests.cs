@@ -2,17 +2,17 @@
 using Xunit;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
-{
-	public class DesignPropertiesTests: IDisposable
-	{
-		public DesignPropertiesTests() => Device.PlatformServices = new MockPlatformServices();
-		public void Dispose() => Device.PlatformServices = null;
+namespace Xamarin.Forms.Xaml.UnitTests;
 
-		[Fact]
-		public void DesignProperties()
-		{
-			var xaml = @"
+public class DesignPropertiesTests: IDisposable
+{
+	public DesignPropertiesTests() => Device.PlatformServices = new MockPlatformServices();
+	public void Dispose() => Device.PlatformServices = null;
+
+	[Fact]
+	public void DesignProperties()
+	{
+		var xaml = @"
 				<ContentPage
 						xmlns=""http://xamarin.com/schemas/2014/forms""
 						xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
@@ -22,12 +22,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					<Label  d:Text=""Bar"" Text=""Foo"" x:Name=""label"" />
 				</ContentPage>";
 
-			var view = new ContentPage();
-			XamlLoader.Load(view, xaml, useDesignProperties: true); //this is equiv as LoadFromXaml, but with the bool set
+		var view = new ContentPage();
+		XamlLoader.Load(view, xaml, useDesignProperties: true); //this is equiv as LoadFromXaml, but with the bool set
 
-			var label = ((Forms.Internals.INameScope)view).FindByName("label") as Label;
+		var label = ((Forms.Internals.INameScope)view).FindByName("label") as Label;
 
-			Assert.Equal("Bar", label.Text);
-		}
+		Assert.Equal("Bar", label.Text);
 	}
 }

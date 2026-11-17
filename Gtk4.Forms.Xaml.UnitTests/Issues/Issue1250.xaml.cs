@@ -3,45 +3,44 @@ using System.Collections.Generic;
 using Xunit;
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests
-{
-	public class Issue1250AspectRatioContainer : ContentView
-	{
-		protected override SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
-		{
-			return new SizeRequest(new Size(widthConstraint, widthConstraint * AspectRatio));
-		}
+namespace Xamarin.Forms.Xaml.UnitTests;
 
-		public double AspectRatio { get; set; }
+public class Issue1250AspectRatioContainer : ContentView
+{
+	protected override SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
+	{
+		return new SizeRequest(new Size(widthConstraint, widthConstraint * AspectRatio));
 	}
 
-	public partial class Issue1250 : ContentPage
+	public double AspectRatio { get; set; }
+}
+
+public partial class Issue1250 : ContentPage
+{
+	public Issue1250()
 	{
-		public Issue1250()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Issue1250(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Issue1250(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
+	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void AddCustomElementInCollection(bool useCompiledXaml)
 		{
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void AddCustomElementInCollection(bool useCompiledXaml)
-			{
-				var page = new Issue1250(useCompiledXaml);
-				var stack = page.stack;
+			var page = new Issue1250(useCompiledXaml);
+			var stack = page.stack;
 
-				Assert.Equal(3, stack.Children.Count);
-				Assert.IsType<Label>(stack.Children[0]);
-				Assert.IsType<Issue1250AspectRatioContainer>(stack.Children[1]);
-				Assert.IsType<Label>(stack.Children[2]);
-			}
+			Assert.Equal(3, stack.Children.Count);
+			Assert.IsType<Label>(stack.Children[0]);
+			Assert.IsType<Issue1250AspectRatioContainer>(stack.Children[1]);
+			Assert.IsType<Label>(stack.Children[2]);
 		}
 	}
 }

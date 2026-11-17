@@ -3,30 +3,29 @@ using System.Collections.Generic;
 using Xunit;
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class IsCompiledDefault : ContentPage
 {
-	public partial class IsCompiledDefault : ContentPage
+	public IsCompiledDefault()
 	{
-		public IsCompiledDefault()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public IsCompiledDefault(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public IsCompiledDefault(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
+	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void IsCompiled(bool useCompiledXaml)
 		{
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void IsCompiled(bool useCompiledXaml)
-			{
-				var layout = new IsCompiledDefault(useCompiledXaml);
-				Assert.True(typeof(IsCompiledDefault).IsCompiled());
-			}
+			var layout = new IsCompiledDefault(useCompiledXaml);
+			Assert.True(typeof(IsCompiledDefault).IsCompiled());
 		}
 	}
 }

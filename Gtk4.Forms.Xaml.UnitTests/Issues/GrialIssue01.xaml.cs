@@ -3,32 +3,31 @@ using System.Collections.Generic;
 using Xunit;
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class GrialIssue01 : ContentPage
 {
-	public partial class GrialIssue01 : ContentPage
+	public GrialIssue01()
 	{
-		public GrialIssue01()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public GrialIssue01(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public GrialIssue01(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
+	{
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void ImplicitCastIsUsedOnFileImageSource(bool useCompiledXaml)
 		{
-			[Theory]
-			[InlineData(true)]
-			[InlineData(false)]
-			public void ImplicitCastIsUsedOnFileImageSource(bool useCompiledXaml)
-			{
-				var layout = new GrialIssue01(useCompiledXaml);
-				var res = (FileImageSource)layout.Resources["image"];
+			var layout = new GrialIssue01(useCompiledXaml);
+			var res = (FileImageSource)layout.Resources["image"];
 
-				Assert.Equal("path.png", res.File);
-			}
+			Assert.Equal("path.png", res.File);
 		}
 	}
 }

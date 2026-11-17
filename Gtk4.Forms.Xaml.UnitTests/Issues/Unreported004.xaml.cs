@@ -3,51 +3,49 @@ using System.Collections.Generic;
 using Xunit;
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class Unreported004 : ContentPage
 {
-	public partial class Unreported004 : ContentPage
+	public Unreported004()
 	{
-		public Unreported004()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Unreported004(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Unreported004(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public static readonly BindableProperty SomePropertyProperty =
-			BindableProperty.Create("SomeProperty", typeof(string),
+	public static readonly BindableProperty SomePropertyProperty =
+		BindableProperty.Create("SomeProperty", typeof(string),
 			typeof(Unreported004), null);
 
-		public static string GetSomeProperty(BindableObject bindable)
-		{
-			return bindable.GetValue(SomePropertyProperty) as string;
-		}
+	public static string GetSomeProperty(BindableObject bindable)
+	{
+		return bindable.GetValue(SomePropertyProperty) as string;
+	}
 
-		public static string GetSomeProperty(BindableObject bindable, object foo)
-		{
-			return null;
-		}
+	public static string GetSomeProperty(BindableObject bindable, object foo)
+	{
+		return null;
+	}
 
-		public static void SetSomeProperty(BindableObject bindable, string value)
-		{
-			bindable.SetValue(SomePropertyProperty, value);
-		}
+	public static void SetSomeProperty(BindableObject bindable, string value)
+	{
+		bindable.SetValue(SomePropertyProperty, value);
+	}
 
 
-		public class Tests
+	public class Tests
+	{
+		[Theory]
+		[InlineData(true), InlineData(false)]
+		public void MultipleGetMethodsAllowed(bool useCompiledXaml)
 		{
-			[Theory]
-			[InlineData(true), InlineData(false)]
-			public void MultipleGetMethodsAllowed(bool useCompiledXaml)
-			{
-				var page = new Unreported004(useCompiledXaml);
-				Assert.NotNull(page.label);
-				Assert.Equal("foo", GetSomeProperty(page.label));
-			}
+			var page = new Unreported004(useCompiledXaml);
+			Assert.NotNull(page.label);
+			Assert.Equal("foo", GetSomeProperty(page.label));
 		}
 	}
 }
-

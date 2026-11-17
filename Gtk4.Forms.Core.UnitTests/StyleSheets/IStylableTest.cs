@@ -4,70 +4,69 @@
 using Xamarin.Forms.Core.UnitTests;
 using Xunit;
 
-namespace Xamarin.Forms.StyleSheets.UnitTests
+namespace Xamarin.Forms.StyleSheets.UnitTests;
+
+public class IStylableTest
 {
-	public class IStylableTest
+	public IStylableTest()
 	{
-		public IStylableTest()
-		{
-			Device.PlatformServices = new MockPlatformServices();
-			Internals.Registrar.RegisterAll(new Type[0]);
-		}
+		Device.PlatformServices = new MockPlatformServices();
+		Internals.Registrar.RegisterAll(new Type[0]);
+	}
 
-		[Fact]
-		public void GetPropertyDefinedOnParent()
-		{
-			var label = new Label();
-			var bp = ((IStylable)label).GetProperty("background-color", false);
-			Assert.Same(VisualElement.BackgroundColorProperty, bp);
-		}
+	[Fact]
+	public void GetPropertyDefinedOnParent()
+	{
+		var label = new Label();
+		var bp = ((IStylable)label).GetProperty("background-color", false);
+		Assert.Same(VisualElement.BackgroundColorProperty, bp);
+	}
 
-		[Fact]
-		public void GetPropertyDefinedOnType()
-		{
-			var label = new Label();
-			var bp = ((IStylable)label).GetProperty("color", false);
-			Assert.Same(Label.TextColorProperty, bp);
-		}
+	[Fact]
+	public void GetPropertyDefinedOnType()
+	{
+		var label = new Label();
+		var bp = ((IStylable)label).GetProperty("color", false);
+		Assert.Same(Label.TextColorProperty, bp);
+	}
 
-		[Fact]
-		public void GetPropertyDefinedOnType2()
-		{
-			var entry = new Entry();
-			var bp = ((IStylable)entry).GetProperty("color", false);
-			Assert.Same(Entry.TextColorProperty, bp);
-		}
+	[Fact]
+	public void GetPropertyDefinedOnType2()
+	{
+		var entry = new Entry();
+		var bp = ((IStylable)entry).GetProperty("color", false);
+		Assert.Same(Entry.TextColorProperty, bp);
+	}
 
-		[Fact]
-		public void GetPropertyDefinedOnType3()
-		{
-			var indicator = new ActivityIndicator();
-			var bp = ((IStylable)indicator).GetProperty("color", false);
-			Assert.Same(ActivityIndicator.ColorProperty, bp);
-		}
+	[Fact]
+	public void GetPropertyDefinedOnType3()
+	{
+		var indicator = new ActivityIndicator();
+		var bp = ((IStylable)indicator).GetProperty("color", false);
+		Assert.Same(ActivityIndicator.ColorProperty, bp);
+	}
 
-		[Fact]
-		public void GetInvalidPropertyForType()
-		{
-			var grid = new Grid();
-			var bp = ((IStylable)grid).GetProperty("color", false);
-			Assert.Null(bp);
-		}
+	[Fact]
+	public void GetInvalidPropertyForType()
+	{
+		var grid = new Grid();
+		var bp = ((IStylable)grid).GetProperty("color", false);
+		Assert.Null(bp);
+	}
 
-		[Fact]
-		public void GetPropertyDefinedOnPropertyOwnerType()
-		{
-			var frame = new Frame();
-			var bp = ((IStylable)frame).GetProperty("padding-left", false);
-			Assert.Same(PaddingElement.PaddingLeftProperty, bp);
-		}
+	[Fact]
+	public void GetPropertyDefinedOnPropertyOwnerType()
+	{
+		var frame = new Frame();
+		var bp = ((IStylable)frame).GetProperty("padding-left", false);
+		Assert.Same(PaddingElement.PaddingLeftProperty, bp);
+	}
 
-		[Fact]
-		public void GetNonPublicProperty()
-		{
-			var label = new Label();
-			var bp = ((IStylable)label).GetProperty("margin-right", false);
-			Assert.Same(View.MarginRightProperty, bp);
-		}
+	[Fact]
+	public void GetNonPublicProperty()
+	{
+		var label = new Label();
+		var bp = ((IStylable)label).GetProperty("margin-right", false);
+		Assert.Same(View.MarginRightProperty, bp);
 	}
 }

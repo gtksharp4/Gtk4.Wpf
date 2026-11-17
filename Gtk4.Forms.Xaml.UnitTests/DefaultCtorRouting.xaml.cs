@@ -7,55 +7,54 @@ using Xamarin.Forms.Build.Tasks;
 using Xamarin.Forms.Core.UnitTests;
 using Xamarin.Forms.Xaml;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+[XamlCompilation(XamlCompilationOptions.Skip)]
+public partial class DefaultCtorRouting : ContentPage
 {
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class DefaultCtorRouting : ContentPage
+	[TypeConverter(typeof(IsCompiledTypeConverter))]
+	public bool IsCompiled { get; set; }
+
+	public DefaultCtorRouting()
 	{
-		[TypeConverter(typeof(IsCompiledTypeConverter))]
-		public bool IsCompiled { get; set; }
-
-		public DefaultCtorRouting()
-		{
-			InitializeComponent();
-		}
-
-		public class Tests
-		: IDisposable{
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-			}
-
-			public void Dispose()
-{
-				Device.PlatformServices = null;
-			}
-
-			[Fact]
-			public void ShouldntBeCompiled()
-			{
-				var p = new DefaultCtorRouting();
-				Assert.False(p.IsCompiled);
-			}
-		}
+		InitializeComponent();
 	}
 
-	[ProvideCompiled("Xamarin.Forms.Core.XamlC.IsCompiledTypeConverter")]
-	class IsCompiledTypeConverter : TypeConverter, ICompiledTypeConverter
-	{
-		public override object ConvertFromInvariantString(string value)
+	public class Tests
+		: IDisposable{
+		public Tests()
 		{
-			if (value != "IsCompiled?")
-				throw new Exception();
-			return false;
+			Device.PlatformServices = new MockPlatformServices();
 		}
 
-		public IEnumerable<Instruction> ConvertFromString(string value, ILContext context, BaseNode node)
+		public void Dispose()
 		{
-			if (value != "IsCompiled?")
-				throw new Exception();
-			yield return Instruction.Create(OpCodes.Ldc_I4_1);
+			Device.PlatformServices = null;
 		}
+
+		[Fact]
+		public void ShouldntBeCompiled()
+		{
+			var p = new DefaultCtorRouting();
+			Assert.False(p.IsCompiled);
+		}
+	}
+}
+
+[ProvideCompiled("Xamarin.Forms.Core.XamlC.IsCompiledTypeConverter")]
+class IsCompiledTypeConverter : TypeConverter, ICompiledTypeConverter
+{
+	public override object ConvertFromInvariantString(string value)
+	{
+		if (value != "IsCompiled?")
+			throw new Exception();
+		return false;
+	}
+
+	public IEnumerable<Instruction> ConvertFromString(string value, ILContext context, BaseNode node)
+	{
+		if (value != "IsCompiled?")
+			throw new Exception();
+		yield return Instruction.Create(OpCodes.Ldc_I4_1);
 	}
 }

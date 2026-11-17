@@ -10,156 +10,155 @@ using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 using WindowsOS = Xamarin.Forms.PlatformConfiguration.Windows;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class WebViewUnitTests : BaseTestFixture
 {
-	public class WebViewUnitTests : BaseTestFixture
+	[Fact]
+	public void TestSourceImplicitConversion()
 	{
-		[Fact]
-		public void TestSourceImplicitConversion()
+		var web = new WebView();
+		Assert.Null(web.Source);
+		web.Source = "http://www.google.com";
+		Assert.NotNull(web.Source);
+		Assert.True(web.Source is UrlWebViewSource);
+		Assert.Equal("http://www.google.com", ((UrlWebViewSource)web.Source).Url);
+	}
+
+	[Fact]
+	public void TestSourceChangedPropagation()
+	{
+		var source = new UrlWebViewSource { Url = "http://www.google.com" };
+		var web = new WebView { Source = source };
+		bool signaled = false;
+		web.PropertyChanged += (sender, args) =>
 		{
-			var web = new WebView();
-			Assert.Null(web.Source);
-			web.Source = "http://www.google.com";
-			Assert.NotNull(web.Source);
-			Assert.True(web.Source is UrlWebViewSource);
-			Assert.Equal("http://www.google.com", ((UrlWebViewSource)web.Source).Url);
-		}
+			if (args.PropertyName == WebView.SourceProperty.PropertyName)
+				signaled = true;
+		};
+		Assert.False(signaled);
+		source.Url = "http://www.xamarin.com";
+		Assert.True(signaled);
+	}
 
-		[Fact]
-		public void TestSourceChangedPropagation()
+	[Fact]
+	public void TestSourceDisconnected()
+	{
+		var source = new UrlWebViewSource { Url = "http://www.google.com" };
+		var web = new WebView { Source = source };
+		web.Source = new UrlWebViewSource { Url = "Foo" };
+		bool signaled = false;
+		web.PropertyChanged += (sender, args) =>
 		{
-			var source = new UrlWebViewSource { Url = "http://www.google.com" };
-			var web = new WebView { Source = source };
-			bool signaled = false;
-			web.PropertyChanged += (sender, args) =>
-			{
-				if (args.PropertyName == WebView.SourceProperty.PropertyName)
-					signaled = true;
-			};
-			Assert.False(signaled);
-			source.Url = "http://www.xamarin.com";
-			Assert.True(signaled);
-		}
+			if (args.PropertyName == WebView.SourceProperty.PropertyName)
+				signaled = true;
+		};
+		Assert.False(signaled);
+		source.Url = "http://www.xamarin.com";
+		Assert.False(signaled);
+	}
 
-		[Fact]
-		public void TestSourceDisconnected()
+	class ViewModel
+	{
+		public string HTML { get; set; } = "<html><body><p>This is a WebView!</p></body></html>";
+
+		public string URL { get; set; } = "http://xamarin.com";
+
+	}
+
+	[Fact]
+	public void TestBindingContextPropagatesToSource()
+	{
+		var htmlWebView = new WebView
 		{
-			var source = new UrlWebViewSource { Url = "http://www.google.com" };
-			var web = new WebView { Source = source };
-			web.Source = new UrlWebViewSource { Url = "Foo" };
-			bool signaled = false;
-			web.PropertyChanged += (sender, args) =>
-			{
-				if (args.PropertyName == WebView.SourceProperty.PropertyName)
-					signaled = true;
-			};
-			Assert.False(signaled);
-			source.Url = "http://www.xamarin.com";
-			Assert.False(signaled);
-		}
-
-		class ViewModel
+		};
+		var urlWebView = new WebView
 		{
-			public string HTML { get; set; } = "<html><body><p>This is a WebView!</p></body></html>";
+		};
 
-			public string URL { get; set; } = "http://xamarin.com";
+		var htmlSource = new HtmlWebViewSource();
+		htmlSource.SetBinding(HtmlWebViewSource.HtmlProperty, "HTML");
+		htmlWebView.Source = htmlSource;
 
-		}
+		var urlSource = new UrlWebViewSource();
+		urlSource.SetBinding(UrlWebViewSource.UrlProperty, "URL");
+		urlWebView.Source = urlSource;
 
-		[Fact]
-		public void TestBindingContextPropagatesToSource()
+		var viewModel = new ViewModel();
+
+		var container = new StackLayout
 		{
-			var htmlWebView = new WebView
-			{
-			};
-			var urlWebView = new WebView
-			{
-			};
+			BindingContext = viewModel,
+			Padding = new Size(20, 20),
+			Children = {
+				htmlWebView,
+				urlWebView
+			}
+		};
 
-			var htmlSource = new HtmlWebViewSource();
-			htmlSource.SetBinding(HtmlWebViewSource.HtmlProperty, "HTML");
-			htmlWebView.Source = htmlSource;
+		Assert.Equal("<html><body><p>This is a WebView!</p></body></html>", htmlSource.Html);
+		Assert.Equal("http://xamarin.com", urlSource.Url);
+	}
 
-			var urlSource = new UrlWebViewSource();
-			urlSource.SetBinding(UrlWebViewSource.UrlProperty, "URL");
-			urlWebView.Source = urlSource;
+	[Fact]
+	public void TestAndroidMixedContent()
+	{
+		var defaultWebView = new WebView();
 
-			var viewModel = new ViewModel();
+		var mixedContentWebView = new WebView();
+		mixedContentWebView.On<Android>().SetMixedContentMode(MixedContentHandling.AlwaysAllow);
 
-			var container = new StackLayout
-			{
-				BindingContext = viewModel,
-				Padding = new Size(20, 20),
-				Children = {
-					htmlWebView,
-					urlWebView
-				}
-			};
+		Assert.Equal(defaultWebView.On<Android>().MixedContentMode(), MixedContentHandling.NeverAllow);
+		Assert.Equal(mixedContentWebView.On<Android>().MixedContentMode(), MixedContentHandling.AlwaysAllow);
+	}
 
-			Assert.Equal("<html><body><p>This is a WebView!</p></body></html>", htmlSource.Html);
-			Assert.Equal("http://xamarin.com", urlSource.Url);
-		}
+	[Fact]
+	public void TestEnableZoomControls()
+	{
+		var defaultWebView = new WebView();
 
-		[Fact]
-		public void TestAndroidMixedContent()
-		{
-			var defaultWebView = new WebView();
+		var enableZoomControlsWebView = new WebView();
+		enableZoomControlsWebView.On<Android>().SetEnableZoomControls(true);
 
-			var mixedContentWebView = new WebView();
-			mixedContentWebView.On<Android>().SetMixedContentMode(MixedContentHandling.AlwaysAllow);
+		Assert.Equal(defaultWebView.On<Android>().ZoomControlsEnabled(), false);
+		Assert.Equal(enableZoomControlsWebView.On<Android>().ZoomControlsEnabled(), true);
+	}
 
-			Assert.Equal(defaultWebView.On<Android>().MixedContentMode(), MixedContentHandling.NeverAllow);
-			Assert.Equal(mixedContentWebView.On<Android>().MixedContentMode(), MixedContentHandling.AlwaysAllow);
-		}
+	[Fact]
+	public void TestDisplayZoomControls()
+	{
+		var defaultWebView = new WebView();
 
-		[Fact]
-		public void TestEnableZoomControls()
-		{
-			var defaultWebView = new WebView();
+		var displayZoomControlsWebView = new WebView();
+		displayZoomControlsWebView.On<Android>().SetDisplayZoomControls(false);
 
-			var enableZoomControlsWebView = new WebView();
-			enableZoomControlsWebView.On<Android>().SetEnableZoomControls(true);
+		Assert.Equal(defaultWebView.On<Android>().ZoomControlsDisplayed(), true);
+		Assert.Equal(displayZoomControlsWebView.On<Android>().ZoomControlsDisplayed(), false);
+	}
 
-			Assert.Equal(defaultWebView.On<Android>().ZoomControlsEnabled(), false);
-			Assert.Equal(enableZoomControlsWebView.On<Android>().ZoomControlsEnabled(), true);
-		}
+	[Fact]
+	public void TestWindowsSetAllowJavaScriptAlertsFlag()
+	{
+		var defaultWebView = new WebView();
 
-		[Fact]
-		public void TestDisplayZoomControls()
-		{
-			var defaultWebView = new WebView();
+		var jsAlertsAllowedWebView = new WebView();
+		jsAlertsAllowedWebView.On<WindowsOS>().SetIsJavaScriptAlertEnabled(true);
 
-			var displayZoomControlsWebView = new WebView();
-			displayZoomControlsWebView.On<Android>().SetDisplayZoomControls(false);
+		Assert.Equal(defaultWebView.On<WindowsOS>().IsJavaScriptAlertEnabled(), false);
+		Assert.Equal(jsAlertsAllowedWebView.On<WindowsOS>().IsJavaScriptAlertEnabled(), true);
+	}
 
-			Assert.Equal(defaultWebView.On<Android>().ZoomControlsDisplayed(), true);
-			Assert.Equal(displayZoomControlsWebView.On<Android>().ZoomControlsDisplayed(), false);
-		}
+	[Fact]
+	public void TestSettingOfCookie()
+	{
+		var defaultWebView = new WebView();
+		var CookieContainer = new CookieContainer();
 
-		[Fact]
-		public void TestWindowsSetAllowJavaScriptAlertsFlag()
-		{
-			var defaultWebView = new WebView();
+		CookieContainer.Add(new Cookie("TestCookie", "My Test Cookie...", "/", "microsoft.com"));
 
-			var jsAlertsAllowedWebView = new WebView();
-			jsAlertsAllowedWebView.On<WindowsOS>().SetIsJavaScriptAlertEnabled(true);
+		defaultWebView.Cookies = CookieContainer;
+		defaultWebView.Source = "http://xamarin.com";
 
-			Assert.Equal(defaultWebView.On<WindowsOS>().IsJavaScriptAlertEnabled(), false);
-			Assert.Equal(jsAlertsAllowedWebView.On<WindowsOS>().IsJavaScriptAlertEnabled(), true);
-		}
-
-		[Fact]
-		public void TestSettingOfCookie()
-		{
-			var defaultWebView = new WebView();
-			var CookieContainer = new CookieContainer();
-
-			CookieContainer.Add(new Cookie("TestCookie", "My Test Cookie...", "/", "microsoft.com"));
-
-			defaultWebView.Cookies = CookieContainer;
-			defaultWebView.Source = "http://xamarin.com";
-
-			Assert.NotNull(defaultWebView.Cookies);
-		}
+		Assert.NotNull(defaultWebView.Cookies);
 	}
 }

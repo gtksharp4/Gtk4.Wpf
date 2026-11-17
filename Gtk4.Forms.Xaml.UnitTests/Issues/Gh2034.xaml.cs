@@ -3,32 +3,31 @@ using System.Collections.Generic;
 using Xunit;
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+[XamlCompilation(XamlCompilationOptions.Skip)]
+public partial class Gh2034 : ContentPage
 {
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class Gh2034 : ContentPage
+	public Gh2034()
 	{
-		public Gh2034()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Gh2034(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Gh2034(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
+	{
+		[Theory]
+		[InlineData(true)]
+		public void Compiles(bool useCompiledXaml)
 		{
-			[Theory]
-			[InlineData(true)]
-			public void Compiles(bool useCompiledXaml)
-			{
-				if (!useCompiledXaml)
-					return;
-				MockCompiler.Compile(typeof(Gh2034));
+			if (!useCompiledXaml)
 				return;
-			}
+			MockCompiler.Compile(typeof(Gh2034));
+			return;
 		}
 	}
 }

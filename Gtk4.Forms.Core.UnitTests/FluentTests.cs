@@ -2,7 +2,4 @@
 using Xunit;
 
 
-namespace Xamarin.Forms.Core.UnitTests
-{
-
-}
+namespace Xamarin.Forms.Core.UnitTests;

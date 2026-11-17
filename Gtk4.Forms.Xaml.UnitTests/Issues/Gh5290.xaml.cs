@@ -2,47 +2,46 @@
 using Xunit;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public class Gh5290VM
 {
-	public class Gh5290VM
+	public TimeSpan? Time { get; set; }
+}
+
+public partial class Gh5290 : ContentPage
+{
+	public static readonly BindableProperty NullableTimeProperty =
+		BindableProperty.Create("NullableTime", typeof(TimeSpan?), typeof(Gh5290), default(TimeSpan?));
+
+	public TimeSpan? NullableTime
 	{
-		public TimeSpan? Time { get; set; }
+		get => (TimeSpan?)GetValue(NullableTimeProperty);
+		set => SetValue(NullableTimeProperty, value);
 	}
 
-	public partial class Gh5290 : ContentPage
+	public Gh5290() => InitializeComponent();
+	public Gh5290(bool useCompiledXaml)
 	{
-		public static readonly BindableProperty NullableTimeProperty =
-			BindableProperty.Create("NullableTime", typeof(TimeSpan?), typeof(Gh5290), default(TimeSpan?));
+		//this stub will be replaced at compile time
+	}
 
-		public TimeSpan? NullableTime
+	public class Tests: IDisposable
+	{
+		public Tests() => Device.PlatformServices = new MockPlatformServices();
+		public void Dispose() => Device.PlatformServices = null;
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void TwoWayBindingToNullable(bool useCompiledXaml)
 		{
-			get => (TimeSpan?)GetValue(NullableTimeProperty);
-			set => SetValue(NullableTimeProperty, value);
-		}
+			var vm = new Gh5290VM { Time = TimeSpan.FromMinutes(42) };
+			var layout = new Gh5290(useCompiledXaml) { BindingContext = vm };
+			Assert.Equal(TimeSpan.FromMinutes(42), layout.NullableTime);
 
-		public Gh5290() => InitializeComponent();
-		public Gh5290(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		public class Tests: IDisposable
-		{
-			public Tests() => Device.PlatformServices = new MockPlatformServices();
-			public void Dispose() => Device.PlatformServices = null;
-
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void TwoWayBindingToNullable(bool useCompiledXaml)
-			{
-				var vm = new Gh5290VM { Time = TimeSpan.FromMinutes(42) };
-				var layout = new Gh5290(useCompiledXaml) { BindingContext = vm };
-				Assert.Equal(TimeSpan.FromMinutes(42), layout.NullableTime);
-
-				layout.SetValueFromRenderer(NullableTimeProperty, null);
-				Assert.Null(vm.Time);
-			}
+			layout.SetValueFromRenderer(NullableTimeProperty, null);
+			Assert.Null(vm.Time);
 		}
 	}
 }

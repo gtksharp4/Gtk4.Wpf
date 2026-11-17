@@ -5,85 +5,84 @@ using Xunit;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public enum NavigationOperation
 {
-	public enum NavigationOperation
+	Forward,
+	Back,
+	Replace,
+}
+
+[ContentProperty(nameof(Operation))]
+public class NavigateExtension : IMarkupExtension<ICommand>
+{
+	public NavigationOperation Operation { get; set; }
+
+	public Type Type { get; set; }
+
+	public ICommand ProvideValue(IServiceProvider serviceProvider)
 	{
-		Forward,
-		Back,
-		Replace,
+		return new Command(() => { });
 	}
 
-	[ContentProperty(nameof(Operation))]
-	public class NavigateExtension : IMarkupExtension<ICommand>
+	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)
 	{
-		public NavigationOperation Operation { get; set; }
+		return ProvideValue(serviceProvider);
+	}
+}
 
-		public Type Type { get; set; }
-
-		public ICommand ProvideValue(IServiceProvider serviceProvider)
-		{
-			return new Command(() => { });
-		}
-
-		object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)
-		{
-			return ProvideValue(serviceProvider);
-		}
+public partial class TypeExtension : ContentPage
+{
+	public TypeExtension()
+	{
+		InitializeComponent();
 	}
 
-	public partial class TypeExtension : ContentPage
+	public TypeExtension(bool useCompiledXaml)
 	{
-		public TypeExtension()
-		{
-			InitializeComponent();
-		}
+		//this stub will be replaced at compile time
+	}
 
-		public TypeExtension(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		public class Tests
+	public class Tests
 		: IDisposable{
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-			}
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+		}
 
-			public void Dispose()
-{
-				Device.PlatformServices = null;
-			}
+		public void Dispose()
+		{
+			Device.PlatformServices = null;
+		}
 
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void NestedMarkupExtensionInsideDataTemplate(bool useCompiledXaml)
-			{
-				var page = new TypeExtension(useCompiledXaml);
-				var listView = page.listview;
-				listView.ItemsSource = new string[2];
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void NestedMarkupExtensionInsideDataTemplate(bool useCompiledXaml)
+		{
+			var page = new TypeExtension(useCompiledXaml);
+			var listView = page.listview;
+			listView.ItemsSource = new string[2];
 
-				var cell = (ViewCell)listView.TemplatedItems[0];
-				var button = (Button)cell.View;
-				Assert.NotNull(button.Command);
+			var cell = (ViewCell)listView.TemplatedItems[0];
+			var button = (Button)cell.View;
+			Assert.NotNull(button.Command);
 
-				cell = (ViewCell)listView.TemplatedItems[1];
-				button = (Button)cell.View;
-				Assert.NotNull(button.Command);
-			}
+			cell = (ViewCell)listView.TemplatedItems[1];
+			button = (Button)cell.View;
+			Assert.NotNull(button.Command);
+		}
 
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			//https://bugzilla.xamarin.com/show_bug.cgi?id=55027
-			public void TypeExtensionSupportsNamespace(bool useCompiledXaml)
-			{
-				var page = new TypeExtension(useCompiledXaml);
-				var button = page.button0;
-				Assert.Equal(typeof(TypeExtension), button.CommandParameter);
-			}
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		//https://bugzilla.xamarin.com/show_bug.cgi?id=55027
+		public void TypeExtensionSupportsNamespace(bool useCompiledXaml)
+		{
+			var page = new TypeExtension(useCompiledXaml);
+			var button = page.button0;
+			Assert.Equal(typeof(TypeExtension), button.CommandParameter);
 		}
 	}
 }

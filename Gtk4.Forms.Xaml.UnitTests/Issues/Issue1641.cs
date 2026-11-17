@@ -1,14 +1,14 @@
 ﻿using System;
 using Xunit;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public class Issue1641
 {
-	public class Issue1641
+	[Fact]
+	public void StaticResourceInTableView()
 	{
-		[Fact]
-		public void StaticResourceInTableView()
-		{
-			var xaml = @"
+		var xaml = @"
 					<ContentPage
 					xmlns=""http://xamarin.com/schemas/2014/forms""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"">
@@ -26,12 +26,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					        </TableRoot>
 					    </TableView>
 					</ContentPage>";
-			var page = new ContentPage().LoadFromXaml(xaml);
-			var table = page.Content as TableView;
-			Assert.Equal("Hello there!", page.Resources["caption"] as string);
-			Assert.Equal("Hello there!", (table.Root[0][0] as TextCell).Text);
+		var page = new ContentPage().LoadFromXaml(xaml);
+		var table = page.Content as TableView;
+		Assert.Equal("Hello there!", page.Resources["caption"] as string);
+		Assert.Equal("Hello there!", (table.Root[0][0] as TextCell).Text);
 
-		}
 	}
 }
-

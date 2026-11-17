@@ -5,75 +5,74 @@ using Gdk;
 using Xamarin.Forms.Platform.GTK.Extensions;
 using Xamarin.Forms.Shapes;
 
-namespace Xamarin.Forms.Platform.GTK.Controls
+namespace Xamarin.Forms.Platform.GTK.Controls;
+
+public class PathView : ShapeView
 {
-	public class PathView : ShapeView
+	private PathGeometry _geometry;
+
+	public void UpdateGeometry(PathGeometry geometry)
 	{
-		private PathGeometry _geometry;
+		_geometry = geometry;
+		QueueDraw();
+	}
 
-		public void UpdateGeometry(PathGeometry geometry)
+	protected override void Draw(Gdk.Rectangle area, Context cr)
+	{
+		// A Path whose Data is a geometry type the renderer cannot convert leaves _geometry
+		// null, and this runs inside the GTK draw handler - an exception there tears down the
+		// whole redraw rather than losing one shape.
+		if (_geometry == null)
+			return;
+
+		cr.FillRule = _geometry.FillRule == Shapes.FillRule.EvenOdd ? Cairo.FillRule.EvenOdd : Cairo.FillRule.Winding;
+
+		foreach (var figure in _geometry.Figures)
 		{
-			_geometry = geometry;
-			QueueDraw();
-		}
+			cr.MoveTo(figure.StartPoint.X, figure.StartPoint.Y);
 
-		protected override void Draw(Gdk.Rectangle area, Context cr)
-		{
-			// A Path whose Data is a geometry type the renderer cannot convert leaves _geometry
-			// null, and this runs inside the GTK draw handler - an exception there tears down the
-			// whole redraw rather than losing one shape.
-			if (_geometry == null)
-				return;
+			Point lastPoint = figure.StartPoint;
 
-			cr.FillRule = _geometry.FillRule == Shapes.FillRule.EvenOdd ? Cairo.FillRule.EvenOdd : Cairo.FillRule.Winding;
-
-			foreach (var figure in _geometry.Figures)
+			foreach (var segment in figure.Segments)
 			{
-				cr.MoveTo(figure.StartPoint.X, figure.StartPoint.Y);
-
-				Point lastPoint = figure.StartPoint;
-
-				foreach (var segment in figure.Segments)
+				if (segment is LineSegment lineSegment)
 				{
-					if (segment is LineSegment lineSegment)
-					{
-						cr.LineTo(lineSegment.Point.X, lineSegment.Point.Y);
+					cr.LineTo(lineSegment.Point.X, lineSegment.Point.Y);
 
-						lastPoint = lineSegment.Point;
-					}
-					else if (segment is ArcSegment arcSegment)
-					{
-						List<Point> points = new List<Point>();
-
-						GeometryHelper.FlattenArc(points,
-							lastPoint,
-							arcSegment.Point,
-							arcSegment.Size.Width,
-							arcSegment.Size.Height,
-							arcSegment.RotationAngle,
-							arcSegment.IsLargeArc,
-							arcSegment.SweepDirection == SweepDirection.CounterClockwise,
-							1);
-
-						for (int i = 0; i < points.Count; i++)
-						{
-							if (!double.IsNaN(points[i].X) && !double.IsNaN(points[i].Y))
-								cr.LineTo(points[i].X, points[i].Y);
-						}
-
-						if (points.Count > 0)
-							if (!double.IsNaN(points[points.Count - 1].X) && !double.IsNaN(points[points.Count - 1].Y))
-								lastPoint = points[points.Count - 1];
-
-					}
+					lastPoint = lineSegment.Point;
 				}
+				else if (segment is ArcSegment arcSegment)
+				{
+					List<Point> points = new List<Point>();
 
-				if (figure.IsClosed)
-					cr.ClosePath();
+					GeometryHelper.FlattenArc(points,
+						lastPoint,
+						arcSegment.Point,
+						arcSegment.Size.Width,
+						arcSegment.Size.Height,
+						arcSegment.RotationAngle,
+						arcSegment.IsLargeArc,
+						arcSegment.SweepDirection == SweepDirection.CounterClockwise,
+						1);
+
+					for (int i = 0; i < points.Count; i++)
+					{
+						if (!double.IsNaN(points[i].X) && !double.IsNaN(points[i].Y))
+							cr.LineTo(points[i].X, points[i].Y);
+					}
+
+					if (points.Count > 0)
+						if (!double.IsNaN(points[points.Count - 1].X) && !double.IsNaN(points[points.Count - 1].Y))
+							lastPoint = points[points.Count - 1];
+
+				}
 			}
 
-			base.Draw(area, cr);
+			if (figure.IsClosed)
+				cr.ClosePath();
 		}
 
+		base.Draw(area, cr);
 	}
+
 }

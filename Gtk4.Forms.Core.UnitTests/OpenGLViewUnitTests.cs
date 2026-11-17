@@ -1,20 +1,19 @@
 ﻿using Xunit;
 
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class OpenGLViewUnitTests : BaseTestFixture
 {
-	public class OpenGLViewUnitTests : BaseTestFixture
+	[Fact]
+	public void Display()
 	{
-		[Fact]
-		public void Display()
-		{
-			var view = new OpenGLView();
-			bool displayed = false;
+		var view = new OpenGLView();
+		bool displayed = false;
 
-			view.DisplayRequested += (s, o) => displayed = true;
+		view.DisplayRequested += (s, o) => displayed = true;
 
-			view.Display();
-			Assert.True(displayed);
-		}
+		view.Display();
+		Assert.True(displayed);
 	}
 }

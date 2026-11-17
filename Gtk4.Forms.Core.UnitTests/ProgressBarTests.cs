@@ -5,43 +5,42 @@ using System.Linq;
 using Xamarin.Forms.Internals;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class ProgressBarTests : BaseTestFixture
 {
-	public class ProgressBarTests : BaseTestFixture
+	public ProgressBarTests()
 	{
-		public ProgressBarTests()
-		{
-			Device.PlatformServices = new MockPlatformServices();
-			Ticker.Default = new BlockingTicker();
-		}
+		Device.PlatformServices = new MockPlatformServices();
+		Ticker.Default = new BlockingTicker();
+	}
 
-		public override void Dispose()
-		{
-			base.Dispose();
-			Device.PlatformServices = null;
-			Ticker.Default = null;
-		}
+	public override void Dispose()
+	{
+		base.Dispose();
+		Device.PlatformServices = null;
+		Ticker.Default = null;
+	}
 
-		[Fact]
-		public void TestClamp()
-		{
-			ProgressBar bar = new ProgressBar();
+	[Fact]
+	public void TestClamp()
+	{
+		ProgressBar bar = new ProgressBar();
 
-			bar.Progress = 2;
-			Assert.Equal(1, bar.Progress);
+		bar.Progress = 2;
+		Assert.Equal(1, bar.Progress);
 
-			bar.Progress = -1;
-			Assert.Equal(0, bar.Progress);
-		}
+		bar.Progress = -1;
+		Assert.Equal(0, bar.Progress);
+	}
 
-		[Fact]
-		public void TestProgressTo()
-		{
-			var bar = new ProgressBar();
+	[Fact]
+	public void TestProgressTo()
+	{
+		var bar = new ProgressBar();
 
-			bar.ProgressTo(0.8, 250, Easing.Linear);
+		bar.ProgressTo(0.8, 250, Easing.Linear);
 
-			Assert.Equal(0.8, bar.Progress, 0.001);
-		}
+		Assert.Equal(0.8, bar.Progress, 0.001);
 	}
 }

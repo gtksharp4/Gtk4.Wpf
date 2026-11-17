@@ -7,28 +7,27 @@ using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class ShellNavigationStateTests : ShellTestBase
 {
-	public class ShellNavigationStateTests : ShellTestBase
+	[Fact]
+	public void LocationInitializedWithUri()
 	{
-		[Fact]
-		public void LocationInitializedWithUri()
-		{
-			var uri = new Uri($"//test/IMPL_TEST/D_FAULT_TEST", UriKind.Relative);
-			var uriState = new ShellNavigationState(uri);
+		var uri = new Uri($"//test/IMPL_TEST/D_FAULT_TEST", UriKind.Relative);
+		var uriState = new ShellNavigationState(uri);
 
-			Assert.Equal("//test", uriState.Location.ToString());
-			Assert.Equal("//test/IMPL_TEST/D_FAULT_TEST", uriState.FullLocation.ToString());
-		}
+		Assert.Equal("//test", uriState.Location.ToString());
+		Assert.Equal("//test/IMPL_TEST/D_FAULT_TEST", uriState.FullLocation.ToString());
+	}
 
-		[Fact]
-		public void LocationInitializedWithString()
-		{
-			var uri = new Uri("//test/IMPL_TEST/D_FAULT_TEST", UriKind.Relative);
-			var strState = new ShellNavigationState(uri.ToString());
+	[Fact]
+	public void LocationInitializedWithString()
+	{
+		var uri = new Uri("//test/IMPL_TEST/D_FAULT_TEST", UriKind.Relative);
+		var strState = new ShellNavigationState(uri.ToString());
 
-			Assert.Equal("//test", strState.Location.ToString());
-			Assert.Equal("//test/IMPL_TEST/D_FAULT_TEST", strState.FullLocation.ToString());
-		}
+		Assert.Equal("//test", strState.Location.ToString());
+		Assert.Equal("//test/IMPL_TEST/D_FAULT_TEST", strState.FullLocation.ToString());
 	}
 }

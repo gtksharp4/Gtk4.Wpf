@@ -1,91 +1,90 @@
 ﻿using System;
 using System.ComponentModel;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers
+namespace Xamarin.Forms.Platform.GTK.Renderers;
+
+public class SliderRenderer : ViewRenderer<Slider, Gtk.Scale>
 {
-	public class SliderRenderer : ViewRenderer<Slider, Gtk.Scale>
+	private double _minimum;
+	private double _maximum;
+	private bool _disposed;
+
+	protected override bool PreventGestureBubbling { get; set; } = true;
+
+	protected override void Dispose(bool disposing)
 	{
-		private double _minimum;
-		private double _maximum;
-		private bool _disposed;
+		if (Control != null)
+			Control.ValueChanged -= OnControlValueChanged;
 
-		protected override bool PreventGestureBubbling { get; set; } = true;
-
-		protected override void Dispose(bool disposing)
+		if (disposing && !_disposed)
 		{
-			if (Control != null)
-				Control.ValueChanged -= OnControlValueChanged;
-
-			if (disposing && !_disposed)
-			{
-				_disposed = true;
-			}
-
-			base.Dispose(disposing);
+			_disposed = true;
 		}
 
-		protected override void OnElementChanged(ElementChangedEventArgs<Slider> e)
+		base.Dispose(disposing);
+	}
+
+	protected override void OnElementChanged(ElementChangedEventArgs<Slider> e)
+	{
+		if (e.NewElement != null)
 		{
-			if (e.NewElement != null)
+			if (Control == null)
 			{
-				if (Control == null)
+				_minimum = e.NewElement.Minimum;
+				_maximum = e.NewElement.Maximum;
+				double stepping = Math.Min((e.NewElement.Maximum - e.NewElement.Minimum) / 10, 1);
+
+				// A horizontal slider for selecting a value from a range. GTK3 replaces the
+				// separate Gtk.HScale class with an orientation on Gtk.Scale.
+				SetNativeControl(new Gtk.Scale(Gtk.Orientation.Horizontal, _minimum, _maximum, stepping)
 				{
-					_minimum = e.NewElement.Minimum;
-					_maximum = e.NewElement.Maximum;
-					double stepping = Math.Min((e.NewElement.Maximum - e.NewElement.Minimum) / 10, 1);
-
-					// A horizontal slider for selecting a value from a range. GTK3 replaces the
-					// separate Gtk.HScale class with an orientation on Gtk.Scale.
-					SetNativeControl(new Gtk.Scale(Gtk.Orientation.Horizontal, _minimum, _maximum, stepping)
-					{
-						// Do not show a label in order to mimic the rest of the Xamarin.Forms backends
-						DrawValue = false
-					});
-					Control.ValueChanged += OnControlValueChanged;
-				}
-
-				UpdateMaximum();
-				UpdateMinimum();
-				UpdateValue();
+					// Do not show a label in order to mimic the rest of the Xamarin.Forms backends
+					DrawValue = false
+				});
+				Control.ValueChanged += OnControlValueChanged;
 			}
 
-			base.OnElementChanged(e);
+			UpdateMaximum();
+			UpdateMinimum();
+			UpdateValue();
 		}
 
-		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			base.OnElementPropertyChanged(sender, e);
+		base.OnElementChanged(e);
+	}
 
-			if (e.PropertyName == Slider.MaximumProperty.PropertyName)
-				UpdateMaximum();
-			else if (e.PropertyName == Slider.MinimumProperty.PropertyName)
-				UpdateMinimum();
-			else if (e.PropertyName == Slider.ValueProperty.PropertyName)
-				UpdateValue();
-		}
+	protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+	{
+		base.OnElementPropertyChanged(sender, e);
 
-		private void OnControlValueChanged(object sender, EventArgs eventArgs)
-		{
-			ElementController.SetValueFromRenderer(Slider.ValueProperty, Control.Value);
-		}
+		if (e.PropertyName == Slider.MaximumProperty.PropertyName)
+			UpdateMaximum();
+		else if (e.PropertyName == Slider.MinimumProperty.PropertyName)
+			UpdateMinimum();
+		else if (e.PropertyName == Slider.ValueProperty.PropertyName)
+			UpdateValue();
+	}
 
-		private void UpdateMaximum()
-		{
-			_maximum = (float)Element.Maximum;
+	private void OnControlValueChanged(object sender, EventArgs eventArgs)
+	{
+		ElementController.SetValueFromRenderer(Slider.ValueProperty, Control.Value);
+	}
 
-			Control.SetRange(_minimum, _maximum);
-		}
+	private void UpdateMaximum()
+	{
+		_maximum = (float)Element.Maximum;
 
-		private void UpdateMinimum()
-		{
-			_minimum = (float)Element.Minimum;
+		Control.SetRange(_minimum, _maximum);
+	}
 
-			Control.SetRange(_minimum, _maximum);
-		}
+	private void UpdateMinimum()
+	{
+		_minimum = (float)Element.Minimum;
 
-		private void UpdateValue()
-		{
-			Control.Value = (float)Element.Value;
-		}
+		Control.SetRange(_minimum, _maximum);
+	}
+
+	private void UpdateValue()
+	{
+		Control.Value = (float)Element.Value;
 	}
 }

@@ -3,28 +3,27 @@ using System.Collections.Generic;
 using Xunit;
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class Unreported003 : ContentPage
 {
-	public partial class Unreported003 : ContentPage
+	public Unreported003()
 	{
-		public Unreported003()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Unreported003(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Unreported003(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
+	{
+		[Theory]
+		[InlineData(true), InlineData(false)]
+		public void AllowCtorArgsForValueTypes(bool useCompiledXaml)
 		{
-			[Theory]
-			[InlineData(true), InlineData(false)]
-			public void AllowCtorArgsForValueTypes(bool useCompiledXaml)
-			{
-				var page = new Unreported003(useCompiledXaml);
-			}
+			var page = new Unreported003(useCompiledXaml);
 		}
 	}
 }

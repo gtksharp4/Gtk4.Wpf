@@ -2,148 +2,147 @@
 using Xunit;
 
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class TextCellTests : BaseTestFixture
 {
-	public class TextCellTests : BaseTestFixture
+	[Fact]
+	public void TestTapped()
 	{
-		[Fact]
-		public void TestTapped()
+		var cell = new TextCell();
+		bool tapped = false;
+		cell.Tapped += (sender, args) => tapped = true;
+
+		cell.OnTapped();
+		Assert.True(tapped);
+	}
+
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public void TappedHonorsCanExecute(bool canExecute)
+	{
+		bool executed = false;
+
+		var cmd = new Command(() => executed = true, () => canExecute);
+		var cell = new TextCell { Command = cmd };
+		cell.OnTapped();
+
+		Assert.Equal(canExecute, executed);
+	}
+
+	[Fact]
+	public void TestCommand()
+	{
+		bool executed = false;
+
+		var cmd = new Command(() => executed = true);
+		var cell = new TextCell();
+		cell.Command = cmd;
+		cell.OnTapped();
+
+		Assert.True(executed, "Command was not executed");
+	}
+
+	[Fact]
+	public void TestCommandParameter()
+	{
+		bool executed = false;
+
+		object obj = new object();
+		var cmd = new Command(p =>
 		{
-			var cell = new TextCell();
-			bool tapped = false;
-			cell.Tapped += (sender, args) => tapped = true;
+			Assert.Same(obj, p);
+			executed = true;
+		});
 
-			cell.OnTapped();
-			Assert.True(tapped);
-		}
-
-		[Theory]
-		[InlineData(true)]
-		[InlineData(false)]
-		public void TappedHonorsCanExecute(bool canExecute)
+		var cell = new TextCell
 		{
-			bool executed = false;
+			Command = cmd,
+			CommandParameter = obj
+		};
 
-			var cmd = new Command(() => executed = true, () => canExecute);
-			var cell = new TextCell { Command = cmd };
-			cell.OnTapped();
+		cell.OnTapped();
 
-			Assert.Equal(canExecute, executed);
-		}
+		Assert.True(executed, "Command was not executed");
+	}
 
-		[Fact]
-		public void TestCommand()
-		{
-			bool executed = false;
+	[Fact]
+	public void TestCommandCanExecute()
+	{
+		bool tested = false;
 
-			var cmd = new Command(() => executed = true);
-			var cell = new TextCell();
-			cell.Command = cmd;
-			cell.OnTapped();
-
-			Assert.True(executed, "Command was not executed");
-		}
-
-		[Fact]
-		public void TestCommandParameter()
-		{
-			bool executed = false;
-
-			object obj = new object();
-			var cmd = new Command(p =>
+		var cmd = new Command(() => { },
+			canExecute: () =>
 			{
-				Assert.Same(obj, p);
-				executed = true;
+				tested = true;
+				return true;
 			});
 
-			var cell = new TextCell
+		new TextCell { Command = cmd };
+		Assert.True(tested, "Command.CanExecute was not called");
+	}
+
+	[Fact]
+	public void TestCommandCanExecuteDisables()
+	{
+		var cmd = new Command(() => { }, () => false);
+		var cell = new TextCell { Command = cmd };
+		Assert.False(cell.IsEnabled, "Cell was not disabled");
+	}
+
+	[Fact]
+	public void TestCommandCanExecuteChanged()
+	{
+		bool first = true;
+		var cmd = new Command(() => { }, () =>
+		{
+			if (first)
 			{
-				Command = cmd,
-				CommandParameter = obj
-			};
-
-			cell.OnTapped();
-
-			Assert.True(executed, "Command was not executed");
-		}
-
-		[Fact]
-		public void TestCommandCanExecute()
-		{
-			bool tested = false;
-
-			var cmd = new Command(() => { },
-				canExecute: () =>
-				{
-					tested = true;
-					return true;
-				});
-
-			new TextCell { Command = cmd };
-			Assert.True(tested, "Command.CanExecute was not called");
-		}
-
-		[Fact]
-		public void TestCommandCanExecuteDisables()
-		{
-			var cmd = new Command(() => { }, () => false);
-			var cell = new TextCell { Command = cmd };
-			Assert.False(cell.IsEnabled, "Cell was not disabled");
-		}
-
-		[Fact]
-		public void TestCommandCanExecuteChanged()
-		{
-			bool first = true;
-			var cmd = new Command(() => { }, () =>
+				first = false;
+				return false;
+			}
+			else
 			{
-				if (first)
-				{
-					first = false;
-					return false;
-				}
-				else
-				{
-					return true;
-				}
-			});
+				return true;
+			}
+		});
 
-			var cell = new TextCell { Command = cmd };
-			Assert.False(cell.IsEnabled, "Cell was not disabled");
+		var cell = new TextCell { Command = cmd };
+		Assert.False(cell.IsEnabled, "Cell was not disabled");
 
-			cmd.ChangeCanExecute();
+		cmd.ChangeCanExecute();
 
-			Assert.True(cell.IsEnabled, "Cell was not reenabled");
-		}
+		Assert.True(cell.IsEnabled, "Cell was not reenabled");
+	}
 
-		[Fact]
-		public void Create()
-		{
-			var template = new DataTemplate(typeof(TextCell));
-			var content = template.CreateContent();
+	[Fact]
+	public void Create()
+	{
+		var template = new DataTemplate(typeof(TextCell));
+		var content = template.CreateContent();
 
-			Assert.NotNull(content);
-			Assert.IsAssignableFrom<TextCell>(content);
-		}
+		Assert.NotNull(content);
+		Assert.IsAssignableFrom<TextCell>(content);
+	}
 
-		[Fact]
-		public void Detail()
-		{
-			var template = new DataTemplate(typeof(TextCell));
-			template.SetValue(TextCell.DetailProperty, "detail");
+	[Fact]
+	public void Detail()
+	{
+		var template = new DataTemplate(typeof(TextCell));
+		template.SetValue(TextCell.DetailProperty, "detail");
 
-			TextCell cell = (TextCell)template.CreateContent();
-			Assert.Equal("detail", cell.Detail);
-		}
+		TextCell cell = (TextCell)template.CreateContent();
+		Assert.Equal("detail", cell.Detail);
+	}
 
-		[Fact]
-		public void Text()
-		{
-			var template = new DataTemplate(typeof(TextCell));
-			template.SetValue(TextCell.TextProperty, "text");
+	[Fact]
+	public void Text()
+	{
+		var template = new DataTemplate(typeof(TextCell));
+		template.SetValue(TextCell.TextProperty, "text");
 
-			TextCell cell = (TextCell)template.CreateContent();
-			Assert.Equal("text", cell.Text);
-		}
+		TextCell cell = (TextCell)template.CreateContent();
+		Assert.Equal("text", cell.Text);
 	}
 }

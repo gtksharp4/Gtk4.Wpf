@@ -8,347 +8,345 @@ using Gdk;
 using Xamarin.Forms.Platform.GTK.Extensions;
 using IOPath = System.IO.Path;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers
-{
-	public class ImageRenderer : ViewRenderer<Image, Controls.ImageControl>
-	{
-		bool _isDisposed;
+namespace Xamarin.Forms.Platform.GTK.Renderers;
 
-		protected override void Dispose(bool disposing)
+public class ImageRenderer : ViewRenderer<Image, Controls.ImageControl>
+{
+	bool _isDisposed;
+
+	protected override void Dispose(bool disposing)
+	{
+		if (_isDisposed)
+			return;
+
+		if (disposing)
 		{
-			if (_isDisposed)
+			if (Control != null)
+			{
+				Control.Dispose();
+				Control = null;
+			}
+		}
+
+		_isDisposed = true;
+
+		base.Dispose(disposing);
+	}
+
+	protected override void OnElementChanged(ElementChangedEventArgs<Image> e)
+	{
+		if (Control == null)
+		{
+			var image = new Controls.ImageControl();
+			SetNativeControl(image);
+		}
+
+		if (e.NewElement != null)
+		{
+			SetImage(e.OldElement);
+			SetAspect();
+			SetScaleX();
+			SetScaleY();
+			SetRotation();
+		}
+
+		base.OnElementChanged(e);
+	}
+
+	protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+	{
+		base.OnElementPropertyChanged(sender, e);
+
+		// Opacity is not handled here: VisualElementTracker.UpdateOpacity applies it to the
+		// container with gtk_widget_set_opacity. The IsOpaque branch that used to sit here
+		// forwarded Element.Opacity into ImageControl.SetAlpha, which was a colour-key call
+		// (Pixbuf.AddAlpha) and not an alpha blend at all - the default Opacity of 1.0 made
+		// every pure-white pixel transparent instead of leaving the image untouched.
+		if (e.PropertyName == Image.SourceProperty.PropertyName)
+			SetImage();
+		else if (e.PropertyName == Image.AspectProperty.PropertyName)
+			SetAspect();
+		else if (e.PropertyName == Image.ScaleProperty.PropertyName)
+			SetScale();
+		else if (e.PropertyName == Image.ScaleXProperty.PropertyName)
+			SetScaleX();
+		else if (e.PropertyName == Image.ScaleYProperty.PropertyName)
+			SetScaleY();
+		else if (e.PropertyName == Image.RotationProperty.PropertyName)
+			SetRotation();
+	}
+
+	// There is deliberately no OnSizeAllocated override here. It used to call
+	// Control.SetSizeRequest(allocation.Width, allocation.Height) inline, and that was both
+	// pointless and harmful.
+	//
+	// Pointless because this renderer IS the container - a VisibleWindow = false Gtk.EventBox -
+	// and the ImageControl is its only child, so GTK already allocates the control the whole of
+	// that allocation. The request asked for exactly what the widget was being given anyway,
+	// and ImageControl rescales its pixbuf from its OWN size-allocate (ImageControl.cs:129).
+	//
+	// Harmful twice over. SetSizeRequest calls gtk_widget_queue_resize, and queueing a resize
+	// from inside size-allocate is invalid in GTK3: the resize is discarded while alloc-needed
+	// is left standing on the ancestors, so every later queue_resize raised anywhere in this
+	// subtree is swallowed too - see VisualElementRenderer.OnSizeAllocated, which is why every
+	// other renderer in this backend defers geometry to GLib.Idle. And a size request is a
+	// MINIMUM that propagates all the way up to the toplevel's minimum size, so stamping the
+	// image with the largest allocation it had ever had meant the window grew and could never
+	// be dragged back smaller - the same ratchet measured on NavigationPageRenderer
+	// (800x600 -> 800x672, NavigationPageRenderer.cs:168).
+
+	async void SetImage(Image oldElement = null)
+	{
+		var source = Element.Source;
+
+		if (oldElement != null)
+		{
+			var oldSource = oldElement.Source;
+			if (Equals(oldSource, source))
 				return;
 
-			if (disposing)
-			{
-				if (Control != null)
-				{
-					Control.Dispose();
-					Control = null;
-				}
-			}
+			if (oldSource is FileImageSource && source is FileImageSource
+			                                 && ((FileImageSource)oldSource).File == ((FileImageSource)source).File)
+				return;
 
-			_isDisposed = true;
-
-			base.Dispose(disposing);
+			Control.Pixbuf = null;
 		}
 
-		protected override void OnElementChanged(ElementChangedEventArgs<Image> e)
+		((IImageController)Element).SetIsLoading(true);
+
+		var image = await source.GetNativeImageAsync();
+
+		var imageView = Control;
+		if (imageView != null)
+			imageView.Pixbuf = image;
+
+		if (!_isDisposed)
 		{
-			if (Control == null)
-			{
-				var image = new Controls.ImageControl();
-				SetNativeControl(image);
-			}
-
-			if (e.NewElement != null)
-			{
-				SetImage(e.OldElement);
-				SetAspect();
-				SetScaleX();
-				SetScaleY();
-				SetRotation();
-			}
-
-			base.OnElementChanged(e);
-		}
-
-		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			base.OnElementPropertyChanged(sender, e);
-
-			// Opacity is not handled here: VisualElementTracker.UpdateOpacity applies it to the
-			// container with gtk_widget_set_opacity. The IsOpaque branch that used to sit here
-			// forwarded Element.Opacity into ImageControl.SetAlpha, which was a colour-key call
-			// (Pixbuf.AddAlpha) and not an alpha blend at all - the default Opacity of 1.0 made
-			// every pure-white pixel transparent instead of leaving the image untouched.
-			if (e.PropertyName == Image.SourceProperty.PropertyName)
-				SetImage();
-			else if (e.PropertyName == Image.AspectProperty.PropertyName)
-				SetAspect();
-			else if (e.PropertyName == Image.ScaleProperty.PropertyName)
-				SetScale();
-			else if (e.PropertyName == Image.ScaleXProperty.PropertyName)
-				SetScaleX();
-			else if (e.PropertyName == Image.ScaleYProperty.PropertyName)
-				SetScaleY();
-			else if (e.PropertyName == Image.RotationProperty.PropertyName)
-				SetRotation();
-		}
-
-		// There is deliberately no OnSizeAllocated override here. It used to call
-		// Control.SetSizeRequest(allocation.Width, allocation.Height) inline, and that was both
-		// pointless and harmful.
-		//
-		// Pointless because this renderer IS the container - a VisibleWindow = false Gtk.EventBox -
-		// and the ImageControl is its only child, so GTK already allocates the control the whole of
-		// that allocation. The request asked for exactly what the widget was being given anyway,
-		// and ImageControl rescales its pixbuf from its OWN size-allocate (ImageControl.cs:129).
-		//
-		// Harmful twice over. SetSizeRequest calls gtk_widget_queue_resize, and queueing a resize
-		// from inside size-allocate is invalid in GTK3: the resize is discarded while alloc-needed
-		// is left standing on the ancestors, so every later queue_resize raised anywhere in this
-		// subtree is swallowed too - see VisualElementRenderer.OnSizeAllocated, which is why every
-		// other renderer in this backend defers geometry to GLib.Idle. And a size request is a
-		// MINIMUM that propagates all the way up to the toplevel's minimum size, so stamping the
-		// image with the largest allocation it had ever had meant the window grew and could never
-		// be dragged back smaller - the same ratchet measured on NavigationPageRenderer
-		// (800x600 -> 800x672, NavigationPageRenderer.cs:168).
-
-		async void SetImage(Image oldElement = null)
-		{
-			var source = Element.Source;
-
-			if (oldElement != null)
-			{
-				var oldSource = oldElement.Source;
-				if (Equals(oldSource, source))
-					return;
-
-				if (oldSource is FileImageSource && source is FileImageSource
-					&& ((FileImageSource)oldSource).File == ((FileImageSource)source).File)
-					return;
-
-				Control.Pixbuf = null;
-			}
-
-			((IImageController)Element).SetIsLoading(true);
-
-			var image = await source.GetNativeImageAsync();
-
-			var imageView = Control;
-			if (imageView != null)
-				imageView.Pixbuf = image;
-
-			if (!_isDisposed)
-			{
-				((IVisualElementController)Element).NativeSizeChanged();
-				((IImageController)Element).SetIsLoading(false);
-			}
-		}
-
-		void SetAspect()
-		{
-			switch (Element.Aspect)
-			{
-				case Aspect.AspectFit:
-					Control.Aspect = Controls.ImageAspect.AspectFit;
-					break;
-				case Aspect.AspectFill:
-					Control.Aspect = Controls.ImageAspect.AspectFill;
-					break;
-				case Aspect.Fill:
-					Control.Aspect = Controls.ImageAspect.Fill;
-					break;
-				default:
-					throw new ArgumentOutOfRangeException(nameof(Element.Aspect));
-			}
-		}
-
-		void SetScale()
-		{
-			Control.Scale = Element.Scale;
-		}
-
-		void SetScaleX()
-		{
-			Control.ScaleX = Element.ScaleX;
-		}
-
-		void SetScaleY()
-		{
-			Control.ScaleY = Element.ScaleY;
-		}
-
-		void SetRotation()
-		{
-			Control.Rotation = Element.Rotation;
+			((IVisualElementController)Element).NativeSizeChanged();
+			((IImageController)Element).SetIsLoading(false);
 		}
 	}
 
-	public interface IImageSourceHandler : IRegisterable
+	void SetAspect()
 	{
-		Task<Pixbuf> LoadImageAsync(ImageSource imagesource, CancellationToken cancelationToken =
-			default(CancellationToken), float scale = 1);
-	}
-
-	public sealed class FileImageSourceHandler : IImageSourceHandler
-	{
-		public async Task<Pixbuf> LoadImageAsync(
-			ImageSource imagesource,
-			CancellationToken cancelationToken = default(CancellationToken),
-			float scale = 1f)
+		switch (Element.Aspect)
 		{
-			Pixbuf image = null;
-			var filesource = imagesource as FileImageSource;
-
-			if (filesource != null)
-			{
-				var file = filesource.File;
-				if (!string.IsNullOrEmpty(file))
-				{
-					var imagePath = IOPath.Combine(AppDomain.CurrentDomain.BaseDirectory, file);
-
-					if (File.Exists(imagePath))
-					{
-						await Device.InvokeOnMainThreadAsync(() =>
-						{
-							image = new Pixbuf(imagePath);
-						});
-					}
-				}
-			}
-
-			return image;
+			case Aspect.AspectFit:
+				Control.Aspect = Controls.ImageAspect.AspectFit;
+				break;
+			case Aspect.AspectFill:
+				Control.Aspect = Controls.ImageAspect.AspectFill;
+				break;
+			case Aspect.Fill:
+				Control.Aspect = Controls.ImageAspect.Fill;
+				break;
+			default:
+				throw new ArgumentOutOfRangeException(nameof(Element.Aspect));
 		}
 	}
 
-	public sealed class StreamImagesourceHandler : IImageSourceHandler
+	void SetScale()
 	{
-		public async Task<Pixbuf> LoadImageAsync(ImageSource imagesource, CancellationToken cancelationToken = default(CancellationToken), float scale = 1)
-		{
-			Pixbuf image = null;
+		Control.Scale = Element.Scale;
+	}
 
-			var streamsource = imagesource as StreamImageSource;
-			if (streamsource?.Stream == null)
-				return null;
-			using (var streamImage = await ((IStreamImageSource)streamsource)
-				.GetStreamAsync(cancelationToken).ConfigureAwait(false))
+	void SetScaleX()
+	{
+		Control.ScaleX = Element.ScaleX;
+	}
+
+	void SetScaleY()
+	{
+		Control.ScaleY = Element.ScaleY;
+	}
+
+	void SetRotation()
+	{
+		Control.Rotation = Element.Rotation;
+	}
+}
+
+public interface IImageSourceHandler : IRegisterable
+{
+	Task<Pixbuf> LoadImageAsync(ImageSource imagesource, CancellationToken cancelationToken =
+		default(CancellationToken), float scale = 1);
+}
+
+public sealed class FileImageSourceHandler : IImageSourceHandler
+{
+	public async Task<Pixbuf> LoadImageAsync(
+		ImageSource imagesource,
+		CancellationToken cancelationToken = default(CancellationToken),
+		float scale = 1f)
+	{
+		Pixbuf image = null;
+		var filesource = imagesource as FileImageSource;
+
+		if (filesource != null)
+		{
+			var file = filesource.File;
+			if (!string.IsNullOrEmpty(file))
 			{
-				if (streamImage != null)
+				var imagePath = IOPath.Combine(AppDomain.CurrentDomain.BaseDirectory, file);
+
+				if (File.Exists(imagePath))
 				{
 					await Device.InvokeOnMainThreadAsync(() =>
 					{
-						image = new Pixbuf(streamImage);
+						image = new Pixbuf(imagePath);
 					});
 				}
 			}
-
-			return image;
 		}
+
+		return image;
 	}
+}
 
-	public sealed class UriImageSourceHandler : IImageSourceHandler
+public sealed class StreamImagesourceHandler : IImageSourceHandler
+{
+	public async Task<Pixbuf> LoadImageAsync(ImageSource imagesource, CancellationToken cancelationToken = default(CancellationToken), float scale = 1)
 	{
-		public async Task<Pixbuf> LoadImageAsync(
-			ImageSource imagesource,
-			CancellationToken cancelationToken = default(CancellationToken),
-			float scale = 1)
+		Pixbuf image = null;
+
+		var streamsource = imagesource as StreamImageSource;
+		if (streamsource?.Stream == null)
+			return null;
+		using (var streamImage = await ((IStreamImageSource)streamsource)
+			       .GetStreamAsync(cancelationToken).ConfigureAwait(false))
 		{
-			Pixbuf image = null;
-
-			var imageLoader = imagesource as UriImageSource;
-
-			if (imageLoader?.Uri == null)
-				return null;
-
-			using (Stream streamImage = await imageLoader.GetStreamAsync(cancelationToken))
+			if (streamImage != null)
 			{
-				if (streamImage == null || !streamImage.CanRead)
-				{
-					return null;
-				}
-
 				await Device.InvokeOnMainThreadAsync(() =>
 				{
 					image = new Pixbuf(streamImage);
 				});
 			}
-
-			return image;
-		}
-	}
-
-
-	public sealed class FontImageSourceHandler : IImageSourceHandler
-	{
-		public async Task<Pixbuf> LoadImageAsync(ImageSource imageSource,
-			CancellationToken cancellationToken = new CancellationToken(), float scale = 1)
-		{
-			if (!(imageSource is FontImageSource fontImageSource))
-				return null;
-
-			// Ported off System.Drawing (Bitmap/Graphics/PrivateFontCollection): on .NET 7+
-			// System.Drawing.Common throws PlatformNotSupportedException on non-Windows.
-			// The glyph is now rasterised with Cairo + Pango, which is native to GTK.
-			var size = Math.Max(1, (int)fontImageSource.Size);
-			Pixbuf pixbuf = null;
-
-			await Device.InvokeOnMainThreadAsync(() =>
-			{
-				using (var surface = new Cairo.ImageSurface(Cairo.Format.Argb32, size, size))
-				using (var cr = new Cairo.Context(surface))
-				using (var layout = Pango.CairoHelper.CreateLayout(cr))
-				{
-					layout.FontDescription = CreateFontDescription(fontImageSource);
-					layout.SetText(fontImageSource.Glyph ?? string.Empty);
-
-					var fontColor = fontImageSource.Color != Color.Default
-						? fontImageSource.Color
-						: Color.White;
-					cr.SetSourceRGBA(fontColor.R, fontColor.G, fontColor.B, fontColor.A);
-
-					// Centre the glyph in the square, matching the sizing intent of the
-					// previous implementation (glyph drawn at half the requested size).
-					layout.GetPixelSize(out var glyphWidth, out var glyphHeight);
-					cr.MoveTo((size - glyphWidth) / 2.0, (size - glyphHeight) / 2.0);
-					Pango.CairoHelper.ShowLayout(cr, layout);
-
-					surface.Flush();
-
-					// GTK4: Gdk.CairoHelper.SetSourcePixbuf and
-					// Pixbuf(Cairo.ImageSurface, x, y, w, h) are gone.
-					// Extract ARGB32 pixel data and convert Cairo BGRA (little-endian) → GdkPixbuf RGBA.
-					// Pixbuf.cs:208 — Pixbuf(byte[], bool hasAlpha, int bps, int width, int height, int rowstride)
-					{
-						IntPtr dataPtr = surface.DataPtr;
-						int stride = surface.Stride;
-						byte[] rgba = new byte[size * size * 4];
-						int dst = 0;
-
-						for (int row = 0; row < size; row++)
-						{
-							IntPtr rowPtr = IntPtr.Add(dataPtr, row * stride);
-							for (int col = 0; col < size; col++)
-							{
-								IntPtr px = IntPtr.Add(rowPtr, col * 4);
-								byte b = System.Runtime.InteropServices.Marshal.ReadByte(px, 0);
-								byte g = System.Runtime.InteropServices.Marshal.ReadByte(px, 1);
-								byte r = System.Runtime.InteropServices.Marshal.ReadByte(px, 2);
-								byte a = System.Runtime.InteropServices.Marshal.ReadByte(px, 3);
-								rgba[dst++] = r;
-								rgba[dst++] = g;
-								rgba[dst++] = b;
-								rgba[dst++] = a;
-							}
-						}
-
-						pixbuf = new Pixbuf(rgba, true, 8, size, size, size * 4);
-					}
-				}
-			});
-
-			return pixbuf;
 		}
 
-		static Pango.FontDescription CreateFontDescription(FontImageSource fontImageSource)
-		{
-			// Pango resolves by family name through fontconfig. ToPangoFamily handles the
-			// "path/to/file.ttf#Family Name" convention, and - for an icon font shipped with
-			// [assembly: ExportFont] - extracts it, registers it with fontconfig and returns the
-			// family name that is really inside the file.
-			var family = fontImageSource.FontFamily.ToPangoFamily();
-
-			var description = new Pango.FontDescription();
-
-			if (!string.IsNullOrWhiteSpace(family))
-				description.Family = family;
-
-			// Preserve the previous half-of-requested-size glyph metric.
-			description.Size = (int)(fontImageSource.Size * .5f * Pango.Scale.PangoScale);
-
-			return description;
-		}
+		return image;
 	}
 }
 
+public sealed class UriImageSourceHandler : IImageSourceHandler
+{
+	public async Task<Pixbuf> LoadImageAsync(
+		ImageSource imagesource,
+		CancellationToken cancelationToken = default(CancellationToken),
+		float scale = 1)
+	{
+		Pixbuf image = null;
+
+		var imageLoader = imagesource as UriImageSource;
+
+		if (imageLoader?.Uri == null)
+			return null;
+
+		using (Stream streamImage = await imageLoader.GetStreamAsync(cancelationToken))
+		{
+			if (streamImage == null || !streamImage.CanRead)
+			{
+				return null;
+			}
+
+			await Device.InvokeOnMainThreadAsync(() =>
+			{
+				image = new Pixbuf(streamImage);
+			});
+		}
+
+		return image;
+	}
+}
+
+
+public sealed class FontImageSourceHandler : IImageSourceHandler
+{
+	public async Task<Pixbuf> LoadImageAsync(ImageSource imageSource,
+		CancellationToken cancellationToken = new CancellationToken(), float scale = 1)
+	{
+		if (!(imageSource is FontImageSource fontImageSource))
+			return null;
+
+		// Ported off System.Drawing (Bitmap/Graphics/PrivateFontCollection): on .NET 7+
+		// System.Drawing.Common throws PlatformNotSupportedException on non-Windows.
+		// The glyph is now rasterised with Cairo + Pango, which is native to GTK.
+		var size = Math.Max(1, (int)fontImageSource.Size);
+		Pixbuf pixbuf = null;
+
+		await Device.InvokeOnMainThreadAsync(() =>
+		{
+			using (var surface = new Cairo.ImageSurface(Cairo.Format.Argb32, size, size))
+			using (var cr = new Cairo.Context(surface))
+			using (var layout = Pango.CairoHelper.CreateLayout(cr))
+			{
+				layout.FontDescription = CreateFontDescription(fontImageSource);
+				layout.SetText(fontImageSource.Glyph ?? string.Empty);
+
+				var fontColor = fontImageSource.Color != Color.Default
+					? fontImageSource.Color
+					: Color.White;
+				cr.SetSourceRGBA(fontColor.R, fontColor.G, fontColor.B, fontColor.A);
+
+				// Centre the glyph in the square, matching the sizing intent of the
+				// previous implementation (glyph drawn at half the requested size).
+				layout.GetPixelSize(out var glyphWidth, out var glyphHeight);
+				cr.MoveTo((size - glyphWidth) / 2.0, (size - glyphHeight) / 2.0);
+				Pango.CairoHelper.ShowLayout(cr, layout);
+
+				surface.Flush();
+
+				// GTK4: Gdk.CairoHelper.SetSourcePixbuf and
+				// Pixbuf(Cairo.ImageSurface, x, y, w, h) are gone.
+				// Extract ARGB32 pixel data and convert Cairo BGRA (little-endian) → GdkPixbuf RGBA.
+				// Pixbuf.cs:208 — Pixbuf(byte[], bool hasAlpha, int bps, int width, int height, int rowstride)
+				{
+					IntPtr dataPtr = surface.DataPtr;
+					int stride = surface.Stride;
+					byte[] rgba = new byte[size * size * 4];
+					int dst = 0;
+
+					for (int row = 0; row < size; row++)
+					{
+						IntPtr rowPtr = IntPtr.Add(dataPtr, row * stride);
+						for (int col = 0; col < size; col++)
+						{
+							IntPtr px = IntPtr.Add(rowPtr, col * 4);
+							byte b = System.Runtime.InteropServices.Marshal.ReadByte(px, 0);
+							byte g = System.Runtime.InteropServices.Marshal.ReadByte(px, 1);
+							byte r = System.Runtime.InteropServices.Marshal.ReadByte(px, 2);
+							byte a = System.Runtime.InteropServices.Marshal.ReadByte(px, 3);
+							rgba[dst++] = r;
+							rgba[dst++] = g;
+							rgba[dst++] = b;
+							rgba[dst++] = a;
+						}
+					}
+
+					pixbuf = new Pixbuf(rgba, true, 8, size, size, size * 4);
+				}
+			}
+		});
+
+		return pixbuf;
+	}
+
+	static Pango.FontDescription CreateFontDescription(FontImageSource fontImageSource)
+	{
+		// Pango resolves by family name through fontconfig. ToPangoFamily handles the
+		// "path/to/file.ttf#Family Name" convention, and - for an icon font shipped with
+		// [assembly: ExportFont] - extracts it, registers it with fontconfig and returns the
+		// family name that is really inside the file.
+		var family = fontImageSource.FontFamily.ToPangoFamily();
+
+		var description = new Pango.FontDescription();
+
+		if (!string.IsNullOrWhiteSpace(family))
+			description.Family = family;
+
+		// Preserve the previous half-of-requested-size glyph metric.
+		description.Size = (int)(fontImageSource.Size * .5f * Pango.Scale.PangoScale);
+
+		return description;
+	}
+}

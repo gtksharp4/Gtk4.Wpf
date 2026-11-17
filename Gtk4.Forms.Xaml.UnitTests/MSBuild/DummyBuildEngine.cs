@@ -3,59 +3,57 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Build.Framework;
 
-namespace Xamarin.Forms.MSBuild.UnitTests
+namespace Xamarin.Forms.MSBuild.UnitTests;
+
+public class DummyBuildEngine : IBuildEngine
 {
-	public class DummyBuildEngine : IBuildEngine
+	public List<BuildErrorEventArgs> Errors { get; } = new List<BuildErrorEventArgs>();
+
+	public List<BuildWarningEventArgs> Warnings { get; } = new List<BuildWarningEventArgs>();
+
+	public List<BuildMessageEventArgs> Messages { get; } = new List<BuildMessageEventArgs>();
+
+	public void LogErrorEvent(BuildErrorEventArgs e)
 	{
-		public List<BuildErrorEventArgs> Errors { get; } = new List<BuildErrorEventArgs>();
+		Errors.Add(e);
+	}
 
-		public List<BuildWarningEventArgs> Warnings { get; } = new List<BuildWarningEventArgs>();
+	public void LogWarningEvent(BuildWarningEventArgs e)
+	{
+		Warnings.Add(e);
+	}
 
-		public List<BuildMessageEventArgs> Messages { get; } = new List<BuildMessageEventArgs>();
+	public void LogMessageEvent(BuildMessageEventArgs e)
+	{
+		Messages.Add(e);
+	}
 
-		public void LogErrorEvent(BuildErrorEventArgs e)
-		{
-			Errors.Add(e);
-		}
+	public void LogCustomEvent(CustomBuildEventArgs e)
+	{
+	}
 
-		public void LogWarningEvent(BuildWarningEventArgs e)
-		{
-			Warnings.Add(e);
-		}
+	public bool BuildProjectFile(string projectFileName, string[] targetNames, IDictionary globalProperties, IDictionary targetOutputs)
+	{
+		return false;
+	}
 
-		public void LogMessageEvent(BuildMessageEventArgs e)
-		{
-			Messages.Add(e);
-		}
+	public bool ContinueOnError
+	{
+		get { return false; }
+	}
 
-		public void LogCustomEvent(CustomBuildEventArgs e)
-		{
-		}
+	public int LineNumberOfTaskNode
+	{
+		get { return 1; }
+	}
 
-		public bool BuildProjectFile(string projectFileName, string[] targetNames, IDictionary globalProperties, IDictionary targetOutputs)
-		{
-			return false;
-		}
+	public int ColumnNumberOfTaskNode
+	{
+		get { return 1; }
+	}
 
-		public bool ContinueOnError
-		{
-			get { return false; }
-		}
-
-		public int LineNumberOfTaskNode
-		{
-			get { return 1; }
-		}
-
-		public int ColumnNumberOfTaskNode
-		{
-			get { return 1; }
-		}
-
-		public string ProjectFileOfTaskNode
-		{
-			get { return String.Empty; }
-		}
+	public string ProjectFileOfTaskNode
+	{
+		get { return String.Empty; }
 	}
 }
-

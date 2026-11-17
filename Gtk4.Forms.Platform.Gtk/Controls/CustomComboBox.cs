@@ -1,73 +1,72 @@
 ﻿using Xamarin.Forms.Platform.GTK.Extensions;
 
-namespace Xamarin.Forms.Platform.GTK.Controls
+namespace Xamarin.Forms.Platform.GTK.Controls;
+
+// CustomCombobox, Gtk.Entry + Gtk.Button
+public class CustomComboBox : Gtk.Box
 {
-	// CustomCombobox, Gtk.Entry + Gtk.Button
-	public class CustomComboBox : Gtk.Box
+	private Gtk.Entry _entry;
+	private Gtk.Button _button;
+	private Gtk.Image _arrow;
+	private Gdk.Color _color;
+
+	public CustomComboBox()
 	{
-		private Gtk.Entry _entry;
-		private Gtk.Button _button;
-		private Gtk.Image _arrow;
-		private Gdk.Color _color;
+		BuildCustomComboBox();
+	}
 
-		public CustomComboBox()
+	public Gtk.Entry Entry
+	{
+		get
 		{
-			BuildCustomComboBox();
+			return _entry;
 		}
+	}
 
-		public Gtk.Entry Entry
+	public Gtk.Button PopupButton
+	{
+		get
 		{
-			get
-			{
-				return _entry;
-			}
+			return _button;
 		}
+	}
 
-		public Gtk.Button PopupButton
+	public Gdk.Color Color
+	{
+		get { return _color; }
+		set
 		{
-			get
-			{
-				return _button;
-			}
+			_color = value;
+			Entry.SetTextColor(_color);
 		}
+	}
 
-		public Gdk.Color Color
-		{
-			get { return _color; }
-			set
-			{
-				_color = value;
-				Entry.SetTextColor(_color);
-			}
-		}
+	public void SetBackgroundColor(Gdk.Color color)
+	{
+		// Uses its argument. It previously ignored `color` entirely and hardcoded a red frame
+		// and a blue entry - leftover debugging colours - so every Forms DatePicker and
+		// TimePicker rendered red/blue no matter what BackgroundColor the app set, including
+		// the default.
+		StyleExtensions.SetBackgroundColor(this, color);
+		Entry.SetBaseColor(color);
+	}
 
-		public void SetBackgroundColor(Gdk.Color color)
-		{
-			// Uses its argument. It previously ignored `color` entirely and hardcoded a red frame
-			// and a blue entry - leftover debugging colours - so every Forms DatePicker and
-			// TimePicker rendered red/blue no matter what BackgroundColor the app set, including
-			// the default.
-			StyleExtensions.SetBackgroundColor(this, color);
-			Entry.SetBaseColor(color);
-		}
+	private void BuildCustomComboBox()
+	{
+		_entry = new Gtk.Entry();
+		_entry.CanFocus = true;
+		_entry.IsEditable = true;
+		PackStart(_entry, true, true, 0);
 
-		private void BuildCustomComboBox()
-		{
-			_entry = new Gtk.Entry();
-			_entry.CanFocus = true;
-			_entry.IsEditable = true;
-			PackStart(_entry, true, true, 0);
-
-			_button = new Gtk.Button();
-			_button.WidthRequest = 30;
-			_button.CanFocus = true;
-			// GTK3 deprecates Gtk.Arrow; the themed "pan-down" icon is the replacement it
-			// recommends, and it follows the icon theme instead of drawing a fixed glyph.
-			// GTK4: new Gtk.Image(iconName, IconSize) is gone; use NewFromIconName.
-			// IconSize.Button is gone; Normal is the GTK4 equivalent.
-			_arrow = Gtk.Image.NewFromIconName("pan-down-symbolic");
-			_button.Add(_arrow);
-			PackEnd(_button, false, false, 0);
-		}
+		_button = new Gtk.Button();
+		_button.WidthRequest = 30;
+		_button.CanFocus = true;
+		// GTK3 deprecates Gtk.Arrow; the themed "pan-down" icon is the replacement it
+		// recommends, and it follows the icon theme instead of drawing a fixed glyph.
+		// GTK4: new Gtk.Image(iconName, IconSize) is gone; use NewFromIconName.
+		// IconSize.Button is gone; Normal is the GTK4 equivalent.
+		_arrow = Gtk.Image.NewFromIconName("pan-down-symbolic");
+		_button.Add(_arrow);
+		PackEnd(_button, false, false, 0);
 	}
 }

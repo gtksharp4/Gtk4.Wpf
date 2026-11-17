@@ -6,167 +6,166 @@ using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.GTK.Renderers;
 using IOPath = System.IO.Path;
 
-namespace Xamarin.Forms.Platform.GTK.Extensions
+namespace Xamarin.Forms.Platform.GTK.Extensions;
+
+public static class ImageExtensions
 {
-	public static class ImageExtensions
+	public static Pixbuf ToPixbuf(this ImageSource imagesource)
 	{
-		public static Pixbuf ToPixbuf(this ImageSource imagesource)
-		{
-			return ToPixbufAux(imagesource, null);
-		}
+		return ToPixbufAux(imagesource, null);
+	}
 
-		public static Pixbuf ToPixbuf(this ImageSource imagesource, Size size)
-		{
-			return ToPixbufAux(imagesource, size);
-		}
+	public static Pixbuf ToPixbuf(this ImageSource imagesource, Size size)
+	{
+		return ToPixbufAux(imagesource, size);
+	}
 
-		private static Pixbuf ToPixbufAux(this ImageSource imagesource, Size? size)
+	private static Pixbuf ToPixbufAux(this ImageSource imagesource, Size? size)
+	{
+		try
 		{
-			try
+			Pixbuf image = null;
+
+			var filesource = imagesource as FileImageSource;
+
+			if (filesource != null)
 			{
-				Pixbuf image = null;
+				var file = filesource.File;
 
-				var filesource = imagesource as FileImageSource;
-
-				if (filesource != null)
+				if (!string.IsNullOrEmpty(file))
 				{
-					var file = filesource.File;
+					var imagePath = IOPath.Combine(AppDomain.CurrentDomain.BaseDirectory, file);
 
-					if (!string.IsNullOrEmpty(file))
-					{
-						var imagePath = IOPath.Combine(AppDomain.CurrentDomain.BaseDirectory, file);
-
-						image = size.HasValue
-							? new Pixbuf(imagePath, (int)size.Value.Width, (int)size.Value.Height)
-							: new Pixbuf(imagePath);
-					}
+					image = size.HasValue
+						? new Pixbuf(imagePath, (int)size.Value.Width, (int)size.Value.Height)
+						: new Pixbuf(imagePath);
 				}
+			}
 
-				return image;
-			}
-			catch
-			{
-				return null;
-			}
+			return image;
 		}
-
-		internal static async Task<Pixbuf> GetNativeImageAsync(this ImageSource imageSource, CancellationToken cancellationToken = default(CancellationToken))
+		catch
 		{
-			if (imageSource == null || imageSource.IsEmpty)
-				return null;
-
-			var handler = Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(imageSource);
-			if (handler == null)
-				return null;
-
-			try
-			{
-				return await handler.LoadImageAsync(imageSource, cancellationToken).ConfigureAwait(false);
-			}
-			catch (OperationCanceledException)
-			{
-				Log.Warning("Image loading", "Image load cancelled");
-			}
-			catch (Exception ex)
-			{
-				Log.Warning("Image loading", $"Image load failed: {ex}");
-			}
-
 			return null;
 		}
+	}
 
-		internal static Task ApplyNativeImageAsync(this IVisualElementRenderer renderer, BindableProperty imageSourceProperty, Action<Pixbuf> onSet, Action<bool> onLoading = null, CancellationToken cancellationToken = default(CancellationToken))
+	internal static async Task<Pixbuf> GetNativeImageAsync(this ImageSource imageSource, CancellationToken cancellationToken = default(CancellationToken))
+	{
+		if (imageSource == null || imageSource.IsEmpty)
+			return null;
+
+		var handler = Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(imageSource);
+		if (handler == null)
+			return null;
+
+		try
 		{
-			return renderer.ApplyNativeImageAsync(null, imageSourceProperty, onSet, onLoading, cancellationToken);
+			return await handler.LoadImageAsync(imageSource, cancellationToken).ConfigureAwait(false);
+		}
+		catch (OperationCanceledException)
+		{
+			Log.Warning("Image loading", "Image load cancelled");
+		}
+		catch (Exception ex)
+		{
+			Log.Warning("Image loading", $"Image load failed: {ex}");
 		}
 
-		internal static async Task ApplyNativeImageAsync(this IVisualElementRenderer renderer, BindableObject bindable, BindableProperty imageSourceProperty, Action<Pixbuf> onSet, Action<bool> onLoading = null, CancellationToken cancellationToken = default(CancellationToken))
+		return null;
+	}
+
+	internal static Task ApplyNativeImageAsync(this IVisualElementRenderer renderer, BindableProperty imageSourceProperty, Action<Pixbuf> onSet, Action<bool> onLoading = null, CancellationToken cancellationToken = default(CancellationToken))
+	{
+		return renderer.ApplyNativeImageAsync(null, imageSourceProperty, onSet, onLoading, cancellationToken);
+	}
+
+	internal static async Task ApplyNativeImageAsync(this IVisualElementRenderer renderer, BindableObject bindable, BindableProperty imageSourceProperty, Action<Pixbuf> onSet, Action<bool> onLoading = null, CancellationToken cancellationToken = default(CancellationToken))
+	{
+		_ = renderer ?? throw new ArgumentNullException(nameof(renderer));
+		_ = imageSourceProperty ?? throw new ArgumentNullException(nameof(imageSourceProperty));
+		_ = onSet ?? throw new ArgumentNullException(nameof(onSet));
+
+		// TODO: it might be good to make sure the renderer has not been disposed
+
+		// makse sure things are good before we start
+		var element = bindable ?? renderer.Element;
+
+		var nativeRenderer = renderer as IVisualNativeElementRenderer;
+
+		if (element == null || renderer.Container == null || (nativeRenderer != null && nativeRenderer.Control == null))
+			return;
+
+		onLoading?.Invoke(true);
+		if (element.GetValue(imageSourceProperty) is ImageSource initialSource && !initialSource.IsEmpty)
 		{
-			_ = renderer ?? throw new ArgumentNullException(nameof(renderer));
-			_ = imageSourceProperty ?? throw new ArgumentNullException(nameof(imageSourceProperty));
-			_ = onSet ?? throw new ArgumentNullException(nameof(onSet));
-
-			// TODO: it might be good to make sure the renderer has not been disposed
-
-			// makse sure things are good before we start
-			var element = bindable ?? renderer.Element;
-
-			var nativeRenderer = renderer as IVisualNativeElementRenderer;
-
-			if (element == null || renderer.Container == null || (nativeRenderer != null && nativeRenderer.Control == null))
-				return;
-
-			onLoading?.Invoke(true);
-			if (element.GetValue(imageSourceProperty) is ImageSource initialSource && !initialSource.IsEmpty)
+			try
 			{
-				try
+				using (var drawable = await initialSource.GetNativeImageAsync(cancellationToken))
 				{
-					using (var drawable = await initialSource.GetNativeImageAsync(cancellationToken))
-					{
-						// TODO: it might be good to make sure the renderer has not been disposed
+					// TODO: it might be good to make sure the renderer has not been disposed
 
-						// we are back, so update the working element
-						element = bindable ?? renderer.Element;
+					// we are back, so update the working element
+					element = bindable ?? renderer.Element;
 
-						// makse sure things are good now that we are back
-						if (element == null || renderer.Container == null || (nativeRenderer != null && nativeRenderer.Control == null))
-							return;
+					// makse sure things are good now that we are back
+					if (element == null || renderer.Container == null || (nativeRenderer != null && nativeRenderer.Control == null))
+						return;
 
-						// only set if we are still on the same image
-						if (element.GetValue(imageSourceProperty) == initialSource)
-							onSet(drawable);
-					}
-				}
-				finally
-				{
-					if (element != null && onLoading != null)
-					{
-						// only mark as finished if we are still on the same image
-						if (element.GetValue(imageSourceProperty) == initialSource)
-							onLoading.Invoke(false);
-					}
+					// only set if we are still on the same image
+					if (element.GetValue(imageSourceProperty) == initialSource)
+						onSet(drawable);
 				}
 			}
-			else
+			finally
 			{
-				onSet(null);
-				onLoading?.Invoke(false);
+				if (element != null && onLoading != null)
+				{
+					// only mark as finished if we are still on the same image
+					if (element.GetValue(imageSourceProperty) == initialSource)
+						onLoading.Invoke(false);
+				}
 			}
 		}
-
-		internal static async Task ApplyNativeImageAsync(this BindableObject bindable, BindableProperty imageSourceProperty, Action<Pixbuf> onSet, Action<bool> onLoading = null, CancellationToken cancellationToken = default(CancellationToken))
+		else
 		{
-			_ = bindable ?? throw new ArgumentNullException(nameof(bindable));
-			_ = imageSourceProperty ?? throw new ArgumentNullException(nameof(imageSourceProperty));
-			_ = onSet ?? throw new ArgumentNullException(nameof(onSet));
+			onSet(null);
+			onLoading?.Invoke(false);
+		}
+	}
 
-			onLoading?.Invoke(true);
-			if (bindable.GetValue(imageSourceProperty) is ImageSource initialSource)
+	internal static async Task ApplyNativeImageAsync(this BindableObject bindable, BindableProperty imageSourceProperty, Action<Pixbuf> onSet, Action<bool> onLoading = null, CancellationToken cancellationToken = default(CancellationToken))
+	{
+		_ = bindable ?? throw new ArgumentNullException(nameof(bindable));
+		_ = imageSourceProperty ?? throw new ArgumentNullException(nameof(imageSourceProperty));
+		_ = onSet ?? throw new ArgumentNullException(nameof(onSet));
+
+		onLoading?.Invoke(true);
+		if (bindable.GetValue(imageSourceProperty) is ImageSource initialSource)
+		{
+			try
 			{
-				try
+				using (var drawable = await initialSource.GetNativeImageAsync(cancellationToken))
 				{
-					using (var drawable = await initialSource.GetNativeImageAsync(cancellationToken))
-					{
-						// only set if we are still on the same image
-						if (bindable.GetValue(imageSourceProperty) == initialSource)
-							onSet(drawable);
-					}
-				}
-				finally
-				{
-					if (onLoading != null)
-					{
-						// only mark as finished if we are still on the same image
-						if (bindable.GetValue(imageSourceProperty) == initialSource)
-							onLoading.Invoke(false);
-					}
+					// only set if we are still on the same image
+					if (bindable.GetValue(imageSourceProperty) == initialSource)
+						onSet(drawable);
 				}
 			}
-			else
+			finally
 			{
-				onSet(null);
-				onLoading?.Invoke(false);
+				if (onLoading != null)
+				{
+					// only mark as finished if we are still on the same image
+					if (bindable.GetValue(imageSourceProperty) == initialSource)
+						onLoading.Invoke(false);
+				}
 			}
+		}
+		else
+		{
+			onSet(null);
+			onLoading?.Invoke(false);
 		}
 	}
 }

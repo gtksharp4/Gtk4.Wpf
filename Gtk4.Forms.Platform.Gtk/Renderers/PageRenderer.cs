@@ -1,40 +1,39 @@
 ﻿using Xamarin.Forms.Platform.GTK.Packagers;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers
+namespace Xamarin.Forms.Platform.GTK.Renderers;
+
+public class PageRenderer : AbstractPageRenderer<Controls.Page, Page>
 {
-	public class PageRenderer : AbstractPageRenderer<Controls.Page, Page>
+	private PageElementPackager _packager;
+
+	protected override void Dispose(bool disposing)
 	{
-		private PageElementPackager _packager;
+		base.Dispose(disposing);
 
-		protected override void Dispose(bool disposing)
+		if (_packager != null)
 		{
-			base.Dispose(disposing);
+			_packager.Dispose();
+			_packager = null;
+		}
+	}
 
-			if (_packager != null)
-			{
-				_packager.Dispose();
-				_packager = null;
-			}
+	protected override void OnShown()
+	{
+		base.OnShown();
+
+		if (_packager == null)
+		{
+			_packager = new PageElementPackager(this);
 		}
 
-		protected override void OnShown()
-		{
-			base.OnShown();
+		_packager.Load();
+	}
 
-			if (_packager == null)
-			{
-				_packager = new PageElementPackager(this);
-			}
+	protected override void OnSizeAllocated(Gdk.Rectangle allocation)
+	{
+		if (!Sensitive)
+			return;
 
-			_packager.Load();
-		}
-
-		protected override void OnSizeAllocated(Gdk.Rectangle allocation)
-		{
-			if (!Sensitive)
-				return;
-
-			base.OnSizeAllocated(allocation);
-		}
+		base.OnSizeAllocated(allocation);
 	}
 }

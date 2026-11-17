@@ -8,63 +8,62 @@ using Xamarin.Forms.Platform.GTK.Renderers;
 
 [assembly: ExportRenderer(typeof(DisposePage), typeof(DisposePageRenderer))]
 [assembly: ExportRenderer(typeof(DisposeLabel), typeof(DisposeLabelRenderer))]
-namespace Xamarin.Forms.ControlGallery.GTK
+namespace Xamarin.Forms.ControlGallery.GTK;
+
+class Program
 {
-	class Program
+	[STAThread]
+	static void Main(string[] args)
 	{
-		[STAThread]
-		static void Main(string[] args)
-		{
-			ExceptionManager.UnhandledException += OnUnhandledException;
+		ExceptionManager.UnhandledException += OnUnhandledException;
 
-			// GtkOpenGL.Init() is gone for good: it existed only to bootstrap OpenTK's
-			// Toolkit, and OpenGLView now runs on Gtk.GLArea, which needs no initialisation
-			// (plan M6 §9.2).
-			GtkThemes.Init();
-			Gtk.Application.Init();
+		// GtkOpenGL.Init() is gone for good: it existed only to bootstrap OpenTK's
+		// Toolkit, and OpenGLView now runs on Gtk.GLArea, which needs no initialisation
+		// (plan M6 §9.2).
+		GtkThemes.Init();
+		Gtk.Application.Init();
 
-			// The Maps renderer lives in Xamarin.Forms.Maps.GTK, so that assembly has to be
-			// loaded before Registrar scans - naming a type in it is what forces the load.
-			Forms.Init(new[] { typeof(Xamarin.Forms.Maps.GTK.MapRenderer).Assembly });
-			Xamarin.Forms.Maps.GTK.FormsMaps.Init();
-			var app = new App();
-			var window = new FormsWindow();
-			window.LoadApplication(app);
-			window.SetApplicationTitle("Xamarin.Forms GTK# Backend");
-			window.SetApplicationIcon("gtk4logo.png");
-			window.Show();
-			Gtk.Application.Run();
-		}
-
-		private static void OnUnhandledException(UnhandledExceptionArgs args)
-		{
-			System.Diagnostics.Debug.WriteLine($"Unhandled GTK# exception: {args.ExceptionObject}");
-		}
+		// The Maps renderer lives in Xamarin.Forms.Maps.GTK, so that assembly has to be
+		// loaded before Registrar scans - naming a type in it is what forces the load.
+		Forms.Init(new[] { typeof(Xamarin.Forms.Maps.GTK.MapRenderer).Assembly });
+		Xamarin.Forms.Maps.GTK.FormsMaps.Init();
+		var app = new App();
+		var window = new FormsWindow();
+		window.LoadApplication(app);
+		window.SetApplicationTitle("Xamarin.Forms GTK# Backend");
+		window.SetApplicationIcon("gtk4logo.png");
+		window.Show();
+		Gtk.Application.Run();
 	}
 
-	public class DisposePageRenderer : PageRenderer
+	private static void OnUnhandledException(UnhandledExceptionArgs args)
 	{
-		protected override void Dispose(bool disposing)
-		{
-			if (disposing)
-			{
-				((DisposePage)Element).SendRendererDisposed();
-			}
-
-			base.Dispose(disposing);
-		}
+		System.Diagnostics.Debug.WriteLine($"Unhandled GTK# exception: {args.ExceptionObject}");
 	}
+}
 
-	public class DisposeLabelRenderer : LabelRenderer
+public class DisposePageRenderer : PageRenderer
+{
+	protected override void Dispose(bool disposing)
 	{
-		protected override void Dispose(bool disposing)
+		if (disposing)
 		{
-			if (disposing)
-			{
-				((DisposeLabel)Element).SendRendererDisposed();
-			}
-
-			base.Dispose(disposing);
+			((DisposePage)Element).SendRendererDisposed();
 		}
+
+		base.Dispose(disposing);
+	}
+}
+
+public class DisposeLabelRenderer : LabelRenderer
+{
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			((DisposeLabel)Element).SendRendererDisposed();
+		}
+
+		base.Dispose(disposing);
 	}
 }

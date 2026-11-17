@@ -1,247 +1,246 @@
 ﻿using Xunit;
 
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class SwipeViewTests : BaseTestFixture
 {
-	public class SwipeViewTests : BaseTestFixture
+	[Fact]
+	public void TestConstructor()
 	{
-		[Fact]
-		public void TestConstructor()
+		var swipeView = new SwipeView();
+
+		Assert.Equal(0, swipeView.LeftItems.Count);
+		Assert.Equal(0, swipeView.TopItems.Count);
+		Assert.Equal(0, swipeView.RightItems.Count);
+		Assert.Equal(0, swipeView.BottomItems.Count);
+	}
+
+	[Fact]
+	public void TestDefaultSwipeItems()
+	{
+		var swipeView = new SwipeView();
+
+		var swipeItem = new SwipeItem
 		{
-			var swipeView = new SwipeView();
+			BackgroundColor = Color.Red,
+			Text = "Text"
+		};
 
-			Assert.Equal(0, swipeView.LeftItems.Count);
-			Assert.Equal(0, swipeView.TopItems.Count);
-			Assert.Equal(0, swipeView.RightItems.Count);
-			Assert.Equal(0, swipeView.BottomItems.Count);
-		}
-
-		[Fact]
-		public void TestDefaultSwipeItems()
+		swipeView.LeftItems = new SwipeItems
 		{
-			var swipeView = new SwipeView();
+			swipeItem
+		};
 
-			var swipeItem = new SwipeItem
-			{
-				BackgroundColor = Color.Red,
-				Text = "Text"
-			};
+		Assert.Equal(SwipeMode.Reveal, swipeView.LeftItems.Mode);
+		Assert.Equal(SwipeBehaviorOnInvoked.Auto, swipeView.LeftItems.SwipeBehaviorOnInvoked);
+	}
 
-			swipeView.LeftItems = new SwipeItems
-			{
-				swipeItem
-			};
+	[Fact]
+	public void TestSwipeItemsExecuteMode()
+	{
+		var swipeView = new SwipeView();
 
-			Assert.Equal(SwipeMode.Reveal, swipeView.LeftItems.Mode);
-			Assert.Equal(SwipeBehaviorOnInvoked.Auto, swipeView.LeftItems.SwipeBehaviorOnInvoked);
-		}
-
-		[Fact]
-		public void TestSwipeItemsExecuteMode()
+		var swipeItem = new SwipeItem
 		{
-			var swipeView = new SwipeView();
+			BackgroundColor = Color.Red,
+			Text = "Text"
+		};
 
-			var swipeItem = new SwipeItem
-			{
-				BackgroundColor = Color.Red,
-				Text = "Text"
-			};
-
-			var swipeItems = new SwipeItems
-			{
-				Mode = SwipeMode.Execute
-			};
-
-			swipeItems.Add(swipeItem);
-
-			swipeView.LeftItems = swipeItems;
-
-			Assert.Equal(SwipeMode.Execute, swipeView.LeftItems.Mode);
-		}
-
-		[Fact]
-		public void TestSwipeItemsSwipeBehaviorOnInvoked()
+		var swipeItems = new SwipeItems
 		{
-			var swipeView = new SwipeView();
+			Mode = SwipeMode.Execute
+		};
 
-			var swipeItem = new SwipeItem
-			{
-				BackgroundColor = Color.Red,
-				Text = "Text"
-			};
+		swipeItems.Add(swipeItem);
 
-			var swipeItems = new SwipeItems
-			{
-				SwipeBehaviorOnInvoked = SwipeBehaviorOnInvoked.Close
-			};
+		swipeView.LeftItems = swipeItems;
 
-			swipeItems.Add(swipeItem);
+		Assert.Equal(SwipeMode.Execute, swipeView.LeftItems.Mode);
+	}
 
-			swipeView.LeftItems = swipeItems;
+	[Fact]
+	public void TestSwipeItemsSwipeBehaviorOnInvoked()
+	{
+		var swipeView = new SwipeView();
 
-			Assert.Equal(SwipeBehaviorOnInvoked.Close, swipeView.LeftItems.SwipeBehaviorOnInvoked);
-		}
-
-		[Fact]
-		public void TestLeftItems()
+		var swipeItem = new SwipeItem
 		{
-			var swipeView = new SwipeView();
+			BackgroundColor = Color.Red,
+			Text = "Text"
+		};
 
-			var swipeItem = new SwipeItem
-			{
-				BackgroundColor = Color.Red,
-				Text = "Text"
-			};
-
-			swipeView.LeftItems = new SwipeItems
-			{
-				swipeItem
-			};
-
-			Assert.NotEqual(0, swipeView.LeftItems.Count);
-		}
-
-		[Fact]
-		public void TestRightItems()
+		var swipeItems = new SwipeItems
 		{
-			var swipeView = new SwipeView();
+			SwipeBehaviorOnInvoked = SwipeBehaviorOnInvoked.Close
+		};
 
-			var swipeItem = new SwipeItem
-			{
-				BackgroundColor = Color.Red,
-				Text = "Text"
-			};
+		swipeItems.Add(swipeItem);
 
-			swipeView.RightItems = new SwipeItems
-			{
-				swipeItem
-			};
+		swipeView.LeftItems = swipeItems;
 
-			Assert.NotEqual(0, swipeView.RightItems.Count);
-		}
+		Assert.Equal(SwipeBehaviorOnInvoked.Close, swipeView.LeftItems.SwipeBehaviorOnInvoked);
+	}
 
-		[Fact]
-		public void TestTopItems()
+	[Fact]
+	public void TestLeftItems()
+	{
+		var swipeView = new SwipeView();
+
+		var swipeItem = new SwipeItem
 		{
-			var swipeView = new SwipeView();
+			BackgroundColor = Color.Red,
+			Text = "Text"
+		};
 
-			var swipeItem = new SwipeItem
-			{
-				BackgroundColor = Color.Red,
-				Text = "Text"
-			};
-
-			swipeView.TopItems = new SwipeItems
-			{
-				swipeItem
-			};
-
-			Assert.NotEqual(0, swipeView.TopItems.Count);
-		}
-
-		[Fact]
-		public void TestBottomItems()
+		swipeView.LeftItems = new SwipeItems
 		{
-			var swipeView = new SwipeView();
+			swipeItem
+		};
 
-			var swipeItem = new SwipeItem
-			{
-				BackgroundColor = Color.Red,
-				Text = "Text"
-			};
+		Assert.NotEqual(0, swipeView.LeftItems.Count);
+	}
 
-			swipeView.BottomItems = new SwipeItems
-			{
-				swipeItem
-			};
+	[Fact]
+	public void TestRightItems()
+	{
+		var swipeView = new SwipeView();
 
-			Assert.NotEqual(0, swipeView.BottomItems.Count);
-		}
-
-		[Fact]
-		public void TestProgramaticallyOpen()
+		var swipeItem = new SwipeItem
 		{
-			bool isOpen = false;
+			BackgroundColor = Color.Red,
+			Text = "Text"
+		};
 
-			var swipeView = new SwipeView();
-
-			swipeView.OpenRequested += (sender, args) =>
-			{
-				isOpen = true;
-			};
-
-			var swipeItem = new SwipeItem
-			{
-				BackgroundColor = Color.Red,
-				Text = "Text"
-			};
-
-			swipeView.LeftItems = new SwipeItems
-			{
-				swipeItem
-			};
-
-			swipeView.Open(OpenSwipeItem.LeftItems);
-
-			Assert.True(isOpen);
-		}
-
-		[Fact]
-		public void TestProgramaticallyClose()
+		swipeView.RightItems = new SwipeItems
 		{
-			bool isOpen = false;
+			swipeItem
+		};
 
-			var swipeView = new SwipeView();
+		Assert.NotEqual(0, swipeView.RightItems.Count);
+	}
 
-			swipeView.OpenRequested += (sender, args) => isOpen = true;
-			swipeView.CloseRequested += (sender, args) => isOpen = false;
+	[Fact]
+	public void TestTopItems()
+	{
+		var swipeView = new SwipeView();
 
-			var swipeItem = new SwipeItem
-			{
-				BackgroundColor = Color.Red,
-				Text = "Text"
-			};
-
-			swipeView.LeftItems = new SwipeItems
-			{
-				swipeItem
-			};
-
-			swipeView.Open(OpenSwipeItem.LeftItems);
-
-			swipeView.Close();
-
-			Assert.False(isOpen);
-		}
-
-		[Fact]
-		public void TestSwipeItemView()
+		var swipeItem = new SwipeItem
 		{
-			var swipeView = new SwipeView();
+			BackgroundColor = Color.Red,
+			Text = "Text"
+		};
 
-			var swipeItemViewContent = new Grid();
-			swipeItemViewContent.BackgroundColor = Color.Red;
+		swipeView.TopItems = new SwipeItems
+		{
+			swipeItem
+		};
 
-			swipeItemViewContent.Children.Add(new Label
-			{
-				HorizontalOptions = LayoutOptions.Center,
-				VerticalOptions = LayoutOptions.Center,
-				Text = "SwipeItemView"
-			});
+		Assert.NotEqual(0, swipeView.TopItems.Count);
+	}
 
-			var swipeItemView = new SwipeItemView
-			{
-				Content = swipeItemViewContent
-			};
+	[Fact]
+	public void TestBottomItems()
+	{
+		var swipeView = new SwipeView();
 
-			swipeView.LeftItems = new SwipeItems
-			{
-				swipeItemView
-			};
+		var swipeItem = new SwipeItem
+		{
+			BackgroundColor = Color.Red,
+			Text = "Text"
+		};
 
-			Assert.NotNull(swipeItemView);
-			Assert.NotNull(swipeItemView.Content);
-			Assert.NotEqual(0, swipeView.LeftItems.Count);
-		}
+		swipeView.BottomItems = new SwipeItems
+		{
+			swipeItem
+		};
+
+		Assert.NotEqual(0, swipeView.BottomItems.Count);
+	}
+
+	[Fact]
+	public void TestProgramaticallyOpen()
+	{
+		bool isOpen = false;
+
+		var swipeView = new SwipeView();
+
+		swipeView.OpenRequested += (sender, args) =>
+		{
+			isOpen = true;
+		};
+
+		var swipeItem = new SwipeItem
+		{
+			BackgroundColor = Color.Red,
+			Text = "Text"
+		};
+
+		swipeView.LeftItems = new SwipeItems
+		{
+			swipeItem
+		};
+
+		swipeView.Open(OpenSwipeItem.LeftItems);
+
+		Assert.True(isOpen);
+	}
+
+	[Fact]
+	public void TestProgramaticallyClose()
+	{
+		bool isOpen = false;
+
+		var swipeView = new SwipeView();
+
+		swipeView.OpenRequested += (sender, args) => isOpen = true;
+		swipeView.CloseRequested += (sender, args) => isOpen = false;
+
+		var swipeItem = new SwipeItem
+		{
+			BackgroundColor = Color.Red,
+			Text = "Text"
+		};
+
+		swipeView.LeftItems = new SwipeItems
+		{
+			swipeItem
+		};
+
+		swipeView.Open(OpenSwipeItem.LeftItems);
+
+		swipeView.Close();
+
+		Assert.False(isOpen);
+	}
+
+	[Fact]
+	public void TestSwipeItemView()
+	{
+		var swipeView = new SwipeView();
+
+		var swipeItemViewContent = new Grid();
+		swipeItemViewContent.BackgroundColor = Color.Red;
+
+		swipeItemViewContent.Children.Add(new Label
+		{
+			HorizontalOptions = LayoutOptions.Center,
+			VerticalOptions = LayoutOptions.Center,
+			Text = "SwipeItemView"
+		});
+
+		var swipeItemView = new SwipeItemView
+		{
+			Content = swipeItemViewContent
+		};
+
+		swipeView.LeftItems = new SwipeItems
+		{
+			swipeItemView
+		};
+
+		Assert.NotNull(swipeItemView);
+		Assert.NotNull(swipeItemView.Content);
+		Assert.NotEqual(0, swipeView.LeftItems.Count);
 	}
 }

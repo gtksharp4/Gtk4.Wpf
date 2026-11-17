@@ -2,14 +2,14 @@
 
 using Xunit;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public class Issue1794
 {
-	public class Issue1794
+	[Fact]
+	public void FindNameInDT()
 	{
-		[Fact]
-		public void FindNameInDT()
-		{
-			var xaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
+		var xaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
 				<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
 						 xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 						 xmlns:local=""clr-namespace:XamarinFormsXamlSample;assembly=XamarinFormsXamlSample""
@@ -47,11 +47,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 						</ListView.ItemTemplate>
 					</ListView> 
 				</ContentPage>";
-			var layout = new ContentPage().LoadFromXaml(xaml);
-			var list = layout.FindByName<ListView>("listView");
-			var item0 = list.TemplatedItems.GetOrCreateContent(0, null);
-			var item1 = list.TemplatedItems.GetOrCreateContent(1, null);
-			return;
-		}
+		var layout = new ContentPage().LoadFromXaml(xaml);
+		var list = layout.FindByName<ListView>("listView");
+		var item0 = list.TemplatedItems.GetOrCreateContent(0, null);
+		var item1 = list.TemplatedItems.GetOrCreateContent(1, null);
+		return;
 	}
 }

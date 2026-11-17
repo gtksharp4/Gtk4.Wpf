@@ -1,7 +1,6 @@
-﻿namespace Xamarin.Forms.Platform.GTK
+﻿namespace Xamarin.Forms.Platform.GTK;
+
+interface IDesiredSizeProvider
 {
-	interface IDesiredSizeProvider
-	{
-		Gdk.Size GetDesiredSize();
-	}
+	Gdk.Size GetDesiredSize();
 }

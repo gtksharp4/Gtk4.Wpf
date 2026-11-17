@@ -4,95 +4,94 @@ using System.Collections.ObjectModel;
 using Xamarin.Forms.Internals;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class NotifyCollectionChangedEventArgsExtensionsTests : BaseTestFixture
 {
-	public class NotifyCollectionChangedEventArgsExtensionsTests : BaseTestFixture
+	[Fact]
+	public void Add()
 	{
-		[Fact]
-		public void Add()
+		List<string> applied = new List<string> { "foo", "bar", "baz" };
+
+		Action reset = () => Assert.Fail("Reset should not be called");
+		Action<object, int, bool> insert = (o, i, create) =>
 		{
-			List<string> applied = new List<string> { "foo", "bar", "baz" };
+			Assert.True(create);
+			applied.Insert(i, (string)o);
+		};
 
-			Action reset = () => Assert.Fail("Reset should not be called");
-			Action<object, int, bool> insert = (o, i, create) =>
-			{
-				Assert.True(create);
-				applied.Insert(i, (string)o);
-			};
+		Action<object, int> removeAt = (o, i) => applied.RemoveAt(i);
 
-			Action<object, int> removeAt = (o, i) => applied.RemoveAt(i);
+		var items = new ObservableCollection<string>(applied);
+		items.CollectionChanged += (s, e) => e.Apply(insert, removeAt, reset);
 
-			var items = new ObservableCollection<string>(applied);
-			items.CollectionChanged += (s, e) => e.Apply(insert, removeAt, reset);
+		items.Add("monkey");
 
-			items.Add("monkey");
+		Assert.Equal(items, applied);
+	}
 
-			Assert.Equal(items, applied);
-		}
+	[Fact]
+	public void Insert()
+	{
+		List<string> applied = new List<string> { "foo", "bar", "baz" };
 
-		[Fact]
-		public void Insert()
+		Action reset = () => Assert.Fail("Reset should not be called");
+		Action<object, int, bool> insert = (o, i, create) =>
 		{
-			List<string> applied = new List<string> { "foo", "bar", "baz" };
+			Assert.True(create);
+			applied.Insert(i, (string)o);
+		};
+		Action<object, int> removeAt = (o, i) => applied.RemoveAt(i);
 
-			Action reset = () => Assert.Fail("Reset should not be called");
-			Action<object, int, bool> insert = (o, i, create) =>
-			{
-				Assert.True(create);
-				applied.Insert(i, (string)o);
-			};
-			Action<object, int> removeAt = (o, i) => applied.RemoveAt(i);
+		var items = new ObservableCollection<string>(applied);
+		items.CollectionChanged += (s, e) => e.Apply(insert, removeAt, reset);
 
-			var items = new ObservableCollection<string>(applied);
-			items.CollectionChanged += (s, e) => e.Apply(insert, removeAt, reset);
+		items.Insert(1, "monkey");
 
-			items.Insert(1, "monkey");
+		Assert.Equal(items, applied);
+	}
 
-			Assert.Equal(items, applied);
-		}
+	[Fact]
+	public void Move()
+	{
+		List<string> applied = new List<string> { "foo", "bar", "baz" };
 
-		[Fact]
-		public void Move()
+		Action reset = () => Assert.Fail("Reset should not be called");
+		Action<object, int, bool> insert = (o, i, create) =>
 		{
-			List<string> applied = new List<string> { "foo", "bar", "baz" };
+			Assert.False(create);
+			applied.Insert(i, (string)o);
+		};
 
-			Action reset = () => Assert.Fail("Reset should not be called");
-			Action<object, int, bool> insert = (o, i, create) =>
-			{
-				Assert.False(create);
-				applied.Insert(i, (string)o);
-			};
+		Action<object, int> removeAt = (o, i) => applied.RemoveAt(i);
 
-			Action<object, int> removeAt = (o, i) => applied.RemoveAt(i);
+		var items = new ObservableCollection<string>(applied);
+		items.CollectionChanged += (s, e) => e.Apply(insert, removeAt, reset);
 
-			var items = new ObservableCollection<string>(applied);
-			items.CollectionChanged += (s, e) => e.Apply(insert, removeAt, reset);
+		items.Move(0, 2);
 
-			items.Move(0, 2);
+		Assert.Equal(items, applied);
+	}
 
-			Assert.Equal(items, applied);
-		}
+	[Fact]
+	public void Replace()
+	{
+		List<string> applied = new List<string> { "foo", "bar", "baz" };
 
-		[Fact]
-		public void Replace()
+		Action reset = () => Assert.Fail("Reset should not be called");
+		Action<object, int, bool> insert = (o, i, create) =>
 		{
-			List<string> applied = new List<string> { "foo", "bar", "baz" };
+			Assert.True(create);
+			applied.Insert(i, (string)o);
+		};
 
-			Action reset = () => Assert.Fail("Reset should not be called");
-			Action<object, int, bool> insert = (o, i, create) =>
-			{
-				Assert.True(create);
-				applied.Insert(i, (string)o);
-			};
+		Action<object, int> removeAt = (o, i) => applied.RemoveAt(i);
 
-			Action<object, int> removeAt = (o, i) => applied.RemoveAt(i);
+		var items = new ObservableCollection<string>(applied);
+		items.CollectionChanged += (s, e) => e.Apply(insert, removeAt, reset);
 
-			var items = new ObservableCollection<string>(applied);
-			items.CollectionChanged += (s, e) => e.Apply(insert, removeAt, reset);
+		items[1] = "monkey";
 
-			items[1] = "monkey";
-
-			Assert.Equal(items, applied);
-		}
+		Assert.Equal(items, applied);
 	}
 }

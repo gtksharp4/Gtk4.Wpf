@@ -3,31 +3,30 @@ using System.Collections.Generic;
 using Xunit;
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+[XamlCompilation(XamlCompilationOptions.Skip)]
+public partial class IsCompiledSkip : ContentPage
 {
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class IsCompiledSkip : ContentPage
+	public IsCompiledSkip()
 	{
-		public IsCompiledSkip()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public IsCompiledSkip(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public IsCompiledSkip(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
+	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void IsCompiled(bool useCompiledXaml)
 		{
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void IsCompiled(bool useCompiledXaml)
-			{
-				var layout = new IsCompiledDefault(useCompiledXaml);
-				Assert.False(typeof(IsCompiledSkip).IsCompiled());
-			}
+			var layout = new IsCompiledDefault(useCompiledXaml);
+			Assert.False(typeof(IsCompiledSkip).IsCompiled());
 		}
 	}
 }

@@ -1,31 +1,30 @@
 ﻿using Xunit;
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class XNull : ContentPage
 {
-	public partial class XNull : ContentPage
+	public XNull()
 	{
-		public XNull()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public XNull(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public XNull(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
+	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void SupportsXNull(bool useCompiledXaml)
 		{
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void SupportsXNull(bool useCompiledXaml)
-			{
-				var layout = new XNull(useCompiledXaml);
-				Assert.True(layout.Resources.ContainsKey("null"));
-				Assert.Null(layout.Resources["null"]);
-			}
+			var layout = new XNull(useCompiledXaml);
+			Assert.True(layout.Resources.ContainsKey("null"));
+			Assert.Null(layout.Resources["null"]);
 		}
 	}
 }

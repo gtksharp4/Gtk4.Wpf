@@ -1,87 +1,86 @@
 ﻿using Xunit;
 
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class StateTriggerTests
 {
-	public class StateTriggerTests
+	const string NormalStateName = "Normal";
+	const string RedStateName = "Red";
+	const string GreenStateName = "Green";
+
+	// Instance, not static. CreateTestStateGroups snapshots TestEntry.Text into the trigger's
+	// Property at construction time, so a static entry carried "Test" out of
+	// StateTriggerChangedVisualState and into whichever test ran next - making
+	// InitialStateIsNormalIfAvailable pass or fail purely on execution order. xUnit builds a
+	// new instance of this class per test, so an instance field gives each test a fresh Entry.
+	readonly Entry TestEntry = new Entry();
+
+	VisualStateGroupList CreateTestStateGroups()
 	{
-		const string NormalStateName = "Normal";
-		const string RedStateName = "Red";
-		const string GreenStateName = "Green";
+		var stateGroups = new VisualStateGroupList();
+		var visualStateGroup = new VisualStateGroup();
 
-		// Instance, not static. CreateTestStateGroups snapshots TestEntry.Text into the trigger's
-		// Property at construction time, so a static entry carried "Test" out of
-		// StateTriggerChangedVisualState and into whichever test ran next - making
-		// InitialStateIsNormalIfAvailable pass or fail purely on execution order. xUnit builds a
-		// new instance of this class per test, so an instance field gives each test a fresh Entry.
-		readonly Entry TestEntry = new Entry();
+		var normalState = new VisualState { Name = NormalStateName };
 
-		VisualStateGroupList CreateTestStateGroups()
-		{
-			var stateGroups = new VisualStateGroupList();
-			var visualStateGroup = new VisualStateGroup();
+		var greenStateTrigger = new CompareStateTrigger { Property = TestEntry.Text, Value = "Test" };
+		var greenState = new VisualState { Name = GreenStateName };
+		greenState.StateTriggers.Add(greenStateTrigger);
 
-			var normalState = new VisualState { Name = NormalStateName };
+		var redStateTrigger = new CompareStateTrigger { Property = TestEntry.Text, Value = string.Empty };
+		var redState = new VisualState { Name = RedStateName };
+		redState.StateTriggers.Add(redStateTrigger);
 
-			var greenStateTrigger = new CompareStateTrigger { Property = TestEntry.Text, Value = "Test" };
-			var greenState = new VisualState { Name = GreenStateName };
-			greenState.StateTriggers.Add(greenStateTrigger);
+		visualStateGroup.States.Add(normalState);
+		visualStateGroup.States.Add(greenState);
+		visualStateGroup.States.Add(redState);
 
-			var redStateTrigger = new CompareStateTrigger { Property = TestEntry.Text, Value = string.Empty };
-			var redState = new VisualState { Name = RedStateName };
-			redState.StateTriggers.Add(redStateTrigger);
+		stateGroups.Add(visualStateGroup);
 
-			visualStateGroup.States.Add(normalState);
-			visualStateGroup.States.Add(greenState);
-			visualStateGroup.States.Add(redState);
+		return stateGroups;
+	}
 
-			stateGroups.Add(visualStateGroup);
+	[Fact]
+	public void InitialStateIsNormalIfAvailable()
+	{
+		var label1 = new Label();
 
-			return stateGroups;
-		}
+		VisualStateManager.SetVisualStateGroups(label1, CreateTestStateGroups());
 
-		[Fact]
-		public void InitialStateIsNormalIfAvailable()
-		{
-			var label1 = new Label();
+		var groups1 = VisualStateManager.GetVisualStateGroups(label1);
 
-			VisualStateManager.SetVisualStateGroups(label1, CreateTestStateGroups());
+		Assert.Equal(NormalStateName, groups1[0].CurrentState.Name);
+	}
 
-			var groups1 = VisualStateManager.GetVisualStateGroups(label1);
+	[Fact]
+	public void StateTriggerDefaultVisualState()
+	{
+		var grid = new Grid();
 
-			Assert.Equal(NormalStateName, groups1[0].CurrentState.Name);
-		}
+		TestEntry.Text = string.Empty;
 
-		[Fact]
-		public void StateTriggerDefaultVisualState()
-		{
-			var grid = new Grid();
+		grid.Children.Add(TestEntry);
 
-			TestEntry.Text = string.Empty;
+		VisualStateManager.SetVisualStateGroups(grid, CreateTestStateGroups());
 
-			grid.Children.Add(TestEntry);
+		var groups = VisualStateManager.GetVisualStateGroups(grid);
 
-			VisualStateManager.SetVisualStateGroups(grid, CreateTestStateGroups());
+		Assert.Equal(RedStateName, groups[0].CurrentState.Name);
+	}
 
-			var groups = VisualStateManager.GetVisualStateGroups(grid);
+	[Fact]
+	public void StateTriggerChangedVisualState()
+	{
+		var grid = new Grid();
 
-			Assert.Equal(RedStateName, groups[0].CurrentState.Name);
-		}
+		TestEntry.Text = "Test";
 
-		[Fact]
-		public void StateTriggerChangedVisualState()
-		{
-			var grid = new Grid();
+		grid.Children.Add(TestEntry);
 
-			TestEntry.Text = "Test";
+		VisualStateManager.SetVisualStateGroups(grid, CreateTestStateGroups());
 
-			grid.Children.Add(TestEntry);
+		var groups = VisualStateManager.GetVisualStateGroups(grid);
 
-			VisualStateManager.SetVisualStateGroups(grid, CreateTestStateGroups());
-
-			var groups = VisualStateManager.GetVisualStateGroups(grid);
-
-			Assert.Equal(GreenStateName, groups[0].CurrentState.Name);
-		}
+		Assert.Equal(GreenStateName, groups[0].CurrentState.Name);
 	}
 }

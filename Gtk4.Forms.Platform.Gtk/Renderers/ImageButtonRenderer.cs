@@ -3,154 +3,153 @@ using System.ComponentModel;
 using Xamarin.Forms.Platform.GTK.Extensions;
 using GtkImageButton = Xamarin.Forms.Platform.GTK.Controls.ImageButton;
 
-namespace Xamarin.Forms.Platform.GTK.Renderers
+namespace Xamarin.Forms.Platform.GTK.Renderers;
+
+/// <summary>
+/// ImageButton is an image-only button: unlike <see cref="Button"/> it has no Text, and its
+/// image is the content rather than a decoration. It reuses the same native control, which
+/// already knows how to draw a background, a border and an image.
+/// </summary>
+public class ImageButtonRenderer : ViewRenderer<ImageButton, GtkImageButton>
 {
-	/// <summary>
-	/// ImageButton is an image-only button: unlike <see cref="Button"/> it has no Text, and its
-	/// image is the content rather than a decoration. It reuses the same native control, which
-	/// already knows how to draw a background, a border and an image.
-	/// </summary>
-	public class ImageButtonRenderer : ViewRenderer<ImageButton, GtkImageButton>
+	private const uint DefaultBorderWidth = 1;
+
+	private bool _disposed;
+
+	protected override bool PreventGestureBubbling { get; set; } = true;
+
+	public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 	{
-		private const uint DefaultBorderWidth = 1;
+		Control.GetPreferredSize(out _, out var req);
 
-		private bool _disposed;
+		var widthFits = widthConstraint >= req.Width;
+		var heightFits = heightConstraint >= req.Height;
 
-		protected override bool PreventGestureBubbling { get; set; } = true;
+		var size = new Size(widthFits ? req.Width : (int)widthConstraint,
+			heightFits ? req.Height : (int)heightConstraint);
 
-		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
+		return new SizeRequest(size);
+	}
+
+	protected override void OnElementChanged(ElementChangedEventArgs<ImageButton> e)
+	{
+		if (e.NewElement != null)
 		{
-			Control.GetPreferredSize(out _, out var req);
-
-			var widthFits = widthConstraint >= req.Width;
-			var heightFits = heightConstraint >= req.Height;
-
-			var size = new Size(widthFits ? req.Width : (int)widthConstraint,
-				heightFits ? req.Height : (int)heightConstraint);
-
-			return new SizeRequest(size);
-		}
-
-		protected override void OnElementChanged(ElementChangedEventArgs<ImageButton> e)
-		{
-			if (e.NewElement != null)
+			if (Control == null)
 			{
-				if (Control == null)
-				{
-					var button = new GtkImageButton();
-					SetNativeControl(button);
+				var button = new GtkImageButton();
+				SetNativeControl(button);
 
-					Control.Clicked += OnButtonClicked;
-					Control.ButtonPressEvent += OnButtonPressEvent;
-					Control.ButtonReleaseEvent += OnButtonReleaseEvent;
-				}
-
-				UpdateBackgroundColor();
-				UpdateBorder();
-				UpdatePadding();
-				UpdateSource();
+				Control.Clicked += OnButtonClicked;
+				Control.ButtonPressEvent += OnButtonPressEvent;
+				Control.ButtonReleaseEvent += OnButtonReleaseEvent;
 			}
 
-			base.OnElementChanged(e);
+			UpdateBackgroundColor();
+			UpdateBorder();
+			UpdatePadding();
+			UpdateSource();
 		}
 
-		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			base.OnElementPropertyChanged(sender, e);
+		base.OnElementChanged(e);
+	}
 
-			if (e.PropertyName == ImageButton.SourceProperty.PropertyName ||
-				e.PropertyName == ImageButton.AspectProperty.PropertyName)
-				UpdateSource();
-			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
-				UpdateBackgroundColor();
-			else if (e.PropertyName == ImageButton.BorderColorProperty.PropertyName ||
-				e.PropertyName == ImageButton.BorderWidthProperty.PropertyName)
-				UpdateBorder();
-			else if (e.PropertyName == ImageButton.PaddingProperty.PropertyName)
-				UpdatePadding();
-		}
+	protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+	{
+		base.OnElementPropertyChanged(sender, e);
 
-		protected override void Dispose(bool disposing)
+		if (e.PropertyName == ImageButton.SourceProperty.PropertyName ||
+		    e.PropertyName == ImageButton.AspectProperty.PropertyName)
+			UpdateSource();
+		else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+			UpdateBackgroundColor();
+		else if (e.PropertyName == ImageButton.BorderColorProperty.PropertyName ||
+		         e.PropertyName == ImageButton.BorderWidthProperty.PropertyName)
+			UpdateBorder();
+		else if (e.PropertyName == ImageButton.PaddingProperty.PropertyName)
+			UpdatePadding();
+	}
+
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing && !_disposed)
 		{
-			if (disposing && !_disposed)
+			_disposed = true;
+
+			if (Control != null)
 			{
-				_disposed = true;
-
-				if (Control != null)
-				{
-					Control.Clicked -= OnButtonClicked;
-					Control.ButtonPressEvent -= OnButtonPressEvent;
-					Control.ButtonReleaseEvent -= OnButtonReleaseEvent;
-				}
+				Control.Clicked -= OnButtonClicked;
+				Control.ButtonPressEvent -= OnButtonPressEvent;
+				Control.ButtonReleaseEvent -= OnButtonReleaseEvent;
 			}
-
-			base.Dispose(disposing);
 		}
 
-		protected override void UpdateBackgroundColor()
-		{
-			if (Element == null)
-				return;
+		base.Dispose(disposing);
+	}
 
-			if (Element.BackgroundColor.IsDefault)
-				Control.ResetBackgroundColor();
-			else if (Element.BackgroundColor != Color.Transparent)
-				Control.SetBackgroundColor(Element.BackgroundColor.ToGtkColor());
-		}
+	protected override void UpdateBackgroundColor()
+	{
+		if (Element == null)
+			return;
 
-		private void UpdateBorder()
-		{
-			if (Element.BorderWidth > 0)
-				Control.SetBorderWidth((uint)Element.BorderWidth);
-			else
-				Control.SetBorderWidth(DefaultBorderWidth);
+		if (Element.BackgroundColor.IsDefault)
+			Control.ResetBackgroundColor();
+		else if (Element.BackgroundColor != Color.Transparent)
+			Control.SetBackgroundColor(Element.BackgroundColor.ToGtkColor());
+	}
 
-			if (!Element.BorderColor.IsDefault)
-				Control.SetBorderColor(Element.BorderColor.ToGtkColor());
-			else
-				Control.SetBorderColor(null);
-		}
+	private void UpdateBorder()
+	{
+		if (Element.BorderWidth > 0)
+			Control.SetBorderWidth((uint)Element.BorderWidth);
+		else
+			Control.SetBorderWidth(DefaultBorderWidth);
 
-		private void UpdatePadding()
-		{
-			// Gtk.Container.BorderWidth is uniform, so a non-uniform Forms Padding collapses to
-			// its largest edge. Forms allows negative padding; GTK's is unsigned.
-			var padding = Element.Padding;
+		if (!Element.BorderColor.IsDefault)
+			Control.SetBorderColor(Element.BorderColor.ToGtkColor());
+		else
+			Control.SetBorderColor(null);
+	}
 
-			var largest = Math.Max(
-				Math.Max(padding.Left, padding.Right),
-				Math.Max(padding.Top, padding.Bottom));
+	private void UpdatePadding()
+	{
+		// Gtk.Container.BorderWidth is uniform, so a non-uniform Forms Padding collapses to
+		// its largest edge. Forms allows negative padding; GTK's is unsigned.
+		var padding = Element.Padding;
 
-			Control.BorderWidth = (uint)Math.Max(0, largest);
-		}
+		var largest = Math.Max(
+			Math.Max(padding.Left, padding.Right),
+			Math.Max(padding.Top, padding.Bottom));
 
-		private void UpdateSource()
-		{
-			// SetIsLoading drives ImageButton.IsLoading, which apps bind to; ApplyNativeImageAsync
-			// reports it through its onLoading callback.
-			this.ApplyNativeImageAsync(
-				ImageButton.SourceProperty,
-				image =>
-				{
-					Control.ImageWidget.Pixbuf = image;
-					Control.ImageWidget.Visible = image != null;
-				},
-				loading => ((IImageController)Element)?.SetIsLoading(loading));
-		}
+		Control.BorderWidth = (uint)Math.Max(0, largest);
+	}
 
-		private void OnButtonClicked(object sender, EventArgs e)
-		{
-			((IButtonController)Element)?.SendClicked();
-		}
+	private void UpdateSource()
+	{
+		// SetIsLoading drives ImageButton.IsLoading, which apps bind to; ApplyNativeImageAsync
+		// reports it through its onLoading callback.
+		this.ApplyNativeImageAsync(
+			ImageButton.SourceProperty,
+			image =>
+			{
+				Control.ImageWidget.Pixbuf = image;
+				Control.ImageWidget.Visible = image != null;
+			},
+			loading => ((IImageController)Element)?.SetIsLoading(loading));
+	}
 
-		private void OnButtonPressEvent(object sender, Gtk.ButtonPressEventArgs e)
-		{
-			((IButtonController)Element)?.SendPressed();
-		}
+	private void OnButtonClicked(object sender, EventArgs e)
+	{
+		((IButtonController)Element)?.SendClicked();
+	}
 
-		private void OnButtonReleaseEvent(object sender, Gtk.ButtonReleaseEventArgs e)
-		{
-			((IButtonController)Element)?.SendReleased();
-		}
+	private void OnButtonPressEvent(object sender, Gtk.ButtonPressEventArgs e)
+	{
+		((IButtonController)Element)?.SendPressed();
+	}
+
+	private void OnButtonReleaseEvent(object sender, Gtk.ButtonReleaseEventArgs e)
+	{
+		((IButtonController)Element)?.SendReleased();
 	}
 }

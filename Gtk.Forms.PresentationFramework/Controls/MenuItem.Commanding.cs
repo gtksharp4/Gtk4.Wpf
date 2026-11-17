@@ -1,75 +1,74 @@
 using System;
 using System.Windows.Input;
 
-namespace System.Windows.Controls
+namespace System.Windows.Controls;
+
+public partial class MenuItem
 {
-	public partial class MenuItem
+	// ── Command DPs ────────────────────────────────────────────────────────────
+
+	/// <summary>The command invoked when this item is activated.</summary>
+	public static readonly DependencyProperty CommandProperty =
+		DependencyProperty.Register(nameof(Command), typeof(ICommand), typeof(MenuItem),
+			new PropertyMetadata(null, OnCommandChanged));
+
+	/// <summary>Parameter forwarded to <see cref="ICommand.Execute"/>.</summary>
+	public static readonly DependencyProperty CommandParameterProperty =
+		DependencyProperty.Register(nameof(CommandParameter), typeof(object), typeof(MenuItem),
+			new PropertyMetadata(null));
+
+	/// <summary>Optional explicit routing target.</summary>
+	public static readonly DependencyProperty CommandTargetProperty =
+		DependencyProperty.Register(nameof(CommandTarget), typeof(UIElement), typeof(MenuItem),
+			new PropertyMetadata(null));
+
+	static void OnCommandChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
-		// ── Command DPs ────────────────────────────────────────────────────────────
+		var mi = (MenuItem)d;
+		mi.CommandHelper.OnCommandChanged(e.OldValue as ICommand, e.NewValue as ICommand);
+	}
 
-		/// <summary>The command invoked when this item is activated.</summary>
-		public static readonly DependencyProperty CommandProperty =
-			DependencyProperty.Register(nameof(Command), typeof(ICommand), typeof(MenuItem),
-				new PropertyMetadata(null, OnCommandChanged));
+	/// <inheritdoc cref="ICommandSource.Command"/>
+	public ICommand? Command
+	{
+		get => (ICommand?)GetValue(CommandProperty);
+		set => SetValue(CommandProperty, value);
+	}
 
-		/// <summary>Parameter forwarded to <see cref="ICommand.Execute"/>.</summary>
-		public static readonly DependencyProperty CommandParameterProperty =
-			DependencyProperty.Register(nameof(CommandParameter), typeof(object), typeof(MenuItem),
-				new PropertyMetadata(null));
+	/// <inheritdoc cref="ICommandSource.CommandParameter"/>
+	public object? CommandParameter
+	{
+		get => GetValue(CommandParameterProperty);
+		set => SetValue(CommandParameterProperty, value);
+	}
 
-		/// <summary>Optional explicit routing target.</summary>
-		public static readonly DependencyProperty CommandTargetProperty =
-			DependencyProperty.Register(nameof(CommandTarget), typeof(UIElement), typeof(MenuItem),
-				new PropertyMetadata(null));
+	/// <inheritdoc cref="ICommandSource.CommandTarget"/>
+	public UIElement? CommandTarget
+	{
+		get => (UIElement?)GetValue(CommandTargetProperty);
+		set => SetValue(CommandTargetProperty, value);
+	}
 
-		static void OnCommandChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			var mi = (MenuItem)d;
-			mi.CommandHelper.OnCommandChanged(e.OldValue as ICommand, e.NewValue as ICommand);
-		}
+	// ── Command helper ────────────────────────────────────────────────────────
 
-		/// <inheritdoc cref="ICommandSource.Command"/>
-		public ICommand? Command
-		{
-			get => (ICommand?)GetValue(CommandProperty);
-			set => SetValue(CommandProperty, value);
-		}
+	CommandSourceHelper? _commandHelper;
+	CommandSourceHelper CommandHelper => _commandHelper ??= new CommandSourceHelper(this, RefreshEnabled);
 
-		/// <inheritdoc cref="ICommandSource.CommandParameter"/>
-		public object? CommandParameter
-		{
-			get => GetValue(CommandParameterProperty);
-			set => SetValue(CommandParameterProperty, value);
-		}
+	void RefreshEnabled()
+	{
+		var canRun = CommandHelper.QueryCanExecute();
+		if (_gtkButton != null) _gtkButton.Sensitive = canRun;
+		if (_gtkMenuButton != null) _gtkMenuButton.Sensitive = canRun;
+	}
 
-		/// <inheritdoc cref="ICommandSource.CommandTarget"/>
-		public UIElement? CommandTarget
-		{
-			get => (UIElement?)GetValue(CommandTargetProperty);
-			set => SetValue(CommandTargetProperty, value);
-		}
+	bool _disposed;
 
-		// ── Command helper ────────────────────────────────────────────────────────
-
-		CommandSourceHelper? _commandHelper;
-		CommandSourceHelper CommandHelper => _commandHelper ??= new CommandSourceHelper(this, RefreshEnabled);
-
-		void RefreshEnabled()
-		{
-			var canRun = CommandHelper.QueryCanExecute();
-			if (_gtkButton != null) _gtkButton.Sensitive = canRun;
-			if (_gtkMenuButton != null) _gtkMenuButton.Sensitive = canRun;
-		}
-
-		bool _disposed;
-
-		/// <summary>Disposes: unsubscribes from command's CanExecuteChanged.</summary>
-		public void Dispose()
-		{
-			if (_disposed) return;
-			_disposed = true;
-			_commandHelper?.Dispose();
-			_commandHelper = null;
-		}
+	/// <summary>Disposes: unsubscribes from command's CanExecuteChanged.</summary>
+	public void Dispose()
+	{
+		if (_disposed) return;
+		_disposed = true;
+		_commandHelper?.Dispose();
+		_commandHelper = null;
 	}
 }

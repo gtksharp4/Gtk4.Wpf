@@ -1,149 +1,148 @@
 ﻿using Xunit;
 
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class MultiTriggerTests : BaseTestFixture
 {
-	public class MultiTriggerTests : BaseTestFixture
+	public MultiTriggerTests()
 	{
-		public MultiTriggerTests()
+		Device.PlatformServices = new MockPlatformServices();
+	}
+
+	public override void Dispose()
+	{
+		base.Dispose();
+		Device.PlatformServices = null;
+	}
+
+	class MockElement : VisualElement
+	{
+	}
+
+	[Fact]
+	public void SettersAppliedOnAttachIfConditionIsTrue()
+	{
+		var conditionbp = BindableProperty.Create("foo", typeof(string), typeof(BindableObject), null);
+		var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
+		var element = new MockElement();
+		var multiTrigger = new MultiTrigger(typeof(VisualElement))
 		{
-			Device.PlatformServices = new MockPlatformServices();
-		}
+			Conditions = {
+				new PropertyCondition { Property = conditionbp, Value = "foobar" },
+				new BindingCondition { Binding = new Binding ("baz"), Value = "foobaz" },
+			},
+			Setters = {
+				new Setter { Property = setterbp, Value = "qux" },
+			}
+		};
 
-		public override void Dispose()
+		element.SetValue(setterbp, "default");
+		element.SetValue(conditionbp, "foobar");
+		element.BindingContext = new { baz = "foobaz" };
+		Assert.Equal("default", element.GetValue(setterbp));
+		element.Triggers.Add(multiTrigger);
+		Assert.Equal("qux", element.GetValue(setterbp));
+	}
+
+	[Fact]
+	public void SettersNotAppliedOnAttachIfOneConditionIsFalse()
+	{
+		var conditionbp = BindableProperty.Create("foo", typeof(string), typeof(BindableObject), null);
+		var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
+		var element = new MockElement();
+		var multiTrigger = new MultiTrigger(typeof(VisualElement))
 		{
-			base.Dispose();
-			Device.PlatformServices = null;
-		}
+			Conditions = {
+				new PropertyCondition { Property = conditionbp, Value = "foobar" },
+				new BindingCondition { Binding = new Binding ("baz"), Value = "foobaz" },
+			},
+			Setters = {
+				new Setter { Property = setterbp, Value = "qux" },
+			}
+		};
 
-		class MockElement : VisualElement
+		element.SetValue(setterbp, "default");
+		element.SetValue(conditionbp, "foobar");
+		element.BindingContext = new { baz = "foobazXX" };
+		Assert.Equal("default", element.GetValue(setterbp));
+		element.Triggers.Add(multiTrigger);
+		Assert.Equal("default", element.GetValue(setterbp));
+	}
+
+	[Fact]
+	public void SettersUnappliedOnDetach()
+	{
+		var conditionbp = BindableProperty.Create("foo", typeof(string), typeof(BindableObject), null);
+		var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
+		var element = new MockElement();
+		var multiTrigger = new MultiTrigger(typeof(VisualElement))
 		{
-		}
+			Conditions = {
+				new PropertyCondition { Property = conditionbp, Value = "foobar" },
+				new BindingCondition { Binding = new Binding ("baz"), Value = "foobaz" },
+			},
+			Setters = {
+				new Setter { Property = setterbp, Value = "qux" },
+			}
+		};
 
-		[Fact]
-		public void SettersAppliedOnAttachIfConditionIsTrue()
+		element.SetValue(setterbp, "default");
+		element.BindingContext = new { baz = "" };
+		element.Triggers.Add(multiTrigger);
+		Assert.Equal("default", element.GetValue(setterbp)); //both conditions false
+
+		element.SetValue(conditionbp, "foobar");
+		Assert.Equal("default", element.GetValue(setterbp)); //one condition false
+
+		element.BindingContext = new { baz = "foobaz" };
+		Assert.Equal("qux", element.GetValue(setterbp)); //both condition true
+		element.Triggers.Remove(multiTrigger);
+		Assert.Equal("default", element.GetValue(setterbp));
+	}
+
+	[Fact]
+	public void SettersAppliedAndUnappliedOnConditionsChange()
+	{
+		var conditionbp = BindableProperty.Create("foo", typeof(string), typeof(BindableObject), null);
+		var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
+		var element = new MockElement();
+		var multiTrigger = new MultiTrigger(typeof(VisualElement))
 		{
-			var conditionbp = BindableProperty.Create("foo", typeof(string), typeof(BindableObject), null);
-			var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
-			var element = new MockElement();
-			var multiTrigger = new MultiTrigger(typeof(VisualElement))
-			{
-				Conditions = {
-					new PropertyCondition { Property = conditionbp, Value = "foobar" },
-					new BindingCondition { Binding = new Binding ("baz"), Value = "foobaz" },
-				},
-				Setters = {
-					new Setter { Property = setterbp, Value = "qux" },
-				}
-			};
+			Conditions = {
+				new PropertyCondition { Property = conditionbp, Value = "foobar" },
+				new BindingCondition { Binding = new Binding ("baz"), Value = "foobaz" },
+			},
+			Setters = {
+				new Setter { Property = setterbp, Value = "qux" },
+			}
+		};
 
-			element.SetValue(setterbp, "default");
-			element.SetValue(conditionbp, "foobar");
-			element.BindingContext = new { baz = "foobaz" };
-			Assert.Equal("default", element.GetValue(setterbp));
-			element.Triggers.Add(multiTrigger);
-			Assert.Equal("qux", element.GetValue(setterbp));
-		}
+		element.SetValue(setterbp, "default");
+		element.BindingContext = new { baz = "" };
+		element.Triggers.Add(multiTrigger);
+		Assert.Equal("default", element.GetValue(setterbp)); //both conditions false
 
-		[Fact]
-		public void SettersNotAppliedOnAttachIfOneConditionIsFalse()
-		{
-			var conditionbp = BindableProperty.Create("foo", typeof(string), typeof(BindableObject), null);
-			var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
-			var element = new MockElement();
-			var multiTrigger = new MultiTrigger(typeof(VisualElement))
-			{
-				Conditions = {
-					new PropertyCondition { Property = conditionbp, Value = "foobar" },
-					new BindingCondition { Binding = new Binding ("baz"), Value = "foobaz" },
-				},
-				Setters = {
-					new Setter { Property = setterbp, Value = "qux" },
-				}
-			};
+		element.SetValue(conditionbp, "foobar");
+		Assert.Equal("default", element.GetValue(setterbp)); //one condition false
 
-			element.SetValue(setterbp, "default");
-			element.SetValue(conditionbp, "foobar");
-			element.BindingContext = new { baz = "foobazXX" };
-			Assert.Equal("default", element.GetValue(setterbp));
-			element.Triggers.Add(multiTrigger);
-			Assert.Equal("default", element.GetValue(setterbp));
-		}
+		element.BindingContext = new { baz = "foobaz" };
+		Assert.Equal("qux", element.GetValue(setterbp)); //both condition true
 
-		[Fact]
-		public void SettersUnappliedOnDetach()
-		{
-			var conditionbp = BindableProperty.Create("foo", typeof(string), typeof(BindableObject), null);
-			var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
-			var element = new MockElement();
-			var multiTrigger = new MultiTrigger(typeof(VisualElement))
-			{
-				Conditions = {
-					new PropertyCondition { Property = conditionbp, Value = "foobar" },
-					new BindingCondition { Binding = new Binding ("baz"), Value = "foobaz" },
-				},
-				Setters = {
-					new Setter { Property = setterbp, Value = "qux" },
-				}
-			};
+		element.BindingContext = new { baz = "" };
+		Assert.Equal("default", element.GetValue(setterbp)); //one condition false
 
-			element.SetValue(setterbp, "default");
-			element.BindingContext = new { baz = "" };
-			element.Triggers.Add(multiTrigger);
-			Assert.Equal("default", element.GetValue(setterbp)); //both conditions false
+		element.BindingContext = new { baz = "foobaz" };
+		Assert.Equal("qux", element.GetValue(setterbp)); //both condition true
 
-			element.SetValue(conditionbp, "foobar");
-			Assert.Equal("default", element.GetValue(setterbp)); //one condition false
+		element.SetValue(conditionbp, "");
+		Assert.Equal("default", element.GetValue(setterbp)); //one condition false
 
-			element.BindingContext = new { baz = "foobaz" };
-			Assert.Equal("qux", element.GetValue(setterbp)); //both condition true
-			element.Triggers.Remove(multiTrigger);
-			Assert.Equal("default", element.GetValue(setterbp));
-		}
+		element.SetValue(conditionbp, "foobar");
+		Assert.Equal("qux", element.GetValue(setterbp)); //both condition true
 
-		[Fact]
-		public void SettersAppliedAndUnappliedOnConditionsChange()
-		{
-			var conditionbp = BindableProperty.Create("foo", typeof(string), typeof(BindableObject), null);
-			var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
-			var element = new MockElement();
-			var multiTrigger = new MultiTrigger(typeof(VisualElement))
-			{
-				Conditions = {
-					new PropertyCondition { Property = conditionbp, Value = "foobar" },
-					new BindingCondition { Binding = new Binding ("baz"), Value = "foobaz" },
-				},
-				Setters = {
-					new Setter { Property = setterbp, Value = "qux" },
-				}
-			};
-
-			element.SetValue(setterbp, "default");
-			element.BindingContext = new { baz = "" };
-			element.Triggers.Add(multiTrigger);
-			Assert.Equal("default", element.GetValue(setterbp)); //both conditions false
-
-			element.SetValue(conditionbp, "foobar");
-			Assert.Equal("default", element.GetValue(setterbp)); //one condition false
-
-			element.BindingContext = new { baz = "foobaz" };
-			Assert.Equal("qux", element.GetValue(setterbp)); //both condition true
-
-			element.BindingContext = new { baz = "" };
-			Assert.Equal("default", element.GetValue(setterbp)); //one condition false
-
-			element.BindingContext = new { baz = "foobaz" };
-			Assert.Equal("qux", element.GetValue(setterbp)); //both condition true
-
-			element.SetValue(conditionbp, "");
-			Assert.Equal("default", element.GetValue(setterbp)); //one condition false
-
-			element.SetValue(conditionbp, "foobar");
-			Assert.Equal("qux", element.GetValue(setterbp)); //both condition true
-
-			element.SetValue(conditionbp, "");
-			element.BindingContext = new { baz = "foobaz" };
-			Assert.Equal("default", element.GetValue(setterbp)); //both conditions false
-		}
+		element.SetValue(conditionbp, "");
+		element.BindingContext = new { baz = "foobaz" };
+		Assert.Equal("default", element.GetValue(setterbp)); //both conditions false
 	}
 }

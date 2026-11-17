@@ -4,38 +4,37 @@ using Xunit;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class Gh2007 : ContentPage
 {
-	public partial class Gh2007 : ContentPage
+	public Gh2007()
 	{
-		public Gh2007()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Gh2007(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Gh2007(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
 		: IDisposable{
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-			}
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+		}
 
-			public void Dispose()
-{
-				Device.PlatformServices = null;
-			}
+		public void Dispose()
+		{
+			Device.PlatformServices = null;
+		}
 
-			[Theory]
-			[InlineData(false), InlineData(true)]
-			public void UsefullxResourceErrorMessages(bool useCompiledXaml)
-			{
-				Assert.Throws<XamlParseException>(() => new Gh2007(useCompiledXaml));
-			}
+		[Theory]
+		[InlineData(false), InlineData(true)]
+		public void UsefullxResourceErrorMessages(bool useCompiledXaml)
+		{
+			Assert.Throws<XamlParseException>(() => new Gh2007(useCompiledXaml));
 		}
 	}
 }

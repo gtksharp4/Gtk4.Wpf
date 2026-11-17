@@ -4,43 +4,42 @@ using Xunit;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public class Gh2752VM
 {
-	public class Gh2752VM
+	public Gh2752VM Foo { get; set; }
+	public Gh2752VM Bar { get; set; }
+	public string Baz { get; set; }
+}
+public partial class Gh2752 : ContentPage
+{
+	public static readonly BindableProperty MyProperty =
+		BindableProperty.Create("My", typeof(string), typeof(Gh2752), default(string), defaultValueCreator: b => "default created value");
+
+	public string My
 	{
-		public Gh2752VM Foo { get; set; }
-		public Gh2752VM Bar { get; set; }
-		public string Baz { get; set; }
+		get { return (string)GetValue(MyProperty); }
+		set { SetValue(MyProperty, value); }
 	}
-	public partial class Gh2752 : ContentPage
+
+	public Gh2752() => InitializeComponent();
+	public Gh2752(bool useCompiledXaml)
 	{
-		public static readonly BindableProperty MyProperty =
-			BindableProperty.Create("My", typeof(string), typeof(Gh2752), default(string), defaultValueCreator: b => "default created value");
+		//this stub will be replaced at compile time
+	}
 
-		public string My
+	public class Tests: IDisposable
+	{
+		public Tests() => Device.PlatformServices = new MockPlatformServices();
+		public void Dispose() => Device.PlatformServices = null;
+
+		[Theory]
+		[InlineData(true), InlineData(false)]
+		public void FallbcakToDefaultValueCreator(bool useCompiledXaml)
 		{
-			get { return (string)GetValue(MyProperty); }
-			set { SetValue(MyProperty, value); }
-		}
-
-		public Gh2752() => InitializeComponent();
-		public Gh2752(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		public class Tests: IDisposable
-		{
-			public Tests() => Device.PlatformServices = new MockPlatformServices();
-			public void Dispose() => Device.PlatformServices = null;
-
-			[Theory]
-			[InlineData(true), InlineData(false)]
-			public void FallbcakToDefaultValueCreator(bool useCompiledXaml)
-			{
-				var layout = new Gh2752(useCompiledXaml) { BindingContext = null };
-				Assert.Equal("default created value", layout.My);
-			}
+			var layout = new Gh2752(useCompiledXaml) { BindingContext = null };
+			Assert.Equal("default created value", layout.My);
 		}
 	}
 }

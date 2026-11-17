@@ -2,36 +2,35 @@
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+//this covers Issue2125 as well
+[XamlCompilation(XamlCompilationOptions.Skip)]
+public partial class Issue2450 : ContentPage
 {
-	//this covers Issue2125 as well
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class Issue2450 : ContentPage
+	public Issue2450()
 	{
-		public Issue2450()
+		InitializeComponent();
+	}
+
+	public Issue2450(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
+
+	public class Tests
+	{
+		public Tests()
 		{
-			InitializeComponent();
+			Device.PlatformServices = new MockPlatformServices();
 		}
 
-		public Issue2450(bool useCompiledXaml)
+		[Theory]
+		[InlineData(false)]
+		public void ThrowMeaningfulExceptionOnDuplicateXName(bool useCompiledXaml)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		public class Tests
-		{
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-			}
-
-			[Theory]
-			[InlineData(false)]
-			public void ThrowMeaningfulExceptionOnDuplicateXName(bool useCompiledXaml)
-			{
-				var layout = new Issue2450(useCompiledXaml);
-				new XamlParseExceptionConstraint(11, 13, m => m == "An element with the name \"label0\" already exists in this NameScope").Verify(() => (layout.Resources["foo"] as Forms.DataTemplate).CreateContent());
-			}
+			var layout = new Issue2450(useCompiledXaml);
+			new XamlParseExceptionConstraint(11, 13, m => m == "An element with the name \"label0\" already exists in this NameScope").Verify(() => (layout.Resources["foo"] as Forms.DataTemplate).CreateContent());
 		}
 	}
 }

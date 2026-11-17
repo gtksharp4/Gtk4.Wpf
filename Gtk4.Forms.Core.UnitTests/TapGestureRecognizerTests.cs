@@ -1,32 +1,31 @@
 ﻿using System;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class TapGestureRecognizerTests : BaseTestFixture
 {
-	public class TapGestureRecognizerTests : BaseTestFixture
+	[Fact]
+	public void Constructor()
 	{
-		[Fact]
-		public void Constructor()
-		{
-			var tap = new TapGestureRecognizer();
+		var tap = new TapGestureRecognizer();
 
-			Assert.Equal(null, tap.Command);
-			Assert.Equal(null, tap.CommandParameter);
-			Assert.Equal(1, tap.NumberOfTapsRequired);
-		}
+		Assert.Equal(null, tap.Command);
+		Assert.Equal(null, tap.CommandParameter);
+		Assert.Equal(1, tap.NumberOfTapsRequired);
+	}
 
-		[Fact]
-		public void CallbackPassesParameter()
-		{
-			var view = new View();
-			var tap = new TapGestureRecognizer();
-			tap.CommandParameter = "Hello";
+	[Fact]
+	public void CallbackPassesParameter()
+	{
+		var view = new View();
+		var tap = new TapGestureRecognizer();
+		tap.CommandParameter = "Hello";
 
-			object result = null;
-			tap.Command = new Command(o => result = o);
+		object result = null;
+		tap.Command = new Command(o => result = o);
 
-			tap.SendTapped(view);
-			Assert.Equal(result, tap.CommandParameter);
-		}
+		tap.SendTapped(view);
+		Assert.Equal(result, tap.CommandParameter);
 	}
 }

@@ -1,29 +1,28 @@
 ﻿using Xunit;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class McIgnorable : ContentPage
 {
-	public partial class McIgnorable : ContentPage
+	public McIgnorable()
 	{
-		public McIgnorable()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public McIgnorable(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public McIgnorable(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
 
-		public class Tests
+	public class Tests
+	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void DoesNotThrow(bool useCompiledXaml)
 		{
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void DoesNotThrow(bool useCompiledXaml)
-			{
-				var layout = new McIgnorable(useCompiledXaml);
-			}
+			var layout = new McIgnorable(useCompiledXaml);
 		}
 	}
 }

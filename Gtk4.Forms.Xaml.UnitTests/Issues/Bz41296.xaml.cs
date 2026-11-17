@@ -3,30 +3,29 @@ using System.Collections.Generic;
 using Xunit;
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class Bz41296 : ContentPage
 {
-	public partial class Bz41296 : ContentPage
+	public Bz41296()
 	{
-		public Bz41296()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Bz41296(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Bz41296(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
+	{
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void MarkupExtensionInDefaultNamespace(bool useCompiledXaml)
 		{
-			[Theory]
-			[InlineData(true)]
-			[InlineData(false)]
-			public void MarkupExtensionInDefaultNamespace(bool useCompiledXaml)
-			{
-				var layout = new Bz41296(useCompiledXaml);
-				Assert.Equal("FooBar", layout.TestLabel.Text.ToString());
-			}
+			var layout = new Bz41296(useCompiledXaml);
+			Assert.Equal("FooBar", layout.TestLabel.Text.ToString());
 		}
 	}
 }

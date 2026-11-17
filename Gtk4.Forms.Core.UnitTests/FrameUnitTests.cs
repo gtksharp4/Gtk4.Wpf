@@ -4,319 +4,318 @@ using System.Linq;
 using Xunit;
 
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class FrameUnitTests : BaseTestFixture
 {
-	public class FrameUnitTests : BaseTestFixture
+	[Fact]
+	public void TestConstructor()
 	{
-		[Fact]
-		public void TestConstructor()
-		{
-			Frame frame = new Frame();
+		Frame frame = new Frame();
 
-			Assert.Null(frame.Content);
-			Assert.Equal(new Thickness(20, 20, 20, 20), frame.Padding);
+		Assert.Null(frame.Content);
+		Assert.Equal(new Thickness(20, 20, 20, 20), frame.Padding);
+	}
+
+	[Fact]
+	public void TestPackWithoutChild()
+	{
+		Frame frame = new Frame();
+
+		var parent = new NaiveLayout();
+
+		bool thrown = false;
+		try
+		{
+			parent.Children.Add(frame);
+		}
+		catch
+		{
+			thrown = true;
 		}
 
-		[Fact]
-		public void TestPackWithoutChild()
+		Assert.False(thrown);
+	}
+
+	[Fact]
+	public void TestPackWithChild()
+	{
+		Frame frame = new Frame
 		{
-			Frame frame = new Frame();
+			Content = new View()
+		};
 
-			var parent = new NaiveLayout();
+		var parent = new NaiveLayout();
 
-			bool thrown = false;
-			try
-			{
-				parent.Children.Add(frame);
-			}
-			catch
-			{
-				thrown = true;
-			}
-
-			Assert.False(thrown);
+		bool thrown = false;
+		try
+		{
+			parent.Children.Add(frame);
+		}
+		catch
+		{
+			thrown = true;
 		}
 
-		[Fact]
-		public void TestPackWithChild()
+		Assert.False(thrown);
+	}
+
+	[Fact]
+	public void TestSetChild()
+	{
+		Frame frame = new Frame();
+
+		var child1 = new Label();
+
+		bool added = false;
+
+		frame.ChildAdded += (sender, e) => added = true;
+
+		frame.Content = child1;
+
+		Assert.True(added);
+		Assert.Equal(child1, frame.Content);
+
+		added = false;
+		frame.Content = child1;
+
+		Assert.False(added);
+	}
+
+	[Fact]
+	public void TestReplaceChild()
+	{
+		Frame frame = new Frame();
+
+		var child1 = new Label();
+		var child2 = new Label();
+
+		frame.Content = child1;
+
+		bool removed = false;
+		bool added = false;
+
+		frame.ChildRemoved += (sender, e) => removed = true;
+		frame.ChildAdded += (sender, e) => added = true;
+
+		frame.Content = child2;
+
+		Assert.True(removed);
+		Assert.True(added);
+		Assert.Equal(child2, frame.Content);
+	}
+
+	[Fact]
+	public void TestFrameLayout()
+	{
+		View child;
+
+		var frame = new Frame
 		{
-			Frame frame = new Frame
+			Content = child = new View
 			{
-				Content = new View()
-			};
+				WidthRequest = 100,
+				HeightRequest = 200,
+				IsPlatformEnabled = true
+			},
+			IsPlatformEnabled = true,
+		};
 
-			var parent = new NaiveLayout();
+		Assert.Equal(new Size(140, 240), frame.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request);
 
-			bool thrown = false;
-			try
-			{
-				parent.Children.Add(frame);
-			}
-			catch
-			{
-				thrown = true;
-			}
+		frame.Layout(new Rectangle(0, 0, 300, 300));
 
-			Assert.False(thrown);
-		}
+		Assert.Equal(new Rectangle(20, 20, 260, 260), child.Bounds);
+	}
 
-		[Fact]
-		public void TestSetChild()
+	[Fact]
+	public void TestDoesNotThrowOnSetNullChild()
+	{
+		AssertEx.DoesNotThrow(() => new Frame { Content = null });
+	}
+
+	[Fact]
+	public void WidthRequest()
+	{
+		var frame = new Frame
 		{
-			Frame frame = new Frame();
-
-			var child1 = new Label();
-
-			bool added = false;
-
-			frame.ChildAdded += (sender, e) => added = true;
-
-			frame.Content = child1;
-
-			Assert.True(added);
-			Assert.Equal(child1, frame.Content);
-
-			added = false;
-			frame.Content = child1;
-
-			Assert.False(added);
-		}
-
-		[Fact]
-		public void TestReplaceChild()
-		{
-			Frame frame = new Frame();
-
-			var child1 = new Label();
-			var child2 = new Label();
-
-			frame.Content = child1;
-
-			bool removed = false;
-			bool added = false;
-
-			frame.ChildRemoved += (sender, e) => removed = true;
-			frame.ChildAdded += (sender, e) => added = true;
-
-			frame.Content = child2;
-
-			Assert.True(removed);
-			Assert.True(added);
-			Assert.Equal(child2, frame.Content);
-		}
-
-		[Fact]
-		public void TestFrameLayout()
-		{
-			View child;
-
-			var frame = new Frame
+			Content = new View
 			{
-				Content = child = new View
-				{
-					WidthRequest = 100,
-					HeightRequest = 200,
-					IsPlatformEnabled = true
-				},
+				WidthRequest = 100,
+				HeightRequest = 200,
+				IsPlatformEnabled = true
+			},
+			IsPlatformEnabled = true,
+			WidthRequest = 20
+		};
+
+		Assert.Equal(new Size(60, 240), frame.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request);
+	}
+
+	[Fact]
+	public void HeightRequest()
+	{
+		var frame = new Frame
+		{
+			Content = new View
+			{
+				WidthRequest = 100,
+				HeightRequest = 200,
 				IsPlatformEnabled = true,
-			};
+			},
+			IsPlatformEnabled = true,
+			HeightRequest = 20
+		};
 
-			Assert.Equal(new Size(140, 240), frame.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request);
+		Assert.Equal(new Size(140, 60), frame.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request);
+	}
 
-			frame.Layout(new Rectangle(0, 0, 300, 300));
+	[Fact]
+	public void LayoutVerticallyCenter()
+	{
+		View child;
 
-			Assert.Equal(new Rectangle(20, 20, 260, 260), child.Bounds);
-		}
-
-		[Fact]
-		public void TestDoesNotThrowOnSetNullChild()
+		var frame = new Frame
 		{
-			AssertEx.DoesNotThrow(() => new Frame { Content = null });
-		}
-
-		[Fact]
-		public void WidthRequest()
-		{
-			var frame = new Frame
+			Content = child = new View
 			{
-				Content = new View
-				{
-					WidthRequest = 100,
-					HeightRequest = 200,
-					IsPlatformEnabled = true
-				},
+				WidthRequest = 100,
+				HeightRequest = 100,
 				IsPlatformEnabled = true,
-				WidthRequest = 20
-			};
+				VerticalOptions = LayoutOptions.Center
+			},
+			IsPlatformEnabled = true,
+		};
 
-			Assert.Equal(new Size(60, 240), frame.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request);
-		}
+		frame.Layout(new Rectangle(0, 0, 200, 200));
 
-		[Fact]
-		public void HeightRequest()
+		Assert.Equal(new Rectangle(20, 50, 160, 100), child.Bounds);
+	}
+
+	[Fact]
+	public void LayoutVerticallyBegin()
+	{
+		View child;
+
+		var frame = new Frame
 		{
-			var frame = new Frame
+			Content = child = new View
 			{
-				Content = new View
-				{
-					WidthRequest = 100,
-					HeightRequest = 200,
-					IsPlatformEnabled = true,
-				},
+				WidthRequest = 100,
+				HeightRequest = 100,
 				IsPlatformEnabled = true,
-				HeightRequest = 20
-			};
+				VerticalOptions = LayoutOptions.Start
+			},
+			IsPlatformEnabled = true,
+		};
 
-			Assert.Equal(new Size(140, 60), frame.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request);
-		}
+		frame.Layout(new Rectangle(0, 0, 200, 200));
 
-		[Fact]
-		public void LayoutVerticallyCenter()
+		Assert.Equal(new Rectangle(20, 20, 160, 100), child.Bounds);
+	}
+
+	[Fact]
+	public void LayoutVerticallyEnd()
+	{
+		View child;
+
+		var frame = new Frame
 		{
-			View child;
-
-			var frame = new Frame
+			Content = child = new View
 			{
-				Content = child = new View
-				{
-					WidthRequest = 100,
-					HeightRequest = 100,
-					IsPlatformEnabled = true,
-					VerticalOptions = LayoutOptions.Center
-				},
+				WidthRequest = 100,
+				HeightRequest = 100,
 				IsPlatformEnabled = true,
-			};
+				VerticalOptions = LayoutOptions.End
+			},
+			IsPlatformEnabled = true,
+		};
 
-			frame.Layout(new Rectangle(0, 0, 200, 200));
+		frame.Layout(new Rectangle(0, 0, 200, 200));
 
-			Assert.Equal(new Rectangle(20, 50, 160, 100), child.Bounds);
-		}
+		Assert.Equal(new Rectangle(20, 80, 160, 100), child.Bounds);
+	}
 
-		[Fact]
-		public void LayoutVerticallyBegin()
+	[Fact]
+	public void LayoutHorizontallyCenter()
+	{
+		View child;
+
+		var frame = new Frame
 		{
-			View child;
-
-			var frame = new Frame
+			Content = child = new View
 			{
-				Content = child = new View
-				{
-					WidthRequest = 100,
-					HeightRequest = 100,
-					IsPlatformEnabled = true,
-					VerticalOptions = LayoutOptions.Start
-				},
+				WidthRequest = 100,
+				HeightRequest = 100,
 				IsPlatformEnabled = true,
-			};
+				HorizontalOptions = LayoutOptions.Center
+			},
+			IsPlatformEnabled = true,
+		};
 
-			frame.Layout(new Rectangle(0, 0, 200, 200));
+		frame.Layout(new Rectangle(0, 0, 200, 200));
 
-			Assert.Equal(new Rectangle(20, 20, 160, 100), child.Bounds);
-		}
+		Assert.Equal(new Rectangle(50, 20, 100, 160), child.Bounds);
+	}
 
-		[Fact]
-		public void LayoutVerticallyEnd()
+	[Fact]
+	public void LayoutHorizontallyBegin()
+	{
+		View child;
+
+		var frame = new Frame
 		{
-			View child;
-
-			var frame = new Frame
+			Content = child = new View
 			{
-				Content = child = new View
-				{
-					WidthRequest = 100,
-					HeightRequest = 100,
-					IsPlatformEnabled = true,
-					VerticalOptions = LayoutOptions.End
-				},
+				WidthRequest = 100,
+				HeightRequest = 100,
 				IsPlatformEnabled = true,
-			};
+				HorizontalOptions = LayoutOptions.Start
+			},
+			IsPlatformEnabled = true,
+		};
 
-			frame.Layout(new Rectangle(0, 0, 200, 200));
+		frame.Layout(new Rectangle(0, 0, 200, 200));
 
-			Assert.Equal(new Rectangle(20, 80, 160, 100), child.Bounds);
-		}
+		Assert.Equal(new Rectangle(20, 20, 100, 160), child.Bounds);
+	}
 
-		[Fact]
-		public void LayoutHorizontallyCenter()
+	[Fact]
+	public void LayoutHorizontallyEnd()
+	{
+		View child;
+
+		var frame = new Frame
 		{
-			View child;
-
-			var frame = new Frame
+			Content = child = new View
 			{
-				Content = child = new View
-				{
-					WidthRequest = 100,
-					HeightRequest = 100,
-					IsPlatformEnabled = true,
-					HorizontalOptions = LayoutOptions.Center
-				},
+				WidthRequest = 100,
+				HeightRequest = 100,
 				IsPlatformEnabled = true,
-			};
+				HorizontalOptions = LayoutOptions.End
+			},
+			IsPlatformEnabled = true,
+		};
 
-			frame.Layout(new Rectangle(0, 0, 200, 200));
+		frame.Layout(new Rectangle(0, 0, 200, 200));
 
-			Assert.Equal(new Rectangle(50, 20, 100, 160), child.Bounds);
-		}
+		Assert.Equal(new Rectangle(80, 20, 100, 160), child.Bounds);
+	}
 
-		[Fact]
-		public void LayoutHorizontallyBegin()
+	[Fact]
+	public void SettingPaddingThroughStyle()
+	{
+		var frame = new Frame
 		{
-			View child;
-
-			var frame = new Frame
+			Style = new Style(typeof(Frame))
 			{
-				Content = child = new View
-				{
-					WidthRequest = 100,
-					HeightRequest = 100,
-					IsPlatformEnabled = true,
-					HorizontalOptions = LayoutOptions.Start
-				},
-				IsPlatformEnabled = true,
-			};
-
-			frame.Layout(new Rectangle(0, 0, 200, 200));
-
-			Assert.Equal(new Rectangle(20, 20, 100, 160), child.Bounds);
-		}
-
-		[Fact]
-		public void LayoutHorizontallyEnd()
-		{
-			View child;
-
-			var frame = new Frame
-			{
-				Content = child = new View
-				{
-					WidthRequest = 100,
-					HeightRequest = 100,
-					IsPlatformEnabled = true,
-					HorizontalOptions = LayoutOptions.End
-				},
-				IsPlatformEnabled = true,
-			};
-
-			frame.Layout(new Rectangle(0, 0, 200, 200));
-
-			Assert.Equal(new Rectangle(80, 20, 100, 160), child.Bounds);
-		}
-
-		[Fact]
-		public void SettingPaddingThroughStyle()
-		{
-			var frame = new Frame
-			{
-				Style = new Style(typeof(Frame))
-				{
-					Setters = {
-						new Setter {Property = Layout.PaddingProperty, Value = 0}
-					}
+				Setters = {
+					new Setter {Property = Layout.PaddingProperty, Value = 0}
 				}
-			};
+			}
+		};
 
-			Assert.Equal(new Thickness(0), frame.Padding);
+		Assert.Equal(new Thickness(0), frame.Padding);
 
-		}
 	}
 }

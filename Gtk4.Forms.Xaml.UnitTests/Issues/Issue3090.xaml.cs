@@ -2,29 +2,28 @@
 
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class Issue3090 : ContentPage
 {
-	public partial class Issue3090 : ContentPage
+	public Issue3090()
 	{
-		public Issue3090()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Issue3090(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Issue3090(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
+	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void NewDoesNotThrow(bool useCompiledXaml)
 		{
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void NewDoesNotThrow(bool useCompiledXaml)
-			{
-				var p = new Issue3090(useCompiledXaml);
-			}
+			var p = new Issue3090(useCompiledXaml);
 		}
 	}
 }

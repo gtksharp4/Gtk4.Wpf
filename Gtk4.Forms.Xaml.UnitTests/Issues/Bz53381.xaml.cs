@@ -4,47 +4,46 @@ using Xunit;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class Bz53381 : ContentView
 {
-	public partial class Bz53381 : ContentView
+	public Bz53381()
 	{
-		public Bz53381()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Bz53381(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Bz53381(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
 		: IDisposable{
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-			}
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+		}
 
-			public void Dispose()
-{
-				Application.Current = null;
-				Device.PlatformServices = null;
-			}
+		public void Dispose()
+		{
+			Application.Current = null;
+			Device.PlatformServices = null;
+		}
 
-			[Theory]
-			[InlineData(true)]
-			[InlineData(false)]
-			public void ControlTemplateAsImplicitAppLevelStyles(bool useCompiledXaml)
-			{
-				Application.Current = new Bz53381App();
-				var view = new Bz53381(useCompiledXaml);
-				Application.Current.MainPage = new ContentPage { Content = view };
-				var presenter = ((StackLayout)view.InternalChildren[0]).Children[1] as ContentPresenter;
-				Assert.SkipWhen(presenter is null, "precondition not met");
-				var grid = presenter.Content as Grid;
-				Assert.NotNull(grid);
-				Assert.Equal(Color.Green, grid.BackgroundColor);
-			}
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void ControlTemplateAsImplicitAppLevelStyles(bool useCompiledXaml)
+		{
+			Application.Current = new Bz53381App();
+			var view = new Bz53381(useCompiledXaml);
+			Application.Current.MainPage = new ContentPage { Content = view };
+			var presenter = ((StackLayout)view.InternalChildren[0]).Children[1] as ContentPresenter;
+			Assert.SkipWhen(presenter is null, "precondition not met");
+			var grid = presenter.Content as Grid;
+			Assert.NotNull(grid);
+			Assert.Equal(Color.Green, grid.BackgroundColor);
 		}
 	}
 }

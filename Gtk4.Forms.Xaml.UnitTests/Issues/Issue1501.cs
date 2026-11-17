@@ -1,24 +1,24 @@
 ﻿using System;
 using Xunit;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public class BoxView1501 : BoxView
 {
-	public class BoxView1501 : BoxView
-	{
-		public bool Fired { get; set; }
+	public bool Fired { get; set; }
 
-		public void OnBoxViewTapped(object sender, EventArgs e)
-		{
-			Fired = true;
-		}
+	public void OnBoxViewTapped(object sender, EventArgs e)
+	{
+		Fired = true;
 	}
+}
 
-	public class Issue1501
+public class Issue1501
+{
+	[Fact]
+	public void ConnectEventsInGestureRecognizers()
 	{
-		[Fact]
-		public void ConnectEventsInGestureRecognizers()
-		{
-			var xaml = @"
+		var xaml = @"
 				<BoxView 
 					xmlns=""http://xamarin.com/schemas/2014/forms""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
@@ -28,13 +28,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				    </BoxView.GestureRecognizers>
 				</BoxView>";
 
-			BoxView1501 layout = null;
-			AssertEx.DoesNotThrow(() => { layout = new BoxView1501().LoadFromXaml(xaml); });
+		BoxView1501 layout = null;
+		AssertEx.DoesNotThrow(() => { layout = new BoxView1501().LoadFromXaml(xaml); });
 
-			Assert.False(layout.Fired);
-			var tgr = layout.GestureRecognizers[0] as TapGestureRecognizer;
-			tgr.SendTapped(layout);
-			Assert.True(layout.Fired);
-		}
+		Assert.False(layout.Fired);
+		var tgr = layout.GestureRecognizers[0] as TapGestureRecognizer;
+		tgr.SendTapped(layout);
+		Assert.True(layout.Fired);
 	}
 }

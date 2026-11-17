@@ -2,34 +2,33 @@
 using Xamarin.Forms.Internals;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Xamarin.Forms.Core.UnitTests;
+
+public class NumericExtensionsTests
 {
-	public class NumericExtensionsTests
+	[Fact]
+	public void InRange()
 	{
-		[Fact]
-		public void InRange()
-		{
-			Assert.Equal(5, 5.Clamp(0, 10));
-		}
+		Assert.Equal(5, 5.Clamp(0, 10));
+	}
 
-		[Fact]
-		public void BelowMin()
-		{
-			Assert.Equal(5, 0.Clamp(5, 10));
-		}
+	[Fact]
+	public void BelowMin()
+	{
+		Assert.Equal(5, 0.Clamp(5, 10));
+	}
 
-		[Fact]
-		public void AboveMax()
-		{
-			Assert.Equal(5, 10.Clamp(0, 5));
-		}
+	[Fact]
+	public void AboveMax()
+	{
+		Assert.Equal(5, 10.Clamp(0, 5));
+	}
 
-		[Fact]
-		public void MinMaxWrong()
-		{
-			Assert.Equal(0, 10.Clamp(5, 0));
-			Assert.Equal(0, 5.Clamp(10, 0));
-			Assert.Equal(5, 0.Clamp(10, 5));
-		}
+	[Fact]
+	public void MinMaxWrong()
+	{
+		Assert.Equal(0, 10.Clamp(5, 0));
+		Assert.Equal(0, 5.Clamp(10, 0));
+		Assert.Equal(5, 0.Clamp(10, 5));
 	}
 }

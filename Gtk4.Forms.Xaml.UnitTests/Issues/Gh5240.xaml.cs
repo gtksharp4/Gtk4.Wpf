@@ -4,29 +4,28 @@ using Xunit;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+[XamlCompilation(XamlCompilationOptions.Skip)]
+public partial class Gh5240 : ContentPage
 {
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class Gh5240 : ContentPage
+	public Gh5240() => InitializeComponent();
+	public Gh5240(bool useCompiledXaml)
 	{
-		public Gh5240() => InitializeComponent();
-		public Gh5240(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests: IDisposable
-		{
-			public Tests() => Device.PlatformServices = new MockPlatformServices();
-			public void Dispose() => Device.PlatformServices = null;
+	public class Tests: IDisposable
+	{
+		public Tests() => Device.PlatformServices = new MockPlatformServices();
+		public void Dispose() => Device.PlatformServices = null;
 
-			[Theory]
-			[InlineData(true)]
-			public void FailOnUnresolvedDataType(bool useCompiledXaml)
-			{
-				if (useCompiledXaml)
-					AssertEx.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh5240)));
-			}
+		[Theory]
+		[InlineData(true)]
+		public void FailOnUnresolvedDataType(bool useCompiledXaml)
+		{
+			if (useCompiledXaml)
+				AssertEx.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh5240)));
 		}
 	}
 }

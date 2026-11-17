@@ -1,14 +1,14 @@
 ﻿using System;
 using Xunit;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public class Issue1564
 {
-	public class Issue1564
+	[Fact]
+	public void ViewCellAsXamlRoot()
 	{
-		[Fact]
-		public void ViewCellAsXamlRoot()
-		{
-			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+		var xaml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
 				<ViewCell 
 					xmlns=""http://xamarin.com/schemas/2014/forms"" 
 					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"" 
@@ -19,10 +19,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				        </StackLayout>
 				    </ViewCell.View>
 				</ViewCell>";
-			var cell = new ViewCell().LoadFromXaml(xaml);
-			Assert.NotNull(cell);
-			Assert.Equal("This is my label", ((cell.View as StackLayout).Children[0] as Label).Text);
-		}
+		var cell = new ViewCell().LoadFromXaml(xaml);
+		Assert.NotNull(cell);
+		Assert.Equal("This is my label", ((cell.View as StackLayout).Children[0] as Label).Text);
 	}
 }
-

@@ -4,35 +4,34 @@ using Xunit;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public class Gh4102VM
 {
-	public class Gh4102VM
+	public Gh4102VM SomeNullValue { get; set; }
+	public string SomeProperty { get; set; } = "Foo";
+}
+
+public partial class Gh4102 : ContentPage
+{
+	public Gh4102() => InitializeComponent();
+
+	public Gh4102(bool useCompiledXaml)
 	{
-		public Gh4102VM SomeNullValue { get; set; }
-		public string SomeProperty { get; set; } = "Foo";
+		//this stub will be replaced at compile time
 	}
 
-	public partial class Gh4102 : ContentPage
+	public class Tests: IDisposable
 	{
-		public Gh4102() => InitializeComponent();
+		public Tests() => Device.PlatformServices = new MockPlatformServices();
+		public void Dispose() => Device.PlatformServices = null;
 
-		public Gh4102(bool useCompiledXaml)
+		[Theory]
+		[InlineData(true), InlineData(false)]
+		public void CompiledBindingsNullInPath(bool useCompiledXaml)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		public class Tests: IDisposable
-		{
-			public Tests() => Device.PlatformServices = new MockPlatformServices();
-			public void Dispose() => Device.PlatformServices = null;
-
-			[Theory]
-			[InlineData(true), InlineData(false)]
-			public void CompiledBindingsNullInPath(bool useCompiledXaml)
-			{
-				var layout = new Gh4102(useCompiledXaml) { BindingContext = new Gh4102VM() };
-				Assert.Null(layout.label.Text);
-			}
+			var layout = new Gh4102(useCompiledXaml) { BindingContext = new Gh4102VM() };
+			Assert.Null(layout.label.Text);
 		}
 	}
 }

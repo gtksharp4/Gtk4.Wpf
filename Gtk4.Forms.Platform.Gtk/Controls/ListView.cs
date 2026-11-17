@@ -11,604 +11,603 @@ using Xamarin.Forms.Platform.GTK.Extensions;
 // Gtk.ListStore is [Obsolete] in GTK4 but has no tree-model replacement yet.
 #pragma warning disable CS0612
 
-namespace Xamarin.Forms.Platform.GTK.Controls
+namespace Xamarin.Forms.Platform.GTK.Controls;
+
+public class ItemTappedEventArgs : EventArgs
 {
-	public class ItemTappedEventArgs : EventArgs
+	private object _item;
+	private MouseButton _mouseButton;
+
+	public object Item
 	{
-		private object _item;
-		private MouseButton _mouseButton;
-
-		public object Item
+		get
 		{
-			get
-			{
-				return _item;
-			}
-		}
-
-		public MouseButton MouseButton
-		{
-			get
-			{
-				return _mouseButton;
-			}
-		}
-
-		public ItemTappedEventArgs(object item, MouseButton button)
-		{
-			_item = item;
-			_mouseButton = button;
+			return _item;
 		}
 	}
 
-	public class SelectedItemEventArgs : EventArgs
+	public MouseButton MouseButton
 	{
-		private object _selectedItem;
-
-		public object SelectedItem
+		get
 		{
-			get
-			{
-				return _selectedItem;
-			}
-		}
-
-		public SelectedItemEventArgs(object selectedItem)
-		{
-			_selectedItem = selectedItem;
+			return _mouseButton;
 		}
 	}
 
-	public class ListViewSeparator : EventBox
+	public ItemTappedEventArgs(object item, MouseButton button)
 	{
-		public ListViewSeparator()
+		_item = item;
+		_mouseButton = button;
+	}
+}
+
+public class SelectedItemEventArgs : EventArgs
+{
+	private object _selectedItem;
+
+	public object SelectedItem
+	{
+		get
 		{
-			HeightRequest = 1;
-			StyleExtensions.SetBackgroundColor(this, Color.Gray.ToGtkColor());    // Default Color: Gray
-			VisibleWindow = false;
+			return _selectedItem;
 		}
 	}
 
-	public enum State : uint
+	public SelectedItemEventArgs(object selectedItem)
 	{
-		Started,
-		Loading,
-		Completed,
-		Finished
-	};
+		_selectedItem = selectedItem;
+	}
+}
 
-	public class IdleData
+public class ListViewSeparator : EventBox
+{
+	public ListViewSeparator()
 	{
-		public State LoadState;
-		public uint LoadId;
-		public Gtk.ListStore ListStore;
-		public int NumItems;
-		public int NumLoaded;
-		public List Items;
+		HeightRequest = 1;
+		StyleExtensions.SetBackgroundColor(this, Color.Gray.ToGtkColor());    // Default Color: Gray
+		VisibleWindow = false;
+	}
+}
+
+public enum State : uint
+{
+	Started,
+	Loading,
+	Completed,
+	Finished
+};
+
+public class IdleData
+{
+	public State LoadState;
+	public uint LoadId;
+	public Gtk.ListStore ListStore;
+	public int NumItems;
+	public int NumLoaded;
+	public List Items;
+}
+
+public class ListView : ScrolledWindow
+{
+	private const int RefreshHeight = 48;
+
+	private Box _root;
+	private EventBox _headerContainer;
+	private Widget _header;
+	private Box _list;
+	private EventBox _footerContainer;
+	private Widget _footer;
+	private Viewport _viewPort;
+	private IEnumerable<Widget> _cells;
+	private List<ListViewSeparator> _separators;
+	private object _selectedItem;
+	private Gtk.Grid _refreshHeader;
+	private ImageButton _refreshButton;
+	private Gtk.Label _refreshLabel;
+	private bool _isPullToRequestEnabled;
+	private bool _refreshing;
+	private IdleData _data;
+	private Gtk.ListStore _store = null;
+	private List _items;
+	private CellBase _selectedCell;
+	private Gdk.Color _selectionColor;
+
+	public delegate void ItemTappedEventHandler(object sender, ItemTappedEventArgs args);
+	public event ItemTappedEventHandler OnItemTapped = null;
+
+	public delegate void SelectedItemEventHandler(object sender, SelectedItemEventArgs args);
+	public event SelectedItemEventHandler OnSelectedItemChanged = null;
+
+	public delegate void RefreshEventHandler(object sender, EventArgs args);
+	public event RefreshEventHandler OnRefresh = null;
+
+	public ListView()
+	{
+		BuildListView();
+
+		_selectionColor = DefaultSelectionColor;
 	}
 
-	public class ListView : ScrolledWindow
+	public override void Destroy()
 	{
-		private const int RefreshHeight = 48;
-
-		private Box _root;
-		private EventBox _headerContainer;
-		private Widget _header;
-		private Box _list;
-		private EventBox _footerContainer;
-		private Widget _footer;
-		private Viewport _viewPort;
-		private IEnumerable<Widget> _cells;
-		private List<ListViewSeparator> _separators;
-		private object _selectedItem;
-		private Gtk.Grid _refreshHeader;
-		private ImageButton _refreshButton;
-		private Gtk.Label _refreshLabel;
-		private bool _isPullToRequestEnabled;
-		private bool _refreshing;
-		private IdleData _data;
-		private Gtk.ListStore _store = null;
-		private List _items;
-		private CellBase _selectedCell;
-		private Gdk.Color _selectionColor;
-
-		public delegate void ItemTappedEventHandler(object sender, ItemTappedEventArgs args);
-		public event ItemTappedEventHandler OnItemTapped = null;
-
-		public delegate void SelectedItemEventHandler(object sender, SelectedItemEventArgs args);
-		public event SelectedItemEventHandler OnSelectedItemChanged = null;
-
-		public delegate void RefreshEventHandler(object sender, EventArgs args);
-		public event RefreshEventHandler OnRefresh = null;
-
-		public ListView()
+		// Cancel any in-flight incremental load FIRST. LazyLoadItems registers LoadItems as a
+		// GLib idle source and nothing ever removed it, so a ListView destroyed mid-stream -
+		// navigating away from a page, or an ItemsSource change - left the callback alive,
+		// writing to the very fields nulled below.
+		if (_data != null && _data.LoadId != 0)
 		{
-			BuildListView();
-
-			_selectionColor = DefaultSelectionColor;
+			GLib.Source.Remove(_data.LoadId);
+			_data.LoadId = 0;
+			_data.LoadState = Controls.State.Finished;
 		}
 
-		public override void Destroy()
-		{
-			// Cancel any in-flight incremental load FIRST. LazyLoadItems registers LoadItems as a
-			// GLib idle source and nothing ever removed it, so a ListView destroyed mid-stream -
-			// navigating away from a page, or an ItemsSource change - left the callback alive,
-			// writing to the very fields nulled below.
-			if (_data != null && _data.LoadId != 0)
-			{
-				GLib.Source.Remove(_data.LoadId);
-				_data.LoadId = 0;
-				_data.LoadState = Controls.State.Finished;
-			}
+		_store?.Dispose();
+		_store = null;
+		_root = null;
+		_refreshButton = null;
+		_refreshLabel = null;
+		_headerContainer = null;
+		_header = null;
+		_list = null;
+		_footerContainer = null;
+		_footer = null;
+		_viewPort = null;
+		_refreshHeader = null;
+		base.Destroy();
+	}
 
-			_store?.Dispose();
-			_store = null;
-			_root = null;
-			_refreshButton = null;
-			_refreshLabel = null;
-			_headerContainer = null;
-			_header = null;
-			_list = null;
-			_footerContainer = null;
-			_footer = null;
-			_viewPort = null;
-			_refreshHeader = null;
-			base.Destroy();
+	public static Gdk.Color DefaultSelectionColor = Color.FromHex("#3498DB").ToGtkColor();
+
+	public Widget Header
+	{
+		get
+		{
+			return _header;
 		}
-
-		public static Gdk.Color DefaultSelectionColor = Color.FromHex("#3498DB").ToGtkColor();
-
-		public Widget Header
+		set
 		{
-			get
+			if (_header != value)
 			{
-				return _header;
-			}
-			set
-			{
-				if (_header != value)
-				{
-					_header = value;
-					RefreshHeader(_header);
-				}
+				_header = value;
+				RefreshHeader(_header);
 			}
 		}
+	}
 
-		public IEnumerable<Widget> Items
+	public IEnumerable<Widget> Items
+	{
+		get
 		{
-			get
-			{
-				return _cells;
-			}
-			set
-			{
-				_cells = value;
-				_items = new List(typeof(CellBase));
-				PopulateData(_items);
-			}
+			return _cells;
 		}
-
-		public Widget Footer
+		set
 		{
-			get
-			{
-				return _footer;
-			}
-			set
-			{
-				if (_footer != value)
-				{
-					_footer = value;
-					RefreshFooter(_footer);
-				}
-			}
-		}
-
-		public object SelectedItem
-		{
-			get { return _selectedItem; }
-			set
-			{
-				if (value != _selectedItem)
-				{
-					UpdateSelectedItem(value);
-				}
-			}
-		}
-
-		public bool IsPullToRequestEnabled
-		{
-			get { return _isPullToRequestEnabled; }
-			set { _isPullToRequestEnabled = value; }
-		}
-
-		public bool Refreshing
-		{
-			get { return _refreshing; }
-			set { _refreshing = value; }
-		}
-
-		public Gdk.Color SelectionColor
-		{
-			get
-			{
-				return _selectionColor;
-			}
-
-			set
-			{
-				_selectionColor = value;
-				SelectionColorUpdated();
-			}
-		}
-
-		public void SetBackgroundColor(Gdk.Color backgroundColor)
-		{
-			if (_root != null)
-			{
-				_root.SetBackgroundColor(backgroundColor, StateType.Normal);
-				_viewPort.SetBackgroundColor(backgroundColor, StateType.Normal);
-
-				if (_headerContainer != null && !_headerContainer.Children.Any())
-				{
-					_headerContainer.SetBackgroundColor(backgroundColor, StateType.Normal);
-				}
-
-				if (_footerContainer != null && !_footerContainer.Children.Any())
-				{
-					_footerContainer.SetBackgroundColor(backgroundColor, StateType.Normal);
-				}
-			}
-		}
-
-		public void SetSeparatorColor(Gdk.Color separatorColor)
-		{
-			foreach (var separator in _separators)
-			{
-				separator.SetBackgroundColor(separatorColor, StateType.Normal);
-				separator.VisibleWindow = true;
-			}
-		}
-
-		public void SetSeparatorVisibility(bool visible)
-		{
-			foreach (var separator in _separators)
-			{
-				separator.HeightRequest = visible ? 1 : 0;
-			}
-		}
-
-		public void UpdatePullToRefreshEnabled(bool isPullToRequestEnabled)
-		{
-			IsPullToRequestEnabled = isPullToRequestEnabled;
-
-			if (_refreshHeader == null)
-			{
-				return;
-			}
-
-			if (IsPullToRequestEnabled)
-			{
-				_root.RemoveFromContainer(_refreshHeader);
-				_root.PackStart(_refreshHeader, false, false, 0);
-				_root.ReorderChild(_refreshHeader, 0);
-			}
-			else
-			{
-				_root.RemoveFromContainer(_refreshHeader);
-			}
-		}
-
-		public void UpdateIsRefreshing(bool refreshing)
-		{
-			Refreshing = refreshing;
-
-			if (Refreshing)
-			{
-				_refreshHeader.Attach(_refreshLabel, 0, 0, 1, 1);
-			}
-			else
-			{
-				_refreshHeader.RemoveFromContainer(_refreshLabel);
-			}
-
-			_refreshButton.Visible = !Refreshing;
-			_refreshLabel.Visible = Refreshing;
-		}
-
-		public void SetSeletedItem(object selectedItem)
-		{
-			if (selectedItem == null)
-			{
-				return;
-			}
-
-			SelectedItem = selectedItem;
-		}
-
-		private void BuildListView()
-		{
+			_cells = value;
 			_items = new List(typeof(CellBase));
+			PopulateData(_items);
+		}
+	}
 
-			CanFocus = true;
-			ShadowType = ShadowType.None;
-			BorderWidth = 0;
-			HscrollbarPolicy = PolicyType.Never;
-			VscrollbarPolicy = PolicyType.Automatic;
-
-			_root = new Box(Gtk.Orientation.Vertical, 0);
-			_refreshHeader = new Gtk.Grid { RowHomogeneous = true, ColumnHomogeneous = true };
-			_refreshHeader.HeightRequest = RefreshHeight;
-
-			// Refresh Loading
-			_refreshLabel = new Gtk.Label();
-			_refreshLabel.Text = "Loading";
-
-			// Refresh Button
-			_refreshButton = new ImageButton();
-			_refreshButton.LabelWidget.SetTextFromSpan(
-				new Span()
-				{
-					Text = "Refresh"
-				});
-			// GTK4: Gtk.Stock removed. Use an icon-name image instead.
-			// Generated/Gtk/Image.cs:78 — Image.NewFromIconName(string)
-			var refreshIcon = Gtk.Image.NewFromIconName("view-refresh-symbolic");
-			_refreshButton.ImageWidget.Pixbuf = refreshIcon.Pixbuf;
-			_refreshButton.SetImagePosition(PositionType.Left);
-			_refreshButton.Clicked += (sender, args) =>
+	public Widget Footer
+	{
+		get
+		{
+			return _footer;
+		}
+		set
+		{
+			if (_footer != value)
 			{
-				OnRefresh?.Invoke(this, new EventArgs());
-			};
+				_footer = value;
+				RefreshFooter(_footer);
+			}
+		}
+	}
 
-			_refreshHeader.Attach(_refreshButton, 0, 0, 1, 1);
+	public object SelectedItem
+	{
+		get { return _selectedItem; }
+		set
+		{
+			if (value != _selectedItem)
+			{
+				UpdateSelectedItem(value);
+			}
+		}
+	}
 
+	public bool IsPullToRequestEnabled
+	{
+		get { return _isPullToRequestEnabled; }
+		set { _isPullToRequestEnabled = value; }
+	}
+
+	public bool Refreshing
+	{
+		get { return _refreshing; }
+		set { _refreshing = value; }
+	}
+
+	public Gdk.Color SelectionColor
+	{
+		get
+		{
+			return _selectionColor;
+		}
+
+		set
+		{
+			_selectionColor = value;
+			SelectionColorUpdated();
+		}
+	}
+
+	public void SetBackgroundColor(Gdk.Color backgroundColor)
+	{
+		if (_root != null)
+		{
+			_root.SetBackgroundColor(backgroundColor, StateType.Normal);
+			_viewPort.SetBackgroundColor(backgroundColor, StateType.Normal);
+
+			if (_headerContainer != null && !_headerContainer.Children.Any())
+			{
+				_headerContainer.SetBackgroundColor(backgroundColor, StateType.Normal);
+			}
+
+			if (_footerContainer != null && !_footerContainer.Children.Any())
+			{
+				_footerContainer.SetBackgroundColor(backgroundColor, StateType.Normal);
+			}
+		}
+	}
+
+	public void SetSeparatorColor(Gdk.Color separatorColor)
+	{
+		foreach (var separator in _separators)
+		{
+			separator.SetBackgroundColor(separatorColor, StateType.Normal);
+			separator.VisibleWindow = true;
+		}
+	}
+
+	public void SetSeparatorVisibility(bool visible)
+	{
+		foreach (var separator in _separators)
+		{
+			separator.HeightRequest = visible ? 1 : 0;
+		}
+	}
+
+	public void UpdatePullToRefreshEnabled(bool isPullToRequestEnabled)
+	{
+		IsPullToRequestEnabled = isPullToRequestEnabled;
+
+		if (_refreshHeader == null)
+		{
+			return;
+		}
+
+		if (IsPullToRequestEnabled)
+		{
+			_root.RemoveFromContainer(_refreshHeader);
 			_root.PackStart(_refreshHeader, false, false, 0);
-
-			// Header
-			_headerContainer = new EventBox();
-			_root.PackStart(_headerContainer, false, false, 0);
-
-			// List
-			_list = new Box(Gtk.Orientation.Vertical, 0);
-			_separators = new List<ListViewSeparator>();
-			_root.PackStart(_list, true, true, 0);
-
-			// Footer
-			_footerContainer = new EventBox();
-			_root.PackStart(_footerContainer, false, false, 0);
-
-			_viewPort = new Viewport();
-			_viewPort.ShadowType = ShadowType.None;
-			_viewPort.BorderWidth = 0;
-			_viewPort.Add(_root);
-
-			Add(_viewPort);
-
-			ShowAll();
+			_root.ReorderChild(_refreshHeader, 0);
 		}
-
-		private void RefreshHeader(Widget newHeader)
+		else
 		{
-			if (_headerContainer != null)
-			{
-				foreach (var child in _headerContainer.Children)
-				{
-					_headerContainer.RemoveFromContainer(child);
-					child.Dispose();
-					child.Destroy();
-				}
-			}
-
-			if (newHeader != null)
-			{
-				_header = newHeader;
-				_headerContainer.Add(_header);
-				_header.ShowAll();
-			}
+			_root.RemoveFromContainer(_refreshHeader);
 		}
+	}
 
-		private void RefreshFooter(Widget newFooter)
+	public void UpdateIsRefreshing(bool refreshing)
+	{
+		Refreshing = refreshing;
+
+		if (Refreshing)
 		{
-			if (_footerContainer != null)
-			{
-				foreach (var child in _footerContainer.Children)
-				{
-					_footerContainer.RemoveFromContainer(child);
-					child.Dispose();
-					child.Destroy();
-				}
-			}
-
-			if (newFooter != null)
-			{
-				_footer = newFooter;
-				_footerContainer.Add(_footer);
-				_footer.ShowAll();
-			}
+			_refreshHeader.Attach(_refreshLabel, 0, 0, 1, 1);
 		}
-
-		private void LazyLoadItems(List items)
+		else
 		{
-			_data = new IdleData();
-
-			_data.Items = items;
-			_data.NumItems = 0;
-			_data.NumLoaded = 0;
-			_data.ListStore = _store;
-			_data.LoadState = Controls.State.Started;
-			_data.LoadId = Idle.Add(new IdleHandler(LoadItems));
+			_refreshHeader.RemoveFromContainer(_refreshLabel);
 		}
 
-		private bool LoadItems()
+		_refreshButton.Visible = !Refreshing;
+		_refreshLabel.Visible = Refreshing;
+	}
+
+	public void SetSeletedItem(object selectedItem)
+	{
+		if (selectedItem == null)
 		{
-			IdleData id = _data;
-			CellBase obj;
-			TreeIter iter;
-
-			// Make sure we're in the right state 
-			var isLoading = (id.LoadState == Controls.State.Started) ||
-				(id.LoadState == Controls.State.Loading);
-
-			if (!isLoading)
-			{
-				id.LoadState = Controls.State.Completed;
-				return false;
-			}
-
-			// No items 
-			if (id.Items.Count == 0)
-			{
-				id.LoadState = Controls.State.Completed;
-				return false;
-			}
-
-			// First run 
-			if (id.NumItems == 0)
-			{
-				id.NumItems = id.Items.Count;
-				id.NumLoaded = 0;
-				id.LoadState = Controls.State.Loading;
-			}
-
-			// Get the item in the list at pos n_loaded 
-			obj = id.Items[id.NumLoaded] as CellBase;
-
-			// Append the row to the store
-			iter = id.ListStore.AppendValues(obj);
-
-			// Fill in the row at position n_loaded
-			id.ListStore.SetValue(iter, 0, obj);
-
-			id.NumLoaded += 1;
-
-			// Update UI with every item
-			UpdateItem(obj);
-
-			// We loaded everything, so we can change state and remove the idle callback function
-			if (id.NumLoaded == id.NumItems)
-			{
-				id.LoadState = Controls.State.Completed;
-				id.NumLoaded = 0;
-				id.NumItems = 0;
-				id.Items = null;
-
-				CleanupLoadItems();
-
-				return false;
-			}
-			else
-			{
-				return true;
-			}
+			return;
 		}
 
-		private void UpdateItem(CellBase cell)
+		SelectedItem = selectedItem;
+	}
+
+	private void BuildListView()
+	{
+		_items = new List(typeof(CellBase));
+
+		CanFocus = true;
+		ShadowType = ShadowType.None;
+		BorderWidth = 0;
+		HscrollbarPolicy = PolicyType.Never;
+		VscrollbarPolicy = PolicyType.Automatic;
+
+		_root = new Box(Gtk.Orientation.Vertical, 0);
+		_refreshHeader = new Gtk.Grid { RowHomogeneous = true, ColumnHomogeneous = true };
+		_refreshHeader.HeightRequest = RefreshHeight;
+
+		// Refresh Loading
+		_refreshLabel = new Gtk.Label();
+		_refreshLabel.Text = "Loading";
+
+		// Refresh Button
+		_refreshButton = new ImageButton();
+		_refreshButton.LabelWidget.SetTextFromSpan(
+			new Span()
+			{
+				Text = "Refresh"
+			});
+		// GTK4: Gtk.Stock removed. Use an icon-name image instead.
+		// Generated/Gtk/Image.cs:78 — Image.NewFromIconName(string)
+		var refreshIcon = Gtk.Image.NewFromIconName("view-refresh-symbolic");
+		_refreshButton.ImageWidget.Pixbuf = refreshIcon.Pixbuf;
+		_refreshButton.SetImagePosition(PositionType.Left);
+		_refreshButton.Clicked += (sender, args) =>
 		{
-			cell.ButtonPressEvent += (sender, args) =>
-			{
-				var gtkCell = sender as CellBase;
+			OnRefresh?.Invoke(this, new EventArgs());
+		};
 
-				if (gtkCell != null && gtkCell.Cell != null)
-				{
-					SelectedItem = gtkCell.Item;
+		_refreshHeader.Attach(_refreshButton, 0, 0, 1, 1);
 
-					MarkCellAsSelected(gtkCell);
+		_root.PackStart(_refreshHeader, false, false, 0);
 
-					OnItemTapped?.Invoke(this, new ItemTappedEventArgs(SelectedItem, (MouseButton)args.Event.Button - 1));
-				}
-			};
+		// Header
+		_headerContainer = new EventBox();
+		_root.PackStart(_headerContainer, false, false, 0);
 
-			cell.VisibleWindow = false;
+		// List
+		_list = new Box(Gtk.Orientation.Vertical, 0);
+		_separators = new List<ListViewSeparator>();
+		_root.PackStart(_list, true, true, 0);
 
-			_list.PackStart(cell, false, false, 0);
-			cell.ShowAll();
+		// Footer
+		_footerContainer = new EventBox();
+		_root.PackStart(_footerContainer, false, false, 0);
 
-			var separator = new ListViewSeparator();
-			_separators.Add(separator);
-			_list.PackStart(separator, false, false, 0);
-			separator.ShowAll();
-		}
+		_viewPort = new Viewport();
+		_viewPort.ShadowType = ShadowType.None;
+		_viewPort.BorderWidth = 0;
+		_viewPort.Add(_root);
 
-		private void CleanupLoadItems()
+		Add(_viewPort);
+
+		ShowAll();
+	}
+
+	private void RefreshHeader(Widget newHeader)
+	{
+		if (_headerContainer != null)
 		{
-			Debug.Assert(_data.LoadState == Controls.State.Completed);
-
-			_list.ShowAll();
-
-			if (_data.ListStore == null)
-				Debug.WriteLine("Something was wrong!");
-		}
-
-		private void PopulateData(List items)
-		{
-			_store = new Gtk.ListStore(typeof(CellBase));
-
-			foreach (var cell in _cells)
+			foreach (var child in _headerContainer.Children)
 			{
-				items.Append(cell);
-			}
-
-			ClearList();
-			LazyLoadItems(items);
-		}
-
-		private void ClearList()
-		{
-			_selectedCell = null;
-
-			if (_list != null)
-			{
-				foreach (var child in _list.Children)
-				{
-					_list.RemoveFromContainer(child);
-				}
-			}
-
-			if (_separators != null)
-			{
-				_separators.Clear();
+				_headerContainer.RemoveFromContainer(child);
+				child.Dispose();
+				child.Destroy();
 			}
 		}
 
-		private void UpdateSelectedItem(object value)
+		if (newHeader != null)
 		{
-			_selectedItem = value;
-
-			CellBase cell = _list.Children.OfType<CellBase>().FirstOrDefault(c => c.Item == value);
-			MarkCellAsSelected(cell);
-
-			OnSelectedItemChanged?.Invoke(this, new SelectedItemEventArgs(_selectedItem));
+			_header = newHeader;
+			_headerContainer.Add(_header);
+			_header.ShowAll();
 		}
+	}
 
-		private void MarkCellAsSelected(CellBase cell)
+	private void RefreshFooter(Widget newFooter)
+	{
+		if (_footerContainer != null)
 		{
-			if (cell == null)
-				return;
-
-			if (cell.Cell.GetIsGroupHeader<ItemsView<Cell>, Cell>())
-				return;
-
-			foreach (var childCell in _list.Children.OfType<CellBase>())
+			foreach (var child in _footerContainer.Children)
 			{
-				bool isTargetCell = cell == childCell;
-
-				childCell.VisibleWindow = isTargetCell;
-
-				if (isTargetCell)
-				{
-					_selectedCell = childCell;
-					childCell.SetBackgroundColor(_selectionColor, StateType.Normal);
-				}
+				_footerContainer.RemoveFromContainer(child);
+				child.Dispose();
+				child.Destroy();
 			}
 		}
 
-		private void SelectionColorUpdated()
+		if (newFooter != null)
 		{
-			if (_selectedCell == null)
-				return;
-
-			_selectedCell.SetBackgroundColor(_selectionColor, StateType.Normal);
+			_footer = newFooter;
+			_footerContainer.Add(_footer);
+			_footer.ShowAll();
 		}
+	}
+
+	private void LazyLoadItems(List items)
+	{
+		_data = new IdleData();
+
+		_data.Items = items;
+		_data.NumItems = 0;
+		_data.NumLoaded = 0;
+		_data.ListStore = _store;
+		_data.LoadState = Controls.State.Started;
+		_data.LoadId = Idle.Add(new IdleHandler(LoadItems));
+	}
+
+	private bool LoadItems()
+	{
+		IdleData id = _data;
+		CellBase obj;
+		TreeIter iter;
+
+		// Make sure we're in the right state 
+		var isLoading = (id.LoadState == Controls.State.Started) ||
+		                (id.LoadState == Controls.State.Loading);
+
+		if (!isLoading)
+		{
+			id.LoadState = Controls.State.Completed;
+			return false;
+		}
+
+		// No items 
+		if (id.Items.Count == 0)
+		{
+			id.LoadState = Controls.State.Completed;
+			return false;
+		}
+
+		// First run 
+		if (id.NumItems == 0)
+		{
+			id.NumItems = id.Items.Count;
+			id.NumLoaded = 0;
+			id.LoadState = Controls.State.Loading;
+		}
+
+		// Get the item in the list at pos n_loaded 
+		obj = id.Items[id.NumLoaded] as CellBase;
+
+		// Append the row to the store
+		iter = id.ListStore.AppendValues(obj);
+
+		// Fill in the row at position n_loaded
+		id.ListStore.SetValue(iter, 0, obj);
+
+		id.NumLoaded += 1;
+
+		// Update UI with every item
+		UpdateItem(obj);
+
+		// We loaded everything, so we can change state and remove the idle callback function
+		if (id.NumLoaded == id.NumItems)
+		{
+			id.LoadState = Controls.State.Completed;
+			id.NumLoaded = 0;
+			id.NumItems = 0;
+			id.Items = null;
+
+			CleanupLoadItems();
+
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	}
+
+	private void UpdateItem(CellBase cell)
+	{
+		cell.ButtonPressEvent += (sender, args) =>
+		{
+			var gtkCell = sender as CellBase;
+
+			if (gtkCell != null && gtkCell.Cell != null)
+			{
+				SelectedItem = gtkCell.Item;
+
+				MarkCellAsSelected(gtkCell);
+
+				OnItemTapped?.Invoke(this, new ItemTappedEventArgs(SelectedItem, (MouseButton)args.Event.Button - 1));
+			}
+		};
+
+		cell.VisibleWindow = false;
+
+		_list.PackStart(cell, false, false, 0);
+		cell.ShowAll();
+
+		var separator = new ListViewSeparator();
+		_separators.Add(separator);
+		_list.PackStart(separator, false, false, 0);
+		separator.ShowAll();
+	}
+
+	private void CleanupLoadItems()
+	{
+		Debug.Assert(_data.LoadState == Controls.State.Completed);
+
+		_list.ShowAll();
+
+		if (_data.ListStore == null)
+			Debug.WriteLine("Something was wrong!");
+	}
+
+	private void PopulateData(List items)
+	{
+		_store = new Gtk.ListStore(typeof(CellBase));
+
+		foreach (var cell in _cells)
+		{
+			items.Append(cell);
+		}
+
+		ClearList();
+		LazyLoadItems(items);
+	}
+
+	private void ClearList()
+	{
+		_selectedCell = null;
+
+		if (_list != null)
+		{
+			foreach (var child in _list.Children)
+			{
+				_list.RemoveFromContainer(child);
+			}
+		}
+
+		if (_separators != null)
+		{
+			_separators.Clear();
+		}
+	}
+
+	private void UpdateSelectedItem(object value)
+	{
+		_selectedItem = value;
+
+		CellBase cell = _list.Children.OfType<CellBase>().FirstOrDefault(c => c.Item == value);
+		MarkCellAsSelected(cell);
+
+		OnSelectedItemChanged?.Invoke(this, new SelectedItemEventArgs(_selectedItem));
+	}
+
+	private void MarkCellAsSelected(CellBase cell)
+	{
+		if (cell == null)
+			return;
+
+		if (cell.Cell.GetIsGroupHeader<ItemsView<Cell>, Cell>())
+			return;
+
+		foreach (var childCell in _list.Children.OfType<CellBase>())
+		{
+			bool isTargetCell = cell == childCell;
+
+			childCell.VisibleWindow = isTargetCell;
+
+			if (isTargetCell)
+			{
+				_selectedCell = childCell;
+				childCell.SetBackgroundColor(_selectionColor, StateType.Normal);
+			}
+		}
+	}
+
+	private void SelectionColorUpdated()
+	{
+		if (_selectedCell == null)
+			return;
+
+		_selectedCell.SetBackgroundColor(_selectionColor, StateType.Normal);
 	}
 }

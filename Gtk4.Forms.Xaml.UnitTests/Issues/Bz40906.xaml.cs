@@ -4,41 +4,40 @@ using Xunit;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class Bz40906 : ContentPage
 {
-	public partial class Bz40906 : ContentPage
+	public Bz40906()
 	{
-		public Bz40906()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Bz40906(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Bz40906(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
 		: IDisposable{
-			public Tests()
-{
-				Device.PlatformServices = new MockPlatformServices();
-			}
+		public Tests()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+		}
 
-			public void Dispose()
-{
-				Device.PlatformServices = null;
-			}
+		public void Dispose()
+		{
+			Device.PlatformServices = null;
+		}
 
-			[Theory]
-			[InlineData(true)]
-			[InlineData(false)]
-			public void ParsingCDATA(bool useCompiledXaml)
-			{
-				var page = new Bz40906(useCompiledXaml);
-				Assert.Equal("Foo", page.label0.Text);
-				Assert.Equal("FooBar>><<", page.label1.Text);
-			}
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void ParsingCDATA(bool useCompiledXaml)
+		{
+			var page = new Bz40906(useCompiledXaml);
+			Assert.Equal("Foo", page.label0.Text);
+			Assert.Equal("FooBar>><<", page.label1.Text);
 		}
 	}
 }

@@ -3,39 +3,38 @@ using System.Collections.Generic;
 using Xunit;
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests
-{
-	public class U001Page : ContentPage
-	{
-		public U001Page()
-		{
-			;
-		}
+namespace Xamarin.Forms.Xaml.UnitTests;
 
+public class U001Page : ContentPage
+{
+	public U001Page()
+	{
+		;
 	}
 
-	public partial class Unreported001 : TabbedPage
+}
+
+public partial class Unreported001 : TabbedPage
+{
+	public Unreported001()
 	{
-		public Unreported001()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Unreported001(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Unreported001(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-		public class Tests
+	public class Tests
+	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void DoesNotThrow(bool useCompiledXaml)
 		{
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void DoesNotThrow(bool useCompiledXaml)
-			{
-				var p = new Unreported001(useCompiledXaml);
-				Assert.IsType<U001Page>(p.navpage.CurrentPage);
-			}
+			var p = new Unreported001(useCompiledXaml);
+			Assert.IsType<U001Page>(p.navpage.CurrentPage);
 		}
 	}
 }

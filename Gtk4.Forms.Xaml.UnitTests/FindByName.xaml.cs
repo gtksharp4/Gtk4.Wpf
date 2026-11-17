@@ -2,40 +2,39 @@
 
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.Xaml.UnitTests;
+
+public partial class FindByName : ContentPage
 {
-	public partial class FindByName : ContentPage
+	public FindByName()
 	{
-		public FindByName()
+		InitializeComponent();
+	}
+
+	public FindByName(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
+
+	public class FindByNameTests
+	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void TestRootName(bool useCompiledXaml)
 		{
-			InitializeComponent();
+			var page = new FindByName(useCompiledXaml);
+			Assert.Same(page, ((Forms.Internals.INameScope)page).FindByName("root"));
+			Assert.Same(page, page.FindByName<FindByName>("root"));
 		}
 
-		public FindByName(bool useCompiledXaml)
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void TestName(bool useCompiledXaml)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		public class FindByNameTests
-		{
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void TestRootName(bool useCompiledXaml)
-			{
-				var page = new FindByName(useCompiledXaml);
-				Assert.Same(page, ((Forms.Internals.INameScope)page).FindByName("root"));
-				Assert.Same(page, page.FindByName<FindByName>("root"));
-			}
-
-			[Theory]
-			[InlineData(false)]
-			[InlineData(true)]
-			public void TestName(bool useCompiledXaml)
-			{
-				var page = new FindByName(useCompiledXaml);
-				Assert.Same(page.label0, page.FindByName<Label>("label0"));
-			}
+			var page = new FindByName(useCompiledXaml);
+			Assert.Same(page.label0, page.FindByName<Label>("label0"));
 		}
 	}
 }

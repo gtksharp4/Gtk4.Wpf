@@ -3,90 +3,89 @@ using System.Windows;
 using System.Windows.Input;
 using Xunit;
 
-namespace Gtk.Forms.PresentationFramework.Tests
+namespace Gtk.Forms.PresentationFramework.Tests;
+
+/// <summary>
+/// E7: CommandManager walks LogicalParent, not InheritanceParent.
+/// A CommandBinding on an ancestor is found from a descendant.
+/// A KeyBinding with a RoutedCommand whose ancestor has a CommandBinding executes.
+/// </summary>
+public class CommandRoutingLogicalParentTests
 {
-	/// <summary>
-	/// E7: CommandManager walks LogicalParent, not InheritanceParent.
-	/// A CommandBinding on an ancestor is found from a descendant.
-	/// A KeyBinding with a RoutedCommand whose ancestor has a CommandBinding executes.
-	/// </summary>
-	public class CommandRoutingLogicalParentTests
+	sealed class TestEl : UIElement
 	{
-		sealed class TestEl : UIElement
+		new internal UIElement? LogicalParent
 		{
-			new internal UIElement? LogicalParent
-			{
-				get => base.LogicalParent;
-				set => base.LogicalParent = value;
-			}
-
-			protected override Gtk.Widget CreateWidget() =>
-				throw new NotSupportedException("No GTK in pure tests.");
+			get => base.LogicalParent;
+			set => base.LogicalParent = value;
 		}
 
-		[Fact]
-		public void CommandBinding_on_ancestor_found_via_LogicalParent()
-		{
-			bool executed = false;
-			var cmd = new RoutedCommand("E7Ancestor", typeof(CommandRoutingLogicalParentTests));
+		protected override Gtk.Widget CreateWidget() =>
+			throw new NotSupportedException("No GTK in pure tests.");
+	}
 
-			var grandparent = new TestEl();
-			var parent = new TestEl { LogicalParent = grandparent };
-			var child = new TestEl { LogicalParent = parent };
+	[Fact]
+	public void CommandBinding_on_ancestor_found_via_LogicalParent()
+	{
+		bool executed = false;
+		var cmd = new RoutedCommand("E7Ancestor", typeof(CommandRoutingLogicalParentTests));
 
-			grandparent.CommandBindings.Add(new CommandBinding(cmd, (s, e) => executed = true));
+		var grandparent = new TestEl();
+		var parent = new TestEl { LogicalParent = grandparent };
+		var child = new TestEl { LogicalParent = parent };
 
-			cmd.Execute(null, child);
+		grandparent.CommandBindings.Add(new CommandBinding(cmd, (s, e) => executed = true));
 
-			Assert.True(executed);
-		}
+		cmd.Execute(null, child);
 
-		[Fact]
-		public void RoutedCommand_CanExecute_walks_LogicalParent()
-		{
-			var cmd = new RoutedCommand("E7CanEx", typeof(CommandRoutingLogicalParentTests));
+		Assert.True(executed);
+	}
 
-			var parent = new TestEl();
-			var child = new TestEl { LogicalParent = parent };
+	[Fact]
+	public void RoutedCommand_CanExecute_walks_LogicalParent()
+	{
+		var cmd = new RoutedCommand("E7CanEx", typeof(CommandRoutingLogicalParentTests));
 
-			parent.CommandBindings.Add(new CommandBinding(
-				cmd,
-				(s, e) => { },
-				(s, e) => e.CanExecute = false));
+		var parent = new TestEl();
+		var child = new TestEl { LogicalParent = parent };
 
-			Assert.False(cmd.CanExecute(null, child));
-		}
+		parent.CommandBindings.Add(new CommandBinding(
+			cmd,
+			(s, e) => { },
+			(s, e) => e.CanExecute = false));
 
-		[Fact]
-		public void RoutedCommand_with_no_binding_is_not_executable_and_does_not_recurse()
-		{
-			// Regression: CommandManager fell back to command.CanExecute(parameter) for a
-			// RoutedCommand with no CommandBinding and a null target, re-entering itself
-			// → infinite recursion / stack overflow. A RoutedCommand with no matching
-			// binding must report CanExecute=false and Execute must be a no-op.
-			var cmd = new RoutedCommand("E7NoBinding", typeof(CommandRoutingLogicalParentTests));
+		Assert.False(cmd.CanExecute(null, child));
+	}
 
-			Assert.False(cmd.CanExecute(null));          // null target, no binding
-			cmd.Execute(null);                            // must not throw / overflow
-		}
+	[Fact]
+	public void RoutedCommand_with_no_binding_is_not_executable_and_does_not_recurse()
+	{
+		// Regression: CommandManager fell back to command.CanExecute(parameter) for a
+		// RoutedCommand with no CommandBinding and a null target, re-entering itself
+		// → infinite recursion / stack overflow. A RoutedCommand with no matching
+		// binding must report CanExecute=false and Execute must be a no-op.
+		var cmd = new RoutedCommand("E7NoBinding", typeof(CommandRoutingLogicalParentTests));
 
-		[Fact]
-		public void KeyBinding_with_RoutedCommand_executes_via_ancestor_CommandBinding()
-		{
-			bool executed = false;
-			var cmd = new RoutedCommand("E7Key", typeof(CommandRoutingLogicalParentTests));
+		Assert.False(cmd.CanExecute(null));          // null target, no binding
+		cmd.Execute(null);                            // must not throw / overflow
+	}
 
-			var parent = new TestEl();
-			var child = new TestEl { LogicalParent = parent };
+	[Fact]
+	public void KeyBinding_with_RoutedCommand_executes_via_ancestor_CommandBinding()
+	{
+		bool executed = false;
+		var cmd = new RoutedCommand("E7Key", typeof(CommandRoutingLogicalParentTests));
 
-			parent.CommandBindings.Add(new CommandBinding(cmd, (s, e) => executed = true));
-			child.InputBindings.Add(new KeyBinding(cmd, Key.S, ModifierKeys.Control));
+		var parent = new TestEl();
+		var child = new TestEl { LogicalParent = parent };
 
-			var result = child.InvokeInputBinding(
-				new KeyGestureEventArgs(Key.S, ModifierKeys.Control));
+		parent.CommandBindings.Add(new CommandBinding(cmd, (s, e) => executed = true));
+		child.InputBindings.Add(new KeyBinding(cmd, Key.S, ModifierKeys.Control));
 
-			Assert.True(result);
-			Assert.True(executed);
-		}
+		var result = child.InvokeInputBinding(
+			new KeyGestureEventArgs(Key.S, ModifierKeys.Control));
+
+		Assert.True(result);
+		Assert.True(executed);
 	}
 }
