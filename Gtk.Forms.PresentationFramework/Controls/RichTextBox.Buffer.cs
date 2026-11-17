@@ -16,13 +16,20 @@ public partial class RichTextBox
 		_textView = new Gtk.TextView
 		{
 			Editable = !IsReadOnly,
-			WrapMode = Gtk.WrapMode.Word
+			WrapMode = Gtk.WrapMode.Word,
+			AcceptsTab = AcceptsTab,
 		};
 		_scrolledWindow = new Gtk.ScrolledWindow();
 		_scrolledWindow.Child = _textView;
 
 		SyncBufferFromDocument();
+		// Enable undo AFTER loading initial content so the document is not itself on the undo stack.
+		_textView.Buffer.EnableUndo = IsUndoEnabled;
 		_textView.Buffer.Changed += OnBufferChanged;
+		// Separate from the document round-trip: raise TextChanged for user edits only
+		// (programmatic edits set _updating and raise it once themselves).
+		_textView.Buffer.Changed += (_, _) => { if (!_updating) RaiseTextChanged(); };
+		_textView.Buffer.MarkSet += OnBufferMarkSet;
 		return _scrolledWindow;
 	}
 
