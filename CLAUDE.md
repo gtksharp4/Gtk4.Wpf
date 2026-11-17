@@ -4,10 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository
 
-Fork of `xamarin/Xamarin.Forms` (origin: `pieroviano/Xamarin.Forms`), working on the **`5.0.0`**
+Fork of `xamarin/Xamarin.Forms` (origin: `pieroviano/Xamarin.Forms`), working on the **`1.0.0`**
 branch, which is also the default/PR-target branch here. Upstream Xamarin.Forms reached end of
 support on May 1, 2024 and was succeeded by .NET MAUI; this repo is a maintenance fork of the
-5.0.0 line.
+1.0.0 line.
 
 **This fork has been pruned to the GTK leg only.** The prune removed the Android, iOS, UAP, WPF,
 Tizen, MacOS and DualScreen projects, the Cake build, the Azure pipelines and the original

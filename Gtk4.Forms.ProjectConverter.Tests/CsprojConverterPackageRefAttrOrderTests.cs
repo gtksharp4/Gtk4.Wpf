@@ -15,7 +15,7 @@ public class CsprojConverterPackageRefAttrOrderTests
 			"""
 			<Project>
 			  <ItemGroup>
-			    <PackageReference Version="5.0.0" Include="Xamarin.Forms" />
+			    <PackageReference Version="1.0.0" Include="Xamarin.Forms" />
 			    <PackageReference Include="SomeOtherLib" Version="1.0.0" />
 			  </ItemGroup>
 			</Project>
@@ -35,7 +35,7 @@ public class CsprojConverterPackageRefAttrOrderTests
 			"""
 			<Project>
 			  <ItemGroup>
-			    <PackageReference Version="5.0.0" Include="Xamarin.Forms.Maps" />
+			    <PackageReference Version="1.0.0" Include="Xamarin.Forms.Maps" />
 			  </ItemGroup>
 			</Project>
 			""";
@@ -55,7 +55,7 @@ public class CsprojConverterPackageRefAttrOrderTests
 			"""
 			<Project>
 			  <ItemGroup>
-			    <PackageReference Version="5.0.0" Include="Xamarin.Forms">
+			    <PackageReference Version="1.0.0" Include="Xamarin.Forms">
 			      <PrivateAssets>all</PrivateAssets>
 			    </PackageReference>
 			    <PackageReference Include="SomeOtherLib" Version="1.0.0" />
@@ -97,7 +97,7 @@ public class CsprojConverterPackageRefAttrOrderTests
 			"""
 			<Project>
 			  <ItemGroup>
-			    <PackageReference Version="5.0.0" Include="Xamarin.Forms.Platform.Android" />
+			    <PackageReference Version="1.0.0" Include="Xamarin.Forms.Platform.Android" />
 			  </ItemGroup>
 			</Project>
 			""";

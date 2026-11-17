@@ -9,7 +9,7 @@
         <VersionBuildSuffix Condition="'$(VersionBuildSuffix)'==''">*</VersionBuildSuffix>
         <GtkSharp3VersionBuildSuffix>95</GtkSharp3VersionBuildSuffix>
         <NuGetPackageRoot Condition="'$(NuGetPackageRoot)'==''">$(USERPROFILE)\.nuget\packages\</NuGetPackageRoot>
-        <Gtk4FormsVersion>5.0.0</Gtk4FormsVersion>
+        <Gtk4FormsVersion>1.0.0</Gtk4FormsVersion>
         <GtkSharp3Version>3.24.24</GtkSharp3Version>
         <GtkSharpVersion>4.22.4</GtkSharpVersion>
         <InputBoxLibraryVersion>2.0.0</InputBoxLibraryVersion>

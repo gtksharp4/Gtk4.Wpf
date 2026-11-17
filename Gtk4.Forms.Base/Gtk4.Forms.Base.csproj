@@ -20,7 +20,7 @@
 		<!--
 		  Keep this. SetVersions overwrites Version at build time, but restore never runs targets,
 		  and without an explicit Version the SDK would compose one from the Directory.Build.props
-		  fallbacks as $(VersionPrefix)-$(VersionSuffix), i.e. the prerelease "5.0.0-0", and record
+		  fallbacks as $(VersionPrefix)-$(VersionSuffix), i.e. the prerelease "1.0.0-0", and record
 		  that in project.assets.json — breaking the version the meta-package advertises to consumers.
 		-->
 		<Version>$(VersionPrefix).$(VersionSuffix)</Version>

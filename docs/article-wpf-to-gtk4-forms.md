@@ -54,7 +54,7 @@ Add a single `PackageReference` to **`Gtk4.Forms.Base`**:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Gtk4.Forms.Base" Version="5.0.0.*" />
+  <PackageReference Include="Gtk4.Forms.Base" Version="1.0.0.*" />
 </ItemGroup>
 ```
 
@@ -336,6 +336,6 @@ Windows.
 
 ---
 
-*Part of the Gtk4.Forms `5.0.0` maintenance fork. See also
+*Part of the Gtk4.Forms `1.0.0` maintenance fork. See also
 [`article-gtk4-forms-gtk.md`](article-gtk4-forms-gtk.md) for the architecture of the backend,
 and the `Gtk4.Forms.ControlGallery` project for a complete runnable example.*

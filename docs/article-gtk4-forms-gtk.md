@@ -13,7 +13,7 @@ run it as a real Linux desktop application. When Forms was retired, that capabil
 to go.
 
 This article walks through a maintenance fork that was built to close exactly that gap: the
-`5.0.0` branch of Gtk4.Forms, **pruned down to the Gtk leg only**, retargeted at the modern
+`1.0.0` branch of Gtk4.Forms, **pruned down to the Gtk leg only**, retargeted at the modern
 .NET SDK, converted to xUnit v3, given a real CI pipeline, and published under the `Gtk4.`
 package prefix. It is an interesting codebase to study whether or not you ever intend to ship a
 Gtk app, because it is a concrete example of what it takes to keep a large, abandoned UI
@@ -294,7 +294,7 @@ A theme worth calling out, because it generalises far beyond this repository: se
 nastiest defects found in this fork were not in rendering code at all. They were in the build.
 
 - A NuGet utility package auto-imported MSBuild targets that **overwrote `PackageVersion` at pack
-  time**, so every package produced on Windows was stamped `5.0.0` regardless of commit, while the
+  time**, so every package produced on Windows was stamped `1.0.0` regardless of commit, while the
   same commit packed on CI carried a git-derived version. Two different commits, one package
   identity.
 - The same package ran a third-party obfuscator over shipping assemblies in Release builds on
@@ -336,7 +336,7 @@ They are what the difference between "still compiles" and "still maintained" act
 ## Summary
 
 .NET MAUI succeeded Gtk4.Forms everywhere except Gtk. This fork keeps that one leg alive: the
-Gtk4.Forms `5.0.0` Core and XAML stack, mapped onto native Gtk 3 widgets through GtkSharp,
+Gtk4.Forms `1.0.0` Core and XAML stack, mapped onto native Gtk 3 widgets through GtkSharp,
 building on the .NET 10 SDK, tested by three xUnit v3 suites — one of which drives real Gtk
 windows on both Windows and headless Linux — and shipped as `Gtk4.`-prefixed NuGet packages.
 
@@ -347,6 +347,6 @@ codebase answers both questions.
 ---
 
 *Repository: [github.com/pieroviano/Xamarin.Forms](https://github.com/pieroviano/Xamarin.Forms),
-branch `5.0.0`. Original project: [xamarin/Xamarin.Forms](https://github.com/xamarin/Xamarin.Forms)
+branch `1.0.0`. Original project: [xamarin/Xamarin.Forms](https://github.com/xamarin/Xamarin.Forms)
 (MIT). For new cross-platform work, see [.NET MAUI](https://github.com/dotnet/maui) and the
 [official upgrade guidance](https://learn.microsoft.com/dotnet/maui/migration).*

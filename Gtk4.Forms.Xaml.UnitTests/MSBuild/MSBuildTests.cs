@@ -575,7 +575,7 @@ namespace Xamarin.Forms.MSBuild.UnitTests
 		/// (and the second would fail XF001 for a double import).</para>
 		///
 		/// <para><c>RestorePackagesPath</c> is redirected into the temp directory rather than left
-		/// on ~/.nuget/packages. PackageVersion is static at 5.0.0 here, so a globally cached
+		/// on ~/.nuget/packages. PackageVersion is static at 1.0.0 here, so a globally cached
 		/// extraction of an EARLIER build of the same version would be reused and this test would
 		/// grade a stale package.</para>
 		/// </remarks>

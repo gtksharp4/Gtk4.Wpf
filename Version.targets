@@ -16,7 +16,7 @@
    and NuGet rejected it outright:
 
      error MSB4018: System.ArgumentException:
-       PackageVersion string specified '5.0.0.+1048-sha.<commit>-azdo.' is invalid.
+       PackageVersion string specified '1.0.0.+1048-sha.<commit>-azdo.' is invalid.
 
    Because every shipping csproj sets GeneratePackageOnBuild, that killed the plain
    `dotnet build Xamarin.Forms.Gtk.sln` step in the workflow - CI could not build itself.
@@ -66,14 +66,14 @@
         The other six packable projects import Net4x.NuGetUtility, whose PrepareGenerateNuspecPack
         runs BeforeTargets="GenerateNuspec" - i.e. after this target - and overwrote PackageVersion
         with exactly $(VersionPrefix).$(VersionSuffix). The result was that the same commit packed
-        three different ways: six packages as 5.0.0.<yyddd> on Windows, Xamarin.Forms.Platform.GTK
-        (which deliberately does not import that tooling) as 5.0.0, and on Linux - where the
-        tooling is skipped by its own '$(OS)' == 'Windows_NT' condition - all seven as 5.0.0.
+        three different ways: six packages as 1.0.0.<yyddd> on Windows, Xamarin.Forms.Platform.GTK
+        (which deliberately does not import that tooling) as 1.0.0, and on Linux - where the
+        tooling is skipped by its own '$(OS)' == 'Windows_NT' condition - all seven as 1.0.0.
         Computing the same value here makes that overwrite a no-op rather than the thing that
         decides the version, so every project agrees and both OSes produce the same file names.
 
         The commit still survives the change. NuGet strips +build-metadata from package identity
-        and from the .nupkg file name, so the file is Gtk4.<id>.5.0.0.<yyddd>.nupkg while the
+        and from the .nupkg file name, so the file is Gtk4.<id>.1.0.0.<yyddd>.nupkg while the
         InformationalVersion set below - and the AssemblyMetadata("PackageVersion") attribute -
         still name the sha. Do not fold the sha into the version proper to "fix" the file name:
         a four-part version plus a dash-label is where NuGet stops treating it as stable.
@@ -90,7 +90,7 @@
       Guarantee a valid version even when GitInfo returns nothing. On the GitHub macOS runner its git
       cannot resolve the branch, so every Git* property (GitBaseVersion*, GitCommits) comes back empty,
       $(Version) collapses to ".." and the generated AssemblyFileVersion becomes "..." - CS7035, which
-      TreatWarningsAsErrors turns into a build failure. Fall back to $(VersionPrefix) (5.0.0 from
+      TreatWarningsAsErrors turns into a build failure. Fall back to $(VersionPrefix) (1.0.0 from
       GitInfo.txt, resolved independently of git - Directory.Build.props) and zero commits. No-op
       wherever GitInfo populates the version (Windows/Linux).
     -->

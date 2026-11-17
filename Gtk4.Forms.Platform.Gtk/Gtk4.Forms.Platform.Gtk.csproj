@@ -7,7 +7,7 @@
           Keep this. SetVersions overwrites Version at build time, but restore never runs
           targets, and without an explicit Version the SDK would compose one from the
           Directory.Build.props fallbacks as $(VersionPrefix)-$(VersionSuffix), i.e. the
-          prerelease "5.0.0-0", and record that as this project's version in project.assets.json.
+          prerelease "1.0.0-0", and record that as this project's version in project.assets.json.
         -->
         <Version>$(VersionPrefix).$(VersionSuffix)</Version>
         <PackageId>Gtk4.Forms.Platform.Gtk</PackageId>
@@ -91,7 +91,7 @@
     </ItemGroup>
     <!--
       Both symptoms described at the top of this file were silent - a Release build simply grew
-      an obfuscation step, a pack simply produced 5.0.0 again - so removing the imports is not
+      an obfuscation step, a pack simply produced 1.0.0 again - so removing the imports is not
       enough on its own. These two targets turn a re-import into a build failure.
 
       The markers are set only by the removed imports and by nothing else in this tree:

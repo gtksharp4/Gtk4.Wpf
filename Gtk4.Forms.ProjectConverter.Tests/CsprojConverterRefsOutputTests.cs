@@ -27,7 +27,7 @@ public class CsprojConverterRefsOutputTests
 			"""
 			<Project>
 			  <ItemGroup>
-			    <PackageReference Include="Xamarin.Forms" Version="5.0.0" />
+			    <PackageReference Include="Xamarin.Forms" Version="1.0.0" />
 			    <PackageReference Include="SomeOtherLib" Version="1.0.0" />
 			  </ItemGroup>
 			</Project>
@@ -47,7 +47,7 @@ public class CsprojConverterRefsOutputTests
 			"""
 			<Project>
 			  <ItemGroup>
-			    <PackageReference Include="Xamarin.Forms" Version="5.0.0">
+			    <PackageReference Include="Xamarin.Forms" Version="1.0.0">
 			      <PrivateAssets>all</PrivateAssets>
 			    </PackageReference>
 			    <PackageReference Include="SomeOtherLib" Version="1.0.0" />
@@ -69,7 +69,7 @@ public class CsprojConverterRefsOutputTests
 			"""
 			<Project>
 			  <ItemGroup>
-			    <PackageReference Include="Xamarin.Forms.Maps" Version="5.0.0" />
+			    <PackageReference Include="Xamarin.Forms.Maps" Version="1.0.0" />
 			  </ItemGroup>
 			</Project>
 			""";
@@ -87,7 +87,7 @@ public class CsprojConverterRefsOutputTests
 			"""
 			<Project>
 			  <ItemGroup>
-			    <PackageReference Include="Xamarin.Forms.Visual.Material" Version="5.0.0" />
+			    <PackageReference Include="Xamarin.Forms.Visual.Material" Version="1.0.0" />
 			  </ItemGroup>
 			</Project>
 			""";
@@ -105,7 +105,7 @@ public class CsprojConverterRefsOutputTests
 			"""
 			<Project>
 			  <ItemGroup>
-			    <PackageReference Include="Xamarin.Forms.Platform.Android" Version="5.0.0" />
+			    <PackageReference Include="Xamarin.Forms.Platform.Android" Version="1.0.0" />
 			  </ItemGroup>
 			</Project>
 			""";

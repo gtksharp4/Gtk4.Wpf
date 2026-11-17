@@ -1,10 +1,10 @@
 # Gtk4.Forms #
 
-A maintenance fork of **Xamarin.Forms 5.0.0**, pruned to the **GTK leg only** and retargeted at
+A maintenance fork of **Xamarin.Forms 1.0.0**, pruned to the **GTK leg only** and retargeted at
 GTK 4 and the modern .NET SDK. It keeps a Forms XAML codebase runnable as a native desktop app on
 **Windows, Linux and macOS** — the one target .NET MAUI does not cover.
 
-Origin: [`pieroviano/Xamarin.Forms`](https://github.com/pieroviano/Xamarin.Forms), branch `5.0.0`
+Origin: [`pieroviano/Xamarin.Forms`](https://github.com/pieroviano/Xamarin.Forms), branch `1.0.0`
 (the default and PR-target branch). Upstream: [`xamarin/Xamarin.Forms`](https://github.com/xamarin/Xamarin.Forms) (MIT).
 
 ## Support
