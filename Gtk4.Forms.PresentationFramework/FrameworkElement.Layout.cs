@@ -117,6 +117,8 @@ public abstract partial class FrameworkElement
 	/// <summary>
 	/// WPF MeasureCore: deflates available size by Margin, clamps by Width/Min/Max,
 	/// calls MeasureOverride, then inflates by Margin. DesiredSize includes Margin.
+	/// When a non-identity <see cref="LayoutTransform"/> is set the inner desired size is
+	/// expanded to the transformed axis-aligned bounding box before Margin is re-added.
 	/// </summary>
 	protected override Size MeasureCore(Size availableSize)
 	{
@@ -124,23 +126,29 @@ public abstract partial class FrameworkElement
 		double mW = margin.Left + margin.Right;
 		double mH = margin.Top + margin.Bottom;
 
-		// Available space for content (after margin).
-		double contentW = Math.Max(0, availableSize.Width - mW);
-		double contentH = Math.Max(0, availableSize.Height - mH);
+		// Compute LayoutTransform matrix once.
+		Media.Transform? lt = GetValue(LayoutTransformProperty) as Media.Transform;
+		Media.Matrix ltMatrix = (lt == null || lt.Value.IsIdentity)
+			? Media.Matrix.Identity : lt.Value;
+		bool hasLayoutTransform = !ltMatrix.IsIdentity;
+
+		// When a layout transform is active, offer the child infinite space so the
+		// natural size is not clipped by the rotated/scaled inverse of the available rect.
+		double availW = hasLayoutTransform ? double.PositiveInfinity : Math.Max(0, availableSize.Width - mW);
+		double availH = hasLayoutTransform ? double.PositiveInfinity : Math.Max(0, availableSize.Height - mH);
 
 		// Apply explicit Width/Height overrides.
 		double w = Width;
 		double h = Height;
 		double minW = MinWidth, maxW = MaxWidth, minH = MinHeight, maxH = MaxHeight;
 
-		// If Width is explicit, pass it as the constraint.
-		if (!double.IsNaN(w)) contentW = Math.Max(minW, Math.Min(w, maxW));
-		else contentW = Math.Max(minW, Math.Min(contentW, maxW));
+		if (!double.IsNaN(w)) availW = Math.Max(minW, Math.Min(w, maxW));
+		else availW = Math.Max(minW, Math.Min(availW, maxW));
 
-		if (!double.IsNaN(h)) contentH = Math.Max(minH, Math.Min(h, maxH));
-		else contentH = Math.Max(minH, Math.Min(contentH, maxH));
+		if (!double.IsNaN(h)) availH = Math.Max(minH, Math.Min(h, maxH));
+		else availH = Math.Max(minH, Math.Min(availH, maxH));
 
-		var constraint = new Size(contentW, contentH);
+		var constraint = new Size(availW, availH);
 		var overrideSize = MeasureOverride(constraint);
 
 		// Apply explicit override again to the result.
@@ -150,6 +158,15 @@ public abstract partial class FrameworkElement
 		// Clamp to min/max.
 		resultW = Math.Max(minW, Math.Min(resultW, maxW));
 		resultH = Math.Max(minH, Math.Min(resultH, maxH));
+
+		// When a LayoutTransform is active, expand the inner size to its transformed
+		// axis-aligned bounding box before adding margin back.
+		if (hasLayoutTransform)
+		{
+			Size transformed = LayoutTransformBounds(new Size(resultW, resultH), ltMatrix);
+			resultW = transformed.Width;
+			resultH = transformed.Height;
+		}
 
 		// Add margin back for DesiredSize.
 		return new Size(resultW + mW, resultH + mH);
