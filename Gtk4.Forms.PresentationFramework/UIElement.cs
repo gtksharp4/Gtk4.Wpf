@@ -50,6 +50,10 @@ public abstract partial class UIElement : Media.Visual
 		// Hook: attach GTK input controllers (focus, key, mouse, motion).
 		// Implemented in UIElement.GtkInput.cs as a partial method call.
 		AttachInputControllersOnCreated(widget);
+
+		// Apply any RenderTransform set before widget creation.
+		// Implemented in UIElement.RenderTransform.cs.
+		ApplyRenderTransformOnCreated(widget);
 	}
 
 	/// <summary>
@@ -57,6 +61,13 @@ public abstract partial class UIElement : Media.Visual
 	/// Implemented in <c>UIElement.GtkInput.cs</c>.
 	/// </summary>
 	partial void AttachInputControllersOnCreated(Gtk.Widget widget);
+
+	/// <summary>
+	/// Called from <see cref="OnWidgetCreated"/> to apply any
+	/// <see cref="RenderTransform"/> set before widget creation.
+	/// Implemented in <c>UIElement.RenderTransform.cs</c>.
+	/// </summary>
+	partial void ApplyRenderTransformOnCreated(Gtk.Widget widget);
 
 	// ── Opacity ──────────────────────────────────────────────────────────────────
 
