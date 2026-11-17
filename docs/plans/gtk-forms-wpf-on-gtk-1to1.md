@@ -927,9 +927,27 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   documented in the `SetResourceReference` XML doc, weak-event fix deferred to a dedicated round.
   **Round 17 totals: 1661 tests** (89 WindowsBase + 1353 PresentationFramework + 204 MarkupCompiler +
   15 ProjectConverter), all pass; warning-clean.
-- **Carry-over**: weak-event (or unload-hook) teardown for `SetResourceReference` so app-level resource
-  dictionaries do not pin elements (**M1**);
-  compiler diagnostic/warning for a non-`EventTrigger` placed in `FrameworkElement.Triggers`
+- **Round 18 Track A — weak `ResourceChanged` subscription (fixes Round-17 M1 leak) (DONE).**
+  `ResourceDictionary.ResourceChanged` is backed by a weak-handler list (`WeakResourceChangedHandlers.cs`,
+  `List<WeakReference<Action>>`, pruned on raise/subscribe/remove). `FrameworkElement` caches its callback in a
+  field so the delegate lives exactly as long as the element; the dictionary holds it weakly — a collected
+  element is no longer pinned by a long-lived (e.g. `Application`-level) dictionary. `ClearResourceReference`
+  still detaches deterministically. **+2 tests** (a deterministic GC leak test + a live-update-after-GC
+  regression). The Round-17 `SetResourceReference` "must clear to avoid pinning" caveat is removed.
+- **Round 18 Track B — nested binding paths in `DataTrigger` (DONE).** Removed the `NotSupportedException`
+  nested-path guard (the E5 gap); added a reusable internal `PathWatcher` (`BindingEngine.PathWatcher.cs`) that
+  subscribes per-segment INPC and re-subscribes from a changed segment forward. `DataTriggerState` (split into
+  `DataTrigger.State.cs`) owns one `PathWatcher`, recreated on DataContext change. Leaf change, intermediate
+  reassignment, DataContext re-root, null-along-path, single-segment regression, and Enter/ExitActions all
+  covered. **+12 tests** (the inverted contract test now asserts "no throw").
+- **Round 18 review (Opus) + fixes — DONE.** Both tracks correct (weak scheme verified: no reverse strong path,
+  raise-reentrancy index-safe, GC test deterministic; PathWatcher per-segment resubscription/null-safety/
+  DataContext re-root all clean; D8 precedence and the Round-14 no-double-ExitActions contract preserved). No
+  Critical/High/Medium. Two **Low** house-rule nits fixed: the 217-line `DataTriggerNestedPathTests.cs` split
+  into a shared base + core + actions files (all ≤200); a `private set` in a test changed to `internal set`.
+  **Round 18 totals: 1676 tests** (89 WindowsBase + 1368 PresentationFramework + 204 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean.
+- **Carry-over**: compiler diagnostic/warning for a non-`EventTrigger` placed in `FrameworkElement.Triggers`
   (match WPF's compile-time rejection; runtime superset stays); positive Popup/ContextMenu open-replay GTK test
   under a realized parent window;
   `Gtk.PopoverMenu` integration for `MenuItem`; nested-path `DataTrigger` bindings;
