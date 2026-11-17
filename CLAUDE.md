@@ -62,7 +62,7 @@ Five suites, all **xUnit v3 on `net10.0`**, run with `dotnet test`:
 | `Gtk4.Forms.WindowsBase.Tests` | ~83 | no | DP / routed-event / property system |
 | `Gtk4.Forms.MarkupCompiler.Tests` | ~173 | no | XAML → `InitializeComponent` code generation |
 | `Gtk4.Forms.Wpf.ProjectConverter.Tests` | ~15 | no | csproj rewrite |
-| `Gtk4.Forms.PresentationFramework.Tests` | ~1290 | **yes** | controls, binding, themes — on **real GTK 4 widgets** |
+| `Gtk4.Forms.PresentationFramework.Tests` | ~1399 | **yes** | controls, binding, themes — on **real GTK 4 widgets** |
 | `Gtk4.Forms.Integration.Tests` | few | yes | end-to-end: add `Gtk4.Forms.Wpf` to the embedded WPF sample, build (converts), run, detect the window |
 
 ```powershell
