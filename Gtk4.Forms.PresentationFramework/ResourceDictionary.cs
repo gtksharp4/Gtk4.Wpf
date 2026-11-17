@@ -13,6 +13,14 @@ public class ResourceDictionary : IDictionary<object, object?>
 	readonly Dictionary<object, object?> _inner = new Dictionary<object, object?>();
 
 	/// <summary>
+	/// Fired when an entry is added, replaced, removed (<paramref name="newValue"/> is
+	/// <see cref="DependencyProperty.UnsetValue"/>), or the dictionary is cleared
+	/// (<paramref name="key"/> is <c>null</c>).  Live <c>{DynamicResource}</c> references
+	/// subscribe here to re-resolve when their key changes.
+	/// </summary>
+	internal event Action<object?, object?>? ResourceChanged;
+
+	/// <summary>
 	/// Merged resource dictionaries. Resources in merged dictionaries are consulted
 	/// after the local dictionary (last merged wins for duplicates).
 	/// </summary>
@@ -29,7 +37,11 @@ public class ResourceDictionary : IDictionary<object, object?>
 				if (MergedDictionaries[i].TryGetValue(key, out v)) return v;
 			return null;
 		}
-		set => _inner[key] = value;
+		set
+		{
+			_inner[key] = value;
+			ResourceChanged?.Invoke(key, value);
+		}
 	}
 
 	/// <inheritdoc/>
@@ -51,13 +63,27 @@ public class ResourceDictionary : IDictionary<object, object?>
 	}
 
 	/// <inheritdoc/>
-	public void Add(object key, object? value) => _inner.Add(key, value);
+	public void Add(object key, object? value)
+	{
+		_inner.Add(key, value);
+		ResourceChanged?.Invoke(key, value);
+	}
 
 	/// <inheritdoc/>
-	public bool Remove(object key) => _inner.Remove(key);
+	public bool Remove(object key)
+	{
+		bool removed = _inner.Remove(key);
+		if (removed)
+			ResourceChanged?.Invoke(key, DependencyProperty.UnsetValue);
+		return removed;
+	}
 
 	/// <inheritdoc/>
-	public void Clear() => _inner.Clear();
+	public void Clear()
+	{
+		_inner.Clear();
+		ResourceChanged?.Invoke(null, DependencyProperty.UnsetValue);
+	}
 
 	/// <inheritdoc/>
 	public int Count => _inner.Count;
@@ -72,7 +98,11 @@ public class ResourceDictionary : IDictionary<object, object?>
 	public ICollection<object?> Values => _inner.Values;
 
 	/// <inheritdoc/>
-	public void Add(KeyValuePair<object, object?> item) => _inner.Add(item.Key, item.Value);
+	public void Add(KeyValuePair<object, object?> item)
+	{
+		_inner.Add(item.Key, item.Value);
+		ResourceChanged?.Invoke(item.Key, item.Value);
+	}
 
 	/// <inheritdoc/>
 	public bool Contains(KeyValuePair<object, object?> item) =>
@@ -83,8 +113,13 @@ public class ResourceDictionary : IDictionary<object, object?>
 		((ICollection<KeyValuePair<object, object?>>)_inner).CopyTo(array, arrayIndex);
 
 	/// <inheritdoc/>
-	public bool Remove(KeyValuePair<object, object?> item) =>
-		((ICollection<KeyValuePair<object, object?>>)_inner).Remove(item);
+	public bool Remove(KeyValuePair<object, object?> item)
+	{
+		bool removed = ((ICollection<KeyValuePair<object, object?>>)_inner).Remove(item);
+		if (removed)
+			ResourceChanged?.Invoke(item.Key, DependencyProperty.UnsetValue);
+		return removed;
+	}
 
 	/// <inheritdoc/>
 	public IEnumerator<KeyValuePair<object, object?>> GetEnumerator() => _inner.GetEnumerator();
