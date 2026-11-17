@@ -1010,8 +1010,27 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `ScrollBarDpTests.cs` into defaults/roundtrips + behavior files (both ≤120).
   **Round 21 totals: 1869 tests** (89 WindowsBase + 1561 PresentationFramework + 204 MarkupCompiler +
   15 ProjectConverter), all pass; warning-clean.
-- **Carry-over**: `RenderTransform` on pre-4.14 GTK renders nothing (object-model only); `LayoutTransform`
-  (affects measure/arrange) not yet implemented; detach `Gtk.DropTarget` on widget teardown (drag lifecycle leak); synchronous `DoDragDrop`
+- **Round 22 Track A — LayoutTransform (DONE).** `FrameworkElement.LayoutTransform` DP; `MeasureCore`
+  expands `DesiredSize` to the transform's axis-aligned bounding box via an `internal static`
+  `LayoutTransformBounds(Size, Matrix)` (identity short-circuits — no layout regression). GTK visual is
+  best-effort CSS, composed with `RenderTransform` (see fix). **+17 tests** (bounds math, DP, measure).
+- **Round 22 Track B — bitmap Effects (DONE).** `Media.Effects.Effect`/`BlurEffect`/`DropShadowEffect`/
+  `KernelType` + `UIElement.Effect` DP applied via its OWN per-widget `Gtk.CssProvider` (`#ef-N`, priority 601)
+  building `filter: blur()/drop-shadow(dx dy blur rgba())` from a pure `internal EffectCss.BuildFilter`
+  (culture-invariant; `Direction` 0°=right CCW → dx=depth·cos, dy=−depth·sin). **+35 tests**.
+- **Round 22 review (Opus) + fixes — DONE.** Fixed a **HIGH** defect: LayoutTransform and RenderTransform
+  shared one CSS provider/rule, so the second apply (or a reset to identity) wiped the other — now both are
+  **composed into a single CSS matrix** via `internal UIElement.ComposeLayoutAndRender` (layout applied first,
+  then render; pinned by 5 new coexistence/offset tests). Fixed a **Medium** doc defect (the `LayoutTransformBounds`
+  summary falsely claimed arrange used it). Split the 217-line `LayoutTransformTests.cs` into bounds + DP/measure
+  files (**Low**). Verified clean: Effect uses a separate provider (no collision), bounds math + measure
+  integration + Direction/rgba/culture formatting all correct.
+  **Round 22 totals: 1916 tests** (89 WindowsBase + 1608 PresentationFramework + 204 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean.
+- **Carry-over**: `LayoutTransform` is honoured in measure (DesiredSize) but **not in arrange** — `RenderSize`
+  stays the untransformed inner size (WPF applies it in arrange too); `RenderTransform`/`LayoutTransform`/`Effect`
+  CSS render only on GTK 4.14+ (object-model always correct); detach `Gtk.DropTarget` on widget teardown
+  (drag lifecycle leak); synchronous `DoDragDrop`
   result on the GTK path (needs a nested GLib main loop for async drag);
   rich-content ToolTip custom-widget rendering + `ToolTip.IsOpen`/`Placement` honoured natively;
   `DataFormats.StringFormat`↔UnicodeText auto-convert (**A2**); deferred adorner-overlay

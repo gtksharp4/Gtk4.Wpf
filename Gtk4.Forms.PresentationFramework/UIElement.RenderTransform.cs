@@ -101,19 +101,38 @@ public abstract partial class UIElement
 	internal void ApplyLayoutTransformCss()
 	{
 		if (_widget == null) return;
-		Transform? lt = GetValue(FrameworkElement.LayoutTransformProperty) as Transform;
-		ApplyTransformCss(_widget, lt, new Point(0, 0));
+		ApplyRenderTransform(_widget);
 	}
 
 	/// <summary>
-	/// Pushes the current <see cref="RenderTransform"/> and
-	/// <see cref="RenderTransformOrigin"/> values into the widget's style context.
+	/// Pushes the composed <see cref="FrameworkElement.LayoutTransform"/> (applied first)
+	/// and <see cref="RenderTransform"/> (applied second), with
+	/// <see cref="RenderTransformOrigin"/>, into the widget's style context as a single CSS
+	/// rule. Composing both into one matrix is required because they share one CSS provider
+	/// — writing them to separate rules on the same selector would let one overwrite the
+	/// other. The managed layout slot (DesiredSize) stays authoritative regardless.
 	/// </summary>
 	void ApplyRenderTransform(Gtk.Widget widget)
 	{
-		Transform? t = GetValue(RenderTransformProperty) as Transform;
+		Transform? layout = GetValue(FrameworkElement.LayoutTransformProperty) as Transform;
+		Transform? render = GetValue(RenderTransformProperty) as Transform;
 		Point origin = (Point)(GetValue(RenderTransformOriginProperty) ?? new Point(0, 0));
-		ApplyTransformCss(widget, t, origin);
+
+		ApplyTransformCss(widget, new MatrixTransform(ComposeLayoutAndRender(layout, render)), origin);
+	}
+
+	/// <summary>
+	/// Composes a <see cref="FrameworkElement.LayoutTransform"/> (applied first) and a
+	/// <see cref="RenderTransform"/> (applied second) into a single matrix, using the same
+	/// left-to-right convention as <c>TransformGroup</c>: <c>Identity · layout · render</c>.
+	/// Either may be <c>null</c> (treated as identity).
+	/// </summary>
+	internal static Matrix ComposeLayoutAndRender(Transform? layout, Transform? render)
+	{
+		Matrix combined = Matrix.Identity;
+		if (layout != null) combined = combined.Multiply(layout.Value);
+		if (render != null) combined = combined.Multiply(render.Value);
+		return combined;
 	}
 
 	/// <summary>

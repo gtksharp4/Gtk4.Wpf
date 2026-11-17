@@ -66,9 +66,11 @@ public abstract partial class FrameworkElement
 	/// Computes the axis-aligned bounding box of <paramref name="size"/> after applying
 	/// <paramref name="matrix"/>, centred at the origin.
 	/// <para>
-	/// This is the core pure function used by <see cref="MeasureCore"/> and
-	/// <see cref="ArrangeCore"/>; it is intentionally static and side-effect-free
-	/// so it can be unit-tested headlessly.
+	/// This is the core pure function used by <see cref="MeasureCore"/> to expand the
+	/// reported <c>DesiredSize</c> to the transformed bounding box; it is intentionally
+	/// static and side-effect-free so it can be unit-tested headlessly. Note: arrange is
+	/// not yet transform-aware — <c>RenderSize</c> stays the untransformed inner size
+	/// (carry-over), so WPF's arrange-time layout-transform placement is not reproduced.
 	/// </para>
 	/// </summary>
 	/// <param name="size">Untransformed element size.</param>
