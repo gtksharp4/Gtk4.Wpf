@@ -798,6 +798,24 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   removed, cancelable `Navigating` on journal navigations, files split ≤200 lines). **39 tests**
   (model + history + InvokeScript + GTK smoke); PF suite **1111 pass**, warning-clean; sample + the
   build-and-run integration test still pass with the transitive Photino dependency.
+- **Round 13 — infra + command libraries/selectors — DONE.** Two parallel tracks (agents hit a session
+  limit mid-run; recovered next session: built, tested, reviewed, fixed, merged).
+  - *Track A — Visual/tree/Freezable foundation*: `Freezable` (Freeze/IsFrozen/Clone/Changed, frozen
+    rejects mutation) + `DependencyObjectType` (`FromSystemType`, IsInstanceOfType/IsSubclassOf) in
+    `WindowsBase`; `Visual`/`VisualTreeHelper` (GetChildrenCount/GetChild/GetParent over the existing
+    `UIElement.VisualChildren`), `LogicalTreeHelper` (walks `LogicalParent` + per-container logical children),
+    `DrawingVisual`/`DrawingContext`/`VisualCollection`.
+  - *Track B — command libraries + selectors*: `ApplicationCommands`/`NavigationCommands`/`ComponentCommands`/
+    `MediaCommands`/`EditingCommands` (`RoutedUICommand` statics with default gestures, e.g. Copy=Ctrl+C);
+    `DataTemplateSelector`/`StyleSelector`; `HierarchicalDataTemplate` (ItemsSource/ItemTemplate/
+    ItemTemplateSelector + `TreeView` hierarchy population); `ItemsControl` `ItemTemplateSelector`/
+    `ItemContainerStyle`/`ItemContainerStyleSelector`/`DisplayMemberPath` (selector wins over template).
+  - *Recovery fixes*: a `HierarchicalDataTemplate` test poked an internal static (`TreeView.PopulateHierarchicalChildren`)
+    that the repo's **package-based PF consumption** doesn't surface cross-assembly — rewritten to exercise the
+    public `ResolveChildren`/`ItemTemplate` surface; and an `ItemsControlSelector` test's `ref int` counter
+    (unusable in a closure) was replaced with the selector's own `InvokeCount`.
+  - **Full suite: 1466 tests** (83 WindowsBase + 1195 PresentationFramework + 173 MarkupCompiler +
+    15 ProjectConverter), all pass; warning-clean.
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
   true `{DynamicResource}` change-tracking;
   `Gtk.PopoverMenu` integration for `MenuItem`; element-level `FrameworkElement.Triggers` auto-attach on
