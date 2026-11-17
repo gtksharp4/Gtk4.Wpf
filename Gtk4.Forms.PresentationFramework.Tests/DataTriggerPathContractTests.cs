@@ -6,8 +6,8 @@ using Xunit;
 namespace Gtk4.Forms.PresentationFramework.Tests;
 
 /// <summary>
-/// E5: DataTrigger with a multi-segment binding path throws at attach time with a
-/// clear "not yet supported" message. Single-segment paths continue to work.
+/// DataTrigger path attachment contract: multi-segment and single-segment paths
+/// both attach without exception (E5 restriction lifted).
 /// </summary>
 public class DataTriggerPathContractTests
 {
@@ -22,7 +22,7 @@ public class DataTriggerPathContractTests
 	}
 
 	[Fact]
-	public void Multi_segment_path_throws_NotSupportedException_at_attach()
+	public void Multi_segment_path_attaches_without_exception()
 	{
 		var el = new TEl();
 		var style = new Style(typeof(TEl));
@@ -34,8 +34,9 @@ public class DataTriggerPathContractTests
 		dt.Setters.Add(new Setter { Property = TEl.TagProperty, Value = "hit" });
 		style.Triggers.Add(dt);
 
-		var ex = Assert.Throws<NotSupportedException>(() => el.Style = style);
-		Assert.Contains("nested", ex.Message, StringComparison.OrdinalIgnoreCase);
+		// Must not throw — nested paths are now supported.
+		var ex = Record.Exception(() => el.Style = style);
+		Assert.Null(ex);
 	}
 
 	[Fact]
@@ -51,7 +52,6 @@ public class DataTriggerPathContractTests
 		dt.Setters.Add(new Setter { Property = TEl.TagProperty, Value = "ok" });
 		style.Triggers.Add(dt);
 
-		// Must not throw.
 		var ex = Record.Exception(() => el.Style = style);
 		Assert.Null(ex);
 	}
