@@ -26,6 +26,13 @@ public abstract partial class FrameworkElement
 	/// A subsequent call with the same <paramref name="dp"/> replaces the previous
 	/// reference.  Call <see cref="ClearResourceReference"/> to detach.
 	/// </summary>
+	/// <remarks>
+	/// The change subscription is a strong link held by each dictionary in the chain
+	/// (including <see cref="Application"/>-level resources, which outlive the element).
+	/// Until a weak-event path is wired, callers must invoke
+	/// <see cref="ClearResourceReference"/> when the element is torn down to avoid the
+	/// dictionary pinning the element alive.
+	/// </remarks>
 	/// <param name="dp">The dependency property to drive.</param>
 	/// <param name="resourceKey">The resource key to track.</param>
 	public void SetResourceReference(DependencyProperty dp, object resourceKey)
@@ -129,7 +136,8 @@ public abstract partial class FrameworkElement
 	/// <summary>
 	/// Collects all <see cref="ResourceDictionary"/> instances reachable from this
 	/// element's resource chain: own Resources plus every ancestor's Resources, then
-	/// Application.Current.Resources.
+	/// Application.Current.Resources — each including its merged dictionaries
+	/// (recursively), so a key resolved from a merged dictionary also live-updates.
 	/// </summary>
 	List<ResourceDictionary> CollectResourceChain()
 	{
@@ -140,12 +148,22 @@ public abstract partial class FrameworkElement
 		{
 			steps++;
 			if (current is FrameworkElement fe)
-				result.Add(fe.Resources);
+				AddWithMerged(fe.Resources, result);
 			current = (current as UIElement)?.LogicalParent ?? current.InheritanceParent;
 		}
 		if (Application.Current != null)
-			result.Add(Application.Current.Resources);
+			AddWithMerged(Application.Current.Resources, result);
 		return result;
+	}
+
+	// Adds a dictionary and all of its merged dictionaries (depth-first, de-duplicated),
+	// so change subscriptions cover merged entries the resolver (TryGetValue) can see.
+	static void AddWithMerged(ResourceDictionary dict, List<ResourceDictionary> result)
+	{
+		if (result.Contains(dict)) return;
+		result.Add(dict);
+		foreach (var merged in dict.MergedDictionaries)
+			AddWithMerged(merged, result);
 	}
 
 	void OnAnyDictChanged(object? key, object? newValue)

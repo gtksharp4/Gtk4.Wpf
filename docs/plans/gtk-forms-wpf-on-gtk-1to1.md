@@ -900,14 +900,39 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   only by pure-DP inspection (GTK `Popover.Popup()` crashes without a parent window), cancel path is asserted.
   **Round 16 totals: 1641 tests** (83 WindowsBase + 1345 PresentationFramework + 198 MarkupCompiler +
   15 ProjectConverter), all pass; warning-clean.
-- **Carry-over**: compiler diagnostic/warning for a non-`EventTrigger` placed in `FrameworkElement.Triggers`
+- **Round 17 Track A — `[assembly:XmlnsDefinition]`-driven xmlns resolution (markup compiler) (DONE).**
+  The compiler now resolves element/attribute types from referenced assemblies'
+  `[assembly: XmlnsDefinition(xmlnsUri, clrNamespace)]` attributes, merged with the built-in `WpfXmlnsMap`
+  (probed first, so nothing regresses). New injectable seam `IXmlnsDefinitionSource` + production
+  `AssemblyXmlnsDefinitionSource` (reads via `CustomAttributeData`, no new NuGet package); `ResolveType` is now
+  an instance method, gating the xmlns-def probe with a new `TypeExists`. `XmlnsDefinitionAttribute` already
+  existed in `WindowsBase/MarkupAttributes.cs` with four `[assembly: XmlnsDefinition]` entries on the PF assembly.
+  Files: `IXmlnsDefinitionSource.cs`, `AssemblyXmlnsDefinitionSource.cs` (new), `XamlCodeGenerator.cs`,
+  `XamlCodeGenerator.SymbolResolver.cs`, `MarkupCompileTask.cs`. **+12 tests** (6 compiler + 6 WindowsBase attr).
+- **Round 17 Track B — true `{DynamicResource}` live change-tracking (DONE).** New
+  `FrameworkElement.SetResourceReference(dp, key)`/`ClearResourceReference` establish a live link;
+  `ResourceDictionary` raises `ResourceChanged` on add/replace/remove/clear; a **new D7 dynamic-resource
+  precedence layer** sits between trigger (D8) and style (D6):
+  `animation > local > trigger > dynamic-resource > style > inherited > default`. `DynamicResourceExtension`
+  routes a `FrameworkElement`+DP target through `SetResourceReference`. Files: `ResourceDictionary.cs`,
+  `DependencyObject.DynamicResourceLayer.cs` (D7 layer, split out), `DependencyObject.cs`,
+  `FrameworkElement.ResourceReferences.cs` (new). **+6 tests**.
+- **Round 17 review (Opus) + fixes — DONE.** No Critical/High; precedence order verified unchanged for
+  non-dynamic values (no regression). Fixed: **M2** merged-dictionary live-updates — `CollectResourceChain` now
+  recurses into `MergedDictionaries`, so a key resolved from a merged dict also live-updates (pinned by a
+  failing-first mutate test); **L1** the modified `DependencyObject.Layers.cs` (238 lines) D7 block extracted to
+  `DependencyObject.DynamicResourceLayer.cs` (Layers back to 197), class-doc priority line corrected.
+  Carried over (Medium): **M1** app-lifetime subscription leak — a dictionary holds a strong delegate to the
+  element, so `SetResourceReference` pins the element until `ClearResourceReference` (no unload hook yet);
+  documented in the `SetResourceReference` XML doc, weak-event fix deferred to a dedicated round.
+  **Round 17 totals: 1661 tests** (89 WindowsBase + 1353 PresentationFramework + 204 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean.
+- **Carry-over**: weak-event (or unload-hook) teardown for `SetResourceReference` so app-level resource
+  dictionaries do not pin elements (**M1**);
+  compiler diagnostic/warning for a non-`EventTrigger` placed in `FrameworkElement.Triggers`
   (match WPF's compile-time rejection; runtime superset stays); positive Popup/ContextMenu open-replay GTK test
   under a realized parent window;
-  attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
-  true `{DynamicResource}` change-tracking;
-  `Gtk.PopoverMenu` integration for `MenuItem`; element-level `FrameworkElement.Triggers` auto-attach on
-  load (runtime exists, compiler emits `Style.Triggers` only); nested-path `DataTrigger` bindings;
-  `Popup`/`ContextMenu` replay of an `IsOpen=true` set before the backing widget exists (currently dropped);
+  `Gtk.PopoverMenu` integration for `MenuItem`; nested-path `DataTrigger` bindings;
   GTK4-native backings deferred for the Round-6 controls (`Gio.Menu`/`Gtk.PopoverMenuBar` for `Menu`,
   `Gtk.ListView`+`TreeExpander` for `TreeView`, `Gtk.ActionBar` for `ToolBar`);
   `WindowState` round-trip (reflect WM-initiated state changes back into the DP); `gtk_window_move`-free

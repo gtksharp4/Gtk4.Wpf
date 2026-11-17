@@ -5,7 +5,8 @@ namespace System.Windows;
 
 /// <summary>
 /// Trigger-value precedence layer for <see cref="DependencyObject"/>.
-/// Priority: local > trigger > style > inherited > default.
+/// Priority: local &gt; trigger &gt; dynamic-resource &gt; style &gt; inherited &gt; default.
+/// (The dynamic-resource layer lives in <c>DependencyObject.DynamicResourceLayer.cs</c>.)
 /// </summary>
 public partial class DependencyObject
 {
@@ -17,48 +18,6 @@ public partial class DependencyObject
 
 	// Per-DP change hooks used by triggers to subscribe to property changes.
 	Dictionary<DependencyProperty, List<PropertyChangedCallback>>? _changeHooks;
-
-	// ── Dynamic-resource value layer (D7) ─────────────────────────────────────
-	// Sits below trigger and above style, same relative slot as WPF's deferred-reference layer.
-	// Local value always wins; when the local value is cleared this layer re-surfaces.
-
-	readonly Dictionary<DependencyProperty, object?> _dynResValues =
-		new Dictionary<DependencyProperty, object?>();
-
-	/// <summary>
-	/// D7: Writes the resolved resource value into the dynamic-resource layer.
-	/// Lower priority than local/trigger; higher than style/inherited/default.
-	/// Fires change notifications so the effective value updates immediately.
-	/// </summary>
-	internal void SetDynResValue(DependencyProperty dp, object? value)
-	{
-		if (dp == null) throw new ArgumentNullException(nameof(dp));
-		var oldEffective = ResolveEffectiveValue(dp);
-
-		var meta = dp.GetMetadata(GetType());
-		if (meta.CoerceValueCallback != null)
-			value = meta.CoerceValueCallback(this, value);
-
-		_dynResValues[dp] = value;
-		var newEffective = ResolveEffectiveValue(dp);
-		FireChangeIfDifferent(dp, oldEffective, newEffective);
-	}
-
-	/// <summary>
-	/// D7: Removes the dynamic-resource entry for <paramref name="dp"/> and fires change
-	/// notifications.  Called when <see cref="FrameworkElement.ClearResourceReference"/> detaches
-	/// the live link.
-	/// </summary>
-	internal void ClearDynResValue(DependencyProperty dp)
-	{
-		if (dp == null) return;
-		if (!_dynResValues.ContainsKey(dp)) return;
-
-		var oldEffective = ResolveEffectiveValue(dp);
-		_dynResValues.Remove(dp);
-		var newEffective = ResolveEffectiveValue(dp);
-		FireChangeIfDifferent(dp, oldEffective, newEffective);
-	}
 
 	// ── Style value layer (D6) ──────────────────────────────────────────────────
 
