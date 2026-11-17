@@ -9,7 +9,7 @@ namespace System.Windows.Controls;
 /// directly hosts <see cref="UIElement"/> children and is faithful for this phase.
 /// </para>
 /// </summary>
-public class TreeView : ItemsControl
+public partial class TreeView : ItemsControl
 {
 	/// <summary>Raised when <see cref="SelectedItem"/> changes.</summary>
 	public event EventHandler<SelectionChangedEventArgs>? SelectedItemChanged;
@@ -56,14 +56,6 @@ public class TreeView : ItemsControl
 	{
 		_box = new Gtk.Box(Gtk.Orientation.Vertical, 2);
 		return _box;
-	}
-
-	/// <inheritdoc/>
-	protected override UIElement GetContainerForItem(object? item)
-	{
-		var tvi = item as TreeViewItem ?? new TreeViewItem { Header = item?.ToString() };
-		tvi.Selected += OnItemSelected;
-		return tvi;
 	}
 
 	/// <inheritdoc/>

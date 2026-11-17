@@ -26,4 +26,7 @@ public enum Key
 	F13, F14, F15, F16, F17, F18, F19, F20, F21, F22, F23, F24,
 	NumLock, Scroll,
 	LeftShift, RightShift, LeftCtrl, RightCtrl, LeftAlt, RightAlt,
+	OemSemicolon, OemPlus, OemComma, OemMinus, OemPeriod, OemQuestion,
+	OemTilde, OemOpenBrackets, OemPipe, OemCloseBrackets, OemQuotes,
+	OemBackslash,
 }
