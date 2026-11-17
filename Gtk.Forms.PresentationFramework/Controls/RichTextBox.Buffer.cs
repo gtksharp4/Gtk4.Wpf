@@ -46,7 +46,7 @@ namespace System.Windows.Controls
 				foreach (var block in Document.Blocks)
 				{
 					if (!firstBlock)
-						buf.Insert(buf.EndIter, "\n");
+						InsertAtEnd(buf, "\n");
 					firstBlock = false;
 
 					if (block is Paragraph para)
@@ -55,11 +55,21 @@ namespace System.Windows.Controls
 					{
 						var sb = new System.Text.StringBuilder();
 						block.AppendPlainText(sb);
-						buf.Insert(buf.EndIter, sb.ToString());
+						InsertAtEnd(buf, sb.ToString());
 					}
 				}
 			}
 			finally { _updating = false; }
+		}
+
+		/// <summary>
+		/// Appends <paramref name="text"/> at the end of the buffer using the GTK4
+		/// <c>Insert(ref TextIter, string)</c> overload (the value-iter overload is obsolete).
+		/// </summary>
+		static void InsertAtEnd(Gtk.TextBuffer buf, string text)
+		{
+			var end = buf.EndIter;
+			buf.Insert(ref end, text);
 		}
 
 		static void AppendParagraph(Gtk.TextBuffer buf, Paragraph para)
@@ -73,7 +83,7 @@ namespace System.Windows.Controls
 			switch (inline)
 			{
 				case LineBreak _:
-					buf.Insert(buf.EndIter, "\n");
+					InsertAtEnd(buf, "\n");
 					break;
 				case Run r:
 					AppendRunWithTags(buf, r.Text, isBold: false, isItalic: false, isUnderline: false);
@@ -131,12 +141,12 @@ namespace System.Windows.Controls
 			if (string.IsNullOrEmpty(text)) return;
 			if (!isBold && !isItalic && !isUnderline)
 			{
-				buf.Insert(buf.EndIter, text);
+				InsertAtEnd(buf, text);
 				return;
 			}
 			var start = buf.EndIter;
 			int offset = start.Offset;
-			buf.Insert(buf.EndIter, text);
+			InsertAtEnd(buf, text);
 			var startIter = buf.GetIterAtOffset(offset);
 			var endIter = buf.EndIter;
 

@@ -95,8 +95,8 @@ namespace System.Windows.Controls
 				try
 				{
 					if (_textView.Buffer.CharCount > 0)
-						_textView.Buffer.Insert(_textView.Buffer.EndIter, "\n");
-					_textView.Buffer.Insert(_textView.Buffer.EndIter, text);
+						InsertAtEnd(_textView.Buffer, "\n");
+					InsertAtEnd(_textView.Buffer, text);
 				}
 				finally { _updating = false; }
 			}
