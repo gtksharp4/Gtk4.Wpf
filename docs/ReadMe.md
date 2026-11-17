@@ -123,10 +123,8 @@ For hermetic/offline restore the wrapper `nupkg`s are also vendored under `build
 
 ## Getting started
 
-See [`docs/article-wpf-to-gtk4-forms.md`](docs/article-wpf-to-gtk4-forms.md) for a full
-WPF-to-Gtk4.Forms port walkthrough, [`docs/article-gtk4-forms-gtk.md`](docs/article-gtk4-forms-gtk.md)
-for the backend architecture, and the `Gtk4.Forms.ControlGallery` project for a runnable app. The
-entry point is small:
+See [`docs/article-gtk4-forms-gtk.md`](docs/article-gtk4-forms-gtk.md) for the backend architecture,
+and the `Gtk4.Forms.ControlGallery` project for a runnable app. The entry point is small:
 
 ```csharp
 [STAThread]

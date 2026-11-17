@@ -1,4 +1,0 @@
-<Project>
-  <!-- Transitive auto-import entry point (.targets half). See the matching .props for details. -->
-  <Import Project="$(MSBuildThisFileDirectory)../build/Gtk4.Forms.MarkupCompiler.targets" />
-</Project>

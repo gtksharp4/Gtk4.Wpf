@@ -213,44 +213,6 @@ build target cannot retarget the build in progress — the first build rewrites,
 `SkipGtkConvert`/`SkipGtkHost` opt out. Still open: `Gtk4.Forms.Build.Tasks` must expose its XAML
 targets via `buildTransitive/` for a fully hands-off XAML consumer.
 
-**WPF-on-GTK compatibility layer (`Gtk4.Forms.*`, Phase 1).** A separate, in-progress effort to run an
-**unmodified WPF** app (its `System.Windows.*` code and WPF XAML) on the GTK engine — no namespace or
-XAML changes. The types are reimplemented in the real `System.Windows.*` namespaces (projects named
-`Gtk4.Forms.*`, own assembly names): `Gtk4.Forms.WindowsBase` (the `DependencyObject`/`DependencyProperty`
-property + routed-event system, pure netstandard2.0), `Gtk4.Forms.PresentationFramework`
-(`UIElement`→`Window`/controls + a one-way binding engine, rendering on GtkSharp 4, net10.0), and
-`Gtk4.Forms.MarkupCompiler` (a build-time, System.Xaml-free MSBuild task that generates
-`InitializeComponent` from the untouched presentation-namespace XAML — `[assembly: XmlnsDefinition]`
-makes the WPF xmlns resolve to our types). `Gtk4.Forms.Wpf` is the one-package drop-in (+ a WPF
-`Gtk4.Forms.Wpf.ProjectConverter`: strip `UseWPF`, `net*-windows`→`net10.0`, `OutputType=Exe`).
-`Gtk4.Forms.WpfSample` is an unmodified-WPF app that compiles through the compiler as the end-to-end
-proof. **Phase 0** proved the architecture (four controls, one-way binding, ~104 tests). **Phase 1**
-adds the core WPF control set under `Gtk4.Forms.PresentationFramework/Controls/`:
-
-| Control | GTK backing | Notes |
-|---|---|---|
-| `TextBox` | `Gtk.Entry` | Two-way: GTK edits write back via `Changed` event |
-| `CheckBox` | `Gtk.CheckButton` | `IsChecked` (bool?); `Checked`/`Unchecked` events; two-way |
-| `RadioButton` | `Gtk.CheckButton` | `IsChecked`, `GroupName`; grouped via `CheckButton.Group` property |
-| `ComboBox` | `Gtk.DropDown` + `Gtk.StringList` | GTK4-native (not deprecated `ComboBoxText`); `ItemsSource`, `SelectedIndex`, `SelectedItem`, `SelectionChanged` |
-| `Image` | `Gtk.Image` | `System.Windows.Media.ImageSource` (Phase-1 file-path stub in `Media/ImageSource.cs`) |
-| `Border` | `Gtk.Frame` | `[ContentProperty("Child")]`; `BorderThickness`/`Padding` stored (CSS application Phase-2) |
-| `Label` | `Gtk.Box`+`Gtk.Label` | Thin `ContentControl` subclass; string content displayed in `Gtk.Label` |
-| `WebBrowser` | `Gtk.Box` + placeholder `Gtk.Label` | Backed by `IWebBrowserHost`; default `PhotinoWebBrowserHost` (Photino.NET 4.0.16); web content in Photino's own native window (not embedded in GTK tree — future refinement). `InvokeScript` sends a web message; no synchronous JS-eval via Photino. `HostFactory` is a static injectable seam for tests. 26 tests (21 pure model + 5 GTK smoke). |
-
-GTK4 widget choice note: `Gtk.DropDown` is used for `ComboBox` over the deprecated `Gtk.ComboBoxText`
-(the latter is a GTK3 compat shim, `[Obsolete]` in GtkSharp4). `Gtk.CheckButton.Group` is a property
-setter in GtkSharp4 (not a `SetGroup()` method). Test count: 80 (48 new: 24 pure DP + 24 GTK smoke).
-
-**Round 12 track B — default control templates + theming (runtime only).** `DefaultStyleKey`
-DP on `FrameworkElement`, `OverridesDefaultStyle` flag, `System.Windows.Themes.ThemeManager`
-(theme dictionary keyed by `Type`), `System.Windows.Themes.Generic` (seeds default `Style`s and
-`ControlTemplate`s for `Button`, `CheckBox`, `RadioButton`, `Label`, `Border`), `SystemColors`
-(ControlBrush, WindowBrush, HighlightBrush, ControlTextBrush), and `Control.Properties.cs`
-(Padding, HorizontalContentAlignment, VerticalContentAlignment DPs on `Control`).  Default-style
-resolution is the lowest precedence: explicit Style > implicit TargetType style > theme default.
-`Application` ctor calls `Generic.Register()`. Total `Gtk4.Forms.PresentationFramework.Tests`: 961 (1098 including WebBrowser + later rounds).
-
 ## Coding style
 
 .NET Foundation style with the project's exceptions (see `.editorconfig`, which is authoritative):
