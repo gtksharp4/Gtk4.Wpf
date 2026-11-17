@@ -71,6 +71,9 @@ public partial class Window : ContentControl
 		// GTK4 removed per-window image icons, so a HeaderBar titlebar hosts the window icon
 		// (see Window.Icon.cs). Installed here so the icon shows from first display.
 		InstallHeaderBar(_window);
+		// Apply stored chrome DPs (WindowState, WindowStyle, ResizeMode) now that the
+		// native window exists. Must follow InstallHeaderBar so _headerBar is set.
+		ApplyChromeToWindow(_window);
 		// F2: wire window-manager close (title-bar X button) to Close(null) so
 		// ShowDialog unblocks when the user dismisses the window.
 		_window.CloseRequest += OnCloseRequest;
@@ -80,12 +83,18 @@ public partial class Window : ContentControl
 	/// <summary>
 	/// A window's <see cref="FrameworkElement.Width"/>/<see cref="FrameworkElement.Height"/>
 	/// is its initial on-screen extent, not a minimum-size request, so set the GTK top-level
-	/// default size instead of a size request.
+	/// default size instead of a size request. When <see cref="SizeToContent"/> suppresses a
+	/// dimension, that axis is left at -1 so GTK sizes it to the content's natural extent.
 	/// </summary>
 	protected override void ApplyExplicitSize(Gtk.Widget widget)
 	{
-		int w = double.IsNaN(Width) ? -1 : (int)Math.Round(Width);
-		int h = double.IsNaN(Height) ? -1 : (int)Math.Round(Height);
+		var stc = SizeToContent;
+		int w = (stc == SizeToContent.Width || stc == SizeToContent.WidthAndHeight || double.IsNaN(Width))
+			? -1
+			: (int)Math.Round(Width);
+		int h = (stc == SizeToContent.Height || stc == SizeToContent.WidthAndHeight || double.IsNaN(Height))
+			? -1
+			: (int)Math.Round(Height);
 		if ((w > 0 || h > 0) && widget is Gtk.Window gtkWin)
 		{
 			// SetDefaultSize is the WPF-equivalent (initial size, resizable), but the
@@ -111,6 +120,9 @@ public partial class Window : ContentControl
 		{
 			win.Add(contentElement.Widget);
 		}
+
+		// Apply startup location before presenting (GTK4 has no Move() — currently a no-op).
+		ApplyStartupLocation(win);
 
 		// GTK4: Present() maps the window. ShowAll() (GTK3) realises it at the content's
 		// natural size, so it is not used.
