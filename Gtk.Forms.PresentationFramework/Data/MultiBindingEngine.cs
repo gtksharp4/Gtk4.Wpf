@@ -64,6 +64,14 @@ internal static class MultiBindingEngine
 			r.RefreshIfUsesDataContext(target);
 	}
 
+	/// <summary>Deactivates all multi-binding records on <paramref name="target"/>.</summary>
+	internal static void ClearAll(FrameworkElement target)
+	{
+		if (!_records.TryGetValue(target, out var list)) return;
+		foreach (var r in list) r.Deactivate();
+		list.Clear();
+	}
+
 	/// <summary>Re-evaluates the multi-binding for <paramref name="dp"/> on target.</summary>
 	internal static void Refresh(FrameworkElement target, DependencyProperty dp)
 	{
@@ -87,6 +95,10 @@ internal static class MultiBindingEngine
 		readonly List<(INotifyPropertyChanged inpc, PropertyChangedEventHandler handler)> _subs =
 			new List<(INotifyPropertyChanged, PropertyChangedEventHandler)>();
 
+		// TwoWay: callback subscribed to target DP changes.
+		PropertyChangedCallback? _targetChangedCallback;
+		bool _pushing;
+
 		internal DependencyProperty TargetProperty => _dp;
 
 		internal MultiRecord(
@@ -103,18 +115,25 @@ internal static class MultiBindingEngine
 		internal void Activate()
 		{
 			if (!_targetRef.TryGetTarget(out var target)) return;
-			// R6: TwoWay MultiBinding is not supported.
-			if (_mb.Mode == BindingMode.TwoWay)
-				throw new NotSupportedException(
-					"MultiBinding does not support Mode=TwoWay. " +
-					"Implement IMultiValueConverter.ConvertBack manually and use OneWayToSource, " +
-					"or use separate one-way Bindings.");
 			Detach();
 			SubscribeSources(target);
 			Push(target);
+
+			// TwoWay: subscribe to target DP changes and write-back via ConvertBack.
+			if (_mb.Mode == BindingMode.TwoWay)
+			{
+				_targetChangedCallback = OnTargetPropertyChanged;
+				TargetChangeTracker.Subscribe(target, _dp, _targetChangedCallback);
+			}
 		}
 
-		internal void Deactivate() => Detach();
+		internal void Deactivate()
+		{
+			if (_targetChangedCallback != null && _targetRef.TryGetTarget(out var t))
+				TargetChangeTracker.Unsubscribe(t, _dp, _targetChangedCallback);
+			_targetChangedCallback = null;
+			Detach();
+		}
 
 		/// <summary>
 		/// Re-subscribes sources and re-pushes if any child binding uses DataContext.
@@ -135,6 +154,14 @@ internal static class MultiBindingEngine
 		}
 
 		internal void Push(FrameworkElement target)
+		{
+			if (_pushing) return;
+			_pushing = true;
+			try { PushCore(target); }
+			finally { _pushing = false; }
+		}
+
+		void PushCore(FrameworkElement target)
 		{
 			var values = new object?[_mb.Bindings.Count];
 			bool anyUnresolved = false;
@@ -201,6 +228,46 @@ internal static class MultiBindingEngine
 			foreach (var (inpc, handler) in _subs)
 				inpc.PropertyChanged -= handler;
 			_subs.Clear();
+		}
+
+		/// <summary>
+		/// TwoWay write-back: target DP changed → call ConvertBack → write each child source.
+		/// </summary>
+		void OnTargetPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		{
+			if (_pushing) return;
+			if (!_targetRef.TryGetTarget(out var target)) return;
+			if (_mb.Converter == null) return;
+
+			var targetValue = target.GetValue(_dp);
+			var sourceTypes = new Type[_mb.Bindings.Count];
+			for (int i = 0; i < _mb.Bindings.Count; i++)
+				sourceTypes[i] = typeof(object);
+
+			var backValues = _mb.Converter.ConvertBack(
+				targetValue, sourceTypes, _mb.ConverterParameter, CultureInfo.CurrentCulture);
+
+			if (backValues == null) return;
+
+			_pushing = true;
+			try
+			{
+				for (int i = 0; i < _mb.Bindings.Count && i < backValues.Length; i++)
+				{
+					var bv = backValues[i];
+					if (ReferenceEquals(bv, Binding.DoNothing)) continue;
+					if (ReferenceEquals(bv, DependencyProperty.UnsetValue)) continue;
+
+					var b = _mb.Bindings[i];
+					var src = ResolveChildSource(target, b);
+					if (src == null) continue;
+					BindingEngine.WriteBackPath(src, b.Path, bv);
+				}
+			}
+			finally
+			{
+				_pushing = false;
+			}
 		}
 
 		static object? ResolveChildSource(FrameworkElement target, Binding b)

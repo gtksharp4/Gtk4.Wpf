@@ -338,11 +338,13 @@ public class Round8DefectTests
 			=> null;
 	}
 
-	// ── R6: TwoWay MultiBinding throws ────────────────────────────────────────
+	// ── R6: TwoWay MultiBinding is now supported via ConvertBack ─────────────
 
 	[Fact]
-	public void R6_MultiBinding_TwoWay_activation_throws_NotSupportedException()
+	public void R6_MultiBinding_TwoWay_no_longer_throws_now_that_ConvertBack_is_implemented()
 	{
+		// Round 14: TwoWay MultiBinding is supported — ConvertBack writes each child source.
+		// The old contract (NotSupportedException) is replaced by functional TwoWay.
 		var tb = new WpfTextBlock();
 		tb.DataContext = new Source { Name = "x", Count = 1 };
 
@@ -354,7 +356,9 @@ public class Round8DefectTests
 		mb.Bindings.Add(new Binding("Name"));
 		mb.Bindings.Add(new Binding("Count"));
 
-		Assert.Throws<NotSupportedException>(() => tb.SetBinding(WpfTextBlock.TextProperty, mb));
+		// Should not throw.
+		tb.SetBinding(WpfTextBlock.TextProperty, mb);
+		Assert.NotNull(tb.Text);
 	}
 
 	// ── R7: UniformGrid overflow clamp ────────────────────────────────────────

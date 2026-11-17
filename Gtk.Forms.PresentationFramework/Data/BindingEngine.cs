@@ -13,7 +13,7 @@ namespace System.Windows.Data;
 /// adds RelativeSource resolution, StringFormat, FallbackValue, TargetNullValue,
 /// and UpdateSourceTrigger (PropertyChanged / Explicit).
 /// </summary>
-internal static class BindingEngine
+internal static partial class BindingEngine
 {
 	// Per-element list of active records.
 	static readonly ConditionalWeakTable<FrameworkElement, List<BindingRecord>> _bindings =
@@ -46,6 +46,9 @@ internal static class BindingEngine
 		// Also clear any existing multi-binding record for this DP (R2: cross-engine leak).
 		MultiBindingEngine.ClearForDp(target, dp);
 
+		// Clear any priority-binding record too.
+		PriorityBindingEngine.ClearForDp(target, dp);
+
 		// Remove old expression entry.
 		var exprMap = _expressions.GetOrCreateValue(target);
 		exprMap.Remove(dp);
@@ -55,6 +58,13 @@ internal static class BindingEngine
 			var mbExpr = MultiBindingEngine.SetBinding(target, dp, mb);
 			exprMap[dp] = mbExpr;
 			return mbExpr;
+		}
+
+		if (bindingBase is PriorityBinding pb)
+		{
+			var pbExpr = PriorityBindingEngine.SetBinding(target, dp, pb);
+			exprMap[dp] = pbExpr;
+			return pbExpr;
 		}
 
 		if (bindingBase is Binding binding)

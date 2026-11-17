@@ -27,14 +27,15 @@ public partial class FrameworkElement
 	}
 
 	/// <summary>
-	/// Attaches a <see cref="BindingBase"/> (Binding or MultiBinding) to
+	/// Attaches a <see cref="BindingBase"/> (<see cref="Binding"/>,
+	/// <see cref="MultiBinding"/>, or <see cref="PriorityBinding"/>) to
 	/// <paramref name="dp"/> and returns the live expression.
 	/// </summary>
-	public void SetBinding(DependencyProperty dp, BindingBase binding)
+	public BindingExpressionBase? SetBinding(DependencyProperty dp, BindingBase binding)
 	{
 		if (dp == null) throw new ArgumentNullException(nameof(dp));
 		if (binding == null) throw new ArgumentNullException(nameof(binding));
-		BindingEngine.SetBinding(this, dp, binding);
+		return BindingEngine.SetBinding(this, dp, binding);
 	}
 
 	/// <summary>

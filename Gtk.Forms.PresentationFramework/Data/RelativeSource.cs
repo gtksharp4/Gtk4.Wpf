@@ -1,3 +1,5 @@
+using System.Windows.Controls;
+
 namespace System.Windows.Data;
 
 /// <summary>Specifies the source of a binding relative to the target element.</summary>
@@ -79,12 +81,48 @@ public sealed class RelativeSource
 				return target.TemplatedParent;
 
 			case RelativeSourceMode.PreviousData:
-				// PreviousData requires collection context; not implemented.
-				return null;
+				return ResolvePreviousData(target);
 
 			default:
 				return null;
 		}
+	}
+
+	/// <summary>
+	/// Finds the data item immediately before the item whose container is
+	/// <paramref name="target"/> inside a parent <c>ItemsControl</c>.
+	/// <para>
+	/// Limitation: resolution depends on the target's <c>DataContext</c> matching
+	/// an item in the nearest <c>ItemsControl</c> ancestor's <c>Items</c> list.
+	/// If the item container uses a template with an intermediate host element,
+	/// the DataContext walk may not locate the item and returns <c>null</c>.
+	/// </para>
+	/// </summary>
+	static object? ResolvePreviousData(FrameworkElement target)
+	{
+		// Walk to the nearest ItemsControl ancestor.
+		DependencyObject? current =
+			(target as UIElement)?.LogicalParent ?? target.InheritanceParent;
+
+		while (current != null)
+		{
+			if (current is System.Windows.Controls.ItemsControl ic)
+			{
+				var dataItem = target.DataContext;
+				if (dataItem == null) return null;
+
+				// Find the index of the current item in the flat Items list.
+				var items = ic.Items;
+				for (int i = 1; i < items.Count; i++)
+				{
+					if (ReferenceEquals(items[i], dataItem))
+						return items[i - 1];
+				}
+				return null;
+			}
+			current = (current as UIElement)?.LogicalParent ?? current.InheritanceParent;
+		}
+		return null;
 	}
 
 	object? FindAncestor(FrameworkElement target)
