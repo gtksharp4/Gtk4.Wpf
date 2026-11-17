@@ -15,7 +15,7 @@ namespace System.Windows
 	/// <c>Gtk4.Forms.Platform.Gtk</c> (the STA-thread host, the GtkSynchronizationContext,
 	/// and the full Forms layout pass).
 	/// </remarks>
-	public class Window : ContentControl
+	public partial class Window : ContentControl
 	{
 		// ── Title ────────────────────────────────────────────────────────────────
 
@@ -68,6 +68,9 @@ namespace System.Windows
 		protected override Gtk.Widget CreateWidget()
 		{
 			_window = new Gtk.Window { Title = Title };
+			// GTK4 removed per-window image icons, so a HeaderBar titlebar hosts the window icon
+			// (see Window.Icon.cs). Installed here so the icon shows from first display.
+			InstallHeaderBar(_window);
 			// F2: wire window-manager close (title-bar X button) to Close(null) so
 			// ShowDialog unblocks when the user dismisses the window.
 			_window.CloseRequest += OnCloseRequest;
