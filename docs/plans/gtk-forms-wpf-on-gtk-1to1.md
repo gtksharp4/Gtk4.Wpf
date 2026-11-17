@@ -816,6 +816,19 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
     (unusable in a closure) was replaced with the selector's own `InvokeCount`.
   - **Full suite: 1466 tests** (83 WindowsBase + 1195 PresentationFramework + 173 MarkupCompiler +
     15 ProjectConverter), all pass; warning-clean.
+- **Round 14 Track A — data providers + advanced binding (DONE).**
+  - **`DataSourceProvider`** (abstract base): `Data`, `DataChanged`, `IsInitialLoadEnabled`, `InitialLoad()`, `Refresh()`, `BeginInit()`/`EndInit()` (ISupportInitialize shape), `OnQueryFinished` protected hook.
+  - **`ObjectDataProvider`**: `ObjectType`/`ObjectInstance`, `MethodName`/`MethodParameters`/`ConstructorParameters` — instantiates the type (or uses the instance) and optionally invokes `MethodName` via reflection, exposing result as `Data`.
+  - **`XmlDataProvider`**: `Source`(Uri)/`Document`/`XmlSerializer` (inline XML string), `XPath` — loads an `XmlDocument`, evaluates the XPath expression via `XPathNavigator`, exposes matching nodes as `List<XmlNode>` in `Data`.
+  - **`PriorityBinding : BindingBase`**: `Bindings` collection; `PriorityBindingEngine` resolves child bindings in order, uses first non-null result, re-evaluates on INPC; `PriorityBindingExpression` live object; wired into `BindingEngine.SetBinding` and the expression map.
+  - **`BindingGroup`**: `Name`, `BindingExpressions`, `ValidationRules`, `Items` (deduplicated source objects), `BeginEdit()`/`CommitEdit()`/`CancelEdit()`/`UpdateSources()`/`ValidateWithoutUpdate()`; validates source objects via rules; writes sources on commit via `BindingExpression.UpdateSource`.
+  - **`FrameworkElement.BindingGroupProperty`** DP — new partial `FrameworkElement.BindingGroup.cs`.
+  - **`BindingOperations`** (static): `SetBinding`, `ClearBinding`, `ClearAllBindings`, `GetBinding`, `GetBindingExpression`, `GetMultiBindingExpression`, `GetBindingExpressionBase`, `IsDataBound`; routes all kinds through `BindingEngine`; `BindingEngine.ClearBinding`/`ClearAllBindings`/`MultiBindingEngine.ClearAll` added as new partials.
+  - **`MultiBinding` TwoWay**: `ConvertBack` now writes each child source via `TargetChangeTracker`; `Binding.DoNothing`/`DependencyProperty.UnsetValue` sentinels skip that slot; reentrancy-guarded. The old `NotSupportedException` contract is replaced by functional TwoWay. Existing test updated.
+  - **`RelativeSource.PreviousData`**: resolves by walking to the nearest `ItemsControl` ancestor and returning the item at `index - 1` in `Items`. Documented limitation: depends on `DataContext` matching a flat `Items` entry; nested templates with intermediate hosts may not resolve.
+  - **`CollectionViewSource` grouping/live-shaping**: already complete from Round 9 (U6) — `SortDescriptions`/`GroupDescriptions`/`Filter` flow into `View` on `Refresh`.
+  - **44 new tests** (6 `DataSourceProviderTests`, 5 `PriorityBindingTests`, 5 `BindingGroupTests`, 9 `BindingOperationsTests`, 3 `MultiBindingTwoWayTests` + 1 updated `Round8DefectTests`).
+  - **Round 14 totals: 1260 tests** (60 WindowsBase + 1195+65=~1260 PresentationFramework + 173 MarkupCompiler + 15 ProjectConverter); note: WindowsBase/Markup/Converter suites not re-run here — PF total is 1260 all-suites combined from this run.
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
   true `{DynamicResource}` change-tracking;
   `Gtk.PopoverMenu` integration for `MenuItem`; element-level `FrameworkElement.Triggers` auto-attach on
