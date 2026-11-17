@@ -18,6 +18,14 @@ public abstract partial class FrameworkElement
 	// Shared across all references on this element (all share the same resource chain).
 	List<ResourceDictionary>? _subscribedDicts;
 
+	// Cached delegate for OnAnyDictChanged.  One instance per element, created on first
+	// SetResourceReference call and held here (strong reference on the element itself).
+	// ResourceDictionary stores it weakly; because the element holds it strongly, the
+	// delegate survives exactly as long as the element does — which is the desired
+	// lifetime.  When the element is collected the weak reference in the dict goes dead
+	// and the entry is pruned on the next raise or subscribe.
+	Action<object?, object?>? _onAnyDictChangedDelegate;
+
 	/// <summary>
 	/// Establishes a live link between <paramref name="dp"/> and the resource
 	/// identified by <paramref name="resourceKey"/>.  The current value is
@@ -27,11 +35,11 @@ public abstract partial class FrameworkElement
 	/// reference.  Call <see cref="ClearResourceReference"/> to detach.
 	/// </summary>
 	/// <remarks>
-	/// The change subscription is a strong link held by each dictionary in the chain
-	/// (including <see cref="Application"/>-level resources, which outlive the element).
-	/// Until a weak-event path is wired, callers must invoke
-	/// <see cref="ClearResourceReference"/> when the element is torn down to avoid the
-	/// dictionary pinning the element alive.
+	/// Subscriptions are held as <em>weak</em> references by each dictionary, so a
+	/// collected element is not kept alive by a long-lived dictionary such as
+	/// <see cref="Application.Current"/>-level resources.
+	/// <see cref="ClearResourceReference"/> still provides an immediate deterministic
+	/// detach when you no longer need the live link.
 	/// </remarks>
 	/// <param name="dp">The dependency property to drive.</param>
 	/// <param name="resourceKey">The resource key to track.</param>
@@ -99,6 +107,9 @@ public abstract partial class FrameworkElement
 
 	void SubscribeToResourceChain()
 	{
+		// Lazily create the cached delegate so it is allocated once per element.
+		_onAnyDictChangedDelegate ??= OnAnyDictChanged;
+
 		// Collect all ResourceDictionaries reachable from this element's resource chain.
 		var chain = CollectResourceChain();
 
@@ -108,7 +119,7 @@ public abstract partial class FrameworkElement
 			foreach (var dict in _subscribedDicts)
 			{
 				if (!chain.Contains(dict))
-					dict.ResourceChanged -= OnAnyDictChanged;
+					dict.ResourceChanged -= _onAnyDictChangedDelegate;
 			}
 		}
 
@@ -120,7 +131,7 @@ public abstract partial class FrameworkElement
 			if (!_subscribedDicts.Contains(dict))
 			{
 				_subscribedDicts.Add(dict);
-				dict.ResourceChanged += OnAnyDictChanged;
+				dict.ResourceChanged += _onAnyDictChangedDelegate;
 			}
 		}
 	}
@@ -128,8 +139,11 @@ public abstract partial class FrameworkElement
 	void UnsubscribeFromResourceChain()
 	{
 		if (_subscribedDicts == null) return;
-		foreach (var dict in _subscribedDicts)
-			dict.ResourceChanged -= OnAnyDictChanged;
+		if (_onAnyDictChangedDelegate != null)
+		{
+			foreach (var dict in _subscribedDicts)
+				dict.ResourceChanged -= _onAnyDictChangedDelegate;
+		}
 		_subscribedDicts.Clear();
 	}
 
