@@ -5,6 +5,16 @@ namespace System.Windows.Controls;
 
 public partial class WebBrowser
 {
+	WebBrowserDom? _dom;
+
+	/// <summary>
+	/// DOM-access API: query and manipulate the current page's DOM (read/write element properties,
+	/// attributes, innerHTML/innerText, form values, click, evaluate arbitrary JS). Backed by the
+	/// host's script evaluator — real values through CefSharp on Windows, <c>null</c> reads through
+	/// Photino (which has no synchronous JS eval).
+	/// </summary>
+	public WebBrowserDom Dom => _dom ??= new WebBrowserDom(js => Host.ExecuteScript(js));
+
 	/// <summary>
 	/// Evaluates <paramref name="scriptName"/> in the current page.
 	/// Routes to <see cref="IWebBrowserHost.ExecuteScript"/>; through the default
