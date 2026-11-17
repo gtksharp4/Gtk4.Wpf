@@ -230,6 +230,18 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Fact]
+		public void ApplyQueryAttributesWithNullElementDoesNotThrow()
+		{
+			// Route creation can fail (GetOrCreateFromRoute logs a warning and returns null) and
+			// still reach ApplyQueryAttributes with a null element — it must be a no-op, not an NRE.
+			// This is the deferred-navigation race behind the flaky NavigationTaskCompletes* test.
+			var ex = Record.Exception(() => ShellNavigationManager.ApplyQueryAttributes(
+				null, new Dictionary<string, string>(), isLastItem: true, isPopping: false));
+
+			Assert.Null(ex);
+		}
+
+		[Fact]
 		public void CompletingTheSameDeferralTokenTwiceDoesntDoAnything()
 		{
 			var args = CreateShellNavigatedEventArgs();
