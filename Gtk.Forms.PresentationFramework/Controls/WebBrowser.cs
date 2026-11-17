@@ -27,9 +27,39 @@ public partial class WebBrowser : Control, IDisposable
 	/// <summary>
 	/// Factory used to create the <see cref="IWebBrowserHost"/> for each
 	/// <see cref="WebBrowser"/> instance.  Replace this in tests to inject a fake.
+	/// <para>
+	/// Default: a visible CefSharp browser on Windows (the net10.0-windows package variant),
+	/// Photino on every other platform/variant.
+	/// </para>
 	/// </summary>
-	public static Func<IWebBrowserHost> HostFactory { get; set; } =
-		() => new PhotinoWebBrowserHost();
+	public static Func<IWebBrowserHost> HostFactory { get; set; } = CreateDefaultHost;
+
+	// True only in the Windows package variant, where the CefSharp backend is compiled in.
+	internal const bool CefSharpCompiledIn =
+#if WINDOWS
+		true;
+#else
+		false;
+#endif
+
+	/// <summary>
+	/// Pure backend-selection decision: use CefSharp when running on Windows <i>and</i> the CefSharp
+	/// backend is compiled into this build; use Photino otherwise. Kept separate so it is testable
+	/// without instantiating a native host.
+	/// </summary>
+	internal static bool ShouldUseCefSharp(bool isWindows, bool cefSharpCompiledIn)
+		=> isWindows && cefSharpCompiledIn;
+
+	static IWebBrowserHost CreateDefaultHost()
+	{
+		if (ShouldUseCefSharp(OperatingSystem.IsWindows(), CefSharpCompiledIn))
+		{
+#if WINDOWS
+			return new CefSharpWebBrowserHost();
+#endif
+		}
+		return new PhotinoWebBrowserHost();
+	}
 
 	IWebBrowserHost? _host;
 

@@ -5,7 +5,15 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <!--
+      Multi-target so the Windows variant can carry the CefSharp WebBrowser backend. The
+      net10.0-windows TFM is only added when building ON Windows, so the Linux/macOS CI keeps
+      building the single cross-platform net10.0 (Photino) variant and never pulls CefSharp
+      (whose build targets are Windows-only). NuGet hands net10.0-windows consumers the CefSharp
+      variant and everyone else the net10.0 (Photino) one.
+    -->
+    <TargetFrameworks>net10.0</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('Windows'))">net10.0;net10.0-windows</TargetFrameworks>
     <AssemblyName>Gtk.Forms.PresentationFramework</AssemblyName>
     <RootNamespace>System.Windows</RootNamespace>
     <LangVersion>latest</LangVersion>
@@ -29,6 +37,20 @@
   <ItemGroup>
     <PackageReference Include="GtkSharp4" Version="$(GtkSharp4Version)" />
     <PackageReference Include="Photino.NET" Version="4.0.16" />
+  </ItemGroup>
+
+  <!--
+    Windows variant only: a visible CefSharp.WinForms browser backs the WebBrowser control
+    (see Controls/Web/CefSharpWebBrowserHost.cs, compiled under the net10.0-windows WINDOWS
+    symbol). UseWindowsForms enables the WinForms Form that hosts the Chromium control;
+    CefSharpAnyCpuSupport lets CefSharp load its native binaries from an AnyCPU assembly.
+  -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-windows'">
+    <UseWindowsForms>true</UseWindowsForms>
+    <CefSharpAnyCpuSupport>true</CefSharpAnyCpuSupport>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows'">
+    <PackageReference Include="CefSharp.WinForms.NETCore" Version="156.0.150" />
   </ItemGroup>
 
   <!--
