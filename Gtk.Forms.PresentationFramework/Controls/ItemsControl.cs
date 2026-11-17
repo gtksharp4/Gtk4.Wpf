@@ -18,7 +18,7 @@ namespace System.Windows.Controls;
 /// Reacts to <see cref="INotifyCollectionChanged"/> if the source implements it.
 /// </para>
 /// </summary>
-public class ItemsControl : Control
+public partial class ItemsControl : Control
 {
 	// ── ItemsSource DP ───────────────────────────────────────────────────────
 

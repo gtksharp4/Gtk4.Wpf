@@ -8,7 +8,7 @@ namespace System.Windows.Controls;
 /// packs each child's backing GTK widget into the panel's GTK container.
 /// </summary>
 [ContentProperty("Children")]
-public abstract class Panel : FrameworkElement
+public abstract partial class Panel : FrameworkElement
 {
 	/// <summary>The ordered collection of child elements.</summary>
 	public UIElementCollection Children { get; }
