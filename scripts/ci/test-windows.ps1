@@ -12,6 +12,16 @@
 $ErrorActionPreference = 'Stop'
 $env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
 
+# Warm up the GTK 4 runtime install SERIALLY first. GtkSharp4's InstallGtk target downloads the
+# gvsbuild zip into %LOCALAPPDATA%\Gtk and is guarded only by "gtk-4-1.dll not present" - with no
+# lock, a parallel first build has every GtkSharp4-referencing project race on the same gtk.zip and
+# fails with MSB3923 ("the process cannot access the file ... because it is being used by another
+# process"). Building one consumer with -maxcpucount:1 installs it once; the solution build below
+# then finds it present and skips the download, so there is nothing to race on.
+Write-Host '== warm up the gvsbuild GTK 4 runtime (serial, avoids the parallel download race) =='
+dotnet build Gtk.Forms.PresentationFramework/Gtk.Forms.PresentationFramework.csproj -c Debug -maxcpucount:1 -p:GeneratePackageOnBuild=false
+if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
 Write-Host '== build (Debug; installs the gvsbuild GTK 4 runtime via GtkSharp4.targets) =='
 # GeneratePackageOnBuild is disabled: CI builds to test, not to pack, and packing trips the
 # pre-existing Controls.GTK NU5039 (missing readme) that has nothing to do with the tests.
