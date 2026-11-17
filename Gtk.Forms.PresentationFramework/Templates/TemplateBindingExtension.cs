@@ -14,7 +14,7 @@ namespace System.Windows;
 /// <c>Mode = OneWay</c>.
 /// </para>
 /// </summary>
-public sealed class TemplateBindingExtension
+public sealed partial class TemplateBindingExtension
 {
 	/// <summary>The property path on the templated parent to bind to.</summary>
 	public string? Property { get; }

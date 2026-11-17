@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Windows.Data;
 
 namespace System.Windows;
 
@@ -31,11 +32,17 @@ public class TriggerCollection : List<TriggerBase> { }
 /// </summary>
 public class Condition
 {
-	/// <summary>The dependency property to compare.</summary>
+	/// <summary>The dependency property to compare (used by <see cref="MultiTrigger"/>).</summary>
 	public DependencyProperty? Property { get; set; }
 
 	/// <summary>String property name, resolved at attach time when <see cref="Property"/> is null.</summary>
 	public string? PropertyName { get; set; }
+
+	/// <summary>
+	/// Binding expression whose resolved value is compared to <see cref="Value"/>
+	/// (used by <see cref="MultiDataTrigger"/>).
+	/// </summary>
+	public Binding? Binding { get; set; }
 
 	/// <summary>The value to match (string or typed).</summary>
 	public object? Value { get; set; }

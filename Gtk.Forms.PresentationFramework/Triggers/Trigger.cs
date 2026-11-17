@@ -21,6 +21,12 @@ public class Trigger : TriggerBase
 	/// <summary>Setters applied when the condition is active.</summary>
 	public SetterBaseCollection Setters { get; } = new SetterBaseCollection();
 
+	/// <summary>Actions run when the condition becomes active.</summary>
+	public TriggerActionCollection EnterActions { get; } = new TriggerActionCollection();
+
+	/// <summary>Actions run when the condition stops being active.</summary>
+	public TriggerActionCollection ExitActions { get; } = new TriggerActionCollection();
+
 	// Per-target state so the same Trigger object can attach to multiple elements.
 	readonly Dictionary<FrameworkElement, TriggerState> _states =
 		new Dictionary<FrameworkElement, TriggerState>();
@@ -90,6 +96,8 @@ public class Trigger : TriggerBase
 			_appliedDps = new List<DependencyProperty>();
 			foreach (var setter in _trigger.Setters)
 				setter.ApplyToTriggerLayer(_target, this, _appliedDps);
+			foreach (var action in _trigger.EnterActions)
+				action.Invoke(_target);
 		}
 
 		void UnApply()
@@ -98,6 +106,8 @@ public class Trigger : TriggerBase
 			var dps = _appliedDps;
 			_appliedDps = null;
 			_target.ClearTriggerValues(dps, this);
+			foreach (var action in _trigger.ExitActions)
+				action.Invoke(_target);
 		}
 
 		internal void Dispose()

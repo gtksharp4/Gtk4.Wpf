@@ -4,7 +4,7 @@ namespace System.Windows.Data;
 /// Abstract base for all binding expressions (<see cref="Binding"/>, <see cref="MultiBinding"/>).
 /// Holds properties shared by all binding kinds.
 /// </summary>
-public abstract class BindingBase
+public abstract partial class BindingBase
 {
 	/// <summary>
 	/// Format string applied after conversion.
