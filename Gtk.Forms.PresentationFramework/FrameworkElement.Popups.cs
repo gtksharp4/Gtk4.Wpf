@@ -82,6 +82,8 @@ namespace System.Windows
 		protected override void OnWidgetCreated(Gtk.Widget widget)
 		{
 			base.OnWidgetCreated(widget);
+			// Map WPF layout properties (size + alignment) onto the new GTK widget.
+			ApplyLayoutToWidget(widget);
 			var tip = GetValue(ToolTipProperty);
 			if (tip != null)
 				ApplyTooltipToWidget(widget, tip);
