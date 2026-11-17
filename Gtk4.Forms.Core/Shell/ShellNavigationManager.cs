@@ -210,6 +210,12 @@ namespace Xamarin.Forms
 
 		public static void ApplyQueryAttributes(Element element, IDictionary<string, string> query, bool isLastItem, bool isPopping)
 		{
+			// GetOrCreateFromRoute can fail to create content (it logs a warning and returns null),
+			// yet still calls here with a null element. With isLastItem the code below would then
+			// dereference it (element.SetValue) and throw. Nothing to apply to a missing element.
+			if (element == null)
+				return;
+
 			string prefix = "";
 			if (!isLastItem)
 			{
