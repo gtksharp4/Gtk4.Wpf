@@ -848,6 +848,34 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   installs no dead target listener, + doc notes (ObjectDataProvider no auto-requery, BindingGroup non-atomic commit).
   **Round 14 totals: 1561 tests** (83 WindowsBase + 1290 PresentationFramework + 173 MarkupCompiler +
   15 ProjectConverter), all pass; warning-clean.
+- **Round 15 Track A — `VisualStateManager.VisualStateGroups` XAML compilation (DONE).**
+  The markup compiler now emits `InitializeComponent` code for the `<VisualStateManager.VisualStateGroups>`
+  attached-property element form on any `FrameworkElement` (was code-behind only). Multiple groups; states with
+  or without a `<Storyboard>` child (both `<Storyboard>` direct-child and `<VisualState.Storyboard>`
+  property-element forms); `x:Name` on groups/states declares typed fields. Storyboard construction is delegated
+  to the existing `EmitStoryboardInline` (no duplication). Runtime: `VisualStateManager.Get/SetVisualStateGroups`
+  widened `Control` → `FrameworkElement` (backward-compatible; `GoToState` still typed `Control`). Files:
+  `XamlCodeGenerator.VisualStateManager.cs` (new), `XamlCodeGenerator.cs` hook, `WpfXmlnsMap.cs` (+3 types).
+  **+25 tests** (14 compiler + 11 runtime). Note: WPF `VisualState` is storyboard-only in XAML; the runtime
+  `VisualState.Setters` extension has no XAML path (programmatic only).
+- **Round 15 Track B — `Window` chrome (DONE).** Five WPF `Window` DPs mapped to GTK4 with graceful
+  pre-realize deferral: `WindowState` (Normal/Minimized/Maximized → Minimize/Maximize/Unmaximize),
+  `WindowStartupLocation` (Manual/CenterScreen/CenterOwner), `ResizeMode`
+  (NoResize/CanMinimize/CanResize/CanResizeWithGrip → `Resizable`+title-button affordances),
+  `WindowStyle` (None/Single/ThreeD/ToolWindow → `Decorated`), `SizeToContent`
+  (Manual/Width/Height/WidthAndHeight, honored in `ApplyExplicitSize`). Enum defaults match WPF exactly.
+  Files: `Window.Chrome.cs`, `Window.Chrome.Style.cs`, five enum files, `Window.cs` edits. **+29 tests**
+  (20 pure DP + 9 GTK smoke). GTK4 limits documented in the enum XML docs: no `gtk_window_move` (CenterScreen/
+  CenterOwner store-only), no per-button title-bar visibility, border variants collapse to `Decorated=true`,
+  `WindowState` round-trip is one-way (DP→native; WM-initiated changes not reflected back).
+- **Round 15 review (Opus) + fixes — DONE.** Both tracks correct (enum values/defaults, VSM widening,
+  deferral guards, no leaked handlers, codegen delegation all verified). Two **Low** test-only findings fixed:
+  the 259-line `XamlCodeGeneratorVsmTests.cs` split by behaviour into a shared `XamlCodeGeneratorVsmTestBase.cs`
+  + `XamlCodeGeneratorVsmTests.cs` (structure) + `XamlCodeGeneratorVsmStoryboardTests.cs` (storyboard/fields),
+  all ≤200 lines; the brittle whole-file `DoesNotContain("Storyboard")` assertion scoped to
+  `new …Storyboard()` + `.Storyboard =`.
+  **Round 15 totals: 1615 tests** (83 WindowsBase + 1330 PresentationFramework + 187 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean.
 - **Carry-over**: attribute-driven `[XmlnsDefinition]` resolution (replace the built-in xmlns map);
   true `{DynamicResource}` change-tracking;
   `Gtk.PopoverMenu` integration for `MenuItem`; element-level `FrameworkElement.Triggers` auto-attach on
@@ -855,7 +883,8 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `Popup`/`ContextMenu` replay of an `IsOpen=true` set before the backing widget exists (currently dropped);
   GTK4-native backings deferred for the Round-6 controls (`Gio.Menu`/`Gtk.PopoverMenuBar` for `Menu`,
   `Gtk.ListView`+`TreeExpander` for `TreeView`, `Gtk.ActionBar` for `ToolBar`);
-  `VisualStateManager.VisualStateGroups` XAML compilation (VSM groups and states still set in code-behind only);
+  `WindowState` round-trip (reflect WM-initiated state changes back into the DP); `gtk_window_move`-free
+  `WindowStartupLocation` (CenterScreen/CenterOwner currently store-only);
   wire computed arrange rects onto a `Gtk.Fixed` so managed layout drives live GTK positioning
   (replace Box/Grid native backing with `Gtk.Fixed` + SizeAllocate driven by the computed
   ArrangeRects — deferred until the managed math is verified stable).

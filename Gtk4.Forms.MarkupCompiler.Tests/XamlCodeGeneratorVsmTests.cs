@@ -1,24 +1,14 @@
-using Gtk4.Forms.MarkupCompiler;
 using Xunit;
 
 namespace Gtk4.Forms.MarkupCompiler.Tests;
 
 /// <summary>
 /// Round-15A compiler tests: <c>VisualStateManager.VisualStateGroups</c>
-/// attached-property element form → <c>InitializeComponent</c> codegen.
-/// Each test fails without the matching feature.
+/// attached-property element form → group/state construction, naming and the
+/// <c>SetVisualStateGroups</c> attach call. Each test fails without the feature.
 /// </summary>
-public class XamlCodeGeneratorVsmTests
+public class XamlCodeGeneratorVsmTests : XamlCodeGeneratorVsmTestBase
 {
-	readonly XamlCodeGenerator _gen = new XamlCodeGenerator();
-
-	static string Grid(string body) =>
-		$@"<Grid x:Class=""MyApp.MyView""
-	xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
-	xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"">
-	{body}
-</Grid>";
-
 	// ── Group and state construction ──────────────────────────────────────────
 
 	[Fact]
@@ -142,118 +132,5 @@ public class XamlCodeGeneratorVsmTests
 
 		// The parent variable of a root-element VSM block is "this".
 		Assert.Contains("SetVisualStateGroups(this,", code);
-	}
-
-	// ── Storyboard child ──────────────────────────────────────────────────────
-
-	[Fact]
-	public void Vsm_state_with_Storyboard_emits_Storyboard_construction()
-	{
-		string xaml = Grid(@"
-<VisualStateManager.VisualStateGroups>
-  <VisualStateGroup x:Name=""CommonStates"">
-    <VisualState x:Name=""MouseOver"">
-      <Storyboard>
-        <DoubleAnimation Storyboard.TargetName=""myEl""
-                         Storyboard.TargetProperty=""Opacity""
-                         From=""1"" To=""0.5"" Duration=""0:0:0.2"" />
-      </Storyboard>
-    </VisualState>
-  </VisualStateGroup>
-</VisualStateManager.VisualStateGroups>");
-
-		string code = _gen.Generate(xaml, out _);
-
-		Assert.Contains("new System.Windows.Media.Animation.Storyboard()", code);
-	}
-
-	[Fact]
-	public void Vsm_state_Storyboard_assigned_to_state()
-	{
-		string xaml = Grid(@"
-<VisualStateManager.VisualStateGroups>
-  <VisualStateGroup x:Name=""CommonStates"">
-    <VisualState x:Name=""MouseOver"">
-      <Storyboard>
-        <DoubleAnimation Storyboard.TargetProperty=""Opacity""
-                         From=""1"" To=""0.5"" Duration=""0:0:0.2"" />
-      </Storyboard>
-    </VisualState>
-  </VisualStateGroup>
-</VisualStateManager.VisualStateGroups>");
-
-		string code = _gen.Generate(xaml, out _);
-
-		Assert.Contains(".Storyboard = ", code);
-	}
-
-	[Fact]
-	public void Vsm_state_without_Storyboard_emits_no_Storyboard()
-	{
-		string xaml = Grid(@"
-<VisualStateManager.VisualStateGroups>
-  <VisualStateGroup x:Name=""CommonStates"">
-    <VisualState x:Name=""Normal"" />
-  </VisualStateGroup>
-</VisualStateManager.VisualStateGroups>");
-
-		string code = _gen.Generate(xaml, out _);
-
-		Assert.DoesNotContain("Storyboard", code);
-	}
-
-	// ── Multiple groups ───────────────────────────────────────────────────────
-
-	[Fact]
-	public void Vsm_multiple_groups_emit_multiple_VisualStateGroup_constructions()
-	{
-		string xaml = Grid(@"
-<VisualStateManager.VisualStateGroups>
-  <VisualStateGroup x:Name=""CommonStates"">
-    <VisualState x:Name=""Normal"" />
-  </VisualStateGroup>
-  <VisualStateGroup x:Name=""FocusStates"">
-    <VisualState x:Name=""Unfocused"" />
-  </VisualStateGroup>
-</VisualStateManager.VisualStateGroups>");
-
-		string code = _gen.Generate(xaml, out _);
-
-		int count = 0;
-		int idx = 0;
-		while ((idx = code.IndexOf("new System.Windows.VisualStateGroup()", idx)) >= 0)
-		{ count++; idx++; }
-		Assert.Equal(2, count);
-	}
-
-	// ── Named fields declared ─────────────────────────────────────────────────
-
-	[Fact]
-	public void Vsm_named_group_produces_field_declaration()
-	{
-		string xaml = Grid(@"
-<VisualStateManager.VisualStateGroups>
-  <VisualStateGroup x:Name=""CommonStates"" />
-</VisualStateManager.VisualStateGroups>");
-
-		string code = _gen.Generate(xaml, out _);
-
-		// CollectNamedElements picks up VisualStateGroup with x:Name.
-		Assert.Contains("System.Windows.VisualStateGroup CommonStates", code);
-	}
-
-	[Fact]
-	public void Vsm_named_state_produces_field_declaration()
-	{
-		string xaml = Grid(@"
-<VisualStateManager.VisualStateGroups>
-  <VisualStateGroup x:Name=""CommonStates"">
-    <VisualState x:Name=""Normal"" />
-  </VisualStateGroup>
-</VisualStateManager.VisualStateGroups>");
-
-		string code = _gen.Generate(xaml, out _);
-
-		Assert.Contains("System.Windows.VisualState Normal", code);
 	}
 }
