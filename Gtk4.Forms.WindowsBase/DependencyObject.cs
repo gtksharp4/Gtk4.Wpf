@@ -164,7 +164,8 @@ public partial class DependencyObject
 	}
 
 	/// <summary>
-	/// Resolves the effective value: animation > local > trigger > style > inherited > metadata default.
+	/// Resolves the effective value:
+	/// animation &gt; local &gt; trigger &gt; dynamic-resource &gt; style &gt; inherited &gt; metadata default.
 	/// </summary>
 	internal object? ResolveEffectiveValue(DependencyProperty dp)
 	{
@@ -173,12 +174,14 @@ public partial class DependencyObject
 
 		if (_localValues.TryGetValue(dp, out var local)) return local;
 
-		// D8: trigger values sit above style but below local.
-		// The top-of-stack (last-declared) contributor wins.
+		// D8: trigger values sit above dynamic-resource and style but below local.
 		var triggerTop = GetTopTriggerValue(dp);
 		if (!ReferenceEquals(triggerTop, DependencyProperty.UnsetValue)) return triggerTop;
 
-		// D6: style values sit below trigger but above inherited/default.
+		// D7: dynamic-resource layer — below trigger, above style.
+		if (_dynResValues.TryGetValue(dp, out var dynRes)) return dynRes;
+
+		// D6: style values sit below dynamic-resource but above inherited/default.
 		if (_styleValues.TryGetValue(dp, out var style)) return style;
 
 		var meta = dp.GetMetadata(GetType());
