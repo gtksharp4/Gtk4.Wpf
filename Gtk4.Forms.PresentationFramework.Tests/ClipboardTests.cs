@@ -125,4 +125,38 @@ public sealed class ClipboardTests : IDisposable
 		var backend = new InMemoryClipboardBackend();
 		Assert.Null(backend.GetDataObject());
 	}
+
+	// ── Degrade: real GtkClipboardBackend headless (no display) ───────────────
+	// Exercises the production default backend: its native push is best-effort and
+	// must not throw when Gdk.Display.Default is null; the in-memory mirror serves
+	// synchronous reads, so a round-trip still works headless.
+
+	[Fact]
+	public void GtkBackend_text_roundtrips_without_display()
+	{
+		var backend = new GtkClipboardBackend();
+		var ex = Record.Exception(() =>
+		{
+			backend.SetText("gtk headless");
+			Assert.True(backend.ContainsText());
+			Assert.Equal("gtk headless", backend.GetText());
+			backend.Clear();
+			Assert.False(backend.ContainsText());
+		});
+		Assert.Null(ex);
+	}
+
+	[Fact]
+	public void GtkBackend_data_object_roundtrips_without_display()
+	{
+		var backend = new GtkClipboardBackend();
+		var ex = Record.Exception(() =>
+		{
+			backend.SetDataObject(new DataObject(DataFormats.UnicodeText, "payload"));
+			var got = backend.GetDataObject();
+			Assert.NotNull(got);
+			Assert.Equal("payload", got!.GetData(DataFormats.UnicodeText));
+		});
+		Assert.Null(ex);
+	}
 }

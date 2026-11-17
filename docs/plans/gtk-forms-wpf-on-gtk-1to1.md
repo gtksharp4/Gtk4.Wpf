@@ -947,7 +947,32 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   into a shared base + core + actions files (all ≤200); a `private set` in a test changed to `internal set`.
   **Round 18 totals: 1676 tests** (89 WindowsBase + 1368 PresentationFramework + 204 MarkupCompiler +
   15 ProjectConverter), all pass; warning-clean.
-- **Carry-over**: compiler diagnostic/warning for a non-`EventTrigger` placed in `FrameworkElement.Triggers`
+- **Round 19 Track A — `Clipboard` + data-object model (DONE).** New `System.Windows.IDataObject`/`DataObject`
+  (format-keyed store, Text↔UnicodeText auto-convert), `DataFormats`, and static `Clipboard` behind an internal
+  `IClipboardBackend` seam: `InMemoryClipboardBackend` (headless/tests) + `GtkClipboardBackend` (in-memory mirror
+  for synchronous reads + best-effort push to `Gdk.Display.Default.Clipboard`, degrades when no display).
+  **+33 tests** (incl. a headless round-trip through the real `GtkClipboardBackend`). Documented limits:
+  cross-process reads not supported (GTK4 clipboard read is async-only), `StoreAsync` not called on
+  `SetDataObject(copy:true)`, no arbitrary-object serialization, `DataFormats.StringFormat` not auto-converted
+  to UnicodeText (only Text↔UnicodeText).
+- **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
+  `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
+  `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a
+  non-null `AdornerLayer`, backed by `Gtk.Overlay`). **+23 tests** (object-model + decorator walk + GTK overlay
+  smoke). Object model is fully headless; overlay placement happens when both the overlay and the adorner widget
+  are realized.
+- **Round 19 review (Opus) + fixes — DONE.** No Critical/High/Medium. Both tracks verified correct (backend
+  restore via IDisposable + no-parallelism, lazy GTK init, bidirectional format auto-convert, `GetAdornerLayer`
+  null-safe VisualParent walk, `GetAdorners` null-not-empty, Remove detaches). Two **Low** fixes: **A1** added the
+  missing `GtkClipboardBackend` headless coverage (degrade path); **B1** split the 294-line `AdornerTests.cs` into
+  a shared helper + object-model + decorator + GTK-smoke files (all ≤200). Carried over (Low, documented):
+  **A2** `DataFormats.StringFormat`→UnicodeText auto-convert; **B2** deferred adorner-overlay placement (adorners
+  added before realize are tracked logically but not placed until a rendering adorner + realized overlay exist).
+  **Round 19 totals: 1732 tests** (89 WindowsBase + 1424 PresentationFramework + 204 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean.
+- **Carry-over**: `DataFormats.StringFormat`↔UnicodeText auto-convert (**A2**); deferred adorner-overlay
+  placement on realize (**B2**);
+  compiler diagnostic/warning for a non-`EventTrigger` placed in `FrameworkElement.Triggers`
   (match WPF's compile-time rejection; runtime superset stays); positive Popup/ContextMenu open-replay GTK test
   under a realized parent window;
   `Gtk.PopoverMenu` integration for `MenuItem`; nested-path `DataTrigger` bindings;
