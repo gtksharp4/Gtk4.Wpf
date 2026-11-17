@@ -90,7 +90,7 @@ Three suites, all **xUnit v3 on `net10.0`**, all run with `dotnet test`:
 | Project | Tests | Notes |
 |---|---|---|
 | `Gtk4.Forms.Core.UnitTests` | ~4856 | platform-independent Core |
-| `Gtk4.Forms.Xaml.UnitTests` | ~1029 | XAML loader + XamlC compiler (14 `MSBuildTests(sdkStyle:True)` fail locally on a pre-existing relative-`Packages`-feed / `NU1301` issue, unrelated to the GTK backend) |
+| `Gtk4.Forms.Xaml.UnitTests` | ~1047 | XAML loader + XamlC compiler, incl. the `MSBuildTests` integration tests (all green: the fixture's `_Directory.Build.{props,targets}` import `Gtk4.Forms.Build.Tasks\build\Xamarin.Forms.{props,targets}` after the rename, and the copied `NuGet.config`'s local feeds are absolutised so the per-test temp build restores) |
 | `Gtk4.Forms.Platform.Gtk.UnitTests` | ~191 (+3 skip) | **real GTK 4 widgets** |
 
 ```powershell
