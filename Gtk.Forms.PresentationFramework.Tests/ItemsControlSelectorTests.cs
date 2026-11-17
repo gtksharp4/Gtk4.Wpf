@@ -153,8 +153,7 @@ public class ItemsControlSelectorTests
 			ItemFactory = _ => new TextBlock { Text = "static" }
 		};
 
-		var pickCount = 0;
-		var sel = new PickingTemplateSelector(selectorTemplate, ref pickCount);
+		var sel = new PickingTemplateSelector(selectorTemplate);
 		var ic = new InspectableItemsControl
 		{
 			ItemTemplate = staticTemplate,
@@ -164,7 +163,7 @@ public class ItemsControlSelectorTests
 		ic.Populate(new object?[] { new NamedItem { Name = "X" } });
 
 		// Selector was called.
-		Assert.Equal(1, pickCount);
+		Assert.Equal(1, sel.InvokeCount);
 		// Container is a TextBlock (from selector template), not from static template.
 		var tb = ic.CreatedContainers[0] as TextBlock;
 		Assert.NotNull(tb);
@@ -174,26 +173,17 @@ public class ItemsControlSelectorTests
 	sealed class PickingTemplateSelector : DataTemplateSelector
 	{
 		readonly DataTemplate _template;
-		int _count;
-		// ref int won't work in a closure field, capture via a wrapper.
-		readonly Action _increment;
 
-		internal PickingTemplateSelector(DataTemplate template, ref int count)
-		{
-			_template = template;
-			// Capture via local increment field.
-			_count = 0;
-			_increment = () => _count++;
-		}
+		internal PickingTemplateSelector(DataTemplate template) => _template = template;
 
 		public override DataTemplate? SelectTemplate(object? item, DependencyObject? container)
 		{
-			_increment();
+			InvokeCount++;
 			return _template;
 		}
 
-		// Expose count for assertion.
-		internal int InvokeCount => _count;
+		/// <summary>Number of times the selector was asked for a template.</summary>
+		internal int InvokeCount { get; private set; }
 	}
 
 	// Revised test to avoid ref-int closure issue — use InvokeCount directly.
