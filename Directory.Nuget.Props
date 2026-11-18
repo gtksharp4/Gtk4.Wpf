@@ -4,7 +4,7 @@
         <NuGetPackageRoot Condition="'$(NuGetPackageRoot)'=='' and '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))'!='true'">$(HOME)/.nuget/packages/</NuGetPackageRoot>
         <VersionBuildSuffix Condition="'$(Configuration)'!='Release'">*</VersionBuildSuffix>
         <VersionBuildSuffix Condition="'$(Configuration)'=='Release'">*</VersionBuildSuffix>
-        <NuGetUtilityVersion Condition="'$(NuGetUtilityVersion)'==''">2.1.0</NuGetUtilityVersion>
+        <NuGetUtilityVersion Condition="'$(NuGetUtilityVersion)'==''">1.0.17</NuGetUtilityVersion>
         <DirectoryNuGet Condition="'$(DirectoryNuGet)'==''">true</DirectoryNuGet>
         <VersionBuildSuffix Condition="'$(VersionBuildSuffix)'==''">*</VersionBuildSuffix>
         <GtkSharp3VersionBuildSuffix>95</GtkSharp3VersionBuildSuffix>

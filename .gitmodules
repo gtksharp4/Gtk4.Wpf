@@ -1,0 +1,3 @@
+[submodule "WPF-Samples"]
+	path = WPF-Samples
+	url = https://github.com/microsoft/WPF-Samples.git
