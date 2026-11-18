@@ -16,9 +16,9 @@ namespace System.Windows.Media;
 ///   <item>Apply the axis rotation and ellipse scaling to map the unit-circle
 ///         Bézier back to the target coordinate system.</item>
 /// </list>
-/// <para>Bounds note: <see cref="ArcSegment.Bounds"/> expands over the Bézier
-/// control points, which over-estimates the true arc bounding box. This is
-/// intentional and documented.</para>
+/// <para>Bounds note: <see cref="PathGeometry.Bounds"/> expands only over the arc's
+/// end point, so an arc bulging past its chord may be under-estimated. This is a
+/// documented approximation.</para>
 /// </summary>
 internal static class ArcToBezier
 {

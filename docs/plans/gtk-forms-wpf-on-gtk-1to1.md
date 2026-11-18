@@ -1046,6 +1046,25 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   (Low): **A1** `ImageBrush.Opacity` is ignored on the image-paint path (rendering-only, unreachable headless).
   **Round 23 totals: 1965 tests** (89 WindowsBase + 1657 PresentationFramework + 204 MarkupCompiler +
   15 ProjectConverter), all pass; warning-clean.
+- **Round 24 Track A — `ArcSegment` + `A`/`a` path command (DONE).** New `Media.SweepDirection`,
+  `Media/ArcToBezier.cs` (SVG §B.2.4 endpoint→center conversion + arc→cubic split, ≤90°/segment,
+  α=4/3·tan(θ/4), ≈0.027% error), `Media/ArcSegment.cs` (degenerate radius → straight line). `PathMarkupParser`
+  now parses `A`/`a` into `ArcSegment`s (replacing the Round-23 skip); `PathGeometry.Bounds` expands over the
+  arc end point. **+14 tests**.
+- **Round 24 Track B — TextBox selection API (DONE).** New `Controls/TextBox.Selection.cs`:
+  `SelectionStart`/`SelectionLength`/`SelectedText`/`CaretIndex` (CLR properties, clamped to text length),
+  `Select(start,length)`/`SelectAll()`, `SelectionChanged`, and `AcceptsTab` DP. GTK sync via
+  `Gtk.Entry.SelectRegion` (single-line) / `Gtk.TextView.Buffer.SelectRange` (multiline), character offsets,
+  deferred until realized; managed fields authoritative headless. **+15 tests**.
+- **Round 24 review (Opus) + fixes — DONE.** Both tracks verified mathematically/semantically correct
+  (arc endpoint→center sign/sweep mapping, α + segment count, degenerate guards; selection clamping, text-change
+  reclamp on binding, GTK char-offset sync). No Critical/High/Medium. Two **Low** fixes: corrected a broken XML
+  cref in `ArcToBezier.cs` (→ `PathGeometry.Bounds`, accurately noting endpoint-only under-estimate); added the
+  missing `SelectedText`-set (replace-selection) + `CaretIndex`-clamp tests.
+  **Round 24 totals: 1996 tests** (89 WindowsBase + 1688 PresentationFramework + 204 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean. (Note: the `WPF-Samples` submodule + its `Directory.Nuget.Props`/
+  `Gtk4.Forms.Wpf.csproj` edits on `main` are the repo owner's concurrent commits, left untouched.)
+- **Carry-over (Round 24)**: `PathGeometry.Bounds` under-estimates arcs bulging past the chord (endpoint-only).
 - **Carry-over**: `ImageBrush.Opacity` on the painted-image path (**A1**); `ImageBrush` only paints local PNGs
   (no HTTP/non-PNG); arc (`A`) and smooth (`S`/`T`) path commands are skipped, not rendered;
   `LayoutTransform` is honoured in measure (DesiredSize) but **not in arrange** — `RenderSize`
