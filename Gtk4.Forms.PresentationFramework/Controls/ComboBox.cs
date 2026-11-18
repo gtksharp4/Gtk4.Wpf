@@ -194,5 +194,11 @@ public sealed partial class SelectionChangedEventArgs : EventArgs
 		Source = source;
 		OldValue = oldValue;
 		NewValue = newValue;
+		var added = new System.Collections.Generic.List<object?>();
+		var removed = new System.Collections.Generic.List<object?>();
+		if (newValue != null) added.Add(newValue);
+		if (oldValue != null) removed.Add(oldValue);
+		AddedItems = added;
+		RemovedItems = removed;
 	}
 }
