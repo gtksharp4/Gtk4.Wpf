@@ -23,6 +23,7 @@ public abstract partial class UIElement
 		AttachKeyController(focusTarget);
 		AttachClickController(widget);
 		AttachMotionController(widget);
+		AttachScrollController(widget);
 		AttachDragDropOnCreated(widget);
 
 		// Honour a Focus() call that arrived before the widget existed.

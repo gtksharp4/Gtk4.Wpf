@@ -1,6 +1,12 @@
 namespace System.Windows;
 
 /// <summary>
+/// Handler for CLR events that report a dependency-property change
+/// (e.g. <c>UIElement.IsMouseDirectlyOverChanged</c>).
+/// </summary>
+public delegate void DependencyPropertyChangedEventHandler(object sender, DependencyPropertyChangedEventArgs e);
+
+/// <summary>
 /// Provides data for a <see cref="PropertyChangedCallback"/> and
 /// <see cref="DependencyObject.OnPropertyChanged"/>.
 /// </summary>
