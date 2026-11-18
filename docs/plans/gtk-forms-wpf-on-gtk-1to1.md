@@ -1085,6 +1085,24 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   15 ProjectConverter), all pass; warning-clean.
 - **Carry-over (Round 25)**: `Topmost`/`ShowInTaskbar` have no GTK4 native effect; `WindowState.Minimized`
   WM→DP relies on `notify::suspended` (may not fire on some Wayland compositors); Cairo single line-cap.
+- **Round 26 Track A — Drawing model + DrawingBrush (DONE).** abstract `Media.Drawing` (`Bounds`+`Draw`),
+  `GeometryDrawing` (Geometry/Brush/Pen → Cairo fill+stroke), `DrawingGroup` (children, `Bounds` union,
+  Transform/Clip/Opacity via `PushGroup`), `DrawingBrush : TileBrush` (renders the drawing to an off-screen
+  `Cairo.ImageSurface`, scaled via `StretchMath`, Stretch/TileMode honoured). Added `Rect.Empty`/`IsEmpty`/`Union`
+  to WindowsBase `Primitives.cs` (NegativeInfinity sentinel — distinct from a zero rect, WPF parity). **+49 tests**.
+- **Round 26 Track B — TextDecorations (DONE).** `System.Windows.TextDecoration`/`TextDecorationCollection`/
+  `TextDecorationLocation` + static `TextDecorations` (Underline/Strikethrough/OverLine/Baseline); `TextDecorations`
+  on both `TextBlock` (DP) and `TextElement`/`Inline` (property); rendered via Pango markup
+  (`underline="single"`/`strikethrough="true"`; OverLine→`overline` Pango≥1.46; Baseline→underline fallback).
+  **+26 tests**.
+- **Round 26 review (Opus) — DONE, no defects.** Verified the shared `Rect` change is purely additive (no
+  existing-member or zero-rect semantic shift; `Rect.Empty`≠`Rect(0,0,0,0)`), `DrawingGroup` save/restore +
+  PushGroup balance correct, `DrawingBrush` zero-size-surface guarded + surfaces disposed, decoration Pango
+  markup nests/escapes validly, parity on both TextBlock+Inline. Both tracks clean — no fixes required.
+  **Round 26 totals: 2130 tests** (89 WindowsBase + 1822 PresentationFramework + 204 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean.
+- **Carry-over (Round 26)**: `DrawingBrush`/`GeometryDrawing` render only on GTK with a Cairo surface
+  (object-model always correct); `VisualBrush` still unimplemented; Pango `overline`/baseline runtime-dependent.
 - **Carry-over**: `ImageBrush.Opacity` on the painted-image path (**A1**); `ImageBrush` only paints local PNGs
   (no HTTP/non-PNG); arc (`A`) and smooth (`S`/`T`) path commands are skipped, not rendered;
   `LayoutTransform` is honoured in measure (DesiredSize) but **not in arrange** — `RenderSize`
