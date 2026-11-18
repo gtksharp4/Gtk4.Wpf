@@ -62,6 +62,10 @@ public abstract partial class UIElement : Media.Visual
 		// Apply IsTabStop/Focusable → widget.CanFocus.
 		// Implemented in UIElement.TabNavigation.cs.
 		ApplyTabNavigationOnCreated(widget);
+
+		// Push AutomationProperties.Name / HelpText → GTK accessible properties.
+		// Implemented in UIElement.Automation.cs.
+		ApplyAutomationOnCreated(widget);
 	}
 
 	/// <summary>
@@ -90,6 +94,14 @@ public abstract partial class UIElement : Media.Visual
 	/// Implemented in <c>UIElement.TabNavigation.cs</c>.
 	/// </summary>
 	partial void ApplyTabNavigationOnCreated(Gtk.Widget widget);
+
+	/// <summary>
+	/// Called from <see cref="OnWidgetCreated"/> to push any
+	/// <see cref="Automation.AutomationProperties"/> values set before widget creation
+	/// to the GTK 4 accessible API.
+	/// Implemented in <c>UIElement.Automation.cs</c>.
+	/// </summary>
+	partial void ApplyAutomationOnCreated(Gtk.Widget widget);
 
 	// ── Opacity ──────────────────────────────────────────────────────────────────
 
