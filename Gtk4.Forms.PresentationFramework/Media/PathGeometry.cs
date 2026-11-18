@@ -70,6 +70,43 @@ public class BezierSegment : PathSegment
 		cr.CurveTo(Point1.X, Point1.Y, Point2.X, Point2.Y, Point3.X, Point3.Y);
 }
 
+/// <summary>
+/// A quadratic Bézier segment (one control point + end point).
+/// Mirrors <c>System.Windows.Media.QuadraticBezierSegment</c>.
+/// Internally converted to a cubic Bézier for Cairo rendering.
+/// </summary>
+public class QuadraticBezierSegment : PathSegment
+{
+	/// <summary>Creates an empty quadratic Bézier segment.</summary>
+	public QuadraticBezierSegment() { }
+
+	/// <summary>Creates a quadratic Bézier segment.</summary>
+	public QuadraticBezierSegment(System.Windows.Point point1, System.Windows.Point point2,
+		bool isStroked = true)
+	{
+		Point1 = point1; Point2 = point2; IsStroked = isStroked;
+	}
+
+	/// <summary>The control point.</summary>
+	public System.Windows.Point Point1 { get; set; }
+	/// <summary>The end point.</summary>
+	public System.Windows.Point Point2 { get; set; }
+	/// <summary>Whether the segment contributes to the stroke.</summary>
+	public bool IsStroked { get; set; } = true;
+
+	/// <inheritdoc/>
+	internal override void AddToPath(Cairo.Context cr)
+	{
+		// Elevate quadratic P0,P1,P2 to cubic: cp1 = P0 + 2/3*(P1-P0), cp2 = P2 + 2/3*(P1-P2)
+		double p0x = cr.CurrentPoint.X, p0y = cr.CurrentPoint.Y;
+		double cp1x = p0x + 2.0 / 3.0 * (Point1.X - p0x);
+		double cp1y = p0y + 2.0 / 3.0 * (Point1.Y - p0y);
+		double cp2x = Point2.X + 2.0 / 3.0 * (Point1.X - Point2.X);
+		double cp2y = Point2.Y + 2.0 / 3.0 * (Point1.Y - Point2.Y);
+		cr.CurveTo(cp1x, cp1y, cp2x, cp2y, Point2.X, Point2.Y);
+	}
+}
+
 // ── PathFigure ────────────────────────────────────────────────────────────
 
 /// <summary>
@@ -149,6 +186,11 @@ public class PathGeometry : Geometry
 						Expand(bs.Point1.X, bs.Point1.Y);
 						Expand(bs.Point2.X, bs.Point2.Y);
 						Expand(bs.Point3.X, bs.Point3.Y);
+					}
+					else if (seg is QuadraticBezierSegment qs)
+					{
+						Expand(qs.Point1.X, qs.Point1.Y);
+						Expand(qs.Point2.X, qs.Point2.Y);
 					}
 				}
 			}

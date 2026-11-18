@@ -23,6 +23,25 @@ public abstract class Geometry
 
 	/// <summary>An empty geometry with zero bounds.</summary>
 	public static Geometry Empty { get; } = new RectangleGeometry(new System.Windows.Rect(0, 0, 0, 0));
+
+	/// <summary>
+	/// Parses the WPF Path Markup (mini-language) string and returns a <see cref="PathGeometry"/>.
+	/// <para>
+	/// Supported commands (absolute uppercase / relative lowercase):
+	/// <list type="bullet">
+	/// <item><c>M/m</c> — move-to (starts a new figure)</item>
+	/// <item><c>L/l</c> — line-to</item>
+	/// <item><c>H/h</c> — horizontal line-to</item>
+	/// <item><c>V/v</c> — vertical line-to</item>
+	/// <item><c>C/c</c> — cubic Bézier (6 params)</item>
+	/// <item><c>Q/q</c> — quadratic Bézier (4 params)</item>
+	/// <item><c>Z/z</c> — close figure</item>
+	/// </list>
+	/// Best-effort / unsupported: <c>A/a</c> (arc), <c>S/s</c> (smooth cubic), <c>T/t</c> (smooth quadratic).
+	/// </para>
+	/// </summary>
+	/// <exception cref="FormatException">The string contains unrecognised commands or malformed numbers.</exception>
+	public static Geometry Parse(string source) => PathMarkupParser.Parse(source);
 }
 
 /// <summary>
