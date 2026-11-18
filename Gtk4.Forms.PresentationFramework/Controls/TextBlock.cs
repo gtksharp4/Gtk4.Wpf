@@ -47,6 +47,28 @@ public partial class TextBlock : FrameworkElement
 		set => SetValue(TextProperty, value);
 	}
 
+	// ── TextDecorations DP ───────────────────────────────────────────────────────
+
+	/// <summary>Text decorations applied to the entire <see cref="TextBlock"/>.</summary>
+	public static readonly DependencyProperty TextDecorationsProperty =
+		DependencyProperty.Register(
+			nameof(TextDecorations),
+			typeof(TextDecorationCollection),
+			typeof(TextBlock),
+			new PropertyMetadata(null, OnTextDecorationsChanged));
+
+	static void OnTextDecorationsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		((TextBlock)d).ApplyToLabel();
+	}
+
+	/// <summary>Gets or sets the text decorations (underline, strikethrough, etc.) for this block.</summary>
+	public TextDecorationCollection? TextDecorations
+	{
+		get => (TextDecorationCollection?)GetValue(TextDecorationsProperty);
+		set => SetValue(TextDecorationsProperty, value);
+	}
+
 	// ── GTK ──────────────────────────────────────────────────────────────────────
 
 	Gtk.Label _label = null!;
@@ -73,9 +95,12 @@ public partial class TextBlock : FrameworkElement
 			_label.Text = string.Empty;
 			return;
 		}
-		// Check if the single inline is a plain Run with no formatting.
+		// Check if the single inline is a plain Run with no formatting (including no decorations).
+		var blockDec = TextDecorations;
 		if (_inlines.Count == 1 && _inlines[0] is Run r &&
-		    r.Foreground == null && !r.FontWeight.HasValue && !r.FontStyle.HasValue)
+		    r.Foreground == null && !r.FontWeight.HasValue && !r.FontStyle.HasValue &&
+		    (r.TextDecorations == null || r.TextDecorations.Count == 0) &&
+		    (blockDec == null || blockDec.Count == 0))
 		{
 			_label.UseMarkup = false;
 			_label.Text = r.Text;
@@ -86,7 +111,8 @@ public partial class TextBlock : FrameworkElement
 	}
 
 	/// <summary>
-	/// Builds the Pango markup string from the current <see cref="Inlines"/> collection.
+	/// Builds the Pango markup string from the current <see cref="Inlines"/> collection,
+	/// wrapping the whole output in a decoration span when <see cref="TextDecorations"/> is set.
 	/// Exposed internally for unit testing without requiring a live GTK label.
 	/// </summary>
 	internal string BuildMarkup()
@@ -94,6 +120,7 @@ public partial class TextBlock : FrameworkElement
 		var sb = new System.Text.StringBuilder();
 		foreach (var inline in _inlines)
 			inline.AppendMarkup(sb);
-		return sb.ToString();
+		string inner = sb.ToString();
+		return Documents.TextDecorationMarkup.WrapWithDecorations(TextDecorations, inner);
 	}
 }

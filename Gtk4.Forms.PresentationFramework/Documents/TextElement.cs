@@ -20,4 +20,7 @@ public abstract class TextElement
 
 	/// <summary>Foreground brush, or <c>null</c> to inherit.</summary>
 	public Brush? Foreground { get; set; }
+
+	/// <summary>Text decorations (underline, strikethrough, etc.), or <c>null</c> for none.</summary>
+	public TextDecorationCollection? TextDecorations { get; set; }
 }
