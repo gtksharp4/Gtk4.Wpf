@@ -20,6 +20,18 @@ public class ScrollViewerScrollChangedTests : WpfGtkTestBase
 	});
 
 	[Fact]
+	public void ScrollToVerticalOffset_raises_ScrollChanged_exactly_once() => Run(() =>
+	{
+		var (sv, _, _) = ScrollViewerGtkSmokeTests.MakeScrollViewer();
+		int count = 0;
+		sv.ScrollChanged += (_, _) => count++;
+		// WPF raises ScrollChanged once per programmatic scroll; the reentrancy guard must
+		// suppress GTK's synchronous value-changed so only the explicit raise fires.
+		sv.ScrollToVerticalOffset(60.0);
+		Assert.Equal(1, count);
+	});
+
+	[Fact]
 	public void ScrollChanged_args_carry_new_offset() => Run(() =>
 	{
 		var (sv, _, _) = ScrollViewerGtkSmokeTests.MakeScrollViewer(upper: 500.0, pageSize: 100.0);

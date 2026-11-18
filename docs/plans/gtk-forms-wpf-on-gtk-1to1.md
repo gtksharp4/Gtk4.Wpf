@@ -1142,6 +1142,25 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
 - **Carry-over (Round 28)**: `Image.Stretch.None`→`ScaleDown` is an approximation (WPF None = natural size);
   `VisualBrush` paints only `DrawingVisual` content (general live visuals are no-paint); `DrawText` in
   `DrawingContextRenderer` contributes no bounds/render.
+- **Round 29 Track A — ItemsControl alternation (DONE).** `AlternationCount` DP (int, default 0) + read-only
+  attached `AlternationIndex` (`GetAlternationIndex`); each generated container gets `index % count` (count 0/1 →
+  all 0, WPF parity), reassigned on `AlternationCount` change and on every items rebuild. **+17 tests**.
+- **Round 29 Track B — ScrollViewer scroll API (DONE).** Read-only `HorizontalOffset`/`VerticalOffset`/`Extent*`/
+  `Viewport*`/`Scrollable*` (mapped from the `Gtk.ScrolledWindow` H/V `Adjustment`), 14 scroll commands
+  (`ScrollTo*`/`Line*`/`Page*`, clamped), and a `ScrollChanged` event (`ScrollChangedEventArgs` with offsets +
+  extents + viewports + deltas), with a `_scrollUpdating` reentrancy guard so a programmatic scroll raises
+  `ScrollChanged` exactly once (WPF parity) while external adjustment changes also raise it. **+63 tests**.
+- **Round 29 review (Opus) — SHIP, no functional defects.** Verified programmatic-scroll raises ScrollChanged
+  once (matches WPF), delta snapshots correct, clamp/headless/reentrancy all sound, alternation reassignment has
+  no stale-index path. Added one failing-first test pinning `ScrollToVerticalOffset` raises ScrollChanged exactly
+  once (closing the last-wins test gap). Carry-over (Low): `AlternationIndex` uses `RegisterReadOnly` (no
+  `RegisterAttachedReadOnly` factory exists yet — functionally equivalent in this property system);
+  `ScrollToHome`/`ScrollToEnd` raise one ScrollChanged per axis (WPF coalesces to one).
+  **Round 29 totals: 2323 tests** (89 WindowsBase + 2015 PresentationFramework + 204 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean (verified against the committed `net10.0` TFMs).
+  Note: the repo owner is concurrently editing `PresentationFramework.csproj`/`Gtk4.Forms.Wpf.csproj` TFMs
+  (→ `netstandard2.0`/multi-target) in the working tree — left untouched; that WIP currently breaks Photino.NET
+  restore (NU1202) independently of this round.
 - **Carry-over**: `ImageBrush.Opacity` on the painted-image path (**A1**); `ImageBrush` only paints local PNGs
   (no HTTP/non-PNG); arc (`A`) and smooth (`S`/`T`) path commands are skipped, not rendered;
   `LayoutTransform` is honoured in measure (DesiredSize) but **not in arrange** — `RenderSize`
