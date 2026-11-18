@@ -3,13 +3,50 @@ using System;
 namespace System.Windows.Controls;
 
 /// <summary>
-/// Selection model for <see cref="TextBox"/>: SelectionStart, SelectionLength,
-/// SelectedText, CaretIndex, Select, SelectAll, Clear.
+/// Selection model and input options for <see cref="TextBox"/>: SelectionStart,
+/// SelectionLength, SelectedText, CaretIndex, Select, SelectAll, Clear, AcceptsTab.
 /// </summary>
 public partial class TextBox
 {
 	int _selectionStart;
 	int _selectionLength;
+
+	// ── AcceptsTab DP ────────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Whether pressing Tab inserts a tab character instead of moving focus.
+	/// Applies only in multiline mode (<see cref="AcceptsReturn"/>=<c>true</c>),
+	/// where the backing widget is <see cref="Gtk.TextView"/> which exposes
+	/// <c>AcceptsTab</c>. In single-line mode (<see cref="Gtk.Entry"/>) GTK has
+	/// no equivalent; the flag is stored but has no GTK effect.
+	/// WPF default: <c>false</c>.
+	/// </summary>
+	public static readonly DependencyProperty AcceptsTabProperty =
+		DependencyProperty.Register(nameof(AcceptsTab), typeof(bool), typeof(TextBox),
+			new PropertyMetadata(false, OnAcceptsTabChanged));
+
+	static void OnAcceptsTabChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		=> ((TextBox)d).ApplyAcceptsTab((bool)(e.NewValue ?? false));
+
+	/// <summary>Gets or sets whether Tab inserts a tab character (multiline only).</summary>
+	public bool AcceptsTab
+	{
+		get => (bool)(GetValue(AcceptsTabProperty) ?? false);
+		set => SetValue(AcceptsTabProperty, value);
+	}
+
+	// ── Internal helpers used by TextBox.Widget.cs ───────────────────────────
+
+	/// <summary>
+	/// Clamps selection to the current text length after the text changes.
+	/// Called from <c>OnTextChanged</c> so the managed model stays consistent.
+	/// </summary>
+	internal void ClampSelectionToTextLength()
+	{
+		var len = Text.Length;
+		_selectionStart  = Math.Max(0, Math.Min(_selectionStart, len));
+		_selectionLength = Math.Max(0, Math.Min(_selectionLength, len - _selectionStart));
+	}
 
 	/// <summary>Gets or sets the character index of the selection start.</summary>
 	public int SelectionStart
