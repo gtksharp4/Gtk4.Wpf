@@ -130,4 +130,15 @@ public class ToolTipGtkSmokeTests : WpfGtkTestBase
 		var label = (Gtk.Label)tb.Widget; // widget created after IsEnabled=false
 		Assert.False(label.HasTooltip);
 	});
+
+	// A new ToolTip set on an already-realized, disabled element must NOT re-show it.
+	[Fact]
+	public void Setting_ToolTip_while_disabled_and_realized_does_not_show() => Run(() =>
+	{
+		var tb    = new WpfTextBlock();
+		WpfToolTipService.SetIsEnabled(tb, false);
+		var label = (Gtk.Label)tb.Widget; // realize while disabled
+		tb.ToolTip = "late";               // set AFTER realize — must stay suppressed
+		Assert.False(label.HasTooltip);
+	});
 }

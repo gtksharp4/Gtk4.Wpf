@@ -46,7 +46,14 @@ public partial class FrameworkElement
 	static void OnToolTipChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
 		if (d is FrameworkElement fe && fe.IsWidgetCreated)
-			ApplyTooltipToWidget(fe.Widget, e.NewValue);
+		{
+			// Honour ToolTipService.IsEnabled: a new ToolTip on a suppressed element
+			// must not re-show it. Clear the GTK tooltip state when disabled.
+			if (Controls.ToolTipService.GetIsEnabled(fe))
+				ApplyTooltipToWidget(fe.Widget, e.NewValue);
+			else
+				ApplyTooltipToWidget(fe.Widget, null);
+		}
 	}
 
 	internal static void ApplyTooltipToWidget(Gtk.Widget widget, object? tip)

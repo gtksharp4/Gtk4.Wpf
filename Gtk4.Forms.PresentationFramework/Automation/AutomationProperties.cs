@@ -49,7 +49,7 @@ namespace System.Windows.Automation;
 ///   </item>
 /// </list>
 /// </remarks>
-public static class AutomationProperties
+public static partial class AutomationProperties
 {
 	// ── Name ──────────────────────────────────────────────────────────────────────
 
@@ -132,87 +132,6 @@ public static class AutomationProperties
 	{
 		if (element == null) throw new ArgumentNullException(nameof(element));
 		element.SetValue(AutomationIdProperty, value);
-	}
-
-	// ── LabeledBy ────────────────────────────────────────────────────────────────
-
-	/// <summary>
-	/// Identifies the <c>AutomationProperties.LabeledBy</c> attached property.
-	/// Default: <c>null</c>. Object-model only — no GTK accessible push.
-	/// </summary>
-	public static readonly DependencyProperty LabeledByProperty =
-		DependencyProperty.RegisterAttached(
-			"LabeledBy",
-			typeof(UIElement),
-			typeof(AutomationProperties),
-			new PropertyMetadata(null));
-
-	/// <summary>Gets the <see cref="UIElement"/> that labels <paramref name="element"/>.</summary>
-	public static UIElement? GetLabeledBy(DependencyObject element)
-	{
-		if (element == null) throw new ArgumentNullException(nameof(element));
-		return element.GetValue(LabeledByProperty) as UIElement;
-	}
-
-	/// <summary>Sets the <see cref="UIElement"/> that labels <paramref name="element"/>.</summary>
-	public static void SetLabeledBy(DependencyObject element, UIElement? value)
-	{
-		if (element == null) throw new ArgumentNullException(nameof(element));
-		element.SetValue(LabeledByProperty, value);
-	}
-
-	// ── IsRequiredForForm ─────────────────────────────────────────────────────────
-
-	/// <summary>
-	/// Identifies the <c>AutomationProperties.IsRequiredForForm</c> attached property.
-	/// Default: <c>false</c>. Object-model only — no GTK accessible push.
-	/// </summary>
-	public static readonly DependencyProperty IsRequiredForFormProperty =
-		DependencyProperty.RegisterAttached(
-			"IsRequiredForForm",
-			typeof(bool),
-			typeof(AutomationProperties),
-			new PropertyMetadata(false));
-
-	/// <summary>Gets whether <paramref name="element"/> is required to complete a form.</summary>
-	public static bool GetIsRequiredForForm(DependencyObject element)
-	{
-		if (element == null) throw new ArgumentNullException(nameof(element));
-		return (bool)(element.GetValue(IsRequiredForFormProperty) ?? false);
-	}
-
-	/// <summary>Sets whether <paramref name="element"/> is required to complete a form.</summary>
-	public static void SetIsRequiredForForm(DependencyObject element, bool value)
-	{
-		if (element == null) throw new ArgumentNullException(nameof(element));
-		element.SetValue(IsRequiredForFormProperty, value);
-	}
-
-	// ── LiveSetting ───────────────────────────────────────────────────────────────
-
-	/// <summary>
-	/// Identifies the <c>AutomationProperties.LiveSetting</c> attached property.
-	/// Default: <see cref="AutomationLiveSetting.Off"/>. Object-model only — no GTK accessible push.
-	/// </summary>
-	public static readonly DependencyProperty LiveSettingProperty =
-		DependencyProperty.RegisterAttached(
-			"LiveSetting",
-			typeof(AutomationLiveSetting),
-			typeof(AutomationProperties),
-			new PropertyMetadata(AutomationLiveSetting.Off));
-
-	/// <summary>Gets the live-region politeness level for <paramref name="element"/>.</summary>
-	public static AutomationLiveSetting GetLiveSetting(DependencyObject element)
-	{
-		if (element == null) throw new ArgumentNullException(nameof(element));
-		return (AutomationLiveSetting)(element.GetValue(LiveSettingProperty) ?? AutomationLiveSetting.Off);
-	}
-
-	/// <summary>Sets the live-region politeness level for <paramref name="element"/>.</summary>
-	public static void SetLiveSetting(DependencyObject element, AutomationLiveSetting value)
-	{
-		if (element == null) throw new ArgumentNullException(nameof(element));
-		element.SetValue(LiveSettingProperty, value);
 	}
 
 	// ── GTK change callback ───────────────────────────────────────────────────────

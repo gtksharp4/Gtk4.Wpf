@@ -9,20 +9,8 @@ namespace Gtk4.Forms.PresentationFramework.Tests;
 /// Pure (no GTK) tests for <see cref="AutomationProperties"/> attached-DP get/set
 /// round-trips and default values.
 /// </summary>
-public class AutomationPropertiesTests
+public class AutomationPropertiesTests : AutomationTestBase
 {
-	// ── Stubs ─────────────────────────────────────────────────────────────────────
-
-	/// <summary>UIElement that never materialises a GTK widget.</summary>
-	sealed class StubElement : UIElement
-	{
-		protected override Gtk.Widget CreateWidget() =>
-			throw new NotSupportedException("No GTK in pure tests.");
-	}
-
-	/// <summary>Non-UIElement DependencyObject for attached-DP semantics tests.</summary>
-	sealed class PlainDO : DependencyObject { }
-
 	// ── Name ──────────────────────────────────────────────────────────────────────
 
 	[Fact]

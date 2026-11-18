@@ -1034,6 +1034,25 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   15 ProjectConverter), all pass; warning-clean across all TFMs.
 - **Carry-over (Round 33)**: `PasswordChar` and `MaxLength` have no native `Gtk.PasswordEntry` API (managed-only);
   `Slider.AddMark` is one call per tick (no uniform-mark GTK API).
+- **Round 34 Track A — AutomationProperties (DONE).** `System.Windows.Automation.AutomationProperties` attached
+  DPs (`Name`/`HelpText`/`AutomationId`/`LabeledBy`/`IsRequiredForForm`/`LiveSetting`); `Name`→GTK
+  `AccessibleProperty.Label` and `HelpText`→`AccessibleProperty.HelpText` pushed via
+  `Gtk.AccessibleExtensions.UpdateProperty` on realize (API reachable in GtkSharp4); the rest object-model-only.
+  **+28 tests**.
+- **Round 34 Track B — ToolTipService timing/placement (DONE).** Attached DPs `InitialShowDelay`/`ShowDuration`/
+  `BetweenShowDelay`/`ShowOnDisabled`/`Placement`/`PlacementTarget`/`HorizontalOffset`/`VerticalOffset` (store-only
+  — GTK tooltip timing/placement is toolkit-controlled) + `IsEnabled` (actionable: suppresses `HasTooltip` on the
+  realized widget). **+26 tests**.
+- **Round 34 review (Opus) + fixes — DONE.** No functional/netstandard2.0 defect; `IsEnabled` gate doesn't
+  regress the default tooltip apply. Fixed three **house-rule** >200 files (split `AutomationProperties.cs`→
+  `+ .Semantics.cs`; split the 351-line `ToolTipDpTests.cs`→control + service-defaults + service-roundtrip;
+  extracted `AutomationTestBase` stubs to trim `AutomationPropertiesTests.cs`). Fixed a latent bug Opus flagged:
+  `OnToolTipChanged` now consults `ToolTipService.IsEnabled`, so setting a new ToolTip on an already-realized
+  disabled element no longer re-shows it (pinned by a new GTK smoke test).
+  **Round 34 totals: 2648 tests** (89 WindowsBase + 2340 PresentationFramework + 204 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean across all TFMs.
+- **Carry-over (Round 34)**: ToolTip timing/placement DPs are store-only on GTK; `AutomationProperties`
+  LabeledBy/IsRequiredForForm/LiveSetting/AutomationId are object-model-only (no GTK accessible push).
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a
