@@ -40,6 +40,16 @@ public partial class DataGrid
 				_rows.Add(item);
 
 		if (_grid == null) return;
+		RebuildGrid();
+	}
+
+	/// <summary>
+	/// Rebuilds the GTK grid from the current <see cref="_rows"/> snapshot.
+	/// Called by <see cref="Rebuild"/> and by <c>ApplySort</c> after a sort.
+	/// </summary>
+	internal void RebuildGrid()
+	{
+		if (_grid == null) return;
 
 		// Detach all children from the grid.
 		var toRemove = new List<Gtk.Widget>();
@@ -51,13 +61,15 @@ public partial class DataGrid
 		var cols = GetEffectiveColumns();
 		if (cols.Count == 0) return;
 
-		// Header row.
+		// Header row (with sort click handlers).
 		for (int c = 0; c < cols.Count; c++)
 		{
-			var hdr = new Gtk.Label(cols[c].Header?.ToString() ?? string.Empty);
+			var col = cols[c];
+			var hdr = new Gtk.Label(col.Header?.ToString() ?? string.Empty);
 			hdr.Hexpand = true;
 			hdr.AddCssClass("datagrid-header");
 			_grid.Attach(hdr, c, 0, 1, 1);
+			AttachHeaderClick(hdr, col);
 		}
 
 		// Data rows.

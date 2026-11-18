@@ -13,7 +13,7 @@ namespace System.Windows.Controls;
 ///   <item>Supported: <see cref="ItemsSource"/>, explicit <see cref="Columns"/> (
 ///     <see cref="DataGridTextColumn"/>), <see cref="AutoGenerateColumns"/> (reflects
 ///     public readable properties), <see cref="SelectedItem"/>.</item>
-///   <item>Not supported: cell editing, sorting, filtering, grouping, row details,
+///   <item>Not supported: cell editing, filtering, grouping, row details,
 ///     frozen columns, row/column headers resize, virtualization, copy/paste.</item>
 /// </list>
 /// </para>
