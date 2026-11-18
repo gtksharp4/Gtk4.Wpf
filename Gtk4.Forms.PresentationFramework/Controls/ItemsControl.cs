@@ -189,12 +189,14 @@ public partial class ItemsControl : Control
 			if (container is UIElement uiContainer)
 				uiContainer.LogicalParent = this;
 			var gw = container.Widget;
+			int idx = _rows.Count;
 			_rows.Add((container, gw));
+			OnContainerAdded(container, idx);
 			AddItemWidget(gw);
 		}
 	}
 
 	/// <summary>Returns the container <see cref="UIElement"/> at index <paramref name="i"/>.</summary>
-	protected UIElement? ContainerAt(int i) =>
+	protected internal UIElement? ContainerAt(int i) =>
 		i >= 0 && i < _rows.Count ? _rows[i].Container : null;
 }
