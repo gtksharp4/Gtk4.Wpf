@@ -58,6 +58,10 @@ public abstract partial class UIElement : Media.Visual
 		// Apply any Effect set before widget creation.
 		// Implemented in UIElement.Effect.cs.
 		ApplyEffectOnCreated(widget);
+
+		// Apply IsTabStop/Focusable → widget.CanFocus.
+		// Implemented in UIElement.TabNavigation.cs.
+		ApplyTabNavigationOnCreated(widget);
 	}
 
 	/// <summary>
@@ -79,6 +83,13 @@ public abstract partial class UIElement : Media.Visual
 	/// Implemented in <c>UIElement.Effect.cs</c>.
 	/// </summary>
 	partial void ApplyEffectOnCreated(Gtk.Widget widget);
+
+	/// <summary>
+	/// Called from <see cref="OnWidgetCreated"/> to apply <see cref="IsTabStop"/> and
+	/// <see cref="Focusable"/> → <c>widget.CanFocus</c>.
+	/// Implemented in <c>UIElement.TabNavigation.cs</c>.
+	/// </summary>
+	partial void ApplyTabNavigationOnCreated(Gtk.Widget widget);
 
 	// ── Opacity ──────────────────────────────────────────────────────────────────
 
