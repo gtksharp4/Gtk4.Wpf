@@ -74,11 +74,7 @@ public abstract partial class UIElement
 		}
 	}
 
-	/// <summary>
-	/// Whether the backing widget exists. Unlike <see cref="IsWidgetCreated"/> (which some
-	/// controls override to track an inner container) this is exactly <c>_widget != null</c>.
-	/// </summary>
-	internal bool HasBackingWidget => _widget != null;
+	// HasBackingWidget (exactly `_widget != null`) is defined once in UIElement.Lifecycle.cs.
 
 	/// <summary>Sets <see cref="IsMouseCaptured"/> and raises <see cref="IsMouseCapturedChanged"/>.</summary>
 	internal void SetMouseCaptured(bool captured)
