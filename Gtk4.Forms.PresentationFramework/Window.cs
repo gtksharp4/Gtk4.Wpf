@@ -132,9 +132,10 @@ public partial class Window : ContentControl
 	/// <summary>
 	/// Closes the window, leaving <see cref="DialogResult"/> unchanged (null if never
 	/// explicitly set). Unblocks any pending <see cref="ShowDialog"/> call.
-	/// This is the WPF-idiomatic close path (e.g. a Cancel button with no explicit result).
+	/// A <see cref="Closing"/> handler may veto the close by setting
+	/// <see cref="System.ComponentModel.CancelEventArgs.Cancel"/> to <see langword="true"/>.
 	/// </summary>
-	public void Close() => CloseCore(keepResult: true);
+	public void Close() => RequestClose();
 
 	/// <summary>
 	/// Opens this window as a modal dialog. Blocks until <see cref="Close()"/> or
@@ -174,11 +175,15 @@ public partial class Window : ContentControl
 	/// <summary>
 	/// Closes the window and unblocks <see cref="ShowDialog"/> with
 	/// <paramref name="dialogResult"/>. Must be called on the GTK thread.
+	/// A <see cref="Closing"/> handler may veto the close; in that case
+	/// <see cref="DialogResult"/> is restored to its previous value.
 	/// </summary>
 	public void Close(bool? dialogResult)
 	{
+		bool? previous = DialogResult;
 		DialogResult = dialogResult;
-		CloseCore(keepResult: true);
+		if (!RequestClose())
+			DialogResult = previous; // veto: undo the tentative set
 	}
 
 	// ── Internal helpers ──────────────────────────────────────────────────────
@@ -204,12 +209,16 @@ public partial class Window : ContentControl
 
 	/// <summary>
 	/// Handles the GTK close-request signal (window-manager X button / Alt+F4).
-	/// Sets the closed flag so <see cref="ShowDialog"/> unblocks with
-	/// <see cref="DialogResult"/> = null (no explicit result set by the app).
+	/// Runs the <see cref="Closing"/> protocol. Returning <see langword="true"/> from
+	/// this handler tells GTK to suppress its default destroy — used when a handler
+	/// vetoes the close.
 	/// </summary>
 	void OnCloseRequest(object sender, Gtk.CloseRequestArgs e)
 	{
-		CloseCore(keepResult: true);
+		bool proceeded = RequestClose();
+		// GTK4: returning true stops the default close; false lets GTK destroy the window.
+		// Our CloseCore already hides the window, so either way we stop GTK's default.
+		e.RetVal = !proceeded;
 	}
 
 	/// <inheritdoc/>
