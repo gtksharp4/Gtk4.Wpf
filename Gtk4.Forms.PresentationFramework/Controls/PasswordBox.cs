@@ -1,4 +1,5 @@
 using System;
+using System.Security;
 
 namespace System.Windows.Controls;
 
@@ -17,21 +18,31 @@ public class PasswordBox : Control
 	string _password = string.Empty;
 	bool _updating;
 
-	/// <summary>Gets or sets the password text.</summary>
+	/// <summary>Gets or sets the password text.
+	/// Clamped to <see cref="MaxLength"/> (when &gt; 0) on set.</summary>
 	public string Password
 	{
 		get => _password;
 		set
 		{
-			if (_password == value) return;
-			_password = value ?? string.Empty;
+			var incoming = value ?? string.Empty;
+
+			// Clamp to MaxLength.
+			var maxLen = MaxLength;
+			if (maxLen > 0 && incoming.Length > maxLen)
+				incoming = incoming.Substring(0, maxLen);
+
+			if (_password == incoming) return;
+			_password = incoming;
+
 			if (_entry != null && !_updating)
 			{
 				_updating = true;
 				try { _entry.Text = _password; }
 				finally { _updating = false; }
 			}
-			PasswordChanged?.Invoke(this, EventArgs.Empty);
+
+			RaisePasswordChanged();
 		}
 	}
 
@@ -39,8 +50,11 @@ public class PasswordBox : Control
 
 	/// <summary>
 	/// Character used to mask each character in the password.
-	/// GTK4 <see cref="Gtk.PasswordEntry"/> does not expose per-char masking;
-	/// this property is stored and round-trips faithfully but has no visual effect.
+	/// <para>
+	/// <b>GTK 4 limitation:</b> <see cref="Gtk.PasswordEntry"/> does not expose a
+	/// per-character masking API; this property is stored and round-trips faithfully
+	/// but has no visual effect on the backing widget.
+	/// </para>
 	/// </summary>
 	public static readonly DependencyProperty PasswordCharProperty =
 		DependencyProperty.Register(
@@ -49,17 +63,76 @@ public class PasswordBox : Control
 			typeof(PasswordBox),
 			new PropertyMetadata('●'));
 
-	/// <summary>Gets or sets the masking character (cosmetic; not applied by GTK4).</summary>
+	/// <summary>Gets or sets the masking character.
+	/// Round-trips faithfully; has no visual effect on the GTK 4 backing widget —
+	/// see <see cref="PasswordCharProperty"/> for details.</summary>
 	public char PasswordChar
 	{
 		get => (char?)GetValue(PasswordCharProperty) ?? '●';
 		set => SetValue(PasswordCharProperty, value);
 	}
 
+	// ── MaxLength DP ─────────────────────────────────────────────────────────
+
+	/// <summary>Maximum number of characters (0 = unlimited).
+	/// <para>
+	/// <b>GTK 4 note:</b> <see cref="Gtk.PasswordEntry"/> has no native MaxLength
+	/// API; the limit is enforced in managed code only (clamped on <see cref="Password"/> set).
+	/// </para>
+	/// </summary>
+	public static readonly DependencyProperty MaxLengthProperty =
+		DependencyProperty.Register(
+			nameof(MaxLength),
+			typeof(int),
+			typeof(PasswordBox),
+			new PropertyMetadata(0, OnMaxLengthChanged));
+
+	static void OnMaxLengthChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		var pb = (PasswordBox)d;
+		var maxLen = (int)(e.NewValue ?? 0);
+		// Truncate the current password if it exceeds the new limit.
+		if (maxLen > 0 && pb._password.Length > maxLen)
+			pb.Password = pb._password.Substring(0, maxLen);
+	}
+
+	/// <summary>Gets or sets the maximum allowed character count (0 = unlimited).</summary>
+	public int MaxLength
+	{
+		get => (int)(GetValue(MaxLengthProperty) ?? 0);
+		set => SetValue(MaxLengthProperty, value);
+	}
+
 	// ── PasswordChanged event ────────────────────────────────────────────────
 
-	/// <summary>Raised when <see cref="Password"/> changes.</summary>
-	public event EventHandler? PasswordChanged;
+	/// <summary>Raised when <see cref="Password"/> changes (programmatically or via user input).</summary>
+	public event RoutedEventHandler? PasswordChanged;
+
+	void RaisePasswordChanged()
+		=> PasswordChanged?.Invoke(this, new RoutedEventArgs());
+
+	// ── SecurePassword ───────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Returns a <see cref="SecureString"/> copy of the current <see cref="Password"/>.
+	/// The caller is responsible for disposing the returned instance.
+	/// </summary>
+	public SecureString SecurePassword
+	{
+		get
+		{
+			var ss = new SecureString();
+			foreach (char c in _password)
+				ss.AppendChar(c);
+			ss.MakeReadOnly();
+			return ss;
+		}
+	}
+
+	// ── Clear ────────────────────────────────────────────────────────────────
+
+	/// <summary>Clears the password and raises <see cref="PasswordChanged"/>.</summary>
+	public void Clear() => Password = string.Empty;
 
 	// ── GTK backing ──────────────────────────────────────────────────────────
 
@@ -79,11 +152,29 @@ public class PasswordBox : Control
 	{
 		if (_updating) return;
 		_updating = true;
+		string raw;
 		try
 		{
-			_password = _entry!.Text ?? string.Empty;
+			raw = _entry!.Text ?? string.Empty;
 		}
 		finally { _updating = false; }
-		PasswordChanged?.Invoke(this, EventArgs.Empty);
+
+		// Apply MaxLength clamp from GTK input.
+		var maxLen = MaxLength;
+		if (maxLen > 0 && raw.Length > maxLen)
+			raw = raw.Substring(0, maxLen);
+
+		if (_password == raw) return;
+		_password = raw;
+
+		// Sync clamp back to entry if we truncated.
+		if (_entry!.Text != _password)
+		{
+			_updating = true;
+			try { _entry.Text = _password; }
+			finally { _updating = false; }
+		}
+
+		RaisePasswordChanged();
 	}
 }
