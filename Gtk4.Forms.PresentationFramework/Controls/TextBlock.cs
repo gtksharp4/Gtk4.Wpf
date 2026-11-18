@@ -77,7 +77,7 @@ public partial class TextBlock : FrameworkElement
 	protected override Gtk.Widget CreateWidget()
 	{
 		_label = new Gtk.Label(string.Empty);
-		_label.Xalign = 0f;
+		ApplyLayoutToLabel();
 		ApplyToLabel();
 		return _label;
 	}
