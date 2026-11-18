@@ -46,6 +46,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk4.Forms.WpfSample", "Gtk
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk4.Forms.Integration.Tests", "Gtk4.Forms.Integration.Tests\Gtk4.Forms.Integration.Tests.csproj", "{94DD8146-CB1D-4EE7-A32E-409EA04CD1BE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WpfSamples", "WpfSamples", "{883F54CD-F223-4C7D-9840-8A2BE26A1A71}"
+	ProjectSection(SolutionItems) = preProject
+		WPF-Samples-GTK4\ConvertedWpfSamples.txt = WPF-Samples-GTK4\ConvertedWpfSamples.txt
+		WPF-Samples\WpfSamples.txt = WPF-Samples\WpfSamples.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
