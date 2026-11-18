@@ -161,10 +161,10 @@ public class ControlGtkSmokeTests : WpfGtkTestBase
 	// ── Image ─────────────────────────────────────────────────────────────────
 
 	[Fact]
-	public void Image_Widget_is_GtkImage() => Run(() =>
+	public void Image_Widget_is_GtkPicture() => Run(() =>
 	{
 		var img = new WpfImage();
-		Assert.IsType<Gtk.Image>(img.Widget);
+		Assert.IsType<Gtk.Picture>(img.Widget);
 	});
 
 	[Fact]
