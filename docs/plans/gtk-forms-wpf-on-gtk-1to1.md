@@ -1027,7 +1027,28 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   integration + Direction/rgba/culture formatting all correct.
   **Round 22 totals: 1916 tests** (89 WindowsBase + 1608 PresentationFramework + 204 MarkupCompiler +
   15 ProjectConverter), all pass; warning-clean.
-- **Carry-over**: `LayoutTransform` is honoured in measure (DesiredSize) but **not in arrange** — `RenderSize`
+- **Round 23 Track A — `ImageBrush` + `Media.Stretch` consolidation (DONE).** New `Media.Stretch` enum (the
+  canonical `System.Windows.Media.Stretch`, replacing two divergent duplicates previously in
+  `System.Windows.Shapes`/`System.Windows.Controls` — all consumers reference by name, no value break),
+  abstract `TileBrush : Brush` (+`TileMode`/`BrushMappingMode`), `ImageBrush : TileBrush`, and
+  `internal StretchMath.ComputeDestRect` (None/Fill/Uniform/UniformToFill). Painting via
+  `Cairo.ImageSurface`+`SurfacePattern` (local PNG files; degrades to object-model-only otherwise). **+28 tests**.
+- **Round 23 Track B — Path markup mini-language parser (DONE).** `Geometry.Parse(string)` →
+  `PathGeometry`, supporting `M L H V C Q Z` absolute+relative with implicit repeats (`A`/`S`/`T` parsed but
+  skipped, params consumed so the stream stays synced); added `QuadraticBezierSegment`. `Polyline` already
+  existed. **+17 tests**.
+- **Round 23 review (Opus) + fixes — DONE.** Both tracks correct (Stretch consolidation name-only — no value
+  break; StretchMath centering; parser relative accumulation/implicit-repeat/FormatException all verified).
+  Fixed **B1** (ship-blocker): split the 244-line `PathMarkupParser.cs` into parser + `PathMarkupParser.Lexer.cs`
+  (partial) + `PathParseContext.cs` (all ≤160). Fixed **B2**: after `Z` the current point now returns to the
+  closed figure's start (SVG contract) so a following relative command accumulates correctly. Fixed **B3**: added
+  tests proving the `A`/`S`/`T` skips consume the right param counts and keep the stream synced. Carried over
+  (Low): **A1** `ImageBrush.Opacity` is ignored on the image-paint path (rendering-only, unreachable headless).
+  **Round 23 totals: 1965 tests** (89 WindowsBase + 1657 PresentationFramework + 204 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean.
+- **Carry-over**: `ImageBrush.Opacity` on the painted-image path (**A1**); `ImageBrush` only paints local PNGs
+  (no HTTP/non-PNG); arc (`A`) and smooth (`S`/`T`) path commands are skipped, not rendered;
+  `LayoutTransform` is honoured in measure (DesiredSize) but **not in arrange** — `RenderSize`
   stays the untransformed inner size (WPF applies it in arrange too); `RenderTransform`/`LayoutTransform`/`Effect`
   CSS render only on GTK 4.14+ (object-model always correct); detach `Gtk.DropTarget` on widget teardown
   (drag lifecycle leak); synchronous `DoDragDrop`
