@@ -33,7 +33,7 @@
     <GitBranch Condition="'$(SYSTEM_PULLREQUEST_TARGETBRANCH)' == '' and '$(BUILD_SOURCEBRANCHNAME)' != ''">$(BUILD_SOURCEBRANCHNAME)</GitBranch>
   </PropertyGroup>
 
-  <Target Name="SetVersions"
+  <!--<Target Name="SetVersions"
           BeforeTargets="PrepareForBuild;GetAssemblyVersion;GetPackageVersion;Pack"
           DependsOnTargets="GitVersion"
           Returns="$(Version)"
@@ -60,7 +60,7 @@
       <VersionMetadataLabel>@(VersionMetadata -> '%(Identity)', '-')</VersionMetadataLabel>
       <VersionMetadataPlusLabel Condition="'$(VersionMetadataLabel)' != ''">+$(VersionMetadataLabel)</VersionMetadataPlusLabel>
       <Version>$(GitBaseVersionMajor).$(GitBaseVersionMinor).$(GitBaseVersionPatch)</Version>
-      <!--
+      --><!--
         Four components, $(VersionPrefix).$(VersionSuffix), not the three GitSemVer* supplies.
 
         Packable projects that import Net4x.NuGetUtility hit its PrepareGenerateNuspecPack, which
@@ -77,7 +77,7 @@
         InformationalVersion set below - and the AssemblyMetadata("PackageVersion") attribute -
         still name the sha. Do not fold the sha into the version proper to "fix" the file name:
         a four-part version plus a dash-label is where NuGet stops treating it as stable.
-      -->
+      --><!--
       <PackageVersion>$(VersionPrefix).$(VersionSuffix)$(GitSemVerDashLabel)$(VersionMetadataPlusLabel)</PackageVersion>
 
       <PackageVersion Condition="$(IsAzurePipelines)">$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch).$(BUILDVERSION)$(GitSemVerDashLabel)$(VersionMetadataPlusLabel)</PackageVersion>
@@ -86,14 +86,14 @@
       <PackageVersion Condition="$(IsAzurePipelines) and '$(GitBaseVersion)' == '4.4.0'">$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch).$(BUILDVERSION44)$(GitSemVerDashLabel)$(VersionMetadataPlusLabel)</PackageVersion>
     </PropertyGroup>
 
-    <!--
+    --><!--
       Guarantee a valid version even when GitInfo returns nothing. On the GitHub macOS runner its git
       cannot resolve the branch, so every Git* property (GitBaseVersion*, GitCommits) comes back empty,
       $(Version) collapses to ".." and the generated AssemblyFileVersion becomes "..." - CS7035, which
       TreatWarningsAsErrors turns into a build failure. Fall back to $(VersionPrefix) (1.0.0 from
       GitInfo.txt, resolved independently of git - Directory.Build.props) and zero commits. No-op
       wherever GitInfo populates the version (Windows/Linux).
-    -->
+    --><!--
     <PropertyGroup>
       <GitCommits Condition="'$(GitCommits)' == ''">0</GitCommits>
       <Version Condition="'$(GitBaseVersionMajor)' == ''">$(VersionPrefix)</Version>
@@ -101,13 +101,13 @@
     <PropertyGroup>
       <InformationalVersion>$(PackageVersion)</InformationalVersion>
       <FileVersion>$(Version).$(GitCommits)</FileVersion>
-      <AssemblyVersion>2.0.0.0</AssemblyVersion> <!-- THIS SHALL REMAIN 2.0.0.0 -->
+      <AssemblyVersion>2.0.0.0</AssemblyVersion> --><!-- THIS SHALL REMAIN 2.0.0.0 --><!--
     </PropertyGroup>
 
     <ItemGroup>
       <AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
         <_Parameter1>Version</_Parameter1>
-        <_Parameter2>2.0.0.0</_Parameter2> <!-- THIS SHALL REMAIN 2.0.0.0 -->
+        <_Parameter2>2.0.0.0</_Parameter2> --><!-- THIS SHALL REMAIN 2.0.0.0 --><!--
       </AssemblyAttribute>
       <AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
         <_Parameter1>PackageVersion</_Parameter1>
@@ -121,13 +121,13 @@
        <XamarinFormsVersionLine Include="$(PackageVersion)"/>
     </ItemGroup>
     
-    <!-- Occasionally this throws an error from parallel builds writing to this file. It's fine if only one of them wins. -->
+    --><!-- Occasionally this throws an error from parallel builds writing to this file. It's fine if only one of them wins. --><!--
     <WriteLinesToFile ContinueOnError="WarnAndContinue" File="@(Gtk4FormsVersionFile)" Lines="@(XamarinFormsVersionLine)" Overwrite="true" />
     <Message Condition="$(IsAzurePipelines)" Importance="high" Text="##vso[build.updatebuildnumber]$(PackageVersion)"/>
     <Message Condition="$(IsAzurePipelines)" Importance="high" Text="##vso[task.setvariable variable=XamarinFormsPackageVersion;isOutput=true;]$(PackageVersion)"/>
-  </Target>
+  </Target>-->
 
-  <Target Name="VersionInfoReport" DependsOnTargets="SetVersions" AfterTargets="GitInfoReport">
+  <!--<Target Name="VersionInfoReport" DependsOnTargets="SetVersions" AfterTargets="GitInfoReport">
    <ItemGroup>
 		<Message Importance="$(GitInfoReportImportance)" Text="Version Info:
   AssemblyVersion:        $(AssemblyVersion)
@@ -139,6 +139,6 @@
   VersionSuffix:  $(VersionSuffix)
 "/>
    </ItemGroup>
-	</Target>
+	</Target>-->
 
 </Project>

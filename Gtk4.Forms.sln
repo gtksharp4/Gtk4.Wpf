@@ -46,11 +46,19 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk4.Forms.WpfSample", "Gtk
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk4.Forms.Integration.Tests", "Gtk4.Forms.Integration.Tests\Gtk4.Forms.Integration.Tests.csproj", "{94DD8146-CB1D-4EE7-A32E-409EA04CD1BE}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WpfSamples", "WpfSamples", "{883F54CD-F223-4C7D-9840-8A2BE26A1A71}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WpfEquivalenceSamples", "WpfEquivalenceSamples", "{883F54CD-F223-4C7D-9840-8A2BE26A1A71}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WpfSamples", "WpfSamples", "{2515F6B0-6CA2-469B-B9DC-78704396C255}"
 	ProjectSection(SolutionItems) = preProject
-		WPF-Samples-GTK4\ConvertedWpfSamples.txt = WPF-Samples-GTK4\ConvertedWpfSamples.txt
 		WPF-Samples\WpfSamples.txt = WPF-Samples\WpfSamples.txt
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConvertedWpfSamples", "ConvertedWpfSamples", "{A566B287-B07A-4902-AF16-079B6F44EA69}"
+	ProjectSection(SolutionItems) = preProject
+		WPF-Samples-GTK4\ConvertedWpfSamples.txt = WPF-Samples-GTK4\ConvertedWpfSamples.txt
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloWorld", "WPF-Samples\Getting Started\HelloWorld\HelloWorld.csproj", "{830E20A3-C928-31C5-FDFD-1B70085FE317}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -194,6 +202,18 @@ Global
 		{94DD8146-CB1D-4EE7-A32E-409EA04CD1BE}.Release|x64.Build.0 = Release|Any CPU
 		{94DD8146-CB1D-4EE7-A32E-409EA04CD1BE}.Release|x86.ActiveCfg = Release|Any CPU
 		{94DD8146-CB1D-4EE7-A32E-409EA04CD1BE}.Release|x86.Build.0 = Release|Any CPU
+		{830E20A3-C928-31C5-FDFD-1B70085FE317}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{830E20A3-C928-31C5-FDFD-1B70085FE317}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{830E20A3-C928-31C5-FDFD-1B70085FE317}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{830E20A3-C928-31C5-FDFD-1B70085FE317}.Debug|x64.Build.0 = Debug|Any CPU
+		{830E20A3-C928-31C5-FDFD-1B70085FE317}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{830E20A3-C928-31C5-FDFD-1B70085FE317}.Debug|x86.Build.0 = Debug|Any CPU
+		{830E20A3-C928-31C5-FDFD-1B70085FE317}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{830E20A3-C928-31C5-FDFD-1B70085FE317}.Release|Any CPU.Build.0 = Release|Any CPU
+		{830E20A3-C928-31C5-FDFD-1B70085FE317}.Release|x64.ActiveCfg = Release|Any CPU
+		{830E20A3-C928-31C5-FDFD-1B70085FE317}.Release|x64.Build.0 = Release|Any CPU
+		{830E20A3-C928-31C5-FDFD-1B70085FE317}.Release|x86.ActiveCfg = Release|Any CPU
+		{830E20A3-C928-31C5-FDFD-1B70085FE317}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -205,6 +225,9 @@ Global
 		{2AA1C21D-567A-4CF0-A718-A0DCAAB871D3} = {98013F4F-7A74-4B69-8949-57EE3C21ED50}
 		{A5724D86-3A93-46E1-8257-4D72FD5C5F16} = {2EBCF073-4498-4EF0-9475-A504D166D397}
 		{94DD8146-CB1D-4EE7-A32E-409EA04CD1BE} = {98013F4F-7A74-4B69-8949-57EE3C21ED50}
+		{2515F6B0-6CA2-469B-B9DC-78704396C255} = {883F54CD-F223-4C7D-9840-8A2BE26A1A71}
+		{A566B287-B07A-4902-AF16-079B6F44EA69} = {883F54CD-F223-4C7D-9840-8A2BE26A1A71}
+		{830E20A3-C928-31C5-FDFD-1B70085FE317} = {2515F6B0-6CA2-469B-B9DC-78704396C255}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F96F981E-4986-4435-A59E-5A4E4F806746}
