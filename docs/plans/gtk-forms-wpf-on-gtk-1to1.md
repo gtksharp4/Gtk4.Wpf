@@ -960,6 +960,23 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
     `gdk_content_provider`/`gdk_content_formats` path), crashing the whole macOS test process. A native crash is
     not catchable, so the only safe fix is not to call it; macOS runs entirely off the in-memory mirror
     (within-process clipboard works; cross-app push is a documented no-op there). Linux/Windows unaffected.
+- **Round 30 Track A — Popup placement (DONE).** `Popup.Placement` DP (`PlacementMode`, default Bottom; 6 missing
+  enum members added to the existing `PlacementMode`), `HorizontalOffset`/`VerticalOffset` DPs, applied to the GTK
+  popover via pure `PopupPlacementMap.ToGtkPosition` (Bottom/Top/Left/Right exact; Center/Absolute/Relative/Mouse →
+  Bottom fallback, documented) + `Gtk.Popover.SetOffset` (double→int). **+37 tests**.
+- **Round 30 Track B — DataGrid column sorting (DONE).** `DataGrid.CanUserSortColumns` + `DataGridColumn.CanUserSort`/
+  `SortMemberPath`/`SortDirection`; an `internal ToggleSort(column)` seam cycles null→Asc→Desc, clears sibling
+  columns, and re-sorts rows via pure `DataGridSort.SortItems` (reflection member read, single + recursive dotted
+  path, nulls-first, stable via explicit index tiebreaker on `List.Sort`). Header-click wired when realized. **+23 tests**.
+- **Round 30 review (Opus) + fixes — DONE.** Both tracks correct and **netstandard2.0-safe** (no MaxBy/Order/span
+  APIs; built on all 5 TFMs). Fixed two **Low**: split the 286-line `DataGridSortTests.cs` into a shared base +
+  SortItems/DP/ToggleSort files (all ≤150); corrected a stale `DataGridSort` doc (dotted paths resolve recursively,
+  not top-level fallback). Carry-over: replacing `ItemsSource` resets rows to unsorted while a column's
+  `SortDirection` stays non-null (stale sort state across source swaps — WPF re-sorts via its collection view).
+  **Round 30 totals: 2385 tests** (89 WindowsBase + 2077 PresentationFramework + 204 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean across `netstandard2.0;net8.0;net10.0` (+`-windows`).
+  (Constraint adopted this round: PF new code must compile on netstandard2.0 — the owner multi-targeted the
+  assembly to ship a netstandard2.0-compatible NuGet package.)
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a

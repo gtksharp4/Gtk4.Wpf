@@ -14,8 +14,9 @@ internal static class DataGridSort
 	/// <summary>
 	/// Sorts <paramref name="items"/> by <paramref name="memberPath"/> in
 	/// <paramref name="direction"/>, returning a new stable-sorted list.
-	/// A single-segment path is resolved by reflection; nested paths fall back to
-	/// the top-level segment. Null values sort before non-null values.
+	/// Paths are resolved by reflection: a single segment reads that property, and a
+	/// dotted path (e.g. <c>Address.City</c>) resolves recursively segment by segment
+	/// (null-safe — a missing/null segment yields null). Null values sort before non-null.
 	/// </summary>
 	internal static List<object?> SortItems(
 		IEnumerable items,
