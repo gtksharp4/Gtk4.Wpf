@@ -56,4 +56,13 @@ public partial class Window
 			_closingInProgress = false;
 		}
 	}
+
+	/// <summary>
+	/// Maps the <see cref="RequestClose"/> outcome to the GTK <c>close-request</c> return
+	/// value: GTK4 treats <see langword="true"/> as "stop the default close", so a vetoed
+	/// close (<paramref name="proceeded"/> = <see langword="false"/>) returns
+	/// <see langword="true"/> to suppress GTK's destroy, and an allowed close returns
+	/// <see langword="false"/>.
+	/// </summary>
+	internal static bool MapCloseRetVal(bool proceeded) => !proceeded;
 }

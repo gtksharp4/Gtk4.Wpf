@@ -1103,6 +1103,26 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   15 ProjectConverter), all pass; warning-clean.
 - **Carry-over (Round 26)**: `DrawingBrush`/`GeometryDrawing` render only on GTK with a Cairo surface
   (object-model always correct); `VisualBrush` still unimplemented; Pango `overline`/baseline runtime-dependent.
+- **Round 27 Track A — Cursor (DONE).** `System.Windows.Input.Cursor`/`CursorType` (29 members)/`Cursors` +
+  `FrameworkElement.Cursor` DP (→ `Gtk.Widget.CursorFromName` on realize) + `Mouse.OverrideCursor` (store-only —
+  GTK4 has no global override API). WPF→CSS cursor-name mapping is a pure `internal CursorMap.ToGdkName`
+  (Arrow→default, Hand→pointer, IBeam→text, …, None→none). **+60 tests**. `.cur`/`.ani` ctors fall back to
+  `default` (unsupported, documented).
+- **Round 27 Track B — cancelable `Window.Closing` (DONE).** `event CancelEventHandler? Closing`; both `Close()`
+  and the GTK `CloseRequest` signal funnel through an `internal bool RequestClose()` that raises `Closing`,
+  aborts (no `Closed`) on `e.Cancel`, else runs `CloseCore`; `_closingInProgress`+`_closed` guard re-entrancy and
+  double-close; the WM path maps the outcome to `e.RetVal` (veto ⇒ suppress GTK destroy). **+13 tests**.
+- **Round 27 review (Opus) + fixes — DONE.** Both tracks correct (cursor mapping total, realize-deferral,
+  close veto/retry/re-entrancy, RetVal mapping all verified) — no high/medium. Fixed two **Low** house-rule
+  breaches: split the 232-line `WindowClosingTests.cs` (→ basics + `WindowClosingGuardTests`) and the 228-line
+  `CursorObjectModelTests.cs` (→ Cursor/Cursors + `CursorElementTests`), all ≤150. Pinned the GTK close-request
+  return-value inversion behind an `internal static MapCloseRetVal(bool)` seam with a 2-case theory (closes the
+  coverage gap where `OnCloseRequest`'s `!proceeded` was untestable headlessly).
+  **Round 27 totals: 2205 tests** (89 WindowsBase + 1897 PresentationFramework + 204 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean.
+- **Carry-over (Round 27)**: `.cur`/`.ani` cursor files unsupported (fall back to default); `Mouse.OverrideCursor`
+  has no GTK global-override effect; the live GTK `CloseRequest` signal path is exercised only via the
+  `RequestClose` seam (GTK can't raise it deterministically headless).
 - **Carry-over**: `ImageBrush.Opacity` on the painted-image path (**A1**); `ImageBrush` only paints local PNGs
   (no HTTP/non-PNG); arc (`A`) and smooth (`S`/`T`) path commands are skipped, not rendered;
   `LayoutTransform` is honoured in measure (DesiredSize) but **not in arrange** — `RenderSize`

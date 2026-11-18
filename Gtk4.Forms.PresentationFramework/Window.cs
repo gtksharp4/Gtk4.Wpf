@@ -217,8 +217,7 @@ public partial class Window : ContentControl
 	{
 		bool proceeded = RequestClose();
 		// GTK4: returning true stops the default close; false lets GTK destroy the window.
-		// Our CloseCore already hides the window, so either way we stop GTK's default.
-		e.RetVal = !proceeded;
+		e.RetVal = MapCloseRetVal(proceeded);
 	}
 
 	/// <inheritdoc/>
