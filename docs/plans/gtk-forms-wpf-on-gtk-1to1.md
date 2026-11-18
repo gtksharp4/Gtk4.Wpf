@@ -1017,6 +1017,23 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
 - **Carry-over (Round 32)**: `TextBlock.LineHeight` is store-only (no GTK line-spacing applied); `TextTrimming`
   Char vs Word both ellipsize at End; `SelectedValue` retains a non-matching value after a no-match clear
   (WPF behaviour, untested).
+- **Round 33 Track A — Slider ticks (DONE).** `SmallChange`/`LargeChange` (→ adjustment step/page),
+  `TickFrequency`/`TickPlacement` (→ `Gtk.Scale.AddMark` per tick; `Both` adds both sides), `IsSnapToTickEnabled`
+  (snap in Value coercion via pure `SliderSnap.SnapToTick`, round-half-away-from-zero), `IsDirectionReversed`
+  (→ `Range.Inverted`), `Orientation`. **+44 tests**.
+- **Round 33 Track B — PasswordBox completeness (DONE).** `PasswordChanged` (`RoutedEventHandler`, fire-once,
+  `_updating` guard), `MaxLength` (managed clamp — no native GTK API), `Clear()`, `SecurePassword` (fresh
+  read-only `SecureString`), `PasswordChar` (store-only — `Gtk.PasswordEntry` has no echo-char API). **+38 tests**.
+- **Round 33 review (Opus) + fixes — DONE.** No functional defects (snap↔GTK loop guarded, clamp-after-snap,
+  PasswordChanged fire-once + MaxLength clamp + SecurePassword all verified; netstandard2.0-safe). Fixed **F1**
+  (house rule): split the 222-line `Slider.Ticks.cs` (GTK apply → `Slider.TicksGtk.cs`) and the two 260/216-line
+  test files (snap-math and SecurePassword into their own files) — all ≤165. **F3** aligned `SnapToTick` to the
+  documented round-half-away-from-zero (`Math.Round(..., AwayFromZero)`); **F2** corrected the `Clear()` doc
+  (fires only when non-empty).
+  **Round 33 totals: 2595 tests** (89 WindowsBase + 2287 PresentationFramework + 204 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean across all TFMs.
+- **Carry-over (Round 33)**: `PasswordChar` and `MaxLength` have no native `Gtk.PasswordEntry` API (managed-only);
+  `Slider.AddMark` is one call per tick (no uniform-mark GTK API).
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a

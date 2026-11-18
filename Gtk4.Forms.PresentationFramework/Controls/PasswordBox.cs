@@ -131,7 +131,10 @@ public class PasswordBox : Control
 
 	// ── Clear ────────────────────────────────────────────────────────────────
 
-	/// <summary>Clears the password and raises <see cref="PasswordChanged"/>.</summary>
+	/// <summary>
+	/// Clears the password. Raises <see cref="PasswordChanged"/> only if it was non-empty
+	/// (setting the password to its current value is a no-op).
+	/// </summary>
 	public void Clear() => Password = string.Empty;
 
 	// ── GTK backing ──────────────────────────────────────────────────────────

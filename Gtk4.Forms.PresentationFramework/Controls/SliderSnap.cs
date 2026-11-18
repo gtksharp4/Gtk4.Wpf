@@ -51,8 +51,9 @@ internal static class SliderSnap
 		var offset = value - min;
 		var steps = offset / frequency;
 
-		// Round-half-away-from-zero.
-		var roundedSteps = Math.Floor(steps + 0.5);
+		// Round-half-away-from-zero (matches the documented rule for the step count,
+		// so a negative step of −0.5 rounds to −1 rather than toward +∞).
+		var roundedSteps = Math.Round(steps, MidpointRounding.AwayFromZero);
 		var snapped = min + roundedSteps * frequency;
 
 		return Math.Max(min, Math.Min(max, snapped));
