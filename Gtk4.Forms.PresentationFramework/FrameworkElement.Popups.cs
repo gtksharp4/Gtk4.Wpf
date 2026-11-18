@@ -62,6 +62,28 @@ public partial class FrameworkElement
 		widget.HasTooltip = tip != null;
 	}
 
+	/// <summary>
+	/// Re-applies or suppresses the tooltip on <paramref name="fe"/>'s widget based on
+	/// <see cref="Controls.ToolTipService.IsEnabledProperty"/>. Called when that property changes
+	/// on a realized element.
+	/// </summary>
+	internal static void ReapplyTooltipEnabled(FrameworkElement fe)
+	{
+		bool enabled = Controls.ToolTipService.GetIsEnabled(fe);
+		if (enabled)
+		{
+			// Restore: re-apply whatever tooltip is set.
+			var tip = fe.GetValue(ToolTipProperty);
+			ApplyTooltipToWidget(fe.Widget, tip);
+		}
+		else
+		{
+			// Suppress: clear GTK tooltip without touching the DP value.
+			fe.Widget.TooltipText = string.Empty;
+			fe.Widget.HasTooltip = false;
+		}
+	}
+
 	/// <summary>Gets the tooltip attached to <paramref name="element"/>.</summary>
 	public static object? GetToolTip(DependencyObject element)
 	{
@@ -92,7 +114,8 @@ public partial class FrameworkElement
 		// Map WPF layout properties (size + alignment) onto the new GTK widget.
 		ApplyLayoutToWidget(widget);
 		var tip = GetValue(ToolTipProperty);
-		if (tip != null)
+		bool isEnabled = Controls.ToolTipService.GetIsEnabled(this);
+		if (tip != null && isEnabled)
 			ApplyTooltipToWidget(widget, tip);
 		// Apply any Cursor set before widget creation.
 		// Implemented in FrameworkElement.Cursor.cs.

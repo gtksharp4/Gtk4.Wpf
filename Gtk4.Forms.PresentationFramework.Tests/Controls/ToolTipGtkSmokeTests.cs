@@ -1,6 +1,7 @@
 using Xunit;
-using WpfTextBlock = System.Windows.Controls.TextBlock;
-using WpfToolTip   = System.Windows.Controls.ToolTip;
+using WpfTextBlock      = System.Windows.Controls.TextBlock;
+using WpfToolTip        = System.Windows.Controls.ToolTip;
+using WpfToolTipService = System.Windows.Controls.ToolTipService;
 
 namespace Gtk4.Forms.PresentationFramework.Tests.Controls;
 
@@ -82,6 +83,51 @@ public class ToolTipGtkSmokeTests : WpfGtkTestBase
 		var label = (Gtk.Label)tb.Widget;
 		tb.ToolTip = "gone";
 		tb.ToolTip = null;
+		Assert.False(label.HasTooltip);
+	});
+
+	// ── IsEnabled=false suppresses tooltip on realized widget ─────────────────
+
+	[Fact]
+	public void IsEnabled_false_after_realize_clears_HasTooltip() => Run(() =>
+	{
+		var tb    = new WpfTextBlock();
+		tb.ToolTip = "visible";
+		var label = (Gtk.Label)tb.Widget; // force creation
+		Assert.True(label.HasTooltip);    // sanity: tooltip present before suppression
+		WpfToolTipService.SetIsEnabled(tb, false);
+		Assert.False(label.HasTooltip);
+	});
+
+	[Fact]
+	public void IsEnabled_false_after_realize_clears_TooltipText() => Run(() =>
+	{
+		var tb    = new WpfTextBlock();
+		tb.ToolTip = "visible";
+		var label = (Gtk.Label)tb.Widget;
+		WpfToolTipService.SetIsEnabled(tb, false);
+		Assert.Equal(string.Empty, label.TooltipText ?? string.Empty);
+	});
+
+	[Fact]
+	public void IsEnabled_true_after_false_restores_HasTooltip() => Run(() =>
+	{
+		var tb    = new WpfTextBlock();
+		tb.ToolTip = "visible";
+		var label = (Gtk.Label)tb.Widget;
+		WpfToolTipService.SetIsEnabled(tb, false);
+		Assert.False(label.HasTooltip);
+		WpfToolTipService.SetIsEnabled(tb, true);
+		Assert.True(label.HasTooltip);
+	});
+
+	[Fact]
+	public void IsEnabled_false_before_realize_suppresses_tooltip_on_creation() => Run(() =>
+	{
+		var tb = new WpfTextBlock();
+		tb.ToolTip = "suppressed";
+		WpfToolTipService.SetIsEnabled(tb, false);
+		var label = (Gtk.Label)tb.Widget; // widget created after IsEnabled=false
 		Assert.False(label.HasTooltip);
 	});
 }
