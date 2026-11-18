@@ -9,5 +9,11 @@ namespace WpfSample
 			InitializeComponent();
 			DataContext = new MainViewModel();
 		}
+
+		// Standard WPF code-behind lifecycle handler, wired from Loaded="Window_Loaded" in XAML.
+		void Window_Loaded(object sender, System.Windows.RoutedEventArgs e)
+		{
+			Title = Title + " (loaded)";
+		}
 	}
 }

@@ -58,7 +58,7 @@ public class AnimationTests
 				"AnimTestOpacity", typeof(double), typeof(TriggerTarget),
 				new PropertyMetadata(1.0));
 
-		public static readonly RoutedEvent LoadedEvent =
+		public new static readonly RoutedEvent LoadedEvent =
 			EventManager.RegisterRoutedEvent(
 				"AnimTestLoaded", RoutingStrategy.Bubble,
 				typeof(RoutedEventHandler), typeof(TriggerTarget));
