@@ -154,4 +154,16 @@ public enum PlacementMode
 	Left,
 	/// <summary>Relative to the placement target rectangle.</summary>
 	Relative,
+	/// <summary>At absolute screen coordinates specified by <c>HorizontalOffset</c> / <c>VerticalOffset</c>.</summary>
+	Absolute,
+	/// <summary>At the absolute point specified by <c>HorizontalOffset</c> / <c>VerticalOffset</c> (top-left anchor).</summary>
+	AbsolutePoint,
+	/// <summary>Centered over the placement target.</summary>
+	Center,
+	/// <summary>Application-defined custom placement; falls back to <see cref="Bottom"/>.</summary>
+	Custom,
+	/// <summary>Near the mouse cursor position (alias of <see cref="MousePoint"/> for WPF compat).</summary>
+	Mouse,
+	/// <summary>At a point relative to the placement target, specified by <c>HorizontalOffset</c> / <c>VerticalOffset</c>.</summary>
+	RelativePoint,
 }
