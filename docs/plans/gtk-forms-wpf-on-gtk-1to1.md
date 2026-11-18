@@ -1053,6 +1053,24 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   15 ProjectConverter), all pass; warning-clean across all TFMs.
 - **Carry-over (Round 34)**: ToolTip timing/placement DPs are store-only on GTK; `AutomationProperties`
   LabeledBy/IsRequiredForForm/LiveSetting/AutomationId are object-model-only (no GTK accessible push).
+- **Round 35 Track A — RenderTargetBitmap (DONE).** `Media.Imaging.RenderTargetBitmap : BitmapSource` +
+  `Media.PixelFormat`/`PixelFormats.Pbgra32`; `Render(Visual)` rasterises a `DrawingVisual`'s recorded
+  `DrawingContext` into an off-screen `Cairo.ImageSurface(Argb32)` (in-memory — works headless) via the Round-28
+  `DrawingContextRenderer`; `CopyPixels`/`GetPixel` read back premultiplied BGRA (wrong-size buffer throws per WPF).
+  DrawingVisual-only (documented). **+29 tests** (real pixel read-back, not degrade path).
+- **Round 35 Track B — Typography (DONE).** `System.Windows.Documents.Typography` attached DPs
+  (`Capitals`/`NumeralStyle`/`Fraction`/`StandardLigatures`/`Kerning`/`Variants` + 4 enums) mapped to Pango
+  `font_features` tokens (smcp/c2sc/onum/lnum/frac/afrc/sups/subs/ordn/… ; `liga=0`/`kern=0` only when explicitly
+  false; all-default → no span) and woven into `TextBlock.BuildMarkup` (fast-path still skips markup when no
+  features). **+33 tests**.
+- **Round 35 review (Opus) + fix — DONE.** No functional/netstandard2.0 defect (CopyPixels contract + layout
+  correct; TextBlock static-ctor metadata override + markup change don't regress the 74 existing TextBlock tests;
+  `font_features` mapping correct). Fixed one **Low** house-rule breach: split the 318-line `TypographyTests.cs`
+  into defaults/round-trips + `TypographyFontFeaturesTests` (both ≤188).
+  **Round 35 totals: 2704 tests** (89 WindowsBase + 2396 PresentationFramework + 204 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean across all TFMs.
+- **Carry-over (Round 35)**: `RenderTargetBitmap` rasterises only `DrawingVisual` content (general live visuals
+  render nothing); Pango `font_features` requires Pango ≥ 1.38 at runtime.
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a
