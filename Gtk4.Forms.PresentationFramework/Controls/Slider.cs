@@ -6,9 +6,11 @@ namespace System.Windows.Controls;
 /// Two-way: GTK value change writes back into <see cref="Value"/>.
 /// <para>
 /// Setting <see cref="Value"/> clamps it to [<see cref="Minimum"/>, <see cref="Maximum"/>].
+/// When <see cref="IsSnapToTickEnabled"/> is <c>true</c>, the value is additionally
+/// rounded to the nearest tick defined by <see cref="TickFrequency"/>.
 /// </para>
 /// </summary>
-public class Slider : Control
+public partial class Slider : Control
 {
 	/// <summary>Raised when <see cref="Value"/> changes.</summary>
 	public event EventHandler? ValueChanged;
@@ -49,7 +51,8 @@ public class Slider : Control
 
 	// ── Value DP ─────────────────────────────────────────────────────────────
 
-	/// <summary>Current value. Clamped to [<see cref="Minimum"/>, <see cref="Maximum"/>].</summary>
+	/// <summary>Current value. Clamped to [<see cref="Minimum"/>, <see cref="Maximum"/>];
+	/// snapped to the nearest tick when <see cref="IsSnapToTickEnabled"/> is <c>true</c>.</summary>
 	public static readonly DependencyProperty ValueProperty =
 		DependencyProperty.Register(
 			nameof(Value),
@@ -60,7 +63,10 @@ public class Slider : Control
 				{
 					var s = (Slider)d;
 					var dv = (double?)v ?? 0.0;
-					return (object?)Math.Max(s.Minimum, Math.Min(s.Maximum, dv));
+					var clamped = Math.Max(s.Minimum, Math.Min(s.Maximum, dv));
+					if (s.IsSnapToTickEnabled && s.TickFrequency > 0.0)
+						clamped = SliderSnap.SnapToTick(clamped, s.Minimum, s.Maximum, s.TickFrequency);
+					return (object?)clamped;
 				}));
 
 	static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -86,7 +92,7 @@ public class Slider : Control
 
 	// ── Orientation DP ───────────────────────────────────────────────────────
 
-	/// <summary>Orientation of the slider.</summary>
+	/// <summary>Orientation of the slider. WPF default: <see cref="Controls.Orientation.Horizontal"/>.</summary>
 	public static readonly DependencyProperty OrientationProperty =
 		DependencyProperty.Register(
 			nameof(Orientation),
@@ -113,9 +119,11 @@ public class Slider : Control
 			? Gtk.Orientation.Vertical
 			: Gtk.Orientation.Horizontal;
 
-		_scale = new Gtk.Scale(gtkOrientation, Minimum, Maximum, 1.0);
+		_scale = new Gtk.Scale(gtkOrientation, Minimum, Maximum, SmallChange > 0.0 ? SmallChange : 1.0);
 		_scale.Value = Value;
+		_scale.Inverted = IsDirectionReversed;
 		_scale.ValueChanged += OnGtkValueChanged;
+		ApplyTickProps();
 		return _scale;
 	}
 
@@ -123,7 +131,10 @@ public class Slider : Control
 	{
 		var s = (Slider)d;
 		if (s._scale != null)
+		{
 			s._scale.SetRange(s.Minimum, s.Maximum);
+			s.ApplyTickProps();
+		}
 		// Clamp value into new range.
 		var clamped = Math.Max(s.Minimum, Math.Min(s.Maximum, s.Value));
 		if (clamped != s.Value)
