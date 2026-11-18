@@ -109,6 +109,11 @@ public partial class Window
 	/// Also wires <c>notify::is-active</c> for <see cref="Activated"/> /
 	/// <see cref="Deactivated"/>.
 	/// </summary>
+	/// <remarks>
+	/// The notification handlers are not explicitly unsubscribed: they live for the
+	/// window's lifetime and the backing <see cref="Gtk.Window"/> is disposed with the
+	/// <see cref="Window"/>, so there is no per-event churn or leak to clean up.
+	/// </remarks>
 	internal void WireStateNotifications(Gtk.Window win)
 	{
 		win.AddNotification("maximized", OnGtkMaximizedChanged);
@@ -116,33 +121,32 @@ public partial class Window
 		win.AddNotification("is-active", OnGtkIsActiveChanged);
 	}
 
-	/// <summary>
-	/// Handles GTK <c>notify::maximized</c>. Updates <see cref="WindowState"/> DP
-	/// to <see cref="WindowState.Maximized"/> or back to Normal. Guarded against
-	/// the DP→native feedback loop via <see cref="_updatingWindowState"/>.
-	/// </summary>
+	/// <summary>Handles GTK <c>notify::maximized</c> → resolves and syncs the DP.</summary>
 	/// <remarks>Exposed <c>internal</c> for unit testing the WM→DP sync seam.</remarks>
-	internal void OnGtkMaximizedChanged(object o, GLib.NotifyArgs args)
+	internal void OnGtkMaximizedChanged(object o, GLib.NotifyArgs args) => SyncFromGtkFlags((Gtk.Window)o);
+
+	/// <summary>Handles GTK <c>notify::suspended</c> (iconified) → resolves and syncs the DP.</summary>
+	/// <remarks>Exposed <c>internal</c> for unit testing the WM→DP sync seam.</remarks>
+	internal void OnGtkSuspendedChanged(object o, GLib.NotifyArgs args) => SyncFromGtkFlags((Gtk.Window)o);
+
+	// Reads BOTH GTK state flags and syncs the resolved WPF state. Reading both
+	// (rather than one per handler) applies a stable precedence so a maximized window
+	// that is then minimized does not flip back to Maximized on the next maximized notify.
+	void SyncFromGtkFlags(Gtk.Window gtkWin)
 	{
 		if (_updatingWindowState || _window == null) return;
-		var gtkWin = (Gtk.Window)o;
-		var newState = gtkWin.Maximized ? WindowState.Maximized : WindowState.Normal;
-		SyncWindowStateFromGtk(newState);
+		SyncWindowStateFromGtk(ResolveGtkState(gtkWin.Suspended, gtkWin.Maximized));
 	}
 
 	/// <summary>
-	/// Handles GTK <c>notify::suspended</c> (iconified). Updates
-	/// <see cref="WindowState"/> DP to <see cref="WindowState.Minimized"/> or
-	/// back to Normal. Guarded against the DP→native feedback loop.
+	/// Resolves the single WPF <see cref="WindowState"/> from the two independent GTK
+	/// flags. A window can be both maximized and suspended (iconified) in GTK; WPF's
+	/// enum must pick one, so minimized (suspended) takes precedence over maximized.
 	/// </summary>
-	/// <remarks>Exposed <c>internal</c> for unit testing the WM→DP sync seam.</remarks>
-	internal void OnGtkSuspendedChanged(object o, GLib.NotifyArgs args)
-	{
-		if (_updatingWindowState || _window == null) return;
-		var gtkWin = (Gtk.Window)o;
-		var newState = gtkWin.Suspended ? WindowState.Minimized : WindowState.Normal;
-		SyncWindowStateFromGtk(newState);
-	}
+	internal static WindowState ResolveGtkState(bool suspended, bool maximized) =>
+		suspended ? WindowState.Minimized
+		: maximized ? WindowState.Maximized
+		: WindowState.Normal;
 
 	/// <summary>
 	/// Handles GTK <c>notify::is-active</c>. Raises <see cref="Activated"/> or
@@ -165,7 +169,8 @@ public partial class Window
 	/// <c>OnWindowStateChanged</c>, which is guarded to no-op when the flag is set.
 	/// So we set the flag in that callback, not here, to prevent the echo.
 	/// </summary>
-	void SyncWindowStateFromGtk(WindowState newState)
+	/// <remarks>Exposed <c>internal</c> so the WM→DP seam can be unit-tested headlessly.</remarks>
+	internal void SyncWindowStateFromGtk(WindowState newState)
 	{
 		if ((WindowState)(GetValue(WindowStateProperty) ?? WindowState.Normal) == newState) return;
 		// Mark that this DP write originates from GTK so OnWindowStateChanged

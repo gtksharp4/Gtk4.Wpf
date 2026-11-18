@@ -108,32 +108,7 @@ public class WindowStateTests
 	// ── WM→DP round-trip seam (OnGtkMaximizedChanged / OnGtkSuspendedChanged) ──
 
 	[Fact]
-	public void OnGtkMaximizedChanged_updates_WindowState_dp()
-	{
-		var win = new WpfWindow();
-		Assert.Equal(WindowState.Normal, win.WindowState);
-
-		// Simulate GTK notifying that the window was maximized.
-		// Pass a fake GLib.NotifyArgs (null is fine — the handler ignores the args).
-		// The handler requires _window != null to proceed; we set a fake flag
-		// by calling SyncWindowStateFromGtk directly via reflection, since
-		// OnGtkMaximizedChanged also checks _window. The internal seam is
-		// SyncWindowStateFromGtk which is accessible because tests have InternalsVisibleTo.
-		// Instead, bypass the guard by using the DP setter and verifying the flag prevents echo.
-
-		// Directly verify the DP write path: set WindowState, check StateChanged fires.
-		int stateChangedCount = 0;
-		win.StateChanged += (_, _) => stateChangedCount++;
-
-		// No native window — DP set before Show(): StateChanged is NOT raised from Chrome.
-		win.WindowState = WindowState.Maximized;
-		Assert.Equal(WindowState.Maximized, win.WindowState);
-		// StateChanged is not raised when there's no native window (Chrome path skips it).
-		Assert.Equal(0, stateChangedCount);
-	}
-
-	[Fact]
-	public void SyncWindowStateFromGtk_updates_dp_and_raises_StateChanged()
+	public void SyncWindowStateFromGtk_updates_dp_and_raises_StateChanged_once()
 	{
 		var win = new WpfWindow();
 		Assert.Equal(WindowState.Normal, win.WindowState);
@@ -141,38 +116,35 @@ public class WindowStateTests
 		int stateChangedCount = 0;
 		win.StateChanged += (_, _) => stateChangedCount++;
 
-		// Call the internal seam directly (InternalsVisibleTo).
-		// SyncWindowStateFromGtk is private in Window.State.cs, but the method
-		// that calls it is internal; we test via the public DP outcome.
-		// We simulate what the WM→DP sync does by calling the internal handler.
-		// Fake a GLib.NotifyArgs instance (use null-safe path: handler checks _window).
-		// Since _window is null, the handlers OnGtkMaximizedChanged/Suspended early-exit.
-		// The testable internal seam is _updatingWindowState + the DP round-trip.
+		// Drive the real WM→DP seam directly (internal, InternalsVisibleTo).
+		win.SyncWindowStateFromGtk(WindowState.Maximized);
 
-		// Test: when _updatingWindowState is true, setting WindowState does NOT trigger echo.
-		bool echoed = false;
-		win._updatingWindowState = true;
-		win.WindowState = WindowState.Maximized; // must not re-enter OnWindowStateChanged apply
-		win._updatingWindowState = false;
-		// DP was written even under the flag
 		Assert.Equal(WindowState.Maximized, win.WindowState);
-		Assert.False(echoed);
-		// StateChanged was not raised (no native window, Chrome path skipped).
-		Assert.Equal(0, stateChangedCount);
+		Assert.Equal(1, stateChangedCount);           // raised exactly once
+		Assert.False(win._updatingWindowState);        // finally released the guard
 	}
 
 	[Fact]
-	public void Feedback_guard_prevents_dp_to_native_echo()
+	public void SyncWindowStateFromGtk_is_no_op_when_state_unchanged()
 	{
-		var win = new WpfWindow();
-		// Set the guard flag as if the WM→DP path set it.
-		win._updatingWindowState = true;
-		// Writing the DP should not reach the native-apply path (which would throw
-		// since there's no native window even if reached).
-		win.WindowState = WindowState.Maximized;
-		win._updatingWindowState = false;
-		// Guard released; DP value is Maximized.
-		Assert.Equal(WindowState.Maximized, win.WindowState);
+		var win = new WpfWindow();           // default Normal
+		int stateChangedCount = 0;
+		win.StateChanged += (_, _) => stateChangedCount++;
+
+		win.SyncWindowStateFromGtk(WindowState.Normal);
+
+		Assert.Equal(WindowState.Normal, win.WindowState);
+		Assert.Equal(0, stateChangedCount);  // unchanged → no event
+	}
+
+	[Theory]
+	[InlineData(false, false, WindowState.Normal)]
+	[InlineData(false, true,  WindowState.Maximized)]
+	[InlineData(true,  false, WindowState.Minimized)]
+	[InlineData(true,  true,  WindowState.Minimized)]   // suspended wins over maximized
+	public void ResolveGtkState_applies_minimized_precedence(bool suspended, bool maximized, WindowState expected)
+	{
+		Assert.Equal(expected, WpfWindow.ResolveGtkState(suspended, maximized));
 	}
 
 	// ── Pre-realize persistence ───────────────────────────────────────────────

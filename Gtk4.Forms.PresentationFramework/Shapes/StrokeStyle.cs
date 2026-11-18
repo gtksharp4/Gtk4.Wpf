@@ -32,6 +32,10 @@ internal static class StrokeStyle
 	/// Converts a WPF dash array to Cairo dashes by multiplying each value by
 	/// <paramref name="thickness"/>.  Returns an empty array when
 	/// <paramref name="dashes"/> is null or empty (meaning no dash pattern).
+	/// <para>
+	/// An odd-length pattern is passed through unchanged; Cairo (like WPF) implicitly
+	/// repeats the pattern, so the dash/gap sequence matches visually.
+	/// </para>
 	/// </summary>
 	internal static double[] ToCairoDashes(DoubleCollection? dashes, double thickness)
 	{

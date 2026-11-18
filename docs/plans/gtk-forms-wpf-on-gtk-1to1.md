@@ -1065,6 +1065,26 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   15 ProjectConverter), all pass; warning-clean. (Note: the `WPF-Samples` submodule + its `Directory.Nuget.Props`/
   `Gtk4.Forms.Wpf.csproj` edits on `main` are the repo owner's concurrent commits, left untouched.)
 - **Carry-over (Round 24)**: `PathGeometry.Bounds` under-estimates arcs bulging past the chord (endpoint-only).
+- **Round 25 Track A — Shape stroke style (DONE).** `Media.PenLineCap`/`PenLineJoin`/`PenDashCap` enums,
+  `Media.DoubleCollection` (+`Parse`), and 7 `Shape` stroke DPs (`StrokeDashArray`/`StrokeDashOffset`/
+  `StrokeDashCap`/`StrokeStartLineCap`/`StrokeEndLineCap`/`StrokeLineJoin`/`StrokeMiterLimit`) applied to Cairo
+  via pure `StrokeStyle` mappers (dash values × thickness, enum→`Cairo.LineCap`/`LineJoin`). **+38 tests**.
+  Documented: Cairo has one line cap (WPF start/end collapse; `Triangle`→`Butt`) and no per-dash cap.
+- **Round 25 Track B — Window state round-trip (DONE).** `Topmost`/`ShowInTaskbar` DPs (stored; GTK4 has no
+  portable always-on-top/taskbar API — documented no-op), `Activate()`→`Present`, `Activated`/`Deactivated`/
+  `StateChanged` events, and the `WindowState` **WM→DP round-trip** via GTK `notify::maximized`/`suspended`/
+  `is-active`, guarded against the DP↔native echo by an instance `_updatingWindowState` flag. **+26 tests**.
+- **Round 25 review (Opus) + fixes — DONE.** Track A clean (dash×thickness + null/zero guards verified). Track B
+  logic correct (guard leak-free, single `StateChanged`). Fixed a **High** test-adequacy gap — the WM→DP seam
+  was never actually invoked (tests bypassed it); made `SyncWindowStateFromGtk` `internal` and rewrote the tests
+  to drive it (assert DP update + exactly one event + guard released + no-op when unchanged). Fixed a **Medium**:
+  extracted `internal static ResolveGtkState(suspended, maximized)` applying minimized-over-maximized precedence
+  (both handlers now read both flags), pinned by a 4-case theory. Added doc notes (odd-dash pattern;
+  window-lifetime subscriptions).
+  **Round 25 totals: 2055 tests** (89 WindowsBase + 1747 PresentationFramework + 204 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean.
+- **Carry-over (Round 25)**: `Topmost`/`ShowInTaskbar` have no GTK4 native effect; `WindowState.Minimized`
+  WM→DP relies on `notify::suspended` (may not fire on some Wayland compositors); Cairo single line-cap.
 - **Carry-over**: `ImageBrush.Opacity` on the painted-image path (**A1**); `ImageBrush` only paints local PNGs
   (no HTTP/non-PNG); arc (`A`) and smooth (`S`/`T`) path commands are skipped, not rendered;
   `LayoutTransform` is honoured in measure (DesiredSize) but **not in arrange** — `RenderSize`
