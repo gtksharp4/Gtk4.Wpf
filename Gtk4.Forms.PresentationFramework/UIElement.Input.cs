@@ -14,7 +14,14 @@ public abstract partial class UIElement : IInputElement
 	/// <summary>Focusable DP (default <c>true</c>).</summary>
 	public static readonly DependencyProperty FocusableProperty =
 		DependencyProperty.Register(nameof(Focusable), typeof(bool), typeof(UIElement),
-			new PropertyMetadata(true));
+			new PropertyMetadata(true, OnFocusabilityChanged));
+
+	static void OnFocusabilityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		// Re-evaluate widget.CanFocus when Focusable changes (see UIElement.TabNavigation.cs).
+		if (d is UIElement el && el.IsWidgetCreated)
+			el.FocusWidget.CanFocus = el.IsTabStop && (bool)(e.NewValue ?? true);
+	}
 
 	/// <summary>Gets or sets whether this element can receive keyboard focus.</summary>
 	public bool Focusable
