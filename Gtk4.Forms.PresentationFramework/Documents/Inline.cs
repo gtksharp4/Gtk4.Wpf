@@ -26,12 +26,15 @@ public class Run : Inline
 		bool hasBold = FontWeight.HasValue && FontWeight.Value == FontWeights.Bold;
 		bool hasItalic = FontStyle.HasValue && FontStyle.Value == FontStyles.Italic;
 		string? weightSpan = GetPangoWeightSpan(FontWeight);
+		string decAttrs = TextDecorationMarkup.ToPangoAttributes(TextDecorations);
+		bool hasDec = decAttrs.Length > 0;
 
 		if (hasFg)
 		{
 			var color = ((SolidColorBrush)Foreground!).Color;
 			sb.Append($"<span foreground=\"#{color.R:X2}{color.G:X2}{color.B:X2}\">");
 		}
+		if (hasDec) sb.Append($"<span {decAttrs}>");
 		if (weightSpan != null) sb.Append(weightSpan);
 		if (hasBold) sb.Append("<b>");
 		if (hasItalic) sb.Append("<i>");
@@ -41,6 +44,7 @@ public class Run : Inline
 		if (hasItalic) sb.Append("</i>");
 		if (hasBold) sb.Append("</b>");
 		if (weightSpan != null) sb.Append("</span>");
+		if (hasDec) sb.Append("</span>");
 		if (hasFg) sb.Append("</span>");
 	}
 

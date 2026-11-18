@@ -38,8 +38,11 @@ public partial class TextBlock
 		try
 		{
 			// Update Text DP to match: empty when inlines are rich, the run text otherwise.
+			var blockDec = TextDecorations;
 			if (_inlines.Count == 1 && _inlines[0] is Run r &&
-			    r.Foreground == null && !r.FontWeight.HasValue && !r.FontStyle.HasValue)
+			    r.Foreground == null && !r.FontWeight.HasValue && !r.FontStyle.HasValue &&
+			    (r.TextDecorations == null || r.TextDecorations.Count == 0) &&
+			    (blockDec == null || blockDec.Count == 0))
 			{
 				SetValue(TextProperty, r.Text);
 			}
