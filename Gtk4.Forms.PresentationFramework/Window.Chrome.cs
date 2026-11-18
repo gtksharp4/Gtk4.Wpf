@@ -15,17 +15,26 @@ public partial class Window
 	static void OnWindowStateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
 		var w = (Window)d;
+		// Skip when the DP write originated from the WM→DP sync path (Window.State.cs)
+		// to avoid a GTK→DP→GTK echo.
+		if (w._updatingWindowState) return;
 		if (w._window != null)
-			ApplyWindowState(w._window, (WindowState)e.NewValue!);
+		{
+			w._updatingWindowState = true;
+			try { ApplyWindowState(w._window, (WindowState)e.NewValue!); }
+			finally { w._updatingWindowState = false; }
+			w.RaiseStateChanged();
+		}
 	}
 
 	/// <summary>
 	/// Gets or sets the display state of the window (Normal, Minimized, Maximized).
 	/// </summary>
 	/// <remarks>
-	/// One-way: setting this property drives the native GTK window. Changes initiated by
-	/// the window manager (e.g. the user clicking maximize) are not reflected back into
-	/// this property — a realized-window state-change hook is not wired in this phase.
+	/// Two-way: setting this property drives the native GTK window; window-manager
+	/// changes (the user clicking maximize/minimize) are reflected back via
+	/// <c>notify::maximized</c> / <c>notify::suspended</c> and raise
+	/// <see cref="StateChanged"/>.
 	/// </remarks>
 	public WindowState WindowState
 	{
@@ -103,5 +112,7 @@ public partial class Window
 		ApplyResizeMode(win, _headerBar, ResizeMode);
 		// SizeToContent is applied via ApplyExplicitSize; no separate call needed here.
 		// WindowStartupLocation is applied via ApplyStartupLocation in Show().
+		// Wire WM→DP state round-trip and Activated/Deactivated (Window.State.cs).
+		WireStateNotifications(win);
 	}
 }
