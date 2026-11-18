@@ -37,29 +37,6 @@ public partial class TextBlock
 		_label.Xalign = xalign;
 	}
 
-	/// <summary>
-	/// Maps a WPF <see cref="TextAlignment"/> to the GTK <see cref="Gtk.Justification"/>
-	/// and <c>Xalign</c> float pair.
-	/// </summary>
-	/// <remarks>
-	/// <list type="bullet">
-	/// <item>Left → (Left, 0f)</item>
-	/// <item>Center → (Center, 0.5f)</item>
-	/// <item>Right → (Right, 1f)</item>
-	/// <item>Justify → (Fill, 0f)</item>
-	/// </list>
-	/// </remarks>
-	internal static (Gtk.Justification Justify, float Xalign) MapTextAlignment(TextAlignment alignment)
-	{
-		switch (alignment)
-		{
-			case TextAlignment.Center:  return (Gtk.Justification.Center, 0.5f);
-			case TextAlignment.Right:   return (Gtk.Justification.Right, 1f);
-			case TextAlignment.Justify: return (Gtk.Justification.Fill, 0f);
-			default:                    return (Gtk.Justification.Left, 0f);
-		}
-	}
-
 	// ── TextTrimming DP ──────────────────────────────────────────────────────
 
 	/// <summary>
@@ -91,22 +68,6 @@ public partial class TextBlock
 	{
 		if (_label == null) return;
 		_label.Ellipsize = MapTextTrimming(TextTrimming);
-	}
-
-	/// <summary>
-	/// Maps a WPF <see cref="TextTrimming"/> to a Pango <see cref="Pango.EllipsizeMode"/>.
-	/// Both ellipsis modes map to <c>End</c> — Pango has no word/character distinction.
-	/// </summary>
-	internal static Pango.EllipsizeMode MapTextTrimming(TextTrimming trimming)
-	{
-		switch (trimming)
-		{
-			case TextTrimming.CharacterEllipsis:
-			case TextTrimming.WordEllipsis:
-				return Pango.EllipsizeMode.End;
-			default:
-				return Pango.EllipsizeMode.None;
-		}
 	}
 
 	// ── Padding DP ───────────────────────────────────────────────────────────
@@ -147,12 +108,9 @@ public partial class TextBlock
 	/// <summary>
 	/// Distance between lines of text. <see cref="double.NaN"/> (default) means auto.
 	/// <para>
-	/// Stored and read-back faithfully. GTK 4's <see cref="Gtk.Label"/> exposes line
-	/// spacing only via Pango attribute lists; setting a Pango <c>SpacingAttribute</c> on
-	/// the whole label is an approximation (Pango spacing is in 1/1024 pt, not pixels).
-	/// When the label uses markup the attribute list is replaced on each text change, so
-	/// this implementation stores the value and re-applies it in
-	/// <see cref="ApplyToLabel"/> after each content update.
+	/// Stored and read-back faithfully, but <b>store-only</b>: GTK 4's <see cref="Gtk.Label"/>
+	/// exposes line spacing only via Pango attribute-list factory methods that GtkSharp4 does
+	/// not surface at this version, so no GTK-side change is applied (see <see cref="ApplyLineHeight"/>).
 	/// </para>
 	/// </summary>
 	public static readonly DependencyProperty LineHeightProperty =

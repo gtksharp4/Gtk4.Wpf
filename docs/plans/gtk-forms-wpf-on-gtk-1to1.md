@@ -998,6 +998,25 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   range/toggle semantics not reproduced); `TabIndex` has no per-widget GTK order API (GTK uses tree order — the
   managed `TabOrderHelper` computes WPF order); `KeyboardNavigation.IsTabStop` attached DP does not propagate to
   `UIElement.IsTabStop`.
+- **Round 32 Track A — TextBlock layout (DONE).** `TextAlignment` (reused enum) → `Gtk.Label.Justify`+`Xalign`,
+  `TextTrimming` (new enum; Char & Word both → `Pango.EllipsizeMode.End`), `Padding` → label margins, `LineHeight`
+  (store-only — GtkSharp4 doesn't surface the Pango line-spacing factory). Pure `MapTextAlignment`/`MapTextTrimming`
+  helpers. **+39 tests**.
+- **Round 32 Track B — SelectedValue/SelectedValuePath (DONE).** Added to BOTH `ListBox` and `ComboBox` via a
+  shared pure `SelectorValueSupport` (`GetValue` reflection single+dotted path, `FindByValue`); two-way
+  `SelectedValue`↔`SelectedItem` sync (`SelectedValuePath`-resolved; set selects the matching item or clears on
+  no-match), guarded against loops by a per-instance `_updatingValue` flag. **+30 tests**.
+- **Round 32 review (Opus) + fixes — DONE.** No correctness defects (two-way sync-loop guard verified symmetric
+  on both controls; netstandard2.0-safe; mappings correct, no default-left regression). Fixed house-rule/doc:
+  split the 202-line `TextBlock.Layout.cs` (mapping helpers → `TextBlock.LayoutMapping.cs`), split the 330-line
+  `SelectedValueTests.cs` (→ SelectorValueSupport/ListBox/ComboBox files) and the 204-line
+  `TextBlockLayoutDpTests.cs` (→ + mapping-tests file) — all ≤160; corrected a false `LineHeight` doc claim about
+  re-application.
+  **Round 32 totals: 2521 tests** (89 WindowsBase + 2213 PresentationFramework + 204 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean across all TFMs.
+- **Carry-over (Round 32)**: `TextBlock.LineHeight` is store-only (no GTK line-spacing applied); `TextTrimming`
+  Char vs Word both ellipsize at End; `SelectedValue` retains a non-matching value after a no-match clear
+  (WPF behaviour, untested).
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a
