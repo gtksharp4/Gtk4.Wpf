@@ -23,14 +23,16 @@ public class PathMarkupParserEdgeTests
 	}
 
 	[Fact]
-	public void Arc_command_is_skipped_and_following_line_still_parses()
+	public void Arc_command_produces_ArcSegment_and_following_line_still_parses()
 	{
-		// A consumes exactly 7 params (rx ry rot large sweep x y); the trailing L must
-		// still resolve correctly, proving the skip did not desync the token stream.
+		// A consumes exactly 7 params (rx ry rot large sweep x y); both segments must
+		// parse and the token stream must remain in sync for the trailing L.
 		var pg = (PathGeometry)Geometry.Parse("M0,0 A5,5 0 0 1 10,10 L20,20");
 
-		var seg = Assert.IsType<LineSegment>(pg.Figures[0].Segments[0]);
-		Assert.Equal(new Point(20, 20), seg.Point);
+		Assert.Equal(2, pg.Figures[0].Segments.Count);
+		Assert.IsType<ArcSegment>(pg.Figures[0].Segments[0]);
+		var line = Assert.IsType<LineSegment>(pg.Figures[0].Segments[1]);
+		Assert.Equal(new Point(20, 20), line.Point);
 	}
 
 	[Fact]

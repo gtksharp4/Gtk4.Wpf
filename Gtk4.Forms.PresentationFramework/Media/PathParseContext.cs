@@ -45,6 +45,15 @@ internal sealed class PathParseContext
 		CurX = p2.X; CurY = p2.Y;
 	}
 
+	/// <summary>Adds an elliptical-arc segment to <paramref name="endAbsolute"/>.</summary>
+	public void AddArc(Size radii, double rotation, bool isLargeArc,
+		SweepDirection sweep, Point endAbsolute)
+	{
+		EnsureFigure(endAbsolute.X, endAbsolute.Y);
+		_figure!.Segments.Add(new ArcSegment(endAbsolute, radii, rotation, isLargeArc, sweep));
+		CurX = endAbsolute.X; CurY = endAbsolute.Y;
+	}
+
 	/// <summary>
 	/// Closes the current figure and flushes it. Per the SVG/WPF contract the current
 	/// point moves back to the closed figure's start point, so a relative command that

@@ -6,10 +6,10 @@ namespace System.Windows.Media;
 /// Parses the WPF Path Markup (SVG-compatible mini-language) string into a
 /// <see cref="PathGeometry"/>.  Called by <see cref="Geometry.Parse"/>.
 /// <para>
-/// Supported commands (absolute + relative): <c>M L H V C Q Z</c> with implicit
-/// repeated coordinate sets. <c>A</c> (arc), <c>S</c>/<c>T</c> (smooth) are parsed
-/// but skipped (best-effort — their parameters are consumed so the rest of the string
-/// still parses). Lexer helpers live in <c>PathMarkupParser.Lexer.cs</c>; the mutable
+/// Supported commands (absolute + relative): <c>M L H V C Q A Z</c> with implicit
+/// repeated coordinate sets. <c>S</c>/<c>T</c> (smooth) are parsed but skipped
+/// (best-effort — their parameters are consumed so the rest of the string still
+/// parses). Lexer helpers live in <c>PathMarkupParser.Lexer.cs</c>; the mutable
 /// build state lives in <see cref="PathParseContext"/>.
 /// </para>
 /// </summary>
@@ -53,7 +53,7 @@ internal static partial class PathMarkupParser
 			case 'C': ParseCubics(s, ref i, rel, ctx); break;
 			case 'Q': ParseQuadratics(s, ref i, rel, ctx); break;
 			case 'Z': ctx.CloseFigure(pg); break;
-			case 'A': SkipArcParams(s, ref i); break;   // best-effort: skip
+			case 'A': ParseArcs(s, ref i, rel, ctx); break;
 			case 'S': SkipPairs(s, ref i, 4); break;    // best-effort: skip
 			case 'T': SkipPairs(s, ref i, 2); break;    // best-effort: skip
 			default: throw new FormatException($"Unknown path command '{cmd}'.");
@@ -136,17 +136,28 @@ internal static partial class PathMarkupParser
 		} while (i < s.Length && IsNumberStart(s[i]));
 	}
 
-	// best-effort skips ───────────────────────────────────────────────────────
-
-	static void SkipArcParams(string s, ref int i)
+	static void ParseArcs(string s, ref int i, bool rel, PathParseContext ctx)
 	{
-		// A: rx ry x-rotation large-arc-flag sweep-flag x y  (7 numbers)
-		while (i < s.Length && IsNumberStart(s[i]))
+		// A: rx ry x-rotation large-arc-flag sweep-flag x y  (7 tokens per arc)
+		do
 		{
-			for (int p = 0; p < 7 && i < s.Length && IsNumberStart(s[i]); p++)
-			{ ReadNumber(s, ref i); SkipSep(s, ref i); }
-		}
+			double rx        = ReadNumber(s, ref i); SkipSep(s, ref i);
+			double ry        = ReadNumber(s, ref i); SkipSep(s, ref i);
+			double rot       = ReadNumber(s, ref i); SkipSep(s, ref i);
+			double largeFlag = ReadNumber(s, ref i); SkipSep(s, ref i);
+			double sweepFlag = ReadNumber(s, ref i); SkipSep(s, ref i);
+			double x         = ReadNumber(s, ref i); SkipSep(s, ref i);
+			double y         = ReadNumber(s, ref i);
+			double ax = rel ? ctx.CurX + x : x;
+			double ay = rel ? ctx.CurY + y : y;
+			bool isLarge     = largeFlag != 0.0;
+			var sweep        = sweepFlag != 0.0 ? SweepDirection.Clockwise : SweepDirection.Counterclockwise;
+			ctx.AddArc(new Size(Math.Abs(rx), Math.Abs(ry)), rot, isLarge, sweep, new Point(ax, ay));
+			SkipSep(s, ref i);
+		} while (i < s.Length && IsNumberStart(s[i]));
 	}
+
+	// best-effort skips ───────────────────────────────────────────────────────
 
 	static void SkipPairs(string s, ref int i, int count)
 	{

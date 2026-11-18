@@ -192,6 +192,12 @@ public class PathGeometry : Geometry
 						Expand(qs.Point1.X, qs.Point1.Y);
 						Expand(qs.Point2.X, qs.Point2.Y);
 					}
+						else if (seg is ArcSegment arc)
+						{
+							// Approximate: expand over endpoint only.
+							// May under-estimate for arcs bulging beyond start/end.
+							Expand(arc.Point.X, arc.Point.Y);
+						}
 				}
 			}
 			return any
