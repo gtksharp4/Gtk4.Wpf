@@ -13,7 +13,7 @@ namespace System.Windows.Shapes;
 /// <c>Dispose(true)</c> only, never from the finalizer (repo rule).
 /// </para>
 /// </summary>
-public abstract class Shape : FrameworkElement, IDisposable
+public abstract partial class Shape : FrameworkElement, IDisposable
 {
 	// ── Fill DP ──────────────────────────────────────────────────────────────
 
@@ -115,6 +115,9 @@ public abstract class Shape : FrameworkElement, IDisposable
 			cr.FillPreserve();
 			stroke.ApplyToCairo(cr, width, height);
 			cr.LineWidth = sw;
+			StrokeStyle.Apply(cr,
+				StrokeDashArray, StrokeDashOffset, sw,
+				StrokeStartLineCap, StrokeLineJoin, StrokeMiterLimit);
 			cr.Stroke();
 		}
 		else if (fill != null)
@@ -126,6 +129,9 @@ public abstract class Shape : FrameworkElement, IDisposable
 		{
 			stroke.ApplyToCairo(cr, width, height);
 			cr.LineWidth = sw;
+			StrokeStyle.Apply(cr,
+				StrokeDashArray, StrokeDashOffset, sw,
+				StrokeStartLineCap, StrokeLineJoin, StrokeMiterLimit);
 			cr.Stroke();
 		}
 
