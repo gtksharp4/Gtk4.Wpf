@@ -43,6 +43,6 @@ internal static partial class PathMarkupParser
 		}
 		if (i == start)
 			throw new FormatException($"Expected a number at position {start} in path data.");
-		return double.Parse(s.AsSpan(start, i - start), CultureInfo.InvariantCulture);
+		return double.Parse(s.Substring(start, i - start), CultureInfo.InvariantCulture);
 	}
 }

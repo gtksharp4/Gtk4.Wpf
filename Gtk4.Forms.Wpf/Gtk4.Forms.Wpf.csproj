@@ -27,7 +27,7 @@
 		  that in project.assets.json — breaking the version the meta-package advertises to consumers.
 		-->
 		<Version>$(VersionPrefix).$(VersionSuffix)</Version>
-		<TargetFramework>net10.0</TargetFramework>
+		<TargetFrameworks>netstandard2.0;net8.0;net10.0</TargetFrameworks>
 		<IsPackable>true</IsPackable>
 		<!--
 		  This project ships no compiled code — only NuGet dependencies, build wiring and content.
@@ -58,7 +58,7 @@
 		  to BUILD first, it never references its output, so the normal "net10.0 cannot be referenced
 		  by netstandard2.0" error must not apply.
 		-->
-		<ProjectReference Include="..\Gtk4.Forms.Wpf.ProjectConverter\Gtk4.Forms.Wpf.ProjectConverter.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" PrivateAssets="all" />
+		<ProjectReference Include="..\Gtk4.Forms.Wpf.ProjectConverter\Gtk4.Forms.Wpf.ProjectConverter.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" PrivateAssets="all" Condition="'$(TargetFramework)' == 'net10.0'" />
 	</ItemGroup>
 
 	<!--
@@ -74,6 +74,8 @@
 		  canonical "_._" marker satisfies it without shipping a real lib.
 		-->
 		<None Include="_._" Pack="true" PackagePath="\lib\net10.0\_._" />
+		<None Include="_._" Pack="true" PackagePath="\lib\net8.0\_._" />
+		<None Include="_._" Pack="true" PackagePath="\lib\netstandard2.0\_._" />
 		<None Include="Gtk4.Forms.Wpf.props" Pack="true" PackagePath="\build\;\buildTransitive\" />
 		<None Include="Gtk4.Forms.Wpf.targets" Pack="true" PackagePath="\build\;\buildTransitive\" />
 		<!--

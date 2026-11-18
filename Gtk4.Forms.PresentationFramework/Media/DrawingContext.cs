@@ -18,11 +18,25 @@ public sealed class DrawingContext : IDisposable
 	public enum DrawCommandKind { DrawRectangle, DrawEllipse, DrawLine, DrawGeometry, DrawText }
 
 	/// <summary>A single recorded draw command.</summary>
-	public sealed record DrawCommand(
+	public sealed class DrawCommand(
 		DrawCommandKind Kind,
 		Brush? Brush,
 		Pen? Pen,
-		object? Arg);
+		object? Arg)
+	{
+		public DrawCommandKind Kind { get; } = Kind;
+		public Brush? Brush { get; } = Brush;
+		public Pen? Pen { get; } = Pen;
+		public object? Arg { get; } = Arg;
+
+		public void Deconstruct(out DrawCommandKind Kind, out Brush? Brush, out Pen? Pen, out object? Arg)
+		{
+			Kind = this.Kind;
+			Brush = this.Brush;
+			Pen = this.Pen;
+			Arg = this.Arg;
+		}
+	}
 
 	readonly List<DrawCommand> _commands = new();
 

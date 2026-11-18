@@ -149,7 +149,10 @@ internal static class ArcToBezier
 	{
 		double dot = ux * vx + uy * vy;
 		double len = Math.Sqrt((ux * ux + uy * uy) * (vx * vx + vy * vy));
-		double angle = Math.Acos(Math.Clamp(dot / len, -1.0, 1.0));
+		double normalizedDot = dot / len;
+		if (normalizedDot < -1.0) normalizedDot = -1.0;
+		else if (normalizedDot > 1.0) normalizedDot = 1.0;
+		double angle = Math.Acos(normalizedDot);
 		if (ux * vy - uy * vx < 0) angle = -angle;
 		return angle;
 	}

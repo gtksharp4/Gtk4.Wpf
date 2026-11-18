@@ -28,27 +28,27 @@ public sealed class DoubleCollection : Collection<double>
 		if (source is null) throw new ArgumentNullException(nameof(source));
 
 		var result = new DoubleCollection();
-		var span = source.AsSpan().Trim();
+		var text = source.Trim();
 
-		if (span.IsEmpty)
+		if (text.Length == 0)
 			return result;
 
 		int start = 0;
-		for (int i = 0; i <= span.Length; i++)
+		for (int i = 0; i <= text.Length; i++)
 		{
-			bool end = i == span.Length;
-			bool sep = !end && (span[i] == ',' || span[i] == ' ' || span[i] == '\t');
+			bool end = i == text.Length;
+			bool sep = !end && (text[i] == ',' || text[i] == ' ' || text[i] == '\t');
 
 			if (sep || end)
 			{
-				var token = span.Slice(start, i - start).Trim();
-				if (!token.IsEmpty)
+				var token = text.Substring(start, i - start).Trim();
+				if (token.Length != 0)
 				{
 					if (!double.TryParse(token, NumberStyles.Float,
 						CultureInfo.InvariantCulture, out double val))
 					{
 						throw new FormatException(
-							$"Token '{token.ToString()}' is not a valid double.");
+							$"Token '{token}' is not a valid double.");
 					}
 					result.Add(val);
 				}

@@ -34,8 +34,9 @@ internal static class DrawingContextRenderer
 					break;
 
 				case DrawingContext.DrawCommandKind.DrawEllipse:
-					if (cmd.Arg is (System.Windows.Point center, double rx, double ry))
+					if (cmd.Arg is ValueTuple<System.Windows.Point, double, double> ellipse)
 					{
+						var (center, rx, ry) = ellipse;
 						var eb = new Rect(center.X - rx, center.Y - ry, rx * 2, ry * 2);
 						bounds = Expand(bounds, eb);
 						RenderEllipse(cr, cmd.Brush, cmd.Pen, center, rx, ry);
@@ -43,8 +44,9 @@ internal static class DrawingContextRenderer
 					break;
 
 				case DrawingContext.DrawCommandKind.DrawLine:
-					if (cmd.Arg is (System.Windows.Point p0, System.Windows.Point p1))
+					if (cmd.Arg is ValueTuple<System.Windows.Point, System.Windows.Point> line)
 					{
+						var (p0, p1) = line;
 						var lb = Rect.Union(new Rect(p0, new Size(0, 0)), new Rect(p1, new Size(0, 0)));
 						bounds = Expand(bounds, lb);
 						RenderLine(cr, cmd.Pen, p0, p1);
@@ -84,12 +86,18 @@ internal static class DrawingContextRenderer
 					if (cmd.Arg is Rect r) bounds = Expand(bounds, r);
 					break;
 				case DrawingContext.DrawCommandKind.DrawEllipse:
-					if (cmd.Arg is (System.Windows.Point c, double rx, double ry))
+					if (cmd.Arg is ValueTuple<System.Windows.Point, double, double> ellipse)
+					{
+						var (c, rx, ry) = ellipse;
 						bounds = Expand(bounds, new Rect(c.X - rx, c.Y - ry, rx * 2, ry * 2));
+					}
 					break;
 				case DrawingContext.DrawCommandKind.DrawLine:
-					if (cmd.Arg is (System.Windows.Point p0, System.Windows.Point p1))
+					if (cmd.Arg is ValueTuple<System.Windows.Point, System.Windows.Point> line)
+					{
+						var (p0, p1) = line;
 						bounds = Expand(bounds, Rect.Union(new Rect(p0, new Size(0, 0)), new Rect(p1, new Size(0, 0))));
+					}
 					break;
 				case DrawingContext.DrawCommandKind.DrawGeometry:
 					if (cmd.Arg is Geometry g && !g.Bounds.IsEmpty)

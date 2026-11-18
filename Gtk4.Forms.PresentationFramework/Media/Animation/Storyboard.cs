@@ -108,7 +108,7 @@ public class Storyboard : Timeline
 				var nameStr = GetTargetName(child);
 				if (!string.IsNullOrEmpty(nameStr))
 				{
-					var named = target.FindName(nameStr) as DependencyObject;
+					var named = target.FindName(nameStr!) as DependencyObject;
 					if (named != null) animTarget = named;
 				}
 

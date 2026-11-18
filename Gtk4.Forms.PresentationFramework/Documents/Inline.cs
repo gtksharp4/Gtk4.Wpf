@@ -142,7 +142,7 @@ internal static class PangoMarkup
 	internal static string Escape(string? text)
 	{
 		if (string.IsNullOrEmpty(text)) return string.Empty;
-		return text
+		return text!
 			.Replace("&", "&amp;")
 			.Replace("<", "&lt;")
 			.Replace(">", "&gt;")
