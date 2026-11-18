@@ -1,3 +1,8 @@
 [submodule "WPF-Samples"]
 	path = WPF-Samples
-	url = https://github.com/microsoft/WPF-Samples.git
+	url = https://github.com/pieroviano/WPF-Samples.git
+	branch = main
+[submodule "WPF-Samples-GTK4"]
+	path = WPF-Samples-GTK4
+	url = https://github.com/pieroviano/WPF-Samples.git
+	branch = gtk4
