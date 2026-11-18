@@ -20,7 +20,7 @@ namespace Gtk4.Forms.MarkupCompiler
 	/// to the name heuristic so existing unit tests (which supply no references) keep passing.
 	/// </para>
 	/// </summary>
-	sealed class DpSymbolResolver : IDisposable
+	sealed partial class DpSymbolResolver : IDisposable
 	{
 		// (typeFullName, propName) → true = DP, false = CLR
 		readonly ConcurrentDictionary<(string, string), bool> _cache =
@@ -174,21 +174,6 @@ namespace Gtk4.Forms.MarkupCompiler
 				return FallbackEventHeuristic(memberName);
 			}
 		}
-
-		// Common WPF routed/CLR event names, used only when no reference assemblies were supplied
-		// (e.g. in unit tests). In a real build the reflection path above is authoritative.
-		static readonly HashSet<string> _commonEventNames =
-			new HashSet<string>(StringComparer.Ordinal)
-			{
-				"Click", "Checked", "Unchecked", "Loaded", "Unloaded", "Initialized",
-				"SelectionChanged", "TextChanged", "ValueChanged", "Closed", "Closing",
-				"GotFocus", "LostFocus", "KeyDown", "KeyUp",
-				"MouseDown", "MouseUp", "MouseEnter", "MouseLeave", "MouseMove",
-				"MouseLeftButtonDown", "MouseLeftButtonUp", "MouseDoubleClick",
-			};
-
-		internal static bool FallbackEventHeuristic(string memberName) =>
-			memberName != null && _commonEventNames.Contains(memberName);
 
 		bool ResolveIsDP(string typeFullName, string propName)
 		{

@@ -185,7 +185,7 @@ internal static partial class BindingEngine
 
 	// ── Inner record ────────────────────────────────────────────────────────
 
-	internal sealed class BindingRecord
+	internal sealed partial class BindingRecord
 	{
 		readonly WeakReference<FrameworkElement> _targetRef;
 		readonly DependencyProperty _dp;
@@ -245,6 +245,8 @@ internal static partial class BindingEngine
 					? null
 					: _binding.Path!.Split('.')[0];
 			}
+			else
+				AttachDpSource(source); // BindingEngine.SourceDp.cs
 
 			if (mode == BindingMode.TwoWay
 			    && _binding.UpdateSourceTrigger != UpdateSourceTrigger.Explicit)
@@ -524,6 +526,7 @@ internal static partial class BindingEngine
 
 		void DetachInpc()
 		{
+			DetachDpSource(); // BindingEngine.SourceDp.cs
 			if (_inpcSource != null)
 			{
 				_inpcSource.PropertyChanged -= OnSourcePropertyChanged;

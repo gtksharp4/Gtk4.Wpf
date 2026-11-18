@@ -26,8 +26,38 @@ public abstract partial class UIElement
 	/// <summary>The final rect passed to the last <see cref="Arrange"/> call.</summary>
 	Rect _lastArrangeRect = new Rect(double.NegativeInfinity, double.NegativeInfinity, 0, 0);
 
-	/// <summary>The size arranged for this element (set by <see cref="Arrange"/>).</summary>
-	public Size RenderSize { get; protected set; }
+	Size _renderSize;
+	bool _inArrange;
+
+	/// <summary>
+	/// The final render size of this element: set by <see cref="Arrange"/> and, for a mapped
+	/// element, by the live GTK allocation (see <c>FrameworkElement.ActualSize.cs</c>).
+	/// A change on either axis calls <see cref="OnRenderSizeChanged"/> — once per arrange pass.
+	/// </summary>
+	public Size RenderSize
+	{
+		get => _renderSize;
+		set
+		{
+			var old = _renderSize;
+			_renderSize = value;
+			// Inside Arrange the notification is coalesced into one call after ArrangeCore.
+			if (!_inArrange)
+				NotifyRenderSizeChange(old);
+		}
+	}
+
+	void NotifyRenderSizeChange(Size previous)
+	{
+		if (SizeChangeMath.Compute(previous, _renderSize, out bool widthChanged, out bool heightChanged))
+			OnRenderSizeChanged(new SizeChangedInfo(this, previous, widthChanged, heightChanged));
+	}
+
+	/// <summary>
+	/// Called when <see cref="RenderSize"/> changes on at least one axis. The base is a no-op;
+	/// <see cref="FrameworkElement"/> updates ActualWidth/ActualHeight and raises SizeChanged.
+	/// </summary>
+	protected internal virtual void OnRenderSizeChanged(SizeChangedInfo info) { }
 
 	/// <summary>The final rect this element was arranged into.</summary>
 	internal Rect ArrangeRect { get; private set; }
@@ -89,8 +119,18 @@ public abstract partial class UIElement
 		ArrangeRect = finalRect;
 		// Default RenderSize = finalRect size; ArrangeCore (FrameworkElement) may narrow it
 		// for alignment. FrameworkElement.ArrangeCore sets RenderSize itself.
-		RenderSize = new Size(finalRect.Width, finalRect.Height);
-		ArrangeCore(finalRect);
+		var previous = _renderSize;
+		_inArrange = true;
+		try
+		{
+			RenderSize = new Size(finalRect.Width, finalRect.Height);
+			ArrangeCore(finalRect);
+		}
+		finally
+		{
+			_inArrange = false;
+		}
+		NotifyRenderSizeChange(previous);
 	}
 
 	/// <summary>Override to position children. Base is no-op.</summary>

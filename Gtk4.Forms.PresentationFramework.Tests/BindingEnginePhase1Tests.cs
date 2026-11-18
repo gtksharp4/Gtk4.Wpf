@@ -201,10 +201,10 @@ public class BindingEnginePhase1Tests
 
 		Assert.Equal("initial", target.Value);
 
-		// Source is not INPC, so changing Value directly does NOT auto-update target.
-		// This documents the current behaviour: ElementName only hooks INPC sources.
+		// Round 36: a DependencyProperty source is watched like WPF does (no INPC needed),
+		// so changing the source DP re-pushes the target.
 		source.Value = "changed";
-		// target was not updated because TestElement is not INotifyPropertyChanged.
-		Assert.Equal("initial", target.Value);
+		// WPF-faithful: the ElementName target follows the source DP.
+		Assert.Equal("changed", target.Value);
 	}
 }

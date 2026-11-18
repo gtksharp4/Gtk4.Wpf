@@ -204,6 +204,7 @@ public partial class Window : ContentControl
 		{
 			_closed = true;
 			Closed?.Invoke(this, EventArgs.Empty);
+			LifecycleBroadcaster.BroadcastUnloaded(this); // WPF: Unloaded follows Closed
 		}
 	}
 

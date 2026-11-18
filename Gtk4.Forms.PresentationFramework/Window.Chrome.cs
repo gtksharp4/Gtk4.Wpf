@@ -114,5 +114,7 @@ public partial class Window
 		// WindowStartupLocation is applied via ApplyStartupLocation in Show().
 		// Wire WM→DP state round-trip and Activated/Deactivated (Window.State.cs).
 		WireStateNotifications(win);
+		// SourceInitialized / Loaded / ContentRendered / live size sync (Window.Lifecycle.cs).
+		WireLifecycleSignals(win);
 	}
 }
