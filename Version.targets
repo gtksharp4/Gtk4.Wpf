@@ -117,12 +117,12 @@
 
     <Message Condition="$(IsAzurePipelines) and '$(BUILD_REASON)' == 'Schedule'" Importance="high" Text="##vso[build.addbuildtag]$(NightlyTag)"/>
     <ItemGroup>
-       <XamarinFormsVersionFile Include="../.XamarinFormsVersionFile.txt"/>
+       <Gtk4FormsVersionFile Include="../.Gtk4FormsVersionFile.txt"/>
        <XamarinFormsVersionLine Include="$(PackageVersion)"/>
     </ItemGroup>
     
     <!-- Occasionally this throws an error from parallel builds writing to this file. It's fine if only one of them wins. -->
-    <WriteLinesToFile ContinueOnError="WarnAndContinue" File="@(XamarinFormsVersionFile)" Lines="@(XamarinFormsVersionLine)" Overwrite="true" />
+    <WriteLinesToFile ContinueOnError="WarnAndContinue" File="@(Gtk4FormsVersionFile)" Lines="@(XamarinFormsVersionLine)" Overwrite="true" />
     <Message Condition="$(IsAzurePipelines)" Importance="high" Text="##vso[build.updatebuildnumber]$(PackageVersion)"/>
     <Message Condition="$(IsAzurePipelines)" Importance="high" Text="##vso[task.setvariable variable=XamarinFormsPackageVersion;isOutput=true;]$(PackageVersion)"/>
   </Target>

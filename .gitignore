@@ -76,7 +76,7 @@ caketools/
 *.binlog
 .ionide/**
 /.nuspec
-.XamarinFormsVersionFile.txt
+.Gtk4FormsVersionFile.txt
 .idea
 Visual Studio 2019/**
 TestResult.xml
