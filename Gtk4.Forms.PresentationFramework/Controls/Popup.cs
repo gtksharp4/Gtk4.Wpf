@@ -17,7 +17,7 @@ namespace System.Windows.Controls.Primitives;
 /// popover only closes on explicit <c>IsOpen = false</c>.
 /// </para>
 /// </summary>
-public class Popup : FrameworkElement
+public partial class Popup : FrameworkElement
 {
 	// ── IsOpen DP ─────────────────────────────────────────────────────────────
 
@@ -123,6 +123,7 @@ public class Popup : FrameworkElement
 		if (!ReferenceEquals(anchor, _popover))
 			_popover.Parent = anchor;
 
+		ApplyPlacement(_popover);
 		_popover.Closed += OnPopoverClosed;
 		return _popover;
 	}
@@ -133,6 +134,7 @@ public class Popup : FrameworkElement
 		_popover!.Autohide = !StaysOpen;
 		var anchor = PlacementTarget?.Widget;
 		if (anchor != null) _popover.Parent = anchor;
+		ApplyPlacement(_popover);
 		_popover.Popup();
 	}
 
