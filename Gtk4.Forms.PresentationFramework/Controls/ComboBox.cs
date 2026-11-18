@@ -13,7 +13,7 @@ namespace System.Windows.Controls;
 /// so <see cref="SelectedItem"/> returns the original object.
 /// </para>
 /// </summary>
-public class ComboBox : Control
+public partial class ComboBox : Control
 {
 	// ── SelectionChanged event ───────────────────────────────────────────────
 
@@ -85,6 +85,8 @@ public class ComboBox : Control
 		if (!cb._updating)
 			cb.SelectionChanged?.Invoke(cb,
 				new SelectionChangedEventArgs(cb, e.OldValue, e.NewValue));
+
+		cb.RefreshSelectedValue();
 	}
 
 	/// <summary>Gets or sets the selected item.</summary>

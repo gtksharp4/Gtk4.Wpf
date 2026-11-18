@@ -55,7 +55,9 @@ public partial class ListBox : ItemsControl
 
 	static void OnSelectedItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
-		((ListBox)d).ApplySelectedItem(e.OldValue, e.NewValue);
+		var lb = (ListBox)d;
+		lb.ApplySelectedItem(e.OldValue, e.NewValue);
+		lb.RefreshSelectedValue();
 	}
 
 	/// <summary>Gets or sets the first (or only) selected item.</summary>
