@@ -20,7 +20,7 @@ public enum ScrollBarVisibility
 /// <see cref="Gtk.ScrolledWindow"/>.
 /// </summary>
 [ContentProperty("Content")]
-public class ScrollViewer : ContentControl
+public partial class ScrollViewer : ContentControl
 {
 	// ── HorizontalScrollBarVisibility DP ────────────────────────────────────
 
@@ -75,6 +75,13 @@ public class ScrollViewer : ContentControl
 		if (Content is UIElement child)
 			_scroll.Child = child.Widget;
 		return _scroll;
+	}
+
+	/// <inheritdoc/>
+	protected override void OnWidgetCreated(Gtk.Widget widget)
+	{
+		base.OnWidgetCreated(widget);
+		AttachAdjustmentHandlers();
 	}
 
 	/// <inheritdoc/>
