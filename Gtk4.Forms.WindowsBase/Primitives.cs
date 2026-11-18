@@ -106,6 +106,27 @@ public struct Rect : IEquatable<Rect>
 	public static bool operator ==(Rect a, Rect b) => a.Equals(b);
 	/// <inheritdoc/>
 	public static bool operator !=(Rect a, Rect b) => !a.Equals(b);
+	/// <summary>
+	/// A <see cref="Rect"/> sentinel with negative-infinity position and zero size,
+	/// matching the WPF empty-rect convention.
+	/// </summary>
+	public static readonly Rect Empty = new Rect(double.NegativeInfinity, double.NegativeInfinity, 0, 0);
+
+	/// <summary>Returns <c>true</c> when this instance equals <see cref="Empty"/>.</summary>
+	public bool IsEmpty => double.IsNegativeInfinity(X) && double.IsNegativeInfinity(Y) && Width == 0 && Height == 0;
+
+	/// <summary>Returns the smallest <see cref="Rect"/> that contains both <paramref name="a"/> and <paramref name="b"/>.</summary>
+	public static Rect Union(Rect a, Rect b)
+	{
+		if (a.IsEmpty) return b;
+		if (b.IsEmpty) return a;
+		double x = Math.Min(a.X, b.X);
+		double y = Math.Min(a.Y, b.Y);
+		double right = Math.Max(a.X + a.Width, b.X + b.Width);
+		double bottom = Math.Max(a.Y + a.Height, b.Y + b.Height);
+		return new Rect(x, y, right - x, bottom - y);
+	}
+
 	/// <inheritdoc/>
 	public override string ToString() => $"{X},{Y},{Width},{Height}";
 }
