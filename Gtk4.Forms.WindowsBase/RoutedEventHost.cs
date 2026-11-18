@@ -132,18 +132,35 @@ public static class RoutedEventHost
 		// Invoke from root → source.
 		for (int i = chain.Count - 1; i >= 0; i--)
 		{
+			// Like Bubble: keep routing once Handled so handledEventsToo handlers
+			// (instance and class) further down the tunnel are still reached.
 			InvokeHandlers(chain[i], source, e);
-			if (e.Handled) break;
 		}
 	}
 
 	static void InvokeHandlers(DependencyObject element, DependencyObject originalSource, RoutedEventArgs e)
 	{
+		// WPF ordering: class handlers (EventManager.RegisterClassHandler) for the element's
+		// type chain, most-derived first, run before the element's instance handlers.
+		var routedEvent = e.RoutedEvent;
+		var classHandlers = EventManager.GetClassHandlers(element.GetType(), routedEvent);
+		if (classHandlers != null)
+		{
+			foreach (var info in classHandlers)
+			{
+				if (e.Handled && !info.HandledEventsToo) continue;
+				info.Handler.DynamicInvoke(element, e);
+			}
+			// A class handler may re-raise with the same args (e.g. MouseDown cracking into
+			// MouseLeftButtonDown); restore the identity before the instance handlers run.
+			e.RoutedEvent = routedEvent;
+		}
+
 		List<(Delegate handler, bool handledEventsToo)>? list;
 		lock (_lock)
 		{
 			if (!_handlers.TryGetValue(element, out var map)) return;
-			if (!map.ByEvent.TryGetValue(e.RoutedEvent, out var raw)) return;
+			if (!map.ByEvent.TryGetValue(routedEvent, out var raw)) return;
 			list = new List<(Delegate, bool)>(raw); // snapshot
 		}
 		foreach (var (handler, handledEventsToo) in list)

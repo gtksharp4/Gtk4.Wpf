@@ -4,7 +4,8 @@ namespace System.Windows;
 
 /// <summary>
 /// GTK click (GestureClick) and motion (EventControllerMotion) controllers.
-/// Focus and key controllers live in <c>UIElement.GtkInput.cs</c>.
+/// Focus and key controllers live in <c>UIElement.GtkInput.cs</c>; the managed raise path is in
+/// <c>UIElement.MouseDispatch.cs</c>.
 /// </summary>
 public abstract partial class UIElement
 {
@@ -13,6 +14,9 @@ public abstract partial class UIElement
 	void AttachClickController(Gtk.Widget widget)
 	{
 		var click = new Gtk.GestureClick();
+		// GestureClick defaults to the primary button only; 0 listens to every button so right,
+		// middle and X buttons reach MouseDown/MouseUp (WPF distinguishes them via ChangedButton).
+		click.Button = 0;
 		click.Pressed  += OnGtkPressed;
 		click.Released += OnGtkReleased;
 		widget.AddController(click);
@@ -20,52 +24,22 @@ public abstract partial class UIElement
 
 	void OnGtkPressed(object o, Gtk.PressedArgs args)
 	{
-		uint button = GetClickButton(o);
-		var btn = GdkButtonToMouseButton(button);
-		var pos = new System.Windows.Point(args.X, args.Y);
-		UpdateMouseButtonState(btn, pressed: true);
-		Mouse._lastPosition = pos;
-
-		var lb = Mouse.LeftButton;
-		var rb = Mouse.RightButton;
-		var preview = new MouseButtonEventArgs(PreviewMouseDownEvent, pos, btn, args.NPress, lb, rb);
-		RaiseEvent(preview);
-		if (!preview.Handled)
-		{
-			var e = new MouseButtonEventArgs(MouseDownEvent, pos, btn, args.NPress, lb, rb);
-			RaiseEvent(e);
-		}
+		// While captured, every ancestor's gesture would re-target the same press; dispatch once.
+		if (Mouse.Captured != null && IsDuplicateDispatch(o)) return;
+		var btn = GdkButtonToMouseButton(GetClickButton(o));
+		RaiseMouseButton(btn, new Point(args.X, args.Y), args.NPress, pressed: true);
 	}
 
 	void OnGtkReleased(object o, Gtk.ReleasedArgs args)
 	{
-		uint button = GetClickButton(o);
-		var btn = GdkButtonToMouseButton(button);
-		var pos = new System.Windows.Point(args.X, args.Y);
-		UpdateMouseButtonState(btn, pressed: false);
-		Mouse._lastPosition = pos;
-
-		var lb = Mouse.LeftButton;
-		var rb = Mouse.RightButton;
-		var preview = new MouseButtonEventArgs(PreviewMouseUpEvent, pos, btn, 1, lb, rb);
-		RaiseEvent(preview);
-		if (!preview.Handled)
-		{
-			var e = new MouseButtonEventArgs(MouseUpEvent, pos, btn, 1, lb, rb);
-			RaiseEvent(e);
-		}
+		if (Mouse.Captured != null && IsDuplicateDispatch(o)) return;
+		var btn = GdkButtonToMouseButton(GetClickButton(o));
+		RaiseMouseButton(btn, new Point(args.X, args.Y), 1, pressed: false);
 	}
 
-	/// <summary>Reads the button number from the GestureClick sender.</summary>
+	/// <summary>Reads the button that triggered the current GestureClick sequence.</summary>
 	static uint GetClickButton(object sender) =>
-		sender is Gtk.GestureClick gc ? (uint)gc.Button : 1u;
-
-	static void UpdateMouseButtonState(MouseButton btn, bool pressed)
-	{
-		var state = pressed ? MouseButtonState.Pressed : MouseButtonState.Released;
-		if (btn == MouseButton.Left)  Mouse.LeftButton  = state;
-		if (btn == MouseButton.Right) Mouse.RightButton = state;
-	}
+		sender is Gtk.GestureClick gc && gc.CurrentButton != 0 ? gc.CurrentButton : 1u;
 
 	static MouseButton GdkButtonToMouseButton(uint gdkButton) => gdkButton switch
 	{
@@ -85,29 +59,50 @@ public abstract partial class UIElement
 		motion.Motion += OnGtkMotion;
 		motion.Enter  += OnGtkMotionEnter;
 		motion.Leave  += OnGtkMotionLeave;
+		// is-pointer flips without enter/leave when the pointer moves between this widget and a
+		// child; contains-pointer likewise. Keep IsMouseOver/IsMouseDirectlyOver in sync.
+		motion.AddNotification("is-pointer", OnGtkMotionPointerNotify);
+		motion.AddNotification("contains-pointer", OnGtkMotionPointerNotify);
 		widget.AddController(motion);
+	}
+
+	void OnGtkMotionPointerNotify(object o, GLib.NotifyArgs args) => SyncMouseOver(o);
+
+	/// <summary>
+	/// Maps <c>contains-pointer</c> → <see cref="IsMouseOver"/> and <c>is-pointer</c> →
+	/// <see cref="IsMouseDirectlyOver"/>.
+	/// </summary>
+	void SyncMouseOver(object controller)
+	{
+		if (controller is Gtk.EventControllerMotion m)
+			UpdateMouseOver(m.ContainsPointer(), m.IsPointer);
 	}
 
 	void OnGtkMotion(object o, Gtk.MotionArgs args)
 	{
-		var pos = new System.Windows.Point(args.X, args.Y);
-		Mouse._lastPosition = pos;
-		var e = new MouseEventArgs(MouseMoveEvent, pos, Mouse.LeftButton, Mouse.RightButton);
-		RaiseEvent(e);
+		if (Mouse.Captured != null && IsDuplicateDispatch(o)) return;
+		RaiseMouseMove(new Point(args.X, args.Y));
 	}
 
 	void OnGtkMotionEnter(object o, Gtk.EnterArgs args)
 	{
-		var pos = new System.Windows.Point(args.X, args.Y);
-		Mouse._lastPosition = pos;
-		var e = new MouseEventArgs(MouseEnterEvent, pos, Mouse.LeftButton, Mouse.RightButton);
+		var pos = new Point(args.X, args.Y);
+		Mouse.TrackPosition(this, pos);
+		SyncMouseOver(o);
+		var e = new MouseEventArgs(MouseEnterEvent, pos, Mouse.LeftButton, Mouse.RightButton)
+		{
+			PositionSource = this,
+		};
 		RaiseEvent(e);
 	}
 
 	void OnGtkMotionLeave(object? sender, EventArgs args)
 	{
+		// Leave means the pointer left this widget's whole area (moving into a child only
+		// flips is-pointer), so both flags clear.
+		UpdateMouseOver(false, false);
 		var e = new MouseEventArgs(MouseLeaveEvent, Mouse._lastPosition,
-			Mouse.LeftButton, Mouse.RightButton);
+			Mouse.LeftButton, Mouse.RightButton) { PositionSource = Mouse._lastPositionSource };
 		RaiseEvent(e);
 	}
 }

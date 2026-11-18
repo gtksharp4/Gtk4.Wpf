@@ -48,7 +48,7 @@ public sealed class RoutedEvent
 /// <summary>
 /// Provides event-registration services for the routed-event system.
 /// </summary>
-public static class EventManager
+public static partial class EventManager
 {
 	static readonly Dictionary<(string, Type), RoutedEvent> _registry =
 		new Dictionary<(string, Type), RoutedEvent>();

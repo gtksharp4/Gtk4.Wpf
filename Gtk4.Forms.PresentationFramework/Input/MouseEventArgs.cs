@@ -30,10 +30,25 @@ public class MouseEventArgs : RoutedEventArgs
 	/// <summary>State of the right mouse button.</summary>
 	public MouseButtonState RightButton { get; }
 
+	/// <summary>State of the middle mouse button (snapshot of <see cref="Mouse.MiddleButton"/>).</summary>
+	public MouseButtonState MiddleButton { get; }
+
+	/// <summary>State of the first extended button (snapshot of <see cref="Mouse.XButton1"/>).</summary>
+	public MouseButtonState XButton1 { get; }
+
+	/// <summary>State of the second extended button (snapshot of <see cref="Mouse.XButton2"/>).</summary>
+	public MouseButtonState XButton2 { get; }
+
 	/// <summary>Modifier keys held at the time of the event.</summary>
 	public ModifierKeys Modifiers { get; }
 
 	readonly System.Windows.Point _position;
+
+	/// <summary>
+	/// The element whose coordinate space <c>position</c> is expressed in (the element whose
+	/// GTK controller produced the event). Used by <see cref="GetPosition"/> to translate.
+	/// </summary>
+	internal UIElement? PositionSource { get; set; }
 
 	/// <param name="routedEvent">The routed event being raised.</param>
 	/// <param name="position">Pointer position relative to source element.</param>
@@ -51,14 +66,24 @@ public class MouseEventArgs : RoutedEventArgs
 		_position  = position;
 		LeftButton  = leftButton;
 		RightButton = rightButton;
+		MiddleButton = Mouse.MiddleButton;
+		XButton1     = Mouse.XButton1;
+		XButton2     = Mouse.XButton2;
 		Modifiers   = modifiers;
 	}
 
 	/// <summary>
-	/// Returns the pointer position relative to <paramref name="relativeTo"/>.
-	/// When <paramref name="relativeTo"/> is <c>null</c> returns the raw position.
+	/// Returns the pointer position relative to <paramref name="relativeTo"/>, translated from
+	/// the producing element's widget with <c>gtk_widget_compute_point</c>.
 	/// </summary>
-	public System.Windows.Point GetPosition(System.Windows.UIElement? relativeTo) => _position;
+	/// <remarks>
+	/// When <paramref name="relativeTo"/> is <c>null</c> the position is returned relative to the
+	/// element that produced the event (WPF would return window-relative coordinates). Without
+	/// realized widgets (headless) or when GTK cannot relate the two widgets, the raw position is
+	/// returned.
+	/// </remarks>
+	public System.Windows.Point GetPosition(IInputElement? relativeTo) =>
+		MousePositionMap.Translate(PositionSource, relativeTo, _position);
 }
 
 /// <summary>Event args for <c>MouseDown</c>/<c>MouseUp</c> events.</summary>
@@ -69,6 +94,17 @@ public class MouseButtonEventArgs : MouseEventArgs
 
 	/// <summary>Number of rapid clicks (1 = single, 2 = double, …).</summary>
 	public int ClickCount { get; }
+
+	/// <summary>State of <see cref="ChangedButton"/>: Pressed for a down event, Released for up.</summary>
+	public MouseButtonState ButtonState => ChangedButton switch
+	{
+		MouseButton.Left     => LeftButton,
+		MouseButton.Right    => RightButton,
+		MouseButton.Middle   => MiddleButton,
+		MouseButton.XButton1 => XButton1,
+		MouseButton.XButton2 => XButton2,
+		_                    => MouseButtonState.Released,
+	};
 
 	/// <param name="routedEvent">The routed event being raised.</param>
 	/// <param name="position">Pointer position relative to source element.</param>
