@@ -977,6 +977,27 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   15 ProjectConverter), all pass; warning-clean across `netstandard2.0;net8.0;net10.0` (+`-windows`).
   (Constraint adopted this round: PF new code must compile on netstandard2.0 — the owner multi-targeted the
   assembly to ship a netstandard2.0-compatible NuGet package.)
+- **Round 31 Track A — ListBox multi-select (DONE).** `SelectionMode` enum (Single/Multiple/Extended) + DP
+  (default Single), `SelectedItems` (IList), mapped to `Gtk.ListBox.SelectionMode` (Single→Single;
+  Multiple/Extended→Multiple — GTK doesn't distinguish, documented). `SelectionChangedEventArgs` gained
+  `AddedItems`/`RemovedItems` (non-null by default — existing ComboBox/TreeView/TabControl consumers unaffected).
+  GTK `SelectedRowsChanged`→delta→single `SelectionChanged`, guarded against DP↔GTK re-entry. **+28 tests**.
+- **Round 31 Track B — tab navigation (DONE).** `UIElement.IsTabStop` (default true) + `TabIndex`
+  (default `int.MaxValue`) DPs → `widget.CanFocus = IsTabStop && Focusable`; `System.Windows.Input.KeyboardNavigation`
+  static class (`TabNavigation`/`DirectionalNavigation`/`IsTabStop`/`TabIndex` attached DPs + `KeyboardNavigationMode`
+  enum); pure `TabOrderHelper.Order` (stable by TabIndex then declaration, skips non-tab-stops). **+40 tests**.
+- **Round 31 review (Opus) + fixes — DONE.** Top risks clean (shared `SelectionChangedEventArgs` non-null → no
+  consumer NRE; selection-sync single `_updating` guard → no re-entry; netstandard2.0-safe). Fixed two **Minor**:
+  **F1** create-time `CanFocus` applied to the outer widget instead of `FocusWidget` — a multiline TextBox with
+  pre-realize `IsTabStop=false` left its inner TextView focusable; now uses `FocusWidget` (pinned by a new
+  multiline-TextBox GTK smoke test). **F2** corrected the `KeyboardNavigation.IsTabStop`/`TabIndex` docs (they are
+  independent attached DPs, not mirrors that cross-propagate).
+  **Round 31 totals: 2452 tests** (89 WindowsBase + 2144 PresentationFramework + 204 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean across all TFMs.
+- **Carry-over (Round 31)**: GTK can't distinguish `SelectionMode.Multiple` vs `Extended` (keyboard-modifier
+  range/toggle semantics not reproduced); `TabIndex` has no per-widget GTK order API (GTK uses tree order — the
+  managed `TabOrderHelper` computes WPF order); `KeyboardNavigation.IsTabStop` attached DP does not propagate to
+  `UIElement.IsTabStop`.
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a

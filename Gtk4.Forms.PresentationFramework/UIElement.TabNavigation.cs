@@ -95,5 +95,7 @@ public abstract partial class UIElement
 	/// Implemented in this file; wired via partial method in <c>UIElement.cs</c>.
 	/// </summary>
 	partial void ApplyTabNavigationOnCreated(Gtk.Widget widget) =>
-		ApplyCanFocus(widget);
+		// Use FocusWidget (the inner focusable widget — e.g. a multiline TextBox's TextView),
+		// matching the change-callback path; the raw created widget may be an outer wrapper.
+		ApplyCanFocus(FocusWidget);
 }

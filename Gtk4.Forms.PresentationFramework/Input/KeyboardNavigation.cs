@@ -74,12 +74,14 @@ public static class KeyboardNavigation
 		element.SetValue(DirectionalNavigationProperty, value);
 	}
 
-	// ── IsTabStop attached mirror ─────────────────────────────────────────────
+	// ── IsTabStop attached ────────────────────────────────────────────────────
 
 	/// <summary>
-	/// Attached mirror of <see cref="System.Windows.UIElement.IsTabStopProperty"/>.
-	/// Setting this on a <see cref="System.Windows.UIElement"/> updates the element's
-	/// <see cref="System.Windows.UIElement.IsTabStop"/> DP.
+	/// The <c>KeyboardNavigation.IsTabStop</c> attached property. Independent of
+	/// <see cref="System.Windows.UIElement.IsTabStopProperty"/> — WPF exposes the primary
+	/// tab-stop flag on the element (<c>UIElement.IsTabStop</c>); this attached form mirrors
+	/// WPF's surface for XAML that writes <c>KeyboardNavigation.IsTabStop</c> but does not
+	/// cross-propagate to the element's own DP.
 	/// </summary>
 	public static readonly System.Windows.DependencyProperty IsTabStopProperty =
 		System.Windows.DependencyProperty.RegisterAttached(
@@ -102,10 +104,11 @@ public static class KeyboardNavigation
 		element.SetValue(IsTabStopProperty, value);
 	}
 
-	// ── TabIndex attached mirror ──────────────────────────────────────────────
+	// ── TabIndex attached ─────────────────────────────────────────────────────
 
 	/// <summary>
-	/// Attached mirror of <see cref="System.Windows.UIElement.TabIndexProperty"/>.
+	/// The <c>KeyboardNavigation.TabIndex</c> attached property. Independent of
+	/// <see cref="System.Windows.UIElement.TabIndexProperty"/> (does not cross-propagate).
 	/// </summary>
 	public static readonly System.Windows.DependencyProperty TabIndexProperty =
 		System.Windows.DependencyProperty.RegisterAttached(

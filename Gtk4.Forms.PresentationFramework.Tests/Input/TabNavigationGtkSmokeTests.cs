@@ -121,4 +121,16 @@ public class TabNavigationGtkSmokeTests : WpfGtkTestBase
 		Assert.Null(ex);
 		Assert.Equal(3, tb.TabIndex);
 	});
+
+	// Multiline TextBox: FocusWidget is the inner TextView, not the outer wrapper.
+	// IsTabStop=false set BEFORE realize must reach the inner focus widget (F1).
+	[Fact]
+	public void IsTabStop_false_before_realize_applies_to_inner_FocusWidget() => Run(() =>
+	{
+		var tb = new TextBox { AcceptsReturn = true }; // multiline → inner TextView
+		tb.IsTabStop = false;                          // set before realization
+		_ = tb.Widget;                                 // realize
+
+		Assert.False(tb.FocusWidget.CanFocus);
+	});
 }
