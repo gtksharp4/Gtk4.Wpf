@@ -69,6 +69,37 @@ public partial class TextBlock : FrameworkElement
 		set => SetValue(TextDecorationsProperty, value);
 	}
 
+	// ── Typography DP change ─────────────────────────────────────────────────────
+
+	// Typography is registered on typeof(Typography) as attached DPs; we override the
+	// metadata on TextBlock so that changes trigger a markup refresh.
+	static TextBlock()
+	{
+		Documents.Typography.CapitalsProperty.OverrideMetadata(
+			typeof(TextBlock),
+			new PropertyMetadata(Documents.FontCapitals.Normal, OnTypographyChanged));
+		Documents.Typography.NumeralStyleProperty.OverrideMetadata(
+			typeof(TextBlock),
+			new PropertyMetadata(Documents.FontNumeralStyle.Normal, OnTypographyChanged));
+		Documents.Typography.FractionProperty.OverrideMetadata(
+			typeof(TextBlock),
+			new PropertyMetadata(Documents.FontFraction.Normal, OnTypographyChanged));
+		Documents.Typography.StandardLigaturesProperty.OverrideMetadata(
+			typeof(TextBlock),
+			new PropertyMetadata(true, OnTypographyChanged));
+		Documents.Typography.KerningProperty.OverrideMetadata(
+			typeof(TextBlock),
+			new PropertyMetadata(true, OnTypographyChanged));
+		Documents.Typography.VariantsProperty.OverrideMetadata(
+			typeof(TextBlock),
+			new PropertyMetadata(Documents.FontVariants.Normal, OnTypographyChanged));
+	}
+
+	static void OnTypographyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		((TextBlock)d).ApplyToLabel();
+	}
+
 	// ── GTK ──────────────────────────────────────────────────────────────────────
 
 	Gtk.Label _label = null!;
@@ -95,12 +126,15 @@ public partial class TextBlock : FrameworkElement
 			_label.Text = string.Empty;
 			return;
 		}
-		// Check if the single inline is a plain Run with no formatting (including no decorations).
+		// Check if the single inline is a plain Run with no formatting (including no decorations
+		// and no Typography features).
 		var blockDec = TextDecorations;
+		string typographyFeatures = Documents.TypographyPango.BuildFontFeatures(this);
 		if (_inlines.Count == 1 && _inlines[0] is Run r &&
 		    r.Foreground == null && !r.FontWeight.HasValue && !r.FontStyle.HasValue &&
 		    (r.TextDecorations == null || r.TextDecorations.Count == 0) &&
-		    (blockDec == null || blockDec.Count == 0))
+		    (blockDec == null || blockDec.Count == 0) &&
+		    typographyFeatures.Length == 0)
 		{
 			_label.UseMarkup = false;
 			_label.Text = r.Text;
@@ -112,7 +146,9 @@ public partial class TextBlock : FrameworkElement
 
 	/// <summary>
 	/// Builds the Pango markup string from the current <see cref="Inlines"/> collection,
-	/// wrapping the whole output in a decoration span when <see cref="TextDecorations"/> is set.
+	/// wrapping the whole output in a decoration span when <see cref="TextDecorations"/> is set,
+	/// and in a <c>font_features</c> span when any <see cref="Documents.Typography"/> property
+	/// differs from its default.
 	/// Exposed internally for unit testing without requiring a live GTK label.
 	/// </summary>
 	internal string BuildMarkup()
@@ -121,6 +157,7 @@ public partial class TextBlock : FrameworkElement
 		foreach (var inline in _inlines)
 			inline.AppendMarkup(sb);
 		string inner = sb.ToString();
-		return Documents.TextDecorationMarkup.WrapWithDecorations(TextDecorations, inner);
+		string withDecorations = Documents.TextDecorationMarkup.WrapWithDecorations(TextDecorations, inner);
+		return Documents.TypographyPango.WrapWithFontFeatures(this, withDecorations);
 	}
 }
