@@ -167,4 +167,53 @@ public class TextBoxPureTests
 		var tb = new TextBox { IsReadOnly = true };
 		Assert.True(tb.IsReadOnly);
 	}
+
+	// ── AcceptsTab ───────────────────────────────────────────────────────────
+
+	[Fact]
+	public void AcceptsTab_default_is_false()
+	{
+		var tb = new TextBox();
+		Assert.False(tb.AcceptsTab);
+	}
+
+	[Fact]
+	public void AcceptsTab_roundtrip()
+	{
+		var tb = new TextBox { AcceptsTab = true };
+		Assert.True(tb.AcceptsTab);
+	}
+
+	// ── Selection clamping on Text change ────────────────────────────────────
+
+	[Fact]
+	public void SelectionStart_clamped_when_Text_shrinks()
+	{
+		var tb = new TextBox { Text = "hello" };
+		tb.SelectionStart = 4;
+		tb.Text = "hi";
+		Assert.True(tb.SelectionStart <= tb.Text.Length);
+	}
+
+	[Fact]
+	public void SelectionLength_clamped_when_Text_shrinks()
+	{
+		var tb = new TextBox { Text = "hello world" };
+		tb.SelectionStart  = 3;
+		tb.SelectionLength = 7;
+		tb.Text = "hi";
+		// start+length must not exceed new Text.Length
+		Assert.True(tb.SelectionStart + tb.SelectionLength <= tb.Text.Length);
+	}
+
+	[Fact]
+	public void Clamping_before_realize_does_not_throw()
+	{
+		var tb = new TextBox { Text = "abcde" };
+		tb.Select(2, 3);
+		// Shrink text; must not throw and selection must stay in bounds
+		var ex = Record.Exception(() => { tb.Text = "ab"; });
+		Assert.Null(ex);
+		Assert.True(tb.SelectionStart + tb.SelectionLength <= tb.Text.Length);
+	}
 }

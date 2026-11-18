@@ -44,6 +44,7 @@ public partial class TextBox
 		_textView = new Gtk.TextView();
 		ApplyWrapMode();
 		ApplyIsReadOnly(IsReadOnly);
+		ApplyAcceptsTab(AcceptsTab);
 		_textView.Buffer.Text = Text;
 		_textView.Buffer.Changed += OnBufferChanged;
 
@@ -74,6 +75,9 @@ public partial class TextBox
 
 	void OnTextChanged(string text)
 	{
+		// Keep the managed selection model consistent with the new text length.
+		ClampSelectionToTextLength();
+
 		// Always fire TextChanged (pure model concern, widget optional).
 		TextChanged?.Invoke(this, new TextChangedEventArgs(this));
 
@@ -114,6 +118,18 @@ public partial class TextBox
 			TextWrapping.WrapWithOverflow => Gtk.WrapMode.Char,
 			_                             => Gtk.WrapMode.None,
 		};
+	}
+
+	/// <summary>
+	/// Maps <see cref="AcceptsTab"/> to the backing widget.
+	/// Only <see cref="Gtk.TextView"/> (multiline) exposes <c>AcceptsTab</c>;
+	/// <see cref="Gtk.Entry"/> (single-line) has no GTK equivalent — the flag is
+	/// stored in the DP but has no widget-level effect in single-line mode.
+	/// </summary>
+	void ApplyAcceptsTab(bool accepts)
+	{
+		if (_textView != null)
+			_textView.AcceptsTab = accepts;
 	}
 
 	// ── Selection sync ───────────────────────────────────────────────────────
