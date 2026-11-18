@@ -1,7 +1,7 @@
-## Xamarin.Forms Bug Reproduction Guidelines ##
+## Gtk4.Forms Bug Reproduction Guidelines ##
 
 ### Do ###
-- Start with a clean Xamarin.Forms project.
+- Start with a clean Gtk4.Forms project.
 - Use a ContentPage subclass if possible
 - Use the most recent version
 - Clean project and delete packages/bin/obj folders before sending
