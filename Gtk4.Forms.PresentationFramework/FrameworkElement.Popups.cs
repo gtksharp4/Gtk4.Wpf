@@ -94,5 +94,15 @@ public partial class FrameworkElement
 		var tip = GetValue(ToolTipProperty);
 		if (tip != null)
 			ApplyTooltipToWidget(widget, tip);
+		// Apply any Cursor set before widget creation.
+		// Implemented in FrameworkElement.Cursor.cs.
+		ApplyCursorOnCreated(widget);
 	}
+
+	/// <summary>
+	/// Called from <see cref="OnWidgetCreated"/> to apply any
+	/// <see cref="Cursor"/> set before widget creation.
+	/// Implemented in <c>FrameworkElement.Cursor.cs</c>.
+	/// </summary>
+	partial void ApplyCursorOnCreated(Gtk.Widget widget);
 }

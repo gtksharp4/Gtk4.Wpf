@@ -23,4 +23,17 @@ public static class Mouse
 	}
 
 	internal static System.Windows.Point _lastPosition;
+
+	/// <summary>
+	/// Application-wide cursor override. When non-<c>null</c> this cursor takes
+	/// precedence over any element-level <c>FrameworkElement.Cursor</c>.
+	/// <para>
+	/// <b>GTK 4 limitation:</b> GTK does not expose a global cursor override API.
+	/// Setting this property stores the value so application code and consumers can
+	/// read it; actual per-widget enforcement requires the caller to propagate the
+	/// value to the relevant widget(s) or walk the visual tree. No automatic
+	/// propagation is performed by this implementation.
+	/// </para>
+	/// </summary>
+	public static System.Windows.Input.Cursor? OverrideCursor { get; set; }
 }
