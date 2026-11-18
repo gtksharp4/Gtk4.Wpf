@@ -1123,6 +1123,25 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
 - **Carry-over (Round 27)**: `.cur`/`.ani` cursor files unsupported (fall back to default); `Mouse.OverrideCursor`
   has no GTK global-override effect; the live GTK `CloseRequest` signal path is exercised only via the
   `RequestClose` seam (GTK can't raise it deterministically headless).
+- **Round 28 Track A — Image.Stretch (DONE).** `Image.Stretch` (default Uniform) + `StretchDirection` (default
+  Both, enum reused from `Viewbox`) DPs; backing switched `Gtk.Image`→`Gtk.Picture` (which supports sizing);
+  pure `internal ImageStretchMap.ToContentFit` maps `Stretch`→`Gtk.ContentFit` (None→ScaleDown, Fill→Fill,
+  Uniform→Contain, UniformToFill→Cover). **+21 tests**. `StretchDirection` has no GTK equivalent (stored only).
+- **Round 28 Track B — VisualBrush (DONE).** `Media.VisualBrush : TileBrush` renders a `DrawingVisual`'s recorded
+  `DrawingContext` into an off-screen `Cairo.ImageSurface` (via new `DrawingContextRenderer`: rect/ellipse/line/
+  geometry; `DrawText` no-op) then tiles/scales via `StretchMath` — mirroring the Round-26 `DrawingBrush` path.
+  A general (non-`DrawingVisual`) visual paints nothing (GTK can't portably snapshot a foreign/unrealized widget
+  — documented). **+27 tests**.
+- **Round 28 review (Opus) — DONE, no defects.** Verified the `Gtk.Image`→`Gtk.Picture` switch preserves
+  `Source` semantics with no other widget-type consumer broken (only the shared smoke assertion updated),
+  `Gtk.ContentFit` enum values real, Stretch/StretchDirection defaults match WPF, `DrawingContextRenderer`
+  command replay + `ComputeBounds` union correct, VisualBrush mirrors the clean DrawingBrush (zero-size guard +
+  disposed surface). Both tracks clean — no fixes required.
+  **Round 28 totals: 2253 tests** (89 WindowsBase + 1945 PresentationFramework + 204 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean.
+- **Carry-over (Round 28)**: `Image.Stretch.None`→`ScaleDown` is an approximation (WPF None = natural size);
+  `VisualBrush` paints only `DrawingVisual` content (general live visuals are no-paint); `DrawText` in
+  `DrawingContextRenderer` contributes no bounds/render.
 - **Carry-over**: `ImageBrush.Opacity` on the painted-image path (**A1**); `ImageBrush` only paints local PNGs
   (no HTTP/non-PNG); arc (`A`) and smooth (`S`/`T`) path commands are skipped, not rendered;
   `LayoutTransform` is honoured in measure (DesiredSize) but **not in arrange** — `RenderSize`
