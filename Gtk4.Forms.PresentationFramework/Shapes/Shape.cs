@@ -160,15 +160,3 @@ public abstract class Shape : FrameworkElement, IDisposable
 	}
 }
 
-/// <summary>WPF <c>Stretch</c> enumeration.</summary>
-public enum Stretch
-{
-	/// <summary>No stretching; natural size.</summary>
-	None,
-	/// <summary>Fill available space uniformly, preserving aspect ratio.</summary>
-	Uniform,
-	/// <summary>Fill available space non-uniformly.</summary>
-	Fill,
-	/// <summary>Fill uniformly; may clip content.</summary>
-	UniformToFill,
-}

@@ -1,19 +1,7 @@
 using System.Windows.Markup;
+using System.Windows.Media;
 
 namespace System.Windows.Controls;
-
-/// <summary>Specifies how content is stretched to fill its allocated space.</summary>
-public enum Stretch
-{
-	/// <summary>Content preserves its original size.</summary>
-	None,
-	/// <summary>Content is scaled to fit, preserving aspect ratio.</summary>
-	Uniform,
-	/// <summary>Content is scaled to fill, preserving aspect ratio (may clip).</summary>
-	UniformToFill,
-	/// <summary>Content is scaled to fill exactly, ignoring aspect ratio.</summary>
-	Fill,
-}
 
 /// <summary>Specifies which stretch directions are allowed.</summary>
 public enum StretchDirection
