@@ -5,7 +5,7 @@ namespace System.Windows.Controls;
 /// <summary>
 /// Base class for <see cref="DataGrid"/> column definitions.
 /// </summary>
-public abstract class DataGridColumn : DependencyObject
+public abstract partial class DataGridColumn : DependencyObject
 {
 	// ── Header DP ────────────────────────────────────────────────────────────
 
