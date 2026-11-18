@@ -955,6 +955,11 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   cross-process reads not supported (GTK4 clipboard read is async-only), `StoreAsync` not called on
   `SetDataObject(copy:true)`, no arbitrary-object serialization, `DataFormats.StringFormat` not auto-converted
   to UnicodeText (only Text↔UnicodeText).
+  - **CI hotfix (macOS):** `GtkClipboardBackend` disables the native GTK clipboard side-channel on macOS —
+    GTK4's Quartz `GdkClipboard` SIGSEGVs (139) on `SetContent`/`Text=` writes in this GtkSharp build (the
+    `gdk_content_provider`/`gdk_content_formats` path), crashing the whole macOS test process. A native crash is
+    not catchable, so the only safe fix is not to call it; macOS runs entirely off the in-memory mirror
+    (within-process clipboard works; cross-app push is a documented no-op there). Linux/Windows unaffected.
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a

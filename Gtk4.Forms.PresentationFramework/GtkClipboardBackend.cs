@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace System.Windows;
 
 /// <summary>
@@ -24,11 +26,24 @@ internal sealed class GtkClipboardBackend : IClipboardBackend
 {
 	readonly InMemoryClipboardBackend _mirror = new();
 
+	// GTK 4's macOS (Quartz) GdkClipboard SIGSEGVs on SetContent / Text-setter writes in this
+	// GtkSharp build (the content-provider/formats path asserts then crashes). A native crash is
+	// not catchable by try/catch, so the only safe option is to NOT call it: on macOS the native
+	// clipboard side-channel is disabled and everything runs off the in-memory mirror (reads are
+	// unaffected on every platform — they already come from the mirror). Cross-app clipboard push
+	// therefore does not work on macOS; within-process copy/paste still does.
+	static readonly bool _nativeEnabled = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+
 	// ── Display / native clipboard ────────────────────────────────────────────
 
-	/// <summary>Returns the native GDK clipboard, or null when no display is available.</summary>
+	/// <summary>
+	/// Returns the native GDK clipboard, or null when no display is available or the native
+	/// clipboard is disabled on this platform (macOS — see <see cref="_nativeEnabled"/>).
+	/// </summary>
 	static Gdk.Clipboard? NativeClipboard()
 	{
+		if (!_nativeEnabled)
+			return null;
 		try
 		{
 			var display = Gdk.Display.Default;
