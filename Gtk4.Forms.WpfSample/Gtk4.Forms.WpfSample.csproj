@@ -15,6 +15,7 @@
     <EnableDefaultXamlItems>false</EnableDefaultXamlItems>
     <!-- In-tree: point the markup-compiler UsingTask at the freshly built task assembly. -->
     <_GFMarkupCompilerTasksDir>$(MSBuildThisFileDirectory)..\Gtk4.Forms.MarkupCompiler\bin\$(Configuration)\netstandard2.0\</_GFMarkupCompilerTasksDir>
+    <_GFMarkupCompilerUseTaskHost>true</_GFMarkupCompilerUseTaskHost>
   </PropertyGroup>
 
   <ItemGroup>

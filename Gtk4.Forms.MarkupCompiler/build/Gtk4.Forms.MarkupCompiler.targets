@@ -20,7 +20,13 @@
   </Target>
 
   <UsingTask TaskName="Gtk4.Forms.MarkupCompiler.MarkupCompileTask"
-             AssemblyFile="$(_GFMarkupCompilerTasksDir)Gtk4.Forms.MarkupCompiler.dll" />
+             AssemblyFile="$(_GFMarkupCompilerTasksDir)Gtk4.Forms.MarkupCompiler.dll"
+             Condition="'$(_GFMarkupCompilerUseTaskHost)' != 'true'" />
+  <!-- In-tree builds: an out-of-proc task host so reused MSBuild nodes don't lock the task DLL. -->
+  <UsingTask TaskName="Gtk4.Forms.MarkupCompiler.MarkupCompileTask"
+             AssemblyFile="$(_GFMarkupCompilerTasksDir)Gtk4.Forms.MarkupCompiler.dll"
+             TaskFactory="TaskHostFactory"
+             Condition="'$(_GFMarkupCompilerUseTaskHost)' == 'true'" />
 
   <!--
     Collect Page and ApplicationDefinition XAML items.
