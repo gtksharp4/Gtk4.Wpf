@@ -10,6 +10,9 @@
 # Assumes .NET from actions/setup-dotnet.
 set -euo pipefail
 
+# shellcheck source=annotate-failures.sh
+source "$(dirname "$0")/annotate-failures.sh"
+
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
 echo "== install the GTK 4 runtime, a headless X server and fonts =="
@@ -31,17 +34,21 @@ dotnet build Gtk4.Forms.CrossPlatform.slnf -c Debug -p:GeneratePackageOnBuild=fa
 # The logic suites (WindowsBase DP/dispatcher, MarkupCompiler XAML->code, Wpf.ProjectConverter) need
 # no GTK runtime or display.
 echo "== WindowsBase unit tests =="
-dotnet test Gtk4.Forms.WindowsBase.Tests -c Debug --no-build --logger trx
+run_annotated "Linux WindowsBase.Tests" dotnet test Gtk4.Forms.WindowsBase.Tests -c Debug --no-build --logger trx
 
 echo "== MarkupCompiler unit tests =="
-dotnet test Gtk4.Forms.MarkupCompiler.Tests -c Debug --no-build --logger trx
+run_annotated "Linux MarkupCompiler.Tests" dotnet test Gtk4.Forms.MarkupCompiler.Tests -c Debug --no-build --logger trx
 
 echo "== Wpf.ProjectConverter unit tests =="
-dotnet test Gtk4.Forms.Wpf.ProjectConverter.Tests -c Debug --no-build --logger trx
+run_annotated "Linux ProjectConverter.Tests" \
+	dotnet test Gtk4.Forms.Wpf.ProjectConverter.Tests -c Debug --no-build --logger trx
 
 # XF_GTK_REQUIRE_NATIVE turns "no display / no GTK runtime" from a skip into a failure: both are
 # installed above, so an unusable environment means the apt or Xvfb step silently broke.
 echo "== PresentationFramework tests (real GTK 4 widgets, headless under Xvfb) =="
-GDK_BACKEND=x11 XF_GTK_REQUIRE_NATIVE=1 GSETTINGS_BACKEND=memory \
-  xvfb-run -a --server-args="-screen 0 1280x1024x24" \
-    dotnet test Gtk4.Forms.PresentationFramework.Tests -c Debug --no-build --logger trx
+run_gtk_tests() {
+  GDK_BACKEND=x11 XF_GTK_REQUIRE_NATIVE=1 GSETTINGS_BACKEND=memory \
+    xvfb-run -a --server-args="-screen 0 1280x1024x24" \
+      dotnet test Gtk4.Forms.PresentationFramework.Tests -c Debug --no-build --logger trx
+}
+run_annotated "Linux PresentationFramework.Tests" run_gtk_tests

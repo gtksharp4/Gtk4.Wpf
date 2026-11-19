@@ -12,6 +12,9 @@
 # runtime comes from Homebrew.
 set -euo pipefail
 
+# shellcheck source=annotate-failures.sh
+source "$(dirname "$0")/annotate-failures.sh"
+
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
 # The macOS runner's git cannot resolve the branch for GitInfo, so the assembly version falls back to
@@ -23,13 +26,14 @@ dotnet build Gtk4.Forms.CrossPlatform.slnf -c Debug -p:GeneratePackageOnBuild=fa
 # The logic suites (WindowsBase DP/dispatcher, MarkupCompiler XAML->code, Wpf.ProjectConverter) need
 # no GTK runtime.
 echo "== WindowsBase unit tests =="
-dotnet test Gtk4.Forms.WindowsBase.Tests -c Debug --no-build --logger trx
+run_annotated "macOS WindowsBase.Tests" dotnet test Gtk4.Forms.WindowsBase.Tests -c Debug --no-build --logger trx
 
 echo "== MarkupCompiler unit tests =="
-dotnet test Gtk4.Forms.MarkupCompiler.Tests -c Debug --no-build --logger trx
+run_annotated "macOS MarkupCompiler.Tests" dotnet test Gtk4.Forms.MarkupCompiler.Tests -c Debug --no-build --logger trx
 
 echo "== Wpf.ProjectConverter unit tests =="
-dotnet test Gtk4.Forms.Wpf.ProjectConverter.Tests -c Debug --no-build --logger trx
+run_annotated "macOS ProjectConverter.Tests" \
+	dotnet test Gtk4.Forms.Wpf.ProjectConverter.Tests -c Debug --no-build --logger trx
 
 echo "== install the GTK 4 runtime via Homebrew =="
 brew install gtk4 >/dev/null
@@ -42,6 +46,11 @@ pkg-config --modversion gtk4 2>/dev/null || true
 echo "== PresentationFramework tests (real GTK 4 widgets, thread-0 runner over Quartz) =="
 GTK_DLL="Gtk4.Forms.PresentationFramework.Tests/bin/Debug/net10.0/Gtk4.Forms.PresentationFramework.Tests.dll"
 # -verbose prints STARTING/FINISHED per test, so a native Quartz crash names the test it died on.
-DYLD_FALLBACK_LIBRARY_PATH="$GTK_PREFIX/lib:/usr/local/lib:/usr/lib:/lib" \
-	XF_GTK_MAC_RUNNER=1 XF_GTK_REQUIRE_NATIVE=1 \
-	dotnet exec "$GTK_DLL" -verbose
+# A function, not `env VAR=... cmd`: SIP strips DYLD_* when a protected binary such as /usr/bin/env
+# starts, so the variable would never reach dotnet.
+run_gtk_tests() {
+	DYLD_FALLBACK_LIBRARY_PATH="$GTK_PREFIX/lib:/usr/local/lib:/usr/lib:/lib" \
+		XF_GTK_MAC_RUNNER=1 XF_GTK_REQUIRE_NATIVE=1 \
+		dotnet exec "$GTK_DLL" -verbose
+}
+run_annotated "macOS PresentationFramework.Tests" run_gtk_tests
