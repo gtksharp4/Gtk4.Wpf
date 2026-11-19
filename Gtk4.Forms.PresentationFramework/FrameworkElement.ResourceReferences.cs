@@ -10,7 +10,7 @@ public abstract partial class FrameworkElement
 	// Each entry is (dp, key, subscribed-dicts). The list is null until the first
 	// SetResourceReference call, keeping the common case allocation-free.
 
-	record struct ResRef(DependencyProperty Dp, object Key);
+	record struct ResRef(DependencyProperty Dp, object Key, object? Contributor = null);
 
 	List<ResRef>? _resRefs;
 
@@ -53,7 +53,7 @@ public abstract partial class FrameworkElement
 		bool replaced = false;
 		for (int i = 0; i < _resRefs.Count; i++)
 		{
-			if (ReferenceEquals(_resRefs[i].Dp, dp))
+			if (ReferenceEquals(_resRefs[i].Dp, dp) && _resRefs[i].Contributor == null)
 			{
 				_resRefs[i] = new ResRef(dp, resourceKey);
 				replaced = true;
@@ -67,7 +67,7 @@ public abstract partial class FrameworkElement
 		SubscribeToResourceChain();
 
 		// Resolve and push the current value immediately.
-		ApplyResourceRef(dp, resourceKey);
+		ApplyResourceRef(dp, resourceKey, null);
 	}
 
 	/// <summary>
@@ -82,7 +82,7 @@ public abstract partial class FrameworkElement
 
 		for (int i = _resRefs.Count - 1; i >= 0; i--)
 		{
-			if (ReferenceEquals(_resRefs[i].Dp, dp))
+			if (ReferenceEquals(_resRefs[i].Dp, dp) && _resRefs[i].Contributor == null)
 			{
 				_resRefs.RemoveAt(i);
 				break;
@@ -97,8 +97,14 @@ public abstract partial class FrameworkElement
 
 	// ── Internal helpers ─────────────────────────────────────────────────────────
 
-	void ApplyResourceRef(DependencyProperty dp, object key)
+	void ApplyResourceRef(DependencyProperty dp, object key, object? contributor)
 	{
+		if (contributor != null)
+		{
+			if (TryFindResourceCore(key, out var tv)) SetTriggerValue(dp, contributor, tv);
+			else ClearTriggerValue(dp, contributor);
+			return;
+		}
 		if (TryFindResourceCore(key, out var value))
 			SetDynResValue(dp, value);
 		else
@@ -190,7 +196,7 @@ public abstract partial class FrameworkElement
 		foreach (var r in _resRefs)
 		{
 			if (clearAll || Equals(r.Key, key))
-				ApplyResourceRef(r.Dp, r.Key);
+				ApplyResourceRef(r.Dp, r.Key, r.Contributor);
 		}
 	}
 }

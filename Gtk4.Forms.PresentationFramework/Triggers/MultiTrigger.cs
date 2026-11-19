@@ -101,6 +101,7 @@ public class MultiTrigger : TriggerBase
 			if (_appliedDps == null) return;
 			var dps = _appliedDps;
 			_appliedDps = null;
+			_trigger.Setters.UnapplyTriggerLayer(_target, this);
 			_target.ClearTriggerValues(dps, this);
 			if (runActions)
 			{
