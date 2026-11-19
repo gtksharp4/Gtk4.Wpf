@@ -22,7 +22,7 @@ public partial class ComboBox
 		UpdateTextFromSelection();
 	}
 
-	/// <summary>The selection follows its item; a pending index (set before the items) is applied once they exist.</summary>
+	/// <summary>The selection follows its item; an index set before the items stays pending until they exist.</summary>
 	void ReconcileSelection(object? prevItem, int prevIdx)
 	{
 		int newIdx;
@@ -49,7 +49,7 @@ public partial class ComboBox
 			SelectionChanged?.Invoke(this, new SelectionChangedEventArgs(this, prevItem, newItem));
 	}
 
-	/// <summary>Brings SelectedItem in line with an in-range SelectedIndex (no GTK notify fires on a fresh model).</summary>
+	/// <summary>Brings SelectedItem in line with an in-range SelectedIndex (a fresh model fires no GTK notify).</summary>
 	void SyncSelectedItemToIndex()
 	{
 		var idx = SelectedIndex;

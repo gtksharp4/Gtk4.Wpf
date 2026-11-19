@@ -117,7 +117,8 @@ namespace Gtk4.Forms.MarkupCompiler
 				? " { HandledEventsToo = true }" : string.Empty;
 			w.Line($"{setters}.Add(new System.Windows.EventSetter({ownerFq}.{ev}Event, " +
 				$"System.Delegate.CreateDelegate({ownerFq}.{ev}Event.HandlerType, this, " +
-				$"typeof({_classFqName}).GetMethod(\"{EscapeString(handler)}\", System.Reflection.BindingFlags.Instance | " +
+				$"typeof({_classFqName}).GetMethod(\"{EscapeString(handler)}\", " +
+				$"System.Reflection.BindingFlags.Instance | " +
 				$"System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic))){init});");
 		}
 	}

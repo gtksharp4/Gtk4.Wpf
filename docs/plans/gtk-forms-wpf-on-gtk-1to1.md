@@ -1342,8 +1342,14 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   application; throws like `FindResource`). **CI-2 (Medium)** `EventSetter` handler lookup used `GetType().GetMethod`, which
   never finds a private base-class method once the x:Class is subclassed → `typeof(<x:Class>).GetMethod`.
   Rejected in triage: none.
-  **Round 40 totals: 3607 tests** (182 WindowsBase + 3099 PresentationFramework + 311 MarkupCompiler +
+  **Round 40 totals before follow-up: 3607 tests** (182 WindowsBase + 3099 PresentationFramework + 311 MarkupCompiler +
   15 ProjectConverter), all pass; warning-clean across all TFMs.
+- **Round 40 follow-up — DONE.** `SelectedItem = null` (or an item not in `Items`) now sets `SelectedIndex` to -1, so a
+  later `Items` edit no longer resurrects the old index as a pending one. A realized box given an out-of-range
+  `SelectedIndex` clears `SelectedItem` like the headless path. Long lines wrapped. The `StaticResourceScope` and
+  `EventSetter` runtime tests exercise the helper and reflection lookup directly, not generated output; only the
+  MarkupCompiler emission tests guard the generator change (there is no compile-and-run harness).
+  **Totals: 3611 tests** (182 + 3103 + 311 + 15), all pass.
 - **Carry-over (Round 40)**: `Style.Resources` is not emitted, so setter `StaticResource` does not probe a Style's own
   dictionary; a ComboBox with `SelectedIndex` -1 over a non-empty model still shows an item (GTK limitation); out-of-range
   pending `SelectedIndex` is kept as-is until items arrive (WPF coerces); `gf39/xaml-content-model` still to be reviewed and

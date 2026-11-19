@@ -25,7 +25,8 @@ public class StaticResourceScopeTests : WpfGtkTestBase, IDisposable
 		grid.Resources["K"] = Red;
 		var border = new Border();
 		var style = new Style(typeof(Border));
-		style.Setters.Add(new Setter { PropertyName = "Background", Value = StaticResourceScope.Find("K", root, border, grid) });
+		var value = StaticResourceScope.Find("K", root, border, grid);
+		style.Setters.Add(new Setter { PropertyName = "Background", Value = value });
 		border.Style = style;
 		grid.Children.Add(border);
 		root.Content = grid;
@@ -93,6 +94,7 @@ public class StaticResourceScopeTests : WpfGtkTestBase, IDisposable
 		RoutedEventHost.RaiseEvent(derived,
 			new MouseButtonEventArgs(UIElement.MouseDownEvent, new Point(0, 0), MouseButton.Left));
 		Assert.Equal(1, derived.Downs);
-		Assert.Null(typeof(Derived).GetMethod("OnDown", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
+		const BindingFlags all = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+		Assert.Null(typeof(Derived).GetMethod("OnDown", all));
 	});
 }

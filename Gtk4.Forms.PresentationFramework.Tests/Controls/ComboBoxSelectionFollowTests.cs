@@ -143,4 +143,33 @@ public class ComboBoxSelectionFollowTests : WpfGtkTestBase
 		Assert.Equal(2, cb.SelectedIndex);
 		Assert.Empty(log);
 	});
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void Cleared_SelectedItem_is_not_resurrected_by_items_edit(bool realized) => Run(() =>
+	{
+		var cb = Abc(1);
+		if (realized) _ = cb.Widget;
+		cb.SelectedItem = null;
+		var log = Track(cb);
+		cb.Items.Add("D");
+		Assert.Equal(-1, cb.SelectedIndex);
+		Assert.Null(cb.SelectedItem);
+		Assert.Empty(log);
+	});
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void Out_of_range_SelectedIndex_clears_item_like_headless(bool realized) => Run(() =>
+	{
+		var cb = Abc(1);
+		if (realized) _ = cb.Widget;
+		cb.SelectedIndex = 7;
+		Assert.Null(cb.SelectedItem);
+		Assert.Equal(-1, cb.SelectedIndex);
+		cb.Items.Add("D");
+		Assert.Null(cb.SelectedItem);
+	});
 }

@@ -40,7 +40,8 @@ public partial class ComboBox : ItemsControl
 		if (cb._updating) return;
 		if (cb._dropDown != null)
 		{
-			if (idx < 0) cb.SetValue(SelectedItemProperty, null);
+			if (idx < 0 || (idx >= cb.Items.Count && cb.Items.Count > 0))
+				cb.SetValue(SelectedItemProperty, null);
 			else cb.SyncSelectedItemToIndex();
 		}
 		else
@@ -69,7 +70,7 @@ public partial class ComboBox : ItemsControl
 	{
 		var cb = (ComboBox)d;
 		var idx = e.NewValue == null ? -1 : cb.Items.IndexOf(e.NewValue);
-		if (idx >= 0 && cb.SelectedIndex != idx)
+		if (cb.SelectedIndex != idx)
 			cb.SetValue(SelectedIndexProperty, idx);
 
 		// Fire SelectionChanged when SelectedItem is set directly (not from GTK notification).

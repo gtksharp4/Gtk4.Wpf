@@ -29,7 +29,8 @@ public class ComboBoxReworkTests : WpfGtkTestBase
 		Assert.False(new TabControl().IsTextSearchEnabled);
 		Assert.True(new ComboBox().IsTextSearchEnabled);
 		Assert.IsType<FrameworkPropertyMetadata>(ItemsControl.IsTextSearchEnabledProperty.GetMetadata(typeof(ListBox)));
-		Assert.IsType<FrameworkPropertyMetadata>(ItemsControl.IsTextSearchCaseSensitiveProperty.GetMetadata(typeof(ItemsControl)));
+		Assert.IsType<FrameworkPropertyMetadata>(
+			ItemsControl.IsTextSearchCaseSensitiveProperty.GetMetadata(typeof(ItemsControl)));
 	}
 
 	[Fact]
