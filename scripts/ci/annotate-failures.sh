@@ -47,6 +47,8 @@ run_annotated() {
 	rc=${PIPESTATUS[0]}
 	set -e
 	if [ "$rc" -ne 0 ]; then
+		# Drop ANSI colour codes so annotation titles and messages stay readable.
+		perl -pi -e 's/\e\[[0-9;]*m//g' "$log"
 		_annotate_failures "$label" "$log" "$rc"
 	fi
 	rm -f "$log"

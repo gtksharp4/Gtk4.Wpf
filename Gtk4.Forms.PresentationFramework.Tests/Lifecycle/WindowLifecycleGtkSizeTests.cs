@@ -29,17 +29,20 @@ public class WindowLifecycleGtkSizeTests : WpfGtkTestBase
 		var (win, child) = ShowWindow("LifecycleBorderBox");
 		try
 		{
-			Assert.True(GtkPump.Until(() => child.ActualWidth > 0 && win.ActualWidth > 0));
+			GtkState.Require(() => child.ActualWidth > 0 && win.ActualWidth > 0, "non-zero ActualWidth", win, child);
 			GtkPump.For(100);
 
-			Assert.True(child.Widget.ComputeBounds(child.Widget, out var bounds));
+			string State() => GtkState.Describe(win, child);
+			if (!child.Widget.ComputeBounds(child.Widget, out var bounds))
+				Assert.Fail("ComputeBounds failed. " + State());
 			Assert.Equal(bounds.Width, child.ActualWidth);
 			Assert.Equal(bounds.Height, child.ActualHeight);
 			// A themed Gtk.Button has CSS padding + border: gtk_widget_get_width (the content box)
 			// is narrower than what is painted, and WPF's ActualWidth includes the element's border.
-			Assert.True(child.ActualWidth > child.Widget.Width,
-				$"ActualWidth {child.ActualWidth} vs content-box width {child.Widget.Width}");
-			Assert.True(child.ActualHeight > child.Widget.Height);
+			if (child.ActualWidth <= child.Widget.Width)
+				Assert.Fail($"ActualWidth {child.ActualWidth} <= content-box width {child.Widget.Width}. {State()}");
+			if (child.ActualHeight <= child.Widget.Height)
+				Assert.Fail($"ActualHeight {child.ActualHeight} <= content-box height {child.Widget.Height}. {State()}");
 		}
 		finally { win.Close(); }
 	});
@@ -51,7 +54,7 @@ public class WindowLifecycleGtkSizeTests : WpfGtkTestBase
 		var (win, child) = ShowWindow("LifecycleUpdateLayout");
 		try
 		{
-			Assert.True(GtkPump.Until(() => child.ActualWidth > 0 && win.ActualWidth > 0));
+			GtkState.Require(() => child.ActualWidth > 0 && win.ActualWidth > 0, "non-zero ActualWidth", win, child);
 			GtkPump.For(100);
 			int changes = 0;
 			win.SizeChanged += (_, _) => changes++;
@@ -100,7 +103,7 @@ public class WindowLifecycleGtkSizeTests : WpfGtkTestBase
 		win.Show();
 		try
 		{
-			Assert.True(GtkPump.Until(() => win.IsLoaded));
+			GtkState.Require(() => win.IsLoaded, "window Loaded", win);
 			GtkPump.For(150);
 			Assert.Equal(0, rendered);
 		}

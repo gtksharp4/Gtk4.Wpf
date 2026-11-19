@@ -35,7 +35,8 @@ public class WindowLifecycleGtkSmokeTests : WpfGtkTestBase
 		var (win, _, log) = ShowWindow("LifecycleOrder");
 		try
 		{
-			Assert.True(GtkPump.Until(() => log.Contains("ContentRendered")), string.Join(",", log));
+			GtkState.Require(() => log.Contains("ContentRendered"),
+				() => "ContentRendered (log: " + string.Join(",", log) + ")", win);
 			GtkPump.For(100);
 
 			log.RemoveAll(s => s == "Activated"); // WM-dependent; ordering checked separately
@@ -67,7 +68,7 @@ public class WindowLifecycleGtkSmokeTests : WpfGtkTestBase
 		var (win, _, _) = ShowWindow("LifecycleResize");
 		try
 		{
-			Assert.True(GtkPump.Until(() => win.ActualWidth > 0));
+			GtkState.Require(() => win.ActualWidth > 0, "window ActualWidth > 0", win);
 			GtkPump.For(100);
 			var events = new List<SizeChangedEventArgs>();
 			win.SizeChanged += (_, e) => events.Add(e);
@@ -90,7 +91,7 @@ public class WindowLifecycleGtkSmokeTests : WpfGtkTestBase
 	{
 		using var gtk = new GtkDispatcherScope();
 		var (win, child, log) = ShowWindow("LifecycleClose");
-		Assert.True(GtkPump.Until(() => win.IsLoaded && child.IsLoaded));
+		GtkState.Require(() => win.IsLoaded && child.IsLoaded, "window and child Loaded", win, child);
 		log.Clear();
 		win.Closed += (_, _) => log.Add("Closed");
 		win.Unloaded += (_, _) => log.Add("Unloaded:window");
@@ -111,7 +112,7 @@ public class WindowLifecycleGtkSmokeTests : WpfGtkTestBase
 		var (win, child, _) = ShowWindow("LifecycleHide");
 		try
 		{
-			Assert.True(GtkPump.Until(() => child.IsLoaded));
+			GtkState.Require(() => child.IsLoaded, "child Loaded", win, child);
 			int unloaded = 0, loaded = 0;
 			child.Unloaded += (_, _) => unloaded++;
 			child.Loaded += (_, _) => loaded++;
@@ -123,7 +124,8 @@ public class WindowLifecycleGtkSmokeTests : WpfGtkTestBase
 
 			Assert.Equal(0, unloaded);
 			Assert.Equal(0, loaded);
-			Assert.True(child.IsLoaded);
+			if (!child.IsLoaded)
+				Assert.Fail("child no longer loaded after hide/show. " + GtkState.Describe(win, child));
 		}
 		finally { win.Close(); }
 	});
@@ -135,7 +137,7 @@ public class WindowLifecycleGtkSmokeTests : WpfGtkTestBase
 		var (win, child, _) = ShowWindow("LifecycleSwap");
 		try
 		{
-			Assert.True(GtkPump.Until(() => child.IsLoaded));
+			GtkState.Require(() => child.IsLoaded, "child Loaded", win, child);
 			var next = new Border();
 			int oldUnloaded = 0;
 			child.Unloaded += (_, _) => oldUnloaded++;
@@ -143,7 +145,8 @@ public class WindowLifecycleGtkSmokeTests : WpfGtkTestBase
 			win.Content = next;
 			Assert.False(next.IsLoaded); // deferred at DispatcherPriority.Loaded
 
-			Assert.True(GtkPump.Until(() => next.IsLoaded && oldUnloaded == 1));
+			GtkState.Require(() => next.IsLoaded && oldUnloaded == 1,
+				() => $"new content Loaded and old Unloaded (oldUnloaded={oldUnloaded})", win, next);
 		}
 		finally { win.Close(); }
 	});
@@ -159,7 +162,7 @@ public class WindowLifecycleGtkSmokeTests : WpfGtkTestBase
 		win.Show();
 		try
 		{
-			Assert.True(GtkPump.Until(() => win.IsLoaded));
+			GtkState.Require(() => win.IsLoaded, "window Loaded", win);
 			Assert.Equal(new[] { "Initialized", "Loaded" }, log);
 			Assert.True(win.IsInitialized);
 		}
