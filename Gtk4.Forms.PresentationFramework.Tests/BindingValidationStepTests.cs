@@ -166,7 +166,7 @@ public class BindingValidationStepTests : BindingWriteBackTestBase
 	});
 
 	[Fact]
-	public void One_error_per_failing_rule_in_a_step() => Run(() =>
+	public void Only_the_first_failing_rule_in_a_step_reports() => Run(() =>
 	{
 		var log = new List<string>();
 		var tb = Bind(new Vm(),
@@ -174,7 +174,8 @@ public class BindingValidationStepTests : BindingWriteBackTestBase
 			new StepRule(ValidationStep.RawProposedValue, log) { Fail = true });
 		tb.Text = "7";
 		MoveFocusAway(tb);
-		Assert.Equal(2, Validation.GetErrors(tb).Count);
+		Assert.Equal(1, Validation.GetErrors(tb).Count);
+		Assert.Equal(1, log.Count);
 	});
 
 	[Fact]

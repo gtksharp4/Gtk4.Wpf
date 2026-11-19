@@ -34,10 +34,10 @@ internal static partial class BindingEngine
 
 			if (!WriteSource(target, source, sourceValue)) return;
 
-			AttachNotifyErrors(target, source);
+			AttachNotifyErrors(target, source, ResolvePath(source, _binding.Path));
 			RefreshNotifyErrors();
 			bool ok = RunRules(ValidationStep.UpdatedValue, _expr, false, errors);
-			ok &= CollectDataErrors(source, errors);
+			if (ok) ok = CollectDataErrors(source, errors);
 			if (ok) RunRules(ValidationStep.CommittedValue, _expr, false, errors);
 			SetStepErrors(target, errors);
 		}
@@ -91,9 +91,9 @@ internal static partial class BindingEngine
 		}
 
 		/// <summary>Runs ValidatesOnTargetUpdated rules (and IDataErrorInfo) after a source-to-target transfer.</summary>
-		void RunTargetUpdatedValidation(FrameworkElement target, object? source)
+		void RunTargetUpdatedValidation(FrameworkElement target, object? source, object? resolved)
 		{
-			AttachNotifyErrors(target, source);
+			AttachNotifyErrors(target, source, resolved);
 			RefreshNotifyErrors();
 			bool rules = _binding.ValidatesOnDataErrors;
 			foreach (var r in _binding.ValidationRules)
@@ -107,9 +107,9 @@ internal static partial class BindingEngine
 			var errors = new List<ValidationError>();
 			bool ok = RunRules(ValidationStep.RawProposedValue, target.GetValue(_dp), true, errors)
 			          && RunRules(ValidationStep.ConvertedProposedValue,
-				          ResolvePath(source, _binding.Path), true, errors);
+				          resolved, true, errors);
 			if (ok) ok = RunRules(ValidationStep.UpdatedValue, _expr, true, errors);
-			ok &= CollectDataErrors(source, errors);
+			if (ok) ok = CollectDataErrors(source, errors);
 			if (ok) RunRules(ValidationStep.CommittedValue, _expr, true, errors);
 			SetStepErrors(target, errors);
 		}

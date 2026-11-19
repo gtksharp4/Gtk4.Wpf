@@ -1,3 +1,5 @@
+using System;
+using System.Globalization;
 using System.Xml.Linq;
 
 namespace Gtk4.Forms.MarkupCompiler
@@ -21,21 +23,47 @@ namespace Gtk4.Forms.MarkupCompiler
 
 			foreach (XElement prop in bindEl.Elements())
 			{
-				if (prop.Name.LocalName != "Binding.ValidationRules") continue;
+				if (prop.Name.LocalName == "Binding.Converter")
+				{
+					EmitBindingConverterElement(w, prop, bVar, ref counter);
+					continue;
+				}
+				if (prop.Name.LocalName != "Binding.ValidationRules")
+					throw new XamlCodeGeneratorException(
+						"Unsupported Binding property element <" + prop.Name.LocalName + ">.");
 				foreach (XElement rule in prop.Elements())
 				{
 					string ruleType = ResolveType(rule) ?? ClrNamespaceType(rule);
-					if (ruleType == null) continue;
+					if (ruleType == null)
+						throw new XamlCodeGeneratorException(
+							"Cannot resolve validation rule type <" + rule.Name.LocalName + ">.");
 					string ruleVar = "__vr" + counter++;
 					w.Line("var " + ruleVar + " = new " + ruleType + "();");
 					foreach (XAttribute ra in rule.Attributes())
 					{
 						if (ra.IsNamespaceDeclaration) continue;
 						w.Line(ruleVar + "." + ra.Name.LocalName + " = "
-							+ ClrValueExpression(ra.Name.LocalName, ra.Value) + ";");
+							+ RuleAttrExpression(ruleType, ra.Name.LocalName, ra.Value) + ";");
 					}
 					w.Line(bVar + ".ValidationRules.Add(" + ruleVar + ");");
 				}
+			}
+		}
+
+		// <Binding.Converter> with a single inline converter object.
+		void EmitBindingConverterElement(IndentedWriter w, XElement prop, string bVar, ref int counter)
+		{
+			XNamespace xNs = _xNs ?? XNamespace.Get(WpfXmlnsMap.XNs2006);
+			foreach (XElement child in prop.Elements())
+			{
+				string fq = ResolveType(child) ?? ClrNamespaceType(child);
+				if (fq == null)
+					throw new XamlCodeGeneratorException(
+						"Cannot resolve converter type <" + child.Name.LocalName + ">.");
+				string cVar = "__cv" + counter++;
+				EmitElement(w, child, xNs, cVar, fq, ref counter);
+				w.Line(bVar + ".Converter = (System.Windows.Data.IValueConverter)" + cVar + ";");
+				return;
 			}
 		}
 

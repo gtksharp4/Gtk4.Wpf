@@ -35,6 +35,7 @@ internal static partial class MultiBindingEngine
 			}
 
 			object? result;
+			bool formatted = false;
 			if (anyUnresolved)
 			{
 				result = _mb.FallbackValue == DependencyProperty.UnsetValue
@@ -54,8 +55,14 @@ internal static partial class MultiBindingEngine
 			}
 			else
 			{
-				// No converter — join as string.
-				result = string.Join(string.Empty, values);
+				// No converter: StringFormat formats the values array; otherwise join as string.
+				if (_mb.StringFormat != null)
+				{
+					result = string.Format(BindingEngine.ResolveCulture(_mb.ConverterCulture),
+						BindingEngine.GetEffectiveStringFormat(_mb.StringFormat), values);
+					formatted = true;
+				}
+				else result = string.Join(string.Empty, values);
 			}
 
 			// Apply TargetNullValue.
@@ -63,8 +70,9 @@ internal static partial class MultiBindingEngine
 				result = _mb.TargetNullValue;
 
 			// Apply StringFormat.
-			result = BindingEngine.ApplyStringFormat(
-				_mb.StringFormat, result, BindingEngine.ResolveCulture(_mb.ConverterCulture));
+			if (!formatted)
+				result = BindingEngine.ApplyStringFormat(
+					_mb.StringFormat, result, BindingEngine.ResolveCulture(_mb.ConverterCulture));
 
 			BindingEngine.SetTargetSafe(target, _dp, result, _mb.FallbackValue);
 		}

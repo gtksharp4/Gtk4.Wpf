@@ -1247,6 +1247,70 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   the `NotifyActivation` seam); `LostFocus` tests drive managed `Focus()`, not the native focus controller;
   registered defaults are only run through `ValidateValueCallback` (no type check); `Binding` has no
   `ConverterCulture` (conversions use the current culture); metadata `IsAnimationProhibited` is not merged.
+- **Round 39 Track B — Style/Trigger Setter values (DONE).** `Setter.Value` objects (`<Setter.Value>` elements, inline
+  `ControlTemplate`/`DataTemplate`/`MultiBinding`), markup-extension values (`DynamicResource` live, `StaticResource`
+  resolved once, `Binding`/`TemplateBinding`, `x:Static`/`x:Null`), `Setter(dp, value[, targetName])` ctors, and
+  `EventSetter` (handler added at apply, removed on unapply). Gaps on GTK: `Setter.TargetName` is store-only;
+  EventSetter handlers run in registration order (WPF runs them after instance handlers); no control hosts a template
+  root as its widget, so the `Template` setter reaches `Button.Template` and the tree is built, but the widget is
+  unchanged. **+41 tests**.
+- **Round 39 Track D — Binding markup + validation pipeline (DONE).** `ConverterParameter`/`ConverterCulture`/`Source`/
+  `ValidatesOn*`/`NotifyOnValidationError` in XAML and element-syntax `<Binding>` with `ValidationRules`;
+  `ValidationStep` (Raw/Converted/Updated/Committed) + `ValidatesOnTargetUpdated`; `INotifyDataErrorInfo`
+  (`NotifyDataErrorValidationRule`, `ValidatesOnNotifyDataErrors`); `ConverterCulture` on `Binding`/`MultiBinding`;
+  `SetValue(dp, UnsetValue)` clears the local value. No GTK work. Gaps: CommittedValue runs right after UpdatedValue
+  (no BindingGroup/IEditableObject cycle); culture falls back to en-US (no `FrameworkElement.Language`);
+  `MultiBinding` has no validation pipeline; the INDEI subscription is re-resolved on push/write-back, not on every
+  intermediate path-object change. **+52 tests**.
+- **Round 39 review (Opus) + fixes — DONE.** Track B (SHIP-WITH-FIXES): **B-F1 (High)** the compiler emitted
+  `new RoutedEventHandler(this.H)` for every `<EventSetter>`, so `MouseDown`/`KeyDown`/`MouseDoubleClick` handlers
+  failed with CS0123 → `Delegate.CreateDelegate(Owner.XEvent.HandlerType, this, "H")` (binds non-public handlers as
+  WPF); runtime test with a private `MouseButtonEventHandler`-shaped handler. **B-F2 (High)** a style `DynamicResource`
+  wrote the dynamic-resource layer, which outranks the style layer: a base-style link beat a derived plain value, it
+  replaced a user's own `SetResourceReference`, and `Unapply` deleted it → style-layer contributor
+  (`StyleLayerContributor`, `SetStyleResourceReference`/`DropStyleResourceReference`, `ClearStyleValue`); a derived
+  style's plain value drops the base link; only `Layer.Local` still uses `SetResourceReference`. **B-F3** trigger
+  setter `StaticResource` resolved on `this` instead of the style's owner element → receiver threaded through the
+  trigger emitters. **B-F4** style/trigger `Binding` values are local values (engine limitation, not GTK): a trigger
+  setter never shows over a style binding, `ValueSource` reports Local, a trigger binding is ignored when the DP
+  already has one → documented, pinned by `Trigger_setter_does_not_show_over_style_Binding_known_gap`; layer-targeted
+  `BindingExpression` is a backlog item. **B-F5** `Setter.Value = UnsetValue` threw only at apply, after earlier setters
+  applied → throws at assignment; `Setter.Property`/ctors validate (`ArgumentNullException("property")`, read-only DP
+  `ArgumentException`); the NameProperty check is skipped (no `NameProperty` DP here). **B-F6** `EventSetter` ctor
+  uses WPF parameter names, validates the handler type against `RoutedEvent.HandlerType`, and a trigger containing an
+  `EventSetter` throws `InvalidOperationException` on attach. **B-F7** nested `Setter.Value` emission restarted from a
+  stale counter (duplicate `__svN`/`__eN`) → counter passed by `ref`. **B-F9** `FrameworkElement.ResourceChain.cs`,
+  `MultiDataTrigger.State.cs`, `Style.Unapply.cs` extracted. Track D (SHIP-WITH-FIXES): **D-F1 (High)** `Publish`
+  replaced the element's whole error collection, so a sibling INDEI binding wiped other bindings' errors and swapped
+  the `Validation.Errors` instance on every push → per-element, per-binding error state merged into one stable
+  collection (`Validation.SetErrorsFor`); unchanged error sets raise nothing. **D-F2** `ClearBinding` left INDEI/step
+  errors on the element → `Deactivate` clears them. **D-F3** rule attributes went through the type-blind
+  `ClrValueExpression` (`ValidationStep="UpdatedValue"` → string, CS0029) → `RuleAttrExpression` (enum/string/
+  decimal/float/double/bool; `ValidationStep` special-cased); the built-in rule types are in `WpfXmlnsMap`. **D-F4**
+  rules stop at the first failure and `IDataErrorInfo` runs only when nothing failed (WPF `Validate`).
+  **D-F5** binding arguments: `{x:Null}`, `{x:Type}`, leading `{}` escape; `{DynamicResource}` and unknown
+  extensions are build errors. **D-F6** `<Binding.Converter>` inline object; unresolved rule types and unsupported
+  `Binding.*` property elements are build errors (`XamlCodeGeneratorException`). **D-F7** the push reuses the raw value
+  already resolved (no second path walk). **D-F8** `StringFormat` without braces is `{0:fmt}` (`N2` → `1,234.50`);
+  `MultiBinding` without a converter formats the values array (`"{0} {1}"`). The old
+  `StringFormat_without_placeholder_prepends_value` test pinned the non-WPF `"fmt{0}"` shortcut and was corrected.
+  Rejected in triage: **B-F8** (default/theme style never unapplied when an explicit Style is set): wrong for WPF, where
+  the theme style stays a separate lower-precedence layer whose setters/handlers/triggers keep applying; unapplying it
+  would drop theme Templates and defaults. The real harm (a default-style `DynamicResource` beating the explicit
+  style) was the B-F2 symptom and is gone. Separating theme-style from Style precedence is a larger pre-existing
+  design item. **D-F9** (house-rule size of `XamlCodeGenerator.cs` 1180 / `.Binding.cs` 446 lines): not a defect of the
+  round; new code was in new partials. Scheduled with the backlog split below.
+  **Round 39 totals: 3509 tests** (182 WindowsBase + 3014 PresentationFramework + 298 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean across all TFMs. `gf39/xaml-content-model` and
+  `gf39/combobox-itemscontrol` were NOT merged in this round (not part of the merge set that was reviewed); their
+  branches and worktrees are kept untouched for a later round.
+- **Carry-over (Round 39)**: backlog: layer-targeted `BindingExpression` (style/trigger bindings as style/trigger
+  layer values, B-F4); split `XamlCodeGenerator.cs` and `XamlCodeGenerator.Binding.cs` (house line limit); separate
+  theme-style and Style precedence layers (B-F8); `Setter.TargetName` store-only; EventSetter handlers run in
+  registration order, not after instance handlers; `<ControlTemplate.Resources>` is not emitted by the compiler;
+  element-level trigger `StaticResource` now resolves on the owning element variable (verify behaviour while that
+  element is not yet parented at emit time); CommittedValue has no BindingGroup cycle; `MultiBinding` has no validation; INDEI
+  subscription is not refreshed on intermediate path-object changes.
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a

@@ -6,7 +6,7 @@ namespace System.Windows.Controls;
 /// <summary>
 /// Provides methods and attached properties that support data validation.
 /// </summary>
-public static class Validation
+public static partial class Validation
 {
 	// ── Errors (read-only attached DP) ───────────────────────────────────────
 
@@ -93,35 +93,7 @@ public static class Validation
 		if (element is UIElement uie) uie.RemoveHandler(ErrorEvent, handler);
 	}
 
-	// ── Internal mutation helpers ─────────────────────────────────────────────
 
-	/// <summary>
-	/// Sets or clears validation errors on <paramref name="element"/>.
-	/// When <paramref name="notify"/> is <c>true</c>, raises the <see cref="ErrorEvent"/>.
-	/// </summary>
-	internal static void SetErrors(
-		DependencyObject element,
-		IEnumerable<ValidationError> errors,
-		bool notify)
-	{
-		var list = new ObservableCollection<ValidationError>(errors);
-		var ro = new ReadOnlyObservableCollection<ValidationError>(list);
-		element.SetValue(_errorsKey, ro);
-		element.SetValue(_hasErrorKey, list.Count > 0);
-
-		if (notify && element is UIElement uie && list.Count > 0)
-		{
-			var args = new ValidationErrorEventArgs(list[0], ValidationErrorEventAction.Added);
-			args.Source = uie;
-			uie.RaiseEvent(args);
-		}
-	}
-
-	/// <summary>Clears all validation errors on <paramref name="element"/>.</summary>
-	internal static void ClearErrors(DependencyObject element, bool notify)
-	{
-		SetErrors(element, Array.Empty<ValidationError>(), notify);
-	}
 }
 
 /// <summary>Action that caused a <see cref="Validation.ErrorEvent"/>.</summary>

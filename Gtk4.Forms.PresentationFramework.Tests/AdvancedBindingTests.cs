@@ -274,7 +274,7 @@ public class AdvancedBindingTests
 	}
 
 	[Fact]
-	public void StringFormat_without_placeholder_prepends_value()
+	public void StringFormat_without_braces_is_a_format_item_body()
 	{
 		var vm = new ViewModel { First = "World" };
 		var tb = new WpfTextBlock();
@@ -282,8 +282,8 @@ public class AdvancedBindingTests
 		tb.SetBinding(WpfTextBlock.TextProperty,
 			new Binding("First") { StringFormat = "Greeting: " });
 
-		// WPF shortcut: no {0} → appended as "Greeting: {0}"
-		Assert.Equal("Greeting: World", tb.Text);
+		// WPF GetEffectiveStringFormat: no brace → "{0:Greeting: }"; a string ignores the custom format.
+		Assert.Equal("World", tb.Text);
 	}
 
 	// ── FallbackValue ─────────────────────────────────────────────────────

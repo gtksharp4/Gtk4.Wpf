@@ -51,16 +51,32 @@ namespace Gtk4.Forms.MarkupCompiler
 		}
 
 		/// <summary>
-		/// C# expression for a binding argument value: <c>{x:Static}</c> member, <c>{StaticResource}</c>
-		/// lookup, or a string literal.
+		/// C# expression for a binding argument value: <c>{x:Null}</c>, <c>{x:Type}</c>, <c>{x:Static}</c>
+		/// member, <c>{StaticResource}</c> lookup, or a string literal (a leading <c>{}</c> escape is stripped).
 		/// </summary>
+		/// <exception cref="XamlCodeGeneratorException">
+		/// <c>{DynamicResource}</c> (not valid on a Binding) or any other unsupported markup extension.
+		/// </exception>
 		static string BindingValueExpr(string raw)
 		{
 			string t = raw.Trim();
-			if (IsXStatic(t, out string staticExpr, _bindingPrefixMap)) return staticExpr;
-			if (IsStaticOrDynamicResource(t, out string key))
-				return "this.FindResource(\"" + EscapeString(key) + "\")";
-			return "\"" + EscapeString(Unquote(t)) + "\"";
+			bool quoted = t.Length >= 2 && t[0] == '\'' && t[t.Length - 1] == '\'';
+			if (!quoted)
+			{
+				if (IsXNull(t)) return "null";
+				if (IsXType(t, out string typeofExpr, _bindingPrefixMap)) return typeofExpr;
+				if (IsXStatic(t, out string staticExpr, _bindingPrefixMap)) return staticExpr;
+				if (t.StartsWith("{DynamicResource", StringComparison.Ordinal))
+					throw new XamlCodeGeneratorException(
+						"{DynamicResource} is not valid on a Binding argument: " + t);
+				if (IsStaticOrDynamicResource(t, out string key))
+					return "this.FindResource(\"" + EscapeString(key) + "\")";
+				if (t.StartsWith("{", StringComparison.Ordinal) && !t.StartsWith("{}", StringComparison.Ordinal))
+					throw new XamlCodeGeneratorException("Unsupported markup extension on a Binding argument: " + t);
+			}
+			string literal = Unquote(t);
+			if (literal.StartsWith("{}", StringComparison.Ordinal)) literal = literal.Substring(2);
+			return "\"" + EscapeString(literal) + "\"";
 		}
 
 		static string Unquote(string s)

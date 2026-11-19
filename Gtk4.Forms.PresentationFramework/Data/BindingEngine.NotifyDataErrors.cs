@@ -49,14 +49,14 @@ internal static partial class BindingEngine
 		/// Subscribes to the leaf owner (property errors) and, when the bound value is itself
 		/// INotifyDataErrorInfo, to the value (entity errors). No-op while the objects are unchanged.
 		/// </summary>
-		void AttachNotifyErrors(FrameworkElement target, object? source)
+		void AttachNotifyErrors(FrameworkElement target, object? source, object? resolvedValue)
 		{
 			INotifyDataErrorInfo? owner = null, value = null;
 			string? prop = null;
 			if (_binding.ValidatesOnNotifyDataErrors && TryGetLeaf(source, _binding.Path, out var o, out prop))
 			{
 				owner = o as INotifyDataErrorInfo;
-				value = ResolvePath(source, _binding.Path) as INotifyDataErrorInfo;
+				value = resolvedValue as INotifyDataErrorInfo;
 			}
 			if (ReferenceEquals(owner, _ndOwner) && ReferenceEquals(value, _ndValue) && prop == _ndProp) return;
 			bool hadErrors = _notifyErrors.Count > 0;

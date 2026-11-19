@@ -26,8 +26,10 @@ internal static partial class BindingEngine
 		void PushToTarget(FrameworkElement target, object? source)
 		{
 			PushToTargetCore(target, source);
-			RunTargetUpdatedValidation(target, source);
+			RunTargetUpdatedValidation(target, source, _lastRaw);
 		}
+
+		object? _lastRaw;
 
 		void PushToTargetCore(FrameworkElement target, object? source)
 		{
@@ -38,6 +40,7 @@ internal static partial class BindingEngine
 				// either source is null (no DataContext, no explicit source), OR
 				// source is non-null but the path itself doesn't resolve.
 				var rawValue = ResolvePath(source, _binding.Path);
+				_lastRaw = rawValue;
 
 				bool pathUnresolvable = rawValue == null
 				                        && (source == null || PathIsUnresolvable(source));

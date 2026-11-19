@@ -67,7 +67,10 @@ internal static partial class BindingEngine
 	internal static object? ApplyStringFormat(string? fmt, object? value, CultureInfo culture)
 	{
 		if (fmt == null) return value;
-		string s = fmt.Contains("{0") ? fmt : fmt + "{0}";
-		return string.Format(culture, s, value);
+		return string.Format(culture, GetEffectiveStringFormat(fmt), value);
 	}
+
+	/// <summary>A format without braces ('N2', 'C') is a composite-format item body, as in WPF.</summary>
+	internal static string GetEffectiveStringFormat(string fmt) =>
+		fmt.IndexOf('{') < 0 ? "{0:" + fmt + "}" : fmt;
 }

@@ -18,13 +18,12 @@ internal static partial class BindingEngine
 
 		/// <summary>
 		/// Runs the rules registered for <paramref name="step"/>; failures are appended to
-		/// <paramref name="errors"/>. Returns <c>true</c> when all pass.
+		/// <paramref name="errors"/>, stopping at the first failure as WPF does. Returns <c>true</c> when all pass.
 		/// </summary>
 		bool RunRules(ValidationStep step, object? value, bool targetUpdate, List<ValidationError> errors)
 		{
 			if (_binding.ValidationRules.Count == 0) return true;
 			var culture = ResolveCulture(_binding.ConverterCulture);
-			bool ok = true;
 			foreach (var rule in _binding.ValidationRules)
 			{
 				if (rule.ValidationStep != step) continue;
@@ -34,14 +33,13 @@ internal static partial class BindingEngine
 				catch (Exception ex)
 				{
 					errors.Add(new ValidationError(rule, ex.Message, ex));
-					ok = false;
-					continue;
+					return false;
 				}
 				if (result.IsValid) continue;
 				errors.Add(new ValidationError(rule, result.ErrorContent));
-				ok = false;
+				return false;
 			}
-			return ok;
+			return true;
 		}
 
 		/// <summary>IDataErrorInfo of the leaf owner (property error, or entity error for an empty path).</summary>
@@ -69,7 +67,7 @@ internal static partial class BindingEngine
 			if (count == 0 && !_published && !HasValidation) return;
 			var all = new List<ValidationError>(_stepErrors);
 			all.AddRange(_notifyErrors);
-			Validation.SetErrors(target, all, _binding.NotifyOnValidationError);
+			Validation.SetErrorsFor(target, this, all, _binding.NotifyOnValidationError);
 			_published = count > 0;
 		}
 

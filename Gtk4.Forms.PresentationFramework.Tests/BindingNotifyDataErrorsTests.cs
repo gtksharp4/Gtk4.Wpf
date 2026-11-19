@@ -134,8 +134,12 @@ public class BindingNotifyDataErrorsTests : BindingWriteBackTestBase
 		var vm = new NdVm();
 		var tb = Bind(vm);
 		Assert.Equal(1, vm.Subscribers);
+		vm.SetErrors("Name", "bad");
+		Assert.True(Validation.GetHasError(tb));
 		BindingOperations.ClearBinding(tb, WpfTextBox.TextProperty);
 		Assert.Equal(0, vm.Subscribers);
+		Assert.False(Validation.GetHasError(tb));
+		Assert.Equal(0, Validation.GetErrors(tb).Count);
 	});
 
 	[Fact]

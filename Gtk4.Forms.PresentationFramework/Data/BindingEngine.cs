@@ -168,6 +168,10 @@ internal static partial class BindingEngine
 			DetachInpc();
 			UnsubscribeTargetChanges();
 			DetachNotifyErrors();
+			_stepErrors = new List<ValidationError>();
+			if (_targetRef.TryGetTarget(out var target))
+				Validation.SetErrorsFor(target, this, Array.Empty<ValidationError>(), _binding.NotifyOnValidationError);
+			_published = false;
 		}
 
 		internal object? GetResolvedSource(FrameworkElement target) => ResolveSource(target);
