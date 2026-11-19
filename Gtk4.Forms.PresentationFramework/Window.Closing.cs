@@ -99,7 +99,15 @@ public partial class Window
 			_closed = true;
 			Closed?.Invoke(this, EventArgs.Empty);
 			LifecycleBroadcaster.BroadcastUnloaded(this); // WPF: Unloaded follows Closed
+			_application?.OnWindowClosed(this);
 		}
+	}
+
+	/// <summary>Closes without the Closing veto; used by <see cref="Application.Shutdown(int)"/>.</summary>
+	internal void CloseForShutdown()
+	{
+		if (!_closed)
+			CloseCore(keepResult: true);
 	}
 
 	/// <summary>

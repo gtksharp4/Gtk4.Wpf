@@ -128,6 +128,43 @@ public class Dispatcher
 	public void BeginInvoke(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
 	{
 		if (action == null) throw new ArgumentNullException(nameof(action));
-		BeginInvokeAction(action);
+		BeginInvokeAction(() =>
+		{
+			try { action(); }
+			catch (Exception ex)
+			{
+				if (!RaiseUnhandledException(ex))
+					throw;
+			}
+		});
+	}
+
+	// ── Unhandled exceptions ─────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Raised when an exception escapes a callback posted through this dispatcher. A handler sets
+	/// <see cref="DispatcherUnhandledExceptionEventArgs.Handled"/> to keep the app running.
+	/// </summary>
+	public event DispatcherUnhandledExceptionEventHandler? UnhandledException;
+
+	// The Application's hook; runs after UnhandledException so handlers see the exception in WPF order.
+	internal event DispatcherUnhandledExceptionEventHandler? ApplicationUnhandledException;
+
+	// Marks an exception already reported so GLib's own exception hook does not raise it twice.
+	internal const string ReportedKey = "Gtk4.Forms.DispatcherReported";
+
+	/// <summary>
+	/// Raises <see cref="UnhandledException"/> and returns whether a handler set Handled.
+	/// An unhandled exception is tagged so the GLib fallback hook skips it.
+	/// </summary>
+	internal bool RaiseUnhandledException(Exception exception)
+	{
+		var args = new DispatcherUnhandledExceptionEventArgs(this, exception);
+		UnhandledException?.Invoke(this, args);
+		if (!args.Handled)
+			ApplicationUnhandledException?.Invoke(this, args);
+		if (!args.Handled)
+			exception.Data[ReportedKey] = true;
+		return args.Handled;
 	}
 }
