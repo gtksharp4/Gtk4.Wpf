@@ -15,6 +15,14 @@ internal static partial class BindingEngine
 		/// when the source is a <see cref="FrameworkElement"/> (not INPC) and the path is a single
 		/// segment naming one of its DPs, re-pushes the target whenever that DP changes — WPF
 		/// listens to DP sources the same way it listens to INPC sources.
+		/// <para>
+		/// <b>Gap vs WPF:</b> only <see cref="FrameworkElement"/> sources with a single-segment
+		/// path are watched (the hook reuses the FE-keyed <c>TargetChangeTracker</c>). A binding
+		/// whose source is any other <see cref="DependencyObject"/> (a Freezable, a non-FE
+		/// element, a DO held in DataContext), or whose DP sits behind a multi-segment path,
+		/// reads the value once and does not update live; WPF's <c>PropertyPathWorker</c>
+		/// listens on any DependencyObject source.
+		/// </para>
 		/// </summary>
 		void AttachDpSource(object? source)
 		{

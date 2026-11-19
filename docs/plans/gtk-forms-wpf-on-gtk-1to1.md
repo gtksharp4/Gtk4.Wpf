@@ -1071,6 +1071,63 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   15 ProjectConverter), all pass; warning-clean across all TFMs.
 - **Carry-over (Round 35)**: `RenderTargetBitmap` rasterises only `DrawingVisual` content (general live visuals
   render nothing); Pango `font_features` requires Pango ≥ 1.38 at runtime.
+- **Round 36 Track A — Element lifecycle + size events (DONE).** `FrameworkElement.Loaded`/`Unloaded` (Direct,
+  pre-order raise-once broadcast over logical + attached children, `IsLoaded`; deferred attach/detach at
+  `DispatcherPriority.Loaded` re-checks tree state), `Initialized`/`IsInitialized` + `ISupportInitialize`
+  (`BeginInit`/`EndInit` with WPF's exception messages, lazy fire on attach/before Loaded), read-only
+  `ActualWidth`/`ActualHeight` DPs + `SizeChanged` (`SizeChangedInfo`/`SizeChangedEventArgs`, pure
+  `SizeChangeMath` = `DoubleUtil.AreClose`), `Window.SourceInitialized` (GTK realize) / `ContentRendered`
+  (frame-clock `after-paint`); live GTK allocation fed into `RenderSize` from the toplevel frame-clock `layout`
+  signal (`GtkAllocationSync`). **+66 tests**.
+- **Round 36 Track B — Mouse input completeness (DONE).** `EventManager.RegisterClassHandler` (both overloads,
+  most-derived first, before instance handlers, `handledEventsToo`) + `GetRoutedEvents`/`GetRoutedEventsForOwner`;
+  tunnel no longer stops on Handled; button cracking (`(Preview)MouseLeft/RightButtonDown/Up`, Direct, via
+  UIElement class handlers), `(Preview)MouseWheel` (`Gtk.EventControllerScroll`, `RetVal` = Handled so
+  `ScrolledWindow` still scrolls), `IsMouseOver`/`IsMouseDirectlyOver` (`contains-pointer`/`is-pointer`),
+  `CaptureMouse`/`Mouse.Capture`/`CaptureMode`/`IsMouseCaptured`/`Got`/`LostMouseCapture` (managed re-targeting),
+  `Control.(Preview)MouseDoubleClick`; `GestureClick.Button = 0`. **+64 tests**.
+- **Round 36 review (Opus) + fixes — DONE.** Track A: **R36A-1 (High)** live `ActualWidth` was GTK's *content*
+  box (`gtk_widget_get_width`, CSS border+padding removed — a themed Button read ~22px narrow) → now the border
+  box via `gtk_widget_compute_bounds` (`GtkAllocationSync.BorderBoxSize`); the tautological real-GTK assertion
+  replaced by one against `ComputeBounds` plus `ActualWidth > Widget.Width` on a padded Button. **R36A-2**
+  `ContentRendered` re-armed by every `Content` change (WPF `OnContentChanged`/`PostContentRendered`: next
+  `after-paint` with a queued redraw, or dispatcher work at `Input` headless), never raised for a window whose
+  Content was never set; the "GTK limitation" wording dropped. **R36A-3** `Arrange` now only queues
+  `SizeChangedInfo` on a thread-static chain fired after the outermost arrange pass in prepend order (parent
+  first; repeat arranges merge axes — WPF `SizeChangedInfo.Update`), so handlers see final sizes and never
+  re-enter mid-pass (new `UIElement.SizeChanged.cs`). **R36A-4** one writer at a time: a managed arrange no
+  longer writes `RenderSize` once the element is loaded with a mapped widget (`IsRenderSizeOwnedByGtk`) —
+  `UpdateLayout()` on a shown window raises zero SizeChanged; a subtree attached to a live window syncs its
+  allocation right after its deferred Loaded. **R36A-5** the MarkupCompiler brackets every non-Application
+  root with `ISupportInitialize.BeginInit`/`EndInit` (warning-free `(object)this is` check), so a XAML root is
+  `IsInitialized` (children first) before its constructor returns. **R36A-6** `RenderSize` setter is
+  store-only (internal `SetRenderSizeAndNotify` for the live path); test flipped. **R36A-7** `GetChildren`
+  dedupes with a reference `HashSet`; the per-frame sync walks attached children linearly (`EnumerateAttached`).
+  **R36A-8** FE-only/single-segment DP-source tracking documented as a gap in XML docs. **R36A-9** house rule:
+  path resolution split to `BindingEngine.Path.cs` (546→491), `CloseCore`/`OnCloseRequest`/`Close(bool?)` moved
+  to `Window.Closing.cs` (`Window.cs` 236→191). Track B: **F1 (High)** same-GDK-event dedupe now unconditional
+  (pure `MouseDispatchDedupe` + `MouseEventKey`, `DispatchGtkButton`/`DispatchGtkMotion` seams): capturing in
+  `MouseLeftButtonDown` (or releasing in `MouseUp`) no longer re-delivers the event via an ancestor's
+  controller, and uncaptured nesting no longer double-raises press/motion. **F2** pure `MouseButtonMap.TryFromGdk`:
+  4/8→XButton1, 5/9→XButton2 (Win32 `WM_XBUTTON*`/macOS `buttonNumber+1` report 4/5), anything else raises
+  nothing (was Left). **F3** scroll is unit-aware: `GDK_SCROLL_UNIT_SURFACE` pixels → notches at 48 px (WPF
+  ScrollViewer 3 lines × 16 px) before ×120. **F4** the dispatch decision is now covered by pure + nested
+  real-widget tests. **F5** `PreviewMouseMoveEvent` (Tunnel, shared Handled flow with MouseMove) +
+  `IsMouseCaptureWithin` read-only DP / `IsMouseCaptureWithinChanged` (captor + logical ancestors).
+  **F6** no-auto-release documented in `Mouse` capture remarks. **F8** release passes `NPress`. **F9** handler
+  invocation unwraps `TargetInvocationException` (`RoutedEventHandler` invoked typed; `ExceptionDispatchInfo`
+  rethrow; `RoutedEventHost.Invoke.cs` split keeps the host ≤200). **F7** deferred (see carry-over).
+  **+55 tests** (PF +49: SizeChanged chain, ContentRendered re-arm/none, border box, UpdateLayout-no-SizeChanged,
+  generated-root Initialized, GDK dispatch/dedupe/button/wheel maps, PreviewMouseMove/IsMouseCaptureWithin,
+  nested real-widget dispatch; MarkupCompiler +3; WindowsBase +3).
+  **Round 36 totals: 2889 tests** (105 WindowsBase + 2543 PresentationFramework + 226 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean across all TFMs.
+- **Carry-over (Round 36)**: mouse/capture/wheel routed events are still owned by `UIElement` (WPF: registered on
+  `Mouse`, `AddOwner`ed to UIElement, with `Mouse.Add*Handler` helpers — needs `RoutedEvent.AddOwner`; **F7**);
+  capture is never auto-released (disable/hide/remove/OS grab loss) and has no explicit grab without a held
+  button; DP-source binding tracking is FrameworkElement + single-segment only; `Dispatcher.BeginInvoke`
+  ignores `DispatcherPriority`; no `UIElement.Visibility`/`IsVisible`/`IsEnabled` DPs yet (capture gate and
+  Loaded semantics read GTK `visible`/`sensitive`); `BindingEngine.cs` still 491 lines.
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a

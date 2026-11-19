@@ -22,34 +22,19 @@ public abstract partial class UIElement
 		widget.AddController(click);
 	}
 
-	void OnGtkPressed(object o, Gtk.PressedArgs args)
-	{
-		// While captured, every ancestor's gesture would re-target the same press; dispatch once.
-		if (Mouse.Captured != null && IsDuplicateDispatch(o)) return;
-		var btn = GdkButtonToMouseButton(GetClickButton(o));
-		RaiseMouseButton(btn, new Point(args.X, args.Y), args.NPress, pressed: true);
-	}
+	// GTK propagates one unclaimed press/release through every ancestor's GestureClick: the
+	// innermost element dispatches it, every later controller skips it (DispatchGtkButton), with or
+	// without capture — so capturing inside MouseDown never re-delivers that MouseDown.
+	void OnGtkPressed(object o, Gtk.PressedArgs args) =>
+		DispatchGtkButton(GetEventKey(o), GetClickButton(o), new Point(args.X, args.Y), args.NPress, pressed: true);
 
-	void OnGtkReleased(object o, Gtk.ReleasedArgs args)
-	{
-		if (Mouse.Captured != null && IsDuplicateDispatch(o)) return;
-		var btn = GdkButtonToMouseButton(GetClickButton(o));
-		RaiseMouseButton(btn, new Point(args.X, args.Y), 1, pressed: false);
-	}
+	// WPF's MouseUp reports the click count of the press it ends (NPress here).
+	void OnGtkReleased(object o, Gtk.ReleasedArgs args) =>
+		DispatchGtkButton(GetEventKey(o), GetClickButton(o), new Point(args.X, args.Y), args.NPress, pressed: false);
 
 	/// <summary>Reads the button that triggered the current GestureClick sequence.</summary>
 	static uint GetClickButton(object sender) =>
 		sender is Gtk.GestureClick gc && gc.CurrentButton != 0 ? gc.CurrentButton : 1u;
-
-	static MouseButton GdkButtonToMouseButton(uint gdkButton) => gdkButton switch
-	{
-		1u => MouseButton.Left,
-		2u => MouseButton.Middle,
-		3u => MouseButton.Right,
-		8u => MouseButton.XButton1,
-		9u => MouseButton.XButton2,
-		_  => MouseButton.Left,
-	};
 
 	// ── Motion controller ────────────────────────────────────────────────────
 
@@ -78,11 +63,8 @@ public abstract partial class UIElement
 			UpdateMouseOver(m.ContainsPointer(), m.IsPointer);
 	}
 
-	void OnGtkMotion(object o, Gtk.MotionArgs args)
-	{
-		if (Mouse.Captured != null && IsDuplicateDispatch(o)) return;
-		RaiseMouseMove(new Point(args.X, args.Y));
-	}
+	void OnGtkMotion(object o, Gtk.MotionArgs args) =>
+		DispatchGtkMotion(GetEventKey(o), new Point(args.X, args.Y));
 
 	void OnGtkMotionEnter(object o, Gtk.EnterArgs args)
 	{

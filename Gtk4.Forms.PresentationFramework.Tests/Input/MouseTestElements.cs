@@ -58,6 +58,7 @@ public abstract class MouseStateTestBase : IDisposable
 	{
 		Mouse.Capture(null);
 		Mouse.DirectlyOver = null;
+		MouseDispatchDedupe.Reset();
 		foreach (MouseButton b in Enum.GetValues(typeof(MouseButton)))
 			Mouse.SetButtonState(b, MouseButtonState.Released);
 	}

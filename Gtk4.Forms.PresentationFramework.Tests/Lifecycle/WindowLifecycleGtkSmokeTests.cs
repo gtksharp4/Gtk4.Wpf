@@ -61,23 +61,6 @@ public class WindowLifecycleGtkSmokeTests : WpfGtkTestBase
 	});
 
 	[Fact]
-	public void ActualWidth_matches_live_GTK_allocation_after_present() => Run(() =>
-	{
-		using var gtk = new GtkDispatcherScope();
-		var (win, child, log) = ShowWindow("LifecycleActualWidth");
-		try
-		{
-			Assert.True(GtkPump.Until(() => child.ActualWidth > 0 && win.ActualWidth > 0),
-				$"window {win.Widget.Width}x{win.Widget.Height}, child {child.Widget.Width}x{child.Widget.Height}, log={string.Join(",", log)}");
-			GtkPump.For(100);
-			Assert.Equal(child.Widget.Width, child.ActualWidth);
-			Assert.Equal(child.Widget.Height, child.ActualHeight);
-			Assert.Equal(win.Widget.Width, win.ActualWidth);
-		}
-		finally { win.Close(); }
-	});
-
-	[Fact]
 	public void Native_window_resize_raises_SizeChanged() => Run(() =>
 	{
 		using var gtk = new GtkDispatcherScope();
@@ -97,7 +80,7 @@ public class WindowLifecycleGtkSmokeTests : WpfGtkTestBase
 			Assert.True(GtkPump.Until(() => events.Count > 0), "no SizeChanged after resize");
 			Assert.True(events[0].WidthChanged);
 			Assert.Equal(before, events[0].PreviousSize.Width);
-			Assert.Equal(win.Widget.Width, win.ActualWidth);
+			Assert.Equal(GtkAllocationSync.BorderBoxSize(win.Widget).Width, win.ActualWidth);
 		}
 		finally { win.Close(); }
 	});

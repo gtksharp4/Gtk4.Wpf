@@ -5,6 +5,19 @@ namespace System.Windows;
 /// </summary>
 public class SizeChangedInfo
 {
+	bool _widthChanged;
+	bool _heightChanged;
+
+	/// <summary>
+	/// Merges the axes changed by a further arrange of the same element within one layout pass
+	/// (WPF's <c>SizeChangedInfo.Update</c>).
+	/// </summary>
+	internal void Merge(bool widthChanged, bool heightChanged)
+	{
+		_widthChanged |= widthChanged;
+		_heightChanged |= heightChanged;
+	}
+
 	/// <summary>Creates the info for a size change of <paramref name="element"/>.</summary>
 	/// <param name="element">The element whose size changed.</param>
 	/// <param name="previousSize">The size before the change.</param>
@@ -14,8 +27,8 @@ public class SizeChangedInfo
 	{
 		Element = element;
 		PreviousSize = previousSize;
-		WidthChanged = widthChanged;
-		HeightChanged = heightChanged;
+		_widthChanged = widthChanged;
+		_heightChanged = heightChanged;
 	}
 
 	/// <summary>The element whose size changed.</summary>
@@ -28,8 +41,8 @@ public class SizeChangedInfo
 	public Size NewSize => Element.RenderSize;
 
 	/// <summary>Whether the width changed.</summary>
-	public bool WidthChanged { get; }
+	public bool WidthChanged => _widthChanged;
 
 	/// <summary>Whether the height changed.</summary>
-	public bool HeightChanged { get; }
+	public bool HeightChanged => _heightChanged;
 }

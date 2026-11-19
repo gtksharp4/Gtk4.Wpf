@@ -10,7 +10,7 @@ namespace System.Windows;
 /// for Phase 0 it is attached here so the property/event system is self-contained in
 /// <c>Gtk4.Forms.WindowsBase</c>.
 /// </summary>
-public static class RoutedEventHost
+public static partial class RoutedEventHost
 {
 	// Per-object handler list: routedEvent → list of (handler, handledEventsToo).
 	// ConditionalWeakTable holds the element weakly so entries are collected with the element.
@@ -149,7 +149,7 @@ public static class RoutedEventHost
 			foreach (var info in classHandlers)
 			{
 				if (e.Handled && !info.HandledEventsToo) continue;
-				info.Handler.DynamicInvoke(element, e);
+				InvokeHandler(info.Handler, element, e);
 			}
 			// A class handler may re-raise with the same args (e.g. MouseDown cracking into
 			// MouseLeftButtonDown); restore the identity before the instance handlers run.
@@ -166,7 +166,7 @@ public static class RoutedEventHost
 		foreach (var (handler, handledEventsToo) in list)
 		{
 			if (e.Handled && !handledEventsToo) continue;
-			handler.DynamicInvoke(element, e);
+			InvokeHandler(handler, element, e);
 		}
 	}
 }

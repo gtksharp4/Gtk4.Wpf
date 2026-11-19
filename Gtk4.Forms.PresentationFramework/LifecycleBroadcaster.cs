@@ -51,17 +51,38 @@ internal static class LifecycleBroadcaster
 		var result = new List<UIElement>();
 		var tracked = element.LifecycleChildren;
 		if (tracked.Count == 0) return result;
+		// Identity, not Equals: an element type may override equality.
+		var seen = new HashSet<UIElement>(ReferenceEqualityComparer.Instance);
 		foreach (var o in LogicalTreeHelper.GetChildren(element))
 		{
-			if (o is UIElement child && ReferenceEquals(child.LogicalParent, element) && !result.Contains(child))
+			if (o is UIElement child && ReferenceEquals(child.LogicalParent, element) && seen.Add(child))
 				result.Add(child);
 		}
 		foreach (var child in tracked)
 		{
-			if (!result.Contains(child))
+			if (seen.Add(child))
 				result.Add(child);
 		}
 		return result;
+	}
+
+	/// <summary>
+	/// Enumerates <paramref name="root"/> and every element parented to it, root first, in attach
+	/// order (no logical-collection ordering or de-duplication) — linear, for the per-frame
+	/// allocation sync, which needs coverage but not the logical order.
+	/// </summary>
+	internal static IEnumerable<UIElement> EnumerateAttached(UIElement root)
+	{
+		var stack = new Stack<UIElement>();
+		stack.Push(root);
+		while (stack.Count > 0)
+		{
+			var current = stack.Pop();
+			yield return current;
+			var children = current.LifecycleChildren;
+			for (int i = children.Count - 1; i >= 0; i--)
+				stack.Push(children[i]);
+		}
 	}
 
 	/// <summary>
@@ -110,8 +131,11 @@ internal static class LifecycleBroadcaster
 		{
 			dispatcher.BeginInvoke(() =>
 			{
-				if (IsInLoadedTree(element.LogicalParent))
-					BroadcastLoaded(element);
+				if (!IsInLoadedTree(element.LogicalParent))
+					return;
+				BroadcastLoaded(element);
+				// The subtree joined a live window: publish its current GTK allocation now.
+				GtkAllocationSync.Sync(element);
 			}, DispatcherPriority.Loaded);
 		}
 		else

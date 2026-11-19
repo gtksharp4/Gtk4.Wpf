@@ -9,24 +9,38 @@ namespace System.Windows;
 /// GTK 4 has no per-widget <c>size-allocate</c> signal, and a per-widget tick callback would keep
 /// the frame clock running every frame. Instead <see cref="Window"/> runs <see cref="Sync"/> from
 /// the toplevel <c>Gdk.FrameClock</c> <c>layout</c> signal, which fires only on frames that
-/// actually lay out. Once an element is mapped the GTK allocation therefore wins over the
-/// managed <see cref="UIElement.Arrange"/> result.
+/// actually lay out. Once an element is mapped the GTK allocation is the only writer of
+/// <see cref="UIElement.RenderSize"/> (the managed <see cref="UIElement.Arrange"/> no longer
+/// overwrites it).
 /// </remarks>
 internal static class GtkAllocationSync
 {
 	/// <summary>Walks <paramref name="root"/>'s tree pre-order and syncs each mapped widget's size.</summary>
 	internal static void Sync(UIElement root)
 	{
-		foreach (var element in LifecycleBroadcaster.EnumeratePreOrder(root))
+		foreach (var element in LifecycleBroadcaster.EnumerateAttached(root))
 		{
 			if (element is not FrameworkElement fe || !fe.IsLoaded || !fe.HasBackingWidget)
 				continue;
 			var widget = fe.Widget;
 			if (!widget.IsMapped)
 				continue;
-			var allocated = new Size(widget.Width, widget.Height);
+			var allocated = BorderBoxSize(widget);
 			if (allocated != fe.RenderSize)
-				fe.RenderSize = allocated;
+				fe.SetRenderSizeAndNotify(allocated);
 		}
+	}
+
+	/// <summary>
+	/// The widget's border box — its allocation minus CSS margin only, i.e. including its CSS
+	/// border and padding — which is what WPF's <c>RenderSize</c> (arranged size minus
+	/// <c>Margin</c>) measures. <c>gtk_widget_get_width/height</c> return the content box (border
+	/// and padding removed), so <c>gtk_widget_compute_bounds</c> against the widget itself is used.
+	/// </summary>
+	internal static Size BorderBoxSize(Gtk.Widget widget)
+	{
+		if (widget.ComputeBounds(widget, out var bounds))
+			return new Size(bounds.Width, bounds.Height);
+		return new Size(widget.Width, widget.Height);
 	}
 }

@@ -65,4 +65,51 @@ public partial class Window
 	/// <see langword="false"/>.
 	/// </summary>
 	internal static bool MapCloseRetVal(bool proceeded) => !proceeded;
+
+	/// <summary>
+	/// Closes the window and unblocks <see cref="ShowDialog"/> with
+	/// <paramref name="dialogResult"/>. Must be called on the GTK thread.
+	/// A <see cref="Closing"/> handler may veto the close; in that case
+	/// <see cref="DialogResult"/> is restored to its previous value.
+	/// </summary>
+	public void Close(bool? dialogResult)
+	{
+		bool? previous = DialogResult;
+		DialogResult = dialogResult;
+		if (!RequestClose())
+			DialogResult = previous; // veto: undo the tentative set
+	}
+
+	/// <summary>
+	/// Common close implementation. Sets the flag and hides the backing window.
+	/// <paramref name="keepResult"/> is always true from public callers — the parameter
+	/// exists so the window-manager handler can be routed here without resetting DialogResult.
+	/// </summary>
+	void CloseCore(bool keepResult)
+	{
+		_ = keepResult; // reserved for future use
+		_dialogClosed = true;
+		((Gtk.Window)Widget).Hide();
+
+		// Fire Closed once, after the window is hidden (WPF order). Drives app shutdown.
+		if (!_closed)
+		{
+			_closed = true;
+			Closed?.Invoke(this, EventArgs.Empty);
+			LifecycleBroadcaster.BroadcastUnloaded(this); // WPF: Unloaded follows Closed
+		}
+	}
+
+	/// <summary>
+	/// Handles the GTK close-request signal (window-manager X button / Alt+F4).
+	/// Runs the <see cref="Closing"/> protocol. Returning <see langword="true"/> from
+	/// this handler tells GTK to suppress its default destroy — used when a handler
+	/// vetoes the close.
+	/// </summary>
+	void OnCloseRequest(object sender, Gtk.CloseRequestArgs e)
+	{
+		bool proceeded = RequestClose();
+		// GTK4: returning true stops the default close; false lets GTK destroy the window.
+		e.RetVal = MapCloseRetVal(proceeded);
+	}
 }

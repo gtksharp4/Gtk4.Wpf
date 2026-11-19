@@ -35,37 +35,65 @@ public abstract partial class UIElement
 	}
 
 	/// <summary>
-	/// Raises MouseMove as if the pointer moved over this element to <paramref name="position"/>;
-	/// re-targeted to <see cref="Mouse.Captured"/> while the mouse is captured.
+	/// Raises PreviewMouseMove (tunnel) then MouseMove (bubble) as if the pointer moved over this
+	/// element to <paramref name="position"/>; re-targeted to <see cref="Mouse.Captured"/> while
+	/// the mouse is captured. As in WPF the pair shares one Handled flow: when the preview is
+	/// handled, MouseMove is still raised but already handled, so only handledEventsToo handlers run.
 	/// </summary>
 	internal void RaiseMouseMove(Point position)
 	{
 		Mouse.TrackPosition(this, position);
 		var target = Mouse.GetInputTarget(this);
+		var mods = Keyboard.Modifiers;
+		var preview = new MouseEventArgs(PreviewMouseMoveEvent, position, Mouse.LeftButton, Mouse.RightButton,
+			mods) { PositionSource = this };
+		target.RaiseEvent(preview);
+
 		var e = new MouseEventArgs(MouseMoveEvent, position, Mouse.LeftButton, Mouse.RightButton,
-			Keyboard.Modifiers) { PositionSource = this };
+			mods) { PositionSource = this, Handled = preview.Handled };
 		target.RaiseEvent(e);
 	}
 
-	// ── Same-GDK-event de-duplication ────────────────────────────────────────────────
-
-	static (int type, uint time, double x, double y) _lastDispatchedEvent;
+	// ── GTK controller → managed dispatch ───────────────────────────────────────────
 
 	/// <summary>
-	/// Returns <c>true</c> when the GDK event currently being handled by
-	/// <paramref name="controller"/> was already dispatched by another element's controller
-	/// (GTK propagates one event through every ancestor's controllers; the WPF route has already
-	/// been run by the innermost one). The key is (type, time, surface position).
+	/// The GDK event a GTK controller is currently handling, as a <see cref="MouseEventKey"/>;
+	/// <see langword="null"/> when there is none.
 	/// </summary>
-	static bool IsDuplicateDispatch(object controller)
+	static MouseEventKey? GetEventKey(object controller)
 	{
-		if (controller is not Gtk.EventController c) return false;
+		if (controller is not Gtk.EventController c) return null;
 		var ev = c.CurrentEvent;
-		if (ev == null) return false;
+		if (ev == null) return null;
 		ev.GetPosition(out double x, out double y);
-		var key = ((int)ev.EventType, ev.Time, x, y);
-		if (key.Equals(_lastDispatchedEvent)) return true;
-		_lastDispatchedEvent = key;
-		return false;
+		return new MouseEventKey((int)ev.EventType, ev.Time, x, y);
+	}
+
+	/// <summary>
+	/// <see langword="true"/> when the GDK event behind <paramref name="controller"/> was
+	/// already dispatched by another (inner) element's controller — see <see cref="MouseDispatchDedupe"/>.
+	/// </summary>
+	static bool IsDuplicateDispatch(object controller) =>
+		GetEventKey(controller) is MouseEventKey key && MouseDispatchDedupe.IsDuplicate(key);
+
+	/// <summary>
+	/// The GTK click controller's dispatch decision: skips a GDK event already dispatched by an
+	/// inner element (<paramref name="key"/>), drops GDK buttons WPF has no
+	/// <see cref="MouseButton"/> for, and otherwise raises the button route. Returns whether it raised.
+	/// </summary>
+	internal bool DispatchGtkButton(MouseEventKey? key, uint gdkButton, Point position, int clickCount, bool pressed)
+	{
+		if (key.HasValue && MouseDispatchDedupe.IsDuplicate(key.Value)) return false;
+		if (!MouseButtonMap.TryFromGdk(gdkButton, out var button)) return false;
+		RaiseMouseButton(button, position, clickCount, pressed);
+		return true;
+	}
+
+	/// <summary>The GTK motion controller's dispatch decision (single delivery per GDK event).</summary>
+	internal bool DispatchGtkMotion(MouseEventKey? key, Point position)
+	{
+		if (key.HasValue && MouseDispatchDedupe.IsDuplicate(key.Value)) return false;
+		RaiseMouseMove(position);
+		return true;
 	}
 }

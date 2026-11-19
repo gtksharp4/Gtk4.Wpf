@@ -18,10 +18,10 @@ public static partial class Mouse
 	/// <summary>Current state of the middle mouse button.</summary>
 	public static MouseButtonState MiddleButton { get; internal set; } = MouseButtonState.Released;
 
-	/// <summary>Current state of the first extended mouse button (GDK button 8).</summary>
+	/// <summary>Current state of the first extended mouse button (GDK button 8 on X11/Wayland, 4 on Win32/macOS).</summary>
 	public static MouseButtonState XButton1 { get; internal set; } = MouseButtonState.Released;
 
-	/// <summary>Current state of the second extended mouse button (GDK button 9).</summary>
+	/// <summary>Current state of the second extended mouse button (GDK button 9 on X11/Wayland, 5 on Win32/macOS).</summary>
 	public static MouseButtonState XButton2 { get; internal set; } = MouseButtonState.Released;
 
 	/// <summary>

@@ -121,10 +121,19 @@ namespace Gtk4.Forms.MarkupCompiler
 			w.Line("if (_contentLoaded) return;");
 			w.Line("_contentLoaded = true;");
 
+			// WPF's XAML loader brackets the root with ISupportInitialize.BeginInit/EndInit, so
+			// the root's Initialized fires (after its children's) before its constructor returns.
+			// The (object) cast keeps the runtime check warning-free for any root type.
+			if (!isAppDef)
+				w.Line(SupportInitializeCall("BeginInit"));
+
 			// Emit root resources BEFORE attributes/children so {StaticResource} resolves.
 			EmitResources(w, root, xNs, "this", ref _counter);
 			EmitRootAttributes(w, root, xNs);
 			EmitChildren(w, root, xNs, "this", ref _counter);
+
+			if (!isAppDef)
+				w.Line(SupportInitializeCall("EndInit"));
 
 			w.Indent--;
 			w.Line("}");
@@ -217,6 +226,10 @@ namespace Gtk4.Forms.MarkupCompiler
 		{
 			return root.Name.LocalName == "Application";
 		}
+
+		/// <summary>The root's <c>ISupportInitialize.<paramref name="method"/>()</c> call, when it implements it.</summary>
+		internal static string SupportInitializeCall(string method) =>
+			$"if ((object)this is System.ComponentModel.ISupportInitialize __init{method}) __init{method}.{method}();";
 
 		/// <summary>
 		/// Resolves an XAML element to its fully-qualified CLR type name.

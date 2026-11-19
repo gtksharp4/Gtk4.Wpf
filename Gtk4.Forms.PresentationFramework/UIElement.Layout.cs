@@ -27,30 +27,17 @@ public abstract partial class UIElement
 	Rect _lastArrangeRect = new Rect(double.NegativeInfinity, double.NegativeInfinity, 0, 0);
 
 	Size _renderSize;
-	bool _inArrange;
 
 	/// <summary>
 	/// The final render size of this element: set by <see cref="Arrange"/> and, for a mapped
 	/// element, by the live GTK allocation (see <c>FrameworkElement.ActualSize.cs</c>).
-	/// A change on either axis calls <see cref="OnRenderSizeChanged"/> — once per arrange pass.
+	/// As in WPF the setter only stores the value; <see cref="OnRenderSizeChanged"/> (and so
+	/// <c>SizeChanged</c>) is driven by the layout system, not by assigning this property.
 	/// </summary>
 	public Size RenderSize
 	{
 		get => _renderSize;
-		set
-		{
-			var old = _renderSize;
-			_renderSize = value;
-			// Inside Arrange the notification is coalesced into one call after ArrangeCore.
-			if (!_inArrange)
-				NotifyRenderSizeChange(old);
-		}
-	}
-
-	void NotifyRenderSizeChange(Size previous)
-	{
-		if (SizeChangeMath.Compute(previous, _renderSize, out bool widthChanged, out bool heightChanged))
-			OnRenderSizeChanged(new SizeChangedInfo(this, previous, widthChanged, heightChanged));
+		set => _renderSize = value;
 	}
 
 	/// <summary>
@@ -120,17 +107,25 @@ public abstract partial class UIElement
 		// Default RenderSize = finalRect size; ArrangeCore (FrameworkElement) may narrow it
 		// for alignment. FrameworkElement.ArrangeCore sets RenderSize itself.
 		var previous = _renderSize;
-		_inArrange = true;
+		_arrangeDepth++;
 		try
 		{
-			RenderSize = new Size(finalRect.Width, finalRect.Height);
+			_renderSize = new Size(finalRect.Width, finalRect.Height);
 			ArrangeCore(finalRect);
+			// Once mapped the live GTK allocation owns RenderSize (GtkAllocationSync): a managed
+			// arrange must not overwrite it, or the two writers would ping-pong SizeChanged.
+			if (IsRenderSizeOwnedByGtk)
+				_renderSize = previous;
+			else
+				QueueSizeChanged(previous);
 		}
 		finally
 		{
-			_inArrange = false;
+			_arrangeDepth--;
 		}
-		NotifyRenderSizeChange(previous);
+		// WPF fires the SizeChanged chain after the whole (outermost) arrange pass.
+		if (_arrangeDepth == 0)
+			FlushSizeChangedChain();
 	}
 
 	/// <summary>Override to position children. Base is no-op.</summary>

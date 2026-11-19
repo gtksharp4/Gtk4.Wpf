@@ -10,6 +10,14 @@ namespace System.Windows.Input;
 /// <c>MouseUp</c> to <see cref="Captured"/>. <b>GTK 4 gap:</b> with no button held there is no
 /// explicit grab API for widgets inside a toplevel (<c>gdk_seat_grab</c> is not exposed for
 /// them), so pointer motion outside the toplevel is not delivered while captured.
+/// <para>
+/// <b>Gap vs WPF:</b> capture is never released automatically. WPF's <c>MouseDevice</c> drops
+/// capture (raising <c>LostMouseCapture</c>) when the captor becomes disabled, invisible or
+/// non-hit-testable, or when the OS takes the capture away (<c>WM_CAPTURECHANGED</c>, e.g.
+/// alt-tab). Here <see cref="Captured"/> keeps pointing at the element in all those cases until
+/// <see cref="Capture(IInputElement)"/> is called with <c>null</c> (or
+/// <see cref="UIElement.ReleaseMouseCapture"/>), and input keeps being re-targeted to it.
+/// </para>
 /// </remarks>
 public static partial class Mouse
 {
@@ -56,6 +64,7 @@ public static partial class Mouse
 		Captured = next;
 		old?.SetMouseCaptured(false);
 		next?.SetMouseCaptured(true);
+		UIElement.UpdateMouseCaptureWithin(old, next);
 		old?.RaiseMouseCaptureEvent(UIElement.LostMouseCaptureEvent);
 		next?.RaiseMouseCaptureEvent(UIElement.GotMouseCaptureEvent);
 		return true;

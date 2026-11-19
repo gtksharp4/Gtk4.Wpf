@@ -4,18 +4,26 @@ namespace System.Windows;
 /// <see cref="ActualWidth"/>/<see cref="ActualHeight"/> and <see cref="SizeChanged"/>.
 /// </summary>
 /// <remarks>
-/// Two sources feed <see cref="UIElement.RenderSize"/>, and through it these members:
+/// Two sources feed <see cref="UIElement.RenderSize"/>, and through it these members — but only
+/// one at a time:
 /// <list type="bullet">
 /// <item>the managed <see cref="UIElement.Arrange"/> pass — authoritative headless and before
-/// the hosting window is mapped;</item>
-/// <item>the live GTK allocation — once the element's widget is mapped, the toplevel
-/// <c>Gdk.FrameClock</c> <c>layout</c> phase copies <c>gtk_widget_get_width/height</c> into
-/// <see cref="UIElement.RenderSize"/> (<c>GtkAllocationSync</c>), so the GTK allocation wins over
-/// the managed arrange for on-screen elements.</item>
+/// the element is loaded with a mapped widget; its SizeChanged notifications are queued and
+/// raised after the outermost arrange pass (top-down, as WPF's size-changed chain);</item>
+/// <item>the live GTK allocation — once the element is loaded and its widget is mapped, the
+/// toplevel <c>Gdk.FrameClock</c> <c>layout</c> phase copies the widget's border box
+/// (<c>gtk_widget_compute_bounds</c>: allocation minus CSS margin, including CSS border and
+/// padding) into <see cref="UIElement.RenderSize"/> (<c>GtkAllocationSync</c>). From then on a
+/// managed arrange no longer writes RenderSize.</item>
 /// </list>
+/// The ActualWidth/ActualHeight DP values are written when the size changes rather than computed
+/// on read (WPF's <c>GetReadOnlyValueCallback</c>); the CLR getters read RenderSize directly.
 /// </remarks>
 public abstract partial class FrameworkElement
 {
+	/// <inheritdoc/>
+	internal override bool IsRenderSizeOwnedByGtk => IsLoaded && HasBackingWidget && Widget.IsMapped;
+
 	static readonly DependencyPropertyKey _actualWidthPropertyKey =
 		DependencyProperty.RegisterReadOnly(
 			nameof(ActualWidth), typeof(double), typeof(FrameworkElement),

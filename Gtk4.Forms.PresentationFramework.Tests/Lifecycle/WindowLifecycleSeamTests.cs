@@ -81,7 +81,7 @@ public class WindowLifecycleSeamTests
 	public void Protected_virtual_overrides_run()
 	{
 		using var queue = new ManualDispatcherQueue();
-		var win = new OverrideWindow();
+		var win = new OverrideWindow { Content = new Border() };
 		int src = 0, rendered = 0;
 		win.SourceInitialized += (_, _) => src++;
 		win.ContentRendered += (_, _) => rendered++;
@@ -108,5 +108,58 @@ public class WindowLifecycleSeamTests
 
 		Assert.Equal(new[] { "Unloaded:window", "Unloaded:child" }, log);
 		Assert.False(win.IsLoaded);
+	}
+
+	[Fact]
+	public void ContentRendered_is_not_raised_when_Content_was_never_set()
+	{
+		// WPF arms ContentRendered from Window.OnContentChanged only.
+		using var queue = new ManualDispatcherQueue();
+		var win = new WpfWindow();
+		int rendered = 0;
+		win.ContentRendered += (_, _) => rendered++;
+
+		win.RaiseLifecycleForTest();
+		queue.Pump();
+
+		Assert.True(win.IsLoaded);
+		Assert.Equal(0, rendered);
+	}
+
+	[Fact]
+	public void ContentRendered_is_raised_again_after_each_Content_change_on_a_loaded_window()
+	{
+		using var queue = new ManualDispatcherQueue();
+		var win = new WpfWindow { Content = new Border() };
+		int rendered = 0;
+		win.ContentRendered += (_, _) => rendered++;
+		win.RaiseLifecycleForTest();
+		queue.Pump();
+		Assert.Equal(1, rendered);
+
+		win.Content = new Border();
+		Assert.Equal(1, rendered); // deferred, as WPF's PostContentRendered
+		queue.Pump();
+		Assert.Equal(2, rendered);
+
+		win.Content = null;
+		queue.Pump();
+		Assert.Equal(3, rendered);
+	}
+
+	[Fact]
+	public void Content_set_after_load_on_a_window_that_had_none_raises_ContentRendered()
+	{
+		using var queue = new ManualDispatcherQueue();
+		var win = new WpfWindow();
+		int rendered = 0;
+		win.ContentRendered += (_, _) => rendered++;
+		win.RaiseLifecycleForTest();
+		queue.Pump();
+
+		win.Content = new Border();
+		queue.Pump();
+
+		Assert.Equal(1, rendered);
 	}
 }

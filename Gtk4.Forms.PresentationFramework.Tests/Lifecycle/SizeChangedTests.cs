@@ -179,16 +179,18 @@ public class SizeChangedTests
 	}
 
 	[Fact]
-	public void Setting_RenderSize_directly_raises_SizeChanged()
+	public void Setting_RenderSize_directly_only_stores_it()
 	{
+		// WPF: the RenderSize setter stores the size; SizeChanged comes only from layout.
 		var b = new Border();
 		SizeChangedEventArgs? args = null;
 		b.SizeChanged += (_, e) => args = e;
 
 		b.RenderSize = new Size(7, 9);
 
-		Assert.NotNull(args);
-		Assert.Equal(7, b.ActualWidth);
+		Assert.Null(args);
+		Assert.Equal(7, b.ActualWidth); // CLR getter reads RenderSize
 		Assert.Equal(9, b.ActualHeight);
+		Assert.Equal(0.0, b.GetValue(FrameworkElement.ActualWidthProperty)); // DP untouched
 	}
 }
