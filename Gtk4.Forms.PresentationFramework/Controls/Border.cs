@@ -47,7 +47,7 @@ public partial class Border : FrameworkElement
 			nameof(BorderThickness),
 			typeof(Thickness),
 			typeof(Border),
-			new PropertyMetadata(new Thickness(0)));
+			new FrameworkPropertyMetadata(new Thickness(0), OnAppearanceChanged));
 
 	/// <summary>Gets or sets the border thickness.</summary>
 	public Thickness BorderThickness

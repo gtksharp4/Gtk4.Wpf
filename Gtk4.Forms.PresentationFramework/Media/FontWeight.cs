@@ -18,6 +18,9 @@ public struct FontWeight : IEquatable<FontWeight>
 	public static bool operator ==(FontWeight a, FontWeight b) => a.Weight == b.Weight;
 	/// <inheritdoc/>
 	public static bool operator !=(FontWeight a, FontWeight b) => a.Weight != b.Weight;
+	/// <summary>Returns the OpenType weight (1..999); a default-constructed value is Normal (400).</summary>
+	public int ToOpenTypeWeight() => Weight == 0 ? 400 : Weight;
+
 	/// <inheritdoc/>
 	public override string ToString() => Weight.ToString();
 }
@@ -41,4 +44,29 @@ public static class FontWeights
 	public static FontWeight ExtraBold { get; } = new FontWeight(800);
 	/// <summary>Black weight (900).</summary>
 	public static FontWeight Black { get; } = new FontWeight(900);
+	/// <summary>ExtraLight weight (200).</summary>
+	public static FontWeight ExtraLight { get; } = new FontWeight(200);
+	/// <summary>UltraLight weight (200).</summary>
+	public static FontWeight UltraLight { get; } = new FontWeight(200);
+	/// <summary>Regular weight (400).</summary>
+	public static FontWeight Regular { get; } = new FontWeight(400);
+	/// <summary>DemiBold weight (600).</summary>
+	public static FontWeight DemiBold { get; } = new FontWeight(600);
+	/// <summary>UltraBold weight (800).</summary>
+	public static FontWeight UltraBold { get; } = new FontWeight(800);
+	/// <summary>Heavy weight (900).</summary>
+	public static FontWeight Heavy { get; } = new FontWeight(900);
+	/// <summary>ExtraBlack weight (950).</summary>
+	public static FontWeight ExtraBlack { get; } = new FontWeight(950);
+	/// <summary>UltraBlack weight (950).</summary>
+	public static FontWeight UltraBlack { get; } = new FontWeight(950);
+
+	/// <summary>Creates a weight from an OpenType value in 1..999.</summary>
+	/// <exception cref="ArgumentOutOfRangeException">Value is outside 1..999.</exception>
+	public static FontWeight FromOpenTypeWeight(int weightValue)
+	{
+		if (weightValue < 1 || weightValue > 999)
+			throw new ArgumentOutOfRangeException(nameof(weightValue));
+		return new FontWeight(weightValue);
+	}
 }

@@ -7,7 +7,7 @@ namespace System.Windows.Documents;
 /// Base class for all flow-document elements. Carries optional typography properties
 /// that affect Pango markup rendering when set on an inline.
 /// </summary>
-public abstract class TextElement
+public abstract partial class TextElement
 {
 	/// <summary>Font family name, or <c>null</c> to inherit.</summary>
 	public string? FontFamily { get; set; }

@@ -9,7 +9,7 @@ namespace System.Windows;
 /// Instances are created only via the static <c>Register</c> / <c>RegisterAttached</c> /
 /// <c>RegisterReadOnly</c> factory methods.
 /// </summary>
-public sealed class DependencyProperty
+public sealed partial class DependencyProperty
 {
 	/// <summary>
 	/// Sentinel returned by <see cref="DependencyObject.ReadLocalValue"/> when no local
