@@ -1,46 +1,21 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace System.Windows.Controls;
 
 /// <summary>
-/// A drop-down selector backed by <see cref="Gtk.DropDown"/> with a
-/// <see cref="Gtk.StringList"/> model.
+/// A drop-down selector backed by <see cref="Gtk.DropDown"/> with a <see cref="Gtk.StringList"/> model.
 /// <para>
-/// GTK4-native <c>Gtk.DropDown</c> is used (not the deprecated <c>Gtk.ComboBoxText</c>).
-/// Items are converted to string via <c>ToString()</c>; object identity is tracked
-/// so <see cref="SelectedItem"/> returns the original object.
+/// WPF derives from <c>Selector</c>; a shared Selector base is deferred, so this derives from
+/// <see cref="ItemsControl"/> and keeps its own selection DPs. Rows are plain text (item text
+/// from <see cref="ComboBoxItemText.GetText"/>), so <see cref="ItemsControl.ItemTemplate"/> visuals,
+/// <see cref="UIElement"/> content, per-item <c>IsEnabled</c> and prefix auto-complete are not rendered.
 /// </para>
 /// </summary>
-public partial class ComboBox : Control
+public partial class ComboBox : ItemsControl
 {
-	// ── SelectionChanged event ───────────────────────────────────────────────
-
 	/// <summary>Raised when the selected item changes.</summary>
 	public event EventHandler<SelectionChangedEventArgs>? SelectionChanged;
-
-	// ── ItemsSource DP ───────────────────────────────────────────────────────
-
-	/// <summary>The collection of items to display.</summary>
-	public static readonly DependencyProperty ItemsSourceProperty =
-		DependencyProperty.Register(
-			nameof(ItemsSource),
-			typeof(IList),
-			typeof(ComboBox),
-			new PropertyMetadata(null, OnItemsSourceChanged));
-
-	static void OnItemsSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-	{
-		((ComboBox)d).RebuildItems();
-	}
-
-	/// <summary>Gets or sets the items source.</summary>
-	public IList? ItemsSource
-	{
-		get => (IList?)GetValue(ItemsSourceProperty);
-		set => SetValue(ItemsSourceProperty, value);
-	}
 
 	// ── SelectedIndex DP ─────────────────────────────────────────────────────
 
@@ -55,7 +30,12 @@ public partial class ComboBox : Control
 
 	static void OnSelectedIndexChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
-		((ComboBox)d).ApplySelectedIndex((int?)e.NewValue ?? -1);
+		var cb = (ComboBox)d;
+		var idx = (int?)e.NewValue ?? -1;
+		cb.ApplySelectedIndex(idx);
+		// Without a widget no GTK notification drives SelectedItem.
+		if (cb._dropDown == null && !cb._updating)
+			cb.SetValue(SelectedItemProperty, idx >= 0 && idx < cb.Items.Count ? cb.Items[idx] : null);
 	}
 
 	/// <summary>Gets or sets the selected index.</summary>
@@ -79,7 +59,7 @@ public partial class ComboBox : Control
 	static void OnSelectedItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
 		var cb = (ComboBox)d;
-		var idx = e.NewValue == null ? -1 : cb._items.IndexOf(e.NewValue);
+		var idx = e.NewValue == null ? -1 : cb.Items.IndexOf(e.NewValue);
 		if (idx >= 0 && cb.SelectedIndex != idx)
 			cb.SetValue(SelectedIndexProperty, idx);
 
@@ -89,6 +69,7 @@ public partial class ComboBox : Control
 				new SelectionChangedEventArgs(cb, e.OldValue, e.NewValue));
 
 		cb.RefreshSelectedValue();
+		cb.OnSelectionChangedForText();
 	}
 
 	/// <summary>Gets or sets the selected item.</summary>
@@ -111,8 +92,10 @@ public partial class ComboBox : Control
 		_dropDown = new Gtk.DropDown(null, null);
 		_dropDown.Model = _stringList;
 		_dropDown.AddNotification("selected", OnGtkSelectionChanged);
-		RebuildItems(); // push any items set before widget creation
-		return _dropDown;
+		HookPopover();
+		RebuildStringList(); // push any items set before widget creation
+		ApplySelectedIndex(SelectedIndex);
+		return IsEditable ? CreateEditableHost() : _dropDown;
 	}
 
 	void OnGtkSelectionChanged(object? sender, GLib.NotifyArgs e)
@@ -127,13 +110,21 @@ public partial class ComboBox : Control
 
 			var oldItem = SelectedItem;
 			SetValue(SelectedIndexProperty, idx);
-			var newItem = idx >= 0 && idx < _items.Count ? _items[idx] : null;
+			var newItem = idx >= 0 && idx < Items.Count ? Items[idx] : null;
 			SetValue(SelectedItemProperty, newItem);
 
 			SelectionChanged?.Invoke(this, new SelectionChangedEventArgs(this, oldItem, newItem));
 		}
 		finally { _updating = false; }
 	}
+
+	// ── Container hooks (WPF) ────────────────────────────────────────────────
+
+	/// <inheritdoc/>
+	protected override bool IsItemItsOwnContainerOverride(object? item) => item is ComboBoxItem;
+
+	/// <inheritdoc/>
+	protected override DependencyObject GetContainerForItemOverride() => new ComboBoxItem();
 }
 
 /// <summary>Event data for <see cref="ComboBox.SelectionChanged"/> and <see cref="ListBox.SelectionChanged"/>.</summary>
