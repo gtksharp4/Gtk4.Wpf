@@ -7,8 +7,8 @@ namespace System.Windows.Data;
 /// an <see cref="IMultiValueConverter"/>.
 /// <para>
 /// Each child binding resolves independently; the converter receives an array of their
-/// current values and returns the value to push to the target. Source updates are not
-/// supported in this phase (the converter's <c>ConvertBack</c> is not called).
+/// current values and returns the value to push to the target. When the binding is TwoWay,
+/// the converter's <c>ConvertBack</c> splits the target value back across the child sources.
 /// </para>
 /// </summary>
 public class MultiBinding : BindingBase
@@ -22,6 +22,15 @@ public class MultiBinding : BindingBase
 	/// <summary>Optional parameter passed to <see cref="Converter"/>.</summary>
 	public object? ConverterParameter { get; set; }
 
-	/// <summary>Direction of data flow. Default is <see cref="BindingMode.OneWay"/>.</summary>
+	/// <summary>
+	/// Direction of data flow. Default resolves from the target property metadata
+	/// (<c>BindsTwoWayByDefault</c>).
+	/// </summary>
 	public BindingMode Mode { get; set; } = BindingMode.Default;
+
+	/// <summary>
+	/// When the target value is written back. Default resolves from the target property metadata
+	/// (LostFocus for <c>TextBox.Text</c>, otherwise PropertyChanged).
+	/// </summary>
+	public UpdateSourceTrigger UpdateSourceTrigger { get; set; } = UpdateSourceTrigger.Default;
 }

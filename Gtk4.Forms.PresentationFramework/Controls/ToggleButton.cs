@@ -8,6 +8,12 @@ namespace System.Windows.Controls;
 /// </summary>
 public class ToggleButton : ContentControl
 {
+	static ToggleButton()
+	{
+		DefaultStyleKeyProperty.OverrideMetadata(typeof(ToggleButton),
+			new PropertyMetadata(typeof(ToggleButton)));
+	}
+
 	/// <summary>Raised when <see cref="IsChecked"/> becomes <c>true</c>.</summary>
 	public event EventHandler? Checked;
 
@@ -82,4 +88,4 @@ public class ToggleButton : ContentControl
 		try { SetValue(IsCheckedProperty, _toggle.Active ? (bool?)true : false); }
 		finally { _updating = false; }
 	}
-}
+}

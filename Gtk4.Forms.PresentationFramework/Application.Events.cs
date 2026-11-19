@@ -6,6 +6,8 @@ namespace System.Windows;
 public partial class Application
 {
 	readonly HashSet<Window> _activeWindows = new HashSet<Window>();
+	bool _appActive;
+	bool _deactivatePending;
 
 	/// <summary>Raised by <see cref="OnStartup"/> before the StartupUri window is created.</summary>
 	public event StartupEventHandler? Startup;
@@ -34,19 +36,36 @@ public partial class Application
 	/// <summary>Raises <see cref="SessionEnding"/> (never called by the GTK layer).</summary>
 	protected virtual void OnSessionEnding(SessionEndingCancelEventArgs e) => SessionEnding?.Invoke(this, e);
 
-	// Window.Activated/Deactivated feed this: the app activates with its first active window
-	// and deactivates when the last one goes inactive.
+	// Window.Activated/Deactivated feed this. The app activates with its first active window; the
+	// deactivation is deferred because the window manager normally deactivates the old toplevel
+	// before activating the next one, and WPF raises neither event when focus stays in the app.
 	internal void OnWindowActivationChanged(Window window, bool active)
 	{
 		if (active)
 		{
-			bool wasActive = _activeWindows.Count > 0;
-			if (_activeWindows.Add(window) && !wasActive)
+			_deactivatePending = false;
+			_activeWindows.Add(window);
+			if (!_appActive)
+			{
+				_appActive = true;
 				OnActivated(EventArgs.Empty);
+			}
 		}
-		else if (_activeWindows.Remove(window) && _activeWindows.Count == 0)
+		else
+			DeactivateWindow(window);
+	}
+
+	void DeactivateWindow(Window window)
+	{
+		if (!_activeWindows.Remove(window) || _activeWindows.Count > 0 || !_appActive || _deactivatePending)
+			return;
+		_deactivatePending = true;
+		Dispatcher.BeginInvoke(new Action(() =>
 		{
+			if (!_deactivatePending || _activeWindows.Count > 0) return;
+			_deactivatePending = false;
+			_appActive = false;
 			OnDeactivated(EventArgs.Empty);
-		}
+		}));
 	}
 }

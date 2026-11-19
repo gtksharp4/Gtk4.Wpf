@@ -80,8 +80,13 @@ public sealed partial class DependencyProperty
 			throw new ArgumentException(
 				$"Metadata type '{typeMetadata.GetType().Name}' is not compatible with the base metadata type "
 				+ $"'{baseMetadata.GetType().Name}' of property '{Name}'.", nameof(typeMetadata));
+		lock (_metadataByType)
+			if (_metadataByType.ContainsKey(forType))
+				throw new ArgumentException(
+					$"Metadata for property '{Name}' is already registered for type '{forType.Name}'.");
+		// An unset default is inherited from the already-validated base; validate before sealing.
+		if (typeMetadata.IsDefaultValueModified) ValidateDefault(typeMetadata);
 		typeMetadata.Apply(this, forType, baseMetadata);
-		ValidateDefault(typeMetadata);
 		lock (_metadataByType)
 			_metadataByType[forType] = typeMetadata;
 		if (typeMetadata is FrameworkPropertyMetadata fmeta && fmeta.Inherits)
@@ -190,4 +195,4 @@ public sealed class DependencyPropertyKey
 	public DependencyProperty DependencyProperty { get; }
 
 	internal DependencyPropertyKey(DependencyProperty dp) => DependencyProperty = dp;
-}
+}

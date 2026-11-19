@@ -13,6 +13,12 @@ namespace System.Windows.Controls;
 /// </summary>
 public class PasswordBox : Control
 {
+	static PasswordBox()
+	{
+		DefaultStyleKeyProperty.OverrideMetadata(typeof(PasswordBox),
+			new PropertyMetadata(typeof(PasswordBox)));
+	}
+
 	// ── Password (CLR, not DP — matches WPF) ─────────────────────────────────
 
 	string _password = string.Empty;

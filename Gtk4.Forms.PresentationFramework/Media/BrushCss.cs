@@ -102,7 +102,8 @@ internal static class BrushCss
 		foreach (var stop in b.GradientStops.OrderBy(s => s.Offset))
 		{
 			if (sb.Length > 0) sb.Append(", ");
-			sb.Append(Rgba(stop.Color, b.Opacity)).Append(' ').Append(F(Math.Round((position?.Invoke(stop.Offset) ?? stop.Offset) * 100, 4))).Append('%');
+			var offset = position?.Invoke(stop.Offset) ?? stop.Offset;
+			sb.Append(Rgba(stop.Color, b.Opacity)).Append(' ').Append(F(Math.Round(offset * 100, 4))).Append('%');
 		}
 		return sb.ToString();
 	}

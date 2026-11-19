@@ -6,24 +6,43 @@ using Xunit;
 
 namespace Gtk4.Forms.PresentationFramework.Tests;
 
-public class ApplicationUnhandledExceptionTests : WpfGtkTestBase
+// The app event forwards to the shared fixture-thread Dispatcher, so every handler is removed in Dispose.
+public class ApplicationUnhandledExceptionTests : WpfGtkTestBase, IDisposable
 {
 	static readonly string[] NoArgs = new string[0];
 
+	readonly List<(Dispatcher, DispatcherUnhandledExceptionEventHandler)> _subscribed =
+		new List<(Dispatcher, DispatcherUnhandledExceptionEventHandler)>();
+
+	void Subscribe(Application app, DispatcherUnhandledExceptionEventHandler handler)
+	{
+		app.DispatcherUnhandledException += handler;
+		_subscribed.Add((app.Dispatcher, handler));
+	}
+
+	public void Dispose()
+	{
+		Application.ResetCurrentForTests();
+		foreach (var (dispatcher, handler) in _subscribed)
+			dispatcher.UnhandledException -= handler;
+		_subscribed.Clear();
+	}
+
 	[Fact]
-	public void Exception_in_BeginInvoke_reaches_Dispatcher_then_Application_and_Handled_continues() => Run(() =>
+	public void Exception_in_BeginInvoke_reaches_handlers_in_subscription_order_and_Handled_continues() => Run(() =>
 	{
 		var app = new Application();
 		var log = new List<string>();
 		var dispatcher = Dispatcher.CurrentDispatcher;
 		DispatcherUnhandledExceptionEventHandler dh = (_, _) => log.Add("dispatcher");
 		dispatcher.UnhandledException += dh;
-		app.DispatcherUnhandledException += (s, e) =>
+		_subscribed.Add((dispatcher, dh));
+		Subscribe(app, (s, e) =>
 		{
 			log.Add("app");
-			Assert.Same(app, s);
+			Assert.Same(app.Dispatcher, s);
 			e.Handled = true;
-		};
+		});
 		bool continued = false;
 		app.RunLoopOverride = _ =>
 		{
@@ -31,8 +50,7 @@ public class ApplicationUnhandledExceptionTests : WpfGtkTestBase
 			continued = true;
 		};
 
-		try { app.RunCore(NoArgs); }
-		finally { dispatcher.UnhandledException -= dh; }
+		app.RunCore(NoArgs);
 
 		Assert.Equal(new[] { "dispatcher", "app" }, log);
 		Assert.True(continued);
@@ -43,7 +61,7 @@ public class ApplicationUnhandledExceptionTests : WpfGtkTestBase
 	{
 		var app = new Application();
 		int raised = 0;
-		app.DispatcherUnhandledException += (_, _) => raised++;
+		Subscribe(app, (_, _) => raised++);
 		app.RunLoopOverride = _ =>
 			Assert.Throws<InvalidOperationException>(
 				() => Dispatcher.CurrentDispatcher.BeginInvoke(() => throw new InvalidOperationException()));
@@ -54,34 +72,34 @@ public class ApplicationUnhandledExceptionTests : WpfGtkTestBase
 	});
 
 	[Fact]
-	public void Dispatcher_handler_marking_Handled_skips_the_Application_event() => Run(() =>
+	public void Application_handler_still_runs_after_a_Dispatcher_handler_marks_Handled() => Run(() =>
 	{
 		var app = new Application();
 		var dispatcher = Dispatcher.CurrentDispatcher;
 		DispatcherUnhandledExceptionEventHandler dh = (_, e) => e.Handled = true;
 		dispatcher.UnhandledException += dh;
+		_subscribed.Add((dispatcher, dh));
 		int raised = 0;
-		app.DispatcherUnhandledException += (_, _) => raised++;
+		Subscribe(app, (_, _) => raised++);
 		app.RunLoopOverride = _ => dispatcher.BeginInvoke(() => throw new Exception());
 
-		try { app.RunCore(NoArgs); }
-		finally { dispatcher.UnhandledException -= dh; }
+		app.RunCore(NoArgs);
 
-		Assert.Equal(0, raised);
+		Assert.Equal(1, raised);
 	});
 
 	[Fact]
-	public void Application_event_stops_after_Run_returns() => Run(() =>
+	public void Application_handler_subscribed_outside_Run_receives_the_exception() => Run(() =>
 	{
-		var app = new Application { };
-		app.RunLoopOverride = _ => { };
-		app.RunCore(NoArgs);
-		int raised = 0;
-		app.DispatcherUnhandledException += (_, _) => { raised++; };
-
-		Assert.Throws<Exception>(() => Dispatcher.CurrentDispatcher.BeginInvoke(() => throw new Exception()));
-
-		Assert.Equal(0, raised);
+		var app = new Application();
+		Exception? seen = null;
+		Subscribe(app, (_, e) => { seen = e.Exception; e.Handled = true; });
+		var boom = new InvalidOperationException("queued");
+		using var queue = new Lifecycle.ManualDispatcherQueue();
+		Dispatcher.CurrentDispatcher.BeginInvoke(() => throw boom);
+		Assert.Null(seen);
+		queue.Pump();
+		Assert.Same(boom, seen);
 	});
 
 	[Fact]

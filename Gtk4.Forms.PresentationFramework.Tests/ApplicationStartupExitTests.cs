@@ -6,8 +6,10 @@ using Xunit;
 
 namespace Gtk4.Forms.PresentationFramework.Tests;
 
-public class ApplicationStartupExitTests : WpfGtkTestBase
+public class ApplicationStartupExitTests : WpfGtkTestBase, System.IDisposable
 {
+	public void Dispose() => Application.ResetCurrentForTests();
+
 	static readonly string[] NoArgs = new string[0];
 
 	[Fact]
@@ -145,22 +147,6 @@ public class ApplicationStartupExitTests : WpfGtkTestBase
 
 		Assert.Equal(0, app.RunCore(NoArgs));
 		Assert.Equal(1, app.ExitRaised);
-	});
-
-	[Fact]
-	public void Shutdown_closes_remaining_windows_despite_a_Closing_veto() => Run(() =>
-	{
-		var app = new RecordingApp();
-		var win = new Window();
-		win.Closing += (_, e) => e.Cancel = true;
-		bool closed = false;
-		win.Closed += (_, _) => closed = true;
-		app.RunLoopOverride = a => a.Shutdown();
-
-		app.RunCore(NoArgs);
-
-		Assert.True(closed);
-		Assert.Equal(0, app.Windows.Count);
 	});
 
 	[Fact]

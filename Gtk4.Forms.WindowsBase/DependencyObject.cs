@@ -133,8 +133,19 @@ public partial class DependencyObject
 		if (!ReferenceEquals(value, DependencyProperty.UnsetValue)) dp.ThrowIfInvalid(value);
 		OnBeforeSetValue(dp);
 		var oldEffective = ResolveEffectiveValue(dp);
+		bool hadLocal = _localValues.TryGetValue(dp, out var oldLocal);
 		_localValues[dp] = value;
-		CommitLayerChange(dp, oldEffective);
+		// A throwing coerce callback stores nothing (WPF).
+		try { RecomputeCoerced(dp); }
+		catch
+		{
+			if (hadLocal) _localValues[dp] = oldLocal;
+			else _localValues.Remove(dp);
+			RecomputeCoerced(dp);
+			throw;
+		}
+		FireChangeIfDifferent(dp, oldEffective, ResolveEffectiveValue(dp));
+		NotifyValueSource(dp);
 	}
 
 	void FireChangeIfDifferent(DependencyProperty dp, object? oldEffective, object? newEffective)
@@ -186,4 +197,4 @@ public partial class DependencyObject
 	}
 
 
-}
+}

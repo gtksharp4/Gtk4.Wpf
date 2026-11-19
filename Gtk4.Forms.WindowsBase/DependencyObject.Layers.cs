@@ -164,22 +164,31 @@ public partial class DependencyObject
 	internal void NotifyInheritedValueChanged(
 		DependencyProperty dp, object? oldParentValue, object? newParentValue)
 	{
-		// Propagate only when neither local nor trigger value shadows the inherited one.
-		if (_localValues.ContainsKey(dp) || _triggerValues.ContainsKey(dp))
+		// Any layer above Inherited shadows the inherited value.
+		if (_localValues.ContainsKey(dp) || !ReferenceEquals(GetTopTriggerValue(dp), DependencyProperty.UnsetValue)
+		    || _animationValues.ContainsKey(dp) || _dynResValues.ContainsKey(dp) || _styleValues.ContainsKey(dp))
 		{
 			// Shadowed: the value is unchanged, but the inherited fallback it is compared with moved.
 			NotifyValueSource(dp);
 			return;
 		}
 
+		var meta = dp.GetMetadata(GetType());
+		if (meta.CoerceValueCallback != null)
+		{
+			// A coerced result may depend on the inherited value: compare effective values.
+			if (_coercedValues != null && _coercedValues.TryGetValue(dp, out var oldCoerced)) oldParentValue = oldCoerced;
+			RecomputeCoerced(dp);
+			newParentValue = ResolveEffectiveValue(dp);
+			if (Equals(oldParentValue, newParentValue)) return;
+		}
+
 		var args = new DependencyPropertyChangedEventArgs(dp, oldParentValue, newParentValue);
 		OnPropertyChanged(args);
-
-		var meta = dp.GetMetadata(GetType());
 		meta.PropertyChangedCallback?.Invoke(this, args);
 
 		var fmeta = meta as FrameworkPropertyMetadata;
 		if (fmeta != null && fmeta.Inherits)
 			DependencyObjectInheritance.PropagateInheritedValue(dp, this, oldParentValue, newParentValue);
 	}
-}
+}

@@ -149,26 +149,6 @@ public partial class Window
 		: WindowState.Normal;
 
 	/// <summary>
-	/// Handles GTK <c>notify::is-active</c>. Raises <see cref="Activated"/> or
-	/// <see cref="Deactivated"/> depending on the current GTK active state.
-	/// </summary>
-	void OnGtkIsActiveChanged(object o, GLib.NotifyArgs args)
-	{
-		if (_window == null) return;
-		NotifyActivation(_window.IsActive);
-	}
-
-	/// <summary>Raises Activated/Deactivated and informs the <see cref="Application"/>; also the test seam.</summary>
-	internal void NotifyActivation(bool active)
-	{
-		if (active)
-			Activated?.Invoke(this, EventArgs.Empty);
-		else
-			Deactivated?.Invoke(this, EventArgs.Empty);
-		_application?.OnWindowActivationChanged(this, active);
-	}
-
-	/// <summary>
 	/// Updates the <see cref="WindowState"/> DP from a WM-originated change and
 	/// raises <see cref="StateChanged"/>. The <see cref="_updatingWindowState"/>
 	/// flag is NOT set here — the guard is only needed in the DP→native direction.

@@ -14,7 +14,8 @@ public partial class Window
 	bool _shown;
 
 	const string ClosedMessage =
-		"Cannot set Visibility or call Show, ShowDialog, or WindowInteropHelper.EnsureHandle after a Window has closed.";
+		"Cannot set Visibility or call Show, ShowDialog, or WindowInteropHelper.EnsureHandle "
+		+ "after a Window has closed.";
 
 	void VerifyNotClosed()
 	{
@@ -36,7 +37,15 @@ public partial class Window
 	static Window()
 	{
 		VisibilityProperty.OverrideMetadata(typeof(Window),
-			new PropertyMetadata(Visibility.Collapsed, OnVisibilityChanged));
+			new PropertyMetadata(Visibility.Collapsed, null, CoerceWindowVisibility));
+	}
+
+	// WPF coerces before storing, so a rejected Visible leaves the stored value untouched.
+	static object? CoerceWindowVisibility(DependencyObject d, object? value)
+	{
+		if (value is Visibility visibility && visibility == Visibility.Visible)
+			((Window)d).VerifyNotClosed();
+		return value;
 	}
 
 	/// <summary>Shows the window (sets <see cref="UIElement.Visibility"/> to Visible).</summary>
@@ -56,7 +65,6 @@ public partial class Window
 	{
 		if (visibility == Visibility.Visible)
 		{
-			VerifyNotClosed();
 			ShowCore();
 		}
 		else if (_window != null)

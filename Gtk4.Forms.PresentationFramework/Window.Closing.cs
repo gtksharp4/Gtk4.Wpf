@@ -44,6 +44,7 @@ public partial class Window
 		{
 			var args = new CancelEventArgs();
 			Closing?.Invoke(this, args);
+			if (_closed) return true; // a handler already shut the app down
 
 			if (args.Cancel)
 				return false;
@@ -103,9 +104,19 @@ public partial class Window
 		}
 	}
 
-	/// <summary>Closes without the Closing veto; used by <see cref="Application.Shutdown(int)"/>.</summary>
+	/// <summary>
+	/// Closes for <see cref="Application.Shutdown(int)"/>: raises <see cref="Closing"/> (as WPF does)
+	/// but ignores its Cancel.
+	/// </summary>
 	internal void CloseForShutdown()
 	{
+		if (_closed) return;
+		if (!_closingInProgress)
+		{
+			_closingInProgress = true;
+			try { Closing?.Invoke(this, new CancelEventArgs()); }
+			finally { _closingInProgress = false; }
+		}
 		if (!_closed)
 			CloseCore(keepResult: true);
 	}

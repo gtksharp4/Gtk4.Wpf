@@ -12,7 +12,7 @@ public partial class TextBlock
 	/// <summary>Identifies the <see cref="Background"/> dependency property.</summary>
 	public static readonly DependencyProperty BackgroundProperty = Panel.BackgroundProperty.AddOwner(
 		typeof(TextBlock),
-		new FrameworkPropertyMetadata(Panel.BackgroundProperty.DefaultMetadata.DefaultValue, OnAppearanceChanged));
+		new FrameworkPropertyMetadata(Panel.BackgroundProperty.DefaultMetadata.DefaultValue));
 
 	/// <summary>Identifies the <see cref="Foreground"/> dependency property.</summary>
 	public static readonly DependencyProperty ForegroundProperty = TextElement.ForegroundProperty.AddOwner(

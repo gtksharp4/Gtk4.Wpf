@@ -31,8 +31,9 @@ public partial class FrameworkPropertyMetadata : UIPropertyMetadata
 	public FrameworkPropertyMetadata(
 		PropertyChangedCallback? propertyChangedCallback,
 		CoerceValueCallback? coerceValueCallback)
-		: base(null, propertyChangedCallback, coerceValueCallback)
+		: base(propertyChangedCallback)
 	{
+		CoerceValueCallback = coerceValueCallback;
 	}
 
 	/// <inheritdoc cref="PropertyMetadata(object?)"/>

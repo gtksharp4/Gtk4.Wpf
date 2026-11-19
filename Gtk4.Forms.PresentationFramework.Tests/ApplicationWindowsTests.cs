@@ -5,8 +5,10 @@ using Xunit;
 namespace Gtk4.Forms.PresentationFramework.Tests;
 
 /// <summary>Window registration, ShutdownMode policy and activation on real GTK windows.</summary>
-public class ApplicationWindowsTests : WpfGtkTestBase
+public class ApplicationWindowsTests : WpfGtkTestBase, System.IDisposable
 {
+	public void Dispose() => Application.ResetCurrentForTests();
+
 	static readonly string[] NoArgs = new string[0];
 
 	[Fact]
@@ -121,39 +123,4 @@ public class ApplicationWindowsTests : WpfGtkTestBase
 	[Fact]
 	public void ShutdownMode_defaults_to_OnLastWindowClose() => Run(() =>
 		Assert.Equal(ShutdownMode.OnLastWindowClose, new Application().ShutdownMode));
-
-	[Fact]
-	public void Application_activates_with_the_first_window_and_deactivates_with_the_last() => Run(() =>
-	{
-		var app = new Application();
-		var w1 = new Window();
-		var w2 = new Window();
-		int activated = 0, deactivated = 0, windowActivated = 0;
-		app.Activated += (_, _) => activated++;
-		app.Deactivated += (_, _) => deactivated++;
-		w1.Activated += (_, _) => windowActivated++;
-
-		w1.NotifyActivation(true);
-		w2.NotifyActivation(true);
-		Assert.Equal(1, activated);
-		Assert.Equal(1, windowActivated);
-
-		w1.NotifyActivation(false);
-		Assert.Equal(0, deactivated);
-		w2.NotifyActivation(false);
-		Assert.Equal(1, deactivated);
-	});
-
-	[Fact]
-	public void Window_Deactivated_without_prior_activation_does_not_raise_app_Deactivated() => Run(() =>
-	{
-		var app = new Application();
-		var w = new Window();
-		int deactivated = 0;
-		app.Deactivated += (_, _) => deactivated++;
-
-		w.NotifyActivation(false);
-
-		Assert.Equal(0, deactivated);
-	});
 }

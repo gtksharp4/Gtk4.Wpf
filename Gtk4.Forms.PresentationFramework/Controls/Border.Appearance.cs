@@ -13,7 +13,7 @@ public partial class Border
 	/// <summary>Identifies the <see cref="Background"/> dependency property.</summary>
 	public static readonly DependencyProperty BackgroundProperty = Panel.BackgroundProperty.AddOwner(
 		typeof(Border),
-		new FrameworkPropertyMetadata(Panel.BackgroundProperty.DefaultMetadata.DefaultValue, OnAppearanceChanged));
+		new FrameworkPropertyMetadata(Panel.BackgroundProperty.DefaultMetadata.DefaultValue));
 
 	/// <summary>Identifies the <see cref="BorderBrush"/> dependency property.</summary>
 	public static readonly DependencyProperty BorderBrushProperty = DependencyProperty.Register(

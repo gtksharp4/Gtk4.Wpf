@@ -8,6 +8,7 @@ public partial class Application
 	readonly List<Window> _windows = new List<Window>();
 	bool _shutdownStarted;
 	bool _pendingShutdown;
+	bool _shutdownRequested;
 	int _exitCode;
 
 	/// <summary>Raised once while the application shuts down; a handler may change the exit code.</summary>
@@ -26,13 +27,17 @@ public partial class Application
 	public void Shutdown() => Shutdown(0);
 
 	/// <summary>
-	/// Closes the remaining windows, raises <see cref="Exit"/> once and ends the main loop.
-	/// Idempotent and re-entrancy safe. Before <c>Run</c> it only records the request, which
-	/// <c>Run</c> honours right after <see cref="Startup"/>.
+	/// Requests shutdown like WPF: while running it is asynchronous, so windows close, <see cref="Exit"/>
+	/// is raised and the main loop ends later on the dispatcher; the first request wins. Before
+	/// <c>Run</c> it only records the request, which <c>Run</c> honours right after <see cref="Startup"/>.
 	/// </summary>
+	/// <exception cref="InvalidOperationException">Called from a thread other than the application's.</exception>
 	public void Shutdown(int exitCode)
 	{
-		if (_shutdownStarted)
+		if (Dispatcher.Thread != System.Threading.Thread.CurrentThread)
+			throw new InvalidOperationException(
+				"The calling thread cannot access this object because a different thread owns it.");
+		if (_shutdownRequested || _shutdownStarted)
 			return;
 		if (!_running)
 		{
@@ -40,7 +45,12 @@ public partial class Application
 			_exitCode = exitCode;
 			return;
 		}
-		DoShutdown(exitCode);
+		_shutdownRequested = true;
+		_exitCode = exitCode;
+		Dispatcher.BeginInvoke(new Action(() =>
+		{
+			if (!_shutdownStarted) DoShutdown(_exitCode);
+		}));
 	}
 
 	void DoShutdown(int exitCode)
@@ -61,6 +71,7 @@ public partial class Application
 
 	internal void RegisterWindow(Window window)
 	{
+		if (_runCompleted || _shutdownStarted) return;
 		if (Dispatcher.Thread != System.Threading.Thread.CurrentThread)
 			return;
 		_windows.Add(window);
@@ -72,11 +83,11 @@ public partial class Application
 	{
 		if (!_windows.Remove(window))
 			return;
-		_activeWindows.Remove(window);
+		DeactivateWindow(window);
 		bool closingIsMain = ReferenceEquals(window, MainWindow);
 		if (closingIsMain)
 			MainWindow = null;
-		if (!_shutdownStarted && _running
+		if (!_shutdownStarted && !_shutdownRequested && _running
 			&& ShutdownPolicy.ShouldShutdown(ShutdownMode, closingIsMain, _windows.Count))
 			Shutdown();
 	}

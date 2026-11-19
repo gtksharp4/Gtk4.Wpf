@@ -10,12 +10,11 @@ namespace System.Windows.Data;
 /// Resolves each child <see cref="Binding"/>, subscribes to source INPC, and calls the
 /// <see cref="IMultiValueConverter"/> to push a combined value to the target DP.
 /// <para>
-/// TwoWay note: a converter-less TwoWay <see cref="MultiBinding"/> does not write back —
-/// there is no <see cref="IMultiValueConverter.ConvertBack"/> to call.  The target-change
-/// subscription is skipped when <see cref="MultiBinding.Converter"/> is <c>null</c>.
+/// TwoWay: write-back needs <see cref="MultiBinding.Converter"/> (its ConvertBack); without one
+/// no target-change subscription is made. The resolved UpdateSourceTrigger decides when it runs.
 /// </para>
 /// </summary>
-internal static class MultiBindingEngine
+internal static partial class MultiBindingEngine
 {
 	static readonly ConditionalWeakTable<FrameworkElement, List<MultiRecord>> _records =
 		new ConditionalWeakTable<FrameworkElement, List<MultiRecord>>();
@@ -90,7 +89,7 @@ internal static class MultiBindingEngine
 
 	// ── Inner record ────────────────────────────────────────────────────────
 
-	internal sealed class MultiRecord
+	internal sealed partial class MultiRecord
 	{
 		readonly WeakReference<FrameworkElement> _targetRef;
 		readonly DependencyProperty _dp;
@@ -121,26 +120,20 @@ internal static class MultiBindingEngine
 		{
 			if (!_targetRef.TryGetTarget(out var target)) return;
 			Detach();
+			DetachTwoWay();
 			SubscribeSources(target);
 			Push(target);
 
-			// TwoWay: subscribe to target DP changes and write-back via ConvertBack.
-			// A converter-less TwoWay MultiBinding cannot write back (no ConvertBack target),
-			// so skip registering the dead listener entirely.
-			var (mode, _) = BindingDefaults.Resolve(
-				_mb.Mode, UpdateSourceTrigger.Default, _dp, target.GetType());
+			// TwoWay needs a converter's ConvertBack; the resolved trigger decides when it runs.
+			var (mode, trigger) = BindingDefaults.Resolve(
+				_mb.Mode, _mb.UpdateSourceTrigger, _dp, target.GetType());
 			if (mode == BindingMode.TwoWay && _mb.Converter != null)
-			{
-				_targetChangedCallback = OnTargetPropertyChanged;
-				TargetChangeTracker.Subscribe(target, _dp, _targetChangedCallback);
-			}
+				AttachTwoWay(target, trigger);
 		}
 
 		internal void Deactivate()
 		{
-			if (_targetChangedCallback != null && _targetRef.TryGetTarget(out var t))
-				TargetChangeTracker.Unsubscribe(t, _dp, _targetChangedCallback);
-			_targetChangedCallback = null;
+			DetachTwoWay();
 			Detach();
 		}
 
@@ -161,137 +154,5 @@ internal static class MultiBindingEngine
 			SubscribeSources(target);
 			Push(target);
 		}
-
-		internal void Push(FrameworkElement target)
-		{
-			if (_pushing) return;
-			_pushing = true;
-			try { PushCore(target); }
-			finally { _pushing = false; }
-		}
-
-		void PushCore(FrameworkElement target)
-		{
-			var values = new object?[_mb.Bindings.Count];
-			bool anyUnresolved = false;
-
-			for (int i = 0; i < _mb.Bindings.Count; i++)
-			{
-				var b = _mb.Bindings[i];
-				var src = ResolveChildSource(target, b);
-				if (src == null && b.Source == null && b.ElementName == null && b.RelativeSource == null)
-				{
-					// DataContext not set yet — treat as unresolved.
-					anyUnresolved = true;
-				}
-				values[i] = BindingEngine.ResolvePath(src, b.Path);
-			}
-
-			object? result;
-			if (anyUnresolved)
-			{
-				result = _mb.FallbackValue == DependencyProperty.UnsetValue
-					? null
-					: _mb.FallbackValue;
-			}
-			else if (_mb.Converter != null)
-			{
-				result = _mb.Converter.Convert(values, _dp.PropertyType,
-					_mb.ConverterParameter, CultureInfo.CurrentCulture);
-			}
-			else
-			{
-				// No converter — join as string.
-				result = string.Join(string.Empty, values);
-			}
-
-			// Apply TargetNullValue.
-			if (result == null && _mb.TargetNullValue != null)
-				result = _mb.TargetNullValue;
-
-			// Apply StringFormat.
-			result = ApplyStringFormat(_mb.StringFormat, result);
-
-			target.SetValue(_dp, result);
-		}
-
-		void SubscribeSources(FrameworkElement target)
-		{
-			foreach (var b in _mb.Bindings)
-			{
-				var src = ResolveChildSource(target, b);
-				if (src is INotifyPropertyChanged inpc)
-				{
-					PropertyChangedEventHandler handler = (s, e) =>
-					{
-						if (_targetRef.TryGetTarget(out var t)) Push(t);
-					};
-					inpc.PropertyChanged += handler;
-					_subs.Add((inpc, handler));
-				}
-			}
-		}
-
-		void Detach()
-		{
-			foreach (var (inpc, handler) in _subs)
-				inpc.PropertyChanged -= handler;
-			_subs.Clear();
-		}
-
-		/// <summary>
-		/// TwoWay write-back: target DP changed → call ConvertBack → write each child source.
-		/// </summary>
-		void OnTargetPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			if (_pushing) return;
-			if (!_targetRef.TryGetTarget(out var target)) return;
-			if (_mb.Converter == null) return;
-
-			var targetValue = target.GetValue(_dp);
-			var sourceTypes = new Type[_mb.Bindings.Count];
-			for (int i = 0; i < _mb.Bindings.Count; i++)
-				sourceTypes[i] = typeof(object);
-
-			var backValues = _mb.Converter.ConvertBack(
-				targetValue, sourceTypes, _mb.ConverterParameter, CultureInfo.CurrentCulture);
-
-			if (backValues == null) return;
-
-			_pushing = true;
-			try
-			{
-				for (int i = 0; i < _mb.Bindings.Count && i < backValues.Length; i++)
-				{
-					var bv = backValues[i];
-					if (ReferenceEquals(bv, Binding.DoNothing)) continue;
-					if (ReferenceEquals(bv, DependencyProperty.UnsetValue)) continue;
-
-					var b = _mb.Bindings[i];
-					var src = ResolveChildSource(target, b);
-					if (src == null) continue;
-					BindingEngine.WriteBackPath(src, b.Path, bv);
-				}
-			}
-			finally
-			{
-				_pushing = false;
-			}
-		}
-
-		static object? ResolveChildSource(FrameworkElement target, Binding b)
-		{
-			if (b.Source != null) return b.Source;
-			if (b.ElementName != null) return target.FindName(b.ElementName) as FrameworkElement;
-			if (b.RelativeSource != null) return b.RelativeSource.Resolve(target);
-			return target.DataContext;
-		}
-
-		static object? ApplyStringFormat(string? fmt, object? value)
-		{
-			if (fmt == null) return value;
-			string s = fmt.Contains("{0}") ? fmt : fmt + "{0}";
-			return string.Format(CultureInfo.InvariantCulture, s, value);
-		}
 	}
-}
+}

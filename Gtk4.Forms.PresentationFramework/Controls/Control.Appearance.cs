@@ -14,16 +14,16 @@ public abstract partial class Control
 	/// <summary>Identifies the <see cref="Background"/> dependency property.</summary>
 	public static readonly DependencyProperty BackgroundProperty = Panel.BackgroundProperty.AddOwner(
 		typeof(Control),
-		new FrameworkPropertyMetadata(Panel.BackgroundProperty.DefaultMetadata.DefaultValue, OnAppearanceChanged));
+		new FrameworkPropertyMetadata(Panel.BackgroundProperty.DefaultMetadata.DefaultValue));
 
 	/// <summary>Identifies the <see cref="BorderBrush"/> dependency property.</summary>
 	public static readonly DependencyProperty BorderBrushProperty = Border.BorderBrushProperty.AddOwner(
 		typeof(Control),
-		new FrameworkPropertyMetadata(Border.BorderBrushProperty.DefaultMetadata.DefaultValue, OnAppearanceChanged));
+		new FrameworkPropertyMetadata(Border.BorderBrushProperty.DefaultMetadata.DefaultValue));
 
 	/// <summary>Identifies the <see cref="BorderThickness"/> dependency property.</summary>
 	public static readonly DependencyProperty BorderThicknessProperty = Border.BorderThicknessProperty.AddOwner(
-		typeof(Control), new FrameworkPropertyMetadata(new Thickness(), OnAppearanceChanged));
+		typeof(Control), new FrameworkPropertyMetadata(new Thickness()));
 
 	/// <summary>Identifies the <see cref="Foreground"/> dependency property.</summary>
 	public static readonly DependencyProperty ForegroundProperty = TextElement.ForegroundProperty.AddOwner(

@@ -14,6 +14,12 @@ namespace System.Windows.Controls.Primitives;
 /// </summary>
 public class RepeatButton : ContentControl, ICommandSource, IDisposable
 {
+	static RepeatButton()
+	{
+		DefaultStyleKeyProperty.OverrideMetadata(typeof(RepeatButton),
+			new PropertyMetadata(typeof(RepeatButton)));
+	}
+
 	// ── Delay DP ─────────────────────────────────────────────────────────────
 
 	/// <summary>Milliseconds before the first repeat fires after the initial press.</summary>
@@ -183,4 +189,4 @@ public class RepeatButton : ContentControl, ICommandSource, IDisposable
 		_timer?.Dispose();
 		_timer = null;
 	}
-}
+}

@@ -28,6 +28,8 @@ public partial class PropertyMetadata
 	}
 
 	// Fills the unset default of a base registration (default(T) for value types).
+	internal bool IsDefaultValueModified => _defaultValueSet;
+
 	internal void SetImplicitDefault(object? value)
 	{
 		if (!_defaultValueSet) _defaultValue = value;
@@ -35,7 +37,10 @@ public partial class PropertyMetadata
 
 	internal void Apply(DependencyProperty dp, Type targetType, PropertyMetadata? baseMetadata)
 	{
-		if (baseMetadata != null && !IsSealed) Merge(baseMetadata, dp);
+		if (IsSealed)
+			throw new ArgumentException(
+				"Metadata is already associated with a type and property. A new one must be created.");
+		if (baseMetadata != null) Merge(baseMetadata, dp);
 		IsSealed = true;
 		OnApply(dp, targetType);
 	}

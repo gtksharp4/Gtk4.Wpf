@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 
 namespace System.Windows;
 
@@ -6,6 +7,8 @@ public partial class Application
 {
 	GLib.MainLoop? _loop;
 	bool _running;
+	bool _runCalled;
+	bool _runCompleted;
 
 	/// <summary>Test seam: replaces <c>GLib.MainLoop.Run</c> so the lifecycle runs without blocking.</summary>
 	internal Action<Application>? RunLoopOverride { get; set; }
@@ -17,11 +20,19 @@ public partial class Application
 	/// </summary>
 	public int Run() => RunWithGtk(null);
 
-	/// <summary>Sets <see cref="MainWindow"/>, then runs and shows it after startup.</summary>
+	/// <summary>Adds the window, makes it <see cref="MainWindow"/> if none is set, then runs and shows it.</summary>
 	public int Run(Window window)
 	{
-		MainWindow = window ?? throw new ArgumentNullException(nameof(window));
+		PrepareMainWindow(window);
 		return RunWithGtk(window);
+	}
+
+	// WPF adds the window to Windows if missing and sets MainWindow only when it is unset.
+	internal void PrepareMainWindow(Window window)
+	{
+		if (window == null) throw new ArgumentNullException(nameof(window));
+		if (!_windows.Contains(window)) _windows.Add(window);
+		MainWindow ??= window;
 	}
 
 	int RunWithGtk(Window? windowToShow)
@@ -59,16 +70,24 @@ public partial class Application
 	/// <summary>The lifecycle without GTK init, so tests can drive it on the fixture thread.</summary>
 	internal int RunCore(string[] args, Window? windowToShow = null)
 	{
+		if (Dispatcher.Thread != Thread.CurrentThread)
+			throw new InvalidOperationException(
+				"The calling thread cannot access this object because a different thread owns it.");
+		if (_runCalled)
+			throw new InvalidOperationException("Cannot call Run more than once.");
+		_runCalled = true;
 		_running = true;
-		HookDispatcher();
 		try
 		{
-			DoStartup(args);
+			// Startup runs inside the dispatcher in WPF, so its exceptions reach the unhandled-exception event.
+			try { DoStartup(args); }
+			catch (Exception ex) { if (!Dispatcher.RaiseUnhandledException(ex)) throw; }
 			if (_pendingShutdown && !_shutdownStarted)
 				DoShutdown(_exitCode);
 			if (!_shutdownStarted)
 			{
-				windowToShow?.Show();
+				try { windowToShow?.Show(); }
+				catch (Exception ex) { if (!Dispatcher.RaiseUnhandledException(ex)) throw; }
 				RunLoop();
 			}
 			if (!_shutdownStarted)
@@ -78,7 +97,7 @@ public partial class Application
 		finally
 		{
 			_running = false;
-			UnhookDispatcher();
+			_runCompleted = true;
 		}
 	}
 
@@ -88,8 +107,8 @@ public partial class Application
 		OnStartup(new StartupEventArgs(args));
 		if (_shutdownStarted)
 			return;
-		// StartupUri is resolved after Startup so a handler can still set MainWindow itself.
-		if (MainWindow == null && StartupUri != null)
+		// StartupUri is always loaded after Startup; a window created by a handler stays MainWindow.
+		if (StartupUri != null)
 		{
 			var window = CreateWindowFromStartupUri(StartupUri);
 			if (window != null)

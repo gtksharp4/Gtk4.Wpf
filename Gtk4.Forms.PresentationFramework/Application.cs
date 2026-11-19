@@ -16,6 +16,8 @@ public partial class Application : DispatcherObject
 	/// <summary>The most recently created <see cref="Application"/>.</summary>
 	public static Application? Current { get; private set; }
 
+	internal static void ResetCurrentForTests() => Current = null;
+
 	/// <summary>
 	/// Initialises the application, sets <see cref="Current"/>, and seeds the
 	/// theme dictionary with built-in default styles via <see cref="Themes.Generic"/>.
@@ -37,7 +39,8 @@ public partial class Application : DispatcherObject
 
 	/// <summary>
 	/// URI of the XAML window to instantiate once startup completes (set by the generated
-	/// App.g.cs entry-point). Used only when <see cref="MainWindow"/> is still unset.
+	/// App.g.cs entry-point). Always loaded after <see cref="Startup"/> unless shutdown was requested;
+	/// a window created by a Startup handler stays <see cref="MainWindow"/>.
 	/// </summary>
 	public Uri? StartupUri { get; set; }
 }

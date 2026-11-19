@@ -14,7 +14,7 @@ namespace System.Windows.Themes;
 /// </para>
 /// Call <see cref="Register"/> once at startup (e.g. from <see cref="Application"/> ctor).
 /// </summary>
-public static class Generic
+public static partial class Generic
 {
 	static bool _registered;
 
@@ -33,6 +33,9 @@ public static class Generic
 		RegisterLabel();
 		RegisterTextBox();
 		RegisterBorder();
+		RegisterToggleButton();
+		RegisterRepeatButton();
+		RegisterPasswordBox();
 	}
 
 	/// <summary>
@@ -171,4 +174,4 @@ public static class Generic
 		});
 		ThemeManager.RegisterDefaultStyle(typeof(Border), style);
 	}
-}
+}

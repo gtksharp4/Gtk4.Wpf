@@ -1184,6 +1184,54 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   and a `pack://` URI containing commas is split by the family list; `AffectsMeasure`/`AffectsRender` flags not
   aligned with WPF; Image/Visual/DrawingBrush backgrounds store-only; the on-screen CSS result was only verified
   through GTK measurement, not visually.
+- **Round 38 Track A — FrameworkPropertyMetadataOptions + ValidateValueCallback + two-way defaults (DONE).**
+  `FrameworkPropertyMetadataOptions` (WPF numeric values), `UIPropertyMetadata`, metadata sealing and base-merge
+  (only explicitly set flags win), `ValidateValueCallback` (`IsValidType`/`IsValidValue`, direct `SetValue` throws
+  `ArgumentException`), and `BindsTwoWayByDefault`/`DefaultUpdateSourceTrigger` resolved by `BindingDefaults`
+  (`TextBox.Text` → LostFocus, `IsChecked`/`Value`/`SelectedItem`/… two-way); `UpdateSourceTrigger` moved to
+  WindowsBase with a `TypeForwardedTo`. Store-only on GTK: `Affects*` layout/render flags, `Journal`,
+  `OverridesInheritanceBehavior`, `SubPropertiesDoNotAffectRender`, `IsAnimationProhibited`, `NotDataBindable`.
+  **+107 tests**.
+- **Round 38 Track B — Application lifecycle (DONE).** `Startup`/`Exit`/`ShutdownMode`/`Windows`/`MainWindow`,
+  `Activated`/`Deactivated`, `FindResource`/`Properties`, `StartupUri` resolution and
+  `DispatcherUnhandledException`. `SessionEnding` is store-only (GTK reports it only through a `GtkApplication`).
+  **+74 tests**.
+- **Round 38 review (Opus) + fixes — DONE.** Track A (BLOCK): **A1 (High)** bindings pushed null into value-type
+  DPs and threw now that `SetValue` validates → `BindingEngine.SetTargetSafe`/`SetFallbackOrDefault` (valid value,
+  else converted `FallbackValue`, else metadata default; never throws) wired into `PushToTarget`, `ApplyFallback`,
+  `ApplyTargetNullValue` and `MultiBindingEngine.PushCore`. **A2 (High)** `WriteBack` handed the raw target value
+  to `PropertyInfo.SetValue`, so `TextBox.Text` on an `int` threw at LostFocus → `TryResolveWriteTarget` +
+  `TryConvertToSourceType` (empty→null for `Nullable`, TypeConverter/`Convert.ChangeType`); a failed conversion
+  skips the write and sets an `ExceptionValidationRule` error, cleared by the next good write. **A3** the
+  `FrameworkPropertyMetadata(callback, coerce)` ctor no longer marks the default as explicit null. **A4** Window and
+  the `AddOwner` appearance metadata (Control/Border/TextBlock Background, Control BorderBrush/BorderThickness)
+  passed a callback the base already chains, so it ran twice → dropped. **A5** `ConvertBack` exceptions (single and
+  multi) are caught (error only with `ValidatesOnExceptions`), `DoNothing`/`UnsetValue` skip the write, and
+  `MultiBinding.UpdateSourceTrigger` now resolves like `Binding` (LostFocus dirty flag, Explicit never writes);
+  stale `MultiBinding` docs fixed. **A6** reused/duplicate metadata and a second `OverrideMetadata` for one type
+  throw `ArgumentException`; the default is validated before sealing. **A7** `BindingEngine.cs` 518→185 lines
+  (`.Push/.Refresh/.Target/.SourceConvert/.TargetChanges/.WriteBack/.Validation` partials), `MultiBindingEngine`
+  split, `TabItem`/`ComboBox.Items` extracted. Track B (SHIP-WITH-FIXES): **F1 (High)** `CloseForShutdown` now
+  raises `Closing` once and ignores `Cancel` (no re-entry from a handler). **F2 (High)** `StartupUri` always loads
+  after `Startup`. **F3** `DispatcherUnhandledException` forwards to `Dispatcher.UnhandledException` (dispatcher
+  sender, all handlers run, active from subscription); the invented `ApplicationUnhandledException` hook removed.
+  **F4** `DoStartup` and the initial `Show` route exceptions through `RaiseUnhandledException`. **F5**
+  `Shutdown` is thread-checked and posted via `Dispatcher.BeginInvoke` (first request wins). **F6** `Deactivated`
+  is deferred and cancelled when another window activates. **F7** `Run(Window)` keeps an existing `MainWindow`;
+  second `Run` throws. **F8** a finished/shut-down app stops tracking windows; `ResetCurrentForTests` in
+  lifecycle test teardown. **F9** `Window.Activation.cs`, `Application.StartupUri.cs`. Carry-in: **CI-1** a
+  throwing `CoerceValueCallback` stores nothing (`SetValueCore` rolls back) and `Window` rejects Visible-after-close
+  from a coerce callback; **CI-2** `ToggleButton`/`RepeatButton`/`PasswordBox` get a `DefaultStyleKey` and theme
+  Foreground (`Generic.Buttons.cs`); **CI-3** every layer above Inherited now shadows inheritance propagation
+  (coerced values compare effective values); **CI-4** a failed conversion reverts to the default instead of a
+  stale value; **CI-5** `BrushCss`/`ClosedMessage` lines wrapped. Rejected: none.
+  **Round 38 totals: 3364 tests** (177 WindowsBase + 2930 PresentationFramework + 242 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean across all TFMs.
+- **Carry-over (Round 38)**: `SessionEnding` is never raised on GTK; a second `new Application()` does not throw;
+  `Application` Activated/Deactivated depend on window-manager `notify::is-active` ordering (verified only through
+  the `NotifyActivation` seam); `LostFocus` tests drive managed `Focus()`, not the native focus controller;
+  registered defaults are only run through `ValidateValueCallback` (no type check); `Binding` has no
+  `ConverterCulture` (conversions use the current culture); metadata `IsAnimationProhibited` is not merged.
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a

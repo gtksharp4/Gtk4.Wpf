@@ -8,18 +8,15 @@ public partial class Application
 	static bool _glibHooked;
 
 	/// <summary>
-	/// Raised for an exception that escapes a dispatcher callback, after
-	/// <see cref="Dispatcher.UnhandledException"/>. Handled = true keeps the app running;
-	/// otherwise the process terminates.
+	/// Raised for an exception that escapes a dispatcher callback. Like WPF it forwards to
+	/// <see cref="Dispatcher.UnhandledException"/>: handlers get the dispatcher as sender, run in
+	/// subscription order, all run after one sets Handled, and are active from subscription.
 	/// </summary>
-	public event DispatcherUnhandledExceptionEventHandler? DispatcherUnhandledException;
-
-	void HookDispatcher() => Dispatcher.ApplicationUnhandledException += OnDispatcherUnhandled;
-
-	void UnhookDispatcher() => Dispatcher.ApplicationUnhandledException -= OnDispatcherUnhandled;
-
-	void OnDispatcherUnhandled(object sender, DispatcherUnhandledExceptionEventArgs e) =>
-		DispatcherUnhandledException?.Invoke(this, e);
+	public event DispatcherUnhandledExceptionEventHandler? DispatcherUnhandledException
+	{
+		add => Dispatcher.UnhandledException += value;
+		remove => Dispatcher.UnhandledException -= value;
+	}
 
 	/// <summary>
 	/// Routes exceptions that escape GTK signal callbacks (which never pass through

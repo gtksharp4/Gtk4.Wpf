@@ -26,31 +26,41 @@ internal static partial class BindingEngine
 		return current;
 	}
 
+	/// <summary>Resolves the object and property that a write-back through <paramref name="path"/> targets.</summary>
+	internal static bool TryResolveWriteTarget(
+		object? source, string? path, out object owner, out PropertyInfo prop)
+	{
+		owner = null!;
+		prop = null!;
+		if (source == null || string.IsNullOrEmpty(path)) return false;
+
+		var current = source;
+		var segments = path!.Split('.');
+		for (int i = 0; i < segments.Length - 1; i++)
+		{
+			var p = current.GetType().GetProperty(segments[i], BindingFlags.Public | BindingFlags.Instance);
+			if (p == null) return false;
+			var next = p.GetValue(current);
+			if (next == null) return false;
+			current = next;
+		}
+
+		var lastProp = current.GetType().GetProperty(
+			segments[segments.Length - 1], BindingFlags.Public | BindingFlags.Instance);
+		if (lastProp == null || !lastProp.CanWrite) return false;
+		owner = current;
+		prop = lastProp;
+		return true;
+	}
+
 	/// <summary>
 	/// Writes <paramref name="value"/> back through the dot-separated path on
 	/// <paramref name="source"/>. Returns <c>true</c> on success.
 	/// </summary>
 	internal static bool WriteBackPath(object? source, string? path, object? value)
 	{
-		if (source == null) return false;
-		if (string.IsNullOrEmpty(path)) return false;
-
-		var current = source;
-		var segments = path!.Split('.');
-		for (int i = 0; i < segments.Length - 1; i++)
-		{
-			if (current == null) return false;
-			var prop = current.GetType().GetProperty(segments[i],
-				BindingFlags.Public | BindingFlags.Instance);
-			if (prop == null) return false;
-			current = prop.GetValue(current);
-		}
-
-		if (current == null) return false;
-		var lastProp = current.GetType().GetProperty(
-			segments[segments.Length - 1], BindingFlags.Public | BindingFlags.Instance);
-		if (lastProp == null || !lastProp.CanWrite) return false;
-		lastProp.SetValue(current, value);
+		if (!TryResolveWriteTarget(source, path, out var owner, out var prop)) return false;
+		prop.SetValue(owner, value);
 		return true;
 	}
 
