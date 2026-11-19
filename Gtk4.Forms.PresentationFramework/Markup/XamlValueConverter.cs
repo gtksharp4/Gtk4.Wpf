@@ -65,7 +65,7 @@ public static class XamlValueConverter
 		// Nullable<T> → unwrap to T for lookup.
 		Type lookupType = Nullable.GetUnderlyingType(targetType) ?? targetType;
 
-		if (_converters.TryGetValue(lookupType, out var converter))
+		if (TryGetConverter(dp, lookupType, out var converter))
 		{
 			try
 			{
@@ -139,6 +139,17 @@ public static class XamlValueConverter
 		return ConvertByType(targetType, rawValue);
 	}
 
+	// FontSize accepts WPF FontSizeConverter units (px/in/cm/pt); a plain double converter would reject them.
+	static bool TryGetConverter(DependencyProperty dp, Type lookupType, out Func<string, object?> converter)
+	{
+		if (ReferenceEquals(dp, System.Windows.Documents.TextElement.FontSizeProperty))
+		{
+			converter = raw => FontConverters.ParseFontSize(raw);
+			return true;
+		}
+		return _converters.TryGetValue(lookupType, out converter!);
+	}
+
 	// ── Built-in registration ────────────────────────────────────────────────
 
 	static void RegisterBuiltIns()
@@ -162,6 +173,10 @@ public static class XamlValueConverter
 		Register<Color>(MediaConverters.ParseColor);
 		Register<Brush>(MediaConverters.ParseBrush);
 		Register<SolidColorBrush>(raw => (SolidColorBrush)MediaConverters.ParseBrush(raw));
+		Register<FontFamily>(FontConverters.ParseFontFamily);
+		Register<FontWeight>(FontConverters.ParseFontWeight);
+		Register<FontStyle>(FontConverters.ParseFontStyle);
+		Register<FontStretch>(FontConverters.ParseFontStretch);
 
 		// Animation primitives
 		Register<Duration>(AnimationConverters.ParseDuration);
