@@ -22,6 +22,7 @@ public partial class FrameworkElement
 			if (e.OldValue is Style oldStyle)
 			{
 				oldStyle.DetachTriggers(fe);
+				oldStyle.Unapply(fe);
 				var snapshot = fe.SnapshotStyleValues();
 				fe.ClearStyleValues(snapshot);
 			}

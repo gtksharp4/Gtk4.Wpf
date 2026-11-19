@@ -1,0 +1,40 @@
+using System.Collections.Generic;
+
+namespace System.Windows;
+
+/// <summary>Collection of <see cref="SetterBase"/> items.</summary>
+public class SetterBaseCollection : List<SetterBase>
+{
+	/// <summary>Un-applies the trigger-layer state every setter created for <paramref name="contributor"/>.</summary>
+	internal void UnapplyTriggerLayer(DependencyObject target, object contributor)
+	{
+		foreach (var setter in this)
+			setter.Unapply(target, contributor);
+	}
+}
+
+/// <summary>Base class for all setter types.</summary>
+public abstract class SetterBase
+{
+	/// <summary>Applies this setter to <paramref name="target"/> as a local value (direct apply).</summary>
+	internal abstract void Apply(DependencyObject target);
+
+	/// <summary>Applies this setter into the style-value layer of <paramref name="target"/> (D6).</summary>
+	internal abstract void ApplyToStyleLayer(DependencyObject target);
+
+	/// <summary>
+	/// D8: Applies this setter into the trigger-value layer of <paramref name="target"/>,
+	/// keyed by <paramref name="contributor"/> (the trigger-state instance).
+	/// Appends the resolved DP to <paramref name="appliedDps"/> for un-apply bookkeeping.
+	/// </summary>
+	internal abstract void ApplyToTriggerLayer(
+		DependencyObject target,
+		object contributor,
+		List<DependencyProperty> appliedDps);
+
+	/// <summary>
+	/// Removes live state (resource links, bindings, handlers) this setter attached to
+	/// <paramref name="target"/>; <paramref name="contributor"/> is the trigger state, or null for the style.
+	/// </summary>
+	internal virtual void Unapply(DependencyObject target, object? contributor) { }
+}

@@ -73,6 +73,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			}
 
 			XNamespace xNs = GetXNamespace(root);
+			_xNs = xNs;
 			_prefixMap = CollectXmlnsPrefixMap(root);
 			_ignorableNamespaces = CollectIgnorableNamespaces(root);
 			XAttribute classAttr = root.Attribute(xNs + "Class");
@@ -973,13 +974,14 @@ namespace Gtk4.Forms.MarkupCompiler
 				if (ch.Name.LocalName == "Setter")
 				{
 					string propAttr = (string)ch.Attribute("Property");
-					string valAttr = (string)ch.Attribute("Value");
 					if (propAttr == null) continue;
 					string escapedProp = EscapeString(propAttr);
-					string valExpr = valAttr != null
-						? $"\"{EscapeString(valAttr)}\""
-						: "null";
+					string valExpr = SetterValueExpression(w, ch, ownerVar);
 					w.Line($"{styleVar}.Setters.Add(new System.Windows.Setter {{ PropertyName = \"{escapedProp}\", Value = {valExpr} }});");
+				}
+				else if (ch.Name.LocalName == "EventSetter")
+				{
+					EmitEventSetter(w, ch, $"{styleVar}.Setters", targetTypeAttr);
 				}
 				else if (ch.Name.LocalName == "Style.Triggers")
 				{
@@ -1038,8 +1040,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			{
 				if (setter.Name.LocalName != "Setter") continue;
 				string p = (string)setter.Attribute("Property") ?? string.Empty;
-				string v = (string)setter.Attribute("Value");
-				string vExpr = v != null ? $"\"{EscapeString(v)}\"" : "null";
+				string vExpr = SetterValueExpression(w, setter, "this");
 				w.Line($"{trigVar}.Setters.Add(new System.Windows.Setter {{ PropertyName = \"{EscapeString(p)}\", Value = {vExpr} }});");
 			}
 			w.Line($"{containerVar}.Triggers.Add({trigVar});");
@@ -1062,8 +1063,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			{
 				if (setter.Name.LocalName != "Setter") continue;
 				string p = (string)setter.Attribute("Property") ?? string.Empty;
-				string v = (string)setter.Attribute("Value");
-				string vExpr = v != null ? $"\"{EscapeString(v)}\"" : "null";
+				string vExpr = SetterValueExpression(w, setter, "this");
 				w.Line($"{trigVar}.Setters.Add(new System.Windows.Setter {{ PropertyName = \"{EscapeString(p)}\", Value = {vExpr} }});");
 			}
 			w.Line($"{containerVar}.Triggers.Add({trigVar});");
@@ -1098,8 +1098,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				else if (child.Name.LocalName == "Setter")
 				{
 					string p = (string)child.Attribute("Property") ?? string.Empty;
-					string v = (string)child.Attribute("Value");
-					string vExpr = v != null ? $"\"{EscapeString(v)}\"" : "null";
+					string vExpr = SetterValueExpression(w, child, "this");
 					w.Line($"{trigVar}.Setters.Add(new System.Windows.Setter {{ PropertyName = \"{EscapeString(p)}\", Value = {vExpr} }});");
 				}
 			}
