@@ -143,7 +143,12 @@ public class DispatcherTimer
 		bool enabled;
 		lock (_lock) { enabled = _isEnabled; }
 		if (!enabled) return false;
-		FireTick();
+		try { FireTick(); }
+		catch (Exception ex)
+		{
+			if (!Dispatcher.CurrentDispatcher.RaiseUnhandledException(ex))
+				throw;
+		}
 		lock (_lock) { return _isEnabled; }
 	}
 

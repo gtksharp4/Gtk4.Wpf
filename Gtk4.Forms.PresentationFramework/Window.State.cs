@@ -155,10 +155,17 @@ public partial class Window
 	void OnGtkIsActiveChanged(object o, GLib.NotifyArgs args)
 	{
 		if (_window == null) return;
-		if (_window.IsActive)
+		NotifyActivation(_window.IsActive);
+	}
+
+	/// <summary>Raises Activated/Deactivated and informs the <see cref="Application"/>; also the test seam.</summary>
+	internal void NotifyActivation(bool active)
+	{
+		if (active)
 			Activated?.Invoke(this, EventArgs.Empty);
 		else
 			Deactivated?.Invoke(this, EventArgs.Empty);
+		_application?.OnWindowActivationChanged(this, active);
 	}
 
 	/// <summary>

@@ -1,28 +1,19 @@
 using System;
-using System.Reflection;
+using System.Windows.Threading;
 
 namespace System.Windows;
 
 /// <summary>
-/// Hosts the WPF application. Initialises GTK, shows <see cref="MainWindow"/> (or the
-/// window resolved from <see cref="StartupUri"/>), and runs the GTK main loop.
+/// Hosts the WPF application: GTK init, the startup/shutdown lifecycle, the window list and
+/// application resources. The partial files split the lifecycle by concern.
 /// </summary>
 /// <remarks>
-/// Phase-0: GTK is initialised via <see cref="Gtk.Application.Init()"/> and driven by
-/// <see cref="GLib.MainLoop"/>. Phase-1 refinement will bridge to the
-/// <c>Gtk4.Forms.Platform.Gtk</c> STA-thread host (<c>FormsWindow</c>,
-/// <c>GtkThemes</c>, <c>GtkSynchronizationContext</c>) when deeper integration is needed.
+/// Documented gaps versus WPF: a second <c>new Application()</c> does not throw (the test suite
+/// constructs several), and <see cref="SessionEnding"/> is never raised on GTK.
 /// </remarks>
-public class Application
+public partial class Application : DispatcherObject
 {
-	GLib.MainLoop? _loop;
-
-	// ── Current ──────────────────────────────────────────────────────────────
-
-	/// <summary>
-	/// The running <see cref="Application"/> instance. Set in the constructor;
-	/// available for resource lookup from anywhere in the tree.
-	/// </summary>
+	/// <summary>The most recently created <see cref="Application"/>.</summary>
 	public static Application? Current { get; private set; }
 
 	/// <summary>
@@ -35,122 +26,18 @@ public class Application
 		Themes.Generic.Register();
 	}
 
-	// ─────────────────────────────────────────────────────────────────────────
-
-	/// <summary>The main window shown when <see cref="Run()"/> is called.</summary>
+	/// <summary>
+	/// The main window. The first <see cref="Window"/> created while this application is
+	/// <see cref="Current"/> becomes it; it is cleared when that window closes.
+	/// </summary>
 	public Window? MainWindow { get; set; }
 
 	/// <summary>Application-level resources shared by all windows.</summary>
 	public ResourceDictionary Resources { get; } = new ResourceDictionary();
 
 	/// <summary>
-	/// URI of the XAML window to instantiate on startup (set by the generated
-	/// App.g.cs entry-point). Takes precedence over <see cref="MainWindow"/> when set.
-	/// Phase-0: <see cref="MainWindow"/> is set directly in code instead.
+	/// URI of the XAML window to instantiate once startup completes (set by the generated
+	/// App.g.cs entry-point). Used only when <see cref="MainWindow"/> is still unset.
 	/// </summary>
 	public Uri? StartupUri { get; set; }
-
-	/// <summary>
-	/// Initialises GTK and runs the main loop, showing <see cref="MainWindow"/>.
-	/// Returns the GTK exit code (always 0 in Phase 0).
-	/// </summary>
-	public int Run()
-	{
-		Gtk.Application.Init();
-		// Notify the animation scheduler that the GLib event loop is now live.
-		System.Windows.Media.Animation.AnimationScheduler.NotifyGtkInitialised();
-		// Wire Dispatcher delegates to the GLib main loop.
-		Threading.Dispatcher.IsOnDispatcherThread = () => GLib.MainContext.Default.IsOwner;
-		Threading.Dispatcher.BeginInvokeAction = action => GLib.Idle.Add(() => { action(); return false; });
-		Threading.Dispatcher.InvokeAction = action =>
-		{
-			if (GLib.MainContext.Default.IsOwner) { action(); return; }
-			using var done = new System.Threading.ManualResetEventSlim();
-			GLib.Idle.Add(() => { try { action(); } finally { done.Set(); } return false; });
-			done.Wait();
-		};
-		// Wire DispatcherTimer delegates to GLib.
-		Threading.DispatcherTimer.ScheduleAction = (ms, cb) =>
-			GLib.Timeout.Add(ms, new GLib.TimeoutHandler(() => cb()));
-		Threading.DispatcherTimer.RemoveSourceAction = id => GLib.Source.Remove(id);
-
-		// StartupUri takes precedence: the generated App.g.cs sets it (WPF-faithful) rather
-		// than assigning MainWindow directly, so resolve it to the compiled Window type here.
-		if (MainWindow == null && StartupUri != null)
-			MainWindow = CreateWindowFromStartupUri(StartupUri);
-
-		var window = MainWindow;
-		if (window != null)
-		{
-			// WPF default ShutdownMode.OnLastWindowClose: closing the main window exits the app.
-			window.Closed += (_, _) => Shutdown();
-			window.Show();
-		}
-
-		_loop = new GLib.MainLoop();
-		_loop.Run();
-		return 0;
-	}
-
-	/// <summary>
-	/// Reduces a StartupUri to the leaf XAML file name without extension — the expected
-	/// <see cref="Window"/> type name. Handles relative (<c>MainWindow.xaml</c>,
-	/// <c>Views/MainWindow.xaml</c>), backslash, and absolute pack/file URIs.
-	/// </summary>
-	internal static string StartupUriToTypeName(Uri startupUri)
-	{
-		string path = startupUri.IsAbsoluteUri ? startupUri.AbsolutePath : startupUri.OriginalString;
-		string leaf = path.Replace('\\', '/');
-		int slash = leaf.LastIndexOf('/');
-		if (slash >= 0) leaf = leaf.Substring(slash + 1);
-		if (leaf.EndsWith(".xaml", StringComparison.OrdinalIgnoreCase))
-			leaf = leaf.Substring(0, leaf.Length - ".xaml".Length);
-		return leaf;
-	}
-
-	/// <summary>
-	/// Instantiates the <see cref="Window"/> that <paramref name="startupUri"/> refers to.
-	/// The markup compiler compiles each XAML's <c>x:Class</c> into a partial
-	/// <see cref="Window"/> whose constructor calls <c>InitializeComponent</c>; this resolves
-	/// the URI's leaf file name (e.g. <c>MainWindow.xaml</c> → <c>MainWindow</c>) to that type
-	/// in the application assembly and constructs it. Returns <c>null</c> when no matching
-	/// window type is found.
-	/// </summary>
-	Window? CreateWindowFromStartupUri(Uri startupUri)
-	{
-		string leaf = StartupUriToTypeName(startupUri);
-
-		// App is defined in the consumer's assembly, so look there for the window type.
-		Assembly appAssembly = GetType().Assembly;
-		Window? fallback = null;
-		foreach (Type t in appAssembly.GetTypes())
-		{
-			if (t.IsAbstract || !typeof(Window).IsAssignableFrom(t)) continue;
-			if (!string.Equals(t.Name, leaf, StringComparison.Ordinal)) continue;
-
-			// Prefer a match in App's own namespace; otherwise take the first candidate.
-			if (string.Equals(t.Namespace, GetType().Namespace, StringComparison.Ordinal))
-				return (Window)Activator.CreateInstance(t)!;
-			fallback ??= (Window)Activator.CreateInstance(t)!;
-		}
-		return fallback;
-	}
-
-	/// <summary>
-	/// Convenience overload: sets <see cref="MainWindow"/> and calls <see cref="Run()"/>.
-	/// </summary>
-	public int Run(Window mainWindow)
-	{
-		MainWindow = mainWindow ?? throw new ArgumentNullException(nameof(mainWindow));
-		return Run();
-	}
-
-	/// <summary>
-	/// Requests that the main loop terminate and the process exit.
-	/// </summary>
-	public void Shutdown()
-	{
-		if (_loop != null && _loop.IsRunning)
-			_loop.Quit();
-	}
 }

@@ -21,6 +21,18 @@ public partial class Window
 		if (_closed) throw new InvalidOperationException(ClosedMessage);
 	}
 
+	readonly Application? _application;
+
+	/// <summary>
+	/// Registers the window with <see cref="Application.Current"/> (its <see cref="Application.Windows"/>
+	/// list, and <see cref="Application.MainWindow"/> if unset) when one exists on this thread.
+	/// </summary>
+	public Window()
+	{
+		_application = Application.Current;
+		_application?.RegisterWindow(this);
+	}
+
 	static Window()
 	{
 		VisibilityProperty.OverrideMetadata(typeof(Window),

@@ -21,6 +21,8 @@ namespace Gtk4.Forms.MarkupCompiler
 				"MouseWheel", "PreviewMouseWheel", "MouseRightButtonDown", "MouseRightButtonUp",
 				"PreviewMouseLeftButtonDown", "PreviewMouseLeftButtonUp",
 				"GotMouseCapture", "LostMouseCapture",
+				// Round 38: Application lifecycle events (App.xaml root attributes).
+				"Startup", "Exit", "Activated", "Deactivated", "SessionEnding", "DispatcherUnhandledException",
 			};
 
 		internal static bool FallbackEventHeuristic(string memberName) =>
