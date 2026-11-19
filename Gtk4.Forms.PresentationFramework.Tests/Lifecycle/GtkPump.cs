@@ -27,16 +27,16 @@ static class GtkPump
 }
 
 /// <summary>
-/// Routes <see cref="Dispatcher.BeginInvoke(Action, DispatcherPriority)"/> through
-/// <c>GLib.Idle</c> for the duration of a GTK smoke test (as <c>Application.Run</c> does), so
-/// deferred lifecycle work runs from the real main loop; restores the previous bridge on dispose.
+/// Routes <see cref="Dispatcher.BeginInvoke(Action, DispatcherPriority)"/> through the same GLib
+/// bridge <c>Application.Run</c> installs, for the duration of a GTK smoke test, so deferred
+/// lifecycle work runs from the real main loop; restores the previous bridge on dispose.
 /// </summary>
 sealed class GtkDispatcherScope : IDisposable
 {
 	readonly Action<Action> _previous = Dispatcher.BeginInvokeAction;
 
 	public GtkDispatcherScope() =>
-		Dispatcher.BeginInvokeAction = action => GLib.Idle.Add(() => { action(); return false; });
+		Dispatcher.BeginInvokeAction = System.Windows.Application.PostToMainLoop;
 
 	public void Dispose() => Dispatcher.BeginInvokeAction = _previous;
 }
