@@ -80,7 +80,7 @@ public partial class ComboBox
 		_updatingValue = true;
 		try
 		{
-			var match = SelectorValueSupport.FindByValue(_items, SelectedValuePath, value);
+			var match = SelectorValueSupport.FindByValue((System.Collections.IList)Items, SelectedValuePath, value);
 			SelectedItem = match;
 		}
 		finally { _updatingValue = false; }

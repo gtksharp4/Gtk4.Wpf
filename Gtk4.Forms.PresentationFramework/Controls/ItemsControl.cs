@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Windows.Data;
+using System.Windows.Markup;
 
 namespace System.Windows.Controls;
 
@@ -18,6 +19,7 @@ namespace System.Windows.Controls;
 /// Reacts to <see cref="INotifyCollectionChanged"/> if the source implements it.
 /// </para>
 /// </summary>
+[ContentProperty("Items")]
 public partial class ItemsControl : Control
 {
 	// ── ItemsSource DP ───────────────────────────────────────────────────────
@@ -69,10 +71,10 @@ public partial class ItemsControl : Control
 	// ── Items list ───────────────────────────────────────────────────────────
 
 	/// <summary>
-	/// Snapshot of items. Updated on <see cref="ItemsSource"/> change or
-	/// <see cref="INotifyCollectionChanged"/> notification.
+	/// The items: a snapshot of <see cref="ItemsSource"/> when set, otherwise the inline items
+	/// (observable; mutating it while <see cref="ItemsSource"/> is in use throws).
 	/// </summary>
-	public IList<object?> Items { get; } = new List<object?>();
+	public IList<object?> Items => _itemList ??= new ItemList(this);
 
 	// ── INCC subscription ────────────────────────────────────────────────────
 
@@ -81,6 +83,8 @@ public partial class ItemsControl : Control
 
 	void OnItemsSourceChanged(IEnumerable? oldSource, IEnumerable? newSource)
 	{
+		if (newSource != null && !_itemsFromSource && Items.Count > 0)
+			throw new InvalidOperationException("Items collection must be empty before using ItemsSource.");
 		if (_incc != null)
 		{
 			_incc.CollectionChanged -= OnCollectionChanged;
@@ -135,9 +139,6 @@ public partial class ItemsControl : Control
 	readonly List<(UIElement Container, Gtk.Widget Widget)> _rows =
 		new List<(UIElement, Gtk.Widget)>();
 
-	// Item factory hook — defined in ItemsControl.Selectors.cs partial.
-	// GetContainerForItem is declared there with full selector/template/path logic.
-
 	// ── GTK backing ──────────────────────────────────────────────────────────
 
 	bool _widgetCreated;
@@ -153,10 +154,8 @@ public partial class ItemsControl : Control
 
 	internal void RebuildItems()
 	{
-		Items.Clear();
-		if (ItemsSource != null)
-			foreach (var item in EffectiveItems)
-				Items.Add(item);
+		if (ItemsSource != null || _itemsFromSource)
+			FillItemsFromSource();
 
 		OnItemsRebuilt();
 
