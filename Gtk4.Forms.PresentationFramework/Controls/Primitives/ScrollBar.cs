@@ -84,8 +84,9 @@ public partial class ScrollBar : Control
 			nameof(Value),
 			typeof(double),
 			typeof(ScrollBar),
-			new PropertyMetadata(
+			new FrameworkPropertyMetadata(
 				0.0,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal,
 				OnValueChanged,
 				(d, v) =>
 				{

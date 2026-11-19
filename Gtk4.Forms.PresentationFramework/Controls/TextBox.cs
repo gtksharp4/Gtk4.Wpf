@@ -30,7 +30,9 @@ public partial class TextBox : Control
 			nameof(Text),
 			typeof(string),
 			typeof(TextBox),
-			new PropertyMetadata(string.Empty, OnTextDpChanged));
+			new FrameworkPropertyMetadata(string.Empty,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal,
+				OnTextDpChanged, null, false, System.Windows.Data.UpdateSourceTrigger.LostFocus));
 
 	static void OnTextDpChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{

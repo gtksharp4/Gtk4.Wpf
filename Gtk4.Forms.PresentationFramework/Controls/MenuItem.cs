@@ -60,7 +60,8 @@ public partial class MenuItem : FrameworkElement, ICommandSource, IDisposable
 	/// <summary>Checked state; relevant when <see cref="IsCheckable"/> is <c>true</c>.</summary>
 	public static readonly DependencyProperty IsCheckedProperty =
 		DependencyProperty.Register(nameof(IsChecked), typeof(bool), typeof(MenuItem),
-			new PropertyMetadata(false, OnIsCheckedChanged));
+			new FrameworkPropertyMetadata(false,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal, OnIsCheckedChanged));
 
 	static void OnIsCheckedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{

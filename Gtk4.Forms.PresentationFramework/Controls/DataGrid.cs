@@ -83,7 +83,8 @@ public partial class DataGrid : Control
 			nameof(SelectedItem),
 			typeof(object),
 			typeof(DataGrid),
-			new PropertyMetadata(null, OnSelectedItemChanged));
+			new FrameworkPropertyMetadata(null,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSelectedItemChanged));
 
 	static void OnSelectedItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		=> ((DataGrid)d).ApplySelectedItem(e.NewValue);

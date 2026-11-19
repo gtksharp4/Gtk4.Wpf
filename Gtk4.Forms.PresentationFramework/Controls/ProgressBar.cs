@@ -49,7 +49,8 @@ public class ProgressBar : Control
 			nameof(Value),
 			typeof(double),
 			typeof(ProgressBar),
-			new PropertyMetadata(0.0, OnRangeOrValueChanged));
+			new FrameworkPropertyMetadata(0.0,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal, OnRangeOrValueChanged));
 
 	/// <summary>Gets or sets the current value.</summary>
 	public double Value

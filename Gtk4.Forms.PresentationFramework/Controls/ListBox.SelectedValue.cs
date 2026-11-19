@@ -40,7 +40,8 @@ public partial class ListBox
 			nameof(SelectedValue),
 			typeof(object),
 			typeof(ListBox),
-			new PropertyMetadata(null, OnSelectedValueChanged));
+			new FrameworkPropertyMetadata(null,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSelectedValueChanged));
 
 	static void OnSelectedValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{

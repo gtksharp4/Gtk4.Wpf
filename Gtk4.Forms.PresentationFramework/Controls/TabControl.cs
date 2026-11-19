@@ -20,7 +20,8 @@ public class TabControl : ItemsControl
 			nameof(SelectedIndex),
 			typeof(int),
 			typeof(TabControl),
-			new PropertyMetadata(-1, OnSelectedIndexChanged));
+			new FrameworkPropertyMetadata(-1,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal, OnSelectedIndexChanged));
 
 	static void OnSelectedIndexChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
@@ -61,7 +62,8 @@ public class TabControl : ItemsControl
 			nameof(SelectedItem),
 			typeof(object),
 			typeof(TabControl),
-			new PropertyMetadata(null, OnSelectedItemChanged));
+			new FrameworkPropertyMetadata(null,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSelectedItemChanged));
 
 	static void OnSelectedItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{

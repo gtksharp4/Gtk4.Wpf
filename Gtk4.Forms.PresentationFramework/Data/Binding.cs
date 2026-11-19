@@ -69,9 +69,9 @@ public class Binding : BindingBase
 	/// <summary>
 	/// When the source is updated for <see cref="BindingMode.TwoWay"/> or
 	/// <see cref="BindingMode.OneWayToSource"/> bindings.
-	/// <see cref="UpdateSourceTrigger.PropertyChanged"/> and
-	/// <see cref="UpdateSourceTrigger.Explicit"/> are honoured;
-	/// <see cref="UpdateSourceTrigger.LostFocus"/> falls back to PropertyChanged.
+	/// <see cref="UpdateSourceTrigger.PropertyChanged"/>, <see cref="UpdateSourceTrigger.LostFocus"/>
+	/// (written when <c>UIElement.LostFocusEvent</c> reaches the target) and
+	/// <see cref="UpdateSourceTrigger.Explicit"/> are honoured; Default resolves from the target metadata.
 	/// </summary>
 	public UpdateSourceTrigger UpdateSourceTrigger { get; set; } = UpdateSourceTrigger.Default;
 

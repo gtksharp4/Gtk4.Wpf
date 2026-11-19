@@ -50,6 +50,8 @@ public class VisibilityDpTests
 	[Fact]
 	public void Window_Visibility_default_is_Collapsed()
 	{
+		// The override is registered in Window's static constructor; do not depend on test order.
+		System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(WpfWindow).TypeHandle);
 		Assert.Equal(Visibility.Collapsed, UIElement.VisibilityProperty.GetMetadata(typeof(WpfWindow)).DefaultValue);
 		Assert.Equal(Visibility.Visible, UIElement.VisibilityProperty.GetMetadata(typeof(VisElement)).DefaultValue);
 	}

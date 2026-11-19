@@ -127,7 +127,9 @@ internal static class MultiBindingEngine
 			// TwoWay: subscribe to target DP changes and write-back via ConvertBack.
 			// A converter-less TwoWay MultiBinding cannot write back (no ConvertBack target),
 			// so skip registering the dead listener entirely.
-			if (_mb.Mode == BindingMode.TwoWay && _mb.Converter != null)
+			var (mode, _) = BindingDefaults.Resolve(
+				_mb.Mode, UpdateSourceTrigger.Default, _dp, target.GetType());
+			if (mode == BindingMode.TwoWay && _mb.Converter != null)
 			{
 				_targetChangedCallback = OnTargetPropertyChanged;
 				TargetChangeTracker.Subscribe(target, _dp, _targetChangedCallback);

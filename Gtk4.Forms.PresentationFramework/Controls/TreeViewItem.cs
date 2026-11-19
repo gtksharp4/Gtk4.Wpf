@@ -51,7 +51,8 @@ public class TreeViewItem : HeaderedItemsControl
 	/// <summary><c>true</c> when this item is the selected item in its <see cref="TreeView"/>.</summary>
 	public static readonly DependencyProperty IsSelectedProperty =
 		DependencyProperty.Register(nameof(IsSelected), typeof(bool), typeof(TreeViewItem),
-			new PropertyMetadata(false, OnIsSelectedChanged));
+			new FrameworkPropertyMetadata(false,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnIsSelectedChanged));
 
 	static void OnIsSelectedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{

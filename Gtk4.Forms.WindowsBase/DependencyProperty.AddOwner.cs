@@ -33,11 +33,6 @@ public sealed partial class DependencyProperty
 		if (typeMetadata == null) throw new ArgumentNullException(nameof(typeMetadata));
 		AddOwner(ownerType);
 		OverrideMetadata(ownerType, typeMetadata);
-		if (typeMetadata is FrameworkPropertyMetadata fmeta && fmeta.Inherits)
-		{
-			lock (_registryLock)
-				if (!_inheritingRegistry.Contains(this)) _inheritingRegistry.Add(this);
-		}
 		return this;
 	}
 }

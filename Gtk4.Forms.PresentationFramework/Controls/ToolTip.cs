@@ -26,7 +26,8 @@ public class ToolTip : ContentControl
 			nameof(IsOpen),
 			typeof(bool),
 			typeof(ToolTip),
-			new PropertyMetadata(false));
+			new FrameworkPropertyMetadata(false,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
 	/// <summary>
 	/// Gets or sets whether the tooltip is currently open.

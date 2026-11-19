@@ -22,7 +22,8 @@ public class ToggleButton : ContentControl
 			nameof(IsChecked),
 			typeof(bool?),
 			typeof(ToggleButton),
-			new PropertyMetadata(false, OnIsCheckedChanged));
+			new FrameworkPropertyMetadata(false,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal, OnIsCheckedChanged));
 
 	static void OnIsCheckedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{

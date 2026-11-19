@@ -49,8 +49,12 @@ public sealed partial class DependencyProperty
 		Type propertyType,
 		Type ownerType,
 		PropertyMetadata metadata,
-		bool isAttached)
+		bool isAttached,
+		bool isReadOnly,
+		ValidateValueCallback? validateValueCallback)
 	{
+		IsReadOnly = isReadOnly;
+		ValidateValueCallback = validateValueCallback;
 		Name = name;
 		PropertyType = propertyType;
 		OwnerType = ownerType;
@@ -71,8 +75,33 @@ public sealed partial class DependencyProperty
 	{
 		if (forType == null) throw new ArgumentNullException(nameof(forType));
 		if (typeMetadata == null) throw new ArgumentNullException(nameof(typeMetadata));
+		var baseMetadata = GetMetadataBelow(forType);
+		if (!baseMetadata.GetType().IsAssignableFrom(typeMetadata.GetType()))
+			throw new ArgumentException(
+				$"Metadata type '{typeMetadata.GetType().Name}' is not compatible with the base metadata type "
+				+ $"'{baseMetadata.GetType().Name}' of property '{Name}'.", nameof(typeMetadata));
+		typeMetadata.Apply(this, forType, baseMetadata);
+		ValidateDefault(typeMetadata);
 		lock (_metadataByType)
 			_metadataByType[forType] = typeMetadata;
+		if (typeMetadata is FrameworkPropertyMetadata fmeta && fmeta.Inherits)
+			lock (_registryLock)
+				if (!_inheritingRegistry.Contains(this)) _inheritingRegistry.Add(this);
+	}
+
+	// Metadata that applies to forType's base types (or the registration default): what an override merges with.
+	PropertyMetadata GetMetadataBelow(Type forType)
+	{
+		lock (_metadataByType)
+		{
+			var t = forType.BaseType;
+			while (t != null)
+			{
+				if (_metadataByType.TryGetValue(t, out var m)) return m;
+				t = t.BaseType;
+			}
+		}
+		return DefaultMetadata;
 	}
 
 	/// <summary>
@@ -92,67 +121,6 @@ public sealed partial class DependencyProperty
 			}
 		}
 		return DefaultMetadata;
-	}
-
-	// ── Registration ─────────────────────────────────────────────────────────────
-
-	/// <summary>Registers an instance dependency property.</summary>
-	public static DependencyProperty Register(
-		string name,
-		Type propertyType,
-		Type ownerType,
-		PropertyMetadata? typeMetadata = null)
-		=> RegisterCore(name, propertyType, ownerType,
-			typeMetadata ?? new PropertyMetadata(GetDefaultDefault(propertyType)), false);
-
-	/// <summary>Registers an attached dependency property.</summary>
-	public static DependencyProperty RegisterAttached(
-		string name,
-		Type propertyType,
-		Type ownerType,
-		PropertyMetadata? defaultMetadata = null)
-		=> RegisterCore(name, propertyType, ownerType,
-			defaultMetadata ?? new PropertyMetadata(GetDefaultDefault(propertyType)), true);
-
-	/// <summary>
-	/// Registers a read-only dependency property; the returned key is required to
-	/// call <see cref="DependencyObject.SetValue(DependencyPropertyKey,object?)"/>.
-	/// </summary>
-	public static DependencyPropertyKey RegisterReadOnly(
-		string name,
-		Type propertyType,
-		Type ownerType,
-		PropertyMetadata? typeMetadata = null)
-	{
-		var dp = RegisterCore(name, propertyType, ownerType,
-			typeMetadata ?? new PropertyMetadata(GetDefaultDefault(propertyType)), false);
-		dp.IsReadOnly = true;
-		return new DependencyPropertyKey(dp);
-	}
-
-	static DependencyProperty RegisterCore(
-		string name,
-		Type propertyType,
-		Type ownerType,
-		PropertyMetadata metadata,
-		bool isAttached)
-	{
-		if (name == null) throw new ArgumentNullException(nameof(name));
-		if (propertyType == null) throw new ArgumentNullException(nameof(propertyType));
-		if (ownerType == null) throw new ArgumentNullException(nameof(ownerType));
-
-		var key = (name, ownerType);
-		lock (_registryLock)
-		{
-			if (_registry.ContainsKey(key))
-				throw new InvalidOperationException(
-					$"DependencyProperty '{name}' is already registered on '{ownerType.FullName}'.");
-			var dp = new DependencyProperty(name, propertyType, ownerType, metadata, isAttached);
-			_registry[key] = dp;
-			if (metadata is FrameworkPropertyMetadata fmeta && fmeta.Inherits)
-				_inheritingRegistry.Add(dp);
-			return dp;
-		}
 	}
 
 	/// <summary>

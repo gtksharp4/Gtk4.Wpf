@@ -25,7 +25,8 @@ public class DatePicker : Control
 			nameof(SelectedDate),
 			typeof(DateTime?),
 			typeof(DatePicker),
-			new PropertyMetadata(null, OnSelectedDateChanged));
+			new FrameworkPropertyMetadata(null,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSelectedDateChanged));
 
 	static void OnSelectedDateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
