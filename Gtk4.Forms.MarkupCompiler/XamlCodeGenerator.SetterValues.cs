@@ -35,11 +35,20 @@ namespace Gtk4.Forms.MarkupCompiler
 				string k = EscapeString(key);
 				return raw.TrimStart().StartsWith("{DynamicResource", StringComparison.Ordinal)
 					? $"new System.Windows.Markup.DynamicResourceExtension(\"{k}\")"
-					: $"{receiver}.FindResource(\"{k}\")";
+					: StaticResourceLookup(receiver, k);
 			}
 			if (IsXStatic(raw, out string staticExpr, _prefixMap)) return staticExpr;
 			return $"\"{EscapeString(raw)}\"";
 		}
+
+		/// <summary>
+		/// Setter values are emitted before the owner is attached to its parent, so the owner's own chain can miss
+		/// outer scopes; <c>this</c> is the fallback (WPF resolves against every enclosing parse-time scope).
+		/// </summary>
+		static string StaticResourceLookup(string receiver, string escapedKey) =>
+			receiver == "this"
+				? $"this.FindResource(\"{escapedKey}\")"
+				: $"({receiver}.TryFindResource(\"{escapedKey}\") ?? this.FindResource(\"{escapedKey}\"))";
 
 		string EmitSetterValueElement(IndentedWriter w, XElement valueEl, string receiver)
 		{
@@ -68,10 +77,10 @@ namespace Gtk4.Forms.MarkupCompiler
 		}
 
 		/// <summary>
-		/// Emits <c>new EventSetter(Owner.XEvent, Delegate.CreateDelegate(Owner.XEvent.HandlerType, this, "H"))</c>
-		/// into <paramref name="setters"/>. The owner is the style TargetType unless the event is
-		/// qualified (<c>Owner.Event</c>). The event's own delegate type is used and the 3-argument
-		/// overload binds non-public handlers, as WPF does.
+		/// Emits <c>new EventSetter(Owner.XEvent, Delegate.CreateDelegate(Owner.XEvent.HandlerType, this,
+		/// GetType().GetMethod("H", ...)))</c> into <paramref name="setters"/>. The owner is the style TargetType
+		/// unless the event is qualified. The MethodInfo overload binds non-public handlers and allows contravariant
+		/// parameters (<c>(object, RoutedEventArgs)</c> on MouseDown), as C# method-group conversion does in WPF.
 		/// </summary>
 		void EmitEventSetter(IndentedWriter w, XElement el, string setters, string targetTypeAttr)
 		{
@@ -94,7 +103,8 @@ namespace Gtk4.Forms.MarkupCompiler
 				? " { HandledEventsToo = true }" : string.Empty;
 			w.Line($"{setters}.Add(new System.Windows.EventSetter({ownerFq}.{ev}Event, " +
 				$"System.Delegate.CreateDelegate({ownerFq}.{ev}Event.HandlerType, this, " +
-				$"\"{EscapeString(handler)}\")){init});");
+				$"GetType().GetMethod(\"{EscapeString(handler)}\", System.Reflection.BindingFlags.Instance | " +
+				$"System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic))){init});");
 		}
 	}
 }

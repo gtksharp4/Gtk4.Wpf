@@ -26,8 +26,20 @@ public class XamlCodeGeneratorTriggerReceiverTests
 <Setter Property=""Background"" Value=""{StaticResource B}""/></Trigger></Style.Triggers></Style>
 </Grid.Resources></Grid>"));
 
-		Assert.Matches(@"Value = __e\d+\.FindResource\(""B""\)", code);
-		Assert.DoesNotContain(@"this.FindResource(""B"")", code);
+		Assert.Matches(@"Value = \(__e\d+\.TryFindResource\(""B""\) \?\? this\.FindResource\(""B""\)\)", code);
+	}
+
+	[Fact]
+	public void Outer_scope_key_falls_back_to_this_for_unparented_style_and_element_triggers()
+	{
+		// Elements are emitted before they are attached, so their own chain cannot see Window.Resources yet.
+		string code = Gen(Window(@"<Window.Resources><SolidColorBrush x:Key=""W""/></Window.Resources><Grid>
+<Grid.Resources><Style TargetType=""Button""><Style.Triggers><Trigger Property=""IsMouseOver"" Value=""True"">
+<Setter Property=""Background"" Value=""{StaticResource W}""/></Trigger></Style.Triggers></Style></Grid.Resources>
+<Button><Button.Triggers><Trigger Property=""IsMouseOver"" Value=""True"">
+<Setter Property=""Background"" Value=""{StaticResource W}""/></Trigger></Button.Triggers></Button></Grid>"));
+
+		Assert.Equal(2, Regex.Matches(code, @"Value = \(__e\d+\.TryFindResource\(""W""\) \?\? this\.FindResource\(""W""\)\)").Count);
 	}
 
 	[Fact]

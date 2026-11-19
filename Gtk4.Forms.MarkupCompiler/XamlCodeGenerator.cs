@@ -1045,7 +1045,8 @@ namespace Gtk4.Forms.MarkupCompiler
 		{
 			string propAttr = (string)el.Attribute("Property") ?? string.Empty;
 			string valAttr = (string)el.Attribute("Value") ?? string.Empty;
-			w.Line($"var {trigVar} = new System.Windows.Trigger {{ PropertyName = \"{EscapeString(propAttr)}\", Value = \"{EscapeString(valAttr)}\" }};");
+			w.Line($"var {trigVar} = new System.Windows.Trigger {{ " +
+				$"PropertyName = \"{EscapeString(propAttr)}\", Value = \"{EscapeString(valAttr)}\" }};");
 			foreach (XElement setter in el.Elements())
 			{
 				if (setter.Name.LocalName != "Setter") continue;
@@ -1104,14 +1105,16 @@ namespace Gtk4.Forms.MarkupCompiler
 						if (cond.Name.LocalName != "Condition") continue;
 						string p = (string)cond.Attribute("Property") ?? string.Empty;
 						string v = (string)cond.Attribute("Value") ?? string.Empty;
-						w.Line($"{trigVar}.Conditions.Add(new System.Windows.Condition {{ PropertyName = \"{EscapeString(p)}\", Value = \"{EscapeString(v)}\" }});");
+						w.Line($"{trigVar}.Conditions.Add(new System.Windows.Condition {{ " +
+							$"PropertyName = \"{EscapeString(p)}\", Value = \"{EscapeString(v)}\" }});");
 					}
 				}
 				else if (child.Name.LocalName == "Setter")
 				{
 					string p = (string)child.Attribute("Property") ?? string.Empty;
 					string vExpr = SetterValueExpression(w, child, receiver);
-					w.Line($"{trigVar}.Setters.Add(new System.Windows.Setter {{ PropertyName = \"{EscapeString(p)}\", Value = {vExpr} }});");
+					w.Line($"{trigVar}.Setters.Add(new System.Windows.Setter {{ " +
+						$"PropertyName = \"{EscapeString(p)}\", Value = {vExpr} }});");
 				}
 			}
 			w.Line($"{containerVar}.Triggers.Add({trigVar});");

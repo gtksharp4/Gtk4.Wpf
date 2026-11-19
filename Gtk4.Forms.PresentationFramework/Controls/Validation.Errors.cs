@@ -25,7 +25,7 @@ public static partial class Validation
 	/// <summary>
 	/// Replaces the errors <paramref name="owner"/> (a binding) contributes to <paramref name="element"/>;
 	/// an empty list removes them. Other owners' errors are untouched. When <paramref name="notify"/> is
-	/// <c>true</c>, raises <see cref="ErrorEvent"/> for every added and removed error.
+	/// <c>true</c>, raises <see cref="ErrorEvent"/> only for errors that changed.
 	/// </summary>
 	internal static void SetErrorsFor(
 		DependencyObject element, object owner, IReadOnlyList<ValidationError> errors, bool notify)
@@ -40,13 +40,25 @@ public static partial class Validation
 
 		state.BySource.TryGetValue(owner, out var old);
 		if (old == null && errors.Count == 0) return;
-		if (old != null && Same(old, errors)) return;
-		if (errors.Count == 0) state.BySource.Remove(owner);
-		else state.BySource[owner] = new List<ValidationError>(errors);
 
-		if (old != null)
-			foreach (var e in old) state.Items.Remove(e);
-		foreach (var e in errors) state.Items.Add(e);
+		// Unchanged errors keep their instance and raise nothing; new errors are added before stale ones are
+		// removed (WPF UpdateValidationError order).
+		var stale = old == null ? new List<ValidationError>() : new List<ValidationError>(old);
+		var current = new List<ValidationError>(errors.Count);
+		var added = new List<ValidationError>();
+		foreach (var e in errors)
+		{
+			int i = stale.FindIndex(o => Equivalent(o, e));
+			if (i >= 0) { current.Add(stale[i]); stale.RemoveAt(i); }
+			else { current.Add(e); added.Add(e); }
+		}
+		if (added.Count == 0 && stale.Count == 0) return;
+
+		if (current.Count == 0) state.BySource.Remove(owner);
+		else state.BySource[owner] = current;
+
+		foreach (var e in added) state.Items.Add(e);
+		foreach (var e in stale) state.Items.Remove(e);
 
 		bool has = state.Items.Count > 0;
 		if (has != state.HasError)
@@ -56,19 +68,13 @@ public static partial class Validation
 		}
 
 		if (!notify || !(element is UIElement uie)) return;
-		if (old != null) foreach (var e in old) Raise(uie, e, ValidationErrorEventAction.Removed);
-		foreach (var e in errors) Raise(uie, e, ValidationErrorEventAction.Added);
+		foreach (var e in added) Raise(uie, e, ValidationErrorEventAction.Added);
+		foreach (var e in stale) Raise(uie, e, ValidationErrorEventAction.Removed);
 	}
 
-	// An unchanged error set is not a change: no collection churn and no events.
-	static bool Same(List<ValidationError> a, IReadOnlyList<ValidationError> b)
-	{
-		if (a.Count != b.Count) return false;
-		for (int i = 0; i < a.Count; i++)
-			if (!ReferenceEquals(a[i].RuleInError, b[i].RuleInError) || !Equals(a[i].ErrorContent, b[i].ErrorContent)
-			    || !ReferenceEquals(a[i].Exception, b[i].Exception)) return false;
-		return true;
-	}
+	static bool Equivalent(ValidationError a, ValidationError b) =>
+		ReferenceEquals(a.RuleInError, b.RuleInError) && Equals(a.ErrorContent, b.ErrorContent)
+		&& ReferenceEquals(a.Exception, b.Exception);
 
 	static void Raise(UIElement element, ValidationError error, ValidationErrorEventAction action)
 	{

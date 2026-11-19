@@ -1264,8 +1264,8 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   intermediate path-object change. **+52 tests**.
 - **Round 39 review (Opus) + fixes — DONE.** Track B (SHIP-WITH-FIXES): **B-F1 (High)** the compiler emitted
   `new RoutedEventHandler(this.H)` for every `<EventSetter>`, so `MouseDown`/`KeyDown`/`MouseDoubleClick` handlers
-  failed with CS0123 → `Delegate.CreateDelegate(Owner.XEvent.HandlerType, this, "H")` (binds non-public handlers as
-  WPF); runtime test with a private `MouseButtonEventHandler`-shaped handler. **B-F2 (High)** a style `DynamicResource`
+  failed with CS0123 → `Delegate.CreateDelegate(Owner.XEvent.HandlerType, this, GetType().GetMethod("H", ...))` (binds non-public and contravariant handlers like
+  C# method groups; runtime test with private handlers of both shapes). **B-F2 (High)** a style `DynamicResource`
   wrote the dynamic-resource layer, which outranks the style layer: a base-style link beat a derived plain value, it
   replaced a user's own `SetResourceReference`, and `Unapply` deleted it → style-layer contributor
   (`StyleLayerContributor`, `SetStyleResourceReference`/`DropStyleResourceReference`, `ClearStyleValue`); a derived
@@ -1283,7 +1283,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `MultiDataTrigger.State.cs`, `Style.Unapply.cs` extracted. Track D (SHIP-WITH-FIXES): **D-F1 (High)** `Publish`
   replaced the element's whole error collection, so a sibling INDEI binding wiped other bindings' errors and swapped
   the `Validation.Errors` instance on every push → per-element, per-binding error state merged into one stable
-  collection (`Validation.SetErrorsFor`); unchanged error sets raise nothing. **D-F2** `ClearBinding` left INDEI/step
+  collection (`Validation.SetErrorsFor`); only changed errors raise events. **D-F2** `ClearBinding` left INDEI/step
   errors on the element → `Deactivate` clears them. **D-F3** rule attributes went through the type-blind
   `ClrValueExpression` (`ValidationStep="UpdatedValue"` → string, CS0029) → `RuleAttrExpression` (enum/string/
   decimal/float/double/bool; `ValidationStep` special-cased); the built-in rule types are in `WpfXmlnsMap`. **D-F4**
@@ -1291,7 +1291,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   **D-F5** binding arguments: `{x:Null}`, `{x:Type}`, leading `{}` escape; `{DynamicResource}` and unknown
   extensions are build errors. **D-F6** `<Binding.Converter>` inline object; unresolved rule types and unsupported
   `Binding.*` property elements are build errors (`XamlCodeGeneratorException`). **D-F7** the push reuses the raw value
-  already resolved (no second path walk). **D-F8** `StringFormat` without braces is `{0:fmt}` (`N2` → `1,234.50`);
+  already resolved (the write-back path is still resolved once more). **D-F8** `StringFormat` without braces is `{0:fmt}` (`N2` → `1,234.50`);
   `MultiBinding` without a converter formats the values array (`"{0} {1}"`). The old
   `StringFormat_without_placeholder_prepends_value` test pinned the non-WPF `"fmt{0}"` shortcut and was corrected.
   Rejected in triage: **B-F8** (default/theme style never unapplied when an explicit Style is set): wrong for WPF, where
@@ -1304,12 +1304,22 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   15 ProjectConverter), all pass; warning-clean across all TFMs. `gf39/xaml-content-model` and
   `gf39/combobox-itemscontrol` were NOT merged in this round (not part of the merge set that was reviewed); their
   branches and worktrees are kept untouched for a later round.
+- **Round 39 follow-up — DONE.** **B-F3** trigger/style-setter `StaticResource` is emitted before the owner is parented,
+  so `owner.FindResource` threw for keys in outer scopes (also broke element-level triggers) → emits
+  `(owner.TryFindResource(k) ?? this.FindResource(k))`. **B-F1** `CreateDelegate(Type, object, string)` rejects
+  contravariant handlers (`(object, RoutedEventArgs)` on MouseDown) → MethodInfo overload; `{init}` in the emit string
+  was not interpolated and the old tests missed it. The runtime test never ran the compiler's expression shape before;
+  it now does for both handler shapes (the string overload's rejection is pinned). **D-F3** typed rule attributes now
+  tested with a real reference assembly; `NaN`/`Infinity` emit `double.NaN`-style constants and `[Flags]` lists emit
+  `A | B`. **D-F1** `SetErrorsFor` diffs per error: unchanged errors keep their instance, add-before-remove, events only
+  for changes. **D-F6** `<Binding.Converter><StaticResource/></Binding.Converter>` is unsupported (build error; use the
+  `Converter` attribute). Style nits fixed. **Totals: 3523 tests** (182 + 3017 + 309 + 15).
 - **Carry-over (Round 39)**: backlog: layer-targeted `BindingExpression` (style/trigger bindings as style/trigger
   layer values, B-F4); split `XamlCodeGenerator.cs` and `XamlCodeGenerator.Binding.cs` (house line limit); separate
   theme-style and Style precedence layers (B-F8); `Setter.TargetName` store-only; EventSetter handlers run in
   registration order, not after instance handlers; `<ControlTemplate.Resources>` is not emitted by the compiler;
-  element-level trigger `StaticResource` now resolves on the owning element variable (verify behaviour while that
-  element is not yet parented at emit time); CommittedValue has no BindingGroup cycle; `MultiBinding` has no validation; INDEI
+  trigger `StaticResource` resolves on the owning element first, then `this` (see follow-up);
+  CommittedValue has no BindingGroup cycle; `MultiBinding` has no validation; INDEI
   subscription is not refreshed on intermediate path-object changes.
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking

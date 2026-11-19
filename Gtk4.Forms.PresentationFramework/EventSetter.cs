@@ -6,8 +6,9 @@ namespace System.Windows;
 
 /// <summary>
 /// Attaches a routed-event handler to every element the style is applied to, and removes it when
-/// the style is replaced or cleared. In WPF style handlers run after instance handlers; here they
-/// are added at apply time and so run in registration order (GTK gap). Not valid in triggers (attaching a trigger that contains one throws).
+/// the style is replaced or cleared. WPF runs style handlers after instance handlers; here they are added at
+/// apply time and run in registration order (engine limitation, not GTK). Not valid in triggers: attaching a
+/// trigger that contains one throws.
 /// </summary>
 public class EventSetter : SetterBase
 {

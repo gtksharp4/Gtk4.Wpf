@@ -28,7 +28,8 @@ public class XamlCodeGeneratorEventSetterTests
 		Assert.Contains(
 			"Setters.Add(new System.Windows.EventSetter(System.Windows.Controls.Button.ClickEvent, " +
 			"System.Delegate.CreateDelegate(System.Windows.Controls.Button.ClickEvent.HandlerType, " +
-			"this, \"OnClick\")))", code);
+			"this, GetType().GetMethod(\"OnClick\", System.Reflection.BindingFlags.Instance | " +
+			"System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic)))", code);
 	}
 
 	[Fact]
@@ -37,14 +38,15 @@ public class XamlCodeGeneratorEventSetterTests
 		string code = Gen(Style(@"<EventSetter Event=""Border.MouseDown"" Handler=""OnDown""/>"));
 		Assert.Contains("EventSetter(System.Windows.Controls.Border.MouseDownEvent, " +
 			"System.Delegate.CreateDelegate(System.Windows.Controls.Border.MouseDownEvent.HandlerType, " +
-			"this, \"OnDown\"))", code);
+			"this, GetType().GetMethod(\"OnDown\", System.Reflection.BindingFlags.Instance | " +
+			"System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic)))", code);
 	}
 
 	[Fact]
 	public void HandledEventsToo_is_emitted()
 	{
 		string code = Gen(Style(@"<EventSetter Event=""Click"" Handler=""H"" HandledEventsToo=""True""/>"));
-		Assert.Contains("{ HandledEventsToo = true }", code);
+		Assert.Contains("NonPublic))) { HandledEventsToo = true }", code);
 	}
 
 	[Fact]
