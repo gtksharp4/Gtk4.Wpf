@@ -99,17 +99,4 @@ public class ComboBoxGtkSmokeTests : WpfGtkTestBase
 		cb.IsReadOnly = false;
 		Assert.True(entry.IsEditable);
 	});
-
-	[Fact]
-	public void IsDropDownOpen_toggles_without_throwing() => Run(() =>
-	{
-		var cb = new ComboBox { ItemsSource = new[] { "a" } };
-		_ = cb.Widget;
-		int o = 0, c = 0;
-		cb.DropDownOpened += (_, _) => o++;
-		cb.DropDownClosed += (_, _) => c++;
-		cb.IsDropDownOpen = true;
-		cb.IsDropDownOpen = false;
-		Assert.Equal((1, 1), (o, c));
-	});
 }

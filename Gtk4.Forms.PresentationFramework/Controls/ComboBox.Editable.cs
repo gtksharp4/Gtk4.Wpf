@@ -12,10 +12,13 @@ public partial class ComboBox
 		DependencyProperty.Register(nameof(IsEditable), typeof(bool), typeof(ComboBox),
 			new FrameworkPropertyMetadata(false));
 
-	/// <summary>Identifies <see cref="IsReadOnly"/>.</summary>
+	/// <summary>Identifies <see cref="IsReadOnly"/> (shared with <see cref="TextBox.IsReadOnlyProperty"/>).</summary>
 	public static readonly DependencyProperty IsReadOnlyProperty =
-		DependencyProperty.Register(nameof(IsReadOnly), typeof(bool), typeof(ComboBox),
-			new FrameworkPropertyMetadata(false, OnIsReadOnlyChanged));
+		TextBox.IsReadOnlyProperty.AddOwner(typeof(ComboBox),
+			new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.Inherits, OnIsReadOnlyChanged));
+
+	static ComboBox() =>
+		IsTextSearchEnabledProperty.OverrideMetadata(typeof(ComboBox), new FrameworkPropertyMetadata(true));
 
 	/// <summary>Identifies <see cref="StaysOpenOnEdit"/>.</summary>
 	public static readonly DependencyProperty StaysOpenOnEditProperty =
@@ -93,7 +96,7 @@ public partial class ComboBox
 			try { cb._entry.Text = text; }
 			finally { cb._syncingEntry = false; }
 		}
-		if (cb._updatingText) return;
+		if (cb._updatingText || !cb.IsTextSearchEnabled) return;
 		cb._updatingText = true;
 		try { cb.SelectMatchingItem(text); }
 		finally { cb._updatingText = false; }

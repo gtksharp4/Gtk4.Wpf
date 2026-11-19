@@ -129,7 +129,9 @@ public partial class TextBox : Control
 			new PropertyMetadata(false, OnIsReadOnlyChanged));
 
 	static void OnIsReadOnlyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		=> ((TextBox)d).ApplyIsReadOnly((bool)(e.NewValue ?? false));
+	{
+		if (d is TextBox tb) tb.ApplyIsReadOnly((bool)(e.NewValue ?? false));
+	}
 
 	/// <summary>Gets or sets whether the text box is read-only.</summary>
 	public bool IsReadOnly

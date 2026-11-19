@@ -5,23 +5,46 @@ namespace System.Windows.Controls;
 
 public partial class ComboBox
 {
+	readonly List<UIElement> _parentedItems = new List<UIElement>();
+
+	/// <inheritdoc/>
+	internal override bool RebuildsOnInlineItemsChange => true;
+
 	/// <inheritdoc/>
 	protected override void OnItemsRebuilt()
 	{
+		UpdateItemParents();
 		if (_dropDown != null)
 		{
 			RebuildStringList();
-			// Re-apply any SelectedIndex that was set before the widget was created.
+			// Re-apply (or clear) the selection: GTK picks item 0 on a new model.
 			var currentIdx = SelectedIndex;
 			if (currentIdx >= 0 && currentIdx < Items.Count)
 				ApplySelectedIndex(currentIdx);
 			else
 			{
+				ApplySelectedIndex(-1);
 				SetValue(SelectedIndexProperty, -1);
 				SetValue(SelectedItemProperty, null);
 			}
 		}
 		UpdateTextFromSelection();
+	}
+
+	/// <summary>Items that are their own containers get this control as logical parent.</summary>
+	void UpdateItemParents()
+	{
+		foreach (var old in _parentedItems)
+			if (ReferenceEquals(old.LogicalParent, this)) old.LogicalParent = null;
+		_parentedItems.Clear();
+		foreach (var item in Items)
+		{
+			if (item is UIElement ui)
+			{
+				ui.LogicalParent = this;
+				_parentedItems.Add(ui);
+			}
+		}
 	}
 
 	List<string> ItemTexts()

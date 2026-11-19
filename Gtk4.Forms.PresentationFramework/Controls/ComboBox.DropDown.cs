@@ -26,7 +26,11 @@ public partial class ComboBox
 	/// <summary>Raised when the drop-down closes.</summary>
 	public event EventHandler? DropDownClosed;
 
-	/// <summary>Gets or sets whether the drop-down is open.</summary>
+	/// <summary>
+	/// Gets or sets whether the drop-down is open. Store-only: GtkSharp 4 has no safe way to open or
+	/// close <see cref="Gtk.DropDown"/> from code (its popover is internal), so only the property and
+	/// <see cref="DropDownOpened"/>/<see cref="DropDownClosed"/> are driven.
+	/// </summary>
 	public bool IsDropDownOpen
 	{
 		get => (bool)GetValue(IsDropDownOpenProperty)!;
@@ -50,50 +54,7 @@ public partial class ComboBox
 	{
 		var cb = (ComboBox)d;
 		var open = (bool)e.NewValue!;
-		cb.PushDropDownState(open);
 		if (open) cb.OnDropDownOpened(EventArgs.Empty);
 		else cb.OnDropDownClosed(EventArgs.Empty);
-	}
-
-	// ── GTK popover sync ─────────────────────────────────────────────────────
-
-	Gtk.Popover? _popover;
-	bool _syncingPopover;
-
-	/// <summary>
-	/// The DropDown's internal popover is found by walking its children. If it is not
-	/// reachable, closing from code is store-only.
-	/// </summary>
-	void HookPopover()
-	{
-		for (var child = _dropDown.FirstChild; child != null; child = child.NextSibling)
-		{
-			if (child is Gtk.Popover p)
-			{
-				_popover = p;
-				p.AddNotification("visible", OnPopoverVisibleChanged);
-				return;
-			}
-		}
-	}
-
-	void PushDropDownState(bool open)
-	{
-		if (_dropDown == null || _syncingPopover) return;
-		_syncingPopover = true;
-		try
-		{
-			if (open) _popover?.Popup();
-			else _popover?.Popdown();
-		}
-		finally { _syncingPopover = false; }
-	}
-
-	void OnPopoverVisibleChanged(object? sender, GLib.NotifyArgs e)
-	{
-		if (_syncingPopover || _popover == null) return;
-		var visible = _popover.Visible;
-		if (visible != IsDropDownOpen)
-			SetValue(IsDropDownOpenProperty, visible);
 	}
 }

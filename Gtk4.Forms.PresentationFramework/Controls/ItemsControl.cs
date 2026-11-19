@@ -139,9 +139,6 @@ public partial class ItemsControl : Control
 	readonly List<(UIElement Container, Gtk.Widget Widget)> _rows =
 		new List<(UIElement, Gtk.Widget)>();
 
-	// Item factory hook — defined in ItemsControl.Selectors.cs partial.
-	// GetContainerForItem is declared there with full selector/template/path logic.
-
 	// ── GTK backing ──────────────────────────────────────────────────────────
 
 	bool _widgetCreated;

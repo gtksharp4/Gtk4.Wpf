@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -41,7 +40,7 @@ public partial class ItemsControl
 
 		void Changed()
 		{
-			if (!Filling) _owner.RebuildItems();
+			if (!Filling && _owner.RebuildsOnInlineItemsChange) _owner.RebuildItems();
 		}
 
 		protected override void InsertItem(int index, object? item)
@@ -73,6 +72,9 @@ public partial class ItemsControl
 		}
 	}
 
+	/// <summary>Whether inline <see cref="Items"/> edits rebuild the control (only ComboBox needs it).</summary>
+	internal virtual bool RebuildsOnInlineItemsChange => false;
+
 	/// <summary>Returns whether <paramref name="item"/> is its own container (WPF: <c>item is UIElement</c>).</summary>
 	protected virtual bool IsItemItsOwnContainerOverride(object? item) => item is UIElement;
 
@@ -82,7 +84,7 @@ public partial class ItemsControl
 	/// <summary>Whether prefix text search is enabled (store-only; GTK drop-down has no prefix search).</summary>
 	public static readonly DependencyProperty IsTextSearchEnabledProperty =
 		DependencyProperty.Register(nameof(IsTextSearchEnabled), typeof(bool), typeof(ItemsControl),
-			new PropertyMetadata(true));
+			new FrameworkPropertyMetadata(false));
 
 	/// <summary>Gets or sets whether text search is enabled.</summary>
 	public bool IsTextSearchEnabled

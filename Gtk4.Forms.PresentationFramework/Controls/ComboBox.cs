@@ -7,7 +7,8 @@ namespace System.Windows.Controls;
 /// A drop-down selector backed by <see cref="Gtk.DropDown"/> with a <see cref="Gtk.StringList"/> model.
 /// <para>
 /// WPF derives from <c>Selector</c>; a shared Selector base is deferred, so this derives from
-/// <see cref="ItemsControl"/> and keeps its own selection DPs. Rows are plain text (item text
+/// <see cref="ItemsControl"/> and keeps its own selection DPs. GtkDropDown auto-selects the first item of
+/// a non-empty model, so "no selection" is only reflected in the widget while the model is empty. Rows are plain text (item text
 /// from <see cref="ComboBoxItemText.GetText"/>), so <see cref="ItemsControl.ItemTemplate"/> visuals,
 /// <see cref="UIElement"/> content, per-item <c>IsEnabled</c> and prefix auto-complete are not rendered.
 /// </para>
@@ -92,7 +93,6 @@ public partial class ComboBox : ItemsControl
 		_dropDown = new Gtk.DropDown(null, null);
 		_dropDown.Model = _stringList;
 		_dropDown.AddNotification("selected", OnGtkSelectionChanged);
-		HookPopover();
 		RebuildStringList(); // push any items set before widget creation
 		ApplySelectedIndex(SelectedIndex);
 		return IsEditable ? CreateEditableHost() : _dropDown;
