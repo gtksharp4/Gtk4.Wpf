@@ -782,7 +782,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `ScrolledWindow`; **X6** TextBox selection model fixed (`MaxLength` truncates, `SelectionStart` re-clamps
   `SelectionLength`, `SelectedText` setter leaves a consistent caret); **X7** oversized files split to ≤200 lines.
   Full-suite total now **1289 tests** (60 WindowsBase + 1041 PresentationFramework + 173 MarkupCompiler +
-  15 ProjectConverter — the tree also compiles concurrent imaging/markup-NuGet work landed in `7a0e25e1`),
+  15 ProjectConverter — the tree also compiles concurrent imaging/markup-NuGet work landed in `feb7c90b`),
   all pass timeboxed; `Gtk4.Forms.WpfSample` (unmodified WPF) still compiles.
 - **`WebBrowser` control — DONE (Photino.NET).** `System.Windows.Controls.WebBrowser : Control` with the full
   WPF surface: `Source` DP, read-only `CanGoBack`/`CanGoForward`, `Navigate`/`NavigateToString`/`GoBack`/

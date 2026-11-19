@@ -21,7 +21,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{E761DD6D-0
 	ProjectSection(SolutionItems) = preProject
 		docs\article-gtk4-forms-gtk.md = docs\article-gtk4-forms-gtk.md
 		docs\article-wpf-to-gtk4-forms.md = docs\article-wpf-to-gtk4-forms.md
-		docs\code-review.md = docs\code-review.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gtk4.Forms.WindowsBase", "Gtk4.Forms.WindowsBase\Gtk4.Forms.WindowsBase.csproj", "{FB1B7FE7-01F1-42CC-BCC2-E91C5AC0530C}"
