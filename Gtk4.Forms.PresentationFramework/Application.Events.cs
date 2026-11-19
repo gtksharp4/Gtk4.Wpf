@@ -43,6 +43,7 @@ public partial class Application
 	{
 		if (active)
 		{
+			if (!_windows.Contains(window)) return;
 			_deactivatePending = false;
 			_activeWindows.Add(window);
 			if (!_appActive)

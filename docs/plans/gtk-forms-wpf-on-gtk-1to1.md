@@ -1212,8 +1212,9 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   throw `ArgumentException`; the default is validated before sealing. **A7** `BindingEngine.cs` 518→185 lines
   (`.Push/.Refresh/.Target/.SourceConvert/.TargetChanges/.WriteBack/.Validation` partials), `MultiBindingEngine`
   split, `TabItem`/`ComboBox.Items` extracted. Track B (SHIP-WITH-FIXES): **F1 (High)** `CloseForShutdown` now
-  raises `Closing` once and ignores `Cancel` (no re-entry from a handler). **F2 (High)** `StartupUri` always loads
-  after `Startup`. **F3** `DispatcherUnhandledException` forwards to `Dispatcher.UnhandledException` (dispatcher
+  raises `Closing` once and ignores `Cancel` (no re-entry from a handler). **F2 (High)** `StartupUri` loads
+  after `Startup` (a Startup-requested `Shutdown` is async, so the window is still created; see follow-up).
+  **F3** `DispatcherUnhandledException` forwards to `Dispatcher.UnhandledException` (dispatcher
   sender, all handlers run, active from subscription); the invented `ApplicationUnhandledException` hook removed.
   **F4** `DoStartup` and the initial `Show` route exceptions through `RaiseUnhandledException`. **F5**
   `Shutdown` is thread-checked and posted via `Dispatcher.BeginInvoke` (first request wins). **F6** `Deactivated`
@@ -1227,6 +1228,20 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   stale value; **CI-5** `BrushCss`/`ClosedMessage` lines wrapped. Rejected: none.
   **Round 38 totals: 3364 tests** (177 WindowsBase + 2930 PresentationFramework + 242 MarkupCompiler +
   15 ProjectConverter), all pass; warning-clean across all TFMs.
+- **Round 38 follow-up (Opus-verified fixes) — DONE.** **R38C-1** `WriteBack` now runs validation rules on the
+  RAW target value before `ConvertBack`/default conversion (WPF `RawProposedValue`; every rule is treated as raw, no
+  `ValidationStep` yet), so a string rule on an `int` source sees the text and a failing rule blocks conversion.
+  **R38C-2** `Binding.DoNothing` from a converter (single and multi) leaves the target unchanged and `UnsetValue`
+  uses `FallbackValue`/the default, both before `TargetNullValue`/`StringFormat`; `SetTargetSafe` never passes either
+  sentinel to `SetValue`. **R38C-3** `PriorityBinding` pushes through `SetTargetConverted` (value converted to the
+  DP type, invalid → fallback/default) instead of a throwing raw `SetValue`. **R38C-4** the throwing-`ConvertBack`
+  `MultiBinding` test was vacuous (never focused); now `…_does_not_escape_LostFocus` plus a PropertyChanged-trigger
+  test, both verified to fail without the catch. **R38C-5** `Application.OnWindowActivationChanged` ignores windows
+  not in `Windows`, so a window created after the app finished cannot raise `Activated`. **R38C-6** `StartupUri`
+  docs and tests now pin WPF-style asynchronous `Shutdown` from a Startup handler (window still created, then
+  closed). Open: `DependencyObject.SetValue(dp, UnsetValue)` stores the sentinel instead of clearing (WPF clears).
+  **Follow-up totals: 3382 tests** (177 WindowsBase + 2948 PresentationFramework + 242 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean.
 - **Carry-over (Round 38)**: `SessionEnding` is never raised on GTK; a second `new Application()` does not throw;
   `Application` Activated/Deactivated depend on window-manager `notify::is-active` ordering (verified only through
   the `NotifyActivation` seam); `LostFocus` tests drive managed `Focus()`, not the native focus controller;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using Gtk4.Forms.PresentationFramework.Tests.Lifecycle;
 using Xunit;
 
 namespace Gtk4.Forms.PresentationFramework.Tests;
@@ -115,14 +116,30 @@ public class ApplicationStartupExitTests : WpfGtkTestBase, System.IDisposable
 	});
 
 	[Fact]
-	public void Shutdown_inside_OnStartup_skips_the_loop() => Run(() =>
+	public void Shutdown_inside_Startup_is_asynchronous_and_ends_the_loop() => Run(() =>
 	{
+		using var queue = new ManualDispatcherQueue();
 		bool looped = false;
-		var app = new RecordingApp { RunLoopOverride = _ => looped = true };
+		var app = new RecordingApp { RunLoopOverride = _ => { looped = true; queue.Pump(); } };
 		app.Startup += (_, _) => app.Shutdown(4);
 
 		Assert.Equal(4, app.RunCore(NoArgs));
-		Assert.False(looped);
+		Assert.True(looped);
+		Assert.Equal(1, app.ExitRaised);
+	});
+
+	[Fact]
+	public void Shutdown_inside_Startup_still_creates_then_closes_the_StartupUri_window() => Run(() =>
+	{
+		using var queue = new ManualDispatcherQueue();
+		var app = new RecordingApp { StartupUri = new Uri("StartupProbeWindow.xaml", UriKind.Relative) };
+		app.Startup += (_, _) => app.Shutdown(4);
+		Window? during = null;
+		app.RunLoopOverride = a => { during = a.MainWindow; queue.Pump(); };
+
+		Assert.Equal(4, app.RunCore(NoArgs));
+		Assert.IsType<StartupProbeWindow>(during);
+		Assert.Empty(app.Windows);
 		Assert.Equal(1, app.ExitRaised);
 	});
 

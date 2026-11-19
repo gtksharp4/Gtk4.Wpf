@@ -45,8 +45,17 @@ internal static partial class BindingEngine
 				object? value = rawValue;
 				// Converter runs before TargetNullValue (R5).
 				if (_binding.Converter != null)
+				{
 					value = _binding.Converter.Convert(rawValue, _dp.PropertyType,
 						_binding.ConverterParameter, CultureInfo.CurrentCulture);
+					// WPF: DoNothing aborts the transfer; UnsetValue means fallback/default.
+					if (ReferenceEquals(value, Binding.DoNothing)) return;
+					if (ReferenceEquals(value, DependencyProperty.UnsetValue))
+					{
+						ApplyFallback(target);
+						return;
+					}
+				}
 
 				// R5: TargetNullValue applied when resolved+converted value is null.
 				if (value == null && _binding.TargetNullValue != null)

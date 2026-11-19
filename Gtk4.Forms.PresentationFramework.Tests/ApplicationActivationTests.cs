@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Windows;
 using Gtk4.Forms.PresentationFramework.Tests.Lifecycle;
 using Xunit;
@@ -74,5 +75,23 @@ public class ApplicationActivationTests : WpfGtkTestBase, System.IDisposable
 		queue.Pump();
 
 		Assert.Equal(0, deactivated);
+	});
+
+	[Fact]
+	public void Window_created_after_Run_completed_does_not_drive_app_activation() => Run(() =>
+	{
+		using var queue = new ManualDispatcherQueue();
+		var app = new Application { RunLoopOverride = _ => { } };
+		app.RunCore(new string[0]);
+		int activated = 0;
+		app.Activated += (_, _) => activated++;
+		var w = new Window();
+		Assert.DoesNotContain(w, app.Windows.Cast<Window>());
+
+		w.NotifyActivation(true);
+		Assert.Equal(0, activated);
+
+		w.NotifyActivation(false);
+		queue.Pump();
 	});
 }

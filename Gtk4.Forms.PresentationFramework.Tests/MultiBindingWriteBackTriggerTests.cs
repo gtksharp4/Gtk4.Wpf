@@ -58,15 +58,36 @@ public class MultiBindingWriteBackTriggerTests : WpfGtkTestBase
 	});
 
 	[Fact]
-	public void Throwing_ConvertBack_does_not_escape_the_Text_setter() => Run(() =>
+	public void Throwing_ConvertBack_does_not_escape_LostFocus() => Run(() =>
 	{
 		var vm = new Vm();
 		var converter = new CountingConverter { Throw = true };
 		var tb = Bind(vm, converter);
+		tb.Focus();
 
 		tb.Text = "typed";
-		new WpfTextBox().Focus();
+		Assert.Equal(0, converter.ConvertBackCalls);
+		var ex = Record.Exception(() => new WpfTextBox().Focus());
 
+		Assert.Null(ex);
+		Assert.Equal(1, converter.ConvertBackCalls);
+		Assert.Equal("a", vm.First);
+	});
+
+	[Fact]
+	public void Throwing_ConvertBack_does_not_escape_the_Text_setter_with_PropertyChanged_trigger() => Run(() =>
+	{
+		var vm = new Vm();
+		var converter = new CountingConverter { Throw = true };
+		var tb = new WpfTextBox { DataContext = vm };
+		var mb = new MultiBinding { Converter = converter, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
+		mb.Bindings.Add(new Binding("First"));
+		tb.SetBinding(WpfTextBox.TextProperty, mb);
+
+		var ex = Record.Exception(() => tb.Text = "typed");
+
+		Assert.Null(ex);
+		Assert.Equal(1, converter.ConvertBackCalls);
 		Assert.Equal("a", vm.First);
 	});
 

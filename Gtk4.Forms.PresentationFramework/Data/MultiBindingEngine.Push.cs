@@ -45,6 +45,12 @@ internal static partial class MultiBindingEngine
 			{
 				result = _mb.Converter.Convert(values, _dp.PropertyType,
 					_mb.ConverterParameter, CultureInfo.CurrentCulture);
+				if (ReferenceEquals(result, Binding.DoNothing)) return;
+				if (ReferenceEquals(result, DependencyProperty.UnsetValue))
+				{
+					BindingEngine.SetFallbackOrDefault(target, _dp, _mb.FallbackValue);
+					return;
+				}
 			}
 			else
 			{

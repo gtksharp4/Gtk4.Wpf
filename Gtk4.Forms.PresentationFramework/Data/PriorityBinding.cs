@@ -106,14 +106,14 @@ internal static class PriorityBindingEngine
 				var value = BindingEngine.ResolvePath(src, b.Path);
 				if (value != null && !ReferenceEquals(value, DependencyProperty.UnsetValue))
 				{
-					target.SetValue(_dp, value);
+					BindingEngine.SetTargetConverted(target, _dp, value, _pb.FallbackValue);
 					return;
 				}
 			}
 			// No child resolved — apply FallbackValue.
 			var fb = _pb.FallbackValue;
 			if (!ReferenceEquals(fb, DependencyProperty.UnsetValue))
-				target.SetValue(_dp, fb);
+				BindingEngine.SetFallbackOrDefault(target, _dp, fb);
 		}
 
 		void SubscribeSources(FrameworkElement target)

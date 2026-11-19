@@ -43,8 +43,20 @@ internal static partial class BindingEngine
 	internal static void SetTargetSafe(
 		FrameworkElement target, DependencyProperty dp, object? value, object? fallback)
 	{
-		if (ReferenceEquals(value, DependencyProperty.UnsetValue) || dp.IsValidValue(value))
+		if (ReferenceEquals(value, Binding.DoNothing)) return;
+		if (!ReferenceEquals(value, DependencyProperty.UnsetValue) && dp.IsValidValue(value))
 			target.SetValue(dp, value);
+		else
+			SetFallbackOrDefault(target, dp, fallback);
+	}
+
+	/// <summary>Like <see cref="SetTargetSafe"/> but first converts to the DP type (strings, IConvertible).</summary>
+	internal static void SetTargetConverted(
+		FrameworkElement target, DependencyProperty dp, object? value, object? fallback)
+	{
+		if (ReferenceEquals(value, Binding.DoNothing)) return;
+		if (!ReferenceEquals(value, DependencyProperty.UnsetValue) && TryCoerceValid(dp, value, out var v))
+			target.SetValue(dp, v);
 		else
 			SetFallbackOrDefault(target, dp, fallback);
 	}

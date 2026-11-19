@@ -107,7 +107,8 @@ public partial class Application
 		OnStartup(new StartupEventArgs(args));
 		if (_shutdownStarted)
 			return;
-		// StartupUri is always loaded after Startup; a window created by a handler stays MainWindow.
+		// Shutdown() is asynchronous (posted), so the StartupUri window is still created; this check only
+		// matters when the dispatcher runs posted work inline. A window created by a handler stays MainWindow.
 		if (StartupUri != null)
 		{
 			var window = CreateWindowFromStartupUri(StartupUri);

@@ -22,7 +22,9 @@ internal static partial class BindingEngine
 				var source = ResolveSource(target);
 				if (source == null) return;
 
-				object? sourceValue = target.GetValue(_dp);
+				object? rawValue = target.GetValue(_dp);
+				if (!RunPreWriteValidation(target, rawValue)) return;
+				object? sourceValue = rawValue;
 				if (_binding.Converter != null)
 				{
 					try
@@ -46,9 +48,6 @@ internal static partial class BindingEngine
 					ReportError(target, cex!);
 					return;
 				}
-
-				// ── Validation (pre-write: explicit rules only) ──────────────
-				if (!RunPreWriteValidation(target, sourceValue)) return;
 
 				if (_binding.ValidatesOnExceptions)
 				{

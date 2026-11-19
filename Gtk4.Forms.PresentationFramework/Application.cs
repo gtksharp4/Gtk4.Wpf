@@ -39,8 +39,9 @@ public partial class Application : DispatcherObject
 
 	/// <summary>
 	/// URI of the XAML window to instantiate once startup completes (set by the generated
-	/// App.g.cs entry-point). Always loaded after <see cref="Startup"/> unless shutdown was requested;
-	/// a window created by a Startup handler stays <see cref="MainWindow"/>.
+	/// App.g.cs entry-point). Loaded after <see cref="Startup"/>; a window created by a Startup handler stays
+	/// <see cref="MainWindow"/>. Shutdown requested from a Startup handler is asynchronous, so the window is still
+	/// created and is then closed by the posted shutdown.
 	/// </summary>
 	public Uri? StartupUri { get; set; }
 }
