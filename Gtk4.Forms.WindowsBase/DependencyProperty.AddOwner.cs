@@ -30,9 +30,14 @@ public sealed partial class DependencyProperty
 	/// </summary>
 	public DependencyProperty AddOwner(Type ownerType, PropertyMetadata typeMetadata)
 	{
+		if (ownerType == null) throw new ArgumentNullException(nameof(ownerType));
 		if (typeMetadata == null) throw new ArgumentNullException(nameof(typeMetadata));
-		AddOwner(ownerType);
+		lock (_registryLock)
+			if (_registry.ContainsKey((Name, ownerType)))
+				throw new ArgumentException(
+					$"DependencyProperty '{Name}' is already registered on '{ownerType.FullName}'.");
+		// Register the owner only after the override succeeds, so a failed call leaves no stale entry.
 		OverrideMetadata(ownerType, typeMetadata);
-		return this;
+		return AddOwner(ownerType);
 	}
 }

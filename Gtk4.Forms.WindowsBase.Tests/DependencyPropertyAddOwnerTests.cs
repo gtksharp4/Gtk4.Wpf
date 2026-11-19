@@ -75,6 +75,39 @@ public class DependencyPropertyAddOwnerTests
 		Assert.Throws<ArgumentException>(() => OwnerBase.SizeProp.AddOwner(typeof(OwnerBase)));
 	}
 
+	class RetryHost : DependencyObject { }
+
+	class RetryOwnerX : DependencyObject { }
+
+	class RetryOwnerY : DependencyObject { }
+
+	[Fact]
+	public void AddOwner_incompatible_metadata_does_not_register_owner_and_retry_succeeds()
+	{
+		var dp = DependencyProperty.Register(
+			"AoRetryMeta", typeof(double), typeof(RetryHost), new FrameworkPropertyMetadata(1.0));
+
+		Assert.Throws<ArgumentException>(() => dp.AddOwner(typeof(RetryOwnerX), new PropertyMetadata(1.0)));
+		Assert.Null(DependencyProperty.FindByName(dp.Name, typeof(RetryOwnerX)));
+
+		Assert.Same(dp, dp.AddOwner(typeof(RetryOwnerX), new FrameworkPropertyMetadata(2.0)));
+		Assert.Same(dp, DependencyProperty.FindByName(dp.Name, typeof(RetryOwnerX)));
+	}
+
+	[Fact]
+	public void AddOwner_invalid_default_does_not_register_owner_and_retry_succeeds()
+	{
+		var dp = DependencyProperty.Register(
+			"AoRetryValidate", typeof(double), typeof(RetryHost), new PropertyMetadata(1.0),
+			v => v is double d && d > 0);
+
+		Assert.Throws<ArgumentException>(() => dp.AddOwner(typeof(RetryOwnerY), new PropertyMetadata(-1.0)));
+		Assert.Null(DependencyProperty.FindByName(dp.Name, typeof(RetryOwnerY)));
+
+		Assert.Same(dp, dp.AddOwner(typeof(RetryOwnerY), new PropertyMetadata(2.0)));
+		Assert.Same(dp, DependencyProperty.FindByName(dp.Name, typeof(RetryOwnerY)));
+	}
+
 	[Fact]
 	public void AddOwner_inheriting_metadata_flows_through_inheritance_parent()
 	{
