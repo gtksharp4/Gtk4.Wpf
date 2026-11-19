@@ -53,11 +53,27 @@ public class SetterValueRuntimeTests
 	}
 
 	[Fact]
-	public void UnsetValue_throws_ArgumentException_on_apply()
+	public void UnsetValue_throws_ArgumentException_at_assignment()
 	{
-		var s = new Setter(Tag, DependencyProperty.UnsetValue);
-		var ex = Assert.Throws<ArgumentException>(() => s.ApplyToStyleLayer(new SetterTestElement()));
+		var ex = Assert.Throws<ArgumentException>(() => new Setter { Value = DependencyProperty.UnsetValue });
 		Assert.Contains("UnsetValue", ex.Message);
+		Assert.Throws<ArgumentException>(() => new Setter(Tag, DependencyProperty.UnsetValue));
+	}
+
+	[Fact]
+	public void Null_property_reports_ParamName_property()
+	{
+		Assert.Equal("property", Assert.Throws<ArgumentNullException>(() => new Setter(null!, "x")).ParamName);
+		Assert.Equal("property", Assert.Throws<ArgumentNullException>(() => new Setter().Property = null!).ParamName);
+	}
+
+	[Fact]
+	public void Read_only_property_throws_ArgumentException()
+	{
+		var ro = UIElement.IsMouseOverProperty;
+		Assert.Throws<ArgumentException>(() => new Setter(ro, true));
+		Assert.Throws<ArgumentException>(() => new Setter(ro, true, "part"));
+		Assert.Throws<ArgumentException>(() => new Setter().Property = ro);
 	}
 
 	[Fact]

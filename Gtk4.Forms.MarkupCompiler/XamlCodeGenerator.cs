@@ -993,7 +993,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				}
 				else if (ch.Name.LocalName == "Style.Triggers")
 				{
-					EmitStyleTriggers(w, ch, xNs, styleVar, ref counter);
+					EmitStyleTriggers(w, ch, xNs, styleVar, ownerVar, ref counter);
 				}
 			}
 
@@ -1011,6 +1011,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			XElement triggersEl,
 			XNamespace xNs,
 			string styleVar,
+			string receiver,
 			ref int counter)
 		{
 			foreach (XElement ch in triggersEl.Elements())
@@ -1019,13 +1020,13 @@ namespace Gtk4.Forms.MarkupCompiler
 				switch (ch.Name.LocalName)
 				{
 					case "Trigger":
-						EmitTriggerToCollection(w, ch, trigVar, styleVar);
+						EmitTriggerToCollection(w, ch, trigVar, styleVar, receiver);
 						break;
 					case "DataTrigger":
-						EmitDataTriggerToCollection(w, ch, trigVar, styleVar);
+						EmitDataTriggerToCollection(w, ch, trigVar, styleVar, receiver);
 						break;
 					case "MultiTrigger":
-						EmitMultiTriggerToCollection(w, ch, xNs, trigVar, styleVar, ref counter);
+						EmitMultiTriggerToCollection(w, ch, xNs, trigVar, styleVar, receiver, ref counter);
 						break;
 					case "EventTrigger":
 						EmitEventTrigger(w, ch, xNs, trigVar, styleVar, ref counter);
@@ -1039,7 +1040,8 @@ namespace Gtk4.Forms.MarkupCompiler
 		/// <paramref name="containerVar"/>.Triggers.
 		/// Used by both <c>Style.Triggers</c> and element-level trigger blocks.
 		/// </summary>
-		void EmitTriggerToCollection(IndentedWriter w, XElement el, string trigVar, string containerVar)
+		void EmitTriggerToCollection(
+			IndentedWriter w, XElement el, string trigVar, string containerVar, string receiver)
 		{
 			string propAttr = (string)el.Attribute("Property") ?? string.Empty;
 			string valAttr = (string)el.Attribute("Value") ?? string.Empty;
@@ -1048,7 +1050,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			{
 				if (setter.Name.LocalName != "Setter") continue;
 				string p = (string)setter.Attribute("Property") ?? string.Empty;
-				string vExpr = SetterValueExpression(w, setter, "this");
+				string vExpr = SetterValueExpression(w, setter, receiver);
 				w.Line($"{trigVar}.Setters.Add(new System.Windows.Setter {{ PropertyName = \"{EscapeString(p)}\", Value = {vExpr} }});");
 			}
 			w.Line($"{containerVar}.Triggers.Add({trigVar});");
@@ -1059,7 +1061,8 @@ namespace Gtk4.Forms.MarkupCompiler
 		/// <paramref name="containerVar"/>.Triggers.
 		/// Used by both <c>Style.Triggers</c> and element-level trigger blocks.
 		/// </summary>
-		void EmitDataTriggerToCollection(IndentedWriter w, XElement el, string trigVar, string containerVar)
+		void EmitDataTriggerToCollection(
+			IndentedWriter w, XElement el, string trigVar, string containerVar, string receiver)
 		{
 			string bindingAttr = (string)el.Attribute("Binding") ?? string.Empty;
 			string valAttr = (string)el.Attribute("Value") ?? string.Empty;
@@ -1071,7 +1074,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			{
 				if (setter.Name.LocalName != "Setter") continue;
 				string p = (string)setter.Attribute("Property") ?? string.Empty;
-				string vExpr = SetterValueExpression(w, setter, "this");
+				string vExpr = SetterValueExpression(w, setter, receiver);
 				w.Line($"{trigVar}.Setters.Add(new System.Windows.Setter {{ PropertyName = \"{EscapeString(p)}\", Value = {vExpr} }});");
 			}
 			w.Line($"{containerVar}.Triggers.Add({trigVar});");
@@ -1088,6 +1091,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			XNamespace xNs,
 			string trigVar,
 			string containerVar,
+			string receiver,
 			ref int counter)
 		{
 			w.Line($"var {trigVar} = new System.Windows.MultiTrigger();");
@@ -1106,7 +1110,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				else if (child.Name.LocalName == "Setter")
 				{
 					string p = (string)child.Attribute("Property") ?? string.Empty;
-					string vExpr = SetterValueExpression(w, child, "this");
+					string vExpr = SetterValueExpression(w, child, receiver);
 					w.Line($"{trigVar}.Setters.Add(new System.Windows.Setter {{ PropertyName = \"{EscapeString(p)}\", Value = {vExpr} }});");
 				}
 			}

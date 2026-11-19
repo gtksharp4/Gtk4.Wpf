@@ -32,6 +32,7 @@ public partial class DataTrigger : TriggerBase
 	/// <inheritdoc/>
 	internal override void Attach(FrameworkElement target)
 	{
+		Setters.EnsureOnlySetters();
 		if (Binding == null) return;
 		var state = new DataTriggerState(this, target);
 		_states[target] = state;

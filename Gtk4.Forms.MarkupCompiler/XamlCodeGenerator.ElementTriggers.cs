@@ -42,15 +42,15 @@ namespace Gtk4.Forms.MarkupCompiler
 				switch (ch.Name.LocalName)
 				{
 					case "Trigger":
-						EmitTriggerToCollection(w, ch, trigVar, parentVar);
+						EmitTriggerToCollection(w, ch, trigVar, parentVar, parentVar);
 						any = true;
 						break;
 					case "DataTrigger":
-						EmitDataTriggerToCollection(w, ch, trigVar, parentVar);
+						EmitDataTriggerToCollection(w, ch, trigVar, parentVar, parentVar);
 						any = true;
 						break;
 					case "MultiTrigger":
-						EmitMultiTriggerToCollection(w, ch, xNs, trigVar, parentVar, ref counter);
+						EmitMultiTriggerToCollection(w, ch, xNs, trigVar, parentVar, parentVar, ref counter);
 						any = true;
 						break;
 					case "EventTrigger":

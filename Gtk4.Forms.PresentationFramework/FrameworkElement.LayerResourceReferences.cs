@@ -17,6 +17,28 @@ public abstract partial class FrameworkElement
 		ApplyResourceRef(dp, key, contributor);
 	}
 
+	// Contributor for style-setter {DynamicResource} links: they write the style layer, so they rank
+	// below triggers and BasedOn-derived values and never touch a user's own resource reference.
+	internal static readonly object StyleLayerContributor = new object();
+
+	internal void SetStyleResourceReference(DependencyProperty dp, object key)
+	{
+		_resRefs ??= new List<ResRef>();
+		_resRefs.RemoveAll(r => ReferenceEquals(r.Dp, dp) && ReferenceEquals(r.Contributor, StyleLayerContributor));
+		_resRefs.Add(new ResRef(dp, key, StyleLayerContributor));
+		SubscribeToResourceChain();
+		ApplyResourceRef(dp, key, StyleLayerContributor);
+	}
+
+	// Removes the link only; the style value is cleared by the style teardown.
+	internal void DropStyleResourceReference(DependencyProperty dp)
+	{
+		if (_resRefs == null) return;
+		_resRefs.RemoveAll(r => ReferenceEquals(r.Dp, dp) && ReferenceEquals(r.Contributor, StyleLayerContributor));
+		if (_resRefs.Count == 0)
+			UnsubscribeFromResourceChain();
+	}
+
 	internal void ClearLayerResourceReference(DependencyProperty dp, object contributor)
 	{
 		if (_resRefs == null) return;

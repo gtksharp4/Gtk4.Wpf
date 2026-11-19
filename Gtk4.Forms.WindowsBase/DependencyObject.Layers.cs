@@ -33,6 +33,15 @@ public partial class DependencyObject
 		CommitLayerChange(dp, oldEffective);
 	}
 
+	/// <summary>Removes one style-layer value, raising the change when the effective value moves.</summary>
+	internal void ClearStyleValue(DependencyProperty dp)
+	{
+		if (dp == null || !_styleValues.ContainsKey(dp)) return;
+		var oldEffective = ResolveEffectiveValue(dp);
+		_styleValues.Remove(dp);
+		CommitLayerChange(dp, oldEffective);
+	}
+
 	/// <summary>
 	/// D6: Removes style-layer values and fires change notifications correctly.
 	/// Caller passes the snapshot of old style values before clearing.

@@ -5,6 +5,15 @@ namespace System.Windows;
 /// <summary>Collection of <see cref="SetterBase"/> items.</summary>
 public class SetterBaseCollection : List<SetterBase>
 {
+	/// <summary>Trigger setters can only be <see cref="Setter"/> objects, as in WPF.</summary>
+	internal void EnsureOnlySetters()
+	{
+		foreach (var setter in this)
+			if (setter is not Setter)
+				throw new InvalidOperationException(
+					"Trigger setters can only contain Setter objects; EventSetter is not supported.");
+	}
+
 	/// <summary>Un-applies the trigger-layer state every setter created for <paramref name="contributor"/>.</summary>
 	internal void UnapplyTriggerLayer(DependencyObject target, object contributor)
 	{

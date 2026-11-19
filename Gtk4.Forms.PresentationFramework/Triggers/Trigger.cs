@@ -34,6 +34,7 @@ public class Trigger : TriggerBase
 	/// <inheritdoc/>
 	internal override void Attach(FrameworkElement target)
 	{
+		Setters.EnsureOnlySetters();
 		// Idempotent: a re-attach replaces the prior state so its change hook is
 		// removed instead of orphaned (double-attach would leak a TriggerState).
 		if (_states.ContainsKey(target)) Detach(target);

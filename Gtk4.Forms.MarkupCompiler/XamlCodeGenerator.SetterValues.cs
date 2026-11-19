@@ -46,10 +46,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			XNamespace xNs = _xNs ?? XNamespace.Get(WpfXmlnsMap.XNs2006);
 			foreach (XElement child in valueEl.Elements())
 			{
-				int c = _setterCounter;
-				string expr = EmitSetterChild(w, child, xNs, ref c);
-				_setterCounter = c;
-				return expr;
+				return EmitSetterChild(w, child, xNs, ref _setterCounter);
 			}
 			string text = valueEl.Value.Trim();
 			return text.Length == 0 ? "null" : SetterAttributeValue(text, receiver);
@@ -71,9 +68,10 @@ namespace Gtk4.Forms.MarkupCompiler
 		}
 
 		/// <summary>
-		/// Emits <c>new EventSetter(Owner.XEvent, new RoutedEventHandler(this.H))</c> into
-		/// <paramref name="setters"/>. The owner is the style TargetType unless the event is
-		/// qualified (<c>Owner.Event</c>). The delegate type is always RoutedEventHandler.
+		/// Emits <c>new EventSetter(Owner.XEvent, Delegate.CreateDelegate(Owner.XEvent.HandlerType, this, "H"))</c>
+		/// into <paramref name="setters"/>. The owner is the style TargetType unless the event is
+		/// qualified (<c>Owner.Event</c>). The event's own delegate type is used and the 3-argument
+		/// overload binds non-public handlers, as WPF does.
 		/// </summary>
 		void EmitEventSetter(IndentedWriter w, XElement el, string setters, string targetTypeAttr)
 		{
@@ -95,7 +93,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			string init = string.Equals(handled, "true", StringComparison.OrdinalIgnoreCase)
 				? " { HandledEventsToo = true }" : string.Empty;
 			w.Line($"{setters}.Add(new System.Windows.EventSetter({ownerFq}.{ev}Event, " +
-				$"new System.Windows.RoutedEventHandler(this.{handler})){init});");
+				$"System.Delegate.CreateDelegate({ownerFq}.{ev}Event.HandlerType, this, " +
+				$"\"{EscapeString(handler)}\")){init});");
 		}
 	}
 }

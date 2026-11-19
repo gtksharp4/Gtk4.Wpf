@@ -26,6 +26,7 @@ public class MultiTrigger : TriggerBase
 	/// <inheritdoc/>
 	internal override void Attach(FrameworkElement target)
 	{
+		Setters.EnsureOnlySetters();
 		var state = new MultiTriggerState(this, target);
 		_states[target] = state;
 		state.Evaluate();

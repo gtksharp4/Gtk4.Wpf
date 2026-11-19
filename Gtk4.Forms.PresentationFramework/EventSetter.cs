@@ -7,7 +7,7 @@ namespace System.Windows;
 /// <summary>
 /// Attaches a routed-event handler to every element the style is applied to, and removes it when
 /// the style is replaced or cleared. In WPF style handlers run after instance handlers; here they
-/// are added at apply time and so run in registration order (GTK gap). Not valid in triggers.
+/// are added at apply time and so run in registration order (GTK gap). Not valid in triggers (attaching a trigger that contains one throws).
 /// </summary>
 public class EventSetter : SetterBase
 {
@@ -26,7 +26,9 @@ public class EventSetter : SetterBase
 	/// <summary>Creates a setter for <paramref name="routedEvent"/> and <paramref name="handler"/>.</summary>
 	public EventSetter(RoutedEvent routedEvent, Delegate handler)
 	{
-		Event = routedEvent;
+		if (routedEvent == null) throw new ArgumentNullException(nameof(routedEvent));
+		if (handler == null) throw new ArgumentNullException(nameof(handler));
+		_event = routedEvent;
 		Handler = handler;
 	}
 
@@ -43,10 +45,18 @@ public class EventSetter : SetterBase
 
 	/// <summary>The handler to attach.</summary>
 	/// <exception cref="ArgumentNullException">The value is null.</exception>
+	/// <exception cref="ArgumentException">The handler type does not match the event.</exception>
 	public Delegate? Handler
 	{
 		get => _handler;
-		set => _handler = value ?? throw new ArgumentNullException(nameof(value));
+		set
+		{
+			if (value == null) throw new ArgumentNullException(nameof(value));
+			if (_event != null && value.GetType() != _event.HandlerType && value is not RoutedEventHandler)
+				throw new ArgumentException(
+					$"Handler type {value.GetType()} does not match {_event.HandlerType}.", nameof(value));
+			_handler = value;
+		}
 	}
 
 	/// <summary>Whether the handler also receives events already marked handled.</summary>

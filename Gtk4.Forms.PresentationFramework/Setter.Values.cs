@@ -8,14 +8,16 @@ namespace System.Windows;
 
 /// <summary>
 /// Value application for <see cref="Setter"/>. Plain values go into the style or trigger layer.
-/// <see cref="DynamicResourceExtension"/> values stay live (dynamic-resource layer for styles, a
-/// contributor-keyed trigger value for triggers); <see cref="BindingBase"/> values are bound while
-/// the style or trigger is active; <see cref="StaticResourceExtension"/> resolves once at apply.
+/// <see cref="DynamicResourceExtension"/> values stay live (a style-layer link for styles, a
+/// contributor-keyed trigger value for triggers; a local setter uses the dynamic-resource layer);
+/// <see cref="BindingBase"/> values are bound while the style or trigger is active;
+/// <see cref="StaticResourceExtension"/> resolves once at apply.
 /// </summary>
 /// <remarks>
-/// GTK gap: bindings write the local value in this engine, so a style/trigger binding is only
-/// applied when the property has no local value, and a later local set replaces it (WPF keeps
-/// the binding in the style layer underneath).
+/// Engine limitation: style/trigger <see cref="BindingBase"/> values are applied as local values.
+/// Consequently a trigger setter for the same property never shows over a style binding,
+/// <c>ReadLocalValue</c>/<c>ValueSource</c> report Local, and a trigger binding is ignored when the
+/// property already has a binding. A layer-targeted binding expression is a backlog item.
 /// </remarks>
 public partial class Setter
 {
@@ -27,6 +29,7 @@ public partial class Setter
 		public object? Contributor;
 		public DependencyProperty Dp = null!;
 		public BindingExpressionBase? Expr;
+		public bool StyleRef;
 	}
 
 	static readonly ConditionalWeakTable<DependencyObject, List<Live>> _live =
@@ -36,8 +39,6 @@ public partial class Setter
 	{
 		var dp = ResolveProperty(target);
 		if (dp == null) return;
-		if (ReferenceEquals(Value, DependencyProperty.UnsetValue))
-			throw new ArgumentException("'UnsetValue' is not a valid value for the 'Setter.Value' property.");
 		applied?.Add(dp);
 		Unapply(target, contributor);
 
@@ -74,12 +75,14 @@ public partial class Setter
 	void LinkResource(FrameworkElement fe, DependencyProperty dp, object key, Layer layer, object? contributor)
 	{
 		if (layer == Layer.Trigger) fe.SetLayerResourceReference(dp, key, contributor!);
+		else if (layer == Layer.Style) fe.SetStyleResourceReference(dp, key);
 		else fe.SetResourceReference(dp, key);
-		Track(fe, contributor, dp, null);
+		Track(fe, contributor, dp, null, layer == Layer.Style);
 	}
 
 	static void Store(DependencyObject target, DependencyProperty dp, Layer layer, object? contributor, object? v)
 	{
+		if (layer == Layer.Style && target is FrameworkElement sfe) sfe.DropStyleResourceReference(dp);
 		switch (layer)
 		{
 			case Layer.Style: target.SetStyleValue(dp, v); break;
@@ -88,8 +91,12 @@ public partial class Setter
 		}
 	}
 
-	void Track(DependencyObject target, object? contributor, DependencyProperty dp, BindingExpressionBase? expr) =>
-		_live.GetOrCreateValue(target).Add(new Live { Owner = this, Contributor = contributor, Dp = dp, Expr = expr });
+	void Track(DependencyObject target, object? contributor, DependencyProperty dp,
+		BindingExpressionBase? expr, bool styleRef = false) =>
+		_live.GetOrCreateValue(target).Add(new Live
+		{
+			Owner = this, Contributor = contributor, Dp = dp, Expr = expr, StyleRef = styleRef
+		});
 
 	/// <inheritdoc/>
 	internal override void Unapply(DependencyObject target, object? contributor)
@@ -109,6 +116,7 @@ public partial class Setter
 					fe.ClearValue(l.Dp);
 				}
 			}
+			else if (l.StyleRef) fe.DropStyleResourceReference(l.Dp);
 			else if (contributor != null) fe.ClearLayerResourceReference(l.Dp, contributor);
 			else fe.ClearResourceReference(l.Dp);
 		}

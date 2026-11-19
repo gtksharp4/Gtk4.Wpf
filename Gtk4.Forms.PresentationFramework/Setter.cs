@@ -18,6 +18,7 @@ namespace System.Windows;
 public partial class Setter : SetterBase
 {
 	DependencyProperty? _property;
+	object? _value;
 
 	/// <summary>Creates an empty setter.</summary>
 	public Setter() { }
@@ -25,7 +26,8 @@ public partial class Setter : SetterBase
 	/// <summary>Creates a setter for <paramref name="property"/> with <paramref name="value"/>.</summary>
 	public Setter(DependencyProperty property, object value)
 	{
-		Property = property;
+		CheckValidProperty(property);
+		_property = property;
 		Value = value;
 	}
 
@@ -38,10 +40,23 @@ public partial class Setter : SetterBase
 
 	/// <summary>The dependency property to set (takes precedence over <see cref="PropertyName"/>).</summary>
 	/// <exception cref="ArgumentNullException">The value is null.</exception>
+	/// <exception cref="ArgumentException">The property is read-only.</exception>
 	public DependencyProperty? Property
 	{
 		get => _property;
-		set => _property = value ?? throw new ArgumentNullException(nameof(value));
+		set
+		{
+			CheckValidProperty(value);
+			_property = value;
+		}
+	}
+
+	static void CheckValidProperty(DependencyProperty? property)
+	{
+		if (property == null) throw new ArgumentNullException("property");
+		if (property.IsReadOnly)
+			throw new ArgumentException(
+				$"'{property.Name}' is a read-only property and cannot be set by a Setter.", "property");
 	}
 
 	/// <summary>
@@ -51,7 +66,18 @@ public partial class Setter : SetterBase
 	public string? PropertyName { get; set; }
 
 	/// <summary>The value to assign. A string is type-converted on apply.</summary>
-	public object? Value { get; set; }
+	/// <exception cref="ArgumentException">The value is <see cref="DependencyProperty.UnsetValue"/>.</exception>
+	public object? Value
+	{
+		get => _value;
+		set
+		{
+			if (ReferenceEquals(value, DependencyProperty.UnsetValue))
+				throw new ArgumentException(
+					"'UnsetValue' is not a valid value for the 'Setter.Value' property.", nameof(value));
+			_value = value;
+		}
+	}
 
 	/// <summary>
 	/// Name of a template part this setter targets. Store-only: template triggers apply the setter to
