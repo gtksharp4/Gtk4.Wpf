@@ -22,6 +22,7 @@ public class AppearanceInheritanceTests
 	[Fact]
 	public void Window_font_size_and_foreground_flow_to_descendants()
 	{
+		System.Windows.Themes.Generic.Reset();
 		var (win, _, tb, btn) = Tree();
 		win.FontSize = 16;
 		var red = Brushes.Red;
@@ -29,7 +30,8 @@ public class AppearanceInheritanceTests
 		Assert.Equal(16.0, tb.FontSize);
 		Assert.Equal(16.0, btn.FontSize);
 		Assert.Same(red, tb.Foreground);
-		Assert.Same(red, btn.Foreground);
+		// WPF themes colour Button text with ControlTextBrush: Window.Foreground reaches TextBlocks only.
+		Assert.Same(SystemColors.ControlTextBrush, btn.Foreground);
 	}
 
 	[Fact]

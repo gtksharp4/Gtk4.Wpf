@@ -1,3 +1,5 @@
+using System;
+
 namespace System.Windows;
 
 /// <summary>
@@ -11,6 +13,14 @@ public partial class Window
 	// The presentation-source analogue: true from Present() until hidden or closed.
 	bool _shown;
 
+	const string ClosedMessage =
+		"Cannot set Visibility or call Show, ShowDialog, or WindowInteropHelper.EnsureHandle after a Window has closed.";
+
+	void VerifyNotClosed()
+	{
+		if (_closed) throw new InvalidOperationException(ClosedMessage);
+	}
+
 	static Window()
 	{
 		VisibilityProperty.OverrideMetadata(typeof(Window),
@@ -20,6 +30,7 @@ public partial class Window
 	/// <summary>Shows the window (sets <see cref="UIElement.Visibility"/> to Visible).</summary>
 	public void Show()
 	{
+		VerifyNotClosed();
 		if (Visibility == Visibility.Visible)
 			ShowCore();
 		else
@@ -33,8 +44,8 @@ public partial class Window
 	{
 		if (visibility == Visibility.Visible)
 		{
-			if (!_closed)
-				ShowCore();
+			VerifyNotClosed();
+			ShowCore();
 		}
 		else if (_window != null)
 		{
@@ -42,6 +53,9 @@ public partial class Window
 			SetShown(false);
 		}
 	}
+
+	// A top-level's show state is not content suppression: its widget mapping is always Visible.
+	internal override Visibility WidgetVisibility => Visibility.Visible;
 
 	// A top-level's GTK visibility is the show state, not Opacity/CanTarget suppression.
 	internal override void ApplyVisibilityToWidget(Gtk.Widget widget) { }

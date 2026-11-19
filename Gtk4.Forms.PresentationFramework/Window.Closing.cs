@@ -95,6 +95,7 @@ public partial class Window
 		// Fire Closed once, after the window is hidden (WPF order). Drives app shutdown.
 		if (!_closed)
 		{
+			Visibility = Visibility.Hidden; // so re-setting Visible after close is a change and throws
 			_closed = true;
 			Closed?.Invoke(this, EventArgs.Empty);
 			LifecycleBroadcaster.BroadcastUnloaded(this); // WPF: Unloaded follows Closed

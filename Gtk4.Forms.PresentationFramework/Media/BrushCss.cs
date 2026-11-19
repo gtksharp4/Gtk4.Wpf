@@ -12,8 +12,11 @@ namespace System.Windows.Media;
 /// <b>Gaps</b>: <see cref="ImageBrush"/>, <see cref="VisualBrush"/> and <see cref="DrawingBrush"/> have
 /// no CSS form and are store-only. Linear gradients map relative <c>StartPoint</c>/<c>EndPoint</c> to a
 /// CSS angle: exact for axis-aligned and square-box diagonals, approximate on non-square boxes (WPF
-/// stretches the gradient line with the box, CSS keeps the angle). Gradient <c>color</c> (foreground)
-/// falls back to the first stop since CSS text colour cannot be a gradient.
+/// stretches the gradient line with the box, CSS keeps the angle). Linear stop offsets are remapped onto
+/// the CSS gradient line, so a partial span such as (0,0)-(0,0.5) keeps its extent (relative
+/// coordinates only). <c>RadialGradientBrush.GradientOrigin</c> is ignored (CSS has no focal point),
+/// and only <c>SpreadMethod.Pad</c> is honoured because CSS clamps the end colours.
+/// Gradient <c>color</c> (foreground) falls back to the first stop since CSS text colour cannot be a gradient.
 /// </para>
 /// </summary>
 internal static class BrushCss
@@ -33,7 +36,7 @@ internal static class BrushCss
 			case SolidColorBrush s:
 				return $"background-color: {Rgba(s.Color, s.Opacity)};";
 			case LinearGradientBrush l when l.GradientStops.Count > 0:
-				return $"background-image: linear-gradient({F(LinearAngle(l))}deg, {Stops(l)});";
+				return $"background-image: linear-gradient({F(LinearAngle(l))}deg, {Stops(l, LinearRemap(l))});";
 			case RadialGradientBrush r when r.GradientStops.Count > 0:
 				return $"background-image: radial-gradient(ellipse {F(r.RadiusX * 100)}% {F(r.RadiusY * 100)}% " +
 					$"at {F(r.Center.X * 100)}% {F(r.Center.Y * 100)}%, {Stops(r)});";
@@ -81,13 +84,25 @@ internal static class BrushCss
 		return Math.Round((deg + 360.0) % 360.0, 4);
 	}
 
-	static string Stops(GradientBrush b)
+	// Maps stop offsets (0..1 along StartPoint->EndPoint, unit square) to positions along the CSS gradient line.
+	static Func<double, double> LinearRemap(LinearGradientBrush b)
+	{
+		double rad = LinearAngle(b) * Math.PI / 180.0;
+		double dx = Math.Sin(rad), dy = -Math.Cos(rad);
+		double len = Math.Abs(dx) + Math.Abs(dy);
+		double Project(Point p) => 0.5 + ((p.X - 0.5) * dx + (p.Y - 0.5) * dy) / len;
+		double ps = Project(b.StartPoint), pe = Project(b.EndPoint);
+		if (b.StartPoint == b.EndPoint) return t => t;
+		return t => ps + t * (pe - ps);
+	}
+
+	static string Stops(GradientBrush b, Func<double, double>? position = null)
 	{
 		var sb = new StringBuilder();
 		foreach (var stop in b.GradientStops.OrderBy(s => s.Offset))
 		{
 			if (sb.Length > 0) sb.Append(", ");
-			sb.Append(Rgba(stop.Color, b.Opacity)).Append(' ').Append(F(stop.Offset * 100)).Append('%');
+			sb.Append(Rgba(stop.Color, b.Opacity)).Append(' ').Append(F(Math.Round((position?.Invoke(stop.Offset) ?? stop.Offset) * 100, 4))).Append('%');
 		}
 		return sb.ToString();
 	}

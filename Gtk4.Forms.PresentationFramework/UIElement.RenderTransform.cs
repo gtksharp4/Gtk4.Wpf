@@ -145,7 +145,7 @@ public abstract partial class UIElement
 		// Assign a process-unique widget name so the CSS selector targets only this
 		// widget. A monotonic counter (not GetHashCode) avoids a hash collision where a
 		// parent's "#rt-X" rule would also cascade onto a same-named descendant.
-		if (string.IsNullOrEmpty(widget.Name))
+		if (ElementCssStyle.IsUnnamed(widget.Name))
 			widget.Name = $"rt-{System.Threading.Interlocked.Increment(ref _rtNameCounter):x8}";
 
 		string selector = $"#{widget.Name}";

@@ -15,22 +15,15 @@ public partial class DependencyObject
 		new Dictionary<DependencyProperty, object?>();
 
 	/// <summary>
-	/// D7: Writes the resolved resource value into the dynamic-resource layer.
-	/// Lower priority than local/trigger; higher than style/inherited/default.
-	/// Fires change notifications so the effective value updates immediately.
+	/// D7: Writes the resolved resource value (raw; coercion is applied on top) into the
+	/// dynamic-resource layer. Lower priority than local/trigger; higher than style/inherited/default.
 	/// </summary>
 	internal void SetDynResValue(DependencyProperty dp, object? value)
 	{
 		if (dp == null) throw new ArgumentNullException(nameof(dp));
 		var oldEffective = ResolveEffectiveValue(dp);
-
-		var meta = dp.GetMetadata(GetType());
-		if (meta.CoerceValueCallback != null)
-			value = meta.CoerceValueCallback(this, value);
-
 		_dynResValues[dp] = value;
-		var newEffective = ResolveEffectiveValue(dp);
-		FireChangeIfDifferent(dp, oldEffective, newEffective);
+		CommitLayerChange(dp, oldEffective);
 	}
 
 	/// <summary>
@@ -45,7 +38,6 @@ public partial class DependencyObject
 
 		var oldEffective = ResolveEffectiveValue(dp);
 		_dynResValues.Remove(dp);
-		var newEffective = ResolveEffectiveValue(dp);
-		FireChangeIfDifferent(dp, oldEffective, newEffective);
+		CommitLayerChange(dp, oldEffective);
 	}
 }

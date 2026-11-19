@@ -91,13 +91,11 @@ public partial class DependencyObject
 
 		var oldEffective = ResolveEffectiveValue(dp);
 		_localValues.Remove(dp);
-		_baseValues?.Remove(dp);
-		var newEffective = ResolveEffectiveValue(dp);
-		FireChangeIfDifferent(dp, oldEffective, newEffective);
+		CommitLayerChange(dp, oldEffective);
 	}
 
 	/// <summary>
-	/// Returns the local value, or <see cref="DependencyProperty.UnsetValue"/> if no
+	/// Returns the raw (un-coerced) local value, or <see cref="DependencyProperty.UnsetValue"/> if no
 	/// local value has been set.
 	/// </summary>
 	public object? ReadLocalValue(DependencyProperty dp)
@@ -133,21 +131,9 @@ public partial class DependencyObject
 	void SetValueCore(DependencyProperty dp, object? value)
 	{
 		OnBeforeSetValue(dp);
-		var meta = dp.GetMetadata(GetType());
-
-		var rawValue = value;
-		// Coerce against the proposed local value before storing.
-		if (meta.CoerceValueCallback != null)
-			value = meta.CoerceValueCallback(this, value);
-
 		var oldEffective = ResolveEffectiveValue(dp);
-
 		_localValues[dp] = value;
-		RecordBaseValue(dp, meta, rawValue);
-
-		// Local always wins; re-resolve so coercion is reflected in the effective value.
-		var newEffective = ResolveEffectiveValue(dp);
-		FireChangeIfDifferent(dp, oldEffective, newEffective);
+		CommitLayerChange(dp, oldEffective);
 	}
 
 	void FireChangeIfDifferent(DependencyProperty dp, object? oldEffective, object? newEffective)

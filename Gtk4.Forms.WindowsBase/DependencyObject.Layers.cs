@@ -23,22 +23,14 @@ public partial class DependencyObject
 
 	/// <summary>
 	/// D6: Sets a style-layer value (lower priority than a local value).
-	/// Runs <see cref="PropertyMetadata.CoerceValueCallback"/> on the resulting effective
-	/// value before firing change notifications (E4).
+	/// Stores the raw value; coercion is applied on top (see <c>RecomputeCoerced</c>).
 	/// </summary>
 	internal void SetStyleValue(DependencyProperty dp, object? value)
 	{
 		if (dp == null) throw new ArgumentNullException(nameof(dp));
 		var oldEffective = ResolveEffectiveValue(dp);
-
-		// Coerce the raw setter value before storing.
-		var meta = dp.GetMetadata(GetType());
-		if (meta.CoerceValueCallback != null)
-			value = meta.CoerceValueCallback(this, value);
-
 		_styleValues[dp] = value;
-		var newEffective = ResolveEffectiveValue(dp);
-		FireChangeIfDifferent(dp, oldEffective, newEffective);
+		CommitLayerChange(dp, oldEffective);
 	}
 
 	/// <summary>
@@ -50,10 +42,9 @@ public partial class DependencyObject
 		if (snapshot == null || snapshot.Count == 0) return;
 		foreach (var kv in snapshot)
 		{
+			var oldEffective = ResolveEffectiveValue(kv.Key);
 			_styleValues.Remove(kv.Key);
-			if (_localValues.ContainsKey(kv.Key)) continue;
-			var newEffective = ResolveEffectiveValue(kv.Key);
-			FireChangeIfDifferent(kv.Key, kv.Value, newEffective);
+			CommitLayerChange(kv.Key, oldEffective);
 		}
 	}
 
@@ -67,7 +58,7 @@ public partial class DependencyObject
 	/// D8: Pushes or updates a trigger-layer value from a specific <paramref name="contributor"/>
 	/// (a <see cref="Trigger"/> / <see cref="DataTrigger"/> / <see cref="MultiTrigger"/> state).
 	/// Last-declared contributor wins (last in insertion order).
-	/// Runs <see cref="PropertyMetadata.CoerceValueCallback"/> on the value before storing (E4).
+	/// Stores the raw value; coercion is applied on top.
 	/// </summary>
 	internal void SetTriggerValue(DependencyProperty dp, object contributor, object? value)
 	{
@@ -75,11 +66,6 @@ public partial class DependencyObject
 		if (contributor == null) throw new ArgumentNullException(nameof(contributor));
 
 		var oldEffective = ResolveEffectiveValue(dp);
-
-		// Coerce the raw setter value before storing.
-		var meta = dp.GetMetadata(GetType());
-		if (meta.CoerceValueCallback != null)
-			value = meta.CoerceValueCallback(this, value);
 
 		if (!_triggerValues.TryGetValue(dp, out var list))
 			_triggerValues[dp] = list = new List<(object, object?)>();
@@ -97,8 +83,7 @@ public partial class DependencyObject
 		}
 		if (!found) list.Add((contributor, value));
 
-		var newEffective = ResolveEffectiveValue(dp);
-		FireChangeIfDifferent(dp, oldEffective, newEffective);
+		CommitLayerChange(dp, oldEffective);
 	}
 
 	/// <summary>
@@ -122,9 +107,7 @@ public partial class DependencyObject
 		}
 		if (list.Count == 0) _triggerValues.Remove(dp);
 
-		if (_localValues.ContainsKey(dp)) return;
-		var newEffective = ResolveEffectiveValue(dp);
-		FireChangeIfDifferent(dp, oldEffective, newEffective);
+		CommitLayerChange(dp, oldEffective);
 	}
 
 	/// <summary>
@@ -182,8 +165,12 @@ public partial class DependencyObject
 		DependencyProperty dp, object? oldParentValue, object? newParentValue)
 	{
 		// Propagate only when neither local nor trigger value shadows the inherited one.
-		if (_localValues.ContainsKey(dp)) return;
-		if (_triggerValues.ContainsKey(dp)) return; // any active contributor shadows inherited
+		if (_localValues.ContainsKey(dp) || _triggerValues.ContainsKey(dp))
+		{
+			// Shadowed: the value is unchanged, but the inherited fallback it is compared with moved.
+			NotifyValueSource(dp);
+			return;
+		}
 
 		var args = new DependencyPropertyChangedEventArgs(dp, oldParentValue, newParentValue);
 		OnPropertyChanged(args);

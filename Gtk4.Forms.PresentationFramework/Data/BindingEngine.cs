@@ -238,13 +238,22 @@ internal static partial class BindingEngine
 		}
 
 		/// <summary>
-		/// If <paramref name="value"/> is a string but the target DP type is not string,
-		/// converts it via <see cref="System.Windows.Markup.XamlValueConverter"/> (R4).
+		/// Converts <paramref name="value"/> to the target DP type like WPF's default value converter:
+		/// strings through <see cref="System.Windows.Markup.XamlValueConverter"/> (R4), IConvertible
+		/// numerics through <see cref="Convert"/>, then <see cref="TypeDescriptor"/> converters.
+		/// Values already of the target type, or with no known conversion, pass through unchanged.
 		/// </summary>
 		object? CoerceToTargetType(object? value)
 		{
-			if (value is string s && _dp.PropertyType != typeof(string))
+			var t = Nullable.GetUnderlyingType(_dp.PropertyType) ?? _dp.PropertyType;
+			if (value == null || t.IsInstanceOfType(value)) return value;
+			if (value is string s)
 				return System.Windows.Markup.XamlValueConverter.Convert(null!, _dp, s);
+			if (value is IConvertible && typeof(IConvertible).IsAssignableFrom(t) && !t.IsEnum)
+				return Convert.ChangeType(value, t, CultureInfo.InvariantCulture);
+			var converter = TypeDescriptor.GetConverter(t);
+			if (converter.CanConvertFrom(value.GetType()))
+				return converter.ConvertFrom(null, CultureInfo.InvariantCulture, value);
 			return value;
 		}
 
@@ -285,6 +294,16 @@ internal static partial class BindingEngine
 				// StringFormat.
 				value = ApplyStringFormat(_binding.StringFormat, value);
 
+				if (_binding.Converter == null)
+				{
+					try { value = CoerceToTargetType(value); }
+					catch (Exception ex) when (ex is FormatException || ex is InvalidCastException
+						|| ex is OverflowException || ex is NotSupportedException)
+					{
+						ApplyFallback(target); // WPF falls back instead of throwing
+						return;
+					}
+				}
 				target.SetValue(_dp, value);
 			}
 			finally

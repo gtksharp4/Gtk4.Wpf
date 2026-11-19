@@ -52,4 +52,14 @@ public static class SystemColors
 	/// <summary>Brush for the control-text colour.</summary>
 	public static Media.SolidColorBrush ControlTextBrush { get; } =
 		new Media.SolidColorBrush(ControlTextColor);
+
+	// ── Window text ───────────────────────────────────────────────────────────
+
+	/// <summary>System window-text colour (#000000, black).</summary>
+	public static Media.Color WindowTextColor { get; } =
+		Media.Color.FromRgb(0x00, 0x00, 0x00);
+
+	/// <summary>Brush for the window-text colour.</summary>
+	public static Media.SolidColorBrush WindowTextBrush { get; } =
+		new Media.SolidColorBrush(WindowTextColor);
 }

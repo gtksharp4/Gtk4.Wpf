@@ -7,8 +7,8 @@ namespace System.Windows.Controls;
 /// <summary>
 /// A decorator that draws a border around a single child element,
 /// backed by <see cref="Gtk.Frame"/>.
-/// <see cref="BorderThickness"/> and <see cref="Padding"/> are recorded but
-/// not yet applied to the GTK widget (GTK 4 uses CSS for spacing — Phase-2).
+/// BorderBrush, BorderThickness and CornerRadius are rendered as CSS on the Gtk.Frame node (see
+/// <c>ElementCssStyle</c>); Padding is stored but not yet applied.
 /// </summary>
 [ContentProperty("Child")]
 public partial class Border : FrameworkElement
@@ -41,7 +41,7 @@ public partial class Border : FrameworkElement
 
 	// ── BorderThickness DP ───────────────────────────────────────────────────
 
-	/// <summary>Border thickness (stored; CSS application is Phase-2).</summary>
+	/// <summary>Border thickness (rendered as CSS border-width on the frame).</summary>
 	public static readonly DependencyProperty BorderThicknessProperty =
 		DependencyProperty.Register(
 			nameof(BorderThickness),

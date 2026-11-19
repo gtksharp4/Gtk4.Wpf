@@ -32,15 +32,6 @@ public static class FontStretches
 	/// <summary>Ultra-expanded (9).</summary>
 	public static FontStretch UltraExpanded { get; } = new FontStretch(9);
 
-	/// <summary>Creates a stretch from an OpenType value in 1..9.</summary>
-	/// <exception cref="ArgumentOutOfRangeException">Value is outside 1..9.</exception>
-	public static FontStretch FromOpenTypeStretch(int stretchValue)
-	{
-		if (stretchValue < 1 || stretchValue > 9)
-			throw new ArgumentOutOfRangeException(nameof(stretchValue));
-		return new FontStretch(stretchValue);
-	}
-
 	internal static string? NameOf(int openTypeStretch) =>
 		openTypeStretch >= 1 && openTypeStretch <= 9 ? Names[openTypeStretch - 1] : null;
 }

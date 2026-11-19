@@ -435,8 +435,10 @@ namespace Gtk4.Forms.MarkupCompiler
 		/// Used when emitting <c>OwnerType.SetProp(el, (type)convert(...))</c>.
 		/// Falls back to <c>object</c> for unknown combinations.
 		/// </summary>
-		static string ResolveAttachedPropType(string ownerFqType, string propName)
+		string ResolveAttachedPropType(string ownerFqType, string propName)
 		{
+			string resolved = _resolver.GetAttachedSetterValueType(ownerFqType, propName);
+			if (resolved != null) return resolved;
 			// Grid attached props: Row, Column, RowSpan, ColumnSpan are int.
 			if (ownerFqType == "System.Windows.Controls.Grid")
 			{
@@ -454,6 +456,19 @@ namespace Gtk4.Forms.MarkupCompiler
 			// DockPanel attached prop: Dock is System.Windows.Controls.Dock enum.
 			if (ownerFqType == "System.Windows.Controls.DockPanel" && propName == "Dock")
 				return "System.Windows.Controls.Dock";
+			// TextElement text properties (resolver-less generation, e.g. unit tests).
+			if (ownerFqType == "System.Windows.Documents.TextElement")
+			{
+				switch (propName)
+				{
+					case "FontSize": return "double";
+					case "Foreground": return "System.Windows.Media.Brush";
+					case "FontFamily": return "System.Windows.Media.FontFamily";
+					case "FontWeight": return "System.Windows.FontWeight";
+					case "FontStyle": return "System.Windows.FontStyle";
+					case "FontStretch": return "System.Windows.FontStretch";
+				}
+			}
 			// Unknown: use object (a cast to object is a no-op; the setter will fail at runtime
 			// if the type doesn't match, but code will compile).
 			return "object";

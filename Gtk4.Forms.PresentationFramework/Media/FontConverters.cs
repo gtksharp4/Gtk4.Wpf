@@ -25,7 +25,7 @@ internal static class FontConverters
 		if (int.TryParse(s, NumberStyles.None, Inv, out int n))
 		{
 			if (n < 1 || n > 999) throw new FormatException($"FontWeight number {n} is outside 1..999.");
-			return FontWeights.FromOpenTypeWeight(n);
+			return FontWeight.FromOpenTypeWeight(n);
 		}
 		switch (s.ToLowerInvariant())
 		{
@@ -66,7 +66,7 @@ internal static class FontConverters
 		for (int i = 1; i <= 9; i++)
 		{
 			if (string.Equals(FontStretches.NameOf(i), s, StringComparison.OrdinalIgnoreCase))
-				return FontStretches.FromOpenTypeStretch(i);
+				return FontStretch.FromOpenTypeStretch(i);
 		}
 		if (string.Equals(s, "Medium", StringComparison.OrdinalIgnoreCase)) return FontStretches.Medium;
 		throw new FormatException($"Cannot parse FontStretch from \"{raw}\".");

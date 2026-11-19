@@ -48,13 +48,16 @@ public abstract partial class UIElement
 			el.ReleaseInputWithin();
 	}
 
+	/// <summary>The visibility the GTK widget mapping uses; a top-level overrides it.</summary>
+	internal virtual Visibility WidgetVisibility => Visibility;
+
 	/// <summary>Hook for subclasses that own the GTK window state (<see cref="Window"/>).</summary>
 	internal virtual void OnVisibilityChangedCore(Visibility visibility) { }
 
 	/// <summary>Pushes Visibility to the widget: Visible flag, opacity, CanTarget and CanFocus.</summary>
 	internal virtual void ApplyVisibilityToWidget(Gtk.Widget widget)
 	{
-		var flags = VisibilityGtkMap.Map(Visibility);
+		var flags = VisibilityGtkMap.Map(WidgetVisibility);
 		if (!flags.WidgetVisible)
 		{
 			widget.Visible = false;
@@ -65,14 +68,14 @@ public abstract partial class UIElement
 			widget.Visible = true;
 			_widgetCollapsed = false;
 		}
-		widget.Opacity = VisibilityGtkMap.EffectiveOpacity(Visibility, Opacity);
+		widget.Opacity = VisibilityGtkMap.EffectiveOpacity(WidgetVisibility, Opacity);
 		ApplyCanTarget(widget);
 		ApplyCanFocus(FocusWidget);
 	}
 
 	partial void ApplyVisibilityStateOnCreated(Gtk.Widget widget)
 	{
-		if (Visibility != Visibility.Visible)
+		if (WidgetVisibility != Visibility.Visible)
 			ApplyVisibilityToWidget(widget);
 		else if (Opacity != 1.0)
 			widget.Opacity = Opacity;

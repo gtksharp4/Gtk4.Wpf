@@ -154,6 +154,7 @@ public partial class Window : ContentControl
 	/// </remarks>
 	public bool? ShowDialog()
 	{
+		VerifyNotClosed();
 		DialogResult = null;
 		_dialogClosed = false;
 

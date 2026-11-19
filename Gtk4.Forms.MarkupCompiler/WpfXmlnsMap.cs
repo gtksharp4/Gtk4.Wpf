@@ -60,6 +60,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			{ "Grid",             "System.Windows.Controls.Grid" },
 			{ "StackPanel",       "System.Windows.Controls.StackPanel" },
 			{ "DockPanel",        "System.Windows.Controls.DockPanel" },
+			{ "TextElement",      "System.Windows.Documents.TextElement" },
 			{ "WrapPanel",        "System.Windows.Controls.WrapPanel" },
 			{ "Canvas",           "System.Windows.Controls.Canvas" },
 			{ "TextBlock",        "System.Windows.Controls.TextBlock" },

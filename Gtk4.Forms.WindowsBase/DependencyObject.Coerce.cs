@@ -5,12 +5,9 @@ namespace System.Windows;
 
 public partial class DependencyObject
 {
-	// The un-coerced value last passed to SetValue. The local store keeps the coerced result,
-	// so CoerceValue needs this to re-run coercion (and to restore a relaxed value).
-	Dictionary<DependencyProperty, object?>? _baseValues;
-
-	// Coerced result for a property with no local value (e.g. IsEnabled forced false by a
-	// parent). Sits above every other layer, as coercion does in WPF.
+	// Coerced result for a property whose coercion changed the resolved value (e.g. IsEnabled
+	// forced false by a parent). Sits above every other layer, as coercion does in WPF.
+	// All layers store raw values, so coercion is reversible whatever the source.
 	Dictionary<DependencyProperty, object?>? _coercedValues;
 
 	/// <summary>
@@ -20,22 +17,10 @@ public partial class DependencyObject
 	public void CoerceValue(DependencyProperty dp)
 	{
 		if (dp == null) throw new ArgumentNullException(nameof(dp));
-		var coerce = dp.GetMetadata(GetType()).CoerceValueCallback;
-		if (coerce == null) return;
+		if (dp.GetMetadata(GetType()).CoerceValueCallback == null) return;
 
 		var oldEffective = ResolveEffectiveValue(dp);
-		if (_baseValues != null && _baseValues.TryGetValue(dp, out var baseValue))
-		{
-			_localValues[dp] = coerce(this, baseValue);
-		}
-		else
-		{
-			_coercedValues?.Remove(dp);
-			var plain = ResolveEffectiveValue(dp);
-			var coerced = coerce(this, plain);
-			if (!Equals(coerced, plain))
-				(_coercedValues ??= new Dictionary<DependencyProperty, object?>())[dp] = coerced;
-		}
+		RecomputeCoerced(dp);
 		FireChangeIfDifferent(dp, oldEffective, ResolveEffectiveValue(dp));
 	}
 
@@ -49,11 +34,24 @@ public partial class DependencyObject
 		CoerceValue(dp);
 	}
 
-	void RecordBaseValue(DependencyProperty dp, PropertyMetadata meta, object? rawValue)
+	// Rebuilds the coerced-result cache for dp from the raw layer values.
+	void RecomputeCoerced(DependencyProperty dp)
 	{
-		// A fresh local value supersedes any coercion-only result.
+		var coerce = dp.GetMetadata(GetType()).CoerceValueCallback;
 		_coercedValues?.Remove(dp);
-		if (meta.CoerceValueCallback != null)
-			(_baseValues ??= new Dictionary<DependencyProperty, object?>())[dp] = rawValue;
+		if (coerce == null) return;
+
+		var plain = ResolveEffectiveValue(dp);
+		var coerced = coerce(this, plain);
+		if (!Equals(coerced, plain))
+			(_coercedValues ??= new Dictionary<DependencyProperty, object?>())[dp] = coerced;
+	}
+
+	// Every layer mutation: recompute coercion, notify on effective change, then signal the source change.
+	void CommitLayerChange(DependencyProperty dp, object? oldEffective)
+	{
+		RecomputeCoerced(dp);
+		FireChangeIfDifferent(dp, oldEffective, ResolveEffectiveValue(dp));
+		NotifyValueSource(dp);
 	}
 }

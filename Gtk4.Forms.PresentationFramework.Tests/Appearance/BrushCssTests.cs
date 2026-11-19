@@ -89,4 +89,16 @@ public class BrushCssTests
 		Assert.Equal("border-width: 1px 2px 3px 4px;", BrushCss.BorderWidth(new Thickness(4, 1, 2, 3)));
 		Assert.Equal("border-radius: 1px 2px 3px 4px;", BrushCss.BorderRadius(new CornerRadius(1, 2, 3, 4)));
 	}
+
+	[Fact]
+	public void Partial_linear_span_keeps_its_extent()
+	{
+		var g = new LinearGradientBrush(Colors.Red, Colors.Blue)
+			{ StartPoint = new Point(0, 0), EndPoint = new Point(0, 0.5) };
+		string css = BrushCss.Background(g);
+		Assert.Contains("180deg", css);
+		Assert.Contains("0%", css);
+		Assert.Contains("50%", css);
+		Assert.DoesNotContain("100%", css);
+	}
 }

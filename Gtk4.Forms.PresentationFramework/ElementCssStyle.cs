@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Windows.Documents;
 using System.Windows.Media;
@@ -30,19 +31,32 @@ internal sealed class ElementCssStyle
 	/// <summary>True once a provider has been attached to the widget.</summary>
 	internal bool HasProvider => _provider != null;
 
+	/// <summary>CSS parse errors GTK reported for the loaded declarations (GTK ignores bad CSS silently).</summary>
+	internal int ParseErrors { get; private set; }
+
 	internal void Update(string declarations)
 	{
+		if (_provider != null && declarations == Declarations) return;
 		if (_provider == null && declarations.Length == 0) return;
-		if (string.IsNullOrEmpty(_widget.Name))
+		if (IsUnnamed(_widget.Name))
 			_widget.Name = $"ap-{Interlocked.Increment(ref _counter):x8}";
 		if (_provider == null)
 		{
 			_provider = new Gtk.CssProvider();
+			_provider.ParsingError += (_, __) => ParseErrors++;
 			_widget.StyleContext.AddProvider(_provider, Priority);
 		}
 		Declarations = declarations;
+		ParseErrors = 0;
 		_provider.LoadFromData(declarations.Length == 0 ? string.Empty : $"#{_widget.Name} {{ {declarations} }}");
 	}
+
+	/// <summary>
+	/// GTK 4 reports the type name (<c>GtkLabel</c>) for a widget that was never named, so a plain
+	/// empty check would keep it and the <c>#name</c> selector would match nothing.
+	/// </summary>
+	internal static bool IsUnnamed(string? name) =>
+		string.IsNullOrEmpty(name) || name!.StartsWith("Gtk", StringComparison.Ordinal);
 
 	// ── Declaration builders shared by Control / TextBlock / Panel / Border ───────
 
@@ -56,13 +70,29 @@ internal sealed class ElementCssStyle
 		BrushCss.Background(Explicit(d, Controls.Panel.BackgroundProperty) as Brush);
 
 	internal static string Text(DependencyObject d) => Join(
-		BrushCss.Foreground(Explicit(d, TextElement.ForegroundProperty) as Brush),
+		BrushCss.Foreground(ExplicitForeground(d)),
 		FontCss.Build(
 			Explicit(d, TextElement.FontFamilyProperty) as FontFamily,
-			(double?)Explicit(d, TextElement.FontSizeProperty),
-			(FontWeight?)Explicit(d, TextElement.FontWeightProperty),
-			(FontStyle?)Explicit(d, TextElement.FontStyleProperty),
-			(FontStretch?)Explicit(d, TextElement.FontStretchProperty)));
+			Explicit(d, TextElement.FontSizeProperty) is double s ? s : (double?)null,
+			Explicit(d, TextElement.FontWeightProperty) is FontWeight w ? w : (FontWeight?)null,
+			Explicit(d, TextElement.FontStyleProperty) is FontStyle st ? st : (FontStyle?)null,
+			Explicit(d, TextElement.FontStretchProperty) is FontStretch fs ? fs : (FontStretch?)null));
+
+	// Theme text brushes the style layer merely repeats are left to GTK inheritance, so untouched
+	// controls stay provider-free and follow dark themes.
+	static Brush? ExplicitForeground(DependencyObject d)
+	{
+		var brush = Explicit(d, TextElement.ForegroundProperty) as Brush;
+		if (!(brush is SolidColorBrush solid) || !d.HasOnlyStyleValue(TextElement.ForegroundProperty)) return brush;
+		if (!ReferenceEquals(brush, SystemColors.ControlTextBrush)
+			&& !ReferenceEquals(brush, SystemColors.WindowTextBrush))
+			return brush;
+		var inherited = d.GetInheritedValue(TextElement.ForegroundProperty) as Brush;
+		bool same = ReferenceEquals(inherited, brush)
+			|| (inherited is SolidColorBrush other
+				&& other.Color.Equals(solid.Color) && other.Opacity == solid.Opacity);
+		return same ? null : brush;
+	}
 
 	/// <summary>Border brush + thickness (shared by Control and Border via AddOwner'd DPs).</summary>
 	internal static string Border(DependencyObject d)
@@ -70,8 +100,10 @@ internal sealed class ElementCssStyle
 		var brush = Explicit(d, Controls.Border.BorderBrushProperty) as Brush;
 		bool thickness = d.HasNonInheritedValue(Controls.Border.BorderThicknessProperty);
 		if (brush == null && !thickness) return string.Empty;
-		string width = BrushCss.BorderWidth((Thickness)d.GetValue(Controls.Border.BorderThicknessProperty)!);
+		var thicknessValue = d.GetValue(Controls.Border.BorderThicknessProperty);
+		string width = BrushCss.BorderWidth(thicknessValue is Thickness t ? t : default);
 		string color = BrushCss.BorderColor(brush);
-		return Join(width, color.Length > 0 ? "border-style: solid; " + color : string.Empty);
+		// No brush: keep the width but draw nothing (the theme frame rule would otherwise paint).
+		return Join(width, "border-style: solid; " + (color.Length > 0 ? color : "border-color: transparent;"));
 	}
 }

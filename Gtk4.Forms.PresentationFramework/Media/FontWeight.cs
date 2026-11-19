@@ -8,6 +8,15 @@ public struct FontWeight : IEquatable<FontWeight>
 
 	internal FontWeight(int weight) { Weight = weight; }
 
+	/// <summary>Creates a weight from an OpenType value in 1..999.</summary>
+	/// <exception cref="ArgumentOutOfRangeException">Value is outside 1..999.</exception>
+	public static FontWeight FromOpenTypeWeight(int weightValue)
+	{
+		if (weightValue < 1 || weightValue > 999)
+			throw new ArgumentOutOfRangeException(nameof(weightValue));
+		return new FontWeight(weightValue);
+	}
+
 	/// <inheritdoc/>
 	public bool Equals(FontWeight other) => Weight == other.Weight;
 	/// <inheritdoc/>
@@ -60,13 +69,4 @@ public static class FontWeights
 	public static FontWeight ExtraBlack { get; } = new FontWeight(950);
 	/// <summary>UltraBlack weight (950).</summary>
 	public static FontWeight UltraBlack { get; } = new FontWeight(950);
-
-	/// <summary>Creates a weight from an OpenType value in 1..999.</summary>
-	/// <exception cref="ArgumentOutOfRangeException">Value is outside 1..999.</exception>
-	public static FontWeight FromOpenTypeWeight(int weightValue)
-	{
-		if (weightValue < 1 || weightValue > 999)
-			throw new ArgumentOutOfRangeException(nameof(weightValue));
-		return new FontWeight(weightValue);
-	}
 }

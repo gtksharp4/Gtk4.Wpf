@@ -31,6 +31,7 @@ public static class Generic
 		RegisterCheckBox();
 		RegisterRadioButton();
 		RegisterLabel();
+		RegisterTextBox();
 		RegisterBorder();
 	}
 
@@ -49,6 +50,7 @@ public static class Generic
 	static void RegisterButton()
 	{
 		var style = new Style(typeof(Button));
+		style.Setters.Add(ControlText());
 		style.Setters.Add(new Setter
 		{
 			Property = Control.PaddingProperty,
@@ -75,6 +77,7 @@ public static class Generic
 	static void RegisterCheckBox()
 	{
 		var style = new Style(typeof(CheckBox));
+		style.Setters.Add(ControlText());
 		style.Setters.Add(new Setter
 		{
 			Property = Control.PaddingProperty,
@@ -93,6 +96,7 @@ public static class Generic
 	static void RegisterRadioButton()
 	{
 		var style = new Style(typeof(RadioButton));
+		style.Setters.Add(ControlText());
 		style.Setters.Add(new Setter
 		{
 			Property = Control.PaddingProperty,
@@ -111,6 +115,7 @@ public static class Generic
 	static void RegisterLabel()
 	{
 		var style = new Style(typeof(Label));
+		style.Setters.Add(ControlText());
 		style.Setters.Add(new Setter
 		{
 			Property = Control.PaddingProperty,
@@ -128,6 +133,26 @@ public static class Generic
 		});
 		ThemeManager.RegisterDefaultStyle(typeof(Label), style);
 	}
+
+	// ── TextBox ───────────────────────────────────────────────────────────────
+
+	static void RegisterTextBox()
+	{
+		var style = new Style(typeof(TextBox));
+		style.Setters.Add(new Setter
+		{
+			Property = Control.ForegroundProperty,
+			Value = SystemColors.WindowTextBrush
+		});
+		ThemeManager.RegisterDefaultStyle(typeof(TextBox), style);
+	}
+
+	// WPF themes colour these controls with ControlTextBrush, so Window.Foreground does not reach them.
+	static Setter ControlText() => new Setter
+	{
+		Property = Control.ForegroundProperty,
+		Value = SystemColors.ControlTextBrush
+	};
 
 	// ── Border ────────────────────────────────────────────────────────────────
 

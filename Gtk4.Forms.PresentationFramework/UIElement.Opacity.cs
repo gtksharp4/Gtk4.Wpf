@@ -17,8 +17,9 @@ public abstract partial class UIElement
 
 	static void OnOpacityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
-		if (d is UIElement el && el.IsWidgetCreated)
-			el._widget!.Opacity = VisibilityGtkMap.EffectiveOpacity(el.Visibility, (double)(e.NewValue ?? 1.0));
+		if (d is UIElement el && el.HasBackingWidget)
+			el._widget!.Opacity = VisibilityGtkMap.EffectiveOpacity(
+				el.WidgetVisibility, (double)(e.NewValue ?? 1.0));
 	}
 
 	/// <summary>Gets or sets the opacity (0.0 = fully transparent, 1.0 = fully opaque).</summary>

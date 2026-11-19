@@ -1128,6 +1128,62 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   button; DP-source binding tracking is FrameworkElement + single-segment only; `Dispatcher.BeginInvoke`
   ignores `DispatcherPriority`; no `UIElement.Visibility`/`IsVisible`/`IsEnabled` DPs yet (capture gate and
   Loaded semantics read GTK `visible`/`sensitive`); `BindingEngine.cs` still 491 lines.
+- **Round 37 Track A — UIElement Visibility/IsEnabled/IsHitTestVisible (DONE).** `Visibility` (Visible/Hidden/
+  Collapsed) + read-only `IsVisible`/`IsVisibleChanged`, `IsEnabled`/`IsEnabledCore`/`IsEnabledChanged` (coerced
+  through the logical tree and command sources), `IsHitTestVisible`/`IsHitTestVisibleChanged`, `CoerceValue`/
+  `InvalidateProperty`, `BooleanToVisibilityConverter`. GTK mapping in pure `VisibilityGtkMap`: Collapsed hides the
+  widget (containers skip it), Hidden keeps it mapped at opacity 0, untargetable and unfocusable; focus/capture
+  released on disable/collapse/hide. A `Window`'s Visibility is its show state (default Collapsed, `Show`/`Hide`).
+- **Round 37 Track B — Brush/Font DPs (DONE).** `Background`/`Foreground`/`BorderBrush`/`BorderThickness`/
+  `CornerRadius` + `Font*` on Control/TextBlock/Panel/Border (`TextElement`-inherited via `DependencyProperty.
+  AddOwner`), rendered as a lazy per-widget `Gtk.CssProvider` (priority 600) through pure `BrushCss`/`FontCss`/
+  `ElementCssStyle`; only non-inherited values emit CSS, GTK CSS inheritance carries the rest. Image/Visual/Drawing
+  brushes store-only; gradient foreground falls back to the first stop.
+- **Round 37 review (Opus) + fixes — DONE.** Track A: **F1 (High)** a Window's own Visibility (show state)
+  drove the GTK mapping: a widget touched before `Show()` (as `ShowDialog` does) got `CanFocus=false`, and
+  Hide→Opacity→Show left opacity 0; new `internal virtual WidgetVisibility` (Window: always Visible) used by
+  CanFocus/CanTarget/Opacity/created-state; `Opacity` now also applies to a Window (it was gated on a content
+  box a Window never has). **F2 (High)** `ClearValue` never re-ran coercion (cleared child under a disabled
+  parent read enabled). **F3** style/trigger/dynamic-resource/animation layers stored already-coerced values, so
+  coercion could not relax: all layers now store raw values and every mutation goes through one
+  `CommitLayerChange` (old → layer → `RecomputeCoerced` → fire → `NotifyValueSource`), which removed
+  `_baseValues`; `ClearStyleValues`/`ClearTriggerValue` re-coerce and compute old from the resolved value (the
+  snapshot value is wrong when a local shadows it). **F4** `Show`/`ShowDialog`/`Visibility=Visible` after `Close`
+  throw `InvalidOperationException` (WPF text); `CloseCore` sets Hidden so the re-set is a change. **F5**
+  `ReadLocalValue` returns the raw local (automatic with F3). Track B: **B37-1 (High)** CSS emission depends on the
+  value source but refreshed only on effective-value change (local==inherited rendered the ancestor's later
+  value): static `DependencyObject.ValueSourceChanged` hook fired after every layer set/clear (and for children
+  shadowed during inheritance propagation) refreshes appearance DPs; `ElementCssStyle.Update` skips unchanged CSS.
+  **Also found by the real-GTK tests**: GTK 4 `Widget.Name` returns the type name (`GtkLabel`) for an unnamed
+  widget, so the `#name` selector matched nothing and no appearance/effect/render-transform CSS ever applied;
+  new `ElementCssStyle.IsUnnamed` (used by Effect and RenderTransform too). **B37-2** CSS builders pattern-match
+  instead of hard-casting; `BindingEngine.CoerceToTargetType` converts int→double, string→struct (XamlValueConverter),
+  IConvertible and TypeConverter sources, falling back instead of throwing. **B37-3** `FromOpenTypeWeight`/
+  `FromOpenTypeStretch` moved onto the `FontWeight`/`FontStretch` structs (+ FontStretch `<`/`>`/`Compare`).
+  **B37-4** `TextElement.*` attached attributes: `TextElement` in `WpfXmlnsMap`, setter value type resolved from
+  the referenced assembly (`DpSymbolResolver.GetAttachedSetterValueType`) with a hardcoded TextElement fallback.
+  **B37-5** `ElementCssStyle.ParseErrors` (`CssProvider.ParsingError`) → `AppearanceParseErrors`; theory over
+  every builder output ×4 element types plus measure-based effect assertions (font-size height, border width).
+  **B37-6** Generic styles set `Foreground` (ControlTextBrush for Button/CheckBox/RadioButton/Label,
+  `SystemColors.WindowTextBrush` (new) for TextBox) as WPF themes do; a theme brush the style layer merely repeats
+  is not emitted (`HasOnlyStyleValue`/`GetInheritedValue`), so untouched controls stay provider-free. **B37-7**
+  a border with thickness but no brush emits `border-style: solid; border-color: transparent`. **B37-8** linear
+  stop offsets remapped onto the CSS gradient line (partial spans keep their extent); GradientOrigin ignored and
+  only `SpreadMethod.Pad` honoured, documented. **B37-9** TextBlock padding-vs-background gap documented.
+  **B37-10** `FontFamily` locations reduced to the name after `#` (font files are not loaded). **B37-11**
+  `FontCss` skips non-positive/NaN/infinite sizes; DP validation (`ValidateValueCallback`) documented as a gap,
+  flag alignment skipped (no code reads `AffectsMeasure`/`AffectsRender`). **B37-12** stale Border docs and the
+  five long `TextElement.Properties.cs` lines + `FontCss` weight line wrapped. Rejected: none; B37-8's offset
+  remap done (optional), B37-11's flag alignment and validation overload deferred.
+  **Round 37 totals: 3140 tests** (126 WindowsBase + 2764 PresentationFramework + 235 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean across all TFMs.
+- **Carry-over (Round 37)**: no `ValidateValueCallback` (invalid-enum/FontSize/FontFamily validation); Focus and
+  capture gates skip the presentation-source half of `IsVisible`; Window ignores Opacity/CanTarget suppression for
+  Hidden; radial `GradientOrigin` and non-Pad `SpreadMethod` unsupported; linear remap assumes
+  `RelativeToBoundingBox`; `TextBlock.Background` does not cover Padding (margins); font files by URI not loaded
+  and a `pack://` URI containing commas is split by the family list; `AffectsMeasure`/`AffectsRender` flags not
+  aligned with WPF; Image/Visual/DrawingBrush backgrounds store-only; the on-screen CSS result was only verified
+  through GTK measurement, not visually.
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a

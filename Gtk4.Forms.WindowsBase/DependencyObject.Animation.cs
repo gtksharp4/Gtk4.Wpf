@@ -17,22 +17,17 @@ public partial class DependencyObject
 		new Dictionary<DependencyProperty, object?>();
 
 	/// <summary>
-	/// Sets an animation-layer value. This is the highest-priority layer, sitting
-	/// above the local value. Fires change notifications when the effective value
+	/// Sets an animation-layer value (raw; coercion is applied on top). This is the highest-priority
+	/// layer, sitting above the local value. Fires change notifications when the effective value
 	/// differs from the previous effective value.
 	/// </summary>
 	internal void SetAnimationValue(DependencyProperty dp, object? value)
 	{
 		if (dp == null) throw new ArgumentNullException(nameof(dp));
 
-		var meta = dp.GetMetadata(GetType());
-		if (meta.CoerceValueCallback != null)
-			value = meta.CoerceValueCallback(this, value);
-
 		var oldEffective = ResolveEffectiveValue(dp);
 		_animationValues[dp] = value;
-		var newEffective = ResolveEffectiveValue(dp);
-		FireChangeIfDifferent(dp, oldEffective, newEffective);
+		CommitLayerChange(dp, oldEffective);
 	}
 
 	/// <summary>
@@ -46,8 +41,7 @@ public partial class DependencyObject
 
 		var oldEffective = ResolveEffectiveValue(dp);
 		_animationValues.Remove(dp);
-		var newEffective = ResolveEffectiveValue(dp);
-		FireChangeIfDifferent(dp, oldEffective, newEffective);
+		CommitLayerChange(dp, oldEffective);
 	}
 
 	/// <summary>

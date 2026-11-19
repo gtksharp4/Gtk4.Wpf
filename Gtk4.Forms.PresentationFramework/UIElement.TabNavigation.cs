@@ -86,7 +86,7 @@ public abstract partial class UIElement
 	/// </summary>
 	void ApplyCanFocus(Gtk.Widget widget)
 	{
-		widget.CanFocus = VisibilityGtkMap.CanFocus(Visibility, IsTabStop && Focusable);
+		widget.CanFocus = VisibilityGtkMap.CanFocus(WidgetVisibility, IsTabStop && Focusable);
 	}
 
 	/// <summary>

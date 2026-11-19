@@ -37,7 +37,7 @@ public class FontTypesTests
 		Assert.True(FontStretches.Normal == default(FontStretch));
 		Assert.True(FontStretches.Condensed != FontStretches.Expanded);
 		Assert.Equal("SemiCondensed", FontStretches.SemiCondensed.ToString());
-		Assert.Throws<ArgumentOutOfRangeException>(() => FontStretches.FromOpenTypeStretch(10));
+		Assert.Throws<ArgumentOutOfRangeException>(() => FontStretch.FromOpenTypeStretch(10));
 	}
 
 	[Fact]
@@ -94,5 +94,25 @@ public class FontTypesTests
 			typeof(object), TextElement.FontFamilyProperty, "Arial, sans-serif")!;
 		Assert.Equal("Arial, sans-serif", fam.Source);
 		Assert.Throws<FormatException>(() => XamlValueConverter.Convert(typeof(object), fs, "huge"));
+	}
+
+	[Fact]
+	public void FromOpenType_factories_live_on_the_structs_and_validate_range()
+	{
+		Assert.Equal(FontWeights.Bold, FontWeight.FromOpenTypeWeight(700));
+		Assert.Equal(FontStretches.Normal, FontStretch.FromOpenTypeStretch(5));
+		Assert.Throws<ArgumentOutOfRangeException>(() => FontWeight.FromOpenTypeWeight(0));
+		Assert.Throws<ArgumentOutOfRangeException>(() => FontWeight.FromOpenTypeWeight(1000));
+		Assert.Throws<ArgumentOutOfRangeException>(() => FontStretch.FromOpenTypeStretch(0));
+		Assert.Throws<ArgumentOutOfRangeException>(() => FontStretch.FromOpenTypeStretch(10));
+	}
+
+	[Fact]
+	public void FontStretch_compares_by_open_type_value()
+	{
+		Assert.True(FontStretches.Condensed < FontStretches.Expanded);
+		Assert.True(FontStretches.Normal >= FontStretches.Medium);
+		Assert.Equal(0, FontStretch.Compare(FontStretches.Normal, FontStretches.Medium));
+		Assert.True(FontStretch.Compare(FontStretches.Expanded, FontStretches.Normal) > 0);
 	}
 }

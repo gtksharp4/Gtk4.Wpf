@@ -38,7 +38,9 @@ public partial class TextBlock
 	public static readonly DependencyProperty FontStretchProperty = TextElement.FontStretchProperty.AddOwner(
 		typeof(TextBlock), InheritingTextMetadata(TextElement.FontStretchProperty, true));
 
-	/// <summary>Gets or sets the background brush. Does not inherit.</summary>
+	/// <summary>Gets or sets the background brush. Does not inherit.
+	/// GTK limitation: Padding is applied as widget margins, which the CSS background does not cover;
+	/// WPF fills Background over the padding too.</summary>
 	public Brush? Background
 	{
 		get => (Brush?)GetValue(BackgroundProperty);

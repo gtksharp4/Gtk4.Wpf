@@ -15,7 +15,10 @@ public abstract partial class TextElement
 		"FontFamily", typeof(FontFamily), typeof(TextElement),
 		new FrameworkPropertyMetadata(new FontFamily("Segoe UI"), true));
 
-	/// <summary>Identifies the attached FontSize property (default 12 DIPs; inherits).</summary>
+	/// <summary>Identifies the attached FontSize property (default 12 DIPs; inherits).
+	/// Gap: WPF validates the value (ArgumentException for NaN or outside (0, 35791.394], and for a null
+	/// FontFamily); that needs a ValidateValueCallback overload in WindowsBase, so it is not applied here.
+	/// FontCss ignores non-positive or non-finite sizes instead.</summary>
 	public static readonly DependencyProperty FontSizeProperty = DependencyProperty.RegisterAttached(
 		"FontSize", typeof(double), typeof(TextElement), new FrameworkPropertyMetadata(12.0, true));
 
@@ -41,7 +44,8 @@ public abstract partial class TextElement
 	/// <summary>Gets the attached FontFamily.</summary>
 	public static FontFamily GetFontFamily(DependencyObject element) => (FontFamily)Get(element, FontFamilyProperty)!;
 	/// <summary>Sets the attached FontFamily.</summary>
-	public static void SetFontFamily(DependencyObject element, FontFamily value) => Set(element, FontFamilyProperty, value);
+	public static void SetFontFamily(DependencyObject element, FontFamily value) =>
+		Set(element, FontFamilyProperty, value);
 	/// <summary>Gets the attached FontSize.</summary>
 	public static double GetFontSize(DependencyObject element) => (double)Get(element, FontSizeProperty)!;
 	/// <summary>Sets the attached FontSize.</summary>
@@ -49,15 +53,19 @@ public abstract partial class TextElement
 	/// <summary>Gets the attached FontStyle.</summary>
 	public static FontStyle GetFontStyle(DependencyObject element) => (FontStyle)Get(element, FontStyleProperty)!;
 	/// <summary>Sets the attached FontStyle.</summary>
-	public static void SetFontStyle(DependencyObject element, FontStyle value) => Set(element, FontStyleProperty, value);
+	public static void SetFontStyle(DependencyObject element, FontStyle value) =>
+		Set(element, FontStyleProperty, value);
 	/// <summary>Gets the attached FontWeight.</summary>
 	public static FontWeight GetFontWeight(DependencyObject element) => (FontWeight)Get(element, FontWeightProperty)!;
 	/// <summary>Sets the attached FontWeight.</summary>
-	public static void SetFontWeight(DependencyObject element, FontWeight value) => Set(element, FontWeightProperty, value);
+	public static void SetFontWeight(DependencyObject element, FontWeight value) =>
+		Set(element, FontWeightProperty, value);
 	/// <summary>Gets the attached FontStretch.</summary>
-	public static FontStretch GetFontStretch(DependencyObject element) => (FontStretch)Get(element, FontStretchProperty)!;
+	public static FontStretch GetFontStretch(DependencyObject element) =>
+		(FontStretch)Get(element, FontStretchProperty)!;
 	/// <summary>Sets the attached FontStretch.</summary>
-	public static void SetFontStretch(DependencyObject element, FontStretch value) => Set(element, FontStretchProperty, value);
+	public static void SetFontStretch(DependencyObject element, FontStretch value) =>
+		Set(element, FontStretchProperty, value);
 	/// <summary>Gets the attached Foreground.</summary>
 	public static Brush GetForeground(DependencyObject element) => (Brush)Get(element, ForegroundProperty)!;
 	/// <summary>Sets the attached Foreground.</summary>

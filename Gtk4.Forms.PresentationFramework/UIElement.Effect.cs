@@ -70,7 +70,7 @@ public abstract partial class UIElement
 
 		// Assign a process-unique widget name so the CSS selector targets only this widget.
 		// A monotonic counter (not GetHashCode) avoids hash-collision cascade onto same-named descendants.
-		if (string.IsNullOrEmpty(widget.Name))
+		if (ElementCssStyle.IsUnnamed(widget.Name))
 			widget.Name = $"ef-{System.Threading.Interlocked.Increment(ref _effectNameCounter):x8}";
 
 		string selector = $"#{widget.Name}";
