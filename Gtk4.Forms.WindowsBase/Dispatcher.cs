@@ -32,18 +32,27 @@ public class Dispatcher
 	/// </summary>
 	public static Action<Action> InvokeAction { get; set; } = action => action();
 
-	/// <summary>
-	/// Delegate executed by <see cref="BeginInvoke(Action,DispatcherPriority)"/> to post
-	/// work asynchronously onto the GTK main loop.
-	/// Replace with <c>GLib.Idle.Add</c> (or equivalent) once the GLib loop is running.
-	/// The default implementation runs the action inline.
-	/// </summary>
-	public static Action<Action> BeginInvokeAction { get; set; } = action => action();
+	static Action<Action> _beginInvokeAction = action => action();
 
 	/// <summary>
-	/// Priority-aware variant of <see cref="BeginInvokeAction"/>. When set,
-	/// <see cref="BeginInvoke(Action,DispatcherPriority)"/> uses it and passes the validated
-	/// priority; when <c>null</c> it falls back to <see cref="BeginInvokeAction"/>.
+	/// Legacy, priority-less bridge that <see cref="BeginInvoke(Action,DispatcherPriority)"/> uses
+	/// only when <see cref="BeginInvokePriorityAction"/> is <c>null</c>. Assigning it clears
+	/// <see cref="BeginInvokePriorityAction"/>, so the last bridge set wins. The default runs the
+	/// action inline.
+	/// </summary>
+	public static Action<Action> BeginInvokeAction
+	{
+		get => _beginInvokeAction;
+		set
+		{
+			_beginInvokeAction = value;
+			BeginInvokePriorityAction = null;
+		}
+	}
+
+	/// <summary>
+	/// Priority-aware bridge. When non-null, <see cref="BeginInvoke(Action,DispatcherPriority)"/>
+	/// uses it and passes the validated priority; setting <see cref="BeginInvokeAction"/> clears it.
 	/// </summary>
 	public static Action<Action, DispatcherPriority>? BeginInvokePriorityAction { get; set; }
 
@@ -134,16 +143,19 @@ public class Dispatcher
 	/// </summary>
 	/// <exception cref="System.ComponentModel.InvalidEnumArgumentException">
 	/// <paramref name="priority"/> is <see cref="DispatcherPriority.Invalid"/> or out of range.</exception>
-	/// <exception cref="ArgumentException"><paramref name="priority"/> is
-	/// <see cref="DispatcherPriority.Inactive"/>.</exception>
+	/// <remarks>
+	/// <see cref="DispatcherPriority.Inactive"/> is accepted but the action is dropped: this layer returns
+	/// no operation, so it could never be promoted.
+	/// </remarks>
 	public void BeginInvoke(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
 	{
 		if (action == null) throw new ArgumentNullException(nameof(action));
 		if (priority < DispatcherPriority.Inactive || priority > DispatcherPriority.Send)
 			throw new System.ComponentModel.InvalidEnumArgumentException(
 				nameof(priority), (int)priority, typeof(DispatcherPriority));
+		// Inactive work only runs once promoted, which needs an operation handle this layer lacks.
 		if (priority == DispatcherPriority.Inactive)
-			throw new ArgumentException("The priority cannot be Inactive.", nameof(priority));
+			return;
 		void Guarded()
 		{
 			try { action(); }

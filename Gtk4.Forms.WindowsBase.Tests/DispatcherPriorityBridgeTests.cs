@@ -33,7 +33,7 @@ public class DispatcherPriorityBridgeTests
 		Dispatcher.BeginInvokeAction = a => { legacy = true; a(); };
 		Dispatcher.BeginInvokePriorityAction = (a, p) => { prio = true; a(); };
 		try { Dispatcher.CurrentDispatcher.BeginInvoke(() => { }); }
-		finally { Dispatcher.BeginInvokePriorityAction = oldP; Dispatcher.BeginInvokeAction = oldA; }
+		finally { Dispatcher.BeginInvokeAction = oldA; Dispatcher.BeginInvokePriorityAction = oldP; }
 		Assert.True(prio);
 		Assert.False(legacy);
 	}
@@ -47,7 +47,7 @@ public class DispatcherPriorityBridgeTests
 		Dispatcher.BeginInvokePriorityAction = null;
 		Dispatcher.BeginInvokeAction = a => { legacy = true; a(); };
 		try { Dispatcher.CurrentDispatcher.BeginInvoke(() => { }, DispatcherPriority.Render); }
-		finally { Dispatcher.BeginInvokePriorityAction = oldP; Dispatcher.BeginInvokeAction = oldA; }
+		finally { Dispatcher.BeginInvokeAction = oldA; Dispatcher.BeginInvokePriorityAction = oldP; }
 		Assert.True(legacy);
 	}
 
@@ -62,10 +62,43 @@ public class DispatcherPriorityBridgeTests
 	}
 
 	[Fact]
-	public void BeginInvoke_rejects_Inactive_with_ArgumentException()
+	public void BeginInvoke_Inactive_is_accepted_and_never_runs()
 	{
-		var ex = Assert.Throws<ArgumentException>(
-			() => Dispatcher.CurrentDispatcher.BeginInvoke(() => { }, DispatcherPriority.Inactive));
-		Assert.Equal("priority", ex.ParamName);
+		var oldA = Dispatcher.BeginInvokeAction;
+		var oldP = Dispatcher.BeginInvokePriorityAction;
+		bool ran = false, legacy = false, prio = false;
+		Dispatcher.BeginInvokeAction = a => { legacy = true; a(); };
+		Dispatcher.BeginInvokePriorityAction = (a, p) => { prio = true; a(); };
+		Exception? ex;
+		try
+		{
+			ex = Record.Exception(
+				() => Dispatcher.CurrentDispatcher.BeginInvoke(() => ran = true, DispatcherPriority.Inactive));
+		}
+		finally { Dispatcher.BeginInvokeAction = oldA; Dispatcher.BeginInvokePriorityAction = oldP; }
+		Assert.Null(ex);
+		Assert.False(ran);
+		Assert.False(legacy);
+		Assert.False(prio);
+	}
+
+	[Fact]
+	public void Setting_BeginInvokeAction_after_priority_bridge_takes_over()
+	{
+		var oldA = Dispatcher.BeginInvokeAction;
+		var oldP = Dispatcher.BeginInvokePriorityAction;
+		bool legacy = false, prio = false;
+		Dispatcher.BeginInvokePriorityAction = (a, p) => { prio = true; a(); };
+		Dispatcher.BeginInvokeAction = a => { legacy = true; a(); };
+		Action<Action, DispatcherPriority>? after;
+		try
+		{
+			after = Dispatcher.BeginInvokePriorityAction;
+			Dispatcher.CurrentDispatcher.BeginInvoke(() => { }, DispatcherPriority.Normal);
+		}
+		finally { Dispatcher.BeginInvokeAction = oldA; Dispatcher.BeginInvokePriorityAction = oldP; }
+		Assert.True(legacy);
+		Assert.False(prio);
+		Assert.Null(after);
 	}
 }

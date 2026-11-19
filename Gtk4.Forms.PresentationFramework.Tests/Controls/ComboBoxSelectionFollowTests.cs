@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Windows.Controls;
@@ -162,14 +163,67 @@ public class ComboBoxSelectionFollowTests : WpfGtkTestBase
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
-	public void Out_of_range_SelectedIndex_clears_item_like_headless(bool realized) => Run(() =>
+	public void Out_of_range_SelectedIndex_is_ignored(bool realized) => Run(() =>
 	{
 		var cb = Abc(1);
 		if (realized) _ = cb.Widget;
+		var log = Track(cb);
 		cb.SelectedIndex = 7;
+		Assert.Equal(1, cb.SelectedIndex);
+		Assert.Equal("B", cb.SelectedItem);
+		Assert.Empty(log);
+		if (realized) Assert.Equal(1u, ((Gtk.DropDown)cb.Widget).Selected);
+	});
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void Out_of_range_SelectedIndex_without_selection_stays_minus_one(bool realized) => Run(() =>
+	{
+		var cb = Abc(-1);
+		if (realized) _ = cb.Widget;
+		var log = Track(cb);
+		cb.SelectedIndex = 7;
+		Assert.Equal(-1, cb.SelectedIndex);
+		Assert.Null(cb.SelectedItem);
+		Assert.Empty(log);
+	});
+
+	[Fact]
+	public void SelectedIndex_below_minus_one_throws_ArgumentException()
+	{
+		var cb = Abc(1);
+		Assert.Throws<ArgumentException>(() => cb.SelectedIndex = -2);
+		Assert.Equal(1, cb.SelectedIndex);
+	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void Foreign_SelectedItem_is_rejected_and_keeps_selection(bool realized) => Run(() =>
+	{
+		var cb = Abc(1);
+		if (realized) _ = cb.Widget;
+		var log = Track(cb);
+		cb.SelectedItem = "Z";
+		Assert.Equal("B", cb.SelectedItem);
+		Assert.Equal(1, cb.SelectedIndex);
+		Assert.Empty(log);
+		Assert.Equal("B", cb.Text);
+		if (realized) Assert.Equal(1u, ((Gtk.DropDown)cb.Widget).Selected);
+	});
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void Foreign_SelectedItem_without_selection_stays_unselected(bool realized) => Run(() =>
+	{
+		var cb = Abc(-1);
+		if (realized) _ = cb.Widget;
+		var log = Track(cb);
+		cb.SelectedItem = "Z";
 		Assert.Null(cb.SelectedItem);
 		Assert.Equal(-1, cb.SelectedIndex);
-		cb.Items.Add("D");
-		Assert.Null(cb.SelectedItem);
+		Assert.Empty(log);
 	});
 }

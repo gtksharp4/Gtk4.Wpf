@@ -52,8 +52,8 @@ public partial class Application
 		System.Windows.Media.Animation.AnimationScheduler.NotifyGtkInitialised();
 		// Wire Dispatcher delegates to the GLib main loop.
 		Threading.Dispatcher.IsOnDispatcherThread = () => GLib.MainContext.Default.IsOwner;
-		Threading.Dispatcher.BeginInvokePriorityAction = PostToMainLoop;
 		Threading.Dispatcher.BeginInvokeAction = action => PostToMainLoop(action, Threading.DispatcherPriority.Normal);
+		Threading.Dispatcher.BeginInvokePriorityAction = PostToMainLoop;
 		Threading.Dispatcher.InvokeAction = action =>
 		{
 			if (GLib.MainContext.Default.IsOwner) { action(); return; }

@@ -14,7 +14,7 @@ public partial class Application
 	/// Render          -10
 	/// Loaded           -5   Loaded and above are always at or above G_PRIORITY_DEFAULT
 	/// Input             0   G_PRIORITY_DEFAULT (GDK events)
-	/// Background      100   G_PRIORITY_HIGH_IDLE
+	/// Background      130   after GDK_PRIORITY_REDRAW (GTK layout/paint)
 	/// ContextIdle     150
 	/// ApplicationIdle 200   G_PRIORITY_DEFAULT_IDLE
 	/// SystemIdle      300   G_PRIORITY_LOW
@@ -22,6 +22,8 @@ public partial class Application
 	/// Idle priorities are reserved for Background and below: on macOS the Quartz event source and
 	/// frame clock starve idle sources, so Loaded and above must never be mapped there.
 	/// </summary>
+	const int GdkPriorityRedraw = (int)GLib.Priority.HighIdle + 20;
+
 	internal static int ToGLibPriority(DispatcherPriority priority) => priority switch
 	{
 		DispatcherPriority.Send => -40,
@@ -30,7 +32,7 @@ public partial class Application
 		DispatcherPriority.Render => -10,
 		DispatcherPriority.Loaded => -5,
 		DispatcherPriority.Input => (int)GLib.Priority.Default,
-		DispatcherPriority.Background => (int)GLib.Priority.HighIdle,
+		DispatcherPriority.Background => GdkPriorityRedraw + 10,
 		DispatcherPriority.ContextIdle => 150,
 		DispatcherPriority.ApplicationIdle => (int)GLib.Priority.DefaultIdle,
 		DispatcherPriority.SystemIdle => (int)GLib.Priority.Low,

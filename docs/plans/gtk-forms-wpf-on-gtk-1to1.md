@@ -1354,6 +1354,36 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   dictionary; a ComboBox with `SelectedIndex` -1 over a non-empty model still shows an item (GTK limitation); out-of-range
   pending `SelectedIndex` is kept as-is until items arrive (WPF coerces); `gf39/xaml-content-model` still to be reviewed and
   merged.
+- **Round 41 track — Dispatcher priorities (DONE, merged).** `gf41/dispatcher-priority`: `Dispatcher.BeginInvoke`
+  honours `DispatcherPriority` on the GLib main loop through a priority-aware bridge
+  (`BeginInvokePriorityAction`, `Application.ToGLibPriority`); Loaded and above stay non-idle. `gf39/xaml-content-model`
+  is **still not merged**: it was not part of the reviewed set again and its worktree is kept untouched.
+- **macOS CI fix already on main (`e1f9a678`).** Dispatcher work is posted at `G_PRIORITY_DEFAULT`: the Quartz event
+  source and frame clock starved idle sources, so `Loaded` never ran on macOS.
+- **Round 41 review (Opus) + fixes — DONE.** **B-F1 (Medium)** `BeginInvoke(Action, Inactive)` threw
+  `ArgumentException`; real WPF only validates the range there (only `Invoke` rejects Inactive). It is now accepted and
+  dropped (this layer returns no operation, so it can never be promoted); out-of-range still throws
+  `InvalidEnumArgumentException`. **B-F2 (Low)** `Background` mapped to 100, before `GDK_PRIORITY_REDRAW` (120), so it
+  ran before GTK layout/paint; WPF runs it after Render. Now 130 (`GdkPriorityRedraw + 10`), still idle. **B-F3 (Low)**
+  assigning `BeginInvokeAction` was ignored once the priority bridge was installed; the last bridge set now wins
+  (the setter clears `BeginInvokePriorityAction`), and every place that sets both assigns the legacy one first.
+  **B-F4 (Nit)** stale bridge XML docs rewritten. **CI-1 (Low)** `ComboBox.SelectedItem` set to an item not in `Items` is
+  rejected as in WPF: old value kept, no `SelectionChanged`, GTK selection unchanged (restored under a guard, not via
+  coercion, which this DP engine does not treat as revert); `null` still clears. **CI-2 (Low)** an out-of-range
+  `ComboBox.SelectedIndex` on a non-empty list is ignored (previously cleared a selection, or read back 7 with none);
+  an empty list keeps the pending index; `SelectedIndex < -1` throws `ArgumentException` via a `ValidateValueCallback`.
+  The old `Out_of_range_SelectedIndex_clears_item_like_headless` asserted non-WPF behaviour and was rewritten.
+  **CI-3 (Low)** three over-long ComboBox lines wrapped.
+  Rejected in triage: Window `ContentRendered` priority not re-audited (no defect: it is driven by GTK map/frame signals,
+  not by a `BeginInvoke` priority this branch changed; no concrete divergence); starvation test not mutation-verified
+  and macOS Quartz untestable here (a coverage limitation, not a defect; `Input_and_above_is_never_idle` enforces the
+  rule and B-F2 keeps Background idle).
+  **Round 41 totals: 3641 tests** (190 WindowsBase + 3125 PresentationFramework + 311 MarkupCompiler + 15 ProjectConverter),
+  all pass; warning-clean. Failing-first was observed for none of the new tests individually in this wrap-up (fixes and
+  tests were written together); they exercise the changed paths.
+- **Carry-over (Round 41)**: `ListBox` still deselects on a foreign `SelectedItem` (its `SelectionDefectTests`
+  `notInList` test encodes it) - align with WPF in a later round; no `Invoke(Action, DispatcherPriority)` overload;
+  `Inactive` work is dropped, not queued; `gf39/xaml-content-model` still to be reviewed and merged.
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a

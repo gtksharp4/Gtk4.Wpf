@@ -49,7 +49,9 @@ public partial class ComboBox
 			SelectionChanged?.Invoke(this, new SelectionChangedEventArgs(this, prevItem, newItem));
 	}
 
-	/// <summary>Brings SelectedItem in line with an in-range SelectedIndex (a fresh model fires no GTK notify).</summary>
+	/// <summary>
+	/// Brings SelectedItem in line with an in-range SelectedIndex (a fresh model fires no GTK notify).
+	/// </summary>
 	void SyncSelectedItemToIndex()
 	{
 		var idx = SelectedIndex;

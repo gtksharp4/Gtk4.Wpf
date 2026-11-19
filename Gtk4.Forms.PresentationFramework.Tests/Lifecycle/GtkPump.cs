@@ -38,8 +38,8 @@ sealed class GtkDispatcherScope : IDisposable
 
 	public GtkDispatcherScope()
 	{
-		Dispatcher.BeginInvokePriorityAction = System.Windows.Application.PostToMainLoop;
 		Dispatcher.BeginInvokeAction = a => System.Windows.Application.PostToMainLoop(a, DispatcherPriority.Normal);
+		Dispatcher.BeginInvokePriorityAction = System.Windows.Application.PostToMainLoop;
 	}
 
 	public void Dispose()

@@ -44,6 +44,14 @@ public class DispatcherPriorityMapTests
 			Assert.True(Application.ToGLibPriority(p) > (int)GLib.Priority.Default);
 	}
 
+	[Fact]
+	public void Background_runs_after_GTK_redraw_and_before_ContextIdle()
+	{
+		var background = Application.ToGLibPriority(DispatcherPriority.Background);
+		Assert.True(background > (int)GLib.Priority.HighIdle + 20);
+		Assert.True(background < Application.ToGLibPriority(DispatcherPriority.ContextIdle));
+	}
+
 	[Theory]
 	[InlineData(DispatcherPriority.Invalid)]
 	[InlineData(DispatcherPriority.Inactive)]

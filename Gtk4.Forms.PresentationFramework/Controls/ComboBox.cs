@@ -29,18 +29,27 @@ public partial class ComboBox : ItemsControl
 			typeof(int),
 			typeof(ComboBox),
 			new FrameworkPropertyMetadata(-1,
-				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal, OnSelectedIndexChanged));
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal,
+				OnSelectedIndexChanged),
+			v => (int)v! >= -1);
 
 	static void OnSelectedIndexChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
 		var cb = (ComboBox)d;
+		if (cb._rejecting) return;
 		var idx = (int?)e.NewValue ?? -1;
+		// WPF ignores an index past the end of a non-empty list; an empty list keeps it pending.
+		if (!cb._updating && idx >= cb.Items.Count && cb.Items.Count > 0)
+		{
+			cb.Reject(SelectedIndexProperty, e.OldValue);
+			return;
+		}
 		cb.ApplySelectedIndex(idx);
 		// Without a widget no GTK notification drives SelectedItem; with one, GTK stays silent if it already shows idx.
 		if (cb._updating) return;
 		if (cb._dropDown != null)
 		{
-			if (idx < 0 || (idx >= cb.Items.Count && cb.Items.Count > 0))
+			if (idx < 0)
 				cb.SetValue(SelectedItemProperty, null);
 			else cb.SyncSelectedItemToIndex();
 		}
@@ -69,7 +78,14 @@ public partial class ComboBox : ItemsControl
 	static void OnSelectedItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
 		var cb = (ComboBox)d;
+		if (cb._rejecting) return;
 		var idx = e.NewValue == null ? -1 : cb.Items.IndexOf(e.NewValue);
+		// WPF rejects an item that is not in Items; null still clears.
+		if (idx < 0 && e.NewValue != null && !cb._updating)
+		{
+			cb.Reject(SelectedItemProperty, e.OldValue);
+			return;
+		}
 		if (cb.SelectedIndex != idx)
 			cb.SetValue(SelectedIndexProperty, idx);
 
@@ -94,6 +110,15 @@ public partial class ComboBox : ItemsControl
 	Gtk.DropDown _dropDown = null!;
 	Gtk.StringList _stringList = null!;
 	bool _updating;
+	bool _rejecting;
+
+	/// <summary>Restores a rejected selection value without side effects or <see cref="SelectionChanged"/>.</summary>
+	void Reject(DependencyProperty property, object? oldValue)
+	{
+		_rejecting = true;
+		try { SetValue(property, oldValue); }
+		finally { _rejecting = false; }
+	}
 
 	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
@@ -137,7 +162,9 @@ public partial class ComboBox : ItemsControl
 	protected override DependencyObject GetContainerForItemOverride() => new ComboBoxItem();
 }
 
-/// <summary>Event data for <see cref="ComboBox.SelectionChanged"/> and <see cref="ListBox.SelectionChanged"/>.</summary>
+/// <summary>
+/// Event data for <see cref="ComboBox.SelectionChanged"/> and <see cref="ListBox.SelectionChanged"/>.
+/// </summary>
 public sealed partial class SelectionChangedEventArgs : EventArgs
 {
 	/// <summary>The control whose selection changed (a <see cref="ComboBox"/> or <see cref="ListBox"/>).</summary>
