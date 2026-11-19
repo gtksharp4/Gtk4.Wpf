@@ -16,11 +16,11 @@ public abstract partial class TextElement
 		new FrameworkPropertyMetadata(new FontFamily("Segoe UI"), true));
 
 	/// <summary>Identifies the attached FontSize property (default 12 DIPs; inherits).
-	/// Gap: WPF validates the value (ArgumentException for NaN or outside (0, 35791.394], and for a null
-	/// FontFamily); that needs a ValidateValueCallback overload in WindowsBase, so it is not applied here.
-	/// FontCss ignores non-positive or non-finite sizes instead.</summary>
+	/// Validated as in WPF: ArgumentException unless finite and in (0, 35791.394]. The FontFamily
+	/// null check is not applied (the DP is not nullable-validated).</summary>
 	public static readonly DependencyProperty FontSizeProperty = DependencyProperty.RegisterAttached(
-		"FontSize", typeof(double), typeof(TextElement), new FrameworkPropertyMetadata(12.0, true));
+		"FontSize", typeof(double), typeof(TextElement), new FrameworkPropertyMetadata(12.0, true),
+		v => v is double d && d > 0 && d <= 35791.394);
 
 	/// <summary>Identifies the attached FontStyle property (default Normal; inherits).</summary>
 	public static readonly DependencyProperty FontStyleProperty = DependencyProperty.RegisterAttached(

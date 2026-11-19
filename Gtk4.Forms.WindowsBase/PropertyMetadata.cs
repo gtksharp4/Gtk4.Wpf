@@ -15,17 +15,26 @@ public delegate object? CoerceValueCallback(DependencyObject d, object? baseValu
 
 /// <summary>
 /// Provides property-system metadata for a <see cref="DependencyProperty"/>.
+/// Setters throw <see cref="InvalidOperationException"/> once the metadata is sealed
+/// (passed to Register, OverrideMetadata or AddOwner).
 /// </summary>
-public class PropertyMetadata
+public partial class PropertyMetadata
 {
-	/// <summary>Default value returned when no local value or inherited value is present.</summary>
-	public object? DefaultValue { get; protected set; }
+	object? _defaultValue;
+	bool _defaultValueSet;
+	PropertyChangedCallback? _propertyChangedCallback;
+	CoerceValueCallback? _coerceValueCallback;
 
-	/// <summary>Callback fired when the effective value changes.</summary>
-	public PropertyChangedCallback? PropertyChangedCallback { get; protected set; }
+	/// <summary>Creates metadata with no default value; one is inherited or derived at registration.</summary>
+	public PropertyMetadata()
+	{
+	}
 
-	/// <summary>Callback to coerce the value before storing.</summary>
-	public CoerceValueCallback? CoerceValueCallback { get; protected set; }
+	/// <summary>Creates metadata with a change callback only.</summary>
+	public PropertyMetadata(PropertyChangedCallback? propertyChangedCallback)
+	{
+		_propertyChangedCallback = propertyChangedCallback;
+	}
 
 	/// <summary>Creates metadata with a default value.</summary>
 	public PropertyMetadata(object? defaultValue)
@@ -37,7 +46,7 @@ public class PropertyMetadata
 	public PropertyMetadata(object? defaultValue, PropertyChangedCallback? propertyChangedCallback)
 	{
 		DefaultValue = defaultValue;
-		PropertyChangedCallback = propertyChangedCallback;
+		_propertyChangedCallback = propertyChangedCallback;
 	}
 
 	/// <summary>Creates metadata with a default value, change callback, and coerce callback.</summary>
@@ -47,64 +56,45 @@ public class PropertyMetadata
 		CoerceValueCallback? coerceValueCallback)
 	{
 		DefaultValue = defaultValue;
-		PropertyChangedCallback = propertyChangedCallback;
-		CoerceValueCallback = coerceValueCallback;
-	}
-}
-
-/// <summary>
-/// Extended metadata that also carries layout/render influence flags and property
-/// inheritance across the logical tree.
-/// </summary>
-public class FrameworkPropertyMetadata : PropertyMetadata
-{
-	/// <summary>Value propagates down the logical tree to children that have no local value.</summary>
-	public bool Inherits { get; set; }
-
-	/// <summary>A change to this property triggers a Measure pass.</summary>
-	public bool AffectsMeasure { get; set; }
-
-	/// <summary>A change to this property triggers an Arrange pass.</summary>
-	public bool AffectsArrange { get; set; }
-
-	/// <summary>A change to this property triggers a Render pass.</summary>
-	public bool AffectsRender { get; set; }
-
-	/// <inheritdoc cref="PropertyMetadata(object?)"/>
-	public FrameworkPropertyMetadata(object? defaultValue) : base(defaultValue) { }
-
-	/// <summary>Creates metadata with a default value and inheritance flag.</summary>
-	public FrameworkPropertyMetadata(object? defaultValue, bool inherits) : base(defaultValue)
-	{
-		Inherits = inherits;
+		_propertyChangedCallback = propertyChangedCallback;
+		_coerceValueCallback = coerceValueCallback;
 	}
 
-	/// <inheritdoc cref="PropertyMetadata(object?,PropertyChangedCallback?)"/>
-	public FrameworkPropertyMetadata(
-		object? defaultValue,
-		PropertyChangedCallback? propertyChangedCallback) : base(defaultValue, propertyChangedCallback) { }
-
-	/// <inheritdoc cref="PropertyMetadata(object?,PropertyChangedCallback?,CoerceValueCallback?)"/>
-	public FrameworkPropertyMetadata(
-		object? defaultValue,
-		PropertyChangedCallback? propertyChangedCallback,
-		CoerceValueCallback? coerceValueCallback)
-		: base(defaultValue, propertyChangedCallback, coerceValueCallback) { }
-
-	/// <summary>Creates metadata with all options.</summary>
-	public FrameworkPropertyMetadata(
-		object? defaultValue,
-		bool inherits,
-		bool affectsMeasure,
-		bool affectsArrange,
-		bool affectsRender,
-		PropertyChangedCallback? propertyChangedCallback = null,
-		CoerceValueCallback? coerceValueCallback = null)
-		: base(defaultValue, propertyChangedCallback, coerceValueCallback)
+	/// <summary>Default value returned when no local value or inherited value is present.</summary>
+	/// <exception cref="ArgumentException">Set to <see cref="DependencyProperty.UnsetValue"/>.</exception>
+	/// <exception cref="InvalidOperationException">The metadata is sealed.</exception>
+	public object? DefaultValue
 	{
-		Inherits = inherits;
-		AffectsMeasure = affectsMeasure;
-		AffectsArrange = affectsArrange;
-		AffectsRender = affectsRender;
+		get => _defaultValue;
+		set
+		{
+			ThrowIfSealed();
+			if (ReferenceEquals(value, DependencyProperty.UnsetValue))
+				throw new ArgumentException("Cannot set property metadata's default value to 'Unset'.");
+			_defaultValue = value;
+			_defaultValueSet = true;
+		}
+	}
+
+	/// <summary>Callback fired when the effective value changes.</summary>
+	public PropertyChangedCallback? PropertyChangedCallback
+	{
+		get => _propertyChangedCallback;
+		set
+		{
+			ThrowIfSealed();
+			_propertyChangedCallback = value;
+		}
+	}
+
+	/// <summary>Callback to coerce the value before storing.</summary>
+	public CoerceValueCallback? CoerceValueCallback
+	{
+		get => _coerceValueCallback;
+		set
+		{
+			ThrowIfSealed();
+			_coerceValueCallback = value;
+		}
 	}
 }

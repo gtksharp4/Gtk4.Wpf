@@ -17,7 +17,8 @@ public class Calendar : Control
 			nameof(SelectedDate),
 			typeof(DateTime?),
 			typeof(Calendar),
-			new PropertyMetadata(null, OnSelectedDateChanged));
+			new FrameworkPropertyMetadata(null,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSelectedDateChanged));
 
 	static void OnSelectedDateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
@@ -43,7 +44,8 @@ public class Calendar : Control
 			nameof(DisplayDate),
 			typeof(DateTime),
 			typeof(Calendar),
-			new PropertyMetadata(DateTime.Today, OnDisplayDateChanged));
+			new FrameworkPropertyMetadata(DateTime.Today,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnDisplayDateChanged));
 
 	static void OnDisplayDateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{

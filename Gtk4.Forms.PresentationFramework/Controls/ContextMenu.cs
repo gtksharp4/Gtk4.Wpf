@@ -21,7 +21,8 @@ public class ContextMenu : ItemsControl
 	/// <summary><c>true</c> while the context menu is visible.</summary>
 	public static readonly DependencyProperty IsOpenProperty =
 		DependencyProperty.Register(nameof(IsOpen), typeof(bool), typeof(ContextMenu),
-			new PropertyMetadata(false, OnIsOpenChanged));
+			new FrameworkPropertyMetadata(false,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnIsOpenChanged));
 
 	static void OnIsOpenChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{

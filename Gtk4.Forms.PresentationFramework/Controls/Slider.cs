@@ -58,7 +58,8 @@ public partial class Slider : Control
 			nameof(Value),
 			typeof(double),
 			typeof(Slider),
-			new PropertyMetadata(0.0, OnValueChanged,
+			new FrameworkPropertyMetadata(0.0,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal, OnValueChanged,
 				(d, v) =>
 				{
 					var s = (Slider)d;

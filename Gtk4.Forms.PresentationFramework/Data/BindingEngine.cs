@@ -168,7 +168,9 @@ internal static partial class BindingEngine
 			if (!_targetRef.TryGetTarget(out var target)) return;
 			DetachInpc();
 
-			var mode = EffectiveMode();
+			var (mode, trigger) = BindingDefaults.Resolve(
+				_binding.Mode, _binding.UpdateSourceTrigger, _dp, target.GetType());
+			_trigger = trigger;
 			if (mode == BindingMode.OneWayToSource)
 			{
 				SubscribeTargetChanges(target);
@@ -194,7 +196,7 @@ internal static partial class BindingEngine
 				AttachDpSource(source); // BindingEngine.SourceDp.cs
 
 			if (mode == BindingMode.TwoWay
-			    && _binding.UpdateSourceTrigger != UpdateSourceTrigger.Explicit)
+			    && _trigger != UpdateSourceTrigger.Explicit)
 				SubscribeTargetChanges(target);
 		}
 
@@ -203,9 +205,6 @@ internal static partial class BindingEngine
 			DetachInpc();
 			UnsubscribeTargetChanges();
 		}
-
-		BindingMode EffectiveMode() =>
-			_binding.Mode == BindingMode.Default ? BindingMode.OneWay : _binding.Mode;
 
 		internal object? GetResolvedSource(FrameworkElement target) => ResolveSource(target);
 
@@ -338,6 +337,7 @@ internal static partial class BindingEngine
 		void WriteBack(FrameworkElement target)
 		{
 			if (_pushing) return;
+			_dirty = false;
 			// UpdateSourceTrigger.Explicit: only write back when explicitly called.
 			// (PropertyChanged / Default / LostFocus → auto; Explicit → only via WriteBackPublic)
 			_pushing = true;
@@ -468,12 +468,15 @@ internal static partial class BindingEngine
 
 		void SubscribeTargetChanges(FrameworkElement target)
 		{
+			UnsubscribeTargetChanges();
 			_targetChangedCallback = OnTargetPropertyChanged;
 			TargetChangeTracker.Subscribe(target, _dp, _targetChangedCallback);
+			AttachLostFocus(target);
 		}
 
 		void UnsubscribeTargetChanges()
 		{
+			DetachLostFocus();
 			if (_targetChangedCallback == null) return;
 			if (_targetRef.TryGetTarget(out var target))
 				TargetChangeTracker.Unsubscribe(target, _dp, _targetChangedCallback);
@@ -484,7 +487,12 @@ internal static partial class BindingEngine
 		{
 			if (!_targetRef.TryGetTarget(out var target)) return;
 			// Explicit: don't auto write back — wait for UpdateSource().
-			if (_binding.UpdateSourceTrigger == UpdateSourceTrigger.Explicit) return;
+			if (_trigger == UpdateSourceTrigger.Explicit) return;
+			if (_trigger == UpdateSourceTrigger.LostFocus)
+			{
+				_dirty = !_pushing;
+				return;
+			}
 			WriteBack(target);
 		}
 

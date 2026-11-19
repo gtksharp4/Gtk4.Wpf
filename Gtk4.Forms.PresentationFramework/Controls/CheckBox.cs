@@ -30,7 +30,8 @@ public class CheckBox : ContentControl
 			nameof(IsChecked),
 			typeof(bool?),
 			typeof(CheckBox),
-			new PropertyMetadata(false, OnIsCheckedChanged));
+			new FrameworkPropertyMetadata(false,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal, OnIsCheckedChanged));
 
 	static void OnIsCheckedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{

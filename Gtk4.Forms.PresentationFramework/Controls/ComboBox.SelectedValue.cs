@@ -40,7 +40,8 @@ public partial class ComboBox
 			nameof(SelectedValue),
 			typeof(object),
 			typeof(ComboBox),
-			new PropertyMetadata(null, OnSelectedValueChanged));
+			new FrameworkPropertyMetadata(null,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSelectedValueChanged));
 
 	static void OnSelectedValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{

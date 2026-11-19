@@ -130,6 +130,7 @@ public partial class DependencyObject
 
 	void SetValueCore(DependencyProperty dp, object? value)
 	{
+		if (!ReferenceEquals(value, DependencyProperty.UnsetValue)) dp.ThrowIfInvalid(value);
 		OnBeforeSetValue(dp);
 		var oldEffective = ResolveEffectiveValue(dp);
 		_localValues[dp] = value;

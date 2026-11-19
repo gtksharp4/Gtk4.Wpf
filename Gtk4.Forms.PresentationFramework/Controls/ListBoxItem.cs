@@ -18,7 +18,8 @@ public class ListBoxItem : ContentControl
 			nameof(IsSelected),
 			typeof(bool),
 			typeof(ListBoxItem),
-			new PropertyMetadata(false));
+			new FrameworkPropertyMetadata(false,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal));
 
 	/// <summary>Gets or sets the selected state.</summary>
 	public bool IsSelected

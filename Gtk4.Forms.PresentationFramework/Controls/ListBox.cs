@@ -29,7 +29,8 @@ public partial class ListBox : ItemsControl
 			nameof(SelectedIndex),
 			typeof(int),
 			typeof(ListBox),
-			new PropertyMetadata(-1, OnSelectedIndexChanged));
+			new FrameworkPropertyMetadata(-1,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal, OnSelectedIndexChanged));
 
 	static void OnSelectedIndexChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
@@ -51,7 +52,8 @@ public partial class ListBox : ItemsControl
 			nameof(SelectedItem),
 			typeof(object),
 			typeof(ListBox),
-			new PropertyMetadata(null, OnSelectedItemChanged));
+			new FrameworkPropertyMetadata(null,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSelectedItemChanged));
 
 	static void OnSelectedItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{

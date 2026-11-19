@@ -23,7 +23,8 @@ public class Expander : HeaderedContentControl
 			nameof(IsExpanded),
 			typeof(bool),
 			typeof(Expander),
-			new PropertyMetadata(false, OnIsExpandedChanged));
+			new FrameworkPropertyMetadata(false,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal, OnIsExpandedChanged));
 
 	static void OnIsExpandedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{

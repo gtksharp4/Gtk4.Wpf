@@ -17,7 +17,8 @@ public abstract partial class UIElement
 	/// <summary>Identifies the <see cref="Visibility"/> dependency property.</summary>
 	public static readonly DependencyProperty VisibilityProperty =
 		DependencyProperty.Register(nameof(Visibility), typeof(Visibility), typeof(UIElement),
-			new PropertyMetadata(Visibility.Visible, OnVisibilityChanged));
+			new PropertyMetadata(Visibility.Visible, OnVisibilityChanged),
+			v => v is Visibility vis && vis >= Visibility.Visible && vis <= Visibility.Collapsed);
 
 	/// <summary>Gets or sets the display state of this element.</summary>
 	public Visibility Visibility

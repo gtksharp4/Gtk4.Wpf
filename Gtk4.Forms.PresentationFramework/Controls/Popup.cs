@@ -24,7 +24,8 @@ public partial class Popup : FrameworkElement
 	/// <summary><c>true</c> while the popup is visible.</summary>
 	public static readonly DependencyProperty IsOpenProperty =
 		DependencyProperty.Register(nameof(IsOpen), typeof(bool), typeof(Popup),
-			new PropertyMetadata(false, OnIsOpenChanged));
+			new FrameworkPropertyMetadata(false,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnIsOpenChanged));
 
 	static void OnIsOpenChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
