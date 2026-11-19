@@ -167,6 +167,7 @@ internal static partial class BindingEngine
 		{
 			DetachInpc();
 			UnsubscribeTargetChanges();
+			DetachNotifyErrors();
 		}
 
 		internal object? GetResolvedSource(FrameworkElement target) => ResolveSource(target);

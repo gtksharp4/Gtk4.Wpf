@@ -65,6 +65,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			string fallbackValue = null;
 			string targetNullValue = null;
 			string updateSourceTrigger = null;
+			var extras = new List<string>();
 
 			bool firstPositional = true;
 			foreach (string arg in args)
@@ -88,6 +89,7 @@ namespace Gtk4.Forms.MarkupCompiler
 					targetNullValue = a.Substring("TargetNullValue=".Length).Trim();
 				else if (a.StartsWith("UpdateSourceTrigger=", StringComparison.Ordinal))
 					updateSourceTrigger = a.Substring("UpdateSourceTrigger=".Length).Trim();
+				else if (TryExtraBindingArg(a, extras)) { }
 				else if (firstPositional && !a.Contains("="))
 					path = a;
 				firstPositional = false;
@@ -102,7 +104,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			bool hasInit = mode != null || elementName != null
 				|| converterResourceKey != null || relativeSourceExpr != null
 				|| stringFormat != null || fallbackValue != null
-				|| targetNullValue != null || updateSourceTrigger != null;
+				|| targetNullValue != null || updateSourceTrigger != null
+				|| extras.Count > 0;
 
 			if (hasInit)
 			{
@@ -156,6 +159,13 @@ namespace Gtk4.Forms.MarkupCompiler
 					if (comma) sb.Append(", ");
 					sb.Append("UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger."
 						+ updateSourceTrigger);
+					comma = true;
+				}
+				foreach (string extra in extras)
+				{
+					if (comma) sb.Append(", ");
+					sb.Append(extra);
+					comma = true;
 				}
 				sb.Append(" }");
 			}
@@ -402,10 +412,15 @@ namespace Gtk4.Forms.MarkupCompiler
 			var result = new List<string>();
 			int depth = 0;
 			int start = 0;
+			bool quoted = false;
 			for (int i = 0; i < inner.Length; i++)
 			{
 				char c = inner[i];
-				if (c == '{') depth++;
+				// A quote opens only at a value start (after '='), so stray apostrophes are inert.
+				if (c == '\'' && (quoted || (i > 0 && inner[i - 1] == '=')))
+					quoted = !quoted;
+				else if (quoted) continue;
+				else if (c == '{') depth++;
 				else if (c == '}') depth--;
 				else if (c == ',' && depth == 0)
 				{

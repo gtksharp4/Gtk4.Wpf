@@ -1,0 +1,74 @@
+using System;
+using System.Collections.Generic;
+
+namespace Gtk4.Forms.MarkupCompiler
+{
+	public partial class XamlCodeGenerator
+	{
+		// IsBindingExpression is static, so it reads the xmlns map of the current generation here.
+		[ThreadStatic]
+		static IReadOnlyDictionary<string, string> _bindingPrefixMap;
+
+		/// <summary>
+		/// Handles the binding arguments beyond the core set (ConverterParameter, ConverterCulture,
+		/// Source and the validation flags). Returns the C# initializer fragment, or null when
+		/// <paramref name="name"/> is not one of them or the value cannot be emitted.
+		/// </summary>
+		internal static string ExtraBindingInit(string name, string value)
+		{
+			switch (name)
+			{
+				case "ConverterParameter":
+					return "ConverterParameter = " + BindingValueExpr(value);
+				case "Source":
+					return "Source = " + BindingValueExpr(value);
+				case "ConverterCulture":
+					return "ConverterCulture = System.Globalization.CultureInfo.GetCultureInfo(\""
+						+ EscapeString(Unquote(value)) + "\")";
+				case "ValidatesOnDataErrors":
+				case "ValidatesOnExceptions":
+				case "ValidatesOnNotifyDataErrors":
+				case "NotifyOnValidationError":
+					return bool.TryParse(value.Trim(), out bool b)
+						? name + " = " + (b ? "true" : "false")
+						: null;
+				default:
+					return null;
+			}
+		}
+
+		/// <summary>
+		/// Parses a <c>Name=value</c> binding argument; returns false when it is not an extra argument.
+		/// </summary>
+		static bool TryExtraBindingArg(string arg, List<string> inits)
+		{
+			int eq = arg.IndexOf('=');
+			if (eq <= 0) return false;
+			string init = ExtraBindingInit(arg.Substring(0, eq).Trim(), arg.Substring(eq + 1).Trim());
+			if (init == null) return false;
+			inits.Add(init);
+			return true;
+		}
+
+		/// <summary>
+		/// C# expression for a binding argument value: <c>{x:Static}</c> member, <c>{StaticResource}</c>
+		/// lookup, or a string literal.
+		/// </summary>
+		static string BindingValueExpr(string raw)
+		{
+			string t = raw.Trim();
+			if (IsXStatic(t, out string staticExpr, _bindingPrefixMap)) return staticExpr;
+			if (IsStaticOrDynamicResource(t, out string key))
+				return "this.FindResource(\"" + EscapeString(key) + "\")";
+			return "\"" + EscapeString(Unquote(t)) + "\"";
+		}
+
+		static string Unquote(string s)
+		{
+			string t = s.Trim();
+			if (t.Length >= 2 && t[0] == '\'' && t[t.Length - 1] == '\'')
+				return t.Substring(1, t.Length - 2);
+			return t;
+		}
+	}
+}

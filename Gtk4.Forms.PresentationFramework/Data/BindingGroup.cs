@@ -112,7 +112,7 @@ public class BindingGroup
 				ValidationResult result;
 				try
 				{
-					result = rule.Validate(src, CultureInfo.CurrentCulture);
+					result = rule.Validate(src, BindingEngine.ResolveCulture(null), this);
 				}
 				catch
 				{

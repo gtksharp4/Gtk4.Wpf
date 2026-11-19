@@ -12,28 +12,28 @@ internal static partial class BindingEngine
 	/// Non-critical failures are returned in <paramref name="error"/>.
 	/// </summary>
 	internal static bool TryConvertToSourceType(
-		object? value, Type propertyType, out object? result, out Exception? error)
+		object? value, Type propertyType, out object? result, out Exception? error, CultureInfo? culture = null)
 	{
 		result = value;
 		error = null;
 		var underlying = Nullable.GetUnderlyingType(propertyType);
 		var t = underlying ?? propertyType;
 		if (value == null || t.IsInstanceOfType(value)) return true;
-		var culture = CultureInfo.CurrentCulture;
+		var cult = ResolveCulture(culture);
 		try
 		{
 			if (value is string s)
 			{
 				if (underlying != null && string.IsNullOrWhiteSpace(s)) { result = null; return true; }
-				result = TypeDescriptor.GetConverter(t).ConvertFrom(null, culture, s);
+				result = TypeDescriptor.GetConverter(t).ConvertFrom(null, cult, s);
 			}
 			else if (value is IConvertible && typeof(IConvertible).IsAssignableFrom(t) && !t.IsEnum)
-				result = Convert.ChangeType(value, t, culture);
+				result = Convert.ChangeType(value, t, cult);
 			else
 			{
 				var converter = TypeDescriptor.GetConverter(t);
 				if (converter.CanConvertFrom(value.GetType()))
-					result = converter.ConvertFrom(null, culture, value);
+					result = converter.ConvertFrom(null, cult, value);
 			}
 			return true;
 		}

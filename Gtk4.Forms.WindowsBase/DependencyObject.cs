@@ -67,12 +67,13 @@ public partial class DependencyObject
 		return ResolveEffectiveValue(dp);
 	}
 
-	/// <summary>Sets the local value of the property.</summary>
+	/// <summary>Sets the local value of the property; <see cref="DependencyProperty.UnsetValue"/> clears it.</summary>
 	public void SetValue(DependencyProperty dp, object? value)
 	{
 		if (dp == null) throw new ArgumentNullException(nameof(dp));
 		if (dp.IsReadOnly) throw new InvalidOperationException(
 			$"DependencyProperty '{dp.Name}' is read-only. Use SetValue(DependencyPropertyKey, value).");
+		if (ReferenceEquals(value, DependencyProperty.UnsetValue)) { ClearValue(dp); return; }
 		SetValueCore(dp, value);
 	}
 
@@ -80,6 +81,7 @@ public partial class DependencyObject
 	public void SetValue(DependencyPropertyKey key, object? value)
 	{
 		if (key == null) throw new ArgumentNullException(nameof(key));
+		if (ReferenceEquals(value, DependencyProperty.UnsetValue)) { ClearValue(key.DependencyProperty); return; }
 		SetValueCore(key.DependencyProperty, value);
 	}
 

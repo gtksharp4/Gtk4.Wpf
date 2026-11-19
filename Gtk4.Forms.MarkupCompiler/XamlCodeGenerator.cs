@@ -75,6 +75,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			XNamespace xNs = GetXNamespace(root);
 			_xNs = xNs;
 			_prefixMap = CollectXmlnsPrefixMap(root);
+			_bindingPrefixMap = _prefixMap;
 			_ignorableNamespaces = CollectIgnorableNamespaces(root);
 			XAttribute classAttr = root.Attribute(xNs + "Class");
 			if (classAttr == null)
@@ -747,6 +748,13 @@ namespace Gtk4.Forms.MarkupCompiler
 			foreach (XElement child in propEl.Elements())
 			{
 				string childLocal = child.Name.LocalName;
+				if (childLocal == "Binding")
+				{
+					string bVar = $"__b{counter++}";
+					EmitBindingElementInline(w, child, bVar, ref counter);
+					w.Line($"{parentVar}.SetBinding({ownerFqType}.{propName}Property, {bVar});");
+					return;
+				}
 				if (childLocal == "ControlTemplate")
 				{
 					string tmplVar = $"__ct{counter++}";

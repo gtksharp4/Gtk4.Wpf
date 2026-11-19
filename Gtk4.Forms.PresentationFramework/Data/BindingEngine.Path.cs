@@ -64,10 +64,10 @@ internal static partial class BindingEngine
 		return true;
 	}
 
-	static object? ApplyStringFormat(string? fmt, object? value)
+	internal static object? ApplyStringFormat(string? fmt, object? value, CultureInfo culture)
 	{
 		if (fmt == null) return value;
-		string s = fmt.Contains("{0}") ? fmt : fmt + "{0}";
-		return string.Format(CultureInfo.InvariantCulture, s, value);
+		string s = fmt.Contains("{0") ? fmt : fmt + "{0}";
+		return string.Format(culture, s, value);
 	}
 }
