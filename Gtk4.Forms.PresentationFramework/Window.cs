@@ -107,8 +107,8 @@ public partial class Window : ContentControl
 		}
 	}
 
-	/// <summary>Shows the window (makes it visible).</summary>
-	public void Show()
+	/// <summary>Parents the content, applies the start location and presents the GTK window.</summary>
+	void ShowCore()
 	{
 		var win = (Gtk.Window)Widget;
 
@@ -127,6 +127,7 @@ public partial class Window : ContentControl
 		// GTK4: Present() maps the window. ShowAll() (GTK3) realises it at the content's
 		// natural size, so it is not used.
 		win.Present();
+		SetShown(true);
 	}
 
 	/// <summary>

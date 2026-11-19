@@ -53,8 +53,7 @@ public partial class Button : ContentControl, ICommandSource, IDisposable
 		_button = new Gtk.Button();
 		_button.Label = (Content as string) ?? string.Empty;
 		_button.Clicked += OnGtkClicked;
-		// Sync sensitivity with the current command's CanExecute now that the widget exists.
-		RefreshCommandEnabled();
+		// IsEnabled (incl. command CanExecute) is applied by OnWidgetCreated.
 		return _button;
 	}
 
