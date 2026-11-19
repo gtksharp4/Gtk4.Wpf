@@ -41,6 +41,13 @@ public class Dispatcher
 	public static Action<Action> BeginInvokeAction { get; set; } = action => action();
 
 	/// <summary>
+	/// Priority-aware variant of <see cref="BeginInvokeAction"/>. When set,
+	/// <see cref="BeginInvoke(Action,DispatcherPriority)"/> uses it and passes the validated
+	/// priority; when <c>null</c> it falls back to <see cref="BeginInvokeAction"/>.
+	/// </summary>
+	public static Action<Action, DispatcherPriority>? BeginInvokePriorityAction { get; set; }
+
+	/// <summary>
 	/// Predicate that returns <c>true</c> when the caller is on the GTK / dispatcher thread.
 	/// Replace with a GLib-thread check once the GLib loop is running.
 	/// The default considers every thread as the dispatcher thread.
@@ -125,10 +132,19 @@ public class Dispatcher
 	/// Asynchronously posts <paramref name="action"/> to the dispatcher queue at the
 	/// given <paramref name="priority"/>.
 	/// </summary>
+	/// <exception cref="System.ComponentModel.InvalidEnumArgumentException">
+	/// <paramref name="priority"/> is <see cref="DispatcherPriority.Invalid"/> or out of range.</exception>
+	/// <exception cref="ArgumentException"><paramref name="priority"/> is
+	/// <see cref="DispatcherPriority.Inactive"/>.</exception>
 	public void BeginInvoke(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
 	{
 		if (action == null) throw new ArgumentNullException(nameof(action));
-		BeginInvokeAction(() =>
+		if (priority < DispatcherPriority.Inactive || priority > DispatcherPriority.Send)
+			throw new System.ComponentModel.InvalidEnumArgumentException(
+				nameof(priority), (int)priority, typeof(DispatcherPriority));
+		if (priority == DispatcherPriority.Inactive)
+			throw new ArgumentException("The priority cannot be Inactive.", nameof(priority));
+		void Guarded()
 		{
 			try { action(); }
 			catch (Exception ex)
@@ -136,7 +152,10 @@ public class Dispatcher
 				if (!RaiseUnhandledException(ex))
 					throw;
 			}
-		});
+		}
+		var bridge = BeginInvokePriorityAction;
+		if (bridge != null) bridge(Guarded, priority);
+		else BeginInvokeAction(Guarded);
 	}
 
 	// ── Unhandled exceptions ─────────────────────────────────────────────────────
