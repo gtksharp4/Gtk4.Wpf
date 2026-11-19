@@ -52,12 +52,13 @@ public partial class Application
 		System.Windows.Media.Animation.AnimationScheduler.NotifyGtkInitialised();
 		// Wire Dispatcher delegates to the GLib main loop.
 		Threading.Dispatcher.IsOnDispatcherThread = () => GLib.MainContext.Default.IsOwner;
-		Threading.Dispatcher.BeginInvokeAction = PostToMainLoop;
+		Threading.Dispatcher.BeginInvokePriorityAction = PostToMainLoop;
+		Threading.Dispatcher.BeginInvokeAction = action => PostToMainLoop(action, Threading.DispatcherPriority.Normal);
 		Threading.Dispatcher.InvokeAction = action =>
 		{
 			if (GLib.MainContext.Default.IsOwner) { action(); return; }
 			using var done = new System.Threading.ManualResetEventSlim();
-			PostToMainLoop(() => { try { action(); } finally { done.Set(); } });
+			PostToMainLoop(() => { try { action(); } finally { done.Set(); } }, Threading.DispatcherPriority.Send);
 			done.Wait();
 		};
 		// Wire DispatcherTimer delegates to GLib.
@@ -66,16 +67,6 @@ public partial class Application
 		Threading.DispatcherTimer.RemoveSourceAction = id => GLib.Source.Remove(id);
 		EnsureGlibExceptionHook();
 	}
-
-	/// <summary>
-	/// Posts dispatcher work to the GLib main loop at <c>G_PRIORITY_DEFAULT</c>, not the idle priority:
-	/// on macOS the Quartz event source and frame clock keep the loop busy enough to starve idle
-	/// sources, so posted work (e.g. the Loaded broadcast) never ran. WPF also runs Normal-priority
-	/// dispatcher work ahead of rendering. <see cref="System.Windows.Threading.DispatcherPriority"/>
-	/// is not passed through yet, so all posted work shares this priority.
-	/// </summary>
-	internal static void PostToMainLoop(Action action) =>
-		GLib.Idle.Add(GLib.Priority.Default, () => { action(); return false; });
 
 	/// <summary>The lifecycle without GTK init, so tests can drive it on the fixture thread.</summary>
 	internal int RunCore(string[] args, Window? windowToShow = null)

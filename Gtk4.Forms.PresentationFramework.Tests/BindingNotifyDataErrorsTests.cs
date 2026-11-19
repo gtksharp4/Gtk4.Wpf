@@ -161,6 +161,8 @@ public class BindingNotifyDataErrorsTests : BindingWriteBackTestBase
 		var queue = new List<Action>();
 		var oldOn = Dispatcher.IsOnDispatcherThread;
 		var oldBegin = Dispatcher.BeginInvokeAction;
+		var oldPriority = Dispatcher.BeginInvokePriorityAction;
+		Dispatcher.BeginInvokePriorityAction = null;
 		Dispatcher.IsOnDispatcherThread = () => false;
 		Dispatcher.BeginInvokeAction = queue.Add;
 		try
@@ -173,6 +175,7 @@ public class BindingNotifyDataErrorsTests : BindingWriteBackTestBase
 		{
 			Dispatcher.IsOnDispatcherThread = oldOn;
 			Dispatcher.BeginInvokeAction = oldBegin;
+			Dispatcher.BeginInvokePriorityAction = oldPriority;
 		}
 		queue[0]();
 		Assert.True(Validation.GetHasError(tb));

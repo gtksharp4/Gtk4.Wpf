@@ -34,9 +34,17 @@ static class GtkPump
 sealed class GtkDispatcherScope : IDisposable
 {
 	readonly Action<Action> _previous = Dispatcher.BeginInvokeAction;
+	readonly Action<Action, DispatcherPriority>? _previousPriority = Dispatcher.BeginInvokePriorityAction;
 
-	public GtkDispatcherScope() =>
-		Dispatcher.BeginInvokeAction = System.Windows.Application.PostToMainLoop;
+	public GtkDispatcherScope()
+	{
+		Dispatcher.BeginInvokePriorityAction = System.Windows.Application.PostToMainLoop;
+		Dispatcher.BeginInvokeAction = a => System.Windows.Application.PostToMainLoop(a, DispatcherPriority.Normal);
+	}
 
-	public void Dispose() => Dispatcher.BeginInvokeAction = _previous;
+	public void Dispose()
+	{
+		Dispatcher.BeginInvokeAction = _previous;
+		Dispatcher.BeginInvokePriorityAction = _previousPriority;
+	}
 }

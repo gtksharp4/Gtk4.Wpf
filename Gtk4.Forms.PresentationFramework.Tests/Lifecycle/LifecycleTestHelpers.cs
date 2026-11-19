@@ -14,11 +14,14 @@ namespace Gtk4.Forms.PresentationFramework.Tests.Lifecycle;
 sealed class ManualDispatcherQueue : IDisposable
 {
 	readonly Action<Action> _previous;
+	readonly Action<Action, DispatcherPriority>? _previousPriority;
 	readonly Queue<Action> _queue = new Queue<Action>();
 
 	public ManualDispatcherQueue()
 	{
 		_previous = Dispatcher.BeginInvokeAction;
+		_previousPriority = Dispatcher.BeginInvokePriorityAction;
+		Dispatcher.BeginInvokePriorityAction = null;
 		Dispatcher.BeginInvokeAction = a => _queue.Enqueue(a);
 	}
 
@@ -31,7 +34,11 @@ sealed class ManualDispatcherQueue : IDisposable
 			_queue.Dequeue()();
 	}
 
-	public void Dispose() => Dispatcher.BeginInvokeAction = _previous;
+	public void Dispose()
+	{
+		Dispatcher.BeginInvokeAction = _previous;
+		Dispatcher.BeginInvokePriorityAction = _previousPriority;
+	}
 }
 
 /// <summary>Builds named trees and records lifecycle events in order.</summary>
