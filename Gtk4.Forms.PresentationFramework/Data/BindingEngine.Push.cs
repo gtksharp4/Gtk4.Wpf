@@ -25,6 +25,12 @@ internal static partial class BindingEngine
 
 		void PushToTarget(FrameworkElement target, object? source)
 		{
+			PushToTargetCore(target, source);
+			RunTargetUpdatedValidation(target, source);
+		}
+
+		void PushToTargetCore(FrameworkElement target, object? source)
+		{
 			_pushing = true;
 			try
 			{
@@ -47,7 +53,7 @@ internal static partial class BindingEngine
 				if (_binding.Converter != null)
 				{
 					value = _binding.Converter.Convert(rawValue, _dp.PropertyType,
-						_binding.ConverterParameter, CultureInfo.CurrentCulture);
+						_binding.ConverterParameter, ResolveCulture(_binding.ConverterCulture));
 					// WPF: DoNothing aborts the transfer; UnsetValue means fallback/default.
 					if (ReferenceEquals(value, Binding.DoNothing)) return;
 					if (ReferenceEquals(value, DependencyProperty.UnsetValue))
@@ -65,7 +71,7 @@ internal static partial class BindingEngine
 				}
 
 				// StringFormat.
-				value = ApplyStringFormat(_binding.StringFormat, value);
+				value = ApplyStringFormat(_binding.StringFormat, value, ResolveCulture(_binding.ConverterCulture));
 
 				if (_binding.Converter == null)
 				{

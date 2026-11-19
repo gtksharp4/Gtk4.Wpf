@@ -44,7 +44,7 @@ internal static partial class MultiBindingEngine
 			else if (_mb.Converter != null)
 			{
 				result = _mb.Converter.Convert(values, _dp.PropertyType,
-					_mb.ConverterParameter, CultureInfo.CurrentCulture);
+					_mb.ConverterParameter, BindingEngine.ResolveCulture(_mb.ConverterCulture));
 				if (ReferenceEquals(result, Binding.DoNothing)) return;
 				if (ReferenceEquals(result, DependencyProperty.UnsetValue))
 				{
@@ -63,7 +63,8 @@ internal static partial class MultiBindingEngine
 				result = _mb.TargetNullValue;
 
 			// Apply StringFormat.
-			result = ApplyStringFormat(_mb.StringFormat, result);
+			result = BindingEngine.ApplyStringFormat(
+				_mb.StringFormat, result, BindingEngine.ResolveCulture(_mb.ConverterCulture));
 
 			BindingEngine.SetTargetSafe(target, _dp, result, _mb.FallbackValue);
 		}
@@ -98,13 +99,6 @@ internal static partial class MultiBindingEngine
 			if (b.ElementName != null) return target.FindName(b.ElementName) as FrameworkElement;
 			if (b.RelativeSource != null) return b.RelativeSource.Resolve(target);
 			return target.DataContext;
-		}
-
-		static object? ApplyStringFormat(string? fmt, object? value)
-		{
-			if (fmt == null) return value;
-			string s = fmt.Contains("{0}") ? fmt : fmt + "{0}";
-			return string.Format(CultureInfo.InvariantCulture, s, value);
 		}
 	}
 }

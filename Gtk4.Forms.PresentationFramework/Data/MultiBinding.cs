@@ -33,4 +33,16 @@ public class MultiBinding : BindingBase
 	/// (LostFocus for <c>TextBox.Text</c>, otherwise PropertyChanged).
 	/// </summary>
 	public UpdateSourceTrigger UpdateSourceTrigger { get; set; } = UpdateSourceTrigger.Default;
+
+	/// <summary>
+	/// Culture passed to the converter and <c>StringFormat</c>. When <c>null</c> the target's language
+	/// is used; <c>FrameworkElement.Language</c> is not implemented so that is WPF's default, <c>en-US</c>.
+	/// </summary>
+	public System.Globalization.CultureInfo? ConverterCulture { get; set; }
+
+	/// <summary>
+	/// Default <c>true</c> as in WPF. Store-only: <see cref="MultiBinding"/> has no validation
+	/// pipeline here, so INotifyDataErrorInfo of child sources is not surfaced.
+	/// </summary>
+	public bool ValidatesOnNotifyDataErrors { get; set; } = true;
 }

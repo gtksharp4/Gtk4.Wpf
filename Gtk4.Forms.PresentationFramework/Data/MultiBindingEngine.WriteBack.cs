@@ -65,7 +65,7 @@ internal static partial class MultiBindingEngine
 			try
 			{
 				backValues = _mb.Converter.ConvertBack(
-					targetValue, sourceTypes, _mb.ConverterParameter, CultureInfo.CurrentCulture);
+					targetValue, sourceTypes, _mb.ConverterParameter, BindingEngine.ResolveCulture(_mb.ConverterCulture));
 			}
 			catch (Exception ex) when (!BindingEngine.IsCritical(ex))
 			{
@@ -88,7 +88,8 @@ internal static partial class MultiBindingEngine
 					try
 					{
 						if (BindingEngine.TryResolveWriteTarget(src, b.Path, out _, out var p)
-						    && !BindingEngine.TryConvertToSourceType(bv, p.PropertyType, out bv, out _))
+						    && !BindingEngine.TryConvertToSourceType(bv, p.PropertyType, out bv, out _,
+							    BindingEngine.ResolveCulture(_mb.ConverterCulture)))
 							continue;
 						BindingEngine.WriteBackPath(src, b.Path, bv);
 					}

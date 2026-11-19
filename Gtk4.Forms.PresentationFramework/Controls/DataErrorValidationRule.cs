@@ -11,6 +11,12 @@ public sealed class DataErrorValidationRule : ValidationRule
 	/// <summary>Singleton instance.</summary>
 	public static readonly DataErrorValidationRule Instance = new DataErrorValidationRule();
 
+	/// <summary>Creates a rule that runs on <see cref="ValidationStep.UpdatedValue"/> and on target updates.</summary>
+	public DataErrorValidationRule()
+		: base(ValidationStep.UpdatedValue, true)
+	{
+	}
+
 	/// <summary>
 	/// Marker: <see cref="Data.BindingEngine"/> calls <c>CollectDataErrors</c> directly on the
 	/// source when <c>ValidatesOnDataErrors</c> is set; this <c>Validate</c> body is never invoked

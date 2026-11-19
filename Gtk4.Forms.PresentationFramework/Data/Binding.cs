@@ -81,10 +81,23 @@ public class Binding : BindingBase
 	public Collection<ValidationRule> ValidationRules { get; } = new Collection<ValidationRule>();
 
 	/// <summary>
-	/// When <c>true</c>, checks <see cref="IDataErrorInfo"/> / <see cref="INotifyDataErrorInfo"/>
-	/// on the source after a TwoWay update.
+	/// When <c>true</c>, checks <see cref="IDataErrorInfo"/> on the source after a TwoWay update
+	/// and on each source-to-target transfer.
 	/// </summary>
 	public bool ValidatesOnDataErrors { get; set; }
+
+	/// <summary>
+	/// When <c>true</c> (default), surfaces <see cref="INotifyDataErrorInfo"/> errors of the source
+	/// and tracks its <c>ErrorsChanged</c> event.
+	/// </summary>
+	public bool ValidatesOnNotifyDataErrors { get; set; } = true;
+
+	/// <summary>
+	/// Culture passed to converters, validation rules and <c>StringFormat</c>. When <c>null</c> the
+	/// target's language is used; <c>FrameworkElement.Language</c> is not implemented so that is
+	/// WPF's default, <c>en-US</c>.
+	/// </summary>
+	public System.Globalization.CultureInfo? ConverterCulture { get; set; }
 
 	/// <summary>
 	/// When <c>true</c>, any exception thrown during a source update is caught and surfaced
