@@ -42,10 +42,8 @@ public abstract partial class UIElement : Media.Visual
 	/// </summary>
 	protected virtual void OnWidgetCreated(Gtk.Widget widget)
 	{
-		// U2: apply any Opacity set before widget creation.
-		var opacity = (double)(GetValue(OpacityProperty) ?? 1.0);
-		if (opacity != 1.0)
-			widget.Opacity = opacity;
+		// Opacity, Visibility, IsEnabled, IsHitTestVisible → GTK widget state (UIElement.Visibility.cs).
+		ApplyVisibilityStateOnCreated(widget);
 
 		// Hook: attach GTK input controllers (focus, key, mouse, motion).
 		// Implemented in UIElement.GtkInput.cs as a partial method call.
@@ -103,32 +101,11 @@ public abstract partial class UIElement : Media.Visual
 	/// </summary>
 	partial void ApplyAutomationOnCreated(Gtk.Widget widget);
 
-	// ── Opacity ──────────────────────────────────────────────────────────────────
-
 	/// <summary>
-	/// Opacity DP: double in [0,1], default 1.0.
-	/// Applied to the backing <see cref="Gtk.Widget"/> immediately when the widget exists;
-	/// deferred to <see cref="OnWidgetCreated"/> otherwise (lazy-safe).
+	/// Called from <see cref="OnWidgetCreated"/> to apply Opacity, Visibility, IsEnabled and
+	/// IsHitTestVisible set before widget creation. Implemented in <c>UIElement.Visibility.cs</c>.
 	/// </summary>
-	public static readonly DependencyProperty OpacityProperty =
-		DependencyProperty.Register(
-			nameof(Opacity),
-			typeof(double),
-			typeof(UIElement),
-			new PropertyMetadata(1.0, OnOpacityChanged));
-
-	static void OnOpacityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-	{
-		if (d is UIElement el && el.IsWidgetCreated)
-			el._widget!.Opacity = (double)(e.NewValue ?? 1.0);
-	}
-
-	/// <summary>Gets or sets the opacity (0.0 = fully transparent, 1.0 = fully opaque).</summary>
-	public double Opacity
-	{
-		get => (double)(GetValue(OpacityProperty) ?? 1.0);
-		set => SetValue(OpacityProperty, value);
-	}
+	partial void ApplyVisibilityStateOnCreated(Gtk.Widget widget);
 
 	// ── Measure / Arrange — see UIElement.Layout.cs ──────────────────────────
 
@@ -193,6 +170,8 @@ public abstract partial class UIElement : Media.Visual
 			InheritanceParent = value;
 			// Lazy Initialized + deferred subtree Loaded/Unloaded (UIElement.Lifecycle.cs).
 			OnLogicalParentChangedLifecycle(oldParent, value);
+			// Re-coerce IsEnabled/IsHitTestVisible, recompute IsVisible (UIElement.IsVisible.cs).
+			OnLogicalParentChangedVisibilityState();
 		}
 	}
 

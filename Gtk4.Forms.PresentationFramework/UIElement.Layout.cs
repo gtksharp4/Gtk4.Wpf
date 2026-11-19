@@ -73,6 +73,13 @@ public abstract partial class UIElement
 		_measureDirty = false;
 		_lastMeasureConstraint = availableSize;
 
+		// Collapsed takes no space: WPF skips MeasureCore and reports (0,0). Hidden measures normally.
+		if (Visibility == Visibility.Collapsed)
+		{
+			DesiredSize = new Size(0, 0);
+			return;
+		}
+
 		var desired = MeasureCore(availableSize);
 		// W2: clamp to [0, ∞) only — not to availableSize.
 		// WPF lets DesiredSize exceed the available space; Min/Max are enforced inside
@@ -104,6 +111,9 @@ public abstract partial class UIElement
 		_arrangeDirty = false;
 		_lastArrangeRect = finalRect;
 		ArrangeRect = finalRect;
+		// Collapsed: ArrangeCore is skipped and RenderSize is left as it was (WPF records only the rect).
+		if (Visibility == Visibility.Collapsed)
+			return;
 		// Default RenderSize = finalRect size; ArrangeCore (FrameworkElement) may narrow it
 		// for alignment. FrameworkElement.ArrangeCore sets RenderSize itself.
 		var previous = _renderSize;

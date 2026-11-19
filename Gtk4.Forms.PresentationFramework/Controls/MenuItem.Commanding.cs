@@ -15,7 +15,7 @@ public partial class MenuItem
 	/// <summary>Parameter forwarded to <see cref="ICommand.Execute"/>.</summary>
 	public static readonly DependencyProperty CommandParameterProperty =
 		DependencyProperty.Register(nameof(CommandParameter), typeof(object), typeof(MenuItem),
-			new PropertyMetadata(null));
+			new PropertyMetadata(null, (d, e) => ((MenuItem)d).RefreshEnabled()));
 
 	/// <summary>Optional explicit routing target.</summary>
 	public static readonly DependencyProperty CommandTargetProperty =
@@ -54,12 +54,11 @@ public partial class MenuItem
 	CommandSourceHelper? _commandHelper;
 	CommandSourceHelper CommandHelper => _commandHelper ??= new CommandSourceHelper(this, RefreshEnabled);
 
-	void RefreshEnabled()
-	{
-		var canRun = CommandHelper.QueryCanExecute();
-		if (_gtkButton != null) _gtkButton.Sensitive = canRun;
-		if (_gtkMenuButton != null) _gtkMenuButton.Sensitive = canRun;
-	}
+	/// <inheritdoc/>
+	protected override bool IsEnabledCore =>
+		base.IsEnabledCore && (Command == null || CommandHelper.QueryCanExecute());
+
+	void RefreshEnabled() => CoerceValue(IsEnabledProperty);
 
 	bool _disposed;
 

@@ -90,6 +90,7 @@ public partial class Window
 		_ = keepResult; // reserved for future use
 		_dialogClosed = true;
 		((Gtk.Window)Widget).Hide();
+		SetShown(false);
 
 		// Fire Closed once, after the window is hidden (WPF order). Drives app shutdown.
 		if (!_closed)

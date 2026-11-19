@@ -91,6 +91,7 @@ public partial class DependencyObject
 
 		var oldEffective = ResolveEffectiveValue(dp);
 		_localValues.Remove(dp);
+		_baseValues?.Remove(dp);
 		var newEffective = ResolveEffectiveValue(dp);
 		FireChangeIfDifferent(dp, oldEffective, newEffective);
 	}
@@ -134,6 +135,7 @@ public partial class DependencyObject
 		OnBeforeSetValue(dp);
 		var meta = dp.GetMetadata(GetType());
 
+		var rawValue = value;
 		// Coerce against the proposed local value before storing.
 		if (meta.CoerceValueCallback != null)
 			value = meta.CoerceValueCallback(this, value);
@@ -141,6 +143,7 @@ public partial class DependencyObject
 		var oldEffective = ResolveEffectiveValue(dp);
 
 		_localValues[dp] = value;
+		RecordBaseValue(dp, meta, rawValue);
 
 		// Local always wins; re-resolve so coercion is reflected in the effective value.
 		var newEffective = ResolveEffectiveValue(dp);
@@ -169,6 +172,9 @@ public partial class DependencyObject
 	/// </summary>
 	internal object? ResolveEffectiveValue(DependencyProperty dp)
 	{
+		// Coercion result for a property with no local value (DependencyObject.Coerce.cs).
+		if (_coercedValues != null && _coercedValues.TryGetValue(dp, out var coerced)) return coerced;
+
 		// D10: animation values sit above everything else (WPF precedence).
 		if (_animationValues.TryGetValue(dp, out var anim)) return anim;
 

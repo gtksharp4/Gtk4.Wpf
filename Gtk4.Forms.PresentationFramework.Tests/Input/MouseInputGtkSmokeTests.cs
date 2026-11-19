@@ -91,18 +91,18 @@ public class MouseInputGtkSmokeTests : WpfGtkTestBase
 	});
 
 	[Fact]
-	public void CaptureMouse_returns_false_for_insensitive_or_hidden_widget() => Run(() =>
+	public void CaptureMouse_returns_false_for_disabled_or_collapsed_element() => Run(() =>
 	{
 		var btn = new WpfButton();
-		btn.Widget.Sensitive = false;
+		btn.IsEnabled = false;
 		Assert.False(btn.CaptureMouse());
 		Assert.Null(Mouse.Captured);
 
-		btn.Widget.Sensitive = true;
-		btn.Widget.Visible = false;
+		btn.IsEnabled = true;
+		btn.Visibility = Visibility.Collapsed;
 		Assert.False(btn.CaptureMouse());
 
-		btn.Widget.Visible = true;
+		btn.Visibility = Visibility.Visible;
 		Assert.True(btn.CaptureMouse());
 		btn.ReleaseMouseCapture();
 		Assert.Null(Mouse.Captured);

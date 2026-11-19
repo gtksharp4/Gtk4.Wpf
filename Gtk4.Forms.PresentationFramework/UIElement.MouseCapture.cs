@@ -58,21 +58,11 @@ public abstract partial class UIElement
 	}
 
 	/// <summary>
-	/// Whether this element may take capture. WPF requires <c>IsEnabled</c> and <c>IsVisible</c>;
-	/// this layer has no <c>UIElement.IsEnabled</c>/<c>IsVisible</c> DPs yet, so the GTK 4
-	/// equivalents are read from the backing widget and its GTK ancestors (<c>sensitive</c> and
-	/// <c>visible</c>, both inherited in effect like WPF's <c>IsEnabled</c>/<c>IsVisible</c>). An
-	/// element without a created widget is treated as enabled and visible.
+	/// Whether this element may take capture: <see cref="IsEnabled"/> (already parent-coerced) and
+	/// the Visibility chain. WPF requires <c>IsVisible</c>; its presentation-source half (an
+	/// unshown tree is not visible) is skipped so headless elements stay capturable.
 	/// </summary>
-	internal bool CanCaptureMouse
-	{
-		get
-		{
-			for (Gtk.Widget? w = _widget; w != null; w = w.Parent)
-				if (!w.Sensitive || !w.Visible) return false;
-			return true;
-		}
-	}
+	internal bool CanCaptureMouse => IsEnabled && IsVisibilityChainVisible;
 
 	// HasBackingWidget (exactly `_widget != null`) is defined once in UIElement.Lifecycle.cs.
 

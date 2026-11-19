@@ -20,7 +20,7 @@ public abstract partial class UIElement : IInputElement
 	{
 		// Re-evaluate widget.CanFocus when Focusable changes (see UIElement.TabNavigation.cs).
 		if (d is UIElement el && el.IsWidgetCreated)
-			el.FocusWidget.CanFocus = el.IsTabStop && (bool)(e.NewValue ?? true);
+			el.ApplyCanFocus(el.FocusWidget);
 	}
 
 	/// <summary>Gets or sets whether this element can receive keyboard focus.</summary>
@@ -50,10 +50,12 @@ public abstract partial class UIElement : IInputElement
 	/// <summary>
 	/// Requests keyboard focus. Calls <see cref="Gtk.Widget.GrabFocus"/> when the
 	/// backing widget has been created; otherwise records the request to apply on first creation.
+	/// Returns <c>false</c> when not focusable, disabled, or itself or an ancestor is not
+	/// <see cref="Visibility.Visible"/> (the Visibility chain; see <see cref="IsVisibilityChainVisible"/>).
 	/// </summary>
 	public bool Focus()
 	{
-		if (!Focusable) return false;
+		if (!Focusable || !IsEnabled || !IsVisibilityChainVisible) return false;
 		SetFocusedInternal(true);
 		if (IsWidgetCreated)
 			FocusWidget.GrabFocus();

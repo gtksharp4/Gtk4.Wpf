@@ -42,7 +42,7 @@ public partial class Button
 
 	static void OnCommandParameterChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
-		// Refresh enabled state when parameter changes (command may have parameter-sensitive CanExecute).
+		// Re-coerce IsEnabled: CanExecute may depend on the parameter.
 		((Button)d).RefreshCommandEnabled();
 	}
 
@@ -74,12 +74,12 @@ public partial class Button
 	CommandSourceHelper CommandHelper =>
 		_commandHelper ??= new CommandSourceHelper(this, RefreshCommandEnabled);
 
-	void RefreshCommandEnabled()
-	{
-		var canRun = CommandHelper.QueryCanExecute();
-		if (_button != null)
-			_button.Sensitive = canRun;
-	}
+	// WPF ButtonBase pattern: CanExecute feeds IsEnabledCore; the property engine applies Sensitive.
+	/// <inheritdoc/>
+	protected override bool IsEnabledCore =>
+		base.IsEnabledCore && (Command == null || CommandHelper.QueryCanExecute());
+
+	void RefreshCommandEnabled() => CoerceValue(IsEnabledProperty);
 
 	// ── Wired from Button.OnGtkClicked (partial method hook) ─────────────────
 
