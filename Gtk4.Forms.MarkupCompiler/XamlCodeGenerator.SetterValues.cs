@@ -9,6 +9,10 @@ namespace Gtk4.Forms.MarkupCompiler
 		int _setterCounter = 10000;
 		XNamespace _xNs;
 
+		// Element variables enclosing the point being emitted, outermost first (the root is "this").
+		readonly System.Collections.Generic.List<string> _scopeVars = new System.Collections.Generic.List<string>();
+		string _classFqName;
+
 		/// <summary>
 		/// Returns the C# expression for a <c>&lt;Setter&gt;</c> value, emitting any helper locals
 		/// first. The <c>Value</c> attribute wins over a <c>&lt;Setter.Value&gt;</c> property element.
@@ -42,13 +46,22 @@ namespace Gtk4.Forms.MarkupCompiler
 		}
 
 		/// <summary>
-		/// Setter values are emitted before the owner is attached to its parent, so the owner's own chain can miss
-		/// outer scopes; <c>this</c> is the fallback (WPF resolves against every enclosing parse-time scope).
+		/// Setter values are emitted before the owner is attached, so its own chain cannot see the enclosing
+		/// scopes. WPF resolves against the parse-time scope stack: every enclosing element's resources from the
+		/// innermost out, then the root, then the application.
 		/// </summary>
-		static string StaticResourceLookup(string receiver, string escapedKey) =>
-			receiver == "this"
-				? $"this.FindResource(\"{escapedKey}\")"
-				: $"({receiver}.TryFindResource(\"{escapedKey}\") ?? this.FindResource(\"{escapedKey}\"))";
+		string StaticResourceLookup(string receiver, string escapedKey)
+		{
+			var scopes = new System.Collections.Generic.List<string>();
+			for (int i = _scopeVars.Count - 1; i >= 0; i--)
+				scopes.Add(_scopeVars[i]);
+			if (receiver != "this" && !scopes.Contains(receiver))
+				scopes.Insert(0, receiver);
+			if (scopes.Count == 0)
+				return $"this.FindResource(\"{escapedKey}\")";
+			return $"System.Windows.Markup.StaticResourceScope.Find(\"{escapedKey}\", this, " +
+				string.Join(", ", scopes) + ")";
+		}
 
 		string EmitSetterValueElement(IndentedWriter w, XElement valueEl, string receiver)
 		{
@@ -78,8 +91,9 @@ namespace Gtk4.Forms.MarkupCompiler
 
 		/// <summary>
 		/// Emits <c>new EventSetter(Owner.XEvent, Delegate.CreateDelegate(Owner.XEvent.HandlerType, this,
-		/// GetType().GetMethod("H", ...)))</c> into <paramref name="setters"/>. The owner is the style TargetType
-		/// unless the event is qualified. The MethodInfo overload binds non-public handlers and allows contravariant
+		/// typeof(Class).GetMethod("H", ...)))</c> into <paramref name="setters"/>. The owner is the style TargetType
+		/// unless the event is qualified. Binding against the x:Class (not GetType()) keeps private handlers reachable
+		/// from derived classes. The MethodInfo overload binds non-public handlers and allows contravariant
 		/// parameters (<c>(object, RoutedEventArgs)</c> on MouseDown), as C# method-group conversion does in WPF.
 		/// </summary>
 		void EmitEventSetter(IndentedWriter w, XElement el, string setters, string targetTypeAttr)
@@ -103,7 +117,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				? " { HandledEventsToo = true }" : string.Empty;
 			w.Line($"{setters}.Add(new System.Windows.EventSetter({ownerFq}.{ev}Event, " +
 				$"System.Delegate.CreateDelegate({ownerFq}.{ev}Event.HandlerType, this, " +
-				$"GetType().GetMethod(\"{EscapeString(handler)}\", System.Reflection.BindingFlags.Instance | " +
+				$"typeof({_classFqName}).GetMethod(\"{EscapeString(handler)}\", System.Reflection.BindingFlags.Instance | " +
 				$"System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic))){init});");
 		}
 	}

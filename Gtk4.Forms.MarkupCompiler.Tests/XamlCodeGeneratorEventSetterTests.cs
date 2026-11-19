@@ -28,7 +28,7 @@ public class XamlCodeGeneratorEventSetterTests
 		Assert.Contains(
 			"Setters.Add(new System.Windows.EventSetter(System.Windows.Controls.Button.ClickEvent, " +
 			"System.Delegate.CreateDelegate(System.Windows.Controls.Button.ClickEvent.HandlerType, " +
-			"this, GetType().GetMethod(\"OnClick\", System.Reflection.BindingFlags.Instance | " +
+			"this, typeof(global::MyApp.MainWindow).GetMethod(\"OnClick\", System.Reflection.BindingFlags.Instance | " +
 			"System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic)))", code);
 	}
 
@@ -38,7 +38,7 @@ public class XamlCodeGeneratorEventSetterTests
 		string code = Gen(Style(@"<EventSetter Event=""Border.MouseDown"" Handler=""OnDown""/>"));
 		Assert.Contains("EventSetter(System.Windows.Controls.Border.MouseDownEvent, " +
 			"System.Delegate.CreateDelegate(System.Windows.Controls.Border.MouseDownEvent.HandlerType, " +
-			"this, GetType().GetMethod(\"OnDown\", System.Reflection.BindingFlags.Instance | " +
+			"this, typeof(global::MyApp.MainWindow).GetMethod(\"OnDown\", System.Reflection.BindingFlags.Instance | " +
 			"System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic)))", code);
 	}
 
@@ -61,5 +61,13 @@ public class XamlCodeGeneratorEventSetterTests
 	{
 		string code = Gen(Style(@"<Setter Property=""Tag"" Value=""x""/><EventSetter Event=""Click"" Handler=""H""/>"));
 		Assert.True(code.IndexOf("PropertyName = \"Tag\"") < code.IndexOf("new System.Windows.EventSetter"));
+	}
+
+	[Fact]
+	public void Handler_is_bound_against_the_x_Class_not_GetType()
+	{
+		string code = Gen(Style(@"<EventSetter Event=""Click"" Handler=""OnClick""/>"));
+		Assert.Contains("typeof(global::MyApp.MainWindow).GetMethod(", code);
+		Assert.DoesNotContain("GetType().GetMethod(", code);
 	}
 }

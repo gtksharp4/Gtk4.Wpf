@@ -1321,6 +1321,33 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   trigger `StaticResource` resolves on the owning element first, then `this` (see follow-up);
   CommittedValue has no BindingGroup cycle; `MultiBinding` has no validation; INDEI
   subscription is not refreshed on intermediate path-object changes.
+- **Round 40 track — ComboBox as an ItemsControl (DONE, merged; Round 39 track reworked after a BLOCK).**
+  `gf39/combobox-itemscontrol` was blocked in the Round 39 review and reworked (store-only `IsDropDownOpen`, scoped inline
+  rebuilds, text-search semantics, item logical parents); merged as `e56b5957`. `ComboBoxItem`, inline `Items`, item text,
+  `IsDropDownOpen`, `IsEditable`/`Text`. `gf39/xaml-content-model` is **still not merged**: it was not part of the
+  reviewed set this round and its worktree is kept untouched for a later round.
+- **Round 40 review (Opus) + fixes — DONE.** **C-F1/F2/F3 (Medium)** selection reconciliation only ran with a widget,
+  restored by index, and `CreateWidget` relied on a GTK notify that never fires when GTK already shows item 0. Now
+  `ReconcileSelection` runs always: the selection follows its item (insert/remove elsewhere shifts `SelectedIndex`, no
+  `SelectionChanged`), removing the selected item or `Clear()` gives -1/null/`""` plus one `SelectionChanged`, and an index
+  set before the items is kept pending and applied when they arrive. Setting `SelectedIndex` on a realized box GTK already
+  shows now syncs `SelectedItem` (and `-1` clears it). **C-F4 (Low)** doc/test corrected: GtkDropDown cannot show "no
+  selection" while its model is non-empty (keeps the last shown item), so picking the shown item while `SelectedIndex` is
+  -1 fires no notify; documented in the `ComboBox` remarks (no GtkSharp4 signal reconciles it). The old
+  "tells GTK no selection" test only proved an empty model and was renamed. **C-F5 (Low)** `IsTextSearchCaseSensitive`
+  uses `FrameworkPropertyMetadata`; `IsTextSearchEnabled` summary reworded. **C-F6 (Nit)** long lines wrapped.
+  **CI-1 (Medium)** setter `StaticResource` skipped intermediate ancestors' `Resources`, and `TryFindResource` on the
+  unparented owner let an app key shadow a closer one → the compiler tracks the enclosing element variables and emits
+  `StaticResourceScope.Find(k, this, innermost, ..., outermost)` (scopes innermost-first, then the root, then the
+  application; throws like `FindResource`). **CI-2 (Medium)** `EventSetter` handler lookup used `GetType().GetMethod`, which
+  never finds a private base-class method once the x:Class is subclassed → `typeof(<x:Class>).GetMethod`.
+  Rejected in triage: none.
+  **Round 40 totals: 3607 tests** (182 WindowsBase + 3099 PresentationFramework + 311 MarkupCompiler +
+  15 ProjectConverter), all pass; warning-clean across all TFMs.
+- **Carry-over (Round 40)**: `Style.Resources` is not emitted, so setter `StaticResource` does not probe a Style's own
+  dictionary; a ComboBox with `SelectedIndex` -1 over a non-empty model still shows an item (GTK limitation); out-of-range
+  pending `SelectedIndex` is kept as-is until items arrive (WPF coerces); `gf39/xaml-content-model` still to be reviewed and
+  merged.
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a

@@ -13,22 +13,54 @@ public partial class ComboBox
 	/// <inheritdoc/>
 	protected override void OnItemsRebuilt()
 	{
+		// Items is already mutated; the selection DPs still hold the pre-change values.
+		var prevItem = SelectedItem;
+		var prevIdx = SelectedIndex;
 		UpdateItemParents();
-		if (_dropDown != null)
-		{
-			RebuildStringList();
-			// Re-apply (or clear) the selection: GTK picks item 0 on a new model.
-			var currentIdx = SelectedIndex;
-			if (currentIdx >= 0 && currentIdx < Items.Count)
-				ApplySelectedIndex(currentIdx);
-			else
-			{
-				ApplySelectedIndex(-1);
-				SetValue(SelectedIndexProperty, -1);
-				SetValue(SelectedItemProperty, null);
-			}
-		}
+		RebuildStringList();
+		ReconcileSelection(prevItem, prevIdx);
 		UpdateTextFromSelection();
+	}
+
+	/// <summary>The selection follows its item; a pending index (set before the items) is applied once they exist.</summary>
+	void ReconcileSelection(object? prevItem, int prevIdx)
+	{
+		int newIdx;
+		if (prevItem != null)
+		{
+			newIdx = prevIdx >= 0 && prevIdx < Items.Count && Equals(Items[prevIdx], prevItem)
+				? prevIdx
+				: Items.IndexOf(prevItem);
+		}
+		else
+			newIdx = prevIdx;
+		var newItem = newIdx >= 0 && newIdx < Items.Count ? Items[newIdx] : null;
+
+		var wasUpdating = _updating;
+		_updating = true;
+		try
+		{
+			ApplySelectedIndex(newIdx);
+			SetValue(SelectedIndexProperty, newIdx);
+			SetValue(SelectedItemProperty, newItem);
+		}
+		finally { _updating = wasUpdating; }
+		if (!Equals(prevItem, newItem))
+			SelectionChanged?.Invoke(this, new SelectionChangedEventArgs(this, prevItem, newItem));
+	}
+
+	/// <summary>Brings SelectedItem in line with an in-range SelectedIndex (no GTK notify fires on a fresh model).</summary>
+	void SyncSelectedItemToIndex()
+	{
+		var idx = SelectedIndex;
+		if (idx < 0 || idx >= Items.Count) return;
+		var item = Items[idx];
+		var old = SelectedItem;
+		if (Equals(old, item)) return;
+		_updating = true;
+		try { SetValue(SelectedItemProperty, item); }
+		finally { _updating = false; }
+		SelectionChanged?.Invoke(this, new SelectionChangedEventArgs(this, old, item));
 	}
 
 	/// <summary>Items that are their own containers get this control as logical parent.</summary>

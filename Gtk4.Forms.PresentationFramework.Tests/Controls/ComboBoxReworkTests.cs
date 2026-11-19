@@ -29,6 +29,7 @@ public class ComboBoxReworkTests : WpfGtkTestBase
 		Assert.False(new TabControl().IsTextSearchEnabled);
 		Assert.True(new ComboBox().IsTextSearchEnabled);
 		Assert.IsType<FrameworkPropertyMetadata>(ItemsControl.IsTextSearchEnabledProperty.GetMetadata(typeof(ListBox)));
+		Assert.IsType<FrameworkPropertyMetadata>(ItemsControl.IsTextSearchCaseSensitiveProperty.GetMetadata(typeof(ItemsControl)));
 	}
 
 	[Fact]
@@ -89,7 +90,7 @@ public class ComboBoxReworkTests : WpfGtkTestBase
 	}
 
 	[Fact]
-	public void Rebuild_with_no_selection_tells_GTK_no_selection() => Run(() =>
+	public void Clearing_items_empties_model_and_resets_selection_DPs() => Run(() =>
 	{
 		var cb = new ComboBox();
 		var dd = (Gtk.DropDown)cb.Widget;
@@ -97,6 +98,9 @@ public class ComboBoxReworkTests : WpfGtkTestBase
 		cb.SelectedIndex = 0;
 		cb.Items.Clear();
 		Assert.Equal(-1, cb.SelectedIndex);
+		Assert.Null(cb.SelectedItem);
+		Assert.Equal(string.Empty, cb.Text);
+		// An empty model has no valid position; a non-empty one cannot show "no selection" (see ComboBox remarks).
 		Assert.Equal(uint.MaxValue, dd.Selected);
 	});
 

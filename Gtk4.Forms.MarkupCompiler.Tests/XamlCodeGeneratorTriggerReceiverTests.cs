@@ -26,7 +26,7 @@ public class XamlCodeGeneratorTriggerReceiverTests
 <Setter Property=""Background"" Value=""{StaticResource B}""/></Trigger></Style.Triggers></Style>
 </Grid.Resources></Grid>"));
 
-		Assert.Matches(@"Value = \(__e\d+\.TryFindResource\(""B""\) \?\? this\.FindResource\(""B""\)\)", code);
+		Assert.Matches(@"Value = System\.Windows\.Markup\.StaticResourceScope\.Find\(""B"", this, __e\d+\)", code);
 	}
 
 	[Fact]
@@ -39,7 +39,8 @@ public class XamlCodeGeneratorTriggerReceiverTests
 <Button><Button.Triggers><Trigger Property=""IsMouseOver"" Value=""True"">
 <Setter Property=""Background"" Value=""{StaticResource W}""/></Trigger></Button.Triggers></Button></Grid>"));
 
-		Assert.Equal(2, Regex.Matches(code, @"Value = \(__e\d+\.TryFindResource\(""W""\) \?\? this\.FindResource\(""W""\)\)").Count);
+		Assert.Equal(2, Regex.Matches(code,
+			@"Value = System\.Windows\.Markup\.StaticResourceScope\.Find\(""W"", this, __e\d+(, __e\d+)*\)").Count);
 	}
 
 	[Fact]
@@ -53,5 +54,18 @@ public class XamlCodeGeneratorTriggerReceiverTests
 		var names = Regex.Matches(code, @"var (__sv\d+|__e\d+) ").Cast<Match>().Select(m => m.Groups[1].Value).ToList();
 		Assert.True(names.Count >= 4, code);
 		Assert.True(names.Count == names.Distinct().Count(), code);
+	}
+
+	[Fact]
+	public void Nested_style_setter_probes_every_enclosing_scope_innermost_first()
+	{
+		string code = Gen(Window(@"<Grid><Grid.Resources><SolidColorBrush x:Key=""K""/></Grid.Resources>
+<Border><Border.Resources><Style TargetType=""Border""><Setter Property=""Background"" Value=""{StaticResource K}""/>
+</Style></Border.Resources></Border></Grid>"));
+
+		var m = Regex.Match(code, @"StaticResourceScope\.Find\(""K"", this, (__e\d+), (__e\d+)\)");
+		Assert.True(m.Success, code);
+		Assert.Contains($"var {m.Groups[1].Value} = new System.Windows.Controls.Border", code);
+		Assert.Contains($"var {m.Groups[2].Value} = new System.Windows.Controls.Grid", code);
 	}
 }

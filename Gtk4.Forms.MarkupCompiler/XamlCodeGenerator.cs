@@ -85,6 +85,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			}
 
 			className = classAttr.Value.Trim();
+			_scopeVars.Clear();
+			_classFqName = "global::" + className;
 			int lastDot = className.LastIndexOf('.');
 			string ns = lastDot >= 0 ? className.Substring(0, lastDot) : string.Empty;
 			string typeName = lastDot >= 0 ? className.Substring(lastDot + 1) : className;
@@ -612,6 +614,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			ref int counter)
 		{
 			w.Line($"var {varName} = new {fqType}();");
+			_scopeVars.Add(varName);
 
 			// x:Name / Name field assignment
 			string xName = (string)(el.Attribute(xNs + "Name") ?? el.Attribute("Name"));
@@ -697,6 +700,7 @@ namespace Gtk4.Forms.MarkupCompiler
 
 			// Recurse into grandchildren (passes varName as parentVar — single-child or Children.Add)
 			EmitChildren(w, el, xNs, varName, ref counter);
+			_scopeVars.RemoveAt(_scopeVars.Count - 1);
 		}
 
 		/// <summary>

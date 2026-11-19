@@ -7,8 +7,10 @@ namespace System.Windows.Controls;
 /// A drop-down selector backed by <see cref="Gtk.DropDown"/> with a <see cref="Gtk.StringList"/> model.
 /// <para>
 /// WPF derives from <c>Selector</c>; a shared Selector base is deferred, so this derives from
-/// <see cref="ItemsControl"/> and keeps its own selection DPs. GtkDropDown auto-selects the first item of
-/// a non-empty model, so "no selection" is only reflected in the widget while the model is empty. Rows are plain text (item text
+/// <see cref="ItemsControl"/> and keeps its own selection DPs. GtkDropDown cannot show "no selection" while its
+/// model is non-empty: it keeps the last shown (or the first) item, so <see cref="SelectedIndex"/> == -1 is only
+/// reflected in the DPs. Picking the item the box already shows then fires no GTK notification, so it cannot be
+/// selected until another item is picked. Rows are plain text (item text
 /// from <see cref="ComboBoxItemText.GetText"/>), so <see cref="ItemsControl.ItemTemplate"/> visuals,
 /// <see cref="UIElement"/> content, per-item <c>IsEnabled</c> and prefix auto-complete are not rendered.
 /// </para>
@@ -34,8 +36,14 @@ public partial class ComboBox : ItemsControl
 		var cb = (ComboBox)d;
 		var idx = (int?)e.NewValue ?? -1;
 		cb.ApplySelectedIndex(idx);
-		// Without a widget no GTK notification drives SelectedItem.
-		if (cb._dropDown == null && !cb._updating)
+		// Without a widget no GTK notification drives SelectedItem; with one, GTK stays silent if it already shows idx.
+		if (cb._updating) return;
+		if (cb._dropDown != null)
+		{
+			if (idx < 0) cb.SetValue(SelectedItemProperty, null);
+			else cb.SyncSelectedItemToIndex();
+		}
+		else
 			cb.SetValue(SelectedItemProperty, idx >= 0 && idx < cb.Items.Count ? cb.Items[idx] : null);
 	}
 
@@ -95,6 +103,7 @@ public partial class ComboBox : ItemsControl
 		_dropDown.AddNotification("selected", OnGtkSelectionChanged);
 		RebuildStringList(); // push any items set before widget creation
 		ApplySelectedIndex(SelectedIndex);
+		SyncSelectedItemToIndex();
 		return IsEditable ? CreateEditableHost() : _dropDown;
 	}
 

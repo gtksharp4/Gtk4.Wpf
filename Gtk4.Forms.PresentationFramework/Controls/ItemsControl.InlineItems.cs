@@ -35,7 +35,8 @@ public partial class ItemsControl
 		{
 			if (!Filling && _owner.ItemsSource != null)
 				throw new InvalidOperationException(
-					"Operation is not valid while ItemsSource is in use. Access and modify elements with ItemsControl.ItemsSource instead.");
+					"Operation is not valid while ItemsSource is in use. "
+					+ "Access and modify elements with ItemsControl.ItemsSource instead.");
 		}
 
 		void Changed()
@@ -81,7 +82,10 @@ public partial class ItemsControl
 	/// <summary>Creates the container for an item (WPF default: a <see cref="ContentPresenter"/>).</summary>
 	protected virtual DependencyObject GetContainerForItemOverride() => new ContentPresenter();
 
-	/// <summary>Whether prefix text search is enabled (store-only; GTK drop-down has no prefix search).</summary>
+	/// <summary>
+	/// Whether prefix text search is enabled. Store-only for GTK drop-down prefix search; ComboBox uses it
+	/// (with <see cref="IsTextSearchCaseSensitive"/>) for exact Text-to-item matching.
+	/// </summary>
 	public static readonly DependencyProperty IsTextSearchEnabledProperty =
 		DependencyProperty.Register(nameof(IsTextSearchEnabled), typeof(bool), typeof(ItemsControl),
 			new FrameworkPropertyMetadata(false));
@@ -96,7 +100,7 @@ public partial class ItemsControl
 	/// <summary>Whether text matching (e.g. <c>ComboBox.Text</c>) is case-sensitive.</summary>
 	public static readonly DependencyProperty IsTextSearchCaseSensitiveProperty =
 		DependencyProperty.Register(nameof(IsTextSearchCaseSensitive), typeof(bool), typeof(ItemsControl),
-			new PropertyMetadata(false));
+			new FrameworkPropertyMetadata(false));
 
 	/// <summary>Gets or sets whether text matching is case-sensitive.</summary>
 	public bool IsTextSearchCaseSensitive
