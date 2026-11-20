@@ -13,7 +13,7 @@ namespace System.Windows;
 /// <see cref="FakeMessageBoxPresenter"/> (or any <see cref="IMessageBoxPresenter"/>) before
 /// calling <c>Show</c> in tests or automated environments.
 /// </remarks>
-public static class MessageBox
+public static partial class MessageBox
 {
 	/// <summary>
 	/// Injectable presenter. Defaults to <see cref="GtkMessageBoxPresenter"/>;

@@ -50,3 +50,19 @@ public enum MessageBoxResult
 	/// <summary>No was clicked.</summary>
 	No
 }
+
+/// <summary>Specifies options for a <see cref="MessageBox"/>. Stored only on GTK: all values are Win32 flags.</summary>
+[Flags]
+public enum MessageBoxOptions
+{
+	/// <summary>No options.</summary>
+	None = 0,
+	/// <summary>Shown by a service notification.</summary>
+	ServiceNotification = 0x200000,
+	/// <summary>Shown on the default desktop only.</summary>
+	DefaultDesktopOnly = 0x20000,
+	/// <summary>Text is right-aligned.</summary>
+	RightAlign = 0x80000,
+	/// <summary>Text reads right to left.</summary>
+	RtlReading = 0x100000,
+}

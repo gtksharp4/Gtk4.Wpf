@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace System.Windows;
 
 /// <summary>
@@ -18,6 +20,9 @@ internal static class GtkAllocationSync
 	/// <summary>Walks <paramref name="root"/>'s tree pre-order and syncs each mapped widget's size.</summary>
 	internal static void Sync(UIElement root)
 	{
+		// Phase 1 records every changed size and refreshes Grid track sizes, so a SizeChanged handler on an
+		// ancestor already sees the final RowDefinition.ActualHeight of descendants. Phase 2 notifies top-down.
+		List<(FrameworkElement Element, Size Size)>? changed = null;
 		foreach (var element in LifecycleBroadcaster.EnumerateAttached(root))
 		{
 			if (element is not FrameworkElement fe || !fe.IsLoaded || !fe.HasBackingWidget)
@@ -26,9 +31,16 @@ internal static class GtkAllocationSync
 			if (!widget.IsMapped)
 				continue;
 			var allocated = BorderBoxSize(widget);
-			if (allocated != fe.RenderSize)
-				fe.SetRenderSizeAndNotify(allocated);
+			if (allocated == fe.RenderSize)
+				continue;
+			(changed ??= new()).Add((fe, allocated));
+			if (fe is Controls.Grid grid)
+				grid.PublishActualSizes(allocated);
 		}
+		if (changed == null)
+			return;
+		foreach (var (element, size) in changed)
+			element.SetRenderSizeAndNotify(size);
 	}
 
 	/// <summary>

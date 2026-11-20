@@ -47,6 +47,7 @@ public partial class Grid
 
 		double[] colOffsets = BuildOffsets(colWidths);
 		double[] rowOffsets = BuildOffsets(rowHeights);
+		PublishActualSizes(colWidths, rowHeights);
 
 		foreach (UIElement child in Children)
 		{
