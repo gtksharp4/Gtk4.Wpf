@@ -94,8 +94,10 @@ namespace Gtk4.Forms.MarkupCompiler
 			className = classAttr?.Value.Trim() ?? ImplicitClass(root, xamlPath, rootNamespace, out implicitBase);
 			string rootBase = RootBaseFor(root, classAttr != null, className);
 			if (className == null) return null;
+			if (implicitBase != null && UserClassExists(className)) return RegistrationOnly(xamlPath, className);
 
 			_scopeVars.Clear();
+			CollectTypeKeyRefs(xaml);
 			_classFqName = "global::" + className;
 			int lastDot = className.LastIndexOf('.');
 			string ns = lastDot >= 0 ? className.Substring(0, lastDot) : string.Empty;
@@ -122,7 +124,10 @@ namespace Gtk4.Forms.MarkupCompiler
 
 			// Collect named fields
 			var namedElements = new List<(string fieldName, string fieldType)>();
+			_fieldElements.Clear();
+			_fieldNames.Clear();
 			CollectNamedElements(root, xNs, namedElements);
+			string rootName = RootNameField(root, xNs, typeName, namedElements);
 
 			foreach (var (fieldName, fieldType) in namedElements)
 				w.Line($"internal {fieldType} {fieldName};");
@@ -140,6 +145,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			w.Indent++;
 			w.Line("if (_contentLoaded) return;");
 			w.Line("_contentLoaded = true;");
+			if (rootName != null) w.Line($"this.{rootName} = this;");
 
 			// WPF's XAML loader brackets the root with ISupportInitialize.BeginInit/EndInit, so
 			// the root's Initialized fires (after its children's) before its constructor returns.
@@ -294,25 +300,6 @@ namespace Gtk4.Forms.MarkupCompiler
 			return null;
 		}
 
-		/// <summary>Collects all elements that carry <c>x:Name</c> or <c>Name</c>.</summary>
-		void CollectNamedElements(
-			XElement parent,
-			XNamespace xNs,
-			List<(string, string)> results)
-		{
-			foreach (XElement child in parent.Elements())
-			{
-				string name = (string)(child.Attribute(xNs + "Name") ?? child.Attribute("Name"));
-				if (name != null)
-				{
-					string fqType = ResolveType(child);
-					if (fqType != null)
-						results.Add((name, fqType));
-				}
-				CollectNamedElements(child, xNs, results);
-			}
-		}
-
 		/// <summary>Emits root-element attribute assignments onto <c>this</c>.</summary>
 		void EmitRootAttributes(IndentedWriter w, XElement root, XNamespace xNs)
 		{
@@ -348,11 +335,11 @@ namespace Gtk4.Forms.MarkupCompiler
 				{
 					// Style="{StaticResource k}" special-case; generic for other props.
 					if (propName == "Style")
-						w.Line($"this.Style = (System.Windows.Style)this.FindResource(\"{EscapeString(resourceKey)}\");");
+						w.Line($"this.Style = (System.Windows.Style)this.FindResource({ResourceKeyExpression(EscapeString(resourceKey))});");
 					else
 					{
 						string fqType = string.IsNullOrEmpty(rootFqType) ? "this" : rootFqType;
-						w.Line($"this.SetValue({fqType}.{propName}Property, this.FindResource(\"{EscapeString(resourceKey)}\"));");
+						w.Line($"this.SetValue({fqType}.{propName}Property, this.FindResource({ResourceKeyExpression(EscapeString(resourceKey))}));");
 					}
 				}
 				else if (IsXNull(val))
@@ -636,7 +623,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			// x:Name / Name field assignment
 			string xName = (string)(el.Attribute(xNs + "Name") ?? el.Attribute("Name"));
 			bool hasField = ResolveType(el) != null; // user-type resource objects get no field
-			if (xName != null && hasField)
+			if (xName != null && _fieldElements.Contains(el))
 				w.Line($"this.{xName} = {varName};");
 
 			// Emit <X.Resources> children first (before attr assignments that may reference them).
@@ -690,7 +677,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				{
 					string find = val.TrimStart().StartsWith("{StaticResource", StringComparison.Ordinal)
 						? StaticResourceLookup(varName, EscapeString(resourceKey))
-						: $"{varName}.FindResource(\"{EscapeString(resourceKey)}\")";
+						: $"{varName}.FindResource({ResourceKeyExpression(EscapeString(resourceKey))})";
 					string clrType = hookFind != null ? ClrResourceTargetType(fqType, propName) : null;
 					if (propName == "Style")
 						w.Line($"{varName}.Style = (System.Windows.Style){find};");
@@ -1037,8 +1024,9 @@ namespace Gtk4.Forms.MarkupCompiler
 				}
 			}
 
-			if (key != null)
-				w.Line($"{ownerVar}.Resources[\"{EscapeString(key)}\"] = {styleVar};");
+			string styleKey = StyleResourceKey(key, targetTypeAttr);
+			if (styleKey != null)
+				w.Line($"{ownerVar}.Resources[{styleKey}] = {styleVar};");
 		}
 
 		/// <summary>

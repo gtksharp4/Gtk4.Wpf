@@ -16,13 +16,17 @@ public abstract class GeneratorV2TestBase
 	static readonly string Dir = Path.GetDirectoryName(typeof(GeneratorV2TestBase).Assembly.Location)!;
 
 	protected static string Gen(string xaml, bool hasCodeBehind = true, string[] sources = null)
+		=> Gen(xaml, out _, hasCodeBehind, sources);
+
+	protected static string Gen(string xaml, out string className, bool hasCodeBehind = true, string[] sources = null,
+		string xamlPath = null, string rootNamespace = null)
 	{
 		string pf = Path.Combine(Dir, "Gtk4.Forms.PresentationFramework.dll");
 		string wb = Path.Combine(Dir, "Gtk4.Forms.WindowsBase.dll");
 		using var gen = new XamlCodeGenerator { HasCodeBehind = hasCodeBehind, CodeBehindSources = sources };
 		gen.SetReferencePaths(new[] { pf, wb }.Concat(Directory.GetFiles(Dir, "*Sharp.dll")).ToArray());
 		gen.SetXmlnsDefinitionSource(new AssemblyXmlnsDefinitionSource(new[] { pf }));
-		return gen.Generate(xaml, out _);
+		return gen.Generate(xaml, out className, xamlPath, rootNamespace);
 	}
 
 	protected static void AssertCompiles(string code, string extra = "")

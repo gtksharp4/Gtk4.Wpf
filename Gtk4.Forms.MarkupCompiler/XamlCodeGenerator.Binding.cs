@@ -24,7 +24,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				prefix = "{DynamicResource";
 			if (prefix == null) return false;
 			if (!trimmed.EndsWith("}")) return false;
-			resourceKey = trimmed.Substring(prefix.Length).TrimEnd('}').Trim();
+			resourceKey = trimmed.Substring(prefix.Length, trimmed.Length - prefix.Length - 1).Trim();
 			return !string.IsNullOrEmpty(resourceKey);
 		}
 
@@ -193,7 +193,7 @@ namespace Gtk4.Forms.MarkupCompiler
 		/// C# expression to construct the matching <see cref="System.Windows.Data.RelativeSource"/>.
 		/// Returns null when the syntax is unrecognised.
 		/// </summary>
-		static string ParseRelativeSourceArg(string raw)
+		string ParseRelativeSourceArg(string raw)
 		{
 			if (raw == null) return null;
 			string t = raw.Trim();
@@ -223,9 +223,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				{
 					string at = a.Substring("AncestorType=".Length).Trim();
 					// Strip "{x:Type X}" wrapper if present.
-					if (at.StartsWith("{x:Type", StringComparison.Ordinal) && at.EndsWith("}"))
-						at = at.Substring("{x:Type".Length).TrimEnd('}').Trim();
-					ancestorType = WpfXmlnsMap.Resolve(at) ?? at;
+					ancestorType = NestedTypeName(at);
 				}
 				else if (a.StartsWith("AncestorLevel=", StringComparison.Ordinal))
 					ancestorLevel = a.Substring("AncestorLevel=".Length).Trim();
