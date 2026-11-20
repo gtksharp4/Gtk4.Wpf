@@ -40,10 +40,11 @@
     File names already equal $(PackageId), so NuGet auto-imports build/$(PackageId).props|.targets.
   -->
   <ItemGroup>
-    <None Include="build\Gtk4.Forms.MarkupCompiler.props"   Pack="true" PackagePath="build\" />
-    <None Include="build\Gtk4.Forms.MarkupCompiler.targets" Pack="true" PackagePath="build\" />
-    <None Include="buildTransitive\Gtk4.Forms.MarkupCompiler.props"   Pack="true" PackagePath="buildTransitive\" />
-    <None Include="buildTransitive\Gtk4.Forms.MarkupCompiler.targets" Pack="true" PackagePath="buildTransitive\" />
+    <!-- Forward slashes: on Linux/macOS a backslash PackagePath is not a separator (NU5129). -->
+    <None Include="build/Gtk4.Forms.MarkupCompiler.props"   Pack="true" PackagePath="build/" />
+    <None Include="build/Gtk4.Forms.MarkupCompiler.targets" Pack="true" PackagePath="build/" />
+    <None Include="buildTransitive/Gtk4.Forms.MarkupCompiler.props"   Pack="true" PackagePath="buildTransitive/" />
+    <None Include="buildTransitive/Gtk4.Forms.MarkupCompiler.targets" Pack="true" PackagePath="buildTransitive/" />
   </ItemGroup>
 
   <!--
@@ -54,7 +55,7 @@
   <Target Name="_PackMarkupCompilerTask" BeforeTargets="_GetPackageFiles">
     <ItemGroup>
       <None Include="$(OutputPath)Gtk4.Forms.MarkupCompiler.dll"
-            Pack="true" PackagePath="build\$(TargetFramework)\" Visible="false" />
+            Pack="true" PackagePath="build/$(TargetFramework)/" Visible="false" />
     </ItemGroup>
   </Target>
 

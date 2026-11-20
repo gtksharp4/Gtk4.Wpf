@@ -84,16 +84,17 @@
 		  net10.0). NuGet's NU5128 requires a lib/ folder matching the dependency group's TFM; the
 		  canonical "_._" marker satisfies it without shipping a real lib.
 		-->
-		<None Include="_._" Pack="true" PackagePath="\lib\net10.0\_._" />
-		<None Include="_._" Pack="true" PackagePath="\lib\net8.0\_._" />
-		<None Include="_._" Pack="true" PackagePath="\lib\netstandard2.0\_._" />
-		<None Include="Gtk4.Forms.Wpf.props" Pack="true" PackagePath="\build\;\buildTransitive\" />
-		<None Include="Gtk4.Forms.Wpf.targets" Pack="true" PackagePath="\build\;\buildTransitive\" />
+		<!-- Forward slashes: on Linux/macOS a backslash PackagePath is not a separator (NU5129). -->
+		<None Include="_._" Pack="true" PackagePath="lib/net10.0/_._" />
+		<None Include="_._" Pack="true" PackagePath="lib/net8.0/_._" />
+		<None Include="_._" Pack="true" PackagePath="lib/netstandard2.0/_._" />
+		<None Include="Gtk4.Forms.Wpf.props" Pack="true" PackagePath="build/;buildTransitive/" />
+		<None Include="Gtk4.Forms.Wpf.targets" Pack="true" PackagePath="build/;buildTransitive/" />
 		<!--
 		  Pack the entire net10.0 output of ProjectConverter into tools/ so Gtk4.Forms.Wpf.targets can
 		  invoke it as `dotnet tools/Gtk4.Forms.Wpf.ProjectConverter.dll` (RID-agnostic). The Link
 		  metadata is cosmetic (shown in VS) but does not affect the PackagePath.
 		-->
-		<None Include="..\Gtk4.Forms.Wpf.ProjectConverter\bin\$(Configuration)\net10.0\**" Pack="true" PackagePath="\tools\" />
+		<None Include="../Gtk4.Forms.Wpf.ProjectConverter/$(BaseOutputPath)$(Configuration)/net10.0/**" Pack="true" PackagePath="tools/" />
 	</ItemGroup>
 </Project>
