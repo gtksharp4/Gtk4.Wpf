@@ -20,9 +20,6 @@ public partial class ComboBox : Selector
 {
 	internal override DependencyProperty SelectedItemDependencyProperty => SelectedItemProperty;
 
-	/// <summary>Raised when the selected item changes.</summary>
-	public event EventHandler<SelectionChangedEventArgs>? SelectionChanged;
-
 	// ── SelectedIndex DP ─────────────────────────────────────────────────────
 
 	/// <summary>Zero-based index of the selected item; -1 when nothing is selected.</summary>
@@ -94,8 +91,7 @@ public partial class ComboBox : Selector
 
 		// Fire SelectionChanged when SelectedItem is set directly (not from GTK notification).
 		if (!cb._updating)
-			cb.SelectionChanged?.Invoke(cb,
-				new SelectionChangedEventArgs(cb, e.OldValue, e.NewValue));
+			cb.NotifySelectionChanged(e.OldValue, e.NewValue);
 
 		cb.RefreshSelectedValue();
 		cb.OnSelectionChangedForText();
@@ -151,7 +147,7 @@ public partial class ComboBox : Selector
 			var newItem = idx >= 0 && idx < Items.Count ? Items[idx] : null;
 			SetValue(SelectedItemProperty, newItem);
 
-			SelectionChanged?.Invoke(this, new SelectionChangedEventArgs(this, oldItem, newItem));
+			NotifySelectionChanged(oldItem, newItem);
 		}
 		finally { _updating = false; }
 	}
@@ -164,29 +160,3 @@ public partial class ComboBox : Selector
 	/// <inheritdoc/>
 	protected override DependencyObject GetContainerForItemOverride() => new ComboBoxItem();
 }
-
-/// <summary>
-/// Event data for <see cref="ComboBox.SelectionChanged"/> and <see cref="ListBox.SelectionChanged"/>.
-/// </summary>
-public sealed partial class SelectionChangedEventArgs : EventArgs
-{
-	/// <summary>The control whose selection changed (a <see cref="ComboBox"/> or <see cref="ListBox"/>).</summary>
-	public object Source { get; }
-	/// <summary>The previously selected item.</summary>
-	public object? OldValue { get; }
-	/// <summary>The newly selected item.</summary>
-	public object? NewValue { get; }
-
-	internal SelectionChangedEventArgs(object source, object? oldValue, object? newValue)
-	{
-		Source = source;
-		OldValue = oldValue;
-		NewValue = newValue;
-		var added = new System.Collections.Generic.List<object?>();
-		var removed = new System.Collections.Generic.List<object?>();
-		if (newValue != null) added.Add(newValue);
-		if (oldValue != null) removed.Add(oldValue);
-		AddedItems = added;
-		RemovedItems = removed;
-	}
-}

@@ -46,7 +46,7 @@ public partial class ComboBox
 		}
 		finally { _updating = wasUpdating; }
 		if (!Equals(prevItem, newItem))
-			SelectionChanged?.Invoke(this, new SelectionChangedEventArgs(this, prevItem, newItem));
+			NotifySelectionChanged(prevItem, newItem);
 	}
 
 	/// <summary>
@@ -62,7 +62,7 @@ public partial class ComboBox
 		_updating = true;
 		try { SetValue(SelectedItemProperty, item); }
 		finally { _updating = false; }
-		SelectionChanged?.Invoke(this, new SelectionChangedEventArgs(this, old, item));
+		NotifySelectionChanged(old, item);
 	}
 
 	/// <summary>Items that are their own containers get this control as logical parent.</summary>

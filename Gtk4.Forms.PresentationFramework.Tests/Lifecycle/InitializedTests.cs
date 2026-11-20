@@ -11,8 +11,11 @@ namespace Gtk4.Forms.PresentationFramework.Tests.Lifecycle;
 /// Pure tests for <see cref="FrameworkElement.Initialized"/>, <see cref="FrameworkElement.IsInitialized"/>
 /// and the <see cref="ISupportInitialize"/> protocol.
 /// </summary>
-public class InitializedTests
+public class InitializedTests : IDisposable
 {
+	// Several tests start an init without ending it; drop the thread-wide scope so later tests are unaffected.
+	public void Dispose() => InitScope.Reset();
+
 	sealed class TrackingPanel : StackPanel
 	{
 		public readonly List<string> Calls = new List<string>();

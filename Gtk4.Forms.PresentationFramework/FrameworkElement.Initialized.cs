@@ -30,6 +30,7 @@ public abstract partial class FrameworkElement : ISupportInitialize
 		if (_initPending)
 			throw new InvalidOperationException("Cannot have nested BeginInit calls on the same instance.");
 		_initPending = true;
+		InitScope.Enter();
 	}
 
 	/// <summary>Ends the initialization of this element and raises <see cref="Initialized"/> (once).</summary>
@@ -39,7 +40,8 @@ public abstract partial class FrameworkElement : ISupportInitialize
 		if (!_initPending)
 			throw new InvalidOperationException("Must call BeginInit before EndInit.");
 		_initPending = false;
-		TryFireInitialized();
+		try { TryFireInitialized(); }
+		finally { InitScope.Exit(); }
 	}
 
 	/// <summary>

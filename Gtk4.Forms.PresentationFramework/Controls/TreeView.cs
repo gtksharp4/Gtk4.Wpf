@@ -36,7 +36,8 @@ public partial class TreeView : ItemsControl
 		}
 		finally { tv._updating = false; }
 		tv.SelectedItemChanged?.Invoke(tv,
-			new SelectionChangedEventArgs(tv, e.OldValue, e.NewValue));
+			SelectionChangedEventArgs.ForItems(
+			Primitives.Selector.SelectionChangedEvent, tv, e.OldValue, e.NewValue));
 	}
 
 	/// <summary>Gets or sets the selected item.</summary>
@@ -77,6 +78,7 @@ public partial class TreeView : ItemsControl
 			SetValue(SelectedItemProperty, tvi);
 		}
 		finally { _updating = false; }
-		SelectedItemChanged?.Invoke(this, new SelectionChangedEventArgs(this, oldItem, tvi));
+		SelectedItemChanged?.Invoke(this, SelectionChangedEventArgs.ForItems(
+			Primitives.Selector.SelectionChangedEvent, this, oldItem, tvi));
 	}
 }
