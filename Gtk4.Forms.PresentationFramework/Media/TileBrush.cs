@@ -55,6 +55,17 @@ public abstract class TileBrush : Brush
 	/// </summary>
 	public BrushMappingMode ViewportUnits { get; set; } = BrushMappingMode.RelativeToBoundingBox;
 
+	/// <summary>
+	/// Portion of the content shown in the tile. Default covers all of it (0,0,1,1). Stored only.
+	/// </summary>
+	public Rect Viewbox { get; set; } = new Rect(0, 0, 1, 1);
+
+	/// <summary>
+	/// Coordinate space for <see cref="Viewbox"/>. Default <see cref="BrushMappingMode.RelativeToBoundingBox"/>.
+	/// Stored only.
+	/// </summary>
+	public BrushMappingMode ViewboxUnits { get; set; } = BrushMappingMode.RelativeToBoundingBox;
+
 	/// <summary>Horizontal alignment of the content in the tile. Stored only.</summary>
 	public AlignmentX AlignmentX { get; set; } = AlignmentX.Center;
 

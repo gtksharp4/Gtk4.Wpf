@@ -28,6 +28,17 @@ namespace Gtk4.Forms.MarkupCompiler
 			return string.IsNullOrEmpty(rootNamespace) ? sb.ToString() : rootNamespace + "." + sb;
 		}
 
+		// A hand-written class owns the derived name: keep the XAML's own class under a name that cannot clash.
+		static string InternalClassName(string className, string xamlPath)
+		{
+			var sb = new StringBuilder("__Xaml_");
+			string path = xamlPath.Substring(0, xamlPath.Length - System.IO.Path.GetExtension(xamlPath).Length);
+			foreach (char c in path)
+				sb.Append(char.IsLetterOrDigit(c) || c == '_' ? c : '_');
+			int dot = className.LastIndexOf('.');
+			return dot < 0 ? sb.ToString() : className.Substring(0, dot + 1) + sb;
+		}
+
 		/// <summary>Registers the class under its XAML path for <c>StartupUri</c> and navigation lookup.</summary>
 		static void EmitRegistration(IndentedWriter w, string xamlPath, string className)
 		{

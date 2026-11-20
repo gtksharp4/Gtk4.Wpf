@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 
 namespace Gtk4.Forms.MarkupCompiler
@@ -12,7 +13,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			try
 			{
 				Type t = FindType(typeFullName);
-				return t != null && t.IsClass && !t.IsAbstract && t.GetConstructor(Type.EmptyTypes) != null;
+				return t != null && t.IsClass && !t.IsAbstract
+					&& t.GetConstructors().Any(c => c.GetParameters().All(p => p.IsOptional));
 			}
 			catch { return false; }
 		}
@@ -29,10 +31,13 @@ namespace Gtk4.Forms.MarkupCompiler
 			catch { return false; }
 		}
 
-		/// <summary>The parameter type of the single-argument public <c>Add</c> of a collection property.</summary>
+		/// <summary>
+		/// The parameter type of the single-argument public <c>Add</c> of a collection property; an empty
+		/// <paramref name="propName"/> means the type itself is the collection.
+		/// </summary>
 		internal Type CollectionItemType(string typeFullName, string propName)
 		{
-			Type pt = FindPropertyType(typeFullName, propName);
+			Type pt = propName.Length == 0 ? FindType(typeFullName) : FindPropertyType(typeFullName, propName);
 			if (pt == null || !IsAddable(pt)) return null;
 			try
 			{
@@ -43,7 +48,9 @@ namespace Gtk4.Forms.MarkupCompiler
 			return null;
 		}
 
-		/// <summary>True when an instance of <paramref name="typeFullName"/> is assignable to <paramref name="target"/>.</summary>
+		/// <summary>
+		/// True when an instance of <paramref name="typeFullName"/> is assignable to <paramref name="target"/>.
+		/// </summary>
 		internal bool IsAssignable(string typeFullName, Type target)
 		{
 			try

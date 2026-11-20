@@ -30,7 +30,7 @@ public abstract partial class FrameworkElement : ISupportInitialize
 		if (_initPending)
 			throw new InvalidOperationException("Cannot have nested BeginInit calls on the same instance.");
 		_initPending = true;
-		InitScope.Enter();
+		InitScope.Enter(this);
 	}
 
 	/// <summary>Ends the initialization of this element and raises <see cref="Initialized"/> (once).</summary>
@@ -41,7 +41,19 @@ public abstract partial class FrameworkElement : ISupportInitialize
 			throw new InvalidOperationException("Must call BeginInit before EndInit.");
 		_initPending = false;
 		try { TryFireInitialized(); }
-		finally { InitScope.Exit(); }
+		finally { InitScope.Exit(this); }
+	}
+
+	/// <summary>
+	/// Called by generated code when <c>InitializeComponent</c> throws between <c>BeginInit</c> and
+	/// <c>EndInit</c>: ends the root's initialization scope and drops the selection events queued for it.
+	/// <see cref="IsInitialized"/> stays <see langword="false"/>.
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public static void AbandonInitialization(FrameworkElement root)
+	{
+		if (root == null) throw new ArgumentNullException(nameof(root));
+		InitScope.Abandon(root);
 	}
 
 	/// <summary>

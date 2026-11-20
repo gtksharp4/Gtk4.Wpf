@@ -253,6 +253,22 @@ public class DialogSemanticsTests : WpfGtkTestBase
 	});
 
 	[Fact]
+	public void A_focus_left_in_another_window_does_not_block_the_default_button() => Run(() =>
+	{
+		var other = new Form();
+		var f = new Form();
+		int ok = 0;
+		f.Ok.Click += (_, _) => ok++;
+		other.Input.SetFocusedInternal(true);
+		try
+		{
+			PressOnWindow(f.Window, 0xff0d);
+			Assert.Equal(1, ok);
+		}
+		finally { other.Input.SetFocusedInternal(false); }
+	});
+
+	[Fact]
 	public void Keypad_Enter_through_the_window_key_controller_clicks_the_default_button() => Run(() =>
 	{
 		var f = new Form();

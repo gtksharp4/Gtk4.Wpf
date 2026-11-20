@@ -54,6 +54,8 @@ namespace Gtk4.Forms.MarkupCompiler
 		{
 			if (fqType == null) return null;
 			string name = fqType.StartsWith("global::", StringComparison.Ordinal) ? fqType.Substring(8) : fqType;
+			if (name == MediaNs + "GradientStopCollection")
+				return new ContentInfo { Name = "", IsCollection = true };
 			if (_resolver.TryGetContentProperty(name, out string prop, out bool coll))
 				return new ContentInfo { Name = prop, IsCollection = coll };
 			if (!_contentFallback.TryGetValue(name, out ContentInfo info)) return null;
@@ -82,7 +84,8 @@ namespace Gtk4.Forms.MarkupCompiler
 					&& IsUIElement(childFq))
 				w.Line($"{parentVar}.Inlines.Add(new global::{PresDocs}InlineUIContainer({childVar}));");
 			else
-				w.Line($"{parentVar}.{ci.Name}.Add({childVar});");
+				w.Line(ci.Name.Length == 0
+					? $"{parentVar}.Add({childVar});" : $"{parentVar}.{ci.Name}.Add({childVar});");
 		}
 
 		bool IsUIElement(string fq) =>

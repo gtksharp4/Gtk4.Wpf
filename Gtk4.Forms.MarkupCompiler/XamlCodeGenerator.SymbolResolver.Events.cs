@@ -7,8 +7,9 @@ namespace Gtk4.Forms.MarkupCompiler
 	{
 		/// <summary>
 		/// True when <paramref name="ownerFullName"/> declares (or inherits) the routed event <c>{name}Event</c>.
-		/// <paramref name="handlerType"/> is the delegate type of its CLR event wrapper, or <c>RoutedEventHandler</c>
-		/// when there is none. A generic delegate type is not supported and answers false.
+		/// <paramref name="handlerType"/> is the delegate type of its CLR event wrapper, or the second parameter
+		/// of its static <c>Add{name}Handler</c> (attached events), or <c>RoutedEventHandler</c> when neither
+		/// exists. It is a <c>global::</c>-qualified C# name.
 		/// </summary>
 		internal bool TryGetRoutedEvent(string ownerFullName, string name, out string handlerType)
 		{
@@ -25,14 +26,35 @@ namespace Gtk4.Forms.MarkupCompiler
 					EventInfo ev = t.GetEvent(
 						name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 					if (ev == null) continue;
-					if (ev.EventHandlerType.IsGenericType) return false;
-					handlerType = ev.EventHandlerType.FullName.Replace('+', '.');
+					handlerType = GlobalName(ev.EventHandlerType);
 					return true;
 				}
-				handlerType = "System.Windows.RoutedEventHandler";
+				MethodInfo adder = owner.GetMethod("Add" + name + "Handler",
+					BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+				ParameterInfo[] ps = adder?.GetParameters();
+				if (ps != null && ps.Length == 2 && AcceptsDependencyObject(ps[0].ParameterType))
+				{
+					handlerType = GlobalName(ps[1].ParameterType);
+					return true;
+				}
+				handlerType = "global::System.Windows.RoutedEventHandler";
 				return true;
 			}
 			catch { return false; }
+		}
+
+		// By name: the layer assemblies can be loaded more than once, so IsAssignableFrom is unreliable.
+		static bool AcceptsDependencyObject(Type t)
+			=> t.FullName == "System.Windows.DependencyObject"
+				|| t.FullName == "System.Windows.Threading.DispatcherObject"
+				|| t.FullName == "System.Object";
+
+		static string GlobalName(Type t)
+		{
+			string name = (t.FullName ?? t.Name).Replace('+', '.');
+			if (!t.IsGenericType) return "global::" + name;
+			string[] args = Array.ConvertAll(t.GetGenericArguments(), GlobalName);
+			return "global::" + name.Substring(0, name.IndexOf('`')) + "<" + string.Join(", ", args) + ">";
 		}
 	}
 }

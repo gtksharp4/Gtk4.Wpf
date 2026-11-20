@@ -1586,6 +1586,72 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   default-button click; a focused element
   in another window is treated by `Keyboard.FocusedElement` only; `docs/samples-coverage.md` is still the Round 44
   measurement.
+- **Round 46 track A - generator-v3 (DONE, merged).** `gf46/generator-v3` (merge `ab58191b`): media resource objects
+  (`DrawingBrush`, `DrawingGroup`, gradients) with nullable CLR conversions, `{StaticResource {x:Type}}` and nested
+  `x:Type` keys, per-template `x:Name` scopes, attached routed-event syntax (`Button.Click` on a panel), own-type
+  qualified properties, a missing base type, `PreviewMouseDown`/`PreviewMouseUp`, `Localization.*` attributes ignored,
+  space-separated `Rect`/`Point`/`Size`, data providers loaded on first `Data` read. Samples evidence: targets the
+  name-scope (10 apps), routed-delegate (6 apps) and root-base-type (3 apps) classes of `docs/samples-coverage.md`;
+  the end-of-round gate below is the only re-measure (all build, none stopped running).
+- **Round 46 track B - startup-runtime (DONE, merged).** `gf46/startup-runtime` (merge `ce09926c`): string to `Uri`
+  on the DP converter path (`Frame.Source`), routed `Selector.SelectionChanged` held back during `BeginInit`/`EndInit`,
+  `SelectionChangedEventHandler`, `ResourceDictionary.Source` with merged and localised dictionaries, `.resx` names,
+  exceptions that escape GTK callbacks routed to `Dispatcher.UnhandledException` and printed; 25 tests at merge.
+  Samples evidence (measured on `a37d3b17` plus this branch): Linq and OpacityMasking now run (76 apps run, was 74),
+  DragDropEvents still crashes but now says why; no regression.
+- **Round 46 track C - input-focus (NOT merged).** `gf46/input-focus` (5 commits, tip `4ca99c69`, based on `a37d3b17`):
+  keyboard-focus events, `MoveFocus`/`PredictFocus`, `KeyConverter`, `RangeBase.ValueChanged`, `EditingCommands`,
+  `Cursors`, and a rule that Enter/Esc click the default/cancel button regardless of focus. It stays on its branch (no
+  merge decision or review verdict is recorded in the repository): it rewrites the Enter/Esc controller rule that
+  Round 45 B-F3 and `DialogSemanticsTests` pin and touches 45 files. Re-review it against the fixed `main` before merging.
+- **Round 46 review (Opus) + fixes - DONE.** **A-F1** an attached routed event whose owner has no CLR event takes its
+  delegate type from the static `Add{Name}Handler` (`Validation.Error` is `EventHandler<ValidationErrorEventArgs>`, was
+  `RoutedEventHandler`, `CS0123`); generic delegate types are formatted `global::Ns.Name<global::Arg>`. **A-F2** an
+  `x:Class` root always declares the root type as base, as in WPF (a code-behind that only lists interfaces left the
+  class deriving from `object`); the same base repeated across partials is legal, a different one is `CS0263`; the tests
+  that pinned the omission were rewritten. **A-F3** `{StaticResource}`/`{DynamicResource}` attributes convert in media
+  graphs (assigned with `as` the property type; `DynamicResource` is resolved once, there is no dynamic media binding),
+  and `GradientStopCollection` (keyed collection), `DrawingImage` (new, `Image` does not paint it), `PathGeometry`
+  `Figures` markup (new `PathFigureCollection.Parse`; `Figures` is now settable) and a `Transform` element are built;
+  constructors whose parameters are all optional count as instantiable; remaining fallbacks (`Color`,
+  `CollectionViewSource`, `HierarchicalDataTemplate`) are in `docs/samples-coverage.md`. **A-F4** store-only
+  `GradientBrush.MappingMode`/`SpreadMethod` (new `GradientSpreadMethod`), `TileBrush.Viewbox`/`ViewboxUnits` and
+  `GeometryGroup`/`GeometryCollection` (rendering gaps in the remarks; `FillRule` is the existing `Shapes.FillRule`); a
+  media property, property element or child the layer lacks is reported through `XamlCodeGenerator.Messages` and logged
+  as a build message, not dropped silently. **A-F5** an implicit page whose derived name a hand-written class owns
+  (same namespace; comments and strings ignored) is generated as `__Xaml_<path>` and the URI registered to it, instead
+  of mapping the URI to the unrelated class (`RegistrationOnly` is gone). **A-F6** three over-long doc lines wrapped.
+  **B-F1** the generated `InitializeComponent` wraps the body in `try`/`catch` and calls the new
+  `FrameworkElement.AbandonInitialization` (`EditorBrowsable.Never`), which ends the root's init scope; a throw no longer
+  leaves the thread's scope open (the generator uses a pattern match, so a non-`FrameworkElement` root still compiles).
+  **B-F2** `InitScope` keeps the roots that are initialising and queues per root: `SelectionChanged` is held back only
+  for a selector whose own `BeginInit` is open, or whose creating root is, and delivered at the earliest of its own or
+  that root's `EndInit`; one event per change, none merged, none for an empty change; sets after a nested root ended are
+  synchronous (WPF is synchronous throughout; the remaining deferral is a documented divergence). Rewrote the tests that
+  pinned the global deferral. **B-F3** `InitScope.Exit` runs every queued action and rethrows the first exception.
+  **B-F4** `XamlValueConverterUriTests` builds its `Frame` on the GTK thread. **B-F5** `Selector` remarks fixed; the
+  internal `SelectionChangedEventArgs.OldValue`/`NewValue` are gone (three tests did use them). **B-F6** `ParseUri`
+  keeps `OriginalString`; only the `pack://application:,,,` form, which .NET cannot parse, is normalised (pinned).
+  **B-F7** `ResourceDictionary.Source` throws `ArgumentException` for null and empty. **B-F8** `OnGlibUnhandled` unwraps
+  `TargetInvocationException`. **B-F9** the intermittent `Return_through_the_window_key_controller...` failure did not
+  reproduce here (0 of 8 runs before Round 46, 0 of 12 on `ce09926c`, 0 of 10 consecutive runs after the fixes), so the cause is not
+  proven; the code allows one: `Keyboard.FocusedElement` is process-wide and any element focused in another window (or
+  left by an earlier test) made the window's Enter/Esc controller decline. Enter/Esc now consider only focus inside the
+  window (`Window.FocusedHere`), with a failing-first test that leaves a focused element in another window.
+  Rejected in triage: none.
+  **Round 46 totals: 4743 tests** (190 WindowsBase + 3994 PresentationFramework + 525 MarkupCompiler + 34
+  ProjectConverter), all pass; `dotnet build Gtk4.Forms.sln` 0 warnings. `Integration.Tests` not run.
+  **Samples gate (after the fixes, Gtk4.Forms.Wpf packed from the fixed tree):** all 84 `build=pass` projects of
+  `docs/samples-coverage.json` (83 portable apps plus 1 library) build through the two-build recipe, and all 76
+  `run=runs` apps stay alive for 10 s (process alive; the window itself was not re-checked; the task brief said 74, the
+  JSON already records 76 after startup-runtime). The first pass caught a regression: Linq died because a set before the
+  items existed raised an empty `SelectionChanged`; empty changes are now dropped, and Linq stays up.
+- **Carry-over (Round 46)**: `gf46/input-focus` is unmerged; the B-F9 flake is not reproduced, only closed by the
+  window-scoped focus rule; `GeometryGroup`, `DrawingImage` and the gradient/tile members are store-only for rendering;
+  `Selector` still defers events for selectors created in a bracketed root (WPF defers only a selector's own
+  `BeginInit`); `SelectedIndex` set before items exist stays -1 (WPF keeps it and selects the first item when they
+  arrive); `FillRule` lives in `System.Windows.Shapes` here, not `System.Windows.Media`;
+  `docs/samples-coverage.md` is the `a37d3b17` measurement.
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a

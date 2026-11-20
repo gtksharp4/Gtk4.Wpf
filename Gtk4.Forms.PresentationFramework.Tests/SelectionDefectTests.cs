@@ -86,8 +86,8 @@ public class SelectionDefectTests
 		object? newVal = null;
 		lb.SelectionChanged += (s, e) =>
 		{
-			oldVal = e.OldValue;
-			newVal = e.NewValue;
+			oldVal = e.RemovedItems.Count > 0 ? e.RemovedItems[0] : null;
+			newVal = e.AddedItems.Count > 0 ? e.AddedItems[0] : null;
 		};
 
 		lb.SelectedIndex = 2;
@@ -107,8 +107,8 @@ public class SelectionDefectTests
 		object? newVal = null;
 		lb.SelectionChanged += (s, e) =>
 		{
-			oldVal = e.OldValue;
-			newVal = e.NewValue;
+			oldVal = e.RemovedItems.Count > 0 ? e.RemovedItems[0] : null;
+			newVal = e.AddedItems.Count > 0 ? e.AddedItems[0] : null;
 		};
 
 		lb.SelectedItem = "c";

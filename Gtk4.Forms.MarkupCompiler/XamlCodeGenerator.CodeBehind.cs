@@ -28,30 +28,11 @@ namespace Gtk4.Forms.MarkupCompiler
 		}
 
 		/// <summary>
-		/// True when a code-behind partial of the class declares a base list (a class or interfaces).
-		/// </summary>
-		bool CodeBehindDeclaresBase(string className)
-		{
-			if (CodeBehindSources == null) return true;
-			string name = System.Text.RegularExpressions.Regex.Escape(
-				className.Substring(className.LastIndexOf('.') + 1));
-			var re = new System.Text.RegularExpressions.Regex(@"\bpartial\s+class\s+" + name + @"\b\s*(<[^>]*>)?\s*:");
-			foreach (string s in CodeBehindSources)
-				if (re.IsMatch(s)) return true;
-			return false;
-		}
-
-		/// <summary>
-		/// The base type to declare on the generated partial: the root element type when the x:Class has no
-		/// code-behind or its code-behind partial declares no base, else <c>null</c> (the code-behind supplies it).
+		/// The base type to declare on the generated partial: always the root element type for an x:Class, as in
+		/// WPF. C# accepts the same base repeated across partials; a different one is CS0263.
 		/// </summary>
 		string RootBaseFor(XElement root, bool hasClassAttr, string className)
-		{
-			if (hasClassAttr && (!HasCodeBehindFor(className) || !CodeBehindDeclaresBase(className))
-				&& ResolveType(root) is string rootFq)
-				return "global::" + rootFq;
-			return null;
-		}
+			=> hasClassAttr && ResolveType(root) is string rootFq ? "global::" + rootFq : null;
 
 		static string ClassDeclaration(string typeName, string implicitBase, string rootBase)
 			=> implicitBase != null

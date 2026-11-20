@@ -70,13 +70,40 @@ public class GeneratorV3NameScopeTests : GeneratorV2TestBase
 	}
 
 	[Fact]
-	public void G3_an_implicit_page_class_that_the_code_already_declares_emits_only_the_registration()
+	public void F5_an_implicit_page_whose_name_a_user_class_owns_gets_an_internal_class()
+	{
+		const string user = "namespace A { public class P : System.Windows.Controls.Page { } }";
+		string code = Gen($@"<Page {Head}><Border/></Page>", out string name,
+			sources: new[] { user }, xamlPath: "P.xaml", rootNamespace: "A");
+		Assert.Equal("A.__Xaml_P", name);
+		Assert.Contains("GtkFormsXamlRegistration(\"P.xaml\", typeof(global::A.__Xaml_P))", code);
+		Assert.Contains("partial class __Xaml_P :", code);
+		AssertCompiles(code, user);
+	}
+
+	[Theory]
+	[InlineData("// class P")]
+	[InlineData("/* class P */ namespace A { }")]
+	[InlineData("namespace A { class Q { string s = \"class P\"; } }")]
+	[InlineData("namespace B { public class P { } }")]
+	[InlineData("namespace B { } namespace A { }")]
+	public void F5_comments_strings_and_other_namespaces_do_not_collide(string source)
 	{
 		string code = Gen($@"<Page {Head}><Border/></Page>", out string name,
-			sources: new[] { "namespace A { public class P : System.Windows.Controls.Page { } }" },
-			xamlPath: "P.xaml", rootNamespace: "A");
+			sources: new[] { source }, xamlPath: "P.xaml", rootNamespace: "A");
 		Assert.Equal("A.P", name);
-		Assert.Contains("GtkFormsXamlRegistration(\"P.xaml\", typeof(global::A.P))", code);
-		Assert.DoesNotContain("class P", code);
+		Assert.Contains("partial class P :", code);
+	}
+
+	[Theory]
+	[InlineData("namespace A; public class P { }")]
+	[InlineData("namespace A { namespace C { } public class P { } }")]
+	[InlineData("namespace Z { namespace A { public class P { } } }")]
+	public void F5_file_scoped_and_nested_namespaces_are_matched(string source)
+	{
+		string expected = source.StartsWith("namespace Z") ? "A.P" : "A.__Xaml_P";
+		Gen($@"<Page {Head}><Border/></Page>", out string name,
+			sources: new[] { source }, xamlPath: "P.xaml", rootNamespace: "A");
+		Assert.Equal(expected, name);
 	}
 }

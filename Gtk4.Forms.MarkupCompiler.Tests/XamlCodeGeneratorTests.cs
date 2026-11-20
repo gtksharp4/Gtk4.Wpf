@@ -49,7 +49,7 @@ public class XamlCodeGeneratorTests
 	public void PartialClass_Declared()
 	{
 		string code = _gen.Generate(Window(), out _);
-		Assert.Contains("public partial class MainWindow {", code);
+		Assert.Contains("public partial class MainWindow : global::System.Windows.Window {", code);
 	}
 
 	[Fact]
@@ -123,7 +123,7 @@ public class XamlCodeGeneratorTests
 
 		Assert.Equal("MyApp.MainWindow", className);
 		Assert.Contains("namespace MyApp {", code);
-		Assert.Contains("public partial class MainWindow {", code);
+		Assert.Contains("public partial class MainWindow : global::System.Windows.Window {", code);
 		Assert.Contains("internal System.Windows.Controls.TextBlock greeting;", code);
 		Assert.Contains("bool _contentLoaded;", code);
 		Assert.Contains("public void InitializeComponent() {", code);
@@ -151,7 +151,7 @@ public class XamlCodeGeneratorTests
 		string code = _gen.Generate(xaml, out string className);
 
 		Assert.Equal("MyApp.App", className);
-		Assert.Contains("public partial class App {", code);
+		Assert.Contains("public partial class App : global::System.Windows.Application {", code);
 		// StartupUri is emitted as System.Uri (not a plain string).
 		Assert.Contains(
 			@"this.StartupUri = new System.Uri(""MainWindow.xaml"", System.UriKind.RelativeOrAbsolute);",

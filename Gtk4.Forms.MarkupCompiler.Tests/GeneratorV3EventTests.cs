@@ -74,3 +74,19 @@ void M(object s, System.Windows.Input.MouseButtonEventArgs e) { } } }";
 		Assert.DoesNotContain("AddHandler", code);
 	}
 }
+
+public class GeneratorV3GenericEventTests : GeneratorV2TestBase
+{
+	const string Stub = @"namespace A { public partial class W : System.Windows.Window {
+void OnErr(object s, System.Windows.Controls.ValidationErrorEventArgs e) { } } }";
+
+	[Fact]
+	public void Validation_Error_uses_the_generic_Add_handler_delegate_type()
+	{
+		string code = Gen($@"<Window x:Class=""A.W"" {Head}><Grid Validation.Error=""OnErr""/></Window>");
+		Assert.Contains("global::System.EventHandler<global::System.Windows.Controls.ValidationErrorEventArgs>", code);
+		Assert.DoesNotContain("global::global::", code);
+		AssertCompiles(code, Stub);
+	}
+
+}

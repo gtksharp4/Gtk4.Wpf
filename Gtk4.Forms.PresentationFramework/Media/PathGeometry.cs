@@ -157,7 +157,7 @@ public class PathGeometry : Geometry
 	}
 
 	/// <summary>The collection of path figures.</summary>
-	public IList<PathFigure> Figures { get; } = new List<PathFigure>();
+	public PathFigureCollection Figures { get; set; } = new PathFigureCollection();
 
 	/// <inheritdoc/>
 	public override System.Windows.Rect Bounds

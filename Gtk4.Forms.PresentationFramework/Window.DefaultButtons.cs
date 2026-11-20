@@ -34,9 +34,15 @@ public partial class Window
 
 	internal Gtk.EventControllerKey? _acceleratorController;
 
+	// Keyboard.FocusedElement is process-wide: an element focused in another window (or left behind by a closed
+	// one) is no focus for this window's accelerators.
+	IInputElement? FocusedHere()
+		=> Keyboard.FocusedElement is DependencyObject d && ReferenceEquals(GetWindow(d), this)
+			? Keyboard.FocusedElement : null;
+
 	internal bool HandleAcceleratorKeyval(uint keyval, Gdk.ModifierType state)
 	{
-		if (Keyboard.FocusedElement != null) return false;
+		if (FocusedHere() != null) return false;
 		bool enter = keyval == GdkKeyReturn || keyval == GdkKeyKpEnter;
 		if (!enter && keyval != GdkKeyEscape) return false;
 		if (GdkKeyMap.FromGdkModifier(state) != ModifierKeys.None) return false;
@@ -50,7 +56,7 @@ public partial class Window
 		if (e.Handled || e.Modifiers != ModifierKeys.None) return;
 		bool enter = e.Key == Key.Enter;
 		if (!enter && e.Key != Key.Escape) return;
-		if (ClickAccelerator(enter, e.Source as IInputElement ?? Keyboard.FocusedElement)) e.Handled = true;
+		if (ClickAccelerator(enter, e.Source as IInputElement ?? FocusedHere())) e.Handled = true;
 	}
 
 	static bool KeepsKey(bool enter, IInputElement? element) => element switch
@@ -64,7 +70,7 @@ public partial class Window
 
 	bool ClickAccelerator(bool enter, IInputElement? focus)
 	{
-		if (KeepsKey(enter, focus) || KeepsKey(enter, Keyboard.FocusedElement)) return false;
+		if (KeepsKey(enter, focus) || KeepsKey(enter, FocusedHere())) return false;
 		var button = FindButton(this, enter);
 		if (button == null) return false;
 		button.ClickFromAccelerator();

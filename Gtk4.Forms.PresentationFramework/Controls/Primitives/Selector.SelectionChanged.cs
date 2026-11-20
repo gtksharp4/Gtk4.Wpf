@@ -17,8 +17,8 @@ public abstract partial class Selector
 		remove => RemoveHandler(SelectionChangedEvent, value);
 	}
 
-	List<object?>? _pendingAdded;
-	List<object?>? _pendingRemoved;
+	// The root that was being initialised when this selector was created (null outside InitializeComponent).
+	readonly FrameworkElement? _initOwner = InitScope.Current;
 
 	/// <summary>Raises <see cref="SelectionChanged"/>.</summary>
 	protected virtual void OnSelectionChanged(SelectionChangedEventArgs e) => RaiseEvent(e);
@@ -34,41 +34,32 @@ public abstract partial class Selector
 	}
 
 	/// <summary>
-	/// Raises <see cref="SelectionChanged"/> now, or, while an <c>InitializeComponent</c> is running, once when
-	/// the outermost initialization ends (WPF defers selection events during <c>BeginInit</c>/<c>EndInit</c>).
+	/// Raises <see cref="SelectionChanged"/> now, or, while this selector's initialisation is pending, one event
+	/// per change at the earliest of its own <c>EndInit</c> or its owning root's <c>EndInit</c>.
 	/// </summary>
+	/// <remarks>
+	/// WPF raises it synchronously and only holds back the items of the selector's own BeginInit/EndInit.
+	/// Divergence: the generated <c>InitializeComponent</c> brackets the root, not each selector, so selectors created
+	/// inside that root are held with the root.
+	/// </remarks>
 	internal void RaiseSelectionChanged(IList added, IList removed)
 	{
-		if (!InitScope.Active)
-		{
-			OnSelectionChanged(new SelectionChangedEventArgs(SelectionChangedEvent, removed, added) { Source = this });
-			return;
-		}
-		if (_pendingAdded == null)
-		{
-			_pendingAdded = new List<object?>();
-			_pendingRemoved = new List<object?>();
-			InitScope.Defer(FlushSelectionChanged);
-		}
-		Merge(removed, _pendingAdded, _pendingRemoved!);
-		Merge(added, _pendingRemoved!, _pendingAdded);
+		if (added.Count == 0 && removed.Count == 0) return; // WPF never raises an empty change
+		var args = new SelectionChangedEventArgs(SelectionChangedEvent, removed, added) { Source = this };
+		FrameworkElement? holder = InitHolder();
+		if (holder == null) OnSelectionChanged(args);
+		else InitScope.Defer(holder, () => OnSelectionChanged(args));
 	}
 
-	// An item added then removed (or the reverse) while deferred nets out.
-	static void Merge(IList items, List<object?> opposite, List<object?> same)
+	// The open init scope holding this selector back: its own, the root that created it, else (a selector built
+	// outside any scope) the nearest logical ancestor that is initialising.
+	FrameworkElement? InitHolder()
 	{
-		foreach (var item in items)
-		{
-			if (!opposite.Remove(item)) same.Add(item);
-		}
-	}
-
-	void FlushSelectionChanged()
-	{
-		var added = _pendingAdded!;
-		var removed = _pendingRemoved!;
-		_pendingAdded = _pendingRemoved = null;
-		if (added.Count == 0 && removed.Count == 0) return;
-		OnSelectionChanged(new SelectionChangedEventArgs(SelectionChangedEvent, removed, added) { Source = this });
+		if (!InitScope.Active) return null;
+		if (InitScope.IsOpen(this)) return this;
+		if (_initOwner != null) return InitScope.IsOpen(_initOwner) ? _initOwner : null;
+		for (UIElement? p = LogicalParent; p != null; p = p.LogicalParent)
+			if (p is FrameworkElement fe && InitScope.IsOpen(fe)) return fe;
+		return null;
 	}
 }

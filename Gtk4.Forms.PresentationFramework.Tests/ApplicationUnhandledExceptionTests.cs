@@ -118,6 +118,24 @@ public class ApplicationUnhandledExceptionTests : WpfGtkTestBase, IDisposable
 	});
 
 	[Fact]
+	public void Glib_hook_unwraps_the_TargetInvocationException_of_the_callback_marshaller() => Run(() =>
+	{
+		var dispatcher = Dispatcher.CurrentDispatcher;
+		Exception? recorded = null;
+		DispatcherUnhandledExceptionEventHandler dh = (_, e) => { recorded = e.Exception; e.Handled = true; };
+		dispatcher.UnhandledException += dh;
+		try
+		{
+			var wrapped = new System.Reflection.TargetInvocationException(new ArgumentOutOfRangeException());
+			var args = new GLib.UnhandledExceptionArgs(wrapped, false);
+			Application.OnGlibUnhandled(args);
+			Assert.IsType<ArgumentOutOfRangeException>(recorded);
+			Assert.False(args.ExitApplication);
+		}
+		finally { dispatcher.UnhandledException -= dh; }
+	});
+
+	[Fact]
 	public void Glib_hook_terminates_when_unhandled_and_skips_already_reported() => Run(() =>
 	{
 		var unhandled = new GLib.UnhandledExceptionArgs(new Exception("g"), false);

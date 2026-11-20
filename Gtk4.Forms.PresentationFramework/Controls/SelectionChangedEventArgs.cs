@@ -24,11 +24,6 @@ public class SelectionChangedEventArgs : RoutedEventArgs
 	/// <summary>Items removed from the selection.</summary>
 	public IList RemovedItems { get; }
 
-	/// <summary>The item that replaced <see cref="RemovedItems"/>[0] (single-item changes only).</summary>
-	internal object? OldValue => RemovedItems.Count > 0 ? RemovedItems[0] : null;
-
-	/// <summary>The first added item.</summary>
-	internal object? NewValue => AddedItems.Count > 0 ? AddedItems[0] : null;
 
 	/// <summary>Event data for a change of a single selected item.</summary>
 	internal static SelectionChangedEventArgs ForItems(RoutedEvent id, object source, object? oldItem, object? newItem)

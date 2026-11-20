@@ -66,11 +66,17 @@ static class UnitConverters
 	internal static ImageSource ParseImageSource(string raw) =>
 		new System.Windows.Media.Imaging.BitmapImage(MakeUri(raw.Trim()));
 
-	/// <summary>WPF UriTypeConverter: relative or absolute; the empty string is an empty relative URI.</summary>
+	/// <summary>
+	/// WPF UriTypeConverter: relative or absolute, keeping the original text (<c>OriginalString</c>); the empty
+	/// string is an empty relative URI. Only a string .NET cannot parse as written (the <c>:,,,</c> authority of
+	/// <c>pack://application:,,,</c>) falls back to the normalised form of <see cref="MakeUri"/>.
+	/// </summary>
 	internal static Uri ParseUri(string raw)
 	{
 		var s = raw.Trim();
-		return s.Length == 0 ? new Uri("", UriKind.Relative) : MakeUri(s);
+		if (s.Length == 0) return new Uri("", UriKind.Relative);
+		try { return new Uri(s, UriKind.RelativeOrAbsolute); }
+		catch (UriFormatException) { return MakeUri(s); }
 	}
 
 	static Uri MakeUri(string s)

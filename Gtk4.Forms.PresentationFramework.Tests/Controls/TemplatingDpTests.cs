@@ -284,8 +284,8 @@ public class TemplatingDpTests
 		object? capturedNew = "sentinel";
 		lb.SelectionChanged += (s, e) =>
 		{
-			capturedOld = e.OldValue;
-			capturedNew = e.NewValue;
+			capturedOld = e.RemovedItems.Count > 0 ? e.RemovedItems[0] : null;
+			capturedNew = e.AddedItems.Count > 0 ? e.AddedItems[0] : null;
 		};
 		lb.SelectedItem = "b";
 		Assert.Equal("a", capturedOld);

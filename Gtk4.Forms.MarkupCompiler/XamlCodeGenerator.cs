@@ -78,6 +78,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				throw new XamlCodeGeneratorException("XAML parse error: " + ex.Message, ex);
 			}
 
+			_messages.Clear();
 			XElement root = doc.Root;
 			if (root == null)
 			{
@@ -94,7 +95,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			className = classAttr?.Value.Trim() ?? ImplicitClass(root, xamlPath, rootNamespace, out implicitBase);
 			string rootBase = RootBaseFor(root, classAttr != null, className);
 			if (className == null) return null;
-			if (implicitBase != null && UserClassExists(className)) return RegistrationOnly(xamlPath, className);
+			if (implicitBase != null && UserClassExists(className)) className = InternalClassName(className, xamlPath);
 
 			_scopeVars.Clear();
 			CollectTypeKeyRefs(xaml);
@@ -149,9 +150,15 @@ namespace Gtk4.Forms.MarkupCompiler
 
 			// WPF's XAML loader brackets the root with ISupportInitialize.BeginInit/EndInit, so
 			// the root's Initialized fires (after its children's) before its constructor returns.
-			// The (object) cast keeps the runtime check warning-free for any root type.
+			// The (object) cast keeps the runtime check warning-free for any root type. A throwing body
+			// abandons the root's init scope so it cannot hold back selection events thread-wide.
 			if (!isAppDef)
+			{
 				w.Line(SupportInitializeCall("BeginInit"));
+				w.Line("try");
+				w.Line("{");
+				w.Indent++;
+			}
 
 			// Emit root resources BEFORE attributes/children so {StaticResource} resolves.
 			EmitResources(w, root, xNs, "this", ref _counter);
@@ -159,7 +166,21 @@ namespace Gtk4.Forms.MarkupCompiler
 			EmitChildren(w, root, xNs, "this", ref _counter);
 
 			if (!isAppDef)
+			{
+				w.Indent--;
+				w.Line("}");
+				w.Line("catch");
+				w.Line("{");
+				w.Indent++;
+				w.Line("if ((object)this is global::System.Windows.FrameworkElement __initRoot)");
+				w.Indent++;
+				w.Line("global::System.Windows.FrameworkElement.AbandonInitialization(__initRoot);");
+				w.Indent--;
+				w.Line("throw;");
+				w.Indent--;
+				w.Line("}");
 				w.Line(SupportInitializeCall("EndInit"));
+			}
 
 			w.Indent--;
 			w.Line("}");
@@ -557,7 +578,9 @@ namespace Gtk4.Forms.MarkupCompiler
 			return set;
 		}
 
-		/// <summary>True for an attribute in a compile-time-ignored namespace, or a LocBaml <c>Localization.*</c> one.</summary>
+		/// <summary>
+		/// True for an attribute in a compile-time-ignored namespace, or a LocBaml <c>Localization.*</c> one.
+		/// </summary>
 		bool IsIgnorableAttribute(XAttribute attr) =>
 			_ignorableNamespaces.Contains(attr.Name.Namespace.NamespaceName)
 			|| attr.Name.LocalName == "Localization.Attributes" || attr.Name.LocalName == "Localization.Comments";
@@ -605,7 +628,12 @@ namespace Gtk4.Forms.MarkupCompiler
 				}
 
 				string fqType = ResolveType(child);
-				if (fqType == null) continue;
+				if (fqType == null)
+				{
+					if (IsMediaObjectType(ResolveType(parent)))
+						NoteSkippedMedia(parent, "element " + child.Name.LocalName);
+					continue;
+				}
 
 				string varName = $"__e{counter++}";
 				EmitElement(w, child, xNs, varName, fqType, ref counter);
@@ -648,7 +676,11 @@ namespace Gtk4.Forms.MarkupCompiler
 
 				string propName = attr.Name.LocalName;
 				string val = attr.Value;
-				if (SkipsUnknownMediaProperty(fqType, propName)) continue;
+				if (SkipsUnknownMediaProperty(fqType, propName))
+				{
+					NoteSkippedMedia(el, "property " + propName);
+					continue;
+				}
 
 				// Attached-property syntax: "Owner.Prop" (e.g. Grid.Row, Canvas.Left).
 				int dotPos = propName.IndexOf('.');
@@ -688,6 +720,10 @@ namespace Gtk4.Forms.MarkupCompiler
 					w.Line($"{varName}.SetBinding({fqType}.{propName}Property, {tbBindingInit});");
 				else if (IsBindingExpression(val, out string bindingInit))
 					w.Line($"{varName}.SetBinding({fqType}.{propName}Property, {bindingInit});");
+				else if (MediaResourceTarget(fqType, propName, val) is Type mediaType
+					&& IsStaticOrDynamicResource(val, out string mediaKey))
+					w.Line(varName + "." + propName + " = " + StaticResourceLookup("this", EscapeString(mediaKey))
+						+ " as global::" + mediaType.FullName.Replace('+', '.') + ";");
 				else if (IsStaticOrDynamicResource(val, out string resourceKey))
 				{
 					string find = val.TrimStart().StartsWith("{StaticResource", StringComparison.Ordinal)

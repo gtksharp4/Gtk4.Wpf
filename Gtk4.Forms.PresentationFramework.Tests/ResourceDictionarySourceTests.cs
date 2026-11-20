@@ -53,8 +53,8 @@ public class ResourceDictionarySourceTests
 	}
 
 	[Fact]
-	public void Source_null_throws_ArgumentNullException() =>
-		Assert.Throws<ArgumentNullException>(() => new ResourceDictionary().Source = null!);
+	public void Source_null_throws_ArgumentException() =>
+		Assert.Throws<ArgumentException>(() => new ResourceDictionary().Source = null!);
 
 	[Fact]
 	public void Source_empty_throws_ArgumentException() =>

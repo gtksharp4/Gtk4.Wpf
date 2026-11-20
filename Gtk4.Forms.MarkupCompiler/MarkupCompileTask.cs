@@ -101,6 +101,9 @@ namespace Gtk4.Forms.MarkupCompiler
 						continue;
 					}
 
+					foreach (string note in generator.Messages)
+						Log.LogMessage(null, null, null, xamlPath, 0, 0, 0, 0, MessageImportance.Normal, note);
+
 					File.WriteAllText(outputPath, code);
 					Log.LogMessage(MessageImportance.Low,
 						"  {0} -> {1} ({2})", xamlPath, outputPath, className);

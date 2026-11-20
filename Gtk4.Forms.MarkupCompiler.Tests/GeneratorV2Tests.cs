@@ -56,7 +56,7 @@ public class GeneratorV2Tests : GeneratorV2TestBase
 	public void G3_with_code_behind_the_declaration_is_unchanged()
 	{
 		string code = Gen($@"<Page x:Class=""A.P"" {Head}/>");
-		Assert.Contains("public partial class P {", code);
+		Assert.Contains("public partial class P : global::System.Windows.Controls.Page {", code);
 		Assert.DoesNotContain("public P()", code);
 	}
 
@@ -66,7 +66,7 @@ public class GeneratorV2Tests : GeneratorV2TestBase
 		string xaml = $@"<Page x:Class=""A.P"" {Head}/>";
 		string with = Gen(xaml, sources: new[]
 		{ "namespace A { public partial class P : System.Windows.Controls.Page { } }" });
-		Assert.Contains("public partial class P {", with);
+		Assert.Contains("public partial class P : global::System.Windows.Controls.Page {", with);
 		string without = Gen(xaml, sources: new[] { "namespace A { public partial class Other { } }" });
 		Assert.Contains("public partial class P : global::System.Windows.Controls.Page {", without);
 	}

@@ -34,6 +34,9 @@ public partial class Application
 	{
 		if (!(args.ExceptionObject is Exception ex))
 			return;
+		// GLib's callback marshaller wraps the original in TargetInvocationException.
+		while (ex is System.Reflection.TargetInvocationException { InnerException: { } inner })
+			ex = inner;
 		// Already reported by Dispatcher.BeginInvoke / DispatcherTimer and rethrown: terminate.
 		var handled = !ex.Data.Contains(Dispatcher.ReportedKey)
 			&& Dispatcher.CurrentDispatcher.RaiseUnhandledException(ex);

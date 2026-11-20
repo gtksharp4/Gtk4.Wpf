@@ -53,11 +53,23 @@ public class GeneratorV3PropertyTests : GeneratorV2TestBase
 	}
 
 	[Fact]
-	public void G5_a_code_behind_partial_that_declares_a_base_keeps_the_generated_class_baseless()
+	public void G5_a_code_behind_partial_that_declares_the_same_base_repeats_it()
 	{
-		string code = Gen(Window("<Button/>"),
-			sources: new[] { "namespace A { public partial class W : System.Windows.Window { } }" });
-		Assert.DoesNotContain("partial class W :", code);
+		const string cb = "namespace A { public partial class W : System.Windows.Window { } }";
+		string code = Gen(Window("<Button/>"), sources: new[] { cb });
+		Assert.Contains("partial class W : global::System.Windows.Window", code);
+		AssertCompiles(code, cb);
+	}
+
+	[Fact]
+	public void G5_a_code_behind_that_only_lists_interfaces_still_gets_the_root_base()
+	{
+		const string cb = "namespace A { public partial class P : System.ComponentModel.INotifyPropertyChanged { "
+			+ "public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged; "
+			+ "public P() { InitializeComponent(); Content = null; Loaded += (s, e) => { }; } } }";
+		string code = Gen($@"<Page x:Class=""A.P"" {Head}/>", sources: new[] { cb });
+		Assert.Contains(": global::System.Windows.Controls.Page", code);
+		AssertCompiles(code, cb);
 	}
 
 	[Fact]

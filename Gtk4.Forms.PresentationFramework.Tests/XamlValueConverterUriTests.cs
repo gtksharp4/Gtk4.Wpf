@@ -6,7 +6,7 @@ using Xunit;
 namespace Gtk4.Forms.PresentationFramework.Tests;
 
 /// <summary>String-to-<see cref="Uri"/> on the dependency-property converter path (WPF UriTypeConverter).</summary>
-public class XamlValueConverterUriTests
+public class XamlValueConverterUriTests : WpfGtkTestBase
 {
 	[Fact]
 	public void FrameSource_RelativeString_ConvertsToRelativeUri()
@@ -27,12 +27,22 @@ public class XamlValueConverterUriTests
 	}
 
 	[Fact]
-	public void FrameSource_ConvertedValue_IsAcceptedByTheDependencyProperty()
+	public void FrameSource_ConvertedValue_IsAcceptedByTheDependencyProperty() => Run(() =>
 	{
 		var frame = new Frame();
 		frame.SetValue(Frame.SourceProperty,
 			XamlValueConverter.Convert(typeof(Frame), Frame.SourceProperty, "Page2.xaml"));
 
 		Assert.Equal(new Uri("Page2.xaml", UriKind.Relative), frame.Source);
-	}
+	});
+
+	[Fact]
+	public void Uri_keeps_the_original_string_with_backslashes()
+		=> Assert.Equal(@"sub\a.xaml", UnitConverters.ParseUri(@"sub\a.xaml").OriginalString);
+
+	// .NET cannot parse the ",,," authority, so ParseUri falls back to the normalised pack form.
+	[Fact]
+	public void Uri_of_a_pack_application_string_is_normalised_because_dotnet_cannot_parse_it()
+		=> Assert.Equal("pack://application/a.xaml",
+			UnitConverters.ParseUri(" pack://application:,,,/a.xaml ").OriginalString);
 }

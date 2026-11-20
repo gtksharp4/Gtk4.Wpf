@@ -19,7 +19,9 @@ namespace Gtk4.Forms.MarkupCompiler
 				if (ResolveTypeRefName(m.Groups[1].Value) is string name) _typeKeyRefs.Add(name);
 		}
 
-		/// <summary>The key of a Style: its <c>x:Key</c>, or its type when a <c>{x:Type}</c> reference needs it.</summary>
+		/// <summary>
+		/// The key of a Style: its <c>x:Key</c>, or its type when a <c>{x:Type}</c> reference needs it.
+		/// </summary>
 		string StyleResourceKey(string key, string targetTypeAttr)
 		{
 			if (key != null) return ResourceKeyExpression(EscapeString(key));

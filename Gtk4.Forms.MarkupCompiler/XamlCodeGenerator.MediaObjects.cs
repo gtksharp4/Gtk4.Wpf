@@ -86,11 +86,20 @@ namespace Gtk4.Forms.MarkupCompiler
 			string fq = pe.Parent == null ? null : ResolveType(pe.Parent);
 			if (!_resolver.HasReferences || !IsMediaObjectType(fq) || !MediaPropertyElementEmittable(pe.Parent, fq, pe))
 				return false;
+			if (_resolver.GetPropertyType(fq, prop) == null)
+			{
+				NoteSkippedMedia(pe.Parent, "property element " + prop);
+				return true;
+			}
 			bool coll = _resolver.CollectionItemType(fq, prop) != null;
 			foreach (XElement child in pe.Elements())
 			{
 				string cfq = ResolveType(child);
-				if (cfq == null) continue;
+				if (cfq == null)
+				{
+					NoteSkippedMedia(pe, "element " + child.Name.LocalName);
+					continue;
+				}
 				string v = $"__e{counter++}";
 				EmitElement(w, child, xNs, v, cfq, ref counter);
 				w.Line(coll ? $"{parentVar}.{prop}.Add({v});" : $"{parentVar}.{prop} = {v};");
@@ -103,8 +112,20 @@ namespace Gtk4.Forms.MarkupCompiler
 			=> _resolver.HasReferences && IsMediaObjectType(fq) && prop.IndexOf('.') < 0
 				&& _resolver.GetPropertyType(fq, prop) == null && !IsKnownEvent(fq, prop);
 
+		// A {StaticResource}/{DynamicResource} on a settable media reference-type property. DynamicResource is
+		// resolved once, like StaticResource: media objects have no dynamic-resource binding in the layer.
+		Type MediaResourceTarget(string fq, string name, string val)
+		{
+			if (!IsMediaObjectType(fq) || !IsStaticOrDynamicResource(val, out _)) return null;
+			Type t = _resolver.GetPropertyType(fq, name);
+			return t != null && !t.IsValueType && !t.IsGenericType && t.FullName != null
+				&& t.FullName.StartsWith(MediaNs, StringComparison.Ordinal) && _resolver.IsWritable(fq, name)
+				? t : null;
+		}
+
 		bool ClrAttributeConvertible(string fq, string name, string val)
 		{
+			if (IsStaticOrDynamicResource(val, out _)) return MediaResourceTarget(fq, name, val) != null;
 			if (val.TrimStart().StartsWith("{", StringComparison.Ordinal)) return false;
 			Type t = _resolver.GetPropertyType(fq, name);
 			if (t == null) return false;
@@ -118,7 +139,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				return long.TryParse(val, System.Globalization.NumberStyles.Integer,
 					System.Globalization.CultureInfo.InvariantCulture, out _);
 			return ConverterBackedStructs.Contains(under.FullName) || ConverterBackedClasses.Contains(under.FullName)
-				|| under.FullName == MediaNs + "Geometry";
+				|| under.FullName == MediaNs + "Geometry" || under.FullName == MediaNs + "PathFigureCollection";
 		}
 
 		static bool IsIntegral(Type t)

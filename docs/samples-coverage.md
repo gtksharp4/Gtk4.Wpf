@@ -205,6 +205,14 @@ two largest classes: the root base type for x:Class with no code-behind (16 apps
    `myMediaElement` (MediaGallery), keyframe names (KeySplineAnimations), `trg1` (TableRows) and `root`
    (MergedResources).
 8. **Not a generator bug:** DocumentStructure's `fixedpage1_structure.xaml` is malformed XML.
+9. **Media resources that still fall back to a plain value (Round 46 review).** A keyed media resource is built as an
+   object only when every attribute converts and every nested element resolves. `{StaticResource}`/`{DynamicResource}`
+   now convert on a settable media reference property (`DynamicResource` is resolved once, there is no dynamic media
+   binding), and `DrawingImage`, `PathGeometry` (`Figures` markup, `Transform`), `GradientStopCollection` and
+   `GeometryGroup` are built. Left as a plain value: a `<Color>` resource (kept as text, coerced at the use site),
+   `CollectionViewSource` and `HierarchicalDataTemplate` (not media objects; their emission is unchanged), and any media
+   resource with an attribute or nested type the layer lacks. A skipped media property or child element is now reported
+   as a build message (`Skipped ... on X: not available in the layer`) instead of vanishing silently.
 
 ## Next rounds
 

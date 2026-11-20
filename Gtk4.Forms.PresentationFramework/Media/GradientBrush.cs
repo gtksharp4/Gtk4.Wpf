@@ -46,6 +46,18 @@ public abstract class GradientBrush : Brush
 	public GradientStopCollection GradientStops { get; set; } = new GradientStopCollection();
 
 	/// <summary>
+	/// Coordinate space of the gradient points. Default <see cref="BrushMappingMode.RelativeToBoundingBox"/>.
+	/// Stored only: points are always treated as relative.
+	/// </summary>
+	public BrushMappingMode MappingMode { get; set; } = BrushMappingMode.RelativeToBoundingBox;
+
+	/// <summary>
+	/// How the gradient fills beyond its end points. Default <see cref="GradientSpreadMethod.Pad"/>.
+	/// Stored only: Cairo's default (pad) always applies.
+	/// </summary>
+	public GradientSpreadMethod SpreadMethod { get; set; } = GradientSpreadMethod.Pad;
+
+	/// <summary>
 	/// Returns the first stop's <see cref="Gdk.RGBA"/> as an approximation for
 	/// widget colouring.  Full gradient paint is handled by <see cref="ApplyToCairo"/>.
 	/// </summary>
@@ -168,4 +180,18 @@ public class RadialGradientBrush : GradientBrush
 		AddStops(pat);
 		cr.SetSource(pat);
 	}
+}
+
+/// <summary>
+/// How a gradient fills the area outside its end points.
+/// Mirrors <c>System.Windows.Media.GradientSpreadMethod</c>.
+/// </summary>
+public enum GradientSpreadMethod
+{
+	/// <summary>The end colours fill the rest.</summary>
+	Pad,
+	/// <summary>The gradient repeats in reverse.</summary>
+	Reflect,
+	/// <summary>The gradient repeats.</summary>
+	Repeat,
 }

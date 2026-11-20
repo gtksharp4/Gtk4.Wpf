@@ -8,8 +8,8 @@ namespace System.Windows.Controls.Primitives;
 /// in step with the current item of the items' <see cref="ICollectionView"/>.
 /// </summary>
 /// <remarks>
-/// Each derived control still owns its <c>SelectedItem</c>/<c>SelectedIndex</c> properties and
-/// <c>SelectionChanged</c> event; the shared base is limited to the view synchronisation.
+/// Each derived control still owns its <c>SelectedItem</c>/<c>SelectedIndex</c> properties;
+/// <c>SelectionChanged</c>/<c>SelectionChangedEvent</c> are declared on <see cref="Selector"/> itself.
 /// </remarks>
 public abstract partial class Selector : ItemsControl
 {
