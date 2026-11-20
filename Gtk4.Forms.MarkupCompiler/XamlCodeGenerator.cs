@@ -644,9 +644,10 @@ namespace Gtk4.Forms.MarkupCompiler
 					string ownerFqType = QualifyTypeName(ownerLocalName);
 					// Emit: OwnerType.SetProp(element, (castType)XamlValueConverter.Convert(...))
 					string castType = ResolveAttachedPropType(ownerFqType, attachedProp);
-					w.Line($"{ownerFqType}.Set{attachedProp}({varName}, " +
+					string ownerEmit = Emitted(ownerFqType);
+					w.Line($"{ownerEmit}.Set{attachedProp}({varName}, " +
 						$"({castType})System.Windows.Markup.XamlValueConverter.Convert(" +
-						$"typeof({ownerFqType}), {ownerFqType}.{attachedProp}Property, \"{EscapeString(val)}\"));");
+						$"typeof({ownerEmit}), {ownerEmit}.{attachedProp}Property, \"{EscapeString(val)}\"));");
 					continue;
 				}
 
@@ -747,7 +748,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			// Template and ContentTemplate property elements contain a ControlTemplate child.
 			// ItemTemplate property elements contain a DataTemplate child.
 			// MultiBinding property elements contain a MultiBinding child.
-			string ownerFqType = QualifyTypeName(ownerLocalName);
+			string ownerFqType = Emitted(QualifyTypeName(ownerLocalName));
 
 			foreach (XElement child in propEl.Elements())
 			{
@@ -913,7 +914,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			ref int counter)
 		{
 			w.Line($"var {tmplVar} = new System.Windows.Controls.DataTemplate();");
-			string dataType = TypeRefExpression((string)tmplEl.Attribute("DataType"));
+			string dataType = DataTypeExpression((string)tmplEl.Attribute("DataType"));
 			if (dataType != "null") w.Line($"{tmplVar}.DataType = {dataType};");
 
 			XElement root = FindTemplateRoot(tmplEl);

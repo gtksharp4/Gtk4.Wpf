@@ -17,9 +17,11 @@ namespace Gtk4.Forms.MarkupCompiler
 			string t = value.Trim();
 			if (t.StartsWith("{", StringComparison.Ordinal))
 			{
-				if (!t.StartsWith("{x:Type", StringComparison.Ordinal) || !t.EndsWith("}", StringComparison.Ordinal))
-					return false;
-				t = t.Substring("{x:Type".Length, t.Length - "{x:Type".Length - 1).Trim();
+				string head = t.StartsWith("{x:TypeExtension", StringComparison.Ordinal) ? "{x:TypeExtension"
+					: t.StartsWith("{x:Type", StringComparison.Ordinal) ? "{x:Type" : null;
+				if (head == null || !t.EndsWith("}", StringComparison.Ordinal)) return false;
+				if (t.Length > head.Length + 1 && !char.IsWhiteSpace(t[head.Length])) return false;
+				t = t.Substring(head.Length, t.Length - head.Length - 1).Trim();
 				if (t.StartsWith("TypeName=", StringComparison.Ordinal))
 					t = t.Substring("TypeName=".Length).Trim();
 			}
@@ -59,6 +61,14 @@ namespace Gtk4.Forms.MarkupCompiler
 			=> WpfXmlnsMap.Resolve(localName) ?? ProbePresentationType(localName) ?? localName;
 
 		/// <summary>
+		/// <paramref name="name"/> as an emitted type name: resolved (dotted) names get <c>global::</c> so a
+		/// user namespace with a <c>System</c> segment cannot shadow them; bare unresolved names stay as is.
+		/// </summary>
+		static string Emitted(string name)
+			=> name.IndexOf('.') > 0 && !name.StartsWith("global::", StringComparison.Ordinal)
+				? "global::" + name : name;
+
+		/// <summary>
 		/// Resolves a <c>TargetType</c>/<c>DataType</c> value (plain or <c>{x:Type}</c> form) to a
 		/// CLR type name; user clr-namespace types come back as <c>global::Ns.Type</c>. Falls back to
 		/// the bare name when unresolved. Returns <c>null</c> when the value is not a type reference.
@@ -68,14 +78,31 @@ namespace Gtk4.Forms.MarkupCompiler
 			if (!TryParseTypeRef(value, out string prefix, out string localName)) return null;
 			if (prefix.Length > 0 && _prefixMap.TryGetValue(prefix, out string clrNs) && clrNs.Length > 0)
 				return "global::" + clrNs + "." + localName;
-			return QualifyTypeName(localName);
+			return Emitted(QualifyTypeName(localName));
 		}
 
-		/// <summary>The <c>typeof(...)</c> expression for a type reference, or <c>null</c> for none.</summary>
+		/// <summary>
+		/// The <c>typeof(...)</c> expression for a type reference attribute value, or <c>null</c> when the
+		/// attribute is absent.
+		/// </summary>
+		/// <exception cref="XamlCodeGeneratorException">The value is present but not a type reference.</exception>
 		string TypeRefExpression(string value)
 		{
-			string name = value == null ? null : ResolveTypeRefName(value);
-			return name == null ? "null" : $"typeof({name})";
+			if (value == null) return "null";
+			string name = ResolveTypeRefName(value)
+				?? throw new XamlCodeGeneratorException("Unsupported type reference: " + value);
+			return $"typeof({name})";
+		}
+
+		/// <summary>
+		/// The <c>DataType</c> expression: <c>typeof</c> for <c>{x:Type}</c>, else the plain string
+		/// (an XML element name for XmlDataProvider templates), or <c>null</c> when absent.
+		/// </summary>
+		string DataTypeExpression(string value)
+		{
+			if (value == null) return "null";
+			if (value.TrimStart().StartsWith("{x:Type", StringComparison.Ordinal)) return TypeRefExpression(value);
+			return "\"" + EscapeString(value) + "\"";
 		}
 	}
 }

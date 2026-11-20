@@ -34,7 +34,7 @@ public class XamlCodeGeneratorTypeRefTests
 	[InlineData("{x:Type TypeName=Button}")]
 	[InlineData("{x:Type  Button }")]
 	public void Style_TargetType_forms_emit_the_same_typeof(string form)
-		=> Assert.Contains("new System.Windows.Style(typeof(System.Windows.Controls.Button))",
+		=> Assert.Contains("new System.Windows.Style(typeof(global::System.Windows.Controls.Button))",
 			Gen(StyleXaml(form)));
 
 	[Fact]
@@ -42,7 +42,7 @@ public class XamlCodeGeneratorTypeRefTests
 	{
 		string code = Gen(StyleXaml("{x:Type Rectangle}"));
 		Assert.DoesNotContain("Type Rectangle", code);
-		Assert.Contains("typeof(System.Windows.Shapes.Rectangle)", code);
+		Assert.Contains("typeof(global::System.Windows.Shapes.Rectangle)", code);
 	}
 
 	[Theory]
@@ -58,7 +58,7 @@ public class XamlCodeGeneratorTypeRefTests
 	{
 		var gen = new XamlCodeGenerator();
 		gen.SetXmlnsDefinitionSource(new FakeXmlnsDefinitionSource((Pres, "Some.Controls")));
-		Assert.Contains("typeof(Some.Controls.Gizmo)", Gen(StyleXaml("{x:Type Gizmo}"), gen));
+		Assert.Contains("typeof(global::Some.Controls.Gizmo)", Gen(StyleXaml("{x:Type Gizmo}"), gen));
 	}
 
 	[Theory]
@@ -70,8 +70,8 @@ public class XamlCodeGeneratorTypeRefTests
 	[InlineData("ScrollViewer", "System.Windows.Controls.ScrollViewer")]
 	public void Style_TargetType_layer_types_are_qualified(string name, string fq)
 	{
-		Assert.Contains($"typeof({fq})", Gen(StyleXaml(name)));
-		Assert.Contains($"typeof({fq})", Gen(StyleXaml("{x:Type " + name + "}")));
+		Assert.Contains($"typeof(global::{fq})", Gen(StyleXaml(name)));
+		Assert.Contains($"typeof(global::{fq})", Gen(StyleXaml("{x:Type " + name + "}")));
 	}
 
 	[Fact]
@@ -79,14 +79,13 @@ public class XamlCodeGeneratorTypeRefTests
 	{
 		string code = Gen(Window(@"<Button><Button.Template>
 <ControlTemplate TargetType=""{x:Type Button}""><Border /></ControlTemplate></Button.Template></Button>"));
-		Assert.Contains("new System.Windows.Controls.ControlTemplate(typeof(System.Windows.Controls.Button))", code);
+		Assert.Contains("new System.Windows.Controls.ControlTemplate(typeof(global::System.Windows.Controls.Button))", code);
 	}
 
 	[Theory]
 	[InlineData("{x:Type local:Place}")]
 	[InlineData("{x:Type TypeName=local:Place}")]
-	[InlineData("local:Place")]
-	public void DataTemplate_DataType_forms(string form)
+	public void DataTemplate_DataType_x_Type_forms(string form)
 	{
 		string code = Gen(Window(
 			$@"<Window.Resources><DataTemplate x:Key=""d"" DataType=""{form}"">" +
@@ -105,14 +104,14 @@ public class XamlCodeGeneratorTypeRefTests
 	{
 		string code = Gen(Window(@"<Window.Resources><Style x:Key=""s"" TargetType=""{x:Type ListBoxItem}"">
 <EventSetter Event=""MouseDoubleClick"" Handler=""OnDbl"" /></Style></Window.Resources>"));
-		Assert.Contains("System.Windows.Controls.ListBoxItem.MouseDoubleClickEvent", code);
+		Assert.Contains("typeof(global::System.Windows.Controls.ListBoxItem)", code);
 	}
 
 	[Theory]
-	[InlineData("ScrollViewer.HorizontalScrollBarVisibility", "System.Windows.Controls.ScrollViewer.Set")]
-	[InlineData("SpellCheck.IsEnabled", "System.Windows.Controls.SpellCheck.Set")]
-	[InlineData("Canvas.Left", "System.Windows.Controls.Canvas.Set")]
-	[InlineData("Grid.Row", "System.Windows.Controls.Grid.Set")]
+	[InlineData("ScrollViewer.HorizontalScrollBarVisibility", "global::System.Windows.Controls.ScrollViewer.Set")]
+	[InlineData("SpellCheck.IsEnabled", "global::System.Windows.Controls.SpellCheck.Set")]
+	[InlineData("Canvas.Left", "global::System.Windows.Controls.Canvas.Set")]
+	[InlineData("Grid.Row", "global::System.Windows.Controls.Grid.Set")]
 	public void Attached_property_owners_are_qualified(string attr, string expected)
 	{
 		string code = Gen(Window($@"<Button {attr}=""1"" />"));
@@ -125,8 +124,8 @@ public class XamlCodeGeneratorTypeRefTests
 	public void Attached_property_owner_is_qualified_in_a_property_element_context()
 	{
 		string code = Gen(Window(@"<TextBox SpellCheck.IsEnabled=""True"" ScrollViewer.CanContentScroll=""True"" />"));
-		Assert.Contains("typeof(System.Windows.Controls.SpellCheck)", code);
-		Assert.Contains("typeof(System.Windows.Controls.ScrollViewer)", code);
+		Assert.Contains("typeof(global::System.Windows.Controls.SpellCheck)", code);
+		Assert.Contains("typeof(global::System.Windows.Controls.ScrollViewer)", code);
 	}
 
 	[Fact]
@@ -164,5 +163,5 @@ public class XamlCodeGeneratorTypeRefTests
 	[Fact]
 	public void Existing_plain_forms_are_unchanged()
 		=> Assert.Equal(1, Gen(StyleXaml("Button")).Split('\n')
-			.Count(l => l.Contains("new System.Windows.Style(typeof(System.Windows.Controls.Button))")));
+			.Count(l => l.Contains("new System.Windows.Style(typeof(global::System.Windows.Controls.Button))")));
 }

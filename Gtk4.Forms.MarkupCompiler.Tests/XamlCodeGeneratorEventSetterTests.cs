@@ -26,8 +26,8 @@ public class XamlCodeGeneratorEventSetterTests
 	{
 		string code = Gen(Style(@"<EventSetter Event=""Click"" Handler=""OnClick""/>"));
 		Assert.Contains(
-			"Setters.Add(new System.Windows.EventSetter(System.Windows.Controls.Button.ClickEvent, " +
-			"System.Delegate.CreateDelegate(System.Windows.Controls.Button.ClickEvent.HandlerType, " +
+			"Setters.Add(new System.Windows.EventSetter(global::System.Windows.Controls.Button.ClickEvent, " +
+			"System.Delegate.CreateDelegate(global::System.Windows.Controls.Button.ClickEvent.HandlerType, " +
 			"this, typeof(global::MyApp.MainWindow).GetMethod(\"OnClick\", System.Reflection.BindingFlags.Instance | " +
 			"System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic)))", code);
 	}
@@ -36,8 +36,8 @@ public class XamlCodeGeneratorEventSetterTests
 	public void Qualified_event_uses_named_owner()
 	{
 		string code = Gen(Style(@"<EventSetter Event=""Border.MouseDown"" Handler=""OnDown""/>"));
-		Assert.Contains("EventSetter(System.Windows.Controls.Border.MouseDownEvent, " +
-			"System.Delegate.CreateDelegate(System.Windows.Controls.Border.MouseDownEvent.HandlerType, " +
+		Assert.Contains("EventSetter(global::System.Windows.Controls.Border.MouseDownEvent, " +
+			"System.Delegate.CreateDelegate(global::System.Windows.Controls.Border.MouseDownEvent.HandlerType, " +
 			"this, typeof(global::MyApp.MainWindow).GetMethod(\"OnDown\", System.Reflection.BindingFlags.Instance | " +
 			"System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic)))", code);
 	}
