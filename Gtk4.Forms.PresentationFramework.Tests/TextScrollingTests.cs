@@ -111,4 +111,24 @@ public class TextScrollingTests : WpfGtkTestBase
 		Assert.True(atEnd.Value + atEnd.PageSize >= atEnd.Upper - 1, $"not at end: {atEnd}");
 		Assert.Equal(0, atHome);
 	});
+
+	[Fact]
+	public void AppendText_past_MaxLength_is_clamped_and_raises_TextChanged() => Run(() =>
+	{
+		var tb = new TextBox { AcceptsReturn = true, MaxLength = 8, Text = "abcde" };
+		var win = new Window { Content = tb };
+		win.Show();
+		GtkPump.For(100);
+		int raised = 0;
+		tb.TextChanged += (_, _) => raised++;
+		tb.AppendText("fghij");
+		var text = tb.Text;
+		var count = raised;
+		tb.AppendText("k");
+		var after = tb.Text;
+		win.Close();
+		Assert.Equal("abcdefgh", text);
+		Assert.True(count > 0);
+		Assert.Equal("abcdefgh", after);
+	});
 }

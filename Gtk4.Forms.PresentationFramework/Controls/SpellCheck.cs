@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 
 namespace System.Windows.Controls;
@@ -15,7 +16,7 @@ public static class SpellCheck
 
 	/// <summary>Identifies the <c>SpellCheck.CustomDictionaries</c> attached property.</summary>
 	public static readonly DependencyProperty CustomDictionariesProperty =
-		DependencyProperty.RegisterAttached("CustomDictionaries", typeof(IList<Uri>), typeof(SpellCheck),
+		DependencyProperty.RegisterAttached("CustomDictionaries", typeof(IList), typeof(SpellCheck),
 			new PropertyMetadata(null));
 
 	/// <summary>Gets whether spell checking is enabled on <paramref name="element"/>.</summary>
@@ -27,10 +28,10 @@ public static class SpellCheck
 		=> Require(element).SetValue(IsEnabledProperty, value);
 
 	/// <summary>Gets the custom dictionaries of <paramref name="element"/>, creating the list on first use.</summary>
-	public static IList<Uri> GetCustomDictionaries(DependencyObject element)
+	public static IList GetCustomDictionaries(DependencyObject element)
 	{
 		Require(element);
-		if (element.GetValue(CustomDictionariesProperty) is not IList<Uri> list)
+		if (element.GetValue(CustomDictionariesProperty) is not IList list)
 		{
 			list = new List<Uri>();
 			element.SetValue(CustomDictionariesProperty, list);

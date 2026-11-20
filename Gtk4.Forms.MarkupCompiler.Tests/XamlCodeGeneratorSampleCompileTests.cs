@@ -29,7 +29,7 @@ public class XamlCodeGeneratorSampleCompileTests
 	// Samples whose generated code compiles with no errors at all.
 	static readonly HashSet<string> Clean = new()
 	{
-		"OpacityAnimation.App.xaml", "BitmapEffectsGallery.App.xaml",
+		"OpacityAnimation.App.xaml", "BitmapEffectsGallery.App.xaml", "PropertyAnimation.App.xaml",
 		"Converter.App.xaml", "DataTrigger.MainWindow.xaml", "AnimationTiming.HandoffVersusComposeExample.xaml",
 	};
 

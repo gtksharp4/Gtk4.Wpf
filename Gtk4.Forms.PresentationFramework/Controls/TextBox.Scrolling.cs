@@ -57,7 +57,8 @@ public partial class TextBox
 	{
 		if (text == null) throw new ArgumentNullException(nameof(text));
 		if (text.Length == 0) return;
-		if (_textView == null)
+		// Over MaxLength the DP clamp must run, so take the normal (rewriting) path.
+		if (_textView == null || (MaxLength > 0 && Text.Length + text.Length > MaxLength))
 		{
 			Text += text;
 			return;

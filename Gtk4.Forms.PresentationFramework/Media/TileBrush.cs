@@ -54,6 +54,12 @@ public abstract class TileBrush : Brush
 	/// Default is <see cref="BrushMappingMode.RelativeToBoundingBox"/>.
 	/// </summary>
 	public BrushMappingMode ViewportUnits { get; set; } = BrushMappingMode.RelativeToBoundingBox;
+
+	/// <summary>Horizontal alignment of the content in the tile. Stored only.</summary>
+	public AlignmentX AlignmentX { get; set; } = AlignmentX.Center;
+
+	/// <summary>Vertical alignment of the content in the tile. Stored only.</summary>
+	public AlignmentY AlignmentY { get; set; } = AlignmentY.Center;
 }
 
 /// <summary>

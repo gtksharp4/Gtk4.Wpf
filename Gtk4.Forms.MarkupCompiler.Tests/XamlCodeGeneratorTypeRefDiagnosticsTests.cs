@@ -103,10 +103,13 @@ public class XamlCodeGeneratorTypeRefDiagnosticsTests
 	[Theory]
 	[InlineData("{Binding Foo}")]
 	[InlineData("{DynamicResource t}")]
-	[InlineData("{StaticResource t}")]
 	public void DataTemplate_markup_extension_DataType_throws(string form)
 		=> Assert.Throws<XamlCodeGeneratorException>(() => new XamlCodeGenerator().Generate(
 			DataTemplate(form), out _));
+
+	[Fact]
+	public void DataTemplate_StaticResource_DataType_emits_the_lookup()
+		=> Assert.Contains(".DataType = this.FindResource(\"t\");", Gen(DataTemplate("{StaticResource t}")));
 
 	[Fact]
 	public void Layer_types_are_global_qualified_in_every_position()

@@ -97,8 +97,8 @@ namespace Gtk4.Forms.MarkupCompiler
 		/// <summary>
 		/// The <c>DataType</c> expression: <c>typeof</c> for <c>{x:Type}</c>/<c>{x:TypeExtension}</c>, the member for
 		/// <c>{x:Static}</c>, else the plain string (an XML element name for XmlDataProvider templates; a leading
-		/// <c>{}</c> escape is stripped), or <c>null</c> when absent. <c>DataType</c> is not a dependency property,
-		/// so other markup extensions are rejected.
+		/// <c>{}</c> escape is stripped), <c>{StaticResource}</c> as a resource lookup, or <c>null</c> when absent.
+		/// <c>DataType</c> is a CLR property, so <c>{Binding}</c> and <c>{DynamicResource}</c> are rejected.
 		/// </summary>
 		/// <exception cref="XamlCodeGeneratorException">The value is an unsupported markup extension.</exception>
 		string DataTypeExpression(string value)
@@ -110,6 +110,9 @@ namespace Gtk4.Forms.MarkupCompiler
 			if (t.StartsWith("{", StringComparison.Ordinal))
 			{
 				if (IsXStatic(value, out string staticExpr, _prefixMap, ProbePresentationType)) return staticExpr;
+				if (t.StartsWith("{StaticResource", StringComparison.Ordinal)
+					&& IsStaticOrDynamicResource(t, out string key))
+					return StaticResourceLookup("this", EscapeString(key));
 				throw new XamlCodeGeneratorException("Unsupported DataType value: " + value);
 			}
 			return "\"" + EscapeString(value) + "\"";

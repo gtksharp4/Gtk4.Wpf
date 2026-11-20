@@ -29,6 +29,15 @@ public class SpellCheckTests : WpfGtkTestBase
 	});
 
 	[Fact]
+	public void CustomDictionaries_is_the_non_generic_IList_and_takes_Uris() => Run(() =>
+	{
+		System.Collections.IList list = SpellCheck.GetCustomDictionaries(new TextBox());
+		list.Add(new Uri("file:///d.lex"));
+		Assert.Single(list);
+		Assert.Equal(typeof(System.Collections.IList), SpellCheck.CustomDictionariesProperty.PropertyType);
+	});
+
+	[Fact]
 	public void Accessors_reject_a_null_element()
 	{
 		Assert.Throws<ArgumentNullException>(() => SpellCheck.GetIsEnabled(null!));

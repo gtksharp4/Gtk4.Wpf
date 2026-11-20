@@ -366,7 +366,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				}
 				else
 				{
-					w.Line($"this.{propName} = {ClrValueExpression(propName, val)};");
+					w.Line($"this.{propName} = {ClrPropertyExpression(rootFqType, propName, val)};");
 				}
 			}
 		}
@@ -696,7 +696,7 @@ namespace Gtk4.Forms.MarkupCompiler
 						$"{DpValueExpression(fqType, propName, val)});");
 				}
 				else
-					w.Line($"{varName}.{propName} = {ClrValueExpression(propName, val)};");
+					w.Line($"{varName}.{propName} = {ClrPropertyExpression(fqType, propName, val)};");
 			}
 
 			// Recurse into grandchildren (passes varName as parentVar — single-child or Children.Add)

@@ -1426,31 +1426,38 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
 - **Round 43 review (Opus) + fixes - DONE.** **B-N-A (Medium)** `DataType` emitted every non-`{x:Type` value as a string, so
   `{Binding Foo}` became a literal. `{}Hero` now emits `"Hero"` (escape stripped), `{x:Type}`/`{x:TypeExtension}` stay
   `typeof`, `{x:Static}` emits the member, and any other markup extension (`{Binding}`, `{StaticResource}`,
-  `{DynamicResource}`) throws `XamlCodeGeneratorException` because `DataType` is not a DP. **B-N-B (Medium)** `WpfXmlnsMap`
+  `{DynamicResource}`) - see the follow-up for the corrected `{StaticResource}` handling. **B-N-B (Medium)** `WpfXmlnsMap`
   mapped `SpellCheck` but the type did not exist; added a store-only `System.Windows.Controls.SpellCheck`
   (`IsEnabled` default false, `CustomDictionaries` created lazily per element; GTK spell checking is not applied), and the
   sample-compile filter now counts CS0234. **B-N-C (Low)** the `Emitted()` doc promised that a user namespace with a `System`
   segment cannot shadow emitted names; reworded to what it does. **B-N-D (Medium)** the presentation xmlns now also maps
   `Controls.Primitives`, `Documents`, `Input`, `Media`, `Media.Animation`, `Media.Effects`, `Media.Imaging` and `Navigation`
-  (no short-name collisions across the 447 public types), so `TargetType="RepeatButton"`/`"Paragraph"` emit qualified
+  (no short-name collisions across the 447 public types; `System.Windows.Automation` was missed, added by the follow-up), so `TargetType="RepeatButton"`/`"Paragraph"` emit qualified
   `typeof`. **C-N1** stray trailing CR removed from `TextBox.Widget.cs`, `RichTextBox.Buffer.cs`, `UIElement.cs`. **C-N2**
   `TextGapsTests`/`TextScrollingTests` class summary and over-120 lines wrapped (the box-drawing section comments measure
   under 120 characters and were left). **C-N3** the static `Get/Set{Horizontal,Vertical}ScrollBarVisibility` docs now say
   only `ScrollViewer`, `TextBox` and `RichTextBox` apply the value. **C-N4** `TextBox.AppendText` on the multiline backing
-  inserts at the buffer end under the `_updating` guard instead of rewriting the buffer, so the caret survives.
+  inserts at the buffer end under the `_updating` guard instead of rewriting the buffer, so the caret survives (the follow-up restores the MaxLength clamp).
   Rejected in triage: none.
   Consequence of B-N-D: `PropertyAnimation.App.xaml` (a `Clean` sample) now gets 5 semantic errors, because the
   `DrawingBrush` it used to drop silently now resolves and the generator emits string literals for `Rect`/enum
-  properties (`Viewport`, `ViewportUnits`, `TileMode`) and `AlignmentX/Y` is missing. It was removed from the `Clean` set.
+  properties (`Viewport`, `ViewportUnits`, `TileMode`) and `AlignmentX/Y` is missing. It was removed from the `Clean` set (restored by the follow-up).
   In-repo sample compile is otherwise unchanged. The official WPF-Samples coverage was **not** re-measured (no checkout
   or harness in this environment); `docs/samples-coverage.md` is still the Round 42 measurement.
   **Round 43 totals: 4331 tests** (190 WindowsBase + 3730 PresentationFramework + 378 MarkupCompiler + 33 ProjectConverter),
   all pass; `dotnet build Gtk4.Forms.sln` 0 warnings. Failing-first was observed for the `AppendText` caret test and the
   RepeatButton/Brush namespace cases; the DataType, SpellCheck and namespace tests were written alongside their fixes.
+- **Round 43 follow-up - DONE.** **B-N-A** `DataType="{StaticResource k}"` now emits the resource lookup (`DataType` is a CLR
+  property; only `{Binding}` and `{DynamicResource}` still throw). **B-N-B** `SpellCheck.CustomDictionaries` and
+  `GetCustomDictionaries` are the non-generic `IList` as in WPF (a `List<Uri>` instance). **B-N-D** `System.Windows.Automation`
+  added to the presentation xmlns. **Regression** non-DP CLR properties of struct or enum type now emit a typed conversion
+  (`XamlValueConverter.ConvertByType` / enum member) instead of a string, and `TileBrush` gained store-only
+  `AlignmentX`/`AlignmentY` (new enums); `PropertyAnimation.App.xaml` is `Clean` again. **C-N4** `TextBox.AppendText` falls
+  back to `Text += text` when the result would exceed `MaxLength`, so the clamp and `TextChanged` run.
+  **Follow-up totals: 4335 tests** (190 + 3732 + 380 + 33), all pass, 0 warnings.
 - **Carry-over (Round 43)**: B-N-C follow-up (emit `global::` on every generated `System.*` reference, then a
   `x:Class="MyApp.System.MainWindow"` compile test expecting zero CS0234; today 7 CS0234; about 110 literal sites);
-  setter value elements emit string literals for non-string properties (`Rect`, enum, `TileMode`) of newly resolvable
-  Media types; `ScrollViewer.*ScrollBarVisibility` not applied to `ListBox`/`DataGrid`; re-measure samples coverage;
+  `ScrollViewer.*ScrollBarVisibility` not applied to `ListBox`/`DataGrid`; re-measure samples coverage;
   `gf39/xaml-content-model` still to be reviewed and merged.
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking

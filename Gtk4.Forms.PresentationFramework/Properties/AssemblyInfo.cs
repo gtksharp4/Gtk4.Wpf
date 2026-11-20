@@ -37,6 +37,9 @@ using System.Windows.Markup;
 	"System.Windows.Media.Imaging")]
 [assembly: XmlnsDefinition(
 	"http://schemas.microsoft.com/winfx/2006/xaml/presentation",
+	"System.Windows.Automation")]
+[assembly: XmlnsDefinition(
+	"http://schemas.microsoft.com/winfx/2006/xaml/presentation",
 	"System.Windows.Navigation")]
 
 // UpdateSourceTrigger moved to WindowsBase so FrameworkPropertyMetadata can carry a default trigger.
