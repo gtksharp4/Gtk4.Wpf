@@ -191,9 +191,4 @@ public partial class ListBox
 
 		RaiseSelectionChanged(added, removed);
 	}
-
-	void RaiseSelectionChanged(IList added, IList removed)
-	{
-		SelectionChanged?.Invoke(this, new SelectionChangedEventArgs(this, added, removed));
-	}
 }

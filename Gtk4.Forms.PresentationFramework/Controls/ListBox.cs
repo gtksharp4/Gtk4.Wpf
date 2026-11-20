@@ -19,14 +19,6 @@ public partial class ListBox : Selector
 	/// <inheritdoc/>
 	internal override bool ImplicitSynchronization => SelectionMode == SelectionMode.Single;
 
-	// ── SelectionChanged event ────────────────────────────────────────────────
-
-	/// <summary>
-	/// Raised when the selection changes. <see cref="SelectionChangedEventArgs.AddedItems"/>
-	/// and <see cref="SelectionChangedEventArgs.RemovedItems"/> describe the delta.
-	/// </summary>
-	public event EventHandler<SelectionChangedEventArgs>? SelectionChanged;
-
 	// ── SelectedIndex DP ──────────────────────────────────────────────────────
 
 	/// <summary>Zero-based index of the first selected item; -1 when nothing selected.</summary>

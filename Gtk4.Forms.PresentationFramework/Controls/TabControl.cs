@@ -12,9 +12,6 @@ public class TabControl : Selector
 {
 	internal override DependencyProperty SelectedItemDependencyProperty => SelectedItemProperty;
 
-	/// <summary>Raised when <see cref="SelectedIndex"/> or <see cref="SelectedItem"/> changes.</summary>
-	public event EventHandler<SelectionChangedEventArgs>? SelectionChanged;
-
 	// ── SelectedIndex DP ────────────────────────────────────────────────────
 
 	/// <summary>Zero-based index of the selected tab; -1 when nothing selected.</summary>
@@ -44,8 +41,7 @@ public class TabControl : Selector
 			var newItem = idx >= 0 && idx < tc.Items.Count ? tc.Items[idx] : null;
 			if (!ReferenceEquals(oldItem, newItem))
 				tc.SetValue(SelectedItemProperty, newItem);
-			tc.SelectionChanged?.Invoke(tc,
-				new SelectionChangedEventArgs(tc, oldItem, newItem));
+			tc.NotifySelectionChanged(oldItem, newItem);
 		}
 		finally { tc._updating = false; }
 	}
@@ -81,8 +77,7 @@ public class TabControl : Selector
 			// Apply to notebook directly; GTK SwitchPage re-entry is blocked by _updating.
 			tc.ApplySelectedIndexDirect(idx < 0 ? -1 : idx);
 			// Single raise for programmatic path.
-			tc.SelectionChanged?.Invoke(tc,
-				new SelectionChangedEventArgs(tc, e.OldValue, e.NewValue));
+			tc.NotifySelectionChanged(e.OldValue, e.NewValue);
 		}
 		finally { tc._updating = false; }
 	}
@@ -176,7 +171,7 @@ public class TabControl : Selector
 			SetValue(SelectedIndexProperty, idx);
 			var newItem = idx >= 0 && idx < Items.Count ? Items[idx] : null;
 			SetValue(SelectedItemProperty, newItem);
-			SelectionChanged?.Invoke(this, new SelectionChangedEventArgs(this, oldItem, newItem));
+			NotifySelectionChanged(oldItem, newItem);
 		}
 		finally { _updating = false; }
 	}

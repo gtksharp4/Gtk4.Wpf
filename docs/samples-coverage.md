@@ -5,6 +5,19 @@ against the official `microsoft/WPF-Samples` (256 projects: 243 apps, 9 librarie
 Per-project results are in [`samples-coverage.json`](samples-coverage.json). Each row holds its result in the previous
 report (`previous`, report `9ca5b30b`), so the next run can diff against it.
 
+## Round 46 update: startup runtime (`gf46/startup-runtime`)
+
+Re-measured on `a37d3b17` plus this branch, with the same recipe and a package packed from the worktree.
+**All 84 projects still build, and 76 apps run** (was 74): Linq and OpacityMasking now run, and no app that ran
+before stopped running. The per-category and per-theme tables below are the `ea4c17ae` measurement.
+
+- Linq: `Selector.SelectionChanged` is held back while a `BeginInit`/`EndInit` scope is open and raised once, with
+  the net change, when the outermost scope ends.
+- OpacityMasking: the DP converter path converts a string to `Uri` (`Frame.Source`).
+- DragDropEvents: an exception that escapes a GTK signal callback now reaches `Dispatcher.UnhandledException` and is
+  printed if unhandled. The sample still crashes, and now says why (it needs `Grid.RowDefinitions`, a compiler gap).
+- LocalizationResources and StringLocalizationSample: see the table below. Neither is fixable in the runtime alone.
+
 ## Headline
 
 **83 of 206 portable official WPF sample apps build unmodified, and 74 run.** That is up from 59 / 47 in report
@@ -124,8 +137,8 @@ parse-time `{StaticResource}`):
 
 ## Regressions
 
-None. No project went pass→fail, and no app went runs→crash/hang. Linq, LocalizationResources and
-StringLocalizationSample crash for the same reason as before. DragDropThumbOps hangs, as before.
+None. No project went pass→fail, and no app went runs→crash/hang. LocalizationResources and
+StringLocalizationSample crash for the reasons in the table below. DragDropThumbOps hangs, as before.
 
 ## API demand
 
@@ -154,12 +167,10 @@ The counts are failing portable apps that report the symbol. Windows-only demand
 | Sample | Result | Cause |
 |---|---|---|
 | OpacityAnimation, TargetValues | crash | `'' is not a valid value for property 'Background'`. The `DrawingBrush` resources in `App.xaml` are still emitted as `Resources["…"] = "";`. The resource-object fix does not yet cover `DrawingBrush`/`DrawingGroup` |
-| OpacityMasking | crash | `'GradientBrushExample.xaml' is not a valid value for property 'Source'`. `Frame.Source` is a `Uri` dependency property. The DP path (`XamlValueConverter.Convert`) has no string→`Uri` conversion; Round 45 added it only to the CLR-property path |
 | IntroToStylingAndTemplating | crash | `BasedOn="{StaticResource {x:Type TextBlock}}"` is emitted as `FindResource("{x:Type TextBlock")`. The nested markup extension is truncated instead of becoming `typeof(TextBlock)` |
-| DragDropEvents | crash | Exits with code 1 about 0.6 s after its window appears, with no managed exception. Re-run alone: same. stdout shows `Marshaling layout signal`: GtkSharp caught an exception in a GTK signal callback and exited the process. The likely trigger is the sample's `SizeChanged` handler, which sets `TextBox.Height` from `RowDefinitions[1].ActualHeight` during layout. The layer does not route GTK-callback exceptions to `Dispatcher.UnhandledException`, so the exception is never printed |
-| Linq | crash | Unchanged. Setting `SelectedIndex` in `InitializeComponent` raises `SelectionChanged` before later named elements exist, which is a `NullReferenceException` in the sample handler |
-| LocalizationResources | crash | Unchanged. `MissingManifestResourceException` for `LocalizationResources.data.stringtable.resources`: the manifest name of a `.resx` outside `Properties/` |
-| StringLocalizationSample | crash | Unchanged. `Resource with key 'LocalizedMessage' not found` (a merged or localised dictionary) |
+| DragDropEvents | crash | The exception is now printed (it was swallowed before): `ArgumentOutOfRangeException` at `mainGrid.RowDefinitions[1]` in the sample's `SizeChanged` handler. No generated file of the 84 built samples contains `Grid.RowDefinitions` or `ColumnDefinitions`, so the grid has no rows. MarkupCompiler track |
+| LocalizationResources | crash | Not a manifest-name defect: the converter leaves `EmbeddedResource` untouched. The sample embeds only `stringtable.en-us.restext`, which the SDK compiles into an en-US satellite; there is no neutral resource and no `UICulture`. `ResourceManager` therefore finds nothing under any other UI culture (en-GB here), as in real WPF. It runs with the UI culture forced to en-US |
+| StringLocalizationSample | crash | `Resource with key 'LocalizedMessage' not found`. `ResourceDictionary.Source` now loads a registered compiled dictionary, but the markup compiler emits nothing for `Application.Resources` `MergedDictionaries` or for `StringResources.xaml`. MarkupCompiler track |
 | DragDropThumbOps | hang | Unchanged. Alive with no top-level window after 38 s, and the logs are empty. Not diagnosed |
 
 ## XAML generator errors
@@ -199,15 +210,12 @@ two largest classes: the root base type for x:Class with no code-behind (16 apps
 
 These are ranked by portable samples unblocked. "Only" means samples whose sole remaining blocker is the track.
 
-1. **Startup crashes: up to 8 more runs, and every one of these apps already builds.**
+1. **Startup crashes: up to 6 more runs, and every one of these apps already builds.**
    - Instantiate `DrawingBrush`/`DrawingGroup` resource objects (OpacityAnimation, TargetValues).
-   - Add string→`Uri` in the DP converter path, as the CLR path has (OpacityMasking).
    - Resolve `{StaticResource {x:Type T}}` (IntroToStylingAndTemplating).
-   - Don't raise `SelectionChanged` during `InitializeComponent` (Linq).
-   - Use the localised `.resx` manifest name (LocalizationResources), and resolve merged dictionaries
-     (StringLocalizationSample).
-   - Route exceptions from GTK signal callbacks to `Dispatcher.UnhandledException` and print them, then fix what
-     DragDropEvents reveals.
+   - Emit `Application.Resources` `MergedDictionaries` and register dictionary XAML for `ResourceDictionary.Source`
+     (StringLocalizationSample, MarkupCompiler).
+   - Emit `Grid.RowDefinitions`/`ColumnDefinitions` (DragDropEvents; no generated file of the 84 built samples contains them, MarkupCompiler).
 2. **XAML generator v3: 9 only.**
    - Only: DataTemplatingIntro, GlobalizationHomepage, RoutedEventHandling, CaptureUnCaptureMouse,
      AlternatingAppearanceOfItems, VideoViewerDemo, AppCompat-Quirks, WindowActivationAndDeactivation, PropertyAnimation.
@@ -290,3 +298,4 @@ Deliberately not next:
 | 2026-11-20 | `db9526db` | 1.0.0.26324 | 45 / 206 | 31 | 10 crash, 4 hang; no regressions |
 | 2026-11-20 | `64cddd04` | 1.0.0.26324 | 59 / 206 | 47 | Round 44; 10 crash, 2 hang; 2 regressions (TargetValues, MultiPage: x:Class-less Page now compiled) |
 | 2026-11-20 | `ea4c17ae` | 1.0.0.26324 | 83 / 206 | 74 | Round 45; 8 crash, 1 hang; no regressions (both Round 44 regressions fixed) |
+| 2026-11-20 | `a37d3b17` + `gf46/startup-runtime` | 1.0.0.26324 | 83 / 206 | 76 | Round 46 startup runtime: Linq and OpacityMasking run; no regressions; 6 crash, 1 hang |

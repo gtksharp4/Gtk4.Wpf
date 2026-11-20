@@ -8,7 +8,7 @@ namespace System.Windows;
 /// Minimal WPF-compatible resource dictionary. Stores keyed resources and supports
 /// merged-dictionary composition (Phase 0 — merge is additive only).
 /// </summary>
-public class ResourceDictionary : IDictionary<object, object?>
+public partial class ResourceDictionary : IDictionary<object, object?>
 {
 	readonly Dictionary<object, object?> _inner = new Dictionary<object, object?>();
 

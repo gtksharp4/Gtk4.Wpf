@@ -35,11 +35,11 @@ public partial class Application
 		if (!(args.ExceptionObject is Exception ex))
 			return;
 		// Already reported by Dispatcher.BeginInvoke / DispatcherTimer and rethrown: terminate.
-		if (ex.Data.Contains(Dispatcher.ReportedKey))
-		{
-			args.ExitApplication = true;
-			return;
-		}
-		args.ExitApplication = !Dispatcher.CurrentDispatcher.RaiseUnhandledException(ex);
+		var handled = !ex.Data.Contains(Dispatcher.ReportedKey)
+			&& Dispatcher.CurrentDispatcher.RaiseUnhandledException(ex);
+		args.ExitApplication = !handled;
+		// GLib exits without printing, so say why the process is going away.
+		if (!handled)
+			Console.Error.WriteLine("Unhandled exception in a GTK callback. " + ex);
 	}
 }

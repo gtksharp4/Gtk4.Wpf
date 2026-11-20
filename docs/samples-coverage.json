@@ -40,12 +40,21 @@
 		},
 		{
 			"date": "2026-11-20",
-			"report": "this",
+			"report": "a37d3b17",
 			"mainSha": "ea4c17ae09a4d0db710525472711607a2d377f1d",
 			"packageVersion": "1.0.0.26324",
 			"portableApps": 206,
 			"portableBuild": 83,
 			"portableRun": 74
+		},
+		{
+			"date": "2026-11-20",
+			"report": "this",
+			"mainSha": "a37d3b172414003d328b688adf63012d250e6656",
+			"packageVersion": "1.0.0.26324",
+			"portableApps": 206,
+			"portableBuild": 83,
+			"portableRun": 76
 		}
 	],
 	"fields": {
@@ -74,8 +83,8 @@
 		"windowsOnlyProjects": 44,
 		"portableApps": 206,
 		"portableBuild": 83,
-		"portableRun": 74,
-		"portableCrash": 8,
+		"portableRun": 76,
+		"portableCrash": 6,
 		"portableHang": 1,
 		"portableFail": 122,
 		"portableNotBuilt": 1,
@@ -1799,7 +1808,7 @@
 			"legacyCsproj": false,
 			"batch": 1,
 			"build": "pass",
-			"run": "crash",
+			"run": "runs",
 			"errorCodes": [],
 			"missingTypes": [],
 			"missingMembers": [],
@@ -1809,13 +1818,13 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
-			"runNote": "crash: NullReferenceException in the sample's ListBox_SelectionChanged (MainWindow.cs:24); SelectedIndex set in InitializeComponent raises SelectionChanged before later named elements exist (unchanged since 3deb4dba)",
+			"runNote": "runs (gf46/startup-runtime): Selector.SelectionChanged is held back until the root InitializeComponent ends, so the sample handler no longer runs before its fields exist",
 			"previous": {
 				"build": "pass",
 				"run": "crash",
 				"errorCodes": []
 			},
-			"change": "unchanged"
+			"change": "crash->runs"
 		},
 		{
 			"project": "Data Binding/MasterDetail/MasterDetail.csproj",
@@ -2866,7 +2875,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
-			"runNote": "crash: exits with code 1 about 0.6-3.5 s after showing its window, no managed exception printed; stdout \"Marshaling layout signal\" (GtkSharp signal-marshal catch -> ExceptionManager exits the process). Re-run alone: same. Likely the SizeChanged handler setting TextBox.Height = RowDefinitions[1].ActualHeight - adjustment from inside a GTK layout callback; the exception is swallowed by GtkSharp instead of reaching Dispatcher.UnhandledException",
+			"runNote": "crash: exits with code 1 after its window appears. The exception is now printed (gf46/startup-runtime): ArgumentOutOfRangeException in the sample SizeChanged handler at mainGrid.RowDefinitions[1]; the markup compiler emits no Grid.RowDefinitions/ColumnDefinitions (MarkupCompiler track)",
 			"previous": {
 				"build": "fail",
 				"run": "not-run",
@@ -3989,7 +3998,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
-			"runNote": "crash: MissingManifestResourceException for LocalizationResources.data.stringtable.resources (manifest name of a .resx outside Properties/); unchanged",
+			"runNote": "crash: MissingManifestResourceException for LocalizationResources.data.stringtable.resources. Not a manifest-name defect (the converter leaves EmbeddedResource untouched): the sample embeds only stringtable.en-us.restext, a satellite for en-US, with no neutral resource or UICulture, so ResourceManager finds nothing under any other UI culture (en-GB here). Real WPF behaves the same. With the UI culture forced to en-US the app runs",
 			"previous": {
 				"build": "pass",
 				"run": "crash",
@@ -4214,7 +4223,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
-			"runNote": "crash: Resource with key 'LocalizedMessage' not found from InitializeComponent (merged/localised dictionary); unchanged",
+			"runNote": "crash: Resource with key 'LocalizedMessage' not found. ResourceDictionary.Source now loads a registered compiled dictionary at run time (gf46/startup-runtime), but the markup compiler still emits nothing for Application.Resources MergedDictionaries or for StringResources.xaml (MarkupCompiler track)",
 			"previous": {
 				"build": "pass",
 				"run": "crash",
@@ -4854,7 +4863,7 @@
 			"legacyCsproj": false,
 			"batch": 2,
 			"build": "pass",
-			"run": "crash",
+			"run": "runs",
 			"errorCodes": [],
 			"missingTypes": [],
 			"missingMembers": [],
@@ -4864,7 +4873,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
-			"runNote": "crash: ArgumentException 'GradientBrushExample.xaml' is not a valid value for property 'Source'; Frame.Source (Uri DP) set via XamlValueConverter.Convert, which has no string->Uri conversion (only the CLR-property path got it in Round 45)",
+			"runNote": "runs (gf46/startup-runtime): the DP converter path now converts a string to Uri (Frame.Source)",
 			"previous": {
 				"build": "fail",
 				"run": "not-run",

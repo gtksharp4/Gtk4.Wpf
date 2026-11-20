@@ -1,43 +1,42 @@
 using System.Collections;
 using System.Collections.Generic;
 
-// D3: The source-typed overload has been removed; the primary constructor in ComboBox.cs
-// now accepts object so both ComboBox and ListBox set a correct non-null source.
-// This partial adds multi-select members (AddedItems / RemovedItems) and a
-// multi-item constructor used by ListBox in multi-selection mode.
-
 namespace System.Windows.Controls;
 
-public sealed partial class SelectionChangedEventArgs
+/// <summary>Represents the method that handles a <c>SelectionChanged</c> routed event.</summary>
+public delegate void SelectionChangedEventHandler(object sender, SelectionChangedEventArgs e);
+
+/// <summary>Event data for <see cref="Primitives.Selector.SelectionChanged"/>.</summary>
+public class SelectionChangedEventArgs : RoutedEventArgs
 {
-	/// <summary>
-	/// Items added to the selection in this change.
-	/// For single-selection events this contains the new item (if any).
-	/// </summary>
+	/// <summary>Initializes a new instance with the items removed from and added to the selection.</summary>
+	/// <exception cref="ArgumentNullException">A list is <see langword="null"/>.</exception>
+	public SelectionChangedEventArgs(RoutedEvent id, IList removedItems, IList addedItems)
+	{
+		RoutedEvent = id ?? throw new ArgumentNullException(nameof(id));
+		RemovedItems = removedItems ?? throw new ArgumentNullException(nameof(removedItems));
+		AddedItems = addedItems ?? throw new ArgumentNullException(nameof(addedItems));
+	}
+
+	/// <summary>Items added to the selection.</summary>
 	public IList AddedItems { get; }
 
-	/// <summary>
-	/// Items removed from the selection in this change.
-	/// For single-selection events this contains the old item (if any).
-	/// </summary>
+	/// <summary>Items removed from the selection.</summary>
 	public IList RemovedItems { get; }
 
-	/// <summary>
-	/// Multi-select constructor: explicit added/removed lists.
-	/// <see cref="OldValue"/> is the first removed item (or <c>null</c>);
-	/// <see cref="NewValue"/> is the first added item (or <c>null</c>).
-	/// </summary>
-	internal SelectionChangedEventArgs(
-		object source,
-		IList addedItems,
-		IList removedItems)
-		: this(
-			source,
-			removedItems.Count > 0 ? removedItems[0] : null,
-			addedItems.Count > 0 ? addedItems[0] : null)
+	/// <summary>The item that replaced <see cref="RemovedItems"/>[0] (single-item changes only).</summary>
+	internal object? OldValue => RemovedItems.Count > 0 ? RemovedItems[0] : null;
+
+	/// <summary>The first added item.</summary>
+	internal object? NewValue => AddedItems.Count > 0 ? AddedItems[0] : null;
+
+	/// <summary>Event data for a change of a single selected item.</summary>
+	internal static SelectionChangedEventArgs ForItems(RoutedEvent id, object source, object? oldItem, object? newItem)
 	{
-		// Override the lists set by the delegated single-item ctor.
-		AddedItems = addedItems;
-		RemovedItems = removedItems;
+		var removed = new List<object?>();
+		var added = new List<object?>();
+		if (oldItem != null) removed.Add(oldItem);
+		if (newItem != null) added.Add(newItem);
+		return new SelectionChangedEventArgs(id, removed, added) { Source = source };
 	}
 }

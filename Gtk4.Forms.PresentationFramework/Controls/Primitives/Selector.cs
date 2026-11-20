@@ -11,7 +11,7 @@ namespace System.Windows.Controls.Primitives;
 /// Each derived control still owns its <c>SelectedItem</c>/<c>SelectedIndex</c> properties and
 /// <c>SelectionChanged</c> event; the shared base is limited to the view synchronisation.
 /// </remarks>
-public abstract class Selector : ItemsControl
+public abstract partial class Selector : ItemsControl
 {
 	/// <summary>Identifies the <see cref="IsSynchronizedWithCurrentItem"/> property.</summary>
 	public static readonly DependencyProperty IsSynchronizedWithCurrentItemProperty =
