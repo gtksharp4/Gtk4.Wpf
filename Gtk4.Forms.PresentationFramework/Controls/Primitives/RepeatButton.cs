@@ -12,7 +12,7 @@ namespace System.Windows.Controls.Primitives;
 /// occur every <see cref="Interval"/> ms.
 /// </para>
 /// </summary>
-public class RepeatButton : ContentControl, ICommandSource, IDisposable
+public class RepeatButton : ButtonBase
 {
 	static RepeatButton()
 	{
@@ -54,40 +54,6 @@ public class RepeatButton : ContentControl, ICommandSource, IDisposable
 		set => SetValue(IntervalProperty, value);
 	}
 
-	// ── Click event ──────────────────────────────────────────────────────────
-
-	/// <summary>Raised on each repeat while the button is held.</summary>
-	public event RoutedEventHandler? Click;
-
-	// ── ICommandSource ───────────────────────────────────────────────────────
-
-	/// <summary>Command executed on each click repetition.</summary>
-	public static readonly DependencyProperty CommandProperty =
-		DependencyProperty.Register(nameof(Command), typeof(ICommand), typeof(RepeatButton),
-			new PropertyMetadata(null));
-
-	/// <inheritdoc/>
-	public ICommand? Command
-	{
-		get => (ICommand?)GetValue(CommandProperty);
-		set => SetValue(CommandProperty, value);
-	}
-
-	/// <inheritdoc/>
-	public object? CommandParameter
-	{
-		get => GetValue(CommandParameterProperty);
-		set => SetValue(CommandParameterProperty, value);
-	}
-
-	/// <summary>Parameter passed to <see cref="Command"/> on execution.</summary>
-	public static readonly DependencyProperty CommandParameterProperty =
-		DependencyProperty.Register(nameof(CommandParameter), typeof(object), typeof(RepeatButton),
-			new PropertyMetadata(null));
-
-	/// <inheritdoc/>
-	public UIElement? CommandTarget => null;
-
 	// ── GTK backing ──────────────────────────────────────────────────────────
 
 	Gtk.Button? _button;
@@ -108,14 +74,6 @@ public class RepeatButton : ContentControl, ICommandSource, IDisposable
 
 		return _button;
 	}
-
-	/// <inheritdoc/>
-	protected override Gtk.Box ContentContainer =>
-		throw new InvalidOperationException("RepeatButton manages its own content via Label.");
-
-	/// <inheritdoc/>
-	protected override Gtk.Label ContentLabel =>
-		throw new InvalidOperationException("RepeatButton manages its own content via Label.");
 
 	void OnGtkPressed(object o, Gtk.PressedArgs e)
 	{
@@ -139,15 +97,7 @@ public class RepeatButton : ContentControl, ICommandSource, IDisposable
 		_timer = null;
 	}
 
-	void FireClick()
-	{
-		var args = new RoutedEventArgs { Source = this };
-		Click?.Invoke(this, args);
-		var cmd = Command;
-		var param = CommandParameter;
-		if (cmd != null && cmd.CanExecute(param))
-			cmd.Execute(param);
-	}
+	void FireClick() => OnClick();
 
 	/// <inheritdoc/>
 	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
@@ -158,12 +108,13 @@ public class RepeatButton : ContentControl, ICommandSource, IDisposable
 	}
 
 	/// <inheritdoc/>
-	public void Dispose()
+	public override void Dispose()
 	{
 		// Stop repeat firing immediately; guard the idle callbacks.
 		_pressed = false;
 		_timer?.Dispose();
 		_timer = null;
+		base.Dispose();
 	}
 
 	// ── Test helpers (InternalsVisibleTo) ────────────────────────────────────

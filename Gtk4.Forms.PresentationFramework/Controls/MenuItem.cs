@@ -68,9 +68,9 @@ public partial class MenuItem : FrameworkElement, ICommandSource, IDisposable
 		var mi = (MenuItem)d;
 		bool nowChecked = e.NewValue is true;
 		if (nowChecked)
-			mi.Checked?.Invoke(mi, EventArgs.Empty);
+			mi.OnChecked(new RoutedEventArgs(CheckedEvent) { Source = mi });
 		else
-			mi.Unchecked?.Invoke(mi, EventArgs.Empty);
+			mi.OnUnchecked(new RoutedEventArgs(UncheckedEvent) { Source = mi });
 	}
 
 	/// <summary>Gets or sets the checked state.</summary>
@@ -80,11 +80,6 @@ public partial class MenuItem : FrameworkElement, ICommandSource, IDisposable
 		set => SetValue(IsCheckedProperty, value);
 	}
 
-	/// <summary>Raised when <see cref="IsChecked"/> becomes <c>true</c>.</summary>
-	public event EventHandler? Checked;
-
-	/// <summary>Raised when <see cref="IsChecked"/> becomes <c>false</c>.</summary>
-	public event EventHandler? Unchecked;
 
 	// ── InputGestureText DP ───────────────────────────────────────────────────
 
@@ -105,10 +100,6 @@ public partial class MenuItem : FrameworkElement, ICommandSource, IDisposable
 	/// <summary>Child menu items. When non-empty the item shows a sub-menu popover.</summary>
 	public IList<MenuItem> Items { get; } = new List<MenuItem>();
 
-	// ── Click event ───────────────────────────────────────────────────────────
-
-	/// <summary>Raised when the item is activated (clicked).</summary>
-	public event EventHandler? Click;
 
 	// ── GTK backing ───────────────────────────────────────────────────────────
 
@@ -148,8 +139,6 @@ public partial class MenuItem : FrameworkElement, ICommandSource, IDisposable
 			// Toggle; OnIsCheckedChanged raises Checked or Unchecked.
 			SetValue(IsCheckedProperty, !IsChecked);
 		}
-		Click?.Invoke(this, EventArgs.Empty);
-		if (CommandHelper.QueryCanExecute())
-			CommandHelper.InvokeCommand();
+		OnClick();
 	}
 }
