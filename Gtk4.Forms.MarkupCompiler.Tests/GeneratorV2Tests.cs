@@ -20,7 +20,8 @@ public class GeneratorV2Tests : GeneratorV2TestBase
 	[Fact]
 	public void G2_Uri_clr_property_is_converted()
 	{
-		string code = Gen($@"<Page x:Class=""A.P"" {Head}><TextBlock><Hyperlink NavigateUri=""Page2.xaml"">go</Hyperlink></TextBlock></Page>");
+		string code = Gen($@"<Page x:Class=""A.P"" {Head}><TextBlock>
+<Hyperlink NavigateUri=""Page2.xaml"">go</Hyperlink></TextBlock></Page>");
 		Assert.Contains(".NavigateUri = new System.Uri(\"Page2.xaml\", System.UriKind.RelativeOrAbsolute);", code);
 		AssertCompiles(code, PageStub);
 	}
@@ -30,7 +31,8 @@ public class GeneratorV2Tests : GeneratorV2TestBase
 	{
 		string code = Gen($@"<Page x:Class=""A.P"" {Head}><Polygon Points=""0,0 10,0 5,8""/></Page>");
 		Assert.Contains(".Points = (global::System.Windows.Shapes.PointCollection)System.Windows.Markup" +
-			".XamlValueConverter.ConvertByType(typeof(global::System.Windows.Shapes.PointCollection), \"0,0 10,0 5,8\");", code);
+			".XamlValueConverter.ConvertByType(typeof(global::System.Windows.Shapes.PointCollection), " +
+			"\"0,0 10,0 5,8\");", code);
 		AssertCompiles(code, PageStub);
 	}
 
@@ -62,7 +64,8 @@ public class GeneratorV2Tests : GeneratorV2TestBase
 	public void G3_code_behind_is_detected_from_the_project_sources_by_class_name()
 	{
 		string xaml = $@"<Page x:Class=""A.P"" {Head}/>";
-		string with = Gen(xaml, sources: new[] { "namespace A { public partial class P : System.Windows.Controls.Page { } }" });
+		string with = Gen(xaml, sources: new[]
+		{ "namespace A { public partial class P : System.Windows.Controls.Page { } }" });
 		Assert.Contains("public partial class P {", with);
 		string without = Gen(xaml, sources: new[] { "namespace A { public partial class Other { } }" });
 		Assert.Contains("public partial class P : global::System.Windows.Controls.Page {", without);
@@ -93,7 +96,7 @@ public class Scale { public static double Conv(double d, int t) => d; } }";
 <local:Data x:Key=""d"" Name=""n"" Count=""3""/><local:Conv x:Key=""c""/></Window.Resources></Window>");
 		Assert.DoesNotContain("Resources[\"d\"] = \"\"", code);
 		Assert.Contains("new global::A.Data();", code);
-		Assert.Contains(".Count = 3;", code);
+		Assert.Contains("XamlValueConverter.SetClrProperty(__e0, \"Count\", \"3\");", code);
 		AssertCompiles(code, UserTypes);
 	}
 
@@ -101,7 +104,8 @@ public class Scale { public static double Conv(double d, int t) => d; } }";
 	public void G4_XmlDataProvider_gets_its_inline_document()
 	{
 		string code = Gen($@"<Window x:Class=""A.W"" {Head}><Window.Resources>
-<XmlDataProvider x:Key=""p"" XPath=""Inv/Books""><x:XData><Inv xmlns=""""><Books><Book Id=""1""/></Books></Inv></x:XData></XmlDataProvider>
+<XmlDataProvider x:Key=""p"" XPath=""Inv/Books""><x:XData>
+<Inv xmlns=""""><Books><Book Id=""1""/></Books></Inv></x:XData></XmlDataProvider>
 </Window.Resources></Window>");
 		Assert.Contains(".XPath = \"Inv/Books\";", code);
 		Assert.Contains("LoadXml(\"<Inv xmlns=\\\"\\\"><Books><Book Id=\\\"1\\\" /></Books></Inv>\")", code);
@@ -119,7 +123,8 @@ public class Scale { public static double Conv(double d, int t) => d; } }";
 	[Fact]
 	public void G4_SolidColorBrush_resource_is_instantiated()
 	{
-		string code = Gen($@"<Window x:Class=""A.W"" {Head}><Window.Resources><SolidColorBrush x:Key=""B"" Color=""Gold""/></Window.Resources></Window>");
+		string code = Gen($@"<Window x:Class=""A.W"" {Head}><Window.Resources>
+<SolidColorBrush x:Key=""B"" Color=""Gold""/></Window.Resources></Window>");
 		Assert.DoesNotContain("Resources[\"B\"] = \"\"", code);
 		Assert.True(code.Contains(".Color = (global::System.Windows.Media.Color)"), code);
 		AssertCompiles(code, UserTypes);
@@ -130,35 +135,42 @@ public class Scale { public static double Conv(double d, int t) => d; } }";
 	{
 		string code = Gen($@"<Window x:Class=""A.W"" {Head} {Local}><Window.Resources>
 <ObjectDataProvider x:Key=""o"" ObjectType=""{{x:Type local:Scale}}"" MethodName=""Conv"">
-<ObjectDataProvider.MethodParameters><sys:Double>2.5</sys:Double><sys:Int32>1</sys:Int32></ObjectDataProvider.MethodParameters>
+<ObjectDataProvider.MethodParameters><sys:Double>2.5</sys:Double><sys:Int32>1</sys:Int32>
+</ObjectDataProvider.MethodParameters>
 </ObjectDataProvider></Window.Resources></Window>");
 		Assert.Contains(".MethodName = \"Conv\";", code);
-		Assert.Contains("MethodParameters.Add(System.Windows.Markup.XamlValueConverter.ConvertByType(typeof(global::System.Double), \"2.5\"))", code);
+		Assert.Contains("MethodParameters.Add(System.Windows.Markup.XamlValueConverter" +
+			".ConvertByType(typeof(global::System.Double), \"2.5\"))", code);
 		AssertCompiles(code, UserTypes);
 	}
 
 	[Fact]
 	public void G4_System_clr_namespace_values_keep_the_plain_emission()
 	{
-		string code = Gen($@"<Window x:Class=""A.W"" {Head} {Local}><Window.Resources><sys:String x:Key=""s"">hi</sys:String></Window.Resources></Window>");
+		string code = Gen($@"<Window x:Class=""A.W"" {Head} {Local}><Window.Resources>
+<sys:String x:Key=""s"">hi</sys:String></Window.Resources></Window>");
 		Assert.Contains("Resources[\"s\"] = \"hi\";", code);
 	}
 
 	[Fact]
 	public void G5_converter_in_an_inner_dictionary_resolves_through_the_enclosing_scopes()
 	{
-		string code = Gen($@"<Window x:Class=""A.W"" {Head} {Local}><StackPanel><StackPanel.Resources><local:Conv x:Key=""c""/></StackPanel.Resources>
+		string code = Gen($@"<Window x:Class=""A.W"" {Head} {Local}><StackPanel>
+<StackPanel.Resources><local:Conv x:Key=""c""/></StackPanel.Resources>
 <TextBox Text=""{{Binding Name, Converter={{StaticResource c}}}}""/></StackPanel></Window>");
-		Assert.Matches(@"Converter = \(System\.Windows\.Data\.IValueConverter\)System\.Windows\.Markup\.StaticResourceScope\.Find\(""c"", this, __e\d+(, __e\d+)*\)", code);
+		Assert.Matches(@"Converter = \(System\.Windows\.Data\.IValueConverter\)System\.Windows\.Markup" +
+			@"\.StaticResourceScope\.Find\(""c"", this, __e\d+(, __e\d+)*\)", code);
 		AssertCompiles(code, UserTypes);
 	}
 
 	[Fact]
 	public void G5_attribute_StaticResource_on_an_unparented_element_probes_its_ancestors()
 	{
-		string code = Gen($@"<Window x:Class=""A.W"" {Head}><Grid><Grid.Resources><SolidColorBrush x:Key=""B""/></Grid.Resources>
+		string code = Gen($@"<Window x:Class=""A.W"" {Head}><Grid>
+<Grid.Resources><SolidColorBrush x:Key=""B""/></Grid.Resources>
 <Border Background=""{{StaticResource B}}""/></Grid></Window>");
-		Assert.Matches(@"BackgroundProperty, System\.Windows\.Markup\.StaticResourceScope\.Find\(""B"", this, __e\d+, __e\d+\)", code);
+		Assert.Matches(@"BackgroundProperty, System\.Windows\.Markup\.StaticResourceScope" +
+			@"\.Find\(""B"", this, __e\d+, __e\d+\)", code);
 		Assert.DoesNotMatch(@"__e\d+\.FindResource", code);
 		AssertCompiles(code, WindowStub);
 	}

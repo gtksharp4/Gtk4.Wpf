@@ -73,6 +73,14 @@ public class ObjectDataProvider : DataSourceProvider
 	/// <inheritdoc/>
 	protected override void QueryData()
 	{
+		if (_objectInstance == null && _objectType != null
+			&& FindMethod(_objectType, MethodParameters.Count) is { IsStatic: true } sm)
+		{
+			// A static method needs no instance (e.g. Enum.GetValues).
+			Invoke(sm, null);
+			return;
+		}
+
 		object? target;
 
 		if (_objectInstance != null)
@@ -111,24 +119,33 @@ public class ObjectDataProvider : DataSourceProvider
 			return;
 		}
 
-		// Invoke MethodName via reflection.
-		var methodArgs = MethodParameters.Count > 0
-			? new object?[MethodParameters.Count]
-			: Array.Empty<object?>();
-		for (int i = 0; i < MethodParameters.Count; i++)
-			methodArgs[i] = MethodParameters[i];
+		var method = FindMethod(target!.GetType(), MethodParameters.Count);
+		if (method == null)
+		{
+			OnQueryFinished(null);
+			return;
+		}
+		Invoke(method, target);
+	}
 
+	MethodInfo? FindMethod(Type type, int parameterCount)
+	{
+		if (string.IsNullOrEmpty(_methodName)) return null;
+		var flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
+		foreach (var m in type.GetMethods(flags))
+			if (m.Name == _methodName && !m.ContainsGenericParameters && m.GetParameters().Length == parameterCount)
+				return m;
+		return null;
+	}
+
+	void Invoke(MethodInfo method, object? target)
+	{
+		var args = new object?[MethodParameters.Count];
+		for (int i = 0; i < args.Length; i++)
+			args[i] = MethodParameters[i];
 		try
 		{
-			var flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
-			var method = target!.GetType().GetMethod(_methodName, flags);
-			if (method == null)
-			{
-				OnQueryFinished(null);
-				return;
-			}
-			var result = method.Invoke(target, methodArgs.Length == 0 ? null : methodArgs);
-			OnQueryFinished(result);
+			OnQueryFinished(method.Invoke(target, args.Length == 0 ? null : args));
 		}
 		catch (Exception ex)
 		{

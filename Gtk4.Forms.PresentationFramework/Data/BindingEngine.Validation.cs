@@ -78,13 +78,11 @@ internal static partial class BindingEngine
 			prop = null;
 			if (source == null) return false;
 			if (string.IsNullOrEmpty(path)) { owner = source; return true; }
-			var segments = path!.Split('.');
-			var head = segments.Length > 1
-				? ResolvePath(source, string.Join(".", segments, 0, segments.Length - 1))
-				: source;
+			SplitLeaf(path!, out var headPath, out var leaf);
+			var head = headPath.Length > 0 ? ResolvePath(source, headPath) : source;
 			if (head == null) return false;
 			owner = head;
-			prop = segments[segments.Length - 1];
+			prop = leaf;
 			return true;
 		}
 	}

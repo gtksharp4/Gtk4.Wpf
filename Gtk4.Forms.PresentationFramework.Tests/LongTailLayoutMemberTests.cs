@@ -100,7 +100,7 @@ public class LongTailLayoutMemberTests : WpfGtkTestBase
 		var first = new Border();
 		((IAddChild)button).AddChild(first);
 		Assert.Same(first, button.Content);
-		Assert.Throws<ArgumentException>(() => ((IAddChild)button).AddChild(new Border()));
+		Assert.Throws<InvalidOperationException>(() => ((IAddChild)button).AddChild(new Border()));
 		((IAddChild)button).AddChild(null!);
 		Assert.Null(button.Content);
 		((IAddChild)button).AddText("hi");
@@ -127,7 +127,14 @@ public class LongTailLayoutMemberTests : WpfGtkTestBase
 		Assert.Throws<ArgumentException>(() => ((IAddChild)panel).AddChild("text"));
 		((IAddChild)panel).AddText("  \n");
 		Assert.Throws<ArgumentException>(() => ((IAddChild)panel).AddText("words"));
-		Assert.Throws<ArgumentNullException>(() => ((IAddChild)panel).AddText(null!));
+		((IAddChild)panel).AddText(null!);
+	});
+
+	[Fact]
+	public void Panel_AddChild_on_an_items_host_throws() => Run(() =>
+	{
+		var panel = new StackPanel { IsItemsHost = true };
+		Assert.Throws<InvalidOperationException>(() => ((IAddChild)panel).AddChild(new Border()));
 	});
 
 	sealed class AddChildWindow : Window

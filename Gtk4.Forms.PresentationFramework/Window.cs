@@ -52,7 +52,6 @@ public partial class Window : ContentControl
 	/// </summary>
 	public event EventHandler? Closed;
 
-
 	// ── GTK backing ──────────────────────────────────────────────────────────
 
 	Gtk.Window? _window;
@@ -72,6 +71,7 @@ public partial class Window : ContentControl
 		// F2: wire window-manager close (title-bar X button) to Close(null) so
 		// ShowDialog unblocks when the user dismisses the window.
 		_window.CloseRequest += OnCloseRequest;
+		AttachAcceleratorController(_window);
 		return _window;
 	}
 
@@ -164,11 +164,16 @@ public partial class Window : ContentControl
 
 		// Pump until a close path sets _dialogClosed. RunIteration(true) blocks for the
 		// next event and dispatches it (including the close handler), keeping the thread live.
-		while (!_dialogClosed)
-			Gtk.Application.RunIteration(true);
-
-		_showingAsDialog = false;
-		return DialogResult;
+		try
+		{
+			while (!_dialogClosed)
+				Gtk.Application.RunIteration(true);
+		}
+		finally
+		{
+			_showingAsDialog = false;
+		}
+		return _dialogResult ?? false; // WPF: closing without a result is false
 	}
 
 	/// <inheritdoc/>

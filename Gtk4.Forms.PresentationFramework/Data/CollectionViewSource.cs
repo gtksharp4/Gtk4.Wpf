@@ -11,7 +11,7 @@ namespace System.Windows.Data;
 /// </summary>
 public class CollectionViewSource
 {
-	// Cache: source object → its default ListCollectionView.
+	// Cache: source object → its default view.
 	static readonly ConditionalWeakTable<object, CollectionView> _cache =
 		new ConditionalWeakTable<object, CollectionView>();
 
@@ -69,16 +69,20 @@ public class CollectionViewSource
 	// ── Static helper ────────────────────────────────────────────────────────
 
 	/// <summary>
-	/// Returns a stable cached <see cref="CollectionView"/> for <paramref name="source"/>, or <see langword="null"/>
-	/// when it is not an <see cref="IEnumerable"/> (a string is not a collection). Multiple calls with the same object return the same view.
+	/// Returns the cached default view for <paramref name="source"/>: the source itself when it is an
+	/// <see cref="ICollectionView"/>, else a stable view over the sequence (a string yields a view over its
+	/// characters). Returns <see langword="null"/> for a null or non-enumerable source.
 	/// </summary>
-	public static ICollectionView? GetDefaultView(object source)
+	public static ICollectionView? GetDefaultView(object? source)
 	{
-		if (source == null) throw new ArgumentNullException(nameof(source));
-		// ICollectionView is its own view.
+		if (source == null) return null;
 		if (source is ICollectionView cv) return cv;
-		// A string is enumerable but is a single value, never a collection.
-		if (source is string || source is not IEnumerable seq) return null;
-		return _cache.GetValue(seq, s => CreateView((IEnumerable)s));
+		if (source is not IEnumerable seq) return null;
+		return _cache.GetValue(seq, s =>
+		{
+			var view = CreateView((IEnumerable)s);
+			view.IsDefaultView = true;
+			return view;
+		});
 	}
 }

@@ -67,7 +67,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			}
 		}
 
-		static string ElementBindingInit(string name, string value)
+		string ElementBindingInit(string name, string value)
 		{
 			switch (name)
 			{

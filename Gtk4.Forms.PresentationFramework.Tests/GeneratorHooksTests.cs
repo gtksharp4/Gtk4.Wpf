@@ -41,7 +41,11 @@ public class GeneratorHooksTests
 	[Fact]
 	public void PointCollection_converter_rejects_an_odd_count_and_garbage()
 	{
-		Assert.Throws<FormatException>(() => XamlValueConverter.ConvertByType(typeof(PointCollection), "1,2 3"));
+		Assert.Throws<InvalidOperationException>(
+			() => XamlValueConverter.ConvertByType(typeof(PointCollection), "1,2 3"));
+		Assert.Throws<FormatException>(() => XamlValueConverter.ConvertByType(typeof(PointCollection), "1,,2 3"));
+		Assert.Throws<FormatException>(() => XamlValueConverter.ConvertByType(typeof(PointCollection), ",1 2"));
+		Assert.Throws<FormatException>(() => XamlValueConverter.ConvertByType(typeof(PointCollection), "1,2,"));
 		Assert.Throws<FormatException>(() => XamlValueConverter.ConvertByType(typeof(PointCollection), "a,b"));
 	}
 }

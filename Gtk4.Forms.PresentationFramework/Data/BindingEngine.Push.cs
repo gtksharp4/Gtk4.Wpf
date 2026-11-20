@@ -28,6 +28,7 @@ internal static partial class BindingEngine
 			bool transferred = PushToTargetCore(target, source);
 			RunTargetUpdatedValidation(target, source, _lastRaw);
 			if (transferred) RaiseDataTransfer(target, Binding.TargetUpdatedEvent, _binding.NotifyOnTargetUpdated);
+			RefreshCurrentViews(source);
 		}
 
 		object? _lastRaw;
@@ -108,23 +109,14 @@ internal static partial class BindingEngine
 		/// </summary>
 		bool PathIsUnresolvable(object source)
 		{
-			if (string.IsNullOrEmpty(_binding.Path)) return false;
-			// Walk the path; if any segment's property is not found the path is unresolvable.
-			var current = (object?)source;
-			foreach (var segment in _binding.Path!.Split('.'))
-			{
-				if (current == null) return true;
-				var prop = current.GetType().GetProperty(
-					segment, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-				if (prop == null) return true;
-				current = prop.GetValue(current);
-			}
-			return false;
+			return !TryWalk(source, _binding.Path, null, out _);
 		}
 
 		void DetachInpc()
 		{
 			DetachDpSource(); // BindingEngine.SourceDp.cs
+			DetachViews();
+			_watchViews = false;
 			if (_inpcSource != null)
 			{
 				_inpcSource.PropertyChanged -= OnSourcePropertyChanged;

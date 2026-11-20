@@ -96,15 +96,15 @@ public class LongTailMemberTests : WpfGtkTestBase
 	});
 
 	[Fact]
-	public void TextElement_Background_is_an_attached_non_inherited_brush() => Run(() =>
+	public void TextElement_Background_is_a_plain_instance_property() => Run(() =>
 	{
-		var tb = new TextBlock();
-		Assert.Null(TextElement.GetBackground(tb));
-		TextElement.SetBackground(tb, Brushes.Red);
-		Assert.Equal(Colors.Red, ((SolidColorBrush)tb.GetValue(TextElement.BackgroundProperty)!).Color);
-		Assert.Equal(Colors.Red, ((SolidColorBrush)TextElement.GetBackground(tb)!).Color);
+		var run = new Run();
+		Assert.Null(run.Background);
+		run.Background = Brushes.Red;
+		Assert.Equal(Colors.Red, ((SolidColorBrush)run.Background!).Color);
 		Assert.Equal(typeof(Brush), TextElement.BackgroundProperty.PropertyType);
-		Assert.Throws<ArgumentNullException>(() => TextElement.GetBackground(null!));
+		Assert.Null(typeof(TextElement).GetMethod(
+			"GetBackground", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static));
 	});
 
 	[Fact]
@@ -127,8 +127,12 @@ public class LongTailMemberTests : WpfGtkTestBase
 	{
 		var w = new Window();
 		Assert.True(w.ShowActivated);
+		Assert.Equal(true, w.GetValue(Window.ShowActivatedProperty));
 		w.ShowActivated = false;
 		Assert.False(w.ShowActivated);
+		Assert.Equal(false, w.GetValue(Window.ShowActivatedProperty));
+		w.SetValue(Window.ShowActivatedProperty, true);
+		Assert.True(w.ShowActivated);
 	});
 
 	[Fact]

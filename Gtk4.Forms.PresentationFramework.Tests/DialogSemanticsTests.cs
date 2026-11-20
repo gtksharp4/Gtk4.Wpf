@@ -6,7 +6,7 @@ using WpfWindow = System.Windows.Window;
 
 namespace Gtk4.Forms.PresentationFramework.Tests;
 
-/// <summary>Button.IsDefault/IsCancel/IsDefaulted, settable Window.DialogResult, ContentSource, HeaderedContentControl.</summary>
+/// <summary>Button.IsDefault/IsCancel/IsDefaulted, settable Window.DialogResult, HeaderedContentControl.</summary>
 public class DialogSemanticsTests : WpfGtkTestBase
 {
 	static void ScheduleClose(Action action) =>
@@ -97,12 +97,20 @@ public class DialogSemanticsTests : WpfGtkTestBase
 	});
 
 	[Fact]
-	public void IsDefaulted_follows_IsDefault() => Run(() =>
+	public void IsDefaulted_needs_a_window_that_holds_focus() => Run(() =>
 	{
-		var b = new Button { IsDefault = true };
-		Assert.True(b.IsDefaulted);
-		b.IsDefault = false;
-		Assert.False(b.IsDefaulted);
+		var loose = new Button { IsDefault = true };
+		Assert.False(loose.IsDefaulted);
+
+		var f = new Form();
+		f.Input.SetFocusedInternal(true);
+		Assert.True(f.Ok.IsDefaulted);
+		f.Other.SetFocusedInternal(true);
+		Assert.False(f.Ok.IsDefaulted);
+		f.Input.SetFocusedInternal(true);
+		f.Ok.IsDefault = false;
+		Assert.False(f.Ok.IsDefaulted);
+		f.Input.SetFocusedInternal(false);
 	});
 
 	[Fact]
@@ -145,9 +153,34 @@ public class DialogSemanticsTests : WpfGtkTestBase
 	public void A_cancel_button_handler_can_dismiss_the_dialog() => Run(() =>
 	{
 		var f = new Form();
-		f.Cancel.Click += (_, _) => f.Window.DialogResult = false;
+		int clicks = 0;
+		f.Cancel.Click += (_, _) => clicks++;
 		ScheduleClose(() => f.Input.RaiseKeyDownForTest(Key.Escape));
 		Assert.False(f.Window.ShowDialog());
+		Assert.Equal(1, clicks);
+	});
+
+	[Fact]
+	public void A_cancel_button_without_a_handler_dismisses_the_dialog() => Run(() =>
+	{
+		var f = new Form();
+		ScheduleClose(() => f.Cancel.ClickFromAccelerator());
+		Assert.False(f.Window.ShowDialog());
+		Assert.True(f.Window.DialogResult == false);
+	});
+
+	[Fact]
+	public void A_cancel_button_with_a_command_does_not_dismiss_the_dialog() => Run(() =>
+	{
+		var f = new Form();
+		f.Cancel.Command = System.Windows.Input.ApplicationCommands.Close;
+		ScheduleClose(() =>
+		{
+			f.Cancel.ClickFromAccelerator();
+			Assert.Null(f.Window.DialogResult);
+			f.Window.Close();
+		});
+		f.Window.ShowDialog();
 	});
 
 	[Fact]
@@ -166,5 +199,71 @@ public class DialogSemanticsTests : WpfGtkTestBase
 		var hcc = new HeaderedContentControl { Header = "h", Content = "c" };
 		Assert.Equal("h", hcc.Header);
 		Assert.Equal("c", hcc.Content);
+	});
+
+	[Fact]
+	public void A_Closing_handler_can_set_DialogResult() => Run(() =>
+	{
+		var win = new WpfWindow { Title = "dr" };
+		win.Closing += (_, _) => win.DialogResult = true;
+		ScheduleClose(() => win.Close());
+		Assert.True(win.ShowDialog());
+	});
+
+	[Fact]
+	public void Closing_a_dialog_without_a_result_returns_false() => Run(() =>
+	{
+		var win = new WpfWindow { Title = "dr" };
+		ScheduleClose(() => win.Close());
+		Assert.Equal(false, win.ShowDialog());
+	});
+
+	[Fact]
+	public void Return_through_the_window_key_controller_clicks_the_default_button() => Run(() =>
+	{
+		var f = new Form();
+		int ok = 0;
+		f.Ok.Click += (_, _) => ok++;
+		f.Input.SetFocusedInternal(true);
+		bool handled = f.Window.HandleAcceleratorKeyval(0xff0d, default);
+		f.Input.SetFocusedInternal(false);
+		Assert.True(handled);
+		Assert.Equal(1, ok);
+	});
+
+	[Fact]
+	public void Keypad_Enter_clicks_the_default_button_too() => Run(() =>
+	{
+		var f = new Form();
+		int ok = 0;
+		f.Ok.Click += (_, _) => ok++;
+		Assert.True(f.Window.HandleAcceleratorKeyval(0xff8d, default));
+		Assert.Equal(1, ok);
+	});
+
+	[Fact]
+	public void Escape_with_no_focused_element_clicks_the_cancel_button() => Run(() =>
+	{
+		var f = new Form();
+		(Keyboard.FocusedElement as System.Windows.UIElement)?.SetFocusedInternal(false);
+		int cancel = 0;
+		f.Cancel.Click += (_, _) => cancel++;
+		Assert.True(f.Window.HandleAcceleratorKeyval(0xff1b, default));
+		Assert.Equal(1, cancel);
+	});
+
+	[Fact]
+	public void Return_is_left_to_a_multiline_TextBox_or_a_focused_button() => Run(() =>
+	{
+		var f = new Form();
+		int ok = 0;
+		f.Ok.Click += (_, _) => ok++;
+		f.Input.AcceptsReturn = true;
+		f.Input.SetFocusedInternal(true);
+		Assert.False(f.Window.HandleAcceleratorKeyval(0xff0d, default));
+		f.Other.SetFocusedInternal(true);
+		Assert.False(f.Window.HandleAcceleratorKeyval(0xff0d, default));
+		f.Other.SetFocusedInternal(false);
+		Assert.Equal(0, ok);
 	});
 }

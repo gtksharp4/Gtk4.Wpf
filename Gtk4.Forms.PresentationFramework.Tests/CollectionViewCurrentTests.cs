@@ -28,13 +28,12 @@ public class CollectionViewCurrentTests
 	}
 
 	[Fact]
-	public void GetDefaultView_takes_object_and_returns_null_for_a_non_collection()
+	public void GetDefaultView_takes_object_and_returns_null_for_a_non_collection_or_null()
 	{
 		object src = Names();
 		Assert.NotNull(CollectionViewSource.GetDefaultView(src));
 		Assert.Null(CollectionViewSource.GetDefaultView(42));
-		Assert.Null(CollectionViewSource.GetDefaultView("text"));
-		Assert.Throws<ArgumentNullException>(() => CollectionViewSource.GetDefaultView(null!));
+		Assert.Null(CollectionViewSource.GetDefaultView(null));
 	}
 
 	[Fact]

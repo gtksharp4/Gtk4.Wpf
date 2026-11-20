@@ -29,8 +29,7 @@ public abstract partial class FrameworkElement
 	}
 
 	/// <summary>Detaches all element-level triggers. Call on unload/dispose.</summary>
-	[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-	public void DetachElementTriggers()
+	internal void DetachElementTriggers()
 	{
 		foreach (var t in _triggers)
 			t.Detach(this);

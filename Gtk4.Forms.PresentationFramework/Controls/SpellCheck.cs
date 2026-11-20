@@ -53,8 +53,7 @@ public sealed class SpellCheck
 	public static void SetIsEnabled(DependencyObject element, bool value)
 		=> Require(element).SetValue(IsEnabledProperty, value);
 
-	/// <summary>Gets the spelling reform of <paramref name="element"/>.</summary>
-	public static SpellingReform GetSpellingReform(DependencyObject element)
+	internal static SpellingReform GetSpellingReform(DependencyObject element)
 		=> (SpellingReform)Require(element).GetValue(SpellingReformProperty)!;
 
 	/// <summary>Sets the spelling reform of <paramref name="element"/>.</summary>
@@ -81,9 +80,9 @@ public sealed class SpellCheck
 public enum SpellingReform
 {
 	/// <summary>Pre- and post-reform spellings are both accepted.</summary>
-	PreAndPostreform,
-	/// <summary>Post-reform spellings only.</summary>
-	Postreform,
+	PreAndPostreform = 0,
 	/// <summary>Pre-reform spellings only.</summary>
-	Prereform,
+	Prereform = 1,
+	/// <summary>Post-reform spellings only.</summary>
+	Postreform = 2,
 }

@@ -14,7 +14,6 @@ public partial class ContentControl : IAddChild
 	public bool HasContent
 	{
 		get => (bool)GetValue(HasContentProperty)!;
-		protected set => SetValue(_hasContentKey, value);
 	}
 
 	void IAddChild.AddChild(object value) => AddChild(value);
@@ -22,13 +21,13 @@ public partial class ContentControl : IAddChild
 	void IAddChild.AddText(string text) => AddText(text);
 
 	/// <summary>Sets <paramref name="value"/> as the content; a second non-null child is rejected.</summary>
-	/// <exception cref="ArgumentException">The control already has content.</exception>
+	/// <exception cref="InvalidOperationException">The control already has content.</exception>
 	protected virtual void AddChild(object value)
 	{
 		if (Content == null || value == null)
 			Content = value;
 		else
-			throw new ArgumentException("ContentControl cannot have multiple content values.", nameof(value));
+			throw new InvalidOperationException("Content of a ContentControl must be a single element.");
 	}
 
 	/// <summary>Adds text as the content.</summary>

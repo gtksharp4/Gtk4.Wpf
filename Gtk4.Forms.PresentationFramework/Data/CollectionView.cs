@@ -13,6 +13,9 @@ namespace System.Windows.Data;
 /// </summary>
 public partial class CollectionView : ICollectionView, INotifyPropertyChanged
 {
+	/// <summary>True for the view <see cref="CollectionViewSource.GetDefaultView"/> makes for a plain source.</summary>
+	internal bool IsDefaultView { get; set; }
+
 	readonly IEnumerable _source;
 	readonly List<object?> _view = new List<object?>();
 	readonly ObservableCollection<object> _groupObjects = new ObservableCollection<object>();

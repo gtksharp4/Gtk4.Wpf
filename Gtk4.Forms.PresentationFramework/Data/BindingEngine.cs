@@ -134,6 +134,7 @@ internal static partial class BindingEngine
 			var (mode, trigger) = BindingDefaults.Resolve(
 				_binding.Mode, _binding.UpdateSourceTrigger, _dp, target.GetType());
 			_trigger = trigger;
+			_watchViews = mode != BindingMode.OneTime;
 			if (mode == BindingMode.OneWayToSource)
 			{
 				SubscribeTargetChanges(target);
@@ -151,9 +152,7 @@ internal static partial class BindingEngine
 			{
 				_inpcSource = inpc;
 				_inpcSource.PropertyChanged += OnSourcePropertyChanged;
-				_watchedProperty = string.IsNullOrEmpty(_binding.Path)
-					? null
-					: _binding.Path!.Split('.')[0];
+				_watchedProperty = FirstPropertyName(_binding.Path);
 			}
 			else
 				AttachDpSource(source); // BindingEngine.SourceDp.cs

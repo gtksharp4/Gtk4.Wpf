@@ -1,4 +1,4 @@
-namespace System.Windows;
+namespace System.Windows.Data;
 
 /// <summary>
 /// Event data for <see cref="Data.Binding.SourceUpdatedEvent"/> and <see cref="Data.Binding.TargetUpdatedEvent"/>.

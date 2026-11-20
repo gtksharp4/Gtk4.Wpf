@@ -27,8 +27,8 @@ public abstract class Selector : ItemsControl
 
 	/// <summary>
 	/// Gets or sets whether the selection follows the current item of the items' view and vice versa.
-	/// <see langword="null"/> synchronizes only when <see cref="ItemsControl.ItemsSource"/> is itself an
-	/// <see cref="ICollectionView"/>.
+	/// <see langword="null"/> synchronizes only when the view is not the default view of a plain
+	/// <see cref="ItemsControl.ItemsSource"/> (for a <see cref="ListBox"/> also only in single selection mode).
 	/// </summary>
 	public bool? IsSynchronizedWithCurrentItem
 	{
@@ -36,10 +36,17 @@ public abstract class Selector : ItemsControl
 		set => SetValue(IsSynchronizedWithCurrentItemProperty, value);
 	}
 
-	bool IsSynchronizing => _view != null && (IsSynchronizedWithCurrentItem ?? ItemsSource is ICollectionView);
+	bool IsSynchronizing => _view != null && SelectedItemDependencyProperty != null
+		&& (IsSynchronizedWithCurrentItem
+			?? (ImplicitSynchronization && _view is not CollectionView { IsDefaultView: true }));
 
-	/// <summary>The SelectedItem property of the derived control.</summary>
-	internal abstract DependencyProperty SelectedItemDependencyProperty { get; }
+	/// <summary>The SelectedItem property of the derived control; null means it does not synchronize.</summary>
+	internal virtual DependencyProperty? SelectedItemDependencyProperty => null;
+
+	/// <summary>Whether an unset <see cref="IsSynchronizedWithCurrentItem"/> synchronizes a non-default view.</summary>
+	internal virtual bool ImplicitSynchronization => true;
+
+	internal override void OnItemsRebuildCompleted() => Resynchronize();
 
 	internal override void OnCollectionViewChanged(ICollectionView? view)
 	{
@@ -63,7 +70,7 @@ public abstract class Selector : ItemsControl
 	void Select(object? item)
 	{
 		_syncing = true;
-		try { SetValue(SelectedItemDependencyProperty, item); }
+		try { SetValue(SelectedItemDependencyProperty!, item); }
 		finally { _syncing = false; }
 	}
 
@@ -71,7 +78,8 @@ public abstract class Selector : ItemsControl
 	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
 	{
 		base.OnPropertyChanged(e);
-		if (_syncing || !IsSynchronizing || e.Property != SelectedItemDependencyProperty) return;
+		// A rebuild clears the selection without the user choosing anything: the view keeps its current item.
+		if (_syncing || IsRebuildingItems || !IsSynchronizing || e.Property != SelectedItemDependencyProperty) return;
 		_syncing = true;
 		try { _view!.MoveCurrentTo(e.NewValue); }
 		finally { _syncing = false; }

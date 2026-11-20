@@ -23,30 +23,6 @@ namespace System.Windows.Controls;
 [ContentProperty("Items")]
 public partial class ItemsControl : Control
 {
-	// ── ItemsSource DP ───────────────────────────────────────────────────────
-
-	/// <summary>The collection of items to display.</summary>
-	public static readonly DependencyProperty ItemsSourceProperty =
-		DependencyProperty.Register(
-			nameof(ItemsSource),
-			typeof(IEnumerable),
-			typeof(ItemsControl),
-			new PropertyMetadata(null, OnItemsSourceChanged));
-
-	static void OnItemsSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-	{
-		((ItemsControl)d).OnItemsSourceChanged(
-			e.OldValue as IEnumerable,
-			e.NewValue as IEnumerable);
-	}
-
-	/// <summary>Gets or sets the items source.</summary>
-	public IEnumerable? ItemsSource
-	{
-		get => (IEnumerable?)GetValue(ItemsSourceProperty);
-		set => SetValue(ItemsSourceProperty, value);
-	}
-
 	// ── ItemTemplate DP ──────────────────────────────────────────────────────
 
 	/// <summary>Template used to generate each item's visual.</summary>
@@ -76,49 +52,6 @@ public partial class ItemsControl : Control
 	/// (observable; mutating it while <see cref="ItemsSource"/> is in use throws).
 	/// </summary>
 	public IList<object?> Items => _itemList ??= new ItemList(this);
-
-	// ── INCC subscription ────────────────────────────────────────────────────
-
-	INotifyCollectionChanged? _incc;
-	ICollectionView? _collectionView;
-
-	void OnItemsSourceChanged(IEnumerable? oldSource, IEnumerable? newSource)
-	{
-		if (newSource != null && !_itemsFromSource && Items.Count > 0)
-			throw new InvalidOperationException("Items collection must be empty before using ItemsSource.");
-		if (_incc != null)
-		{
-			_incc.CollectionChanged -= OnCollectionChanged;
-			_incc = null;
-		}
-		_collectionView = null;
-
-		if (newSource != null)
-		{
-			// Wrap the source in a default CollectionView (honours filter/sort/group).
-			_collectionView = CollectionViewSource.GetDefaultView(newSource);
-			// A string has no view: it is enumerated as plain items.
-			_incc = _collectionView;
-			if (_incc != null) _incc.CollectionChanged += OnCollectionChanged;
-		}
-
-		RebuildItems();
-		OnCollectionViewChanged(_collectionView);
-	}
-
-	/// <summary>Called after ItemsSource changed, with its default view (or null).</summary>
-	internal virtual void OnCollectionViewChanged(ICollectionView? view) { }
-
-	void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-	{
-		RebuildItems();
-	}
-
-	/// <summary>
-	/// Returns the effective item sequence: the <see cref="ICollectionView"/> when available,
-	/// otherwise the raw <see cref="ItemsSource"/>.
-	/// </summary>
-	IEnumerable EffectiveItems => (IEnumerable?)_collectionView ?? ItemsSource ?? Array.Empty<object>();
 
 	// ── Item generation hooks (overridden by ListBox) ────────────────────────
 
@@ -158,7 +91,22 @@ public partial class ItemsControl : Control
 		return w;
 	}
 
+	/// <summary>True while the items are being rebuilt; derived selection changes are then not user choices.</summary>
+	internal bool IsRebuildingItems { get; private set; }
+
 	internal void RebuildItems()
+	{
+		bool wasRebuilding = IsRebuildingItems;
+		IsRebuildingItems = true;
+		try { RebuildCore(); }
+		finally { IsRebuildingItems = wasRebuilding; }
+		if (!wasRebuilding) OnItemsRebuildCompleted();
+	}
+
+	/// <summary>Called once a rebuild has repopulated the rows and the selection reconciled itself.</summary>
+	internal virtual void OnItemsRebuildCompleted() { }
+
+	void RebuildCore()
 	{
 		if (ItemsSource != null || _itemsFromSource)
 			FillItemsFromSource();

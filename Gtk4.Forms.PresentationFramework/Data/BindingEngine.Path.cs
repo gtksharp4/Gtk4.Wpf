@@ -8,22 +8,11 @@ internal static partial class BindingEngine
 {
 	// ── Path resolution ──────────────────────────────────────────────────────
 
-	/// <summary>Resolves a dot-separated path on <paramref name="source"/>.</summary>
+	/// <summary>Resolves a path ('.' separates properties, '/' steps to a current item) on the source.</summary>
 	internal static object? ResolvePath(object? source, string? path)
 	{
 		if (source == null) return null;
-		if (string.IsNullOrEmpty(path)) return source;
-
-		var current = source;
-		foreach (var segment in path!.Split('.'))
-		{
-			if (current == null) return null;
-			var prop = current.GetType().GetProperty(
-				segment, BindingFlags.Public | BindingFlags.Instance);
-			if (prop == null) return null;
-			current = prop.GetValue(current);
-		}
-		return current;
+		return TryWalk(source, path, null, out var value) ? value : null;
 	}
 
 	/// <summary>Resolves the object and property that a write-back through <paramref name="path"/> targets.</summary>
@@ -34,19 +23,10 @@ internal static partial class BindingEngine
 		prop = null!;
 		if (source == null || string.IsNullOrEmpty(path)) return false;
 
-		var current = source;
-		var segments = path!.Split('.');
-		for (int i = 0; i < segments.Length - 1; i++)
-		{
-			var p = current.GetType().GetProperty(segments[i], BindingFlags.Public | BindingFlags.Instance);
-			if (p == null) return false;
-			var next = p.GetValue(current);
-			if (next == null) return false;
-			current = next;
-		}
-
-		var lastProp = current.GetType().GetProperty(
-			segments[segments.Length - 1], BindingFlags.Public | BindingFlags.Instance);
+		SplitLeaf(path!, out var head, out var leaf);
+		if (leaf == null) return false;
+		if (!TryWalk(source, head, null, out var current) || current == null) return false;
+		var lastProp = current.GetType().GetProperty(leaf, Members);
 		if (lastProp == null || !lastProp.CanWrite) return false;
 		owner = current;
 		prop = lastProp;

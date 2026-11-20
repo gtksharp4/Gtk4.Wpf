@@ -5,16 +5,12 @@ namespace Gtk4.Forms.MarkupCompiler
 {
 	public partial class XamlCodeGenerator
 	{
-		// IsBindingExpression is static, so it reads the xmlns map of the current generation here.
-		[ThreadStatic]
-		static IReadOnlyDictionary<string, string> _bindingPrefixMap;
-
 		/// <summary>
 		/// Handles the binding arguments beyond the core set (ConverterParameter, ConverterCulture,
 		/// Source and the validation flags). Returns the C# initializer fragment, or null when
 		/// <paramref name="name"/> is not one of them or the value cannot be emitted.
 		/// </summary>
-		internal static string ExtraBindingInit(string name, string value)
+		internal string ExtraBindingInit(string name, string value)
 		{
 			switch (name)
 			{
@@ -40,7 +36,7 @@ namespace Gtk4.Forms.MarkupCompiler
 		/// <summary>
 		/// Parses a <c>Name=value</c> binding argument; returns false when it is not an extra argument.
 		/// </summary>
-		static bool TryExtraBindingArg(string arg, List<string> inits)
+		bool TryExtraBindingArg(string arg, List<string> inits)
 		{
 			int eq = arg.IndexOf('=');
 			if (eq <= 0) return false;
@@ -57,15 +53,15 @@ namespace Gtk4.Forms.MarkupCompiler
 		/// <exception cref="XamlCodeGeneratorException">
 		/// <c>{DynamicResource}</c> (not valid on a Binding) or any other unsupported markup extension.
 		/// </exception>
-		static string BindingValueExpr(string raw)
+		string BindingValueExpr(string raw)
 		{
 			string t = raw.Trim();
 			bool quoted = t.Length >= 2 && t[0] == '\'' && t[t.Length - 1] == '\'';
 			if (!quoted)
 			{
 				if (IsXNull(t)) return "null";
-				if (IsXType(t, out string typeofExpr, _bindingPrefixMap)) return typeofExpr;
-				if (IsXStatic(t, out string staticExpr, _bindingPrefixMap)) return staticExpr;
+				if (IsXType(t, out string typeofExpr, _prefixMap)) return typeofExpr;
+				if (IsXStatic(t, out string staticExpr, _prefixMap)) return staticExpr;
 				if (t.StartsWith("{DynamicResource", StringComparison.Ordinal))
 					throw new XamlCodeGeneratorException(
 						"{DynamicResource} is not valid on a Binding argument: " + t);

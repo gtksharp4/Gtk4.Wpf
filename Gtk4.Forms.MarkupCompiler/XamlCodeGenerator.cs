@@ -11,6 +11,12 @@ namespace Gtk4.Forms.MarkupCompiler
 	/// Pure, unit-testable core: parses a WPF XAML document and emits the
 	/// <c>InitializeComponent</c> partial class (C# source text).
 	/// No MSBuild, no System.Xaml dependency.
+	/// <para>
+	/// <c>{StaticResource}</c> scope: an element's own <c>Resources</c> are emitted before its attributes and
+	/// children, so a key in an ancestor's Resources is visible to every descendant regardless of textual
+	/// order (WPF would fail on such a forward reference). Within one dictionary, entries resolve in document
+	/// order, so a forward reference there still fails at run time as in WPF.
+	/// </para>
 	/// </summary>
 	public partial class XamlCodeGenerator : IDisposable
 	{
@@ -82,18 +88,14 @@ namespace Gtk4.Forms.MarkupCompiler
 			XNamespace xNs = GetXNamespace(root);
 			_xNs = xNs;
 			_prefixMap = CollectXmlnsPrefixMap(root);
-			_bindingPrefixMap = _prefixMap;
 			_ignorableNamespaces = CollectIgnorableNamespaces(root);
 			XAttribute classAttr = root.Attribute(xNs + "Class");
 			string implicitBase = null;
 			className = classAttr?.Value.Trim() ?? ImplicitClass(root, xamlPath, rootNamespace, out implicitBase);
-			string rootBase = null;
-			if (classAttr != null && !HasCodeBehindFor(className) && ResolveType(root) is string rootFq)
-				rootBase = "global::" + rootFq;
+			string rootBase = RootBaseFor(root, classAttr != null, className);
 			if (className == null) return null;
 
 			_scopeVars.Clear();
-			_activeScopeVars = _scopeVars;
 			_classFqName = "global::" + className;
 			int lastDot = className.LastIndexOf('.');
 			string ns = lastDot >= 0 ? className.Substring(0, lastDot) : string.Empty;
@@ -115,11 +117,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				w.Indent++;
 			}
 
-			w.Line(implicitBase != null
-				? $"internal sealed partial class {typeName} : {implicitBase} {{"
-				: rootBase != null
-					? $"public partial class {typeName} : {rootBase} {{"
-					: $"public partial class {typeName} {{");
+			w.Line(ClassDeclaration(typeName, implicitBase, rootBase));
 			w.Indent++;
 
 			// Collect named fields
@@ -679,6 +677,10 @@ namespace Gtk4.Forms.MarkupCompiler
 					continue;
 				}
 
+				string hookFind = IsStaticResourceValue(val, out string hookKey)
+					? StaticResourceLookup(varName, EscapeString(hookKey)) : null;
+				if (TryEmitHookProperty(w, varName, propName, val, hookFind)) continue;
+
 				if (IsTemplateBindingExpression(val, out string tbBindingInit))
 					w.Line($"{varName}.SetBinding({fqType}.{propName}Property, {tbBindingInit});");
 				else if (IsBindingExpression(val, out string bindingInit))
@@ -688,8 +690,12 @@ namespace Gtk4.Forms.MarkupCompiler
 					string find = val.TrimStart().StartsWith("{StaticResource", StringComparison.Ordinal)
 						? StaticResourceLookup(varName, EscapeString(resourceKey))
 						: $"{varName}.FindResource(\"{EscapeString(resourceKey)}\")";
+					string clrType = hookFind != null ? ClrResourceTargetType(fqType, propName) : null;
 					if (propName == "Style")
 						w.Line($"{varName}.Style = (System.Windows.Style){find};");
+					else if (clrType != null)
+						w.Line($"{varName}.{propName} = ({clrType})System.Windows.Markup.XamlValueConverter" +
+							$".CoerceResource(typeof({clrType}), {find});");
 					else
 						w.Line($"{varName}.SetValue({fqType}.{propName}Property, {find});");
 				}

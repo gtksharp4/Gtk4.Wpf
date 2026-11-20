@@ -23,7 +23,7 @@ public partial class ContentControl : Control
 	static void OnContentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
 		var cc = (ContentControl)d;
-		cc.HasContent = e.NewValue != null;
+		cc.SetValue(_hasContentKey, e.NewValue != null);
 		cc.UpdateContent(e.OldValue, e.NewValue);
 	}
 

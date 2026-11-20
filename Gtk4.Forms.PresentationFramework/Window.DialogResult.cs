@@ -17,9 +17,14 @@ public partial class Window
 		set
 		{
 			if (!_showingAsDialog)
-				throw new InvalidOperationException("DialogResult can be set only after the window is shown as a dialog.");
+				throw new InvalidOperationException(
+					"DialogResult can be set only after the window is shown as a dialog.");
 			if (_dialogResult == value) return;
-			Close(value);
+			bool? previous = _dialogResult;
+			_dialogResult = value;
+			// Inside a close already in progress (a Closing handler) the value is only recorded.
+			if (!_closingInProgress && !RequestClose())
+				_dialogResult = previous; // vetoed: undo the tentative set
 		}
 	}
 }

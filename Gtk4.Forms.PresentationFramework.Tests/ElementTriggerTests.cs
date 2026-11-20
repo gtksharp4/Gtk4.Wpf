@@ -11,6 +11,13 @@ namespace Gtk4.Forms.PresentationFramework.Tests;
 /// </summary>
 public class ElementTriggerTests
 {
+	[Fact]
+	public void DetachElementTriggers_is_not_public_API()
+	{
+		Assert.Null(typeof(FrameworkElement).GetMethod(
+			"DetachElementTriggers", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance));
+	}
+
 	sealed class TEl : FrameworkElement
 	{
 		public static readonly DependencyProperty TagProperty =

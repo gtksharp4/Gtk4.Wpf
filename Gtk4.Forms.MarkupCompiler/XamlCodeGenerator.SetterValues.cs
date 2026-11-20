@@ -13,10 +13,6 @@ namespace Gtk4.Forms.MarkupCompiler
 		readonly System.Collections.Generic.List<string> _scopeVars = new System.Collections.Generic.List<string>();
 		string _classFqName;
 
-		// The scope list of the Generate call running on this thread; static emit helpers read it.
-		[ThreadStatic]
-		static System.Collections.Generic.List<string> _activeScopeVars;
-
 		/// <summary>
 		/// Returns the C# expression for a <c>&lt;Setter&gt;</c> value, emitting any helper locals
 		/// first. The <c>Value</c> attribute wins over a <c>&lt;Setter.Value&gt;</c> property element.
@@ -55,10 +51,10 @@ namespace Gtk4.Forms.MarkupCompiler
 		/// scopes. WPF resolves against the parse-time scope stack: every enclosing element's resources from the
 		/// innermost out, then the root, then the application.
 		/// </summary>
-		static string StaticResourceLookup(string receiver, string escapedKey)
+		string StaticResourceLookup(string receiver, string escapedKey)
 		{
 			var scopes = new System.Collections.Generic.List<string>();
-			var vars = _activeScopeVars ?? new System.Collections.Generic.List<string>();
+			var vars = _scopeVars;
 			for (int i = vars.Count - 1; i >= 0; i--)
 				scopes.Add(vars[i]);
 			if (receiver != "this" && !scopes.Contains(receiver))

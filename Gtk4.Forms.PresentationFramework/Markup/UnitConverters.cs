@@ -82,22 +82,50 @@ static class UnitConverters
 	}
 
 	/// <summary>
-	/// WPF PointCollectionConverter: numbers separated by whitespace and/or commas, read as x,y pairs.
-	/// An odd count is a FormatException.
+	/// WPF PointCollectionConverter: x,y pairs whose tokens are separated by whitespace and at most one comma.
 	/// </summary>
+	/// <exception cref="FormatException">An empty token (e.g. <c>1,,2</c>) or a token that is not a number.</exception>
+	/// <exception cref="InvalidOperationException">An odd number of coordinates.</exception>
 	internal static System.Windows.Shapes.PointCollection ParsePointCollection(string raw)
 	{
 		var result = new System.Windows.Shapes.PointCollection();
-		string[] parts = raw.Split(new[] { ',', ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-		if (parts.Length % 2 != 0)
-			throw new FormatException($"Cannot parse PointCollection from \"{raw}\": odd number of coordinates.");
-		for (int i = 0; i < parts.Length; i += 2)
-		{
-			if (!double.TryParse(parts[i], NumberStyles.Float, CultureInfo.InvariantCulture, out double x)
-				|| !double.TryParse(parts[i + 1], NumberStyles.Float, CultureInfo.InvariantCulture, out double y))
-				throw new FormatException($"Cannot parse PointCollection from \"{raw}\".");
-			result.Add(new Point(x, y));
-		}
+		List<string> tokens = Tokenize(raw);
+		if (tokens.Count % 2 != 0)
+			throw new InvalidOperationException($"Cannot parse PointCollection from \"{raw}\": missing y value.");
+		for (int i = 0; i < tokens.Count; i += 2)
+			result.Add(new Point(ParseCoordinate(tokens[i], raw), ParseCoordinate(tokens[i + 1], raw)));
 		return result;
 	}
+
+	static double ParseCoordinate(string token, string raw)
+	{
+		if (!double.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out double d))
+			throw new FormatException($"Cannot parse PointCollection from \"{raw}\": \"{token}\" is not a number.");
+		return d;
+	}
+
+	static List<string> Tokenize(string raw)
+	{
+		var tokens = new List<string>();
+		int i = 0;
+		bool afterComma = false;
+		while (true)
+		{
+			while (i < raw.Length && char.IsWhiteSpace(raw[i])) i++;
+			if (i >= raw.Length)
+			{
+				if (afterComma)
+					throw new FormatException($"Cannot parse PointCollection from \"{raw}\": trailing comma.");
+				return tokens;
+			}
+			if (raw[i] == ',') throw new FormatException($"Cannot parse PointCollection from \"{raw}\": empty token.");
+			int start = i;
+			while (i < raw.Length && !char.IsWhiteSpace(raw[i]) && raw[i] != ',') i++;
+			tokens.Add(raw.Substring(start, i - start));
+			while (i < raw.Length && char.IsWhiteSpace(raw[i])) i++;
+			afterComma = i < raw.Length && raw[i] == ',';
+			if (afterComma) i++;
+		}
+	}
 }
+

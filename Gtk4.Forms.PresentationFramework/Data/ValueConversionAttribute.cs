@@ -4,7 +4,7 @@ namespace System.Windows.Data;
 /// Identifies the source and target types an <see cref="IValueConverter"/> converts between.
 /// Metadata only: the binding engine does not read it.
 /// </summary>
-[AttributeUsage(AttributeTargets.Class)]
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 public sealed class ValueConversionAttribute : Attribute
 {
 	/// <summary>Initializes a new instance with the converter's source and target types.</summary>

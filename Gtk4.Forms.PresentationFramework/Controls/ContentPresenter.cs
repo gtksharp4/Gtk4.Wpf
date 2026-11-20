@@ -38,7 +38,15 @@ public class ContentPresenter : FrameworkElement
 	/// Gets or sets the name of the templated parent property this presenter takes its content from
 	/// (WPF default <c>Content</c>). Store-only: the layer does not auto-bind presenters to their templated parent.
 	/// </summary>
-	public string ContentSource { get; set; } = "Content";
+	public string ContentSource
+	{
+		get => (string)GetValue(ContentSourceProperty)!;
+		set => SetValue(ContentSourceProperty, value);
+	}
+
+	/// <summary>Identifies the <see cref="ContentSource"/> dependency property.</summary>
+	public static readonly DependencyProperty ContentSourceProperty = DependencyProperty.Register(
+		"ContentSource", typeof(string), typeof(ContentPresenter), new FrameworkPropertyMetadata("Content"));
 
 	// ── ContentTemplate DP ───────────────────────────────────────────────────
 

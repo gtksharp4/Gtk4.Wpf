@@ -6,8 +6,18 @@ namespace System.ComponentModel;
 /// <summary>An observable collection of <see cref="SortDescription"/>.</summary>
 public class SortDescriptionCollection : Collection<SortDescription>, INotifyCollectionChanged
 {
-	/// <summary>A shared empty collection that is never changed.</summary>
-	public static readonly SortDescriptionCollection Empty = new SortDescriptionCollection();
+	/// <summary>A shared empty collection; changing it throws <see cref="NotSupportedException"/>.</summary>
+	public static readonly SortDescriptionCollection Empty = new ReadOnlyCollection();
+
+	sealed class ReadOnlyCollection : SortDescriptionCollection
+	{
+		protected override void InsertItem(int index, SortDescription item) => throw ReadOnly();
+		protected override void RemoveItem(int index) => throw ReadOnly();
+		protected override void SetItem(int index, SortDescription item) => throw ReadOnly();
+		protected override void ClearItems() => throw ReadOnly();
+
+		static NotSupportedException ReadOnly() => new NotSupportedException("The empty collection is read-only.");
+	}
 
 	NotifyCollectionChangedEventHandler? _changed;
 

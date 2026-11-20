@@ -39,15 +39,35 @@ public partial class Button
 	}
 
 	/// <summary>
-	/// Gets whether Enter would click this button now: it is the <see cref="IsDefault"/> button and the
-	/// keyboard focus is not on another button.
+	/// Gets whether Enter would click this button now: it is the <see cref="IsDefault"/> button, the keyboard
+	/// focus is inside the same window and the focus is not on another button.
 	/// </summary>
 	public bool IsDefaulted => (bool)GetValue(IsDefaultedProperty)!;
 
 	internal void UpdateIsDefaulted()
 	{
-		bool focusOnOtherButton = Keyboard.FocusedElement is ButtonBase other && !ReferenceEquals(other, this);
-		SetValue(_isDefaultedKey, IsDefault && !focusOnOtherButton);
+		bool defaulted = false;
+		if (IsDefault && Window.GetWindow(this) is Window window
+			&& Keyboard.FocusedElement is DependencyObject focus && Window.GetWindow(focus) == window)
+			defaulted = focus is not ButtonBase other || ReferenceEquals(other, this);
+		SetValue(_isDefaultedKey, defaulted);
+	}
+
+	/// <summary>
+	/// Raises <see cref="ButtonBase.Click"/>; an <see cref="IsCancel"/> button without a command then
+	/// dismisses the dialog it sits in (DialogResult false), as in WPF.
+	/// </summary>
+	protected override void OnClick()
+	{
+		try
+		{
+			base.OnClick();
+		}
+		finally
+		{
+			if (Command == null && IsCancel && Window.GetWindow(this) is { IsShowingAsDialog: true } window)
+				window.DialogResult = false;
+		}
 	}
 
 	/// <summary>Clicks the button for the default/cancel accelerator.</summary>

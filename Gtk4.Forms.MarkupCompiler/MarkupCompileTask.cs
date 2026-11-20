@@ -41,18 +41,6 @@ namespace Gtk4.Forms.MarkupCompiler
 		[Output]
 		public ITaskItem[] GeneratedFiles { get; private set; }
 
-		static string[] ReadSources(ITaskItem[] items)
-		{
-			var texts = new List<string>();
-			foreach (ITaskItem i in items)
-			{
-				try { texts.Add(File.ReadAllText(i.ItemSpec)); }
-				catch (IOException) { }
-				catch (UnauthorizedAccessException) { }
-			}
-			return texts.ToArray();
-		}
-
 		static string ImplicitKey(string xamlPath) =>
 			IOPath.IsPathRooted(xamlPath) ? IOPath.GetFileName(xamlPath) : xamlPath;
 
@@ -75,7 +63,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			var generated = new List<ITaskItem>();
 			var generator = new XamlCodeGenerator();
 			if (CompileFiles != null)
-				generator.CodeBehindSources = ReadSources(CompileFiles);
+				generator.CodeBehindSources = CodeBehindScan.ReadSources(
+					System.Linq.Enumerable.Select(CompileFiles, i => i.ItemSpec), OutputDirectory);
 
 			// Thread reference paths into the DP symbol resolver and xmlns-definition source.
 			if (ReferencePaths != null && ReferencePaths.Length > 0)

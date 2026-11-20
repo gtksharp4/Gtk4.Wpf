@@ -35,7 +35,7 @@ namespace Gtk4.Forms.MarkupCompiler
 		/// Round 7: also parses RelativeSource, Converter={StaticResource k},
 		/// StringFormat, FallbackValue, TargetNullValue, UpdateSourceTrigger.
 		/// </summary>
-		static bool IsBindingExpression(string value, out string bindingInit)
+		bool IsBindingExpression(string value, out string bindingInit)
 		{
 			bindingInit = null;
 			if (value == null) return false;

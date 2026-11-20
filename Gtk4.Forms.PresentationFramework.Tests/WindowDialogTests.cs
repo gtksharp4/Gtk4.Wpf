@@ -54,14 +54,14 @@ public class WindowDialogTests : WpfGtkTestBase
 	});
 
 	[Fact]
-	public void ShowDialog_returns_null_when_Close_null() => Run(() =>
+	public void ShowDialog_returns_false_when_Close_null() => Run(() =>
 	{
 		var win = new WpfWindow { Title = "ModalNull" };
 
 		ScheduleClose(() => win.Close(null));
 
 		var result = win.ShowDialog();
-		Assert.Null(result);
+		Assert.Equal(false, result);
 	});
 
 	// ── Pure: Owner property ──────────────────────────────────────────────────
@@ -100,7 +100,7 @@ public class WindowDialogTests : WpfGtkTestBase
 		GLib.Timeout.Add(50, () => { win.Close(); return false; });
 
 		var result = win.ShowDialog();
-		Assert.Null(result); // DialogResult untouched
+		Assert.Equal(false, result); // WPF: no result means false
 	});
 
 	[Fact]
@@ -132,6 +132,6 @@ public class WindowDialogTests : WpfGtkTestBase
 		GLib.Timeout.Add(50, () => { win.Close(); return false; });
 
 		var result = win.ShowDialog();
-		Assert.Null(result);
+		Assert.Equal(false, result);
 	});
 }

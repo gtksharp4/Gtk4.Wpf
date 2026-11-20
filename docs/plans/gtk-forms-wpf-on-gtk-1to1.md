@@ -1522,6 +1522,67 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `UIElement` item in a `ContentPresenter` although `IsItemItsOwnContainerOverride` says it is its own container (WPF: an
   ungrouped radio item is then exclusive with its siblings; only wrapped data items are not);
   `MenuItem` is still a `Gtk.Box` popover (no `Gio.Menu`/`Gtk.PopoverMenu`); official samples coverage not re-measured.
+- **Round 45 track A - generator-v2 (DONE, merged).** `gf45/generator-v2` (merge `50731e8b`): public
+  `FrameworkElement.AttachElementTriggers` hook, `Uri`/`ImageSource`/`PointCollection` CLR conversion, `x:Class` base
+  type and constructor when there is no code-behind, keyed resource objects (user types, `XmlDataProvider`,
+  `ObjectDataProvider`, `SolidColorBrush`) and parse-time `{StaticResource}`; 4487 tests at merge. Samples evidence: the
+  generator classes in `docs/samples-coverage.md` (no base type, `AttachElementTriggers`, `CS0029`, resource
+  placeholders) are the targets; the two Round 44 regressions (TargetValues, MultiPage) were the trigger. Not
+  re-measured per track; the end-of-round gate below shows no regression.
+- **Round 45 track B - items-data-dialog (DONE, merged).** `gf45/items-data-dialog` (merge `f7938bd5`):
+  `Selector.IsSynchronizedWithCurrentItem`, `CollectionView`/`ListCollectionView`, `ValueConversionAttribute`,
+  `BindingExpressionBase.UpdateSource`, `DataTransferEventArgs`, `Button.IsDefault`/`IsCancel`, settable
+  `Window.DialogResult`, `HeaderedContentControl`. Samples evidence: closes the `Selector.IsSynchronizedWithCurrentItem`
+  and `ValueConversion` gaps listed under "Real gaps" in `docs/samples-coverage.md`. Not re-measured per track.
+- **Round 45 track C - long-tail-members (DONE, merged).** `gf45/long-tail-members` (merge `4c6d28e9`): `SpellCheck`,
+  `TextBox` clipboard, `Grid.IsSharedSizeScope`/`ShowGridLines`, definition actual sizes, `HasContent`, `IsItemsHost`,
+  `IAddChild`, `MessageBox` overloads, `Window.ShowActivated` and other single members that alone block apps. Not
+  re-measured per track.
+- **Round 45 review (Opus) + fixes - DONE.** **A-F1 (High)** a keyed resource whose type is not a `DependencyObject`
+  (`SolidColorBrush.Color`) went through `SetValue`/`FindResource`, which does not compile; a `{StaticResource}` now
+  assigns the CLR property through `XamlValueConverter.CoerceResource` (a `<Color>` resource is stored as text), and a
+  `{DynamicResource}`/binding on a non-DP keeps the plain emission. **A-F2** attributes of a user type the resolver
+  cannot see (every type in the project itself) go through the layer hook `XamlValueConverter.SetClrProperty`/`SetClrValue`
+  instead of guessing a literal type (`EmployeeNumber="57304"` was `CS0029`). **A-F3** `ObjectDataProvider`
+  `MethodParameters`/`ConstructorParameters` emit `typeof` for `x:Type`, the member for `x:Static`, `null` for `x:Null`;
+  one parameter that cannot be emitted keeps the plain emission for the whole provider. `ObjectDataProvider` now invokes a
+  static method without constructing the type (`Enum.GetValues(typeof(DayOfWeek))` yields 7) and matches by parameter
+  count. **A-F4** the code-behind scan skips files under the output directory (a stale `.g.cs` dropped the base type and
+  constructor). **A-F5** `DetachElementTriggers` is `internal` again. **A-F6** `ParsePointCollection` tokenizes like WPF
+  (one comma or whitespace; `1,,2` is `FormatException`, a missing y `InvalidOperationException`). **A-F7** the
+  ancestor-resources-visible-regardless-of-order leniency is documented on the generator and pinned by tests (a
+  same-dictionary forward reference stays in document order). **A-F8** the `[ThreadStatic]` scope list and the static
+  binding prefix map are gone; `StaticResourceLookup` and its callers are instance methods. **A-F9** the base-type and
+  constructor logic moved to `XamlCodeGenerator.CodeBehind.cs`; over-long lines wrapped. **B-F1** a `Button` override of
+  `OnClick` dismisses the dialog (`DialogResult = false`) for `IsCancel` without a command. **B-F2** currency sync ignores
+  the selection clears of an item rebuild (`ItemsControl.IsRebuildingItems`), then re-selects the view's current item;
+  switching `ItemsSource` no longer moves the old view. **B-F3** a capture-phase `Gtk.EventControllerKey` on the window
+  routes Return/KP_Enter/Esc to the default/cancel button from any focus (not a multi-line `TextBox`, not a focused
+  button for Enter). **B-F4/B-F11** `DataTransferEventArgs` is in `System.Windows.Data`, `GroupDescription` in
+  `System.ComponentModel`; `SortDescriptionCollection.Empty` is read-only. **B-F5** `ValueConversion` allows multiples.
+  **B-F6** a binding path resolves against the current item of the default view (`/`, `X/Y`, `/Y`, and a step not found
+  on a collection) and re-evaluates on `CurrentChanged`; an empty path keeps the collection. **B-F7** `DialogResult` follows
+  WPF (a `Closing` handler can set it; `ShowDialog` returns `false`, not null, when closed without a result). **B-F8**
+  `Selector` has no abstract internal member; an unset flag syncs only a non-default view (and a single-selection `ListBox`).
+  **B-F9** `GetDefaultView(null)` is null and a string has a view over its characters. **B-F10/C-C6** `ContentSource` and
+  `ShowActivated` are dependency properties. **B-F12** `IsDefaulted` needs a window that holds the focus;
+  `ItemsControl.ItemsSource` moved to a partial; `CollectionViewTests` split. **C-C1** a second `ContentControl` child is
+  `InvalidOperationException`. **C-C2** `TextElement.Background` is an instance property (stored only; `TextElement` is not
+  a `DependencyObject` here, so the registered DP is not its backing store). **C-C3** `TextBox.Copy`/`Cut`/`Paste` read the
+  live widget selection. **C-C4** `HasContent` is get-only. **C-C5** `SpellingReform` values match WPF. **C-C7**
+  `SpellCheck.GetSpellingReform` is internal. **C-C8** `Panel.AddText` ignores blank text; `AddChild` on an items host throws.
+  Rejected in triage: none. Failing-first was done by writing the test with the fix for the generator and layer hooks;
+  the pre-fix failure was not re-run for each test.
+  **Round 45 totals: 4610 tests** (190 WindowsBase + 3935 PresentationFramework + 452 MarkupCompiler + 33
+  ProjectConverter), all pass; `dotnet build Gtk4.Forms.sln` 0 warnings. `Integration.Tests` not run.
+  **Samples gate (after the fixes, Gtk4.Forms.Wpf packed from the fixed tree):** all 60 `build=pass` projects of
+  `docs/samples-coverage.json` (59 portable apps plus 1 Windows-only) build through the two-build recipe, and all 47
+  `run=runs` apps stay alive for 10 s (process alive; the window itself was not re-checked).
+- **Carry-over (Round 45)**: `TextElement` is not a `DependencyObject`, so `Background` is not DP-backed;
+  `PathWatcher` (DataTrigger paths) still splits on `.` only; the capture controller sees Return before GTK's `Entry`
+  activate, so an `Entry` signal handler for `activate` no longer fires when a default button exists; a focused element
+  in another window is treated by `Keyboard.FocusedElement` only; `docs/samples-coverage.md` is still the Round 44
+  measurement.
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a

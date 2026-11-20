@@ -16,6 +16,9 @@ public partial class ListBox : Selector
 {
 	internal override DependencyProperty SelectedItemDependencyProperty => SelectedItemProperty;
 
+	/// <inheritdoc/>
+	internal override bool ImplicitSynchronization => SelectionMode == SelectionMode.Single;
+
 	// ── SelectionChanged event ────────────────────────────────────────────────
 
 	/// <summary>

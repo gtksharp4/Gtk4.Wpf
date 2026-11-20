@@ -14,11 +14,11 @@ public class SelectorSynchronizationTests : WpfGtkTestBase
 	static ObservableCollection<string> Names() => new ObservableCollection<string> { "a", "b", "c" };
 
 	[Fact]
-	public void A_string_ItemsSource_has_no_view_and_does_not_throw() => Run(() =>
+	public void A_string_ItemsSource_has_a_view_over_its_characters_and_does_not_throw() => Run(() =>
 	{
 		var lb = new ListBox { IsSynchronizedWithCurrentItem = true, ItemsSource = "abc" };
 		Assert.Equal(3, lb.Items.Count);
-		Assert.Null(lb.SelectedItem);
+		Assert.Equal('a', lb.SelectedItem);
 	});
 
 	[Fact]
@@ -130,12 +130,76 @@ public class SelectorSynchronizationTests : WpfGtkTestBase
 	});
 
 	[Fact]
-	public void A_selection_the_view_filters_out_is_cleared() => Run(() =>
+	public void A_selection_the_view_filters_out_moves_to_the_views_current_item() => Run(() =>
 	{
 		var src = Names();
 		var lb = new ListBox { IsSynchronizedWithCurrentItem = true, ItemsSource = src };
 		lb.SelectedItem = "b";
 		View(src).Filter = o => (string)o != "b";
+		Assert.NotNull(View(src).CurrentItem);
+		Assert.Equal(View(src).CurrentItem, lb.SelectedItem);
 		Assert.NotEqual("b", lb.SelectedItem);
+	});
+
+	[Fact]
+	public void Removing_the_selected_item_moves_to_the_views_current_item() => Run(() =>
+	{
+		var src = Names();
+		var lb = new ListBox { IsSynchronizedWithCurrentItem = true, ItemsSource = src };
+		lb.SelectedItem = "b";
+		src.Remove("b");
+		Assert.NotNull(View(src).CurrentItem);
+		Assert.Equal(View(src).CurrentItem, lb.SelectedItem);
+	});
+
+	[Fact]
+	public void Switching_ItemsSource_leaves_the_old_view_current_item_alone() => Run(() =>
+	{
+		var list1 = Names();
+		var list2 = new ObservableCollection<string> { "x", "y" };
+		var lb = new ListBox { IsSynchronizedWithCurrentItem = true, ItemsSource = list1 };
+		lb.SelectedItem = "b";
+		Assert.Equal("b", View(list1).CurrentItem);
+		lb.ItemsSource = list2;
+		Assert.Equal("b", View(list1).CurrentItem);
+		Assert.Equal("x", lb.SelectedItem);
+	});
+
+	[Fact]
+	public void Selector_has_no_abstract_non_public_members()
+	{
+		const System.Reflection.BindingFlags all = System.Reflection.BindingFlags.Instance
+			| System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic
+			| System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.DeclaredOnly;
+		Assert.DoesNotContain(typeof(Selector).GetMethods(all), m => m.IsAbstract && !m.IsPublic);
+		Assert.DoesNotContain(typeof(Selector).GetProperties(all),
+			p => (p.GetMethod?.IsAbstract ?? false) && !p.GetMethod!.IsPublic);
+	}
+
+	[Fact]
+	public void An_unset_flag_does_not_sync_the_default_view_of_a_plain_list() => Run(() =>
+	{
+		var src = Names();
+		var lb = new ListBox { ItemsSource = src };
+		lb.SelectedItem = "c";
+		Assert.Equal("a", View(src).CurrentItem);
+	});
+
+	[Fact]
+	public void An_unset_flag_syncs_an_explicit_collection_view() => Run(() =>
+	{
+		var view = new ListCollectionView(Names());
+		var lb = new ListBox { ItemsSource = view };
+		lb.SelectedItem = "c";
+		Assert.Equal("c", view.CurrentItem);
+	});
+
+	[Fact]
+	public void An_unset_flag_does_not_sync_a_multiple_selection_ListBox() => Run(() =>
+	{
+		var view = new ListCollectionView(Names());
+		var lb = new ListBox { SelectionMode = SelectionMode.Extended, ItemsSource = view };
+		lb.SelectedItem = "c";
+		Assert.Equal("a", view.CurrentItem);
 	});
 }

@@ -21,7 +21,7 @@ namespace System.Windows.Markup;
 /// the raw string is returned unchanged.
 /// </para>
 /// </summary>
-public static class XamlValueConverter
+public static partial class XamlValueConverter
 {
 	static readonly Dictionary<Type, Func<string, object?>> _converters =
 		new Dictionary<Type, Func<string, object?>>();
