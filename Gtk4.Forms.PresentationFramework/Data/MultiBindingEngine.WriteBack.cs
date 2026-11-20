@@ -46,6 +46,8 @@ internal static partial class MultiBindingEngine
 			WriteBack(target);
 		}
 
+		internal void WriteBackNow(FrameworkElement target) => WriteBack(target);
+
 		void WriteBack(FrameworkElement target)
 		{
 			_dirty = false;

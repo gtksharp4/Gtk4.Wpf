@@ -87,6 +87,17 @@ internal static partial class MultiBindingEngine
 		}
 	}
 
+	/// <summary>Writes the target value back through the multi-binding for <paramref name="dp"/>.</summary>
+	internal static void UpdateSource(FrameworkElement target, DependencyProperty dp)
+	{
+		if (!_records.TryGetValue(target, out var list)) return;
+		foreach (var r in list)
+		{
+			if (ReferenceEquals(r.TargetProperty, dp))
+				r.WriteBackNow(target);
+		}
+	}
+
 	// ── Inner record ────────────────────────────────────────────────────────
 
 	internal sealed partial class MultiRecord

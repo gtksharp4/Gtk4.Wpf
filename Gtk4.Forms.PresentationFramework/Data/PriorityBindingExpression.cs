@@ -24,8 +24,13 @@ public sealed class PriorityBindingExpression : BindingExpressionBase
 		_pb = pb;
 	}
 
-	/// <summary>Forces a re-evaluation of the priority chain.</summary>
-	public void UpdateTarget()
+	/// <inheritdoc/>
+	public override BindingBase ParentBindingBase => _pb;
+
+	// A priority binding only reads its sources.
+	internal override void UpdateSourceCore() { }
+
+	internal override void UpdateTargetCore()
 	{
 		if (!_targetRef.TryGetTarget(out var target)) return;
 		// No engine-record reference needed: re-activate via public Refresh.

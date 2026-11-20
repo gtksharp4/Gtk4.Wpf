@@ -39,12 +39,13 @@ public partial class FrameworkElement
 	}
 
 	/// <summary>
-	/// Returns the live <see cref="BindingExpressionBase"/> for <paramref name="dp"/>,
-	/// or <c>null</c> when no binding is active.
+	/// Returns the live <see cref="BindingExpression"/> for <paramref name="dp"/>, or <c>null</c> when no
+	/// <see cref="Binding"/> is active (use <see cref="BindingOperations.GetBindingExpressionBase"/> for the
+	/// multi and priority kinds).
 	/// </summary>
-	public BindingExpressionBase? GetBindingExpression(DependencyProperty dp)
+	public BindingExpression? GetBindingExpression(DependencyProperty dp)
 	{
 		if (dp == null) throw new ArgumentNullException(nameof(dp));
-		return BindingEngine.GetBindingExpression(this, dp);
+		return BindingEngine.GetBindingExpression(this, dp) as BindingExpression;
 	}
 }

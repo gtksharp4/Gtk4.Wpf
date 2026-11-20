@@ -25,6 +25,9 @@ public class BindingExpression : BindingExpressionBase
 	/// <summary>The <see cref="Binding"/> that produced this expression.</summary>
 	public Binding ParentBinding => _binding;
 
+	/// <inheritdoc/>
+	public override BindingBase ParentBindingBase => _binding;
+
 	/// <summary>
 	/// The resolved source object (the object the path is evaluated on).
 	/// Returns <c>null</c> when the target has been collected or the source cannot be resolved.
@@ -44,21 +47,13 @@ public class BindingExpression : BindingExpressionBase
 	/// </summary>
 	public object? DataItem => ResolvedSource;
 
-	/// <summary>
-	/// Re-reads the source value and pushes it to the target DP.
-	/// Equivalent to triggering a source-change notification.
-	/// </summary>
-	public void UpdateTarget()
+	internal override void UpdateTargetCore()
 	{
 		if (!_targetRef.TryGetTarget(out var target)) return;
 		Record?.PushToTargetPublic(target);
 	}
 
-	/// <summary>
-	/// Writes the current target DP value back to the source (honours
-	/// <see cref="UpdateSourceTrigger.Explicit"/>).
-	/// </summary>
-	public void UpdateSource()
+	internal override void UpdateSourceCore()
 	{
 		if (!_targetRef.TryGetTarget(out var target)) return;
 		Record?.WriteBackPublic(target);

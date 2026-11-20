@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Windows.Controls.Primitives;
 using System.Windows.Markup;
 
 namespace System.Windows.Controls;
@@ -7,8 +8,10 @@ namespace System.Windows.Controls;
 /// A tab-strip control backed by <see cref="Gtk.Notebook"/>.
 /// Children must be <see cref="TabItem"/> instances.
 /// </summary>
-public class TabControl : ItemsControl
+public class TabControl : Selector
 {
+	internal override DependencyProperty SelectedItemDependencyProperty => SelectedItemProperty;
+
 	/// <summary>Raised when <see cref="SelectedIndex"/> or <see cref="SelectedItem"/> changes.</summary>
 	public event EventHandler<SelectionChangedEventArgs>? SelectionChanged;
 

@@ -25,13 +25,15 @@ internal static partial class BindingEngine
 
 		void PushToTarget(FrameworkElement target, object? source)
 		{
-			PushToTargetCore(target, source);
+			bool transferred = PushToTargetCore(target, source);
 			RunTargetUpdatedValidation(target, source, _lastRaw);
+			if (transferred) RaiseDataTransfer(target, Binding.TargetUpdatedEvent, _binding.NotifyOnTargetUpdated);
 		}
 
 		object? _lastRaw;
 
-		void PushToTargetCore(FrameworkElement target, object? source)
+		/// <summary>Transfers the source value; <see langword="false"/> when the transfer was aborted.</summary>
+		bool PushToTargetCore(FrameworkElement target, object? source)
 		{
 			_pushing = true;
 			try
@@ -48,7 +50,7 @@ internal static partial class BindingEngine
 				if (pathUnresolvable)
 				{
 					ApplyFallback(target);
-					return;
+					return true;
 				}
 
 				object? value = rawValue;
@@ -58,11 +60,11 @@ internal static partial class BindingEngine
 					value = _binding.Converter.Convert(rawValue, _dp.PropertyType,
 						_binding.ConverterParameter, ResolveCulture(_binding.ConverterCulture));
 					// WPF: DoNothing aborts the transfer; UnsetValue means fallback/default.
-					if (ReferenceEquals(value, Binding.DoNothing)) return;
+					if (ReferenceEquals(value, Binding.DoNothing)) return false;
 					if (ReferenceEquals(value, DependencyProperty.UnsetValue))
 					{
 						ApplyFallback(target);
-						return;
+						return true;
 					}
 				}
 
@@ -70,7 +72,7 @@ internal static partial class BindingEngine
 				if (value == null && _binding.TargetNullValue != null)
 				{
 					ApplyTargetNullValue(target);
-					return;
+					return true;
 				}
 
 				// StringFormat.
@@ -82,15 +84,21 @@ internal static partial class BindingEngine
 					catch (Exception ex) when (!IsCritical(ex))
 					{
 						ApplyFallback(target); // WPF falls back instead of throwing
-						return;
+						return true;
 					}
 				}
 				SetTargetSafe(target, _dp, value, _binding.FallbackValue);
+				return true;
 			}
 			finally
 			{
 				_pushing = false;
 			}
+		}
+
+		void RaiseDataTransfer(FrameworkElement target, RoutedEvent routedEvent, bool notify)
+		{
+			if (notify) target.RaiseEvent(new DataTransferEventArgs(routedEvent, target, _dp) { Source = target });
 		}
 
 		/// <summary>

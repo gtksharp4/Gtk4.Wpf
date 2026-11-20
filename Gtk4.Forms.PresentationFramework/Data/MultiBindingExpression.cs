@@ -24,10 +24,18 @@ public class MultiBindingExpression : BindingExpressionBase
 	/// <summary>The <see cref="MultiBinding"/> that produced this expression.</summary>
 	public MultiBinding ParentMultiBinding => _binding;
 
-	/// <summary>Re-evaluates all child bindings and pushes the result to the target.</summary>
-	public void UpdateTarget()
+	/// <inheritdoc/>
+	public override BindingBase ParentBindingBase => _binding;
+
+	internal override void UpdateTargetCore()
 	{
 		if (!_targetRef.TryGetTarget(out var target)) return;
 		MultiBindingEngine.Refresh(target, _dp);
+	}
+
+	internal override void UpdateSourceCore()
+	{
+		if (!_targetRef.TryGetTarget(out var target)) return;
+		MultiBindingEngine.UpdateSource(target, _dp);
 	}
 }

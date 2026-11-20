@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Windows.Controls.Primitives;
 
 namespace System.Windows.Controls;
 
@@ -11,8 +12,10 @@ namespace System.Windows.Controls;
 /// <see cref="SelectionChanged"/> is raised on every change.
 /// </para>
 /// </summary>
-public partial class ListBox : ItemsControl
+public partial class ListBox : Selector
 {
+	internal override DependencyProperty SelectedItemDependencyProperty => SelectedItemProperty;
+
 	// ── SelectionChanged event ────────────────────────────────────────────────
 
 	/// <summary>

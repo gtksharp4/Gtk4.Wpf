@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Windows.Controls.Primitives;
 
 namespace System.Windows.Controls;
 
@@ -15,8 +16,10 @@ namespace System.Windows.Controls;
 /// <see cref="UIElement"/> content, per-item <c>IsEnabled</c> and prefix auto-complete are not rendered.
 /// </para>
 /// </summary>
-public partial class ComboBox : ItemsControl
+public partial class ComboBox : Selector
 {
+	internal override DependencyProperty SelectedItemDependencyProperty => SelectedItemProperty;
+
 	/// <summary>Raised when the selected item changes.</summary>
 	public event EventHandler<SelectionChangedEventArgs>? SelectionChanged;
 

@@ -7,7 +7,7 @@ namespace System.Windows.Controls;
 /// A clickable button backed by a <see cref="Gtk.Button"/>. Click and command members live in
 /// <see cref="ButtonBase"/>; the GTK label follows <see cref="ContentControl.Content"/> when it is a string.
 /// </summary>
-public class Button : ButtonBase
+public partial class Button : ButtonBase
 {
 	static Button()
 	{

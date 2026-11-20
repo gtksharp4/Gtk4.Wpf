@@ -52,11 +52,6 @@ public partial class Window : ContentControl
 	/// </summary>
 	public event EventHandler? Closed;
 
-	/// <summary>
-	/// The dialog result set by <see cref="Close(bool?)"/>; <c>null</c> when the
-	/// window was closed without setting an explicit result.
-	/// </summary>
-	public bool? DialogResult { get; private set; }
 
 	// ── GTK backing ──────────────────────────────────────────────────────────
 
@@ -155,8 +150,9 @@ public partial class Window : ContentControl
 	public bool? ShowDialog()
 	{
 		VerifyNotClosed();
-		DialogResult = null;
+		_dialogResult = null;
 		_dialogClosed = false;
+		_showingAsDialog = true;
 
 		var gtkWin = (Gtk.Window)Widget;
 		gtkWin.Modal = true;
@@ -171,6 +167,7 @@ public partial class Window : ContentControl
 		while (!_dialogClosed)
 			Gtk.Application.RunIteration(true);
 
+		_showingAsDialog = false;
 		return DialogResult;
 	}
 

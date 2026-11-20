@@ -75,10 +75,10 @@ public partial class Window
 	/// </summary>
 	public void Close(bool? dialogResult)
 	{
-		bool? previous = DialogResult;
-		DialogResult = dialogResult;
+		bool? previous = _dialogResult;
+		_dialogResult = dialogResult;
 		if (!RequestClose())
-			DialogResult = previous; // veto: undo the tentative set
+			_dialogResult = previous; // veto: undo the tentative set
 	}
 
 	/// <summary>

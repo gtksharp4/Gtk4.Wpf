@@ -10,7 +10,7 @@ namespace System.Windows.Data;
 /// <see cref="BindingBase.StringFormat"/>, <see cref="BindingBase.FallbackValue"/> and
 /// <see cref="BindingBase.TargetNullValue"/> are inherited from <see cref="BindingBase"/>.
 /// </summary>
-public class Binding : BindingBase
+public partial class Binding : BindingBase
 {
 	/// <summary>
 	/// Sentinel returned from <see cref="IValueConverter.ConvertBack"/> (or
