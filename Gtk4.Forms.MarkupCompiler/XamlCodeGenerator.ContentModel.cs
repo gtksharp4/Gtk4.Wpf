@@ -40,7 +40,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			Add(PresDocs, "Run", "Text", false);
 			Add(PresDocs, "Section ListItem FlowDocument", "Blocks", true);
 			Add(PresDocs, "List", "ListItems", true);
-			Add("System.Windows.Media.", "TransformGroup", "Children", true);
+			Add("System.Windows.Media.", "TransformGroup DrawingGroup", "Children", true);
 			Add("System.Windows.Media.", "PathGeometry", "Figures", true);
 			Add("System.Windows.Media.", "PathFigure", "Segments", true);
 			Add("System.Windows.Media.", "LinearGradientBrush RadialGradientBrush", "GradientStops", true);

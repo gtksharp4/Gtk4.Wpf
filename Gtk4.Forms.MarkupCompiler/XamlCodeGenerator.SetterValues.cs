@@ -38,7 +38,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			{
 				string k = EscapeString(key);
 				return raw.TrimStart().StartsWith("{DynamicResource", StringComparison.Ordinal)
-					? $"new System.Windows.Markup.DynamicResourceExtension(\"{k}\")"
+					? $"new System.Windows.Markup.DynamicResourceExtension({ResourceKeyExpression(k)})"
 					: StaticResourceLookup(receiver, k);
 			}
 			if (IsXType(raw, out string typeExpr, _prefixMap, ProbePresentationType)) return typeExpr;
@@ -60,8 +60,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			if (receiver != "this" && !scopes.Contains(receiver))
 				scopes.Insert(0, receiver);
 			if (scopes.Count == 0)
-				return $"this.FindResource(\"{escapedKey}\")";
-			return $"System.Windows.Markup.StaticResourceScope.Find(\"{escapedKey}\", this, " +
+				return $"this.FindResource({ResourceKeyExpression(escapedKey)})";
+			return $"System.Windows.Markup.StaticResourceScope.Find({ResourceKeyExpression(escapedKey)}, this, " +
 				string.Join(", ", scopes) + ")";
 		}
 

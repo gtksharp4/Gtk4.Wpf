@@ -37,7 +37,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				&& (local == "XmlDataProvider" || local == "ObjectDataProvider" || local == "SolidColorBrush"))
 				return ResolveType(item) is string fq && AttributesResolve(item, fq) && ParametersEmittable(item)
 					? fq : null;
-			return null;
+			return MediaResourceType(item);
 		}
 
 		bool IsStaticResourceValue(string value, out string key)

@@ -33,6 +33,16 @@ public class XamlCodeGeneratorSampleCompileTests
 		"Converter.App.xaml", "DataTrigger.MainWindow.xaml", "AnimationTiming.HandoffVersusComposeExample.xaml",
 		"InlineContainers.MainWindow.xaml", "MenuSeparator.MainWindow.xaml",
 		"SimpleBinding.MainWindow.xaml", "InvokeTarget.MainWindow.xaml", "XmlLang.MainWindow.xaml",
+		"TargetValues.App.xaml", "RoutedEventHandling.MainWindow.xaml", "CaptureUnCaptureMouse.MainWindow.xaml",
+		"IntroToStylingAndTemplating.MainWindow.xaml", "DataTemplatingIntro.MainWindow.xaml",
+		"AlternatingAppearanceOfItems.MainWindow.xaml",
+	};
+
+	// Samples whose handlers are stubbed from the generated code, so the compile check covers the rest.
+	static readonly HashSet<string> StubHandlers = new()
+	{
+		"RoutedEventHandling.MainWindow.xaml", "CaptureUnCaptureMouse.MainWindow.xaml",
+		"IntroToStylingAndTemplating.MainWindow.xaml",
 	};
 
 	// Samples that miss only their code-behind handlers (the stub declares none): the exact diagnostics.
@@ -50,6 +60,11 @@ public class XamlCodeGeneratorSampleCompileTests
 	{
 		["DataTrigger.MainWindow.xaml"] = "namespace DataTrigger { public class Places : System.Collections.ObjectModel.ObservableCollection<object> { } }",
 		["SimpleBinding.MainWindow.xaml"] = "namespace SimpleBinding { public class Person { public string PersonName { get; set; } } }",
+		["IntroToStylingAndTemplating.MainWindow.xaml"] = "namespace IntroToStylingAndTemplating { public class PhotoList { } }",
+		["DataTemplatingIntro.MainWindow.xaml"] = "namespace DataTemplatingIntro { public class Tasks { } "
+			+ "public class TaskListDataTemplateSelector : System.Windows.Controls.DataTemplateSelector { } }",
+		["AlternatingAppearanceOfItems.MainWindow.xaml"] = "namespace AlternatingAppearanceOfItems { "
+			+ "public class Places { } public class ListLeagueList { } }",
 	};
 
 	static readonly string[] Unqualified =
@@ -89,7 +104,7 @@ public class XamlCodeGeneratorSampleCompileTests
 	}
 
 	// Stands in for the code-behind: declares the partial class with the root element's base type.
-	static string CodeBehind(string file)
+	static string CodeBehind(string file, string code)
 	{
 		XElement root = XDocument.Load(Path.Combine(Dir, "Samples", file)).Root!;
 		string cls = (string)root.Attributes().First(a => a.Name.LocalName == "Class");
@@ -102,8 +117,16 @@ public class XamlCodeGeneratorSampleCompileTests
 		int dot = cls.LastIndexOf('.');
 		string ns = dot < 0 ? "" : cls.Substring(0, dot);
 		string name = cls.Substring(dot + 1);
-		return $"namespace {ns} {{ public partial class {name} : {baseType} {{ }} }}" + (Stubs.TryGetValue(file, out string s) ? s : "");
+		string handlers = StubHandlers.Contains(file) ? HandlerStubs(code) : "";
+		return $"namespace {ns} {{ public partial class {name} : {baseType} {{ {handlers} }} }}"
+			+ (Stubs.TryGetValue(file, out string s) ? s : "");
 	}
+
+	static string HandlerStubs(string code)
+		=> string.Concat(System.Text.RegularExpressions.Regex
+			.Matches(code, @"this\.(\w+)\)*;").Cast<System.Text.RegularExpressions.Match>()
+			.Select(m => m.Groups[1].Value).Where(n => char.IsUpper(n[0]) && n != "InitializeComponent").Distinct()
+			.Select(n => $"void {n}(object s, System.Windows.RoutedEventArgs e) {{ }} "));
 
 	[Theory]
 	[MemberData(nameof(Samples))]
@@ -115,7 +138,7 @@ public class XamlCodeGeneratorSampleCompileTests
 		var syntax = tree.GetDiagnostics(ct).Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
 		Assert.True(syntax.Count == 0, file + ": " + string.Join("; ", syntax.Take(3)));
 
-		SyntaxTree stub = CSharpSyntaxTree.ParseText(CodeBehind(file), cancellationToken: ct);
+		SyntaxTree stub = CSharpSyntaxTree.ParseText(CodeBehind(file, code), cancellationToken: ct);
 		CSharpCompilation compilation = CSharpCompilation.Create("g", new[] { tree, stub }, References(),
 			new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 		var errors = compilation.GetDiagnostics(ct).Where(d => d.Severity == DiagnosticSeverity.Error).ToList();

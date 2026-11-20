@@ -90,9 +90,13 @@ static class PrimitiveConverters
 
 	// ── Point / Size / Rect ──────────────────────────────────────────────────
 
+	// WPF accepts commas and/or whitespace between the numbers.
+	static string[] SplitNumbers(string raw) =>
+		raw.Split(new[] { ',', ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
 	internal static Point ParsePoint(string raw)
 	{
-		var parts = raw.Split(',');
+		var parts = SplitNumbers(raw);
 		if (parts.Length == 2)
 			return new Point(ParseDouble(parts[0].Trim()), ParseDouble(parts[1].Trim()));
 		throw new FormatException($"Cannot parse Point from \"{raw}\".");
@@ -100,7 +104,7 @@ static class PrimitiveConverters
 
 	internal static Size ParseSize(string raw)
 	{
-		var parts = raw.Split(',');
+		var parts = SplitNumbers(raw);
 		if (parts.Length == 2)
 			return new Size(ParseDouble(parts[0].Trim()), ParseDouble(parts[1].Trim()));
 		throw new FormatException($"Cannot parse Size from \"{raw}\".");
@@ -108,7 +112,7 @@ static class PrimitiveConverters
 
 	internal static Rect ParseRect(string raw)
 	{
-		var parts = raw.Split(',');
+		var parts = SplitNumbers(raw);
 		if (parts.Length == 4)
 			return new Rect(
 				ParseDouble(parts[0].Trim()),

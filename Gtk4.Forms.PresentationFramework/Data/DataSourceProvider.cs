@@ -10,13 +10,18 @@ public abstract class DataSourceProvider
 	object? _data;
 	bool _initialising;
 	bool _initialLoadEnabled = true;
+	bool _queried;
 
 	// ── Public surface ───────────────────────────────────────────────────────
 
 	/// <summary>The resulting data object exposed to bindings.</summary>
 	public object? Data
 	{
-		get => _data;
+		get
+		{
+			if (!_queried) InitialLoad();
+			return _data;
+		}
 		protected set
 		{
 			if (ReferenceEquals(_data, value)) return;
@@ -44,6 +49,7 @@ public abstract class DataSourceProvider
 	{
 		if (!_initialLoadEnabled) return;
 		if (_initialising) return;
+		_queried = true;
 		_initialising = true;
 		try { QueryData(); }
 		finally { _initialising = false; }
@@ -52,6 +58,7 @@ public abstract class DataSourceProvider
 	/// <summary>Discards the current data and re-queries the source.</summary>
 	public void Refresh()
 	{
+		_queried = true;
 		QueryData();
 	}
 
