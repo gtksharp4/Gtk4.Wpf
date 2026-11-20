@@ -34,7 +34,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			}
 			string local = item.Name.LocalName;
 			if (ns == WpfXmlnsMap.PresentationNs
-				&& (local == "XmlDataProvider" || local == "ObjectDataProvider" || local == "SolidColorBrush"))
+				&& (local == "XmlDataProvider" || local == "ObjectDataProvider" || local == "SolidColorBrush"
+					|| local == "CollectionViewSource"))
 				return ResolveType(item) is string fq && AttributesResolve(item, fq) && ParametersEmittable(item)
 					? fq : null;
 			return MediaResourceType(item);

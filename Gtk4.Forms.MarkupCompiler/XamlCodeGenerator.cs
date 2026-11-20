@@ -71,7 +71,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			XDocument doc;
 			try
 			{
-				doc = XDocument.Parse(xaml, LoadOptions.PreserveWhitespace);
+				doc = XDocument.Parse(xaml, LoadOptions.PreserveWhitespace | LoadOptions.SetLineInfo);
 			}
 			catch (XmlException ex)
 			{
@@ -104,7 +104,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			string ns = lastDot >= 0 ? className.Substring(0, lastDot) : string.Empty;
 			string typeName = lastDot >= 0 ? className.Substring(lastDot + 1) : className;
 
-			bool isAppDef = IsApplicationDefinition(root);
+			bool isAppDef = IsApplicationRoot(root);
 
 			var sb = new StringBuilder();
 			var w = new IndentedWriter(sb);
@@ -161,9 +161,14 @@ namespace Gtk4.Forms.MarkupCompiler
 			}
 
 			// Emit root resources BEFORE attributes/children so {StaticResource} resolves.
-			EmitResources(w, root, xNs, "this", ref _counter);
-			EmitRootAttributes(w, root, xNs);
-			EmitChildren(w, root, xNs, "this", ref _counter);
+			if (IsDictionaryRoot(root))
+				EmitDictionaryRoot(w, root, xNs, ref _counter);
+			else
+			{
+				EmitResources(w, root, xNs, "this", ref _counter);
+				EmitRootAttributes(w, root, xNs);
+				EmitChildren(w, root, xNs, "this", ref _counter);
+			}
 
 			if (!isAppDef)
 			{
@@ -186,7 +191,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			w.Line("}");
 
 			// Application: also emit [STAThread] Main
-			if (isAppDef)
+			if (isAppDef && !SourcesDeclareMain())
 			{
 				w.Line();
 				w.Line("[System.STAThread]");
@@ -267,11 +272,6 @@ namespace Gtk4.Forms.MarkupCompiler
 				}
 			}
 			return XNamespace.Get(WpfXmlnsMap.XNs);
-		}
-
-		static bool IsApplicationDefinition(XElement root)
-		{
-			return root.Name.LocalName == "Application";
 		}
 
 		/// <summary>The root's <c>ISupportInitialize.<paramref name="method"/>()</c> call, when it implements it.</summary>
@@ -811,6 +811,9 @@ namespace Gtk4.Forms.MarkupCompiler
 
 			if (TryEmitMediaPropertyElement(w, propEl, xNs, parentVar, propName, ref counter)) return;
 
+			if (TryEmitItemCollection(w, propEl, xNs, parentVar, QualifyTypeName(ownerLocalName), propName,
+				ref counter)) return;
+
 			// {AnyElement}.Triggers — element-level trigger block.
 			if (propName == "Triggers")
 			{
@@ -847,6 +850,13 @@ namespace Gtk4.Forms.MarkupCompiler
 					w.Line($"{parentVar}.{propName} = {tmplVar};");
 					return;
 				}
+				if (childLocal == "HierarchicalDataTemplate")
+				{
+					string tmplVar = $"__dt{counter++}";
+					EmitHierarchicalTemplateInline(w, child, xNs, tmplVar, parentVar, ref counter);
+					w.Line($"{parentVar}.{propName} = {tmplVar};");
+					return;
+				}
 				if (childLocal == "MultiBinding")
 				{
 					string mbVar = $"__mb{counter++}";
@@ -856,6 +866,7 @@ namespace Gtk4.Forms.MarkupCompiler
 					return;
 				}
 			}
+			if (!_ignorableNamespaces.Contains(propEl.Name.NamespaceName)) NoteDroppedPropertyElement(propEl);
 		}
 
 		/// <summary>
@@ -893,9 +904,25 @@ namespace Gtk4.Forms.MarkupCompiler
 				{ rdWrapper = ch; break; }
 			}
 			items = rdWrapper != null ? rdWrapper.Elements() : resPropEl.Elements();
+			if (rdWrapper != null) EmitDictionarySource(w, rdWrapper, ownerVar);
+			EmitResourceItems(w, items, xNs, ownerVar, ref counter);
+		}
 
+		// Emits each keyed resource element (and merged dictionaries) into <paramref name="ownerVar"/>.Resources.
+		void EmitResourceItems(
+			IndentedWriter w,
+			System.Collections.Generic.IEnumerable<XElement> items,
+			XNamespace xNs,
+			string ownerVar,
+			ref int counter)
+		{
 			foreach (XElement item in items)
 			{
+				if (item.Name.LocalName == "ResourceDictionary.MergedDictionaries")
+				{
+					EmitMergedDictionaries(w, item, ownerVar);
+					continue;
+				}
 				string key = (string)item.Attribute(xNs + "Key");
 				if (item.Name.LocalName == "Style"
 					&& item.Name.NamespaceName == WpfXmlnsMap.PresentationNs)
@@ -918,11 +945,25 @@ namespace Gtk4.Forms.MarkupCompiler
 					EmitDataTemplateInline(w, item, xNs, tmplVar, ref counter);
 					w.Line($"{ownerVar}.Resources[\"{EscapeString(key)}\"] = {tmplVar};");
 				}
+				else if (item.Name.LocalName == "HierarchicalDataTemplate"
+					&& item.Name.NamespaceName == WpfXmlnsMap.PresentationNs
+					&& key != null)
+				{
+					string tmplVar = $"__dt{counter++}";
+					EmitHierarchicalTemplateInline(w, item, xNs, tmplVar, ownerVar, ref counter);
+					w.Line($"{ownerVar}.Resources[\"{EscapeString(key)}\"] = {tmplVar};");
+				}
 				else if (item.Name.LocalName == "Storyboard"
 					&& item.Name.NamespaceName == WpfXmlnsMap.PresentationNs
 					&& key != null)
 				{
 					EmitStoryboardResource(w, item, xNs, ownerVar, key, ref counter);
+				}
+				else if (item.Name.LocalName == "AlternationConverter"
+					&& item.Name.NamespaceName == WpfXmlnsMap.PresentationNs
+					&& key != null && AlternationItemsEmittable(item))
+				{
+					EmitAlternationConverter(w, item, ownerVar, key, ref counter);
 				}
 				else if (key != null && ResourceObjectType(item) is string objType)
 				{
@@ -988,9 +1029,10 @@ namespace Gtk4.Forms.MarkupCompiler
 			XElement tmplEl,
 			XNamespace xNs,
 			string tmplVar,
-			ref int counter)
+			ref int counter,
+			string typeName = "System.Windows.Controls.DataTemplate")
 		{
-			w.Line($"var {tmplVar} = new System.Windows.Controls.DataTemplate();");
+			w.Line($"var {tmplVar} = new {typeName}();");
 			string dataType = DataTypeExpression((string)tmplEl.Attribute("DataType"));
 			if (dataType != "null") w.Line($"{tmplVar}.DataType = {dataType};");
 

@@ -17,10 +17,12 @@ public class CollectionViewSource
 
 	// ── Source ───────────────────────────────────────────────────────────────
 
-	IEnumerable? _source;
+	object? _source;
 
-	/// <summary>Gets or sets the underlying source collection.</summary>
-	public IEnumerable? Source
+	/// <summary>
+	/// Gets or sets the collection to view, or a <see cref="DataSourceProvider"/> whose <c>Data</c> is used.
+	/// </summary>
+	public object? Source
 	{
 		get => _source;
 		set
@@ -39,10 +41,11 @@ public class CollectionViewSource
 	{
 		get
 		{
-			if (_source == null) return null;
+			var items = _source is DataSourceProvider provider ? provider.Data as IEnumerable : _source as IEnumerable;
+			if (items == null) return null;
 			if (_view == null)
 			{
-				_view = CreateView(_source);
+				_view = CreateView(items);
 				// U6: forward instance SortDescriptions/GroupDescriptions to the view.
 				foreach (var sd in SortDescriptions)
 					_view.SortDescriptions.Add(sd);

@@ -29,6 +29,17 @@ public abstract class GeneratorV2TestBase
 		return gen.Generate(xaml, out className, xamlPath, rootNamespace);
 	}
 
+	protected static System.Collections.Generic.IReadOnlyList<string> Messages(string xaml)
+	{
+		string pf = Path.Combine(Dir, "Gtk4.Forms.PresentationFramework.dll");
+		string wb = Path.Combine(Dir, "Gtk4.Forms.WindowsBase.dll");
+		using var gen = new XamlCodeGenerator { HasCodeBehind = true };
+		gen.SetReferencePaths(new[] { pf, wb }.Concat(Directory.GetFiles(Dir, "*Sharp.dll")).ToArray());
+		gen.SetXmlnsDefinitionSource(new AssemblyXmlnsDefinitionSource(new[] { pf }));
+		gen.Generate(xaml, out _);
+		return gen.Messages.ToList();
+	}
+
 	protected static void AssertCompiles(string code, string extra = "")
 	{
 		var refs = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator)
