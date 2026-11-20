@@ -80,6 +80,18 @@ namespace Gtk4.Forms.MarkupCompiler
 			{ "ItemsControl",     "System.Windows.Controls.ItemsControl" },
 			{ "ListBox",          "System.Windows.Controls.ListBox" },
 			{ "ListView",         "System.Windows.Controls.ListView" },
+			{ "ListBoxItem",      "System.Windows.Controls.ListBoxItem" },
+			{ "ScrollViewer",     "System.Windows.Controls.ScrollViewer" },
+			{ "SpellCheck",       "System.Windows.Controls.SpellCheck" },
+			{ "Mouse",            "System.Windows.Input.Mouse" },
+			{ "Keyboard",         "System.Windows.Input.Keyboard" },
+
+			// System.Windows.Shapes
+			{ "Shape",            "System.Windows.Shapes.Shape" },
+			{ "Ellipse",          "System.Windows.Shapes.Ellipse" },
+			{ "Rectangle",        "System.Windows.Shapes.Rectangle" },
+			{ "Polygon",          "System.Windows.Shapes.Polygon" },
+			{ "Polyline",         "System.Windows.Shapes.Polyline" },
 		};
 
 		/// <summary>

@@ -12,6 +12,9 @@ namespace System.Windows.Controls;
 /// </summary>
 public class DataTemplate : FrameworkTemplate
 {
+	/// <summary>The data type this template applies to (store-only; no implicit selection).</summary>
+	public object? DataType { get; set; }
+
 	/// <summary>
 	/// A factory that creates a visual for a specific data item.
 	/// Takes precedence over <see cref="FrameworkTemplate.Factory"/> when set.

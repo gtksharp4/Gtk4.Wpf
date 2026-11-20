@@ -345,14 +345,14 @@ namespace Gtk4.Forms.MarkupCompiler
 					else
 						w.Line($"this.{propName} = {NullExprForClrProp(rootFqType, propName)};");
 				}
-				else if (IsXType(val, out string typeofExpr, _prefixMap))
+				else if (IsXType(val, out string typeofExpr, _prefixMap, ProbePresentationType))
 				{
 					if (!string.IsNullOrEmpty(rootFqType) && IsKnownDp(rootFqType, propName))
 						w.Line($"this.SetValue({rootFqType}.{propName}Property, {typeofExpr});");
 					else
 						w.Line($"this.{propName} = {typeofExpr};");
 				}
-				else if (IsXStatic(val, out string staticExpr, _prefixMap))
+				else if (IsXStatic(val, out string staticExpr, _prefixMap, ProbePresentationType))
 				{
 					if (!string.IsNullOrEmpty(rootFqType) && IsKnownDp(rootFqType, propName))
 						w.Line($"this.SetValue({rootFqType}.{propName}Property, {staticExpr});");
@@ -641,7 +641,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				{
 					string ownerLocalName = propName.Substring(0, dotPos);
 					string attachedProp = propName.Substring(dotPos + 1);
-					string ownerFqType = WpfXmlnsMap.Resolve(ownerLocalName) ?? ownerLocalName;
+					string ownerFqType = QualifyTypeName(ownerLocalName);
 					// Emit: OwnerType.SetProp(element, (castType)XamlValueConverter.Convert(...))
 					string castType = ResolveAttachedPropType(ownerFqType, attachedProp);
 					w.Line($"{ownerFqType}.Set{attachedProp}({varName}, " +
@@ -675,14 +675,14 @@ namespace Gtk4.Forms.MarkupCompiler
 					else
 						w.Line($"{varName}.{propName} = {NullExprForClrProp(fqType, propName)};");
 				}
-				else if (IsXType(val, out string typeofExpr, _prefixMap))
+				else if (IsXType(val, out string typeofExpr, _prefixMap, ProbePresentationType))
 				{
 					if (IsKnownDp(fqType, propName))
 						w.Line($"{varName}.SetValue({fqType}.{propName}Property, {typeofExpr});");
 					else
 						w.Line($"{varName}.{propName} = {typeofExpr};");
 				}
-				else if (IsXStatic(val, out string staticExpr, _prefixMap))
+				else if (IsXStatic(val, out string staticExpr, _prefixMap, ProbePresentationType))
 				{
 					if (IsKnownDp(fqType, propName))
 						w.Line($"{varName}.SetValue({fqType}.{propName}Property, {staticExpr});");
@@ -747,7 +747,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			// Template and ContentTemplate property elements contain a ControlTemplate child.
 			// ItemTemplate property elements contain a DataTemplate child.
 			// MultiBinding property elements contain a MultiBinding child.
-			string ownerFqType = WpfXmlnsMap.Resolve(ownerLocalName) ?? ownerLocalName;
+			string ownerFqType = QualifyTypeName(ownerLocalName);
 
 			foreach (XElement child in propEl.Elements())
 			{
@@ -877,9 +877,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			ref int counter)
 		{
 			string targetTypeAttr = (string)tmplEl.Attribute("TargetType");
-			string targetTypeExpr = targetTypeAttr != null
-				? $"typeof({ResolveTargetType(targetTypeAttr)})"
-				: "null";
+			string targetTypeExpr = TypeRefExpression(targetTypeAttr);
 
 			w.Line($"var {tmplVar} = new System.Windows.Controls.ControlTemplate({targetTypeExpr});");
 
@@ -915,6 +913,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			ref int counter)
 		{
 			w.Line($"var {tmplVar} = new System.Windows.Controls.DataTemplate();");
+			string dataType = TypeRefExpression((string)tmplEl.Attribute("DataType"));
+			if (dataType != "null") w.Line($"{tmplVar}.DataType = {dataType};");
 
 			XElement root = FindTemplateRoot(tmplEl);
 			if (root != null)
@@ -966,9 +966,7 @@ namespace Gtk4.Forms.MarkupCompiler
 
 			// TargetType attribute.
 			string targetTypeAttr = (string)styleEl.Attribute("TargetType");
-			string targetTypeExpr = targetTypeAttr != null
-				? $"typeof({ResolveTargetType(targetTypeAttr)})"
-				: "null";
+			string targetTypeExpr = TypeRefExpression(targetTypeAttr);
 
 			// BasedOn="{StaticResource k}" attribute.
 			string basedOnAttr = (string)styleEl.Attribute("BasedOn");
@@ -1133,20 +1131,6 @@ namespace Gtk4.Forms.MarkupCompiler
 			ref int counter)
 		{
 			EmitEventTriggerFull(w, el, xNs, trigVar, containerVar, true, ref counter);
-		}
-
-		/// <summary>
-		/// Resolves a <c>TargetType</c> attribute value ("Button", "ctrl:Button") to a
-		/// fully-qualified CLR type name, using the built-in presentation-namespace map.
-		/// Falls back to the raw value when the local name is not in the map.
-		/// </summary>
-		static string ResolveTargetType(string targetType)
-		{
-			// Strip optional namespace prefix (e.g. "ctrl:Button" → "Button").
-			int colon = targetType.IndexOf(':');
-			string localName = colon >= 0 ? targetType.Substring(colon + 1) : targetType;
-			string resolved = WpfXmlnsMap.Resolve(localName);
-			return resolved ?? localName;
 		}
 
 	}

@@ -41,7 +41,8 @@ namespace Gtk4.Forms.MarkupCompiler
 					? $"new System.Windows.Markup.DynamicResourceExtension(\"{k}\")"
 					: StaticResourceLookup(receiver, k);
 			}
-			if (IsXStatic(raw, out string staticExpr, _prefixMap)) return staticExpr;
+			if (IsXType(raw, out string typeExpr, _prefixMap, ProbePresentationType)) return typeExpr;
+			if (IsXStatic(raw, out string staticExpr, _prefixMap, ProbePresentationType)) return staticExpr;
 			return $"\"{EscapeString(raw)}\"";
 		}
 
@@ -111,7 +112,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			}
 			if (owner == null) return;
 
-			string ownerFq = ResolveTargetType(owner);
+			string ownerFq = ResolveTypeRefName(owner) ?? owner;
 			string handled = (string)el.Attribute("HandledEventsToo");
 			string init = string.Equals(handled, "true", StringComparison.OrdinalIgnoreCase)
 				? " { HandledEventsToo = true }" : string.Empty;

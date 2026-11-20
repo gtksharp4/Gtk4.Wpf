@@ -162,6 +162,9 @@ public class XamlCodeGeneratorXmlnsDefTests
 			return;
 		}
 
+		// As in MarkupCompileTask, the resolver is created first so WindowsBase resolves while attributes load.
+		string wbDll = Path.Combine(testDir, "Gtk4.Forms.WindowsBase.dll");
+		using var resolver = new DpSymbolResolver(new[] { pfDll, wbDll });
 		var source = new AssemblyXmlnsDefinitionSource(new[] { pfDll });
 		IReadOnlyList<XmlnsDefinitionEntry> entries = ((IXmlnsDefinitionSource)source).GetEntries();
 
