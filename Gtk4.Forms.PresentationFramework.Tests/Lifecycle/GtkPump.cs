@@ -10,6 +10,7 @@ static class GtkPump
 	/// <summary>Iterates the main loop until <paramref name="condition"/> holds or the timeout elapses.</summary>
 	public static bool Until(Func<bool> condition, int timeoutMs = 4000)
 	{
+		WpfGtkFixture.Instance.AssertOnGtkThread();
 		var sw = Stopwatch.StartNew();
 		// A periodic wake-up source so RunIteration(true) never blocks past the deadline.
 		uint wake = GLib.Timeout.Add(10, new GLib.TimeoutHandler(() => true));

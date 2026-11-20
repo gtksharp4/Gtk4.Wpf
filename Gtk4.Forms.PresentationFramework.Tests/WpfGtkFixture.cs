@@ -18,6 +18,7 @@ sealed class WpfGtkFixture
 
 	readonly BlockingCollection<Action> _queue;
 	readonly Thread? _thread;
+	int _gtkThreadId = -1;
 
 	/// <summary>Why GTK could not be brought up, or null if it is running.</summary>
 	public string? UnavailableReason { get; }
@@ -39,6 +40,7 @@ sealed class WpfGtkFixture
 			_queue = WpfGtkThreadBridge.Queue;
 			Marshal(() =>
 			{
+				_gtkThreadId = Environment.CurrentManagedThreadId;
 				try { Gtk.Application.Init(); }
 				catch (DllNotFoundException e) { reason = NoRuntime(e.Message); }
 				catch (TypeInitializationException e) when (e.InnerException is DllNotFoundException inner)
@@ -55,6 +57,7 @@ sealed class WpfGtkFixture
 
 		_thread = new Thread(() =>
 		{
+			_gtkThreadId = Environment.CurrentManagedThreadId;
 			try { Gtk.Application.Init(); }
 			catch (DllNotFoundException e) { reason = NoRuntime(e.Message); }
 			catch (TypeInitializationException e) when (e.InnerException is DllNotFoundException inner)
@@ -83,6 +86,17 @@ sealed class WpfGtkFixture
 		_thread.Start();
 		ready.Wait();
 		UnavailableReason = reason;
+	}
+
+	/// <summary>
+	/// Throws unless called on the GTK thread. Pumping GLib from another thread is undefined behaviour:
+	/// on macOS thread 0 iterates the same context concurrently and the test host segfaults.
+	/// </summary>
+	public void AssertOnGtkThread()
+	{
+		if (_gtkThreadId != Environment.CurrentManagedThreadId)
+			throw new InvalidOperationException(
+				"GTK main loop used off the GTK thread: wrap the test body in Run(() => ...).");
 	}
 
 	/// <summary>Runs <paramref name="action"/> on the GTK thread, rethrowing anything it throws.</summary>

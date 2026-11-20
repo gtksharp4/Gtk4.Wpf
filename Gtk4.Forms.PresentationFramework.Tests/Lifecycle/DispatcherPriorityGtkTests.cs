@@ -10,7 +10,7 @@ namespace Gtk4.Forms.PresentationFramework.Tests.Lifecycle;
 public class DispatcherPriorityGtkTests : WpfGtkTestBase
 {
 	[Fact]
-	public void Burst_runs_in_WPF_priority_order()
+	public void Burst_runs_in_WPF_priority_order() => Run(() =>
 	{
 		using var gtk = new GtkDispatcherScope();
 		var order = new List<DispatcherPriority>();
@@ -32,10 +32,10 @@ public class DispatcherPriorityGtkTests : WpfGtkTestBase
 		var expected = new List<DispatcherPriority>(posted);
 		expected.Sort((a, b) => b.CompareTo(a));
 		Assert.Equal(expected, order);
-	}
+	});
 
 	[Fact]
-	public void Loaded_runs_while_a_default_priority_source_is_busy()
+	public void Loaded_runs_while_a_default_priority_source_is_busy() => Run(() =>
 	{
 		using var gtk = new GtkDispatcherScope();
 		bool ran = false;
@@ -47,10 +47,10 @@ public class DispatcherPriorityGtkTests : WpfGtkTestBase
 			Assert.True(GtkPump.Until(() => ran, 2000));
 		}
 		finally { GLib.Source.Remove(busy); }
-	}
+	});
 
 	[Fact]
-	public void Idle_priority_work_yields_to_a_busy_default_source()
+	public void Idle_priority_work_yields_to_a_busy_default_source() => Run(() =>
 	{
 		using var gtk = new GtkDispatcherScope();
 		bool ran = false;
@@ -59,5 +59,5 @@ public class DispatcherPriorityGtkTests : WpfGtkTestBase
 		Dispatcher.CurrentDispatcher.BeginInvoke(() => ran = ran || spins >= 50, DispatcherPriority.Background);
 		Assert.True(GtkPump.Until(() => ran, 2000));
 		Assert.True(spins >= 50);
-	}
+	});
 }
