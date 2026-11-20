@@ -10,6 +10,12 @@ namespace Gtk4.Forms.Wpf.ProjectConverter;
 /// <para><c>OutputType</c> is left untouched — a WPF app keeps its <c>WinExe</c>. The entry
 /// point comes from the compiled <c>ApplicationDefinition</c>, which works for any executable
 /// output type, so there is no reason to downgrade <c>WinExe</c> to <c>Exe</c>.</para>
+/// <para>Direct <c>PackageReference</c> pins below 10.0.0 of <c>System.Configuration.ConfigurationManager</c>,
+/// <c>System.Diagnostics.EventLog</c> and <c>System.Security.Cryptography.ProtectedData</c> are raised to
+/// 10.0.0: the Gtk4.Forms.Wpf package now flows those versions, and a lower pin would fail restore with NU1605
+/// (under the WindowsDesktop shared framework they came from the framework, so no downgrade arose). Only literal
+/// versions in the project file are rewritten; <c>Directory.Packages.props</c>, property-based versions and ranges
+/// are not, so NU1605 can still occur there.</para>
 /// </summary>
 /// <remarks>
 /// All edits are textual and minimal; unrelated content is left byte-for-byte unchanged.
@@ -42,6 +48,28 @@ internal static class CsprojConverter
 		@"[^\S\r\n]*<UseWindowsForms>[^<]*</UseWindowsForms>[^\S\r\n]*(\r?\n)?",
 		RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+	const string FloorVersion = "10.0.0";
+
+	static readonly string[] _flooredPackages =
+	{
+		"System.Configuration.ConfigurationManager",
+		"System.Diagnostics.EventLog",
+		"System.Security.Cryptography.ProtectedData",
+	};
+
+	static readonly Regex _packageReference = new(
+		@"<PackageReference\b[^>]*?(?:/>|>.*?</PackageReference\s*>)",
+		RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+	static readonly Regex _includeAttribute = new(
+		@"\sInclude\s*=\s*""(?<id>[^""]*)""",
+		RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+	// Version="..." attribute or <Version>...</Version> child; group "v" is the literal version token.
+	static readonly Regex _versionToken = new(
+		@"(?<pre>\sVersion\s*=\s*"")(?<v>[^""]*)(?<post>"")|(?<pre><Version>\s*)(?<v>[^<]*?)(?<post>\s*</Version>)",
+		RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
 	/// <summary>
 	/// Applies all conversion rules to project-file text and reports whether anything changed.
 	/// </summary>
@@ -56,6 +84,7 @@ internal static class CsprojConverter
 
 		result = ApplyTfmCollapse(result);
 		result = StripWpfOptIns(result);
+		result = RaiseFrameworkSuppliedPackageFloors(result);
 
 		changed = !string.Equals(result, content, StringComparison.Ordinal);
 		return result;
@@ -120,5 +149,35 @@ internal static class CsprojConverter
 		content = _useWpf.Replace(content, string.Empty);
 		content = _useWindowsForms.Replace(content, string.Empty);
 		return content;
+	}
+
+	static string RaiseFrameworkSuppliedPackageFloors(string content)
+	{
+		return _packageReference.Replace(content, match =>
+		{
+			var include = _includeAttribute.Match(match.Value);
+			if (!include.Success
+				|| !_flooredPackages.Contains(include.Groups["id"].Value.Trim(), StringComparer.OrdinalIgnoreCase))
+				return match.Value;
+
+			return _versionToken.Replace(match.Value, v =>
+				IsBelowFloor(v.Groups["v"].Value)
+					? v.Groups["pre"].Value + FloorVersion + v.Groups["post"].Value
+					: v.Value, 1);
+		});
+	}
+
+	/// <summary>True for a literal version whose leading numeric major is below 10 (prerelease included).</summary>
+	static bool IsBelowFloor(string version)
+	{
+		version = version.Trim();
+		if (version.Length == 0 || version.Contains("$(") || version[0] == '[' || version[0] == '(')
+			return false;
+
+		var end = 0;
+		while (end < version.Length && char.IsDigit(version[end]))
+			end++;
+
+		return end > 0 && int.TryParse(version.Substring(0, end), out var major) && major < 10;
 	}
 }

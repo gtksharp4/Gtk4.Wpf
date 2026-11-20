@@ -1384,6 +1384,34 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
 - **Carry-over (Round 41)**: `ListBox` still deselects on a foreign `SelectedItem` (its `SelectionDefectTests`
   `notInList` test encodes it) - align with WPF in a later round; no `Invoke(Action, DispatcherPriority)` overload;
   `Inactive` work is dropped, not queued; `gf39/xaml-content-model` still to be reviewed and merged.
+- **Round 42 (first round chosen from `docs/samples-coverage.md`).** Two fixes were already on main before the round:
+  the samples-coverage report (`fedd13c8`: 0/206 portable samples build) and the macOS segfault fix (`581861a2`: the
+  dispatcher-priority GTK tests pumped GLib off the GTK thread; `GtkPump` now throws off-thread use and the tests run
+  inside `Run(() => ...)`).
+- **Round 42 track - desktop framework deps (DONE, merged).** `gf42/desktop-framework-deps`: `Gtk4.Forms.Wpf` depends on
+  `System.Configuration.ConfigurationManager` 10.x, replacing what the WindowsDesktop shared framework supplied implicitly
+  (`Settings.Designer.cs` compiles). `gf42/xtype-qualified-names` and `gf42/colors-text-gaps` are **not merged**: they
+  were not part of the reviewed set this round; both branches are kept untouched for a later review.
+- **Round 42 review (Opus) + fixes - DONE.** **A-F1 (High)** CM 10 brings `System.Diagnostics.EventLog` and
+  `System.Security.Cryptography.ProtectedData` >= 10.0.0 into the consumer graph, so a lower direct pin (the sample
+  `UnhandledExceptionHandling` pins EventLog 4.6.0-preview8) raised NU1605. Under WindowsDesktop these came from the shared
+  framework, so no downgrade arose. `CsprojConverter` now raises literal direct pins of those three packages below 10 to
+  10.0.0 (attribute or `<Version>` child, case-insensitive; ranges, `$(...)`, missing and >= 10 untouched; textual,
+  idempotent). Limitation: `Directory.Packages.props`, property versions and ranges are not rewritten. **Verified
+  limitation**: restore runs before the converter target, so a plain `dotnet build` still fails restore with NU1605 on the
+  first pass; the rewrite happens only when a build runs without restore (`--no-restore`), after which the next restore
+  succeeds. A restore-time fix is carry-over. The D2 audit note "EventLog is fine because CM pulls it in" was wrong: a lower
+  direct pin caused NU1605. **A-F2 (Nit)** the two CM version facts were merged
+  (`Wpf_package_depends_on_ConfigurationManager_10x`); the nuspec check moved from `Integration.Tests` (not run in CI, skipped
+  when no package) into `ProjectConverter.Tests` (ProjectReference for build order; fails instead of skipping).
+  Rejected in triage: **A-F3** (not a repository defect: the "consumers float up to 10.0.15" claim exists only in the
+  implementer's report; lowest-applicable resolution gives CM 10.0.0, AssemblyVersion 10.0.0.0, the same as
+  Microsoft.WindowsDesktop.App.Ref lists).
+  **Round 42 totals: 3657 tests** (190 WindowsBase + 3125 PresentationFramework + 311 MarkupCompiler + 31 ProjectConverter),
+  all pass; `dotnet build Gtk4.Forms.sln` 0 warnings. A-F1 tests were observed failing first (5 of 13 failed before the fix).
+- **Carry-over (Round 42)**: NU1605 on first restore for a lower direct pin (needs a restore-time hook or a different
+  dependency strategy); `gf42/xtype-qualified-names`, `gf42/colors-text-gaps` and `gf39/xaml-content-model` still to be
+  reviewed and merged.
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a

@@ -22,12 +22,11 @@ public class WpfPackageDependencyTests
 	}
 
 	[Fact]
-	public void Wpf_package_depends_on_ConfigurationManager()
+	public void Wpf_package_depends_on_ConfigurationManager_10x()
 	{
-		var refs = PackageReferences("System.Configuration.ConfigurationManager");
+		var reference = Assert.Single(PackageReferences("System.Configuration.ConfigurationManager"));
 
-		var reference = Assert.Single(refs);
-		Assert.False(string.IsNullOrEmpty((string?)reference.Attribute("Version")));
+		Assert.StartsWith("10.", (string)reference.Attribute("Version")!);
 	}
 
 	[Fact]
@@ -39,13 +38,5 @@ public class WpfPackageDependencyTests
 		Assert.Null(reference.Parent!.Attribute("Condition"));
 		Assert.Null(reference.Attribute("PrivateAssets"));
 		Assert.Null(reference.Attribute("ExcludeAssets"));
-	}
-
-	[Fact]
-	public void ConfigurationManager_version_matches_the_dotnet10_shared_framework()
-	{
-		var reference = Assert.Single(PackageReferences("System.Configuration.ConfigurationManager"));
-
-		Assert.StartsWith("10.", (string)reference.Attribute("Version")!);
 	}
 }
