@@ -155,7 +155,7 @@ public static class XamlValueConverter
 	static void RegisterBuiltIns()
 	{
 		// Scalars
-		Register<double>(PrimitiveConverters.ParseDouble);
+		Register<double>(UnitConverters.ParseLength);
 		Register<float>(PrimitiveConverters.ParseFloat);
 		Register<int>(PrimitiveConverters.ParseInt);
 		Register<long>(raw => long.Parse(raw, System.Globalization.CultureInfo.InvariantCulture));
@@ -177,6 +177,9 @@ public static class XamlValueConverter
 		Register<FontWeight>(FontConverters.ParseFontWeight);
 		Register<FontStyle>(FontConverters.ParseFontStyle);
 		Register<FontStretch>(FontConverters.ParseFontStretch);
+		Register<Transform>(UnitConverters.ParseTransform);
+		Register<ImageSource>(UnitConverters.ParseImageSource);
+		Register<System.Windows.Input.ICommand?>(CommandConverters.ParseCommand);
 
 		// Animation primitives
 		Register<Duration>(AnimationConverters.ParseDuration);

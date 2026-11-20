@@ -102,7 +102,7 @@ public class Image : FrameworkElement
 		if (source == null)
 			_picture.Paintable = null;
 		else
-			_picture.Filename = source.FilePath;
+			_picture.Filename = ImageSourceLocation.ResolveFilePath(source);
 	}
 
 	void ApplyStretch(Media.Stretch stretch)
