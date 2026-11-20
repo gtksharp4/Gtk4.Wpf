@@ -1,12 +1,12 @@
-using System;
+using System.Windows.Controls.Primitives;
 
 namespace System.Windows.Controls;
 
 /// <summary>
-/// A two-state (or three-state) check control backed by <see cref="Gtk.CheckButton"/>.
-/// Two-way: GTK toggle writes back into <see cref="IsChecked"/>.
+/// A check control backed by <see cref="Gtk.CheckButton"/>. State, events and three-state
+/// behaviour come from <see cref="ToggleButton"/>.
 /// </summary>
-public class CheckBox : ContentControl
+public class CheckBox : ToggleButton
 {
 	static CheckBox()
 	{
@@ -14,74 +14,20 @@ public class CheckBox : ContentControl
 			new PropertyMetadata(typeof(CheckBox)));
 	}
 
-	// ── Checked / Unchecked events ───────────────────────────────────────────
-
-	/// <summary>Raised when <see cref="IsChecked"/> becomes <c>true</c>.</summary>
-	public event EventHandler? Checked;
-
-	/// <summary>Raised when <see cref="IsChecked"/> becomes <c>false</c>.</summary>
-	public event EventHandler? Unchecked;
-
-	// ── IsChecked DP ─────────────────────────────────────────────────────────
-
-	/// <summary>Three-valued check state; <c>null</c> = indeterminate.</summary>
-	public static readonly DependencyProperty IsCheckedProperty =
-		DependencyProperty.Register(
-			nameof(IsChecked),
-			typeof(bool?),
-			typeof(CheckBox),
-			new FrameworkPropertyMetadata(false,
-				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal, OnIsCheckedChanged));
-
-	static void OnIsCheckedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-	{
-		var cb = (CheckBox)d;
-		if (cb._check != null)
-		{
-			var active = (e.NewValue as bool?) == true;
-			if (cb._check.Active != active)
-				cb._check.Active = active;
-		}
-		if ((e.NewValue as bool?) == true)
-			cb.Checked?.Invoke(cb, EventArgs.Empty);
-		else
-			cb.Unchecked?.Invoke(cb, EventArgs.Empty);
-	}
-
-	/// <summary>Gets or sets the check state.</summary>
-	public bool? IsChecked
-	{
-		get => (bool?)GetValue(IsCheckedProperty);
-		set => SetValue(IsCheckedProperty, value);
-	}
-
-	// ── GTK backing ──────────────────────────────────────────────────────────
-
 	Gtk.CheckButton _check = null!;
-	bool _updating;
 
 	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
 		_check = new Gtk.CheckButton { Active = IsChecked == true };
-		_check.Toggled += OnGtkToggled;
+		_check.Toggled += (s, e) => GtkToggled(_check.Active);
+		_check.Activate += (s, e) => GtkClicked();
 		return _check;
 	}
 
-	// CheckBox doesn't use the ContentControl box/label; override to avoid NotImplementedException.
-	/// <inheritdoc/>
-	protected override Gtk.Box ContentContainer =>
-		throw new InvalidOperationException("CheckBox manages its own widget.");
-
-	/// <inheritdoc/>
-	protected override Gtk.Label ContentLabel =>
-		throw new InvalidOperationException("CheckBox manages its own widget.");
-
-	void OnGtkToggled(object? sender, EventArgs e)
+	internal override void SetGtkActive(bool active)
 	{
-		if (_updating) return;
-		_updating = true;
-		try { SetValue(IsCheckedProperty, _check.Active ? (bool?)true : false); }
-		finally { _updating = false; }
+		if (_check != null && _check.Active != active)
+			_check.Active = active;
 	}
 }

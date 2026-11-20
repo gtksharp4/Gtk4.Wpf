@@ -10,7 +10,7 @@ using WpfSlider        = System.Windows.Controls.Slider;
 using WpfTabControl    = System.Windows.Controls.TabControl;
 using WpfTabItem       = System.Windows.Controls.TabItem;
 using WpfTextBlock     = System.Windows.Controls.TextBlock;
-using WpfToggleButton  = System.Windows.Controls.ToggleButton;
+using WpfToggleButton  = System.Windows.Controls.Primitives.ToggleButton;
 
 namespace Gtk4.Forms.PresentationFramework.Tests.Controls;
 

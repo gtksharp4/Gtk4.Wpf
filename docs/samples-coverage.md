@@ -310,3 +310,16 @@ tooling, and legacy (non-SDK) csproj conversion (21 projects, only 1 of them a p
 |---|---|---|---:|---:|---|
 | 2026-11-19 | `3b73e4f5` | 1.0.0.26323 | 0 / 206 | 0 | +CM diagnostic: 16 build, 10 run |
 | 2026-11-20 | `db9526db` | 1.0.0.26324 | 45 / 206 | 31 | 10 crash, 4 hang; no regressions |
+
+### Round 44 Track C (event surface), spot check
+
+Built the 22 portable projects whose recorded blockers mention `CS0123`, `Click`, `Checked` or `RadioButton`, with the
+strict recipe against the package from the track branch.
+
+- `RoutedEventHandler`-typed `Checked`/`Unchecked`/`Indeterminate`/`Click`, `ButtonBase`, `ToggleButton : ButtonBase`
+  and `RadioButton : ToggleButton` are in. No `Checked`/`Click` `CS0123` or missing-member error is left.
+- 1 more app builds: `Events/CustomRoutedEvents` (`Button.ClickEvent`). The other 21 still fail on other blockers.
+- Remaining `CS0123` are `Slider.ValueChanged` and `ComboBox.SelectionChanged` delegate types, not this track.
+- Open generator gap: attached routed-event syntax (`RadioButton.Checked="..."`, `Button.Click="..."` on a non-button
+  element) is emitted as an attached property (`RadioButton.CheckedProperty`/`SetChecked`). Seen in
+  `CaptureUnCaptureMouse` and `RoutedEventHandling`.
