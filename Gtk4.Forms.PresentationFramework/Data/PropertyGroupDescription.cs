@@ -9,7 +9,7 @@ namespace System.Windows.Data;
 public class PropertyGroupDescription : GroupDescription
 {
 	/// <summary>The property whose value determines the group.</summary>
-	public string? PropertyName { get; }
+	public string? PropertyName { get; set; }
 
 	/// <summary>Initialises with no property (group by item itself).</summary>
 	public PropertyGroupDescription() { }

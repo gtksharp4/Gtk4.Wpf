@@ -7,7 +7,7 @@ namespace Gtk4.Forms.MarkupCompiler
 	public partial class XamlCodeGenerator
 	{
 		/// <summary>
-		/// For a <c>Page</c>/<c>Window</c> root without <c>x:Class</c>: the class name derived from the
+		/// For a <c>Page</c>/<c>Window</c>/<c>ResourceDictionary</c> root without <c>x:Class</c>: the class name derived from the
 		/// file name in the root namespace, and the base type to emit. <c>null</c> otherwise.
 		/// </summary>
 		string ImplicitClass(XElement root, string xamlPath, string rootNamespace, out string baseType)
@@ -15,7 +15,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			baseType = null;
 			if (string.IsNullOrEmpty(xamlPath)) return null;
 			string fq = ResolveType(root);
-			if (fq != "System.Windows.Controls.Page" && fq != "System.Windows.Window") return null;
+			if (fq != "System.Windows.Controls.Page" && fq != "System.Windows.Window" && fq != DictionaryType)
+				return null;
 
 			// Backslash is not a separator on Unix, so normalise first: the class name must not depend on the OS.
 			string stem = Path.GetFileNameWithoutExtension(xamlPath.Replace('\\', '/'));

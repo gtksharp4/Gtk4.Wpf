@@ -281,6 +281,22 @@ Deliberately not next:
   them is a converter feature, not a layer gap.
 - Packaging hygiene, still open: `CS2002` in 83 of 89 builds.
 
+## Generator v4 (branch `gf47/generator-v4`, gate run)
+
+Gate on the pinned feed with `Gtk4.Forms.Wpf 1.0.0.26325` packed from the branch: all 90 build, and 86 of the 89 apps
+run (was 83). No regressions after one fix: `CollectionViewSource.Source` is now `object` (as in WPF), so a data
+provider such as `XmlDataProvider` is accepted. Without it the `CollectionViewSource` sample crashed.
+
+| App | Change | Result |
+|---|---|---|
+| DragDropEvents | `Grid.RowDefinitions`/`ColumnDefinitions` emitted | crash → runs |
+| StringLocalizationSample | merged `ResourceDictionary` files compiled and loaded at parse time | crash → runs |
+| AlternatingAppearanceOfItems | `HierarchicalDataTemplate`, `CollectionViewSource`, `AlternationConverter` as objects | crash → runs |
+| CustomApplicationClass | `Main` for a custom `Application` subclass root | fail → builds, runs |
+| WPFGallery | no duplicate `Main` (`CS0111` gone); still fails on layer gaps (`UserControl`, `Automation.Peers`, ...) | fail |
+
+A property element the generator cannot emit is now reported as a build message with file, line and name.
+
 ## Method
 
 - **Source.** The local `WPF-Samples` tree, split into six category batches. Each batch was copied under
@@ -336,3 +352,4 @@ Deliberately not next:
 | 2026-11-20 | `ea4c17ae` | 1.0.0.26324 | no | 83 / 206 | 74 | Round 45; 8 crash, 1 hang; no regressions |
 | 2026-11-20 | `a37d3b17` + `gf46/startup-runtime` | 1.0.0.26324 | no | 83 / 206 | 76 | Gate run: Linq and OpacityMasking run |
 | 2026-11-20 | `1b50a528` | 1.0.0.26324 | **yes** | 89 / 204 | 83 | Round 46; 5 crash, 1 hang; no regressions; the earlier runs are confirmed local-feed |
+| 2026-11-21 | `2c67b72c` + `gf47/generator-v4` | 1.0.0.26325 | **yes** | 90 projects | 86 | Generator v4; no regressions |
