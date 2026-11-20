@@ -126,8 +126,7 @@ public partial class Window : ContentControl
 	}
 
 	/// <summary>
-	/// Closes the window, leaving <see cref="DialogResult"/> unchanged (null if never
-	/// explicitly set). Unblocks any pending <see cref="ShowDialog"/> call.
+	/// Closes the window; a dialog closed without a result reads <see cref="DialogResult"/> false.
 	/// A <see cref="Closing"/> handler may veto the close by setting
 	/// <see cref="System.ComponentModel.CancelEventArgs.Cancel"/> to <see langword="true"/>.
 	/// </summary>
@@ -172,8 +171,9 @@ public partial class Window : ContentControl
 		finally
 		{
 			_showingAsDialog = false;
+			_dialogResult ??= false; // WPF: closing without a result is false
 		}
-		return _dialogResult ?? false; // WPF: closing without a result is false
+		return _dialogResult;
 	}
 
 	/// <inheritdoc/>

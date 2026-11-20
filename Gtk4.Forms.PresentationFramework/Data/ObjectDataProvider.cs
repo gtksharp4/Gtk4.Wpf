@@ -74,7 +74,7 @@ public class ObjectDataProvider : DataSourceProvider
 	protected override void QueryData()
 	{
 		if (_objectInstance == null && _objectType != null
-			&& FindMethod(_objectType, MethodParameters.Count) is { IsStatic: true } sm)
+			&& FindMethod(_objectType) is { IsStatic: true } sm)
 		{
 			// A static method needs no instance (e.g. Enum.GetValues).
 			Invoke(sm, null);
@@ -119,7 +119,7 @@ public class ObjectDataProvider : DataSourceProvider
 			return;
 		}
 
-		var method = FindMethod(target!.GetType(), MethodParameters.Count);
+		var method = FindMethod(target!.GetType());
 		if (method == null)
 		{
 			OnQueryFinished(null);
@@ -128,14 +128,34 @@ public class ObjectDataProvider : DataSourceProvider
 		Invoke(method, target);
 	}
 
-	MethodInfo? FindMethod(Type type, int parameterCount)
+	// An overload whose parameter types accept the arguments wins (Math.Max with two doubles); failing
+	// that, the first with a matching parameter count.
+	MethodInfo? FindMethod(Type type)
 	{
 		if (string.IsNullOrEmpty(_methodName)) return null;
 		var flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
+		MethodInfo? fallback = null;
 		foreach (var m in type.GetMethods(flags))
-			if (m.Name == _methodName && !m.ContainsGenericParameters && m.GetParameters().Length == parameterCount)
-				return m;
-		return null;
+		{
+			if (m.Name != _methodName || m.ContainsGenericParameters) continue;
+			var ps = m.GetParameters();
+			if (ps.Length != MethodParameters.Count) continue;
+			fallback ??= m;
+			if (AcceptsArguments(ps)) return m;
+		}
+		return fallback;
+	}
+
+	bool AcceptsArguments(ParameterInfo[] ps)
+	{
+		for (int i = 0; i < ps.Length; i++)
+		{
+			var arg = MethodParameters[i];
+			var type = ps[i].ParameterType;
+			if (arg == null ? type.IsValueType && Nullable.GetUnderlyingType(type) == null : !type.IsInstanceOfType(arg))
+				return false;
+		}
+		return true;
 	}
 
 	void Invoke(MethodInfo method, object? target)

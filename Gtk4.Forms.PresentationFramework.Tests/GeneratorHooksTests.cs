@@ -43,7 +43,7 @@ public class GeneratorHooksTests
 	{
 		Assert.Throws<InvalidOperationException>(
 			() => XamlValueConverter.ConvertByType(typeof(PointCollection), "1,2 3"));
-		Assert.Throws<FormatException>(() => XamlValueConverter.ConvertByType(typeof(PointCollection), "1,,2 3"));
+		Assert.Throws<FormatException>(() => XamlValueConverter.ConvertByType(typeof(PointCollection), "1,,2 3 4"));
 		Assert.Throws<FormatException>(() => XamlValueConverter.ConvertByType(typeof(PointCollection), ",1 2"));
 		Assert.Throws<FormatException>(() => XamlValueConverter.ConvertByType(typeof(PointCollection), "1,2,"));
 		Assert.Throws<FormatException>(() => XamlValueConverter.ConvertByType(typeof(PointCollection), "a,b"));

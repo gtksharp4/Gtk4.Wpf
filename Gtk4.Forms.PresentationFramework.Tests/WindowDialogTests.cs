@@ -104,14 +104,14 @@ public class WindowDialogTests : WpfGtkTestBase
 	});
 
 	[Fact]
-	public void NoArgClose_leaves_DialogResult_null() => Run(() =>
+	public void NoArgClose_leaves_DialogResult_false() => Run(() =>
 	{
 		var win = new WpfWindow { Title = "NoArgClose2" };
 
 		GLib.Timeout.Add(50, () => { win.Close(); return false; });
 
 		win.ShowDialog();
-		Assert.Null(win.DialogResult);
+		Assert.Equal(false, win.DialogResult);
 	});
 
 	// ── F2: window-manager close path sets _dialogClosed (pure flag test) ────

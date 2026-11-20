@@ -527,7 +527,7 @@ namespace Gtk4.Forms.MarkupCompiler
 		{
 			// Always use CLR path for explicitly excluded properties.
 			if (_clrOnlyProperties.Contains(propName)) return false;
-			return _resolver.IsDP(fqType, propName);
+			return _resolver.IsDP(fqType, propName) && _resolver.IsDependencyObject(fqType);
 		}
 
 		/// <summary>

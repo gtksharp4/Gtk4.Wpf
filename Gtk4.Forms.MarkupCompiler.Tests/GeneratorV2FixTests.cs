@@ -24,6 +24,26 @@ public class GeneratorV2FixTests : GeneratorV2TestBase
 		AssertCompiles(code, WindowStub);
 	}
 
+
+	[Fact]
+	public void F1_StaticResource_on_a_real_DP_with_a_CLR_only_name_keeps_SetValue()
+	{
+		string code = Gen($@"<Window x:Class=""A.W"" {Head} {Local}><Window.Resources>
+<sys:String x:Key=""s"">v</sys:String></Window.Resources><Button Content=""{{StaticResource s}}""/></Window>");
+		Assert.Contains("SetValue(System.Windows.Controls.Button.ContentProperty, ", code);
+		Assert.DoesNotContain(".Content = (", code);
+	}
+
+	[Fact]
+	public void A_Run_with_Background_and_Foreground_uses_CLR_assignment_and_compiles()
+	{
+		string code = Gen($@"<Window x:Class=""A.W"" {Head}><TextBlock>"
+			+ @"<Run Background=""Yellow"" Foreground=""Red"" Text=""x""/></TextBlock></Window>");
+		Assert.DoesNotContain("Run.BackgroundProperty", code);
+		Assert.DoesNotContain("Run.ForegroundProperty", code);
+		AssertCompiles(code, WindowStub);
+	}
+
 	[Fact]
 	public void F1_DynamicResource_on_a_non_DependencyObject_keeps_the_plain_emission_and_compiles()
 	{

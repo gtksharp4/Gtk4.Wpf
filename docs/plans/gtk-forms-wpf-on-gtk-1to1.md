@@ -1546,9 +1546,10 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   instead of guessing a literal type (`EmployeeNumber="57304"` was `CS0029`). **A-F3** `ObjectDataProvider`
   `MethodParameters`/`ConstructorParameters` emit `typeof` for `x:Type`, the member for `x:Static`, `null` for `x:Null`;
   one parameter that cannot be emitted keeps the plain emission for the whole provider. `ObjectDataProvider` now invokes a
-  static method without constructing the type (`Enum.GetValues(typeof(DayOfWeek))` yields 7) and matches by parameter
-  count. **A-F4** the code-behind scan skips files under the output directory (a stale `.g.cs` dropped the base type and
-  constructor). **A-F5** `DetachElementTriggers` is `internal` again. **A-F6** `ParsePointCollection` tokenizes like WPF
+  static method without constructing the type (`Enum.GetValues(typeof(DayOfWeek))` yields 7) and picks the overload
+  by parameter types (follow-up; first by count). **A-F4** the code-behind scan skips files under the output directory
+  (a stale `.g.cs` dropped the base type and constructor). **A-F5** `DetachElementTriggers` is `internal` again.
+  **A-F6** `ParsePointCollection` tokenizes like WPF
   (one comma or whitespace; `1,,2` is `FormatException`, a missing y `InvalidOperationException`). **A-F7** the
   ancestor-resources-visible-regardless-of-order leniency is documented on the generator and pinned by tests (a
   same-dictionary forward reference stays in document order). **A-F8** the `[ThreadStatic]` scope list and the static
@@ -1556,8 +1557,8 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   constructor logic moved to `XamlCodeGenerator.CodeBehind.cs`; over-long lines wrapped. **B-F1** a `Button` override of
   `OnClick` dismisses the dialog (`DialogResult = false`) for `IsCancel` without a command. **B-F2** currency sync ignores
   the selection clears of an item rebuild (`ItemsControl.IsRebuildingItems`), then re-selects the view's current item;
-  switching `ItemsSource` no longer moves the old view. **B-F3** a capture-phase `Gtk.EventControllerKey` on the window
-  routes Return/KP_Enter/Esc to the default/cancel button from any focus (not a multi-line `TextBox`, not a focused
+  switching `ItemsSource` no longer moves the old view. **B-F3** a window `Gtk.EventControllerKey` (capture phase, only when nothing has focus; a focused element's own `KeyDown` runs first and the window clicks only if it was left unhandled)
+  routes Return/KP_Enter/Esc to the default/cancel button (not a multi-line `TextBox`/`RichTextBox`, not a focused
   button for Enter). **B-F4/B-F11** `DataTransferEventArgs` is in `System.Windows.Data`, `GroupDescription` in
   `System.ComponentModel`; `SortDescriptionCollection.Empty` is read-only. **B-F5** `ValueConversion` allows multiples.
   **B-F6** a binding path resolves against the current item of the default view (`/`, `X/Y`, `/Y`, and a step not found
@@ -1578,9 +1579,11 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   **Samples gate (after the fixes, Gtk4.Forms.Wpf packed from the fixed tree):** all 60 `build=pass` projects of
   `docs/samples-coverage.json` (59 portable apps plus 1 Windows-only) build through the two-build recipe, and all 47
   `run=runs` apps stay alive for 10 s (process alive; the window itself was not re-checked).
+- **Round 45 follow-up (DONE).** **B-F3** Return/Esc no longer pre-empt the focused element: the window controller acts only with no focused element, otherwise the focused element raises `PreviewKeyDown`/`KeyDown` first and the default/cancel button is clicked only if it left them unhandled; `RichTextBox` and an open `ComboBox` keep Enter/Esc; tests drive the window's real key controller. **B-F6** write-back and validation owner resolve the current item when the path is a property of the collection's items (`Text="{Binding Name}"` on a master/detail collection). **A-F3** `ObjectDataProvider` picks the overload whose parameter types fit the arguments (`Math.Max` with two doubles), falling back to the first with the same count. **B-F1** dialog tests have a 5 s watchdog that closes and fails instead of hanging. **B-F2** the new view is attached before the items rebuild, so an `ItemsSource` switch never selects (or pushes to a `SelectedItem` binding) the old view's current item. **A-F1** `{StaticResource}` on a real DP with a CLR-only name (`Content`, `Text`, `Tag`) keeps `SetValue`; only non-`DependencyObject` owners assign the CLR property. **A-F6** the `1,,2` assertion now uses `1,,2 3 4` (the old `1,,2 3` threw before the fix too); whether WPF `TokenizerHelper` reports an empty token as `InvalidOperationException` rather than `FormatException` is unverified (no reference source here), so `FormatException` stays. **B-F12** the 125-column line is wrapped. **B-F7** a dialog closed without a result reads `DialogResult == false`. **C-C2 (pre-existing)** the generator emits a CLR assignment for attributes of a resolvable non-`DependencyObject` owner (`Run Background/Foreground` compile; `Brush` joined the converter-backed classes). Not fixed: `DataGrid` has no edit mode here, so Enter/Esc in a cell edit are not yet protected from the buttons.
+  **Follow-up totals: 4619 tests** (190 WindowsBase + 3942 PresentationFramework + 454 MarkupCompiler + 33 ProjectConverter), all pass; build 0 warnings. **Samples gate:** all 60 `build=pass` projects build through the two-build recipe from the packed fixed tree; all 47 `run=runs` apps stay alive 10 s (40 with a main window handle, 7 alive without one).
 - **Carry-over (Round 45)**: `TextElement` is not a `DependencyObject`, so `Background` is not DP-backed;
-  `PathWatcher` (DataTrigger paths) still splits on `.` only; the capture controller sees Return before GTK's `Entry`
-  activate, so an `Entry` signal handler for `activate` no longer fires when a default button exists; a focused element
+  `PathWatcher` (DataTrigger paths) still splits on `.` only; GTK's own `Entry` activate may still fire alongside a
+  default-button click; a focused element
   in another window is treated by `Keyboard.FocusedElement` only; `docs/samples-coverage.md` is still the Round 44
   measurement.
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),

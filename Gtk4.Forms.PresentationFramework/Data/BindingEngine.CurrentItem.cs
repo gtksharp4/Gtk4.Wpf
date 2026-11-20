@@ -104,4 +104,12 @@ internal static partial class BindingEngine
 		value = prop.GetValue(owner);
 		return true;
 	}
+
+	/// <summary>The write target for <paramref name="leaf"/>: a collection without it yields its current item.</summary>
+	internal static object? LeafOwner(object owner, string leaf)
+	{
+		if (owner is IEnumerable && owner is not string && owner.GetType().GetProperty(leaf, Members) == null)
+			return CurrentOf(owner, null);
+		return owner;
+	}
 }

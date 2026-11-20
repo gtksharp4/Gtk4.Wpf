@@ -18,8 +18,9 @@ public partial class Window
 		AddHandler(LostFocusEvent, new RoutedEventHandler((_, _) => RefreshDefaulted(this)));
 	}
 
-	// A capture-phase controller sees Enter/Esc before GTK's own widgets (an Entry would activate and
-	// swallow Return), so the default and cancel buttons work from any focus, or none.
+	// With no focused element nothing routes a KeyDown, so a window controller covers that case. A
+	// focused element gets its KeyDown first and the window clicks the button only if it left it
+	// unhandled (OnAcceleratorKeyDown).
 	void AttachAcceleratorController(Gtk.Window window)
 	{
 		var controller = new Gtk.EventControllerKey { PropagationPhase = Gtk.PropagationPhase.Capture };
@@ -28,18 +29,22 @@ public partial class Window
 			if (HandleAcceleratorKeyval(args.Keyval, args.State)) args.RetVal = true;
 		};
 		window.AddController(controller);
+		_acceleratorController = controller;
 	}
+
+	internal Gtk.EventControllerKey? _acceleratorController;
 
 	internal bool HandleAcceleratorKeyval(uint keyval, Gdk.ModifierType state)
 	{
+		if (Keyboard.FocusedElement != null) return false;
 		bool enter = keyval == GdkKeyReturn || keyval == GdkKeyKpEnter;
 		if (!enter && keyval != GdkKeyEscape) return false;
 		if (GdkKeyMap.FromGdkModifier(state) != ModifierKeys.None) return false;
-		return ClickAccelerator(enter, Keyboard.FocusedElement);
+		return ClickAccelerator(enter, null);
 	}
 
-	// Enter and Esc reach the window after the focused element declined them. A focused button or a
-	// multi-line TextBox keeps Enter for itself.
+	// Enter and Esc reach the window after the focused element declined them. A focused button, a
+	// multi-line editor or an open drop-down keeps them for itself.
 	void OnAcceleratorKeyDown(object sender, KeyEventArgs e)
 	{
 		if (e.Handled || e.Modifiers != ModifierKeys.None) return;
@@ -48,11 +53,18 @@ public partial class Window
 		if (ClickAccelerator(enter, e.Source as IInputElement ?? Keyboard.FocusedElement)) e.Handled = true;
 	}
 
+	static bool KeepsKey(bool enter, IInputElement? element) => element switch
+	{
+		ButtonBase => enter,
+		TextBox { AcceptsReturn: true } => enter,
+		RichTextBox => enter,
+		ComboBox { IsDropDownOpen: true } => true,
+		_ => false,
+	};
+
 	bool ClickAccelerator(bool enter, IInputElement? focus)
 	{
-		if (enter && (focus is ButtonBase || focus is TextBox { AcceptsReturn: true }
-			|| Keyboard.FocusedElement is ButtonBase || Keyboard.FocusedElement is TextBox { AcceptsReturn: true }))
-			return false;
+		if (KeepsKey(enter, focus) || KeepsKey(enter, Keyboard.FocusedElement)) return false;
 		var button = FindButton(this, enter);
 		if (button == null) return false;
 		button.ClickFromAccelerator();

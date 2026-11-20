@@ -81,7 +81,7 @@ internal static partial class BindingEngine
 			SplitLeaf(path!, out var headPath, out var leaf);
 			var head = headPath.Length > 0 ? ResolvePath(source, headPath) : source;
 			if (head == null) return false;
-			owner = head;
+			owner = (leaf != null ? LeafOwner(head, leaf) : head) ?? head;
 			prop = leaf;
 			return true;
 		}

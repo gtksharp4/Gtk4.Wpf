@@ -51,9 +51,13 @@ public partial class ItemsControl
 			if (_incc != null) _incc.CollectionChanged += OnCollectionChanged;
 		}
 
+		AttachCollectionView(_collectionView);
 		RebuildItems();
 		OnCollectionViewChanged(_collectionView);
 	}
+
+	/// <summary>Called before the items rebuild for a new ItemsSource, so a rebuild sees the new view.</summary>
+	internal virtual void AttachCollectionView(ICollectionView? view) { }
 
 	/// <summary>Called after ItemsSource changed, with its default view (or null).</summary>
 	internal virtual void OnCollectionViewChanged(ICollectionView? view) { }

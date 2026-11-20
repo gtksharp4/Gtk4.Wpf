@@ -26,8 +26,9 @@ internal static partial class BindingEngine
 		SplitLeaf(path!, out var head, out var leaf);
 		if (leaf == null) return false;
 		if (!TryWalk(source, head, null, out var current) || current == null) return false;
-		var lastProp = current.GetType().GetProperty(leaf, Members);
-		if (lastProp == null || !lastProp.CanWrite) return false;
+		current = LeafOwner(current, leaf);
+		var lastProp = current?.GetType().GetProperty(leaf, Members);
+		if (current == null || lastProp == null || !lastProp.CanWrite) return false;
 		owner = current;
 		prop = lastProp;
 		return true;

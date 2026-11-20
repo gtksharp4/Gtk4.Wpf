@@ -12,6 +12,29 @@ public class DialogSemanticsTests : WpfGtkTestBase
 	static void ScheduleClose(Action action) =>
 		GLib.Timeout.Add(10, () => { action(); return false; });
 
+	// A dialog that is never dismissed would pump forever; the watchdog closes it and fails the test.
+	static bool? ShowDialogWithWatchdog(WpfWindow window)
+	{
+		bool done = false, timedOut = false;
+		GLib.Timeout.Add(5000, () =>
+		{
+			if (done) return false;
+			timedOut = true;
+			window.Close();
+			return false;
+		});
+		var result = window.ShowDialog();
+		done = true;
+		Assert.False(timedOut, "The dialog was not dismissed.");
+		return result;
+	}
+
+	static void PressOnWindow(WpfWindow window, uint keyval)
+	{
+		_ = window.Widget;
+		GLib.Signal.Emit(window._acceleratorController!, "key-pressed", keyval, 0u, Gdk.ModifierType.None);
+	}
+
 	sealed class Form
 	{
 		public WpfWindow Window = new WpfWindow();
@@ -127,7 +150,7 @@ public class DialogSemanticsTests : WpfGtkTestBase
 		bool closed = false;
 		win.Closed += (_, _) => closed = true;
 		ScheduleClose(() => win.DialogResult = true);
-		Assert.True(win.ShowDialog());
+		Assert.True(ShowDialogWithWatchdog(win));
 		Assert.True(closed);
 		Assert.True(win.DialogResult);
 	});
@@ -137,7 +160,7 @@ public class DialogSemanticsTests : WpfGtkTestBase
 	{
 		var win = new WpfWindow { Title = "dr" };
 		ScheduleClose(() => win.DialogResult = false);
-		Assert.False(win.ShowDialog());
+		Assert.False(ShowDialogWithWatchdog(win));
 	});
 
 	[Fact]
@@ -146,7 +169,7 @@ public class DialogSemanticsTests : WpfGtkTestBase
 		var f = new Form();
 		f.Ok.Click += (_, _) => f.Window.DialogResult = true;
 		ScheduleClose(() => f.Input.RaiseKeyDownForTest(Key.Enter));
-		Assert.True(f.Window.ShowDialog());
+		Assert.True(ShowDialogWithWatchdog(f.Window));
 	});
 
 	[Fact]
@@ -156,7 +179,7 @@ public class DialogSemanticsTests : WpfGtkTestBase
 		int clicks = 0;
 		f.Cancel.Click += (_, _) => clicks++;
 		ScheduleClose(() => f.Input.RaiseKeyDownForTest(Key.Escape));
-		Assert.False(f.Window.ShowDialog());
+		Assert.False(ShowDialogWithWatchdog(f.Window));
 		Assert.Equal(1, clicks);
 	});
 
@@ -165,7 +188,7 @@ public class DialogSemanticsTests : WpfGtkTestBase
 	{
 		var f = new Form();
 		ScheduleClose(() => f.Cancel.ClickFromAccelerator());
-		Assert.False(f.Window.ShowDialog());
+		Assert.False(ShowDialogWithWatchdog(f.Window));
 		Assert.True(f.Window.DialogResult == false);
 	});
 
@@ -180,7 +203,7 @@ public class DialogSemanticsTests : WpfGtkTestBase
 			Assert.Null(f.Window.DialogResult);
 			f.Window.Close();
 		});
-		f.Window.ShowDialog();
+		ShowDialogWithWatchdog(f.Window);
 	});
 
 	[Fact]
@@ -207,7 +230,7 @@ public class DialogSemanticsTests : WpfGtkTestBase
 		var win = new WpfWindow { Title = "dr" };
 		win.Closing += (_, _) => win.DialogResult = true;
 		ScheduleClose(() => win.Close());
-		Assert.True(win.ShowDialog());
+		Assert.True(ShowDialogWithWatchdog(win));
 	});
 
 	[Fact]
@@ -215,7 +238,8 @@ public class DialogSemanticsTests : WpfGtkTestBase
 	{
 		var win = new WpfWindow { Title = "dr" };
 		ScheduleClose(() => win.Close());
-		Assert.Equal(false, win.ShowDialog());
+		Assert.Equal(false, ShowDialogWithWatchdog(win));
+		Assert.False(win.DialogResult);
 	});
 
 	[Fact]
@@ -224,32 +248,69 @@ public class DialogSemanticsTests : WpfGtkTestBase
 		var f = new Form();
 		int ok = 0;
 		f.Ok.Click += (_, _) => ok++;
-		f.Input.SetFocusedInternal(true);
-		bool handled = f.Window.HandleAcceleratorKeyval(0xff0d, default);
-		f.Input.SetFocusedInternal(false);
-		Assert.True(handled);
+		PressOnWindow(f.Window, 0xff0d);
 		Assert.Equal(1, ok);
 	});
 
 	[Fact]
-	public void Keypad_Enter_clicks_the_default_button_too() => Run(() =>
+	public void Keypad_Enter_through_the_window_key_controller_clicks_the_default_button() => Run(() =>
 	{
 		var f = new Form();
 		int ok = 0;
 		f.Ok.Click += (_, _) => ok++;
-		Assert.True(f.Window.HandleAcceleratorKeyval(0xff8d, default));
+		PressOnWindow(f.Window, 0xff8d);
 		Assert.Equal(1, ok);
 	});
 
 	[Fact]
-	public void Escape_with_no_focused_element_clicks_the_cancel_button() => Run(() =>
+	public void Escape_through_the_window_key_controller_clicks_the_cancel_button() => Run(() =>
 	{
 		var f = new Form();
-		(Keyboard.FocusedElement as System.Windows.UIElement)?.SetFocusedInternal(false);
 		int cancel = 0;
 		f.Cancel.Click += (_, _) => cancel++;
-		Assert.True(f.Window.HandleAcceleratorKeyval(0xff1b, default));
+		PressOnWindow(f.Window, 0xff1b);
 		Assert.Equal(1, cancel);
+	});
+
+	[Fact]
+	public void The_window_controller_leaves_a_focused_elements_Enter_to_its_KeyDown() => Run(() =>
+	{
+		var f = new Form();
+		int ok = 0;
+		f.Ok.Click += (_, _) => ok++;
+		f.Input.SetFocusedInternal(true);
+		PressOnWindow(f.Window, 0xff0d);
+		f.Input.SetFocusedInternal(false);
+		Assert.Equal(0, ok);
+	});
+
+	[Fact]
+	public void A_KeyDown_handler_that_handles_Enter_stops_the_default_button() => Run(() =>
+	{
+		var f = new Form();
+		int ok = 0, seen = 0;
+		f.Ok.Click += (_, _) => ok++;
+		f.Input.KeyDown += (_, e) => { seen++; e.Handled = true; };
+		f.Input.RaiseKeyDownForTest(Key.Enter);
+		Assert.Equal(1, seen);
+		Assert.Equal(0, ok);
+	});
+
+	[Fact]
+	public void Enter_in_a_RichTextBox_and_Escape_in_an_open_ComboBox_do_not_click_buttons() => Run(() =>
+	{
+		var f = new Form();
+		int ok = 0, cancel = 0;
+		f.Ok.Click += (_, _) => ok++;
+		f.Cancel.Click += (_, _) => cancel++;
+		var rtb = new RichTextBox();
+		((StackPanel)f.Window.Content!).Children.Add(rtb);
+		rtb.RaiseKeyDownForTest(Key.Enter);
+		var combo = new ComboBox { IsDropDownOpen = true };
+		((StackPanel)f.Window.Content!).Children.Add(combo);
+		combo.RaiseKeyDownForTest(Key.Escape);
+		Assert.Equal(0, ok);
+		Assert.Equal(0, cancel);
 	});
 
 	[Fact]
@@ -260,10 +321,11 @@ public class DialogSemanticsTests : WpfGtkTestBase
 		f.Ok.Click += (_, _) => ok++;
 		f.Input.AcceptsReturn = true;
 		f.Input.SetFocusedInternal(true);
-		Assert.False(f.Window.HandleAcceleratorKeyval(0xff0d, default));
+		f.Input.RaiseKeyDownForTest(Key.Enter);
 		f.Other.SetFocusedInternal(true);
-		Assert.False(f.Window.HandleAcceleratorKeyval(0xff0d, default));
+		f.Other.RaiseKeyDownForTest(Key.Enter);
 		f.Other.SetFocusedInternal(false);
+		f.Input.SetFocusedInternal(false);
 		Assert.Equal(0, ok);
 	});
 }

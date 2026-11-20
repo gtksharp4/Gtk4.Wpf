@@ -48,13 +48,14 @@ public abstract class Selector : ItemsControl
 
 	internal override void OnItemsRebuildCompleted() => Resynchronize();
 
-	internal override void OnCollectionViewChanged(ICollectionView? view)
+	internal override void AttachCollectionView(ICollectionView? view)
 	{
 		if (_view != null) _view.CurrentChanged -= OnViewCurrentChanged;
 		_view = view;
 		if (_view != null) _view.CurrentChanged += OnViewCurrentChanged;
-		Resynchronize();
 	}
+
+	internal override void OnCollectionViewChanged(ICollectionView? view) => Resynchronize();
 
 	void OnViewCurrentChanged(object? sender, EventArgs e)
 	{

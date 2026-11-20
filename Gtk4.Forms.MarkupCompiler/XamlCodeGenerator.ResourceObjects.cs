@@ -94,7 +94,7 @@ namespace Gtk4.Forms.MarkupCompiler
 		/// </summary>
 		string ClrResourceTargetType(string fqType, string propName)
 		{
-			if (IsKnownDp(fqType, propName)) return null;
+			if (_resolver.IsDP(fqType, propName) && _resolver.IsDependencyObject(fqType)) return null;
 			System.Type t = _resolver.GetPropertyType(fqType, propName);
 			return t == null || t.IsGenericType ? null : "global::" + t.FullName.Replace('+', '.');
 		}

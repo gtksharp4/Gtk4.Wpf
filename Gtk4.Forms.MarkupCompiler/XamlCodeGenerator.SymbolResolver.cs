@@ -88,6 +88,25 @@ namespace Gtk4.Forms.MarkupCompiler
 		}
 
 		/// <summary>
+		/// False only for a resolvable type that does not derive from DependencyObject (Run, SolidColorBrush):
+		/// it has DP fields but no SetValue, so its attributes are plain CLR assignments.
+		/// </summary>
+		internal bool IsDependencyObject(string typeFullName)
+		{
+			if (!_hasReferences) return true;
+			try
+			{
+				for (Type t = FindType(typeFullName); t != null; t = t.BaseType)
+				{
+					if (t.FullName == "System.Windows.DependencyObject") return true;
+				}
+				return FindType(typeFullName) == null;
+			}
+			catch { return true; }
+		}
+
+
+		/// <summary>
 		/// Returns <c>true</c> when <paramref name="typeFullName"/>.<paramref name="propName"/>
 		/// is backed by a <c>DependencyProperty</c> field (checked on the declaring type and all
 		/// its base types).  Falls back to the name heuristic when no references were supplied.

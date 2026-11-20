@@ -22,7 +22,7 @@ namespace Gtk4.Forms.MarkupCompiler
 		// Reference types with a built-in converter that CLR (non-DP) properties of exactly that type use.
 		internal static readonly HashSet<string> ConverterBackedClasses = new HashSet<string>
 		{
-			"System.Windows.Media.ImageSource", "System.Windows.Shapes.PointCollection",
+			"System.Windows.Media.ImageSource", "System.Windows.Shapes.PointCollection", "System.Windows.Media.Brush",
 		};
 
 		/// <summary>

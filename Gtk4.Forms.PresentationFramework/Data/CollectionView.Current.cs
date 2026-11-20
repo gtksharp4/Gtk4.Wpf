@@ -31,7 +31,9 @@ public partial class CollectionView
 	public virtual bool MoveCurrentTo(object? item) => MoveCurrentToPosition(item == null ? -1 : _view.IndexOf(item));
 
 	/// <inheritdoc/>
-	/// <exception cref="ArgumentOutOfRangeException"><paramref name="position"/> is below -1 or above the count.</exception>
+	/// <exception cref="ArgumentOutOfRangeException">
+	/// <paramref name="position"/> is below -1 or above the count.
+	/// </exception>
 	public virtual bool MoveCurrentToPosition(int position)
 	{
 		if (position < -1 || position > _view.Count) throw new ArgumentOutOfRangeException(nameof(position));
