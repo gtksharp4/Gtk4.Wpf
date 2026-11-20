@@ -49,7 +49,9 @@ public class NavigationWindow : Window
 	{
 		Content = newContent;
 		// If navigated to a Page, push its WindowTitle into the window title bar.
-		if (newContent is Page p && !string.IsNullOrEmpty(p.WindowTitle))
-			Title = p.WindowTitle;
+		if (newContent is Page p && PageTitle(p) is { Length: > 0 } title)
+			Title = title;
 	}
+
+	static string PageTitle(Page p) => p.WindowTitle.Length > 0 ? p.WindowTitle : p.Title;
 }

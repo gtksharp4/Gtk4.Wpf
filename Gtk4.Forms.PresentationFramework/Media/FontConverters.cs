@@ -76,7 +76,10 @@ internal static class FontConverters
 	/// Parses a font size with WPF <c>FontSizeConverter</c> units: bare = px, <c>px</c>,
 	/// <c>in</c> (x96), <c>cm</c> (x96/2.54), <c>pt</c> (x96/72). Result is in device-independent px.
 	/// </summary>
-	internal static double ParseFontSize(string raw)
+	internal static double ParseFontSize(string raw) => ParseWithUnits(raw, "FontSize", allowNonFinite: false);
+
+	/// <summary>Parses a number with an optional px/in/cm/pt suffix into device-independent px.</summary>
+	internal static double ParseWithUnits(string raw, string what, bool allowNonFinite)
 	{
 		string s = raw.Trim();
 		double factor = 1.0;
@@ -87,8 +90,8 @@ internal static class FontConverters
 		else if (EndsWith(s, "pt")) { factor = 96.0 / 72.0; number = s.Substring(0, s.Length - 2); }
 
 		if (!double.TryParse(number.Trim(), NumberStyles.Float, Inv, out double value)
-			|| double.IsNaN(value) || double.IsInfinity(value))
-			throw new FormatException($"Cannot parse FontSize from \"{raw}\".");
+			|| (!allowNonFinite && (double.IsNaN(value) || double.IsInfinity(value))))
+			throw new FormatException($"Cannot parse {what} from \"{raw}\".");
 		return value * factor;
 	}
 
