@@ -179,6 +179,7 @@ public static class XamlValueConverter
 		Register<FontStretch>(FontConverters.ParseFontStretch);
 		Register<Transform>(UnitConverters.ParseTransform);
 		Register<ImageSource>(UnitConverters.ParseImageSource);
+		Register<System.Windows.Shapes.PointCollection>(UnitConverters.ParsePointCollection);
 		Register<System.Windows.Input.ICommand?>(CommandConverters.ParseCommand);
 
 		// Animation primitives

@@ -19,15 +19,18 @@ public abstract partial class FrameworkElement
 	/// implementation supports all <see cref="TriggerBase"/> subtypes so that property
 	/// triggers declared on an element (not in a Style) work at runtime.
 	/// Call from <c>InitializeComponent</c> or after the element is added to the tree.
+	/// Layer hook for generated code; real WPF has no such member, so it is hidden from IntelliSense.
 	/// </summary>
-	internal void AttachElementTriggers()
+	[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+	public void AttachElementTriggers()
 	{
 		foreach (var t in _triggers)
 			t.Attach(this);
 	}
 
 	/// <summary>Detaches all element-level triggers. Call on unload/dispose.</summary>
-	internal void DetachElementTriggers()
+	[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+	public void DetachElementTriggers()
 	{
 		foreach (var t in _triggers)
 			t.Detach(this);

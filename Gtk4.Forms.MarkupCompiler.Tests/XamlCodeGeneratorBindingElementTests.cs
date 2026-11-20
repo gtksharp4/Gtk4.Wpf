@@ -47,7 +47,7 @@ public class XamlCodeGeneratorBindingElementTests
 	{
 		string code = Gen(@"<TextBox><TextBox.Text><Binding Path=""Age"" Converter=""{StaticResource c}"" "
 			+ @"ConverterParameter=""p"" ConverterCulture=""fr-FR"" /></TextBox.Text></TextBox>");
-		Assert.Contains(@".Converter = (System.Windows.Data.IValueConverter)this.FindResource(""c"");", code);
+		Assert.Contains(@".Converter = (System.Windows.Data.IValueConverter)System.Windows.Markup.StaticResourceScope.Find(""c"", this", code);
 		Assert.Contains(@".ConverterParameter = ""p"";", code);
 		Assert.Contains(@"GetCultureInfo(""fr-FR"")", code);
 	}

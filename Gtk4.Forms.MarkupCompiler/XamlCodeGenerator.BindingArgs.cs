@@ -70,7 +70,7 @@ namespace Gtk4.Forms.MarkupCompiler
 					throw new XamlCodeGeneratorException(
 						"{DynamicResource} is not valid on a Binding argument: " + t);
 				if (IsStaticOrDynamicResource(t, out string key))
-					return "this.FindResource(\"" + EscapeString(key) + "\")";
+					return StaticResourceLookup("this", EscapeString(key));
 				if (t.StartsWith("{", StringComparison.Ordinal) && !t.StartsWith("{}", StringComparison.Ordinal))
 					throw new XamlCodeGeneratorException("Unsupported markup extension on a Binding argument: " + t);
 			}

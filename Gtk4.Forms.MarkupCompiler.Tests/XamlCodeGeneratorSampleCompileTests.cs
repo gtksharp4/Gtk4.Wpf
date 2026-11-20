@@ -45,6 +45,13 @@ public class XamlCodeGeneratorSampleCompileTests
 		},
 	};
 
+	// User types the samples define in code-behind files that are not copied here.
+	static readonly Dictionary<string, string> Stubs = new()
+	{
+		["DataTrigger.MainWindow.xaml"] = "namespace DataTrigger { public class Places : System.Collections.ObjectModel.ObservableCollection<object> { } }",
+		["SimpleBinding.MainWindow.xaml"] = "namespace SimpleBinding { public class Person { public string PersonName { get; set; } } }",
+	};
+
 	static readonly string[] Unqualified =
 		{ "ListBoxItem", "Ellipse", "Rectangle", "Polygon", "Shape", "ScrollViewer", "SpellCheck" };
 
@@ -95,7 +102,7 @@ public class XamlCodeGeneratorSampleCompileTests
 		int dot = cls.LastIndexOf('.');
 		string ns = dot < 0 ? "" : cls.Substring(0, dot);
 		string name = cls.Substring(dot + 1);
-		return $"namespace {ns} {{ public partial class {name} : {baseType} {{ }} }}";
+		return $"namespace {ns} {{ public partial class {name} : {baseType} {{ }} }}" + (Stubs.TryGetValue(file, out string s) ? s : "");
 	}
 
 	[Theory]

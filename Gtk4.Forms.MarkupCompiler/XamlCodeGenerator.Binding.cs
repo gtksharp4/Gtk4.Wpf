@@ -132,8 +132,8 @@ namespace Gtk4.Forms.MarkupCompiler
 				{
 					if (comma) sb.Append(", ");
 					// Converter resolved lazily from the resource dictionary at runtime.
-					sb.Append("Converter = (System.Windows.Data.IValueConverter)this.FindResource(\""
-						+ EscapeString(converterResourceKey) + "\")");
+					sb.Append("Converter = (System.Windows.Data.IValueConverter)"
+						+ StaticResourceLookup("this", EscapeString(converterResourceKey)));
 					comma = true;
 				}
 				if (stringFormat != null)
@@ -280,8 +280,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			// Converter={StaticResource k}
 			string convAttr = (string)mbEl.Attribute("Converter");
 			if (convAttr != null && IsStaticOrDynamicResource(convAttr, out string convKey))
-				w.Line(mbVar + ".Converter = (System.Windows.Data.IMultiValueConverter)this.FindResource(\""
-					+ EscapeString(convKey) + "\");");
+				w.Line(mbVar + ".Converter = (System.Windows.Data.IMultiValueConverter)"
+					+ StaticResourceLookup("this", EscapeString(convKey)) + ";");
 
 			// Mode
 			string modeAttr = (string)mbEl.Attribute("Mode");
@@ -344,8 +344,8 @@ namespace Gtk4.Forms.MarkupCompiler
 					if (childConvKey != null)
 					{
 						if (comma) childBindingInit += ", ";
-						childBindingInit += "Converter = (System.Windows.Data.IValueConverter)this.FindResource(\""
-							+ EscapeString(childConvKey) + "\")";
+						childBindingInit += "Converter = (System.Windows.Data.IValueConverter)"
+							+ StaticResourceLookup("this", EscapeString(childConvKey));
 						comma = true;
 					}
 					if (childSf != null)

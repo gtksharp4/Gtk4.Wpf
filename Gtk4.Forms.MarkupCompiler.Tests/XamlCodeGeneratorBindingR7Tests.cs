@@ -63,7 +63,7 @@ public class XamlCodeGeneratorBindingR7Tests
 			@"<TextBlock Text=""{Binding Path=Name, Converter={StaticResource myConv}}"" />");
 		string code = _gen.Generate(xaml, out _);
 		Assert.Contains("(System.Windows.Data.IValueConverter)", code);
-		Assert.Contains(@"FindResource(""myConv"")", code);
+		Assert.Contains(@"StaticResourceScope.Find(""myConv"", this", code);
 		Assert.DoesNotContain("TODO", code);
 	}
 
@@ -161,7 +161,7 @@ public class XamlCodeGeneratorBindingR7Tests
 </TextBlock>");
 		string code = _gen.Generate(xaml, out _);
 		Assert.Contains("IMultiValueConverter", code);
-		Assert.Contains(@"FindResource(""myConv"")", code);
+		Assert.Contains(@"StaticResourceScope.Find(""myConv"", this", code);
 	}
 
 	// ── SplitBindingArgs stays correct with nested braces ─────────────────

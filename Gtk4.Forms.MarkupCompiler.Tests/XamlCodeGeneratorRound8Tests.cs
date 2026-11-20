@@ -34,7 +34,7 @@ public class XamlCodeGeneratorRound8Tests
 </TextBlock>");
 		string code = _gen.Generate(xaml, out _);
 		// The child Binding must emit its Converter.
-		Assert.Contains("FindResource(\"myConv\")", code);
+		Assert.Contains("StaticResourceScope.Find(\"myConv\", this", code);
 	}
 
 	[Fact]
@@ -69,7 +69,7 @@ public class XamlCodeGeneratorRound8Tests
 		// Only one FindResource for the MultiBinding's own Converter="mc".
 		int count = 0;
 		int idx = 0;
-		while ((idx = code.IndexOf("FindResource", idx, System.StringComparison.Ordinal)) >= 0)
+		while ((idx = code.IndexOf("StaticResourceScope.Find(", idx, System.StringComparison.Ordinal)) >= 0)
 		{ count++; idx++; }
 		Assert.Equal(1, count);
 	}

@@ -75,7 +75,7 @@ public class XamlCodeGeneratorPhase1Tests
 		Assert.DoesNotContain("TODO(StaticResource)", code);
 		Assert.Contains(@"new System.Windows.Data.Binding(""X"")", code);
 		Assert.Contains("IValueConverter", code);
-		Assert.Contains(@"FindResource(""conv"")", code);
+		Assert.Contains(@"StaticResourceScope.Find(""conv"", this", code);
 	}
 
 	// ── Mode=OneWay does not add ElementName ──────────────────────────────────

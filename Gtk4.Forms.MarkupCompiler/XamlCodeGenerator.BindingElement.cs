@@ -84,8 +84,8 @@ namespace Gtk4.Forms.MarkupCompiler
 				case "Converter":
 					string key = ParseConverterArg(value);
 					return key == null ? null
-						: "Converter = (System.Windows.Data.IValueConverter)this.FindResource(\""
-							+ EscapeString(key) + "\")";
+						: "Converter = (System.Windows.Data.IValueConverter)"
+							+ StaticResourceLookup("this", EscapeString(key));
 				case "RelativeSource":
 					string rs = ParseRelativeSourceArg(value);
 					return rs == null ? null : "RelativeSource = " + rs;

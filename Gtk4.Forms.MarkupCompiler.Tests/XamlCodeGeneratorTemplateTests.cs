@@ -172,7 +172,7 @@ public class XamlCodeGeneratorTemplateTests
 		string code = _gen.Generate(xaml, out _);
 
 		Assert.Contains("SetValue(", code);
-		Assert.Contains("FindResource(", code);
+		Assert.Contains("StaticResourceScope.Find(", code);
 		Assert.Contains(@"""t""", code);
 	}
 

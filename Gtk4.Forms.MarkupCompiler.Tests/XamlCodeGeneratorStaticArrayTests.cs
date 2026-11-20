@@ -156,7 +156,7 @@ public class XamlCodeGeneratorStaticArrayTests
 		string xaml = Window(
 			@"<Button Style=""{StaticResource myStyle}"" ContentTemplate=""{x:Type Button}"" />");
 		string code = _gen.Generate(xaml, out _);
-		Assert.Contains("FindResource", code);  // StaticResource still dispatched
+		Assert.Contains("StaticResourceScope.Find", code);  // StaticResource still dispatched
 		Assert.Contains("typeof", code);         // x:Type also dispatched
 	}
 }

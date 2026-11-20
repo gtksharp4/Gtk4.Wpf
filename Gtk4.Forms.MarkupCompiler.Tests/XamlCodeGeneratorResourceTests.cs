@@ -115,7 +115,7 @@ public class XamlCodeGeneratorResourceTests
 		string code = _gen.Generate(xaml, out _);
 
 		Assert.Contains("(System.Windows.Style)", code);
-		Assert.Contains("FindResource(", code);
+		Assert.Contains("StaticResourceScope.Find(", code);
 		Assert.Contains(@"""btnStyle""", code);
 	}
 
@@ -145,7 +145,7 @@ public class XamlCodeGeneratorResourceTests
 		string code = _gen.Generate(xaml, out _);
 
 		Assert.Contains("SetValue(", code);
-		Assert.Contains("FindResource(", code);
+		Assert.Contains("StaticResourceScope.Find(", code);
 		Assert.Contains(@"""myRes""", code);
 	}
 
