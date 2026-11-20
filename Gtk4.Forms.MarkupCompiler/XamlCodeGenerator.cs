@@ -306,6 +306,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			{
 				if (attr.IsNamespaceDeclaration) continue;
 				if (attr.Name.Namespace == xNs) continue; // x:Class etc.
+				if (attr.Name.Namespace == XNamespace.Xml) continue; // xml:space is a directive
 				if (IsIgnorableAttribute(attr)) continue;  // mc:Ignorable, d: design attrs
 
 				string propName = attr.Name.LocalName;
@@ -565,13 +566,21 @@ namespace Gtk4.Forms.MarkupCompiler
 			ref int counter)
 		{
 			string parentLocalName = parent.Name.LocalName;
+			ContentInfo ci = GetContentInfo(ResolveType(parent));
+			bool inlines = ci != null && ci.IsCollection && ci.Name == "Inlines";
 
-			foreach (XElement child in parent.Elements())
+			List<object> content = CollectContent(parent, inlines);
+			bool hasElements = content.Exists(IsContentElement);
+
+			foreach (object item in content)
 			{
-				string childLocalName = child.Name.LocalName;
-
-				// Property-element syntax (e.g. <Button.Template>, <Window.Resources>).
-				if (childLocalName.IndexOf('.') >= 0)
+				if (item is string text)
+				{
+					if (ci != null) EmitText(w, parentVar, ci, text, hasElements);
+					continue;
+				}
+				XElement child = (XElement)item;
+				if (!IsContentElement(child))
 				{
 					EmitPropertyElement(w, child, xNs, parentVar, ref counter);
 					continue;
@@ -580,10 +589,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				// x:Array element.
 				if (TryEmitXArray(w, child, xNs, out string arrVar, ref counter))
 				{
-					if (WpfXmlnsMap.HasChildren(parentLocalName))
-						w.Line($"{parentVar}.Children.Add({arrVar});");
-					else
-						w.Line($"{parentVar}.Content = {arrVar};");
+					EmitAttach(w, parentVar, parentLocalName, ci, arrVar, null);
 					continue;
 				}
 
@@ -592,12 +598,7 @@ namespace Gtk4.Forms.MarkupCompiler
 
 				string varName = $"__e{counter++}";
 				EmitElement(w, child, xNs, varName, fqType, ref counter);
-
-				// Attach child to parent
-				if (WpfXmlnsMap.HasChildren(parentLocalName))
-					w.Line($"{parentVar}.Children.Add({varName});");
-				else
-					w.Line($"{parentVar}.Content = {varName};");
+				EmitAttach(w, parentVar, parentLocalName, ci, varName, fqType);
 			}
 		}
 
@@ -629,6 +630,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			{
 				if (attr.IsNamespaceDeclaration) continue;
 				if (attr.Name.Namespace == xNs) continue;
+				if (attr.Name.Namespace == XNamespace.Xml) continue; // xml:space is a directive
 				if (IsIgnorableAttribute(attr)) continue;  // mc:Ignorable, d: design attrs
 				if (attr.Name.LocalName == "Name") continue;
 

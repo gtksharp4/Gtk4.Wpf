@@ -105,6 +105,9 @@ public class XamlCodeGeneratorSampleCompileTests
 
 		if (Clean.Contains(file)) Assert.True(errors.Count == 0, file + ": " + string.Join("; ", errors));
 
+		var contentGaps = errors.Where(d => d.Id == "CS1061" && d.GetMessage().Contains("'Content'")).ToList();
+		Assert.True(contentGaps.Count == 0, file + ": " + string.Join("; ", contentGaps));
+
 		var unresolved = errors.Where(d => (d.Id == "CS0246" || d.Id == "CS0103" || d.Id == "CS0234")
 			&& Unqualified.Any(n => d.GetMessage().Contains("'" + n + "'"))).ToList();
 		Assert.True(unresolved.Count == 0, file + ": " + string.Join("; ", unresolved));
