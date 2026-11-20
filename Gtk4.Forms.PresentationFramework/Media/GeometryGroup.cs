@@ -15,9 +15,8 @@ public class GeometryCollection : Collection<Geometry> { }
 /// Mirrors <c>System.Windows.Media.GeometryGroup</c>.
 /// </summary>
 /// <remarks>
-/// <b>Rendering gap:</b> the children paths are appended to one Cairo path and the Cairo default
-/// (even-odd) rule applies; <see cref="FillRule"/> is stored but not honoured. <c>Geometry.Transform</c> of
-/// the group and of the children is not applied.
+/// <b>Rendering gap:</b> the children paths are appended to one Cairo path filled with
+/// <see cref="FillRule"/>. <c>Geometry.Transform</c> of the group and of the children is not applied.
 /// </remarks>
 [ContentProperty("Children")]
 public class GeometryGroup : Geometry
@@ -25,7 +24,7 @@ public class GeometryGroup : Geometry
 	/// <summary>The geometries combined by this group.</summary>
 	public GeometryCollection Children { get; set; } = new GeometryCollection();
 
-	/// <summary>How the combined area is filled. Default <see cref="Shapes.FillRule.EvenOdd"/>. Stored only.</summary>
+	/// <summary>How the combined area is filled. Default <see cref="Shapes.FillRule.EvenOdd"/>.</summary>
 	public FillRule FillRule { get; set; } = FillRule.EvenOdd;
 
 	/// <inheritdoc/>
@@ -42,6 +41,7 @@ public class GeometryGroup : Geometry
 	/// <inheritdoc/>
 	internal override void BuildPath(Cairo.Context cr)
 	{
+		cr.FillRule = FillRule == FillRule.Nonzero ? Cairo.FillRule.Winding : Cairo.FillRule.EvenOdd;
 		foreach (Geometry g in Children) g.BuildPath(cr);
 	}
 }

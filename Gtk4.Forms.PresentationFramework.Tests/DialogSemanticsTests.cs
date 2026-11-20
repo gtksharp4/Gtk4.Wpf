@@ -1,5 +1,6 @@
 using System;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using Xunit;
 using WpfWindow = System.Windows.Window;
@@ -268,6 +269,23 @@ public class DialogSemanticsTests : WpfGtkTestBase
 		finally { other.Input.SetFocusedInternal(false); }
 	});
 
+
+	[Fact]
+	public void Enter_in_a_TextBox_inside_a_Popup_does_not_click_the_default_button() => Run(() =>
+	{
+		var f = new Form();
+		int ok = 0;
+		f.Ok.Click += (_, _) => ok++;
+		var box = new TextBox();
+		new Popup().Child = box;
+		box.SetFocusedInternal(true);
+		try
+		{
+			PressOnWindow(f.Window, 0xff0d);
+			Assert.Equal(0, ok);
+		}
+		finally { box.SetFocusedInternal(false); }
+	});
 	[Fact]
 	public void Keypad_Enter_through_the_window_key_controller_clicks_the_default_button() => Run(() =>
 	{

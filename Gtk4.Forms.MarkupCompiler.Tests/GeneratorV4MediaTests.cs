@@ -44,6 +44,25 @@ public class GeneratorV4MediaTests : GeneratorV2TestBase
 		AssertCompiles(code, WinStub);
 	}
 
+
+	[Theory]
+	[InlineData("StaticResource")]
+	[InlineData("DynamicResource")]
+	public void F3_an_x_Static_key_on_a_media_property_keeps_the_fallback(string ext)
+	{
+		string code = Gen(Win($@"<GeometryDrawing x:Key=""g""
+Brush=""{{{ext} {{x:Static SystemColors.ControlBrushKey}}}}""/>"));
+		Assert.DoesNotContain("{x:Static", code);
+		AssertCompiles(code, WinStub);
+	}
+
+	[Fact]
+	public void F3_a_DynamicResource_media_reference_does_not_throw_for_a_missing_key()
+	{
+		string code = Gen(Win(@"<GeometryDrawing x:Key=""g"" Brush=""{DynamicResource later}""/>"));
+		Assert.Contains("this.TryFindResource(\"later\") as global::System.Windows.Media.Brush;", code);
+		AssertCompiles(code, WinStub);
+	}
 	[Fact]
 	public void F3_a_PathGeometry_resource_takes_Figures_markup_and_a_Transform_element()
 	{

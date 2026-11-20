@@ -24,7 +24,6 @@ public class SelectionChangedEventArgs : RoutedEventArgs
 	/// <summary>Items removed from the selection.</summary>
 	public IList RemovedItems { get; }
 
-
 	/// <summary>Event data for a change of a single selected item.</summary>
 	internal static SelectionChangedEventArgs ForItems(RoutedEvent id, object source, object? oldItem, object? newItem)
 	{

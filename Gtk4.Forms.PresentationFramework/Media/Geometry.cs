@@ -122,6 +122,7 @@ public class EllipseGeometry : Geometry
 		cr.Translate(Center.X, Center.Y);
 		if (RadiusX > 0 && RadiusY > 0)
 			cr.Scale(RadiusX, RadiusY);
+		cr.NewSubPath();
 		cr.Arc(0, 0, 1, 0, 2 * Math.PI);
 		cr.Restore();
 	}

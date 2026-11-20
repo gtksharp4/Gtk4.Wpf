@@ -722,7 +722,9 @@ namespace Gtk4.Forms.MarkupCompiler
 					w.Line($"{varName}.SetBinding({fqType}.{propName}Property, {bindingInit});");
 				else if (MediaResourceTarget(fqType, propName, val) is Type mediaType
 					&& IsStaticOrDynamicResource(val, out string mediaKey))
-					w.Line(varName + "." + propName + " = " + StaticResourceLookup("this", EscapeString(mediaKey))
+					w.Line(varName + "." + propName + " = " + (val.TrimStart().StartsWith("{StaticResource",
+						StringComparison.Ordinal) ? StaticResourceLookup("this", EscapeString(mediaKey))
+						: "this.TryFindResource(" + ResourceKeyExpression(EscapeString(mediaKey)) + ")")
 						+ " as global::" + mediaType.FullName.Replace('+', '.') + ";");
 				else if (IsStaticOrDynamicResource(val, out string resourceKey))
 				{

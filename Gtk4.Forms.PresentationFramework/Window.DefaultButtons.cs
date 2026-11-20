@@ -34,10 +34,10 @@ public partial class Window
 
 	internal Gtk.EventControllerKey? _acceleratorController;
 
-	// Keyboard.FocusedElement is process-wide: an element focused in another window (or left behind by a closed
-	// one) is no focus for this window's accelerators.
+	// Keyboard.FocusedElement is process-wide: an element in another window (or left behind by a closed one)
+	// is no focus here. An element with no window (inside a Popup, which has no parent) counts as here.
 	IInputElement? FocusedHere()
-		=> Keyboard.FocusedElement is DependencyObject d && ReferenceEquals(GetWindow(d), this)
+		=> Keyboard.FocusedElement is DependencyObject d && (GetWindow(d) is not Window w || ReferenceEquals(w, this))
 			? Keyboard.FocusedElement : null;
 
 	internal bool HandleAcceleratorKeyval(uint keyval, Gdk.ModifierType state)

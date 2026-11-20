@@ -52,7 +52,6 @@ namespace Gtk4.Forms.MarkupCompiler
 			return open.Count > 0 ? open[open.Count - 1].name : fileScoped;
 		}
 
-
 		static string StripCommentsAndStrings(string s)
 		{
 			var sb = new StringBuilder(s.Length);

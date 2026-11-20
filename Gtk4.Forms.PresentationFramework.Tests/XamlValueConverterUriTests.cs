@@ -36,6 +36,17 @@ public class XamlValueConverterUriTests : WpfGtkTestBase
 		Assert.Equal(new Uri("Page2.xaml", UriKind.Relative), frame.Source);
 	});
 
+
+	[Theory]
+	[InlineData("/a.xaml")]
+	[InlineData("/Pages/P.xaml")]
+	public void Uri_with_a_leading_slash_stays_relative(string text)
+	{
+		var uri = Assert.IsType<Uri>(XamlValueConverter.Convert(typeof(Frame), Frame.SourceProperty, text));
+
+		Assert.False(uri.IsAbsoluteUri);
+		Assert.Equal(text, uri.OriginalString);
+	}
 	[Fact]
 	public void Uri_keeps_the_original_string_with_backslashes()
 		=> Assert.Equal(@"sub\a.xaml", UnitConverters.ParseUri(@"sub\a.xaml").OriginalString);

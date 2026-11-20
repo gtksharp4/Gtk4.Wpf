@@ -75,6 +75,8 @@ static class UnitConverters
 	{
 		var s = raw.Trim();
 		if (s.Length == 0) return new Uri("", UriKind.Relative);
+		// .NET reads a leading '/' as file:/// on Unix; WPF keeps it relative.
+		if (s[0] == '/' && !s.StartsWith("//", StringComparison.Ordinal)) return new Uri(s, UriKind.Relative);
 		try { return new Uri(s, UriKind.RelativeOrAbsolute); }
 		catch (UriFormatException) { return MakeUri(s); }
 	}

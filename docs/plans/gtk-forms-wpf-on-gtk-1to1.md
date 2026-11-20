@@ -1610,13 +1610,13 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `x:Class` root always declares the root type as base, as in WPF (a code-behind that only lists interfaces left the
   class deriving from `object`); the same base repeated across partials is legal, a different one is `CS0263`; the tests
   that pinned the omission were rewritten. **A-F3** `{StaticResource}`/`{DynamicResource}` attributes convert in media
-  graphs (assigned with `as` the property type; `DynamicResource` is resolved once, there is no dynamic media binding),
+  graphs (assigned with `as` the property type; only plain and `{x:Type}` keys resolve, `{x:Static}` keys keep the fallback; `DynamicResource` is resolved once with a non-throwing lookup),
   and `GradientStopCollection` (keyed collection), `DrawingImage` (new, `Image` does not paint it), `PathGeometry`
   `Figures` markup (new `PathFigureCollection.Parse`; `Figures` is now settable) and a `Transform` element are built;
   constructors whose parameters are all optional count as instantiable; remaining fallbacks (`Color`,
   `CollectionViewSource`, `HierarchicalDataTemplate`) are in `docs/samples-coverage.md`. **A-F4** store-only
   `GradientBrush.MappingMode`/`SpreadMethod` (new `GradientSpreadMethod`), `TileBrush.Viewbox`/`ViewboxUnits` and
-  `GeometryGroup`/`GeometryCollection` (rendering gaps in the remarks; `FillRule` is the existing `Shapes.FillRule`); a
+  `GeometryGroup`/`GeometryCollection` (`FillRule` is the existing `Shapes.FillRule`, honoured by the follow-up); a
   media property, property element or child the layer lacks is reported through `XamlCodeGenerator.Messages` and logged
   as a build message, not dropped silently. **A-F5** an implicit page whose derived name a hand-written class owns
   (same namespace; comments and strings ignored) is generated as `__Xaml_<path>` and the URI registered to it, instead
@@ -1631,7 +1631,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   pinned the global deferral. **B-F3** `InitScope.Exit` runs every queued action and rethrows the first exception.
   **B-F4** `XamlValueConverterUriTests` builds its `Frame` on the GTK thread. **B-F5** `Selector` remarks fixed; the
   internal `SelectionChangedEventArgs.OldValue`/`NewValue` are gone (three tests did use them). **B-F6** `ParseUri`
-  keeps `OriginalString`; only the `pack://application:,,,` form, which .NET cannot parse, is normalised (pinned).
+  keeps `OriginalString`; only the `pack://application:,,,` form, which .NET cannot parse, is normalised (pinned); a leading `/` stays relative (see the follow-up).
   **B-F7** `ResourceDictionary.Source` throws `ArgumentException` for null and empty. **B-F8** `OnGlibUnhandled` unwraps
   `TargetInvocationException`. **B-F9** the intermittent `Return_through_the_window_key_controller...` failure did not
   reproduce here (0 of 8 runs before Round 46, 0 of 12 on `ce09926c`, 0 of 10 consecutive runs after the fixes), so the cause is not
@@ -1646,6 +1646,18 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `run=runs` apps stay alive for 10 s (process alive; the window itself was not re-checked; the task brief said 74, the
   JSON already records 76 after startup-runtime). The first pass caught a regression: Linq died because a set before the
   items existed raised an empty `SelectionChanged`; empty changes are now dropped, and Linq stays up.
+- **Round 46 follow-up (DONE).** `ParseUri` keeps a leading `/` (not `//`) relative: .NET parses it as `file:///` on
+  Unix, so `Frame.Source="/Pages/P.xaml"` was absolute there (tests). Media `{StaticResource}`/`{DynamicResource}` take
+  only plain and `{x:Type}` keys (an `{x:Static}` key emitted a lookup that threw at startup; it keeps the fallback
+  again); `DynamicResource` uses `TryFindResource`, so a missing key is `null` as in WPF. `Window.FocusedHere` treats an
+  element with no window (inside a `Popup`/`ContextMenu`) as focus here, so Enter/Esc typed in it no longer click the
+  default/cancel button. `GeometryGroup` now applies its `FillRule` (the remarks wrongly said Cairo defaults to
+  even-odd; it is winding) and `EllipseGeometry` starts a new sub-path, so grouped ellipses are not joined by a line.
+  Spec item (c) of B-F1 (a runtime test of a generated root throwing in `InitializeComponent` while a later `ComboBox`
+  raises at once) was not added: the generator tests check order and compilation, and
+  `AbandonInitialization` is tested directly. Two double blank lines removed.
+  **Totals: 4749 tests** (190 WindowsBase + 3997 PresentationFramework + 528 MarkupCompiler + 34 ProjectConverter),
+  all pass, 0 warnings.
 - **Carry-over (Round 46)**: `gf46/input-focus` is unmerged; the B-F9 flake is not reproduced, only closed by the
   window-scoped focus rule; `GeometryGroup`, `DrawingImage` and the gradient/tile members are store-only for rendering;
   `Selector` still defers events for selectors created in a bracketed root (WPF defers only a selector's own

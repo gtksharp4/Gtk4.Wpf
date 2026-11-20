@@ -113,10 +113,13 @@ namespace Gtk4.Forms.MarkupCompiler
 				&& _resolver.GetPropertyType(fq, prop) == null && !IsKnownEvent(fq, prop);
 
 		// A {StaticResource}/{DynamicResource} on a settable media reference-type property. DynamicResource is
-		// resolved once, like StaticResource: media objects have no dynamic-resource binding in the layer.
+		// resolved once and tolerates a missing key (null).
 		Type MediaResourceTarget(string fq, string name, string val)
 		{
-			if (!IsMediaObjectType(fq) || !IsStaticOrDynamicResource(val, out _)) return null;
+			if (!IsMediaObjectType(fq) || !IsStaticOrDynamicResource(val, out string key)) return null;
+			// Only plain and {x:Type} keys resolve; others ({x:Static ...}) keep the fallback.
+			if (key.StartsWith("{", StringComparison.Ordinal)
+				&& !key.StartsWith("{x:Type", StringComparison.Ordinal)) return null;
 			Type t = _resolver.GetPropertyType(fq, name);
 			return t != null && !t.IsValueType && !t.IsGenericType && t.FullName != null
 				&& t.FullName.StartsWith(MediaNs, StringComparison.Ordinal) && _resolver.IsWritable(fq, name)
