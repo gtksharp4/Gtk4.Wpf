@@ -41,6 +41,11 @@ Write-Host '== MarkupCompiler unit tests =='
 dotnet test Gtk4.Forms.MarkupCompiler.Tests -c Debug --no-build --logger trx
 if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
+# PackedNuspecTests inspects the real package; the build above runs with GeneratePackageOnBuild off.
+Write-Host '== pack Gtk4.Forms.Wpf =='
+dotnet pack Gtk4.Forms.Wpf/Gtk4.Forms.Wpf.csproj -c Debug --no-build
+if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
 Write-Host '== Wpf.ProjectConverter unit tests =='
 dotnet test Gtk4.Forms.Wpf.ProjectConverter.Tests -c Debug --no-build --logger trx
 if ($LASTEXITCODE) { exit $LASTEXITCODE }

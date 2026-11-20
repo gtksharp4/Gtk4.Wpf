@@ -31,6 +31,10 @@ run_annotated "macOS WindowsBase.Tests" dotnet test Gtk4.Forms.WindowsBase.Tests
 echo "== MarkupCompiler unit tests =="
 run_annotated "macOS MarkupCompiler.Tests" dotnet test Gtk4.Forms.MarkupCompiler.Tests -c Debug --no-build --logger trx
 
+# PackedNuspecTests inspects the real package; the build above runs with GeneratePackageOnBuild off.
+echo "== pack Gtk4.Forms.Wpf =="
+dotnet pack Gtk4.Forms.Wpf/Gtk4.Forms.Wpf.csproj -c Debug --no-build
+
 echo "== Wpf.ProjectConverter unit tests =="
 run_annotated "macOS ProjectConverter.Tests" \
 	dotnet test Gtk4.Forms.Wpf.ProjectConverter.Tests -c Debug --no-build --logger trx
