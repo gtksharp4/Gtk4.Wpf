@@ -1,317 +1,286 @@
 # WPF samples coverage
 
-Measured 2026-11-20 on `main` at `64cddd04c2a2849ec572495acdf96b6700bc1bca`, package `Gtk4.Forms.Wpf 1.0.0.26324`,
+Measured 2026-11-20 on `main` at `ea4c17ae09a4d0db710525472711607a2d377f1d`, package `Gtk4.Forms.Wpf 1.0.0.26324`,
 against the official `microsoft/WPF-Samples` (256 projects: 243 apps, 9 libraries and 4 native C++ projects).
 Per-project results are in [`samples-coverage.json`](samples-coverage.json). Each row holds its result in the previous
-report (`previous`, report `3deb4dba`), so the next run can diff against it.
+report (`previous`, report `9ca5b30b`), so the next run can diff against it.
 
 ## Headline
 
-**59 of 206 portable official WPF sample apps build unmodified, and 47 run.** That is up from 45 / 31 in report
-`3deb4dba` (main `db9526db`, earlier the same day) and from 0 / 0 in report `fedd13c8` (2026-11-19).
+**83 of 206 portable official WPF sample apps build unmodified, and 74 run.** That is up from 59 / 47 in report
+`9ca5b30b` (main `64cddd04`, Round 44) and from 0 / 0 in report `fedd13c8` (2026-11-19).
 
-- 16 apps moved fail→pass and 4 built apps moved from crash/hang to running. All of it is Round 44.
-- **2 regressions (pass→fail): TargetValues and MultiPage.** Neither ran before (both hung). Round 44 now compiles
-  their x:Class-less `Page`, which hits two old generator gaps. See [Regressions](#regressions).
-- Of the other 12 apps that build, 10 crash at startup and 2 hang without a window. 9 of the 12 fail on one
-  generator bug class: `{StaticResource}` lookups and resource objects.
+- 24 apps moved fail→pass (19 run, 5 crash) and 8 built apps moved from crash/hang to running. All of it is Round 45.
+- **No regressions.** No app went pass→fail, and no app went runs→crash/hang.
+- Of the 9 apps that build but do not run, 8 crash at startup and 1 hangs. 5 of the 9 are new builds.
 - 37 apps are Windows-only by design and are excluded from the denominator, as before.
-- The content-model wall is gone: no `.Content`/`xml:space` errors on layer types are left (63 apps before). The
-  generator is still involved in 42 failing apps, and 14 fail on nothing else.
+- Data Binding is now nearly done: 25 of 30 portable apps build and 24 run.
 
 ### Corrections to the raw batch data
 
-The top 15 missing symbols were checked against the `Gtk4.Forms.*` source, and every crash, hang and regression was
-checked against its logs and generated code. The following are corrected here and in the JSON.
+The top 15 missing symbols were checked against the `Gtk4.Forms.*` source. Every crash and hang was checked against its
+logs and generated code. The following are corrected here and in the JSON.
 
-- **259 projects is 256.** Batch 4 counted the three native Migration projects twice: once for the VS2008 `.vcproj`
-  and once for the `.vcxproj` of the same project. One row per project is kept. The 3 Migration native projects are
-  new in the inventory (`change: new-in-inventory`). They are Windows-only, so the denominator does not change.
-- **Windows-only is 44 projects (37 apps), and portable apps are 206, not 209.** The verified classification from
-  the earlier runs is kept, plus the 3 natives. The batch heuristics disagreed on a few legacy projects. Either way,
-  the portable build and run counts (59 and 47) are the same.
-- **`Page.Content`, `Page.WindowTitle`, `Page.Triggers`, `Page.FindResource` and most of `Page.Background` are
-  generator artefacts.** These are 6, 4, 2, 2 and 5 samples.
-  - The errors are on the samples' own root classes (`TransformExample`, `OpacityAnimationExample`, …). For an x:Class
-    with no code-behind, the generated partial declares no base type.
-  - The layer's `Page` already has `Content`, `Title` and `WindowTitle`.
-  - Only `Page.Background`/`BackgroundProperty` is a real gap (2 samples): `Page : FrameworkElement` has no
-    `Background`.
-- **`AttachElementTriggers` is a generator/layer mismatch, not a missing API.** The generator emits
-  `x.AttachElementTriggers()`, but `FrameworkElement.AttachElementTriggers` is `internal`. It affects 13 portable
-  apps, not 8.
-- **`ValueConversion` and `ValueConversionAttribute` are one symbol** (6 samples), and it is missing.
-- **`System.Windows.Forms` (7) and `Form` (5) are Windows-only demand.** Every sample that names them is a
-  Windows-only project, so they are dropped from the ranking.
-- **`TreeViewItem` is not missing.** AlternatingAppearanceOfItems fails because the generator emits
-  `{x:Type TreeViewItem}` inside a `RelativeSource` as an unqualified `typeof(TreeViewItem)`. This is a generator bug.
-- **WPFWithWFAndDatabinding is not a casing bug.** The converter's `UseWPF` regex is `IgnoreCase`. The
-  `NETSDK1005` comes from the sample declaring both `TargetFrameworks=net472` and `TargetFramework=net10.0-windows`.
-  The project is Windows-only, so no count changes.
-- **XmlDataSource moved crash→hang, but its cause did not change.** It is the same unhandled `FindResource` failure.
-  The process stayed alive after the exception, so the recipe classifies it as a hang. This is not a regression.
-- **Real gaps, confirmed absent from the layer:** `Selector.IsSynchronizedWithCurrentItem`, `ValueConversionAttribute`,
-  `BitmapCacheOption`/`BitmapCreateOptions`/`BitmapFrame`/`BitmapPalettes`, `PixelFormats.Indexed*`, all of
-  `System.Windows.Media.Media3D` (`Viewport3D`, `Vector3D`, `Quaternion`), `KeyboardFocusChangedEventArgs`, `Vector`,
-  `UserControl`, and the `FlowDirection` enum itself.
+- **252 projects is 256.** The six batches enumerated `*.csproj` only, so the 4 native `.vcxproj` projects were not
+  measured. They are carried over as not-built and Windows-only (`measured: false`). The denominator does not change.
+- **Windows-only stays at 37 apps (206 portable), not 35 (211).** The batch heuristics disagree with the verified
+  classification on 9 projects. The verified classification is kept, and each disagreement is noted on its row.
+  - FocusTracker and WindowMove are UIA clients, and the 3 PerMonitorDPI apps are Windows-only by design. The
+    batches called them portable.
+  - DocumentMerge only has a csproj `Reference` to `System.Windows.Forms`. The batch called it Windows-only.
+  - DocumentStructure (a WinForms `OpenFileDialog` via an alias) and SingleInstanceDetection (VB
+    `WindowsFormsApplicationBase`) are flagged Windows-only by the batches, and the evidence supports that.
+    Neither builds, so the build and run counts are the same either way. Reclassify both next run; the denominator
+    becomes 204.
+- **Every top-15 symbol is a real gap.** None of them is in the layer: `BitmapCreateOptions`, `BitmapCacheOption`,
+  `BitmapFrame`, `BitmapPalettes`, `PixelFormats.Indexed*`, all of `System.Windows.Media.Media3D` (`Viewport3D`,
+  `Vector3D`, `Quaternion`), `KeyboardFocusChangedEventArgs`, `XamlReader`, `System.Windows.Vector`,
+  `System.Windows.Automation.Peers`, and the `FlowDirection` enum and properties. Three labels and counts need fixing:
+  - `BitmapCreateOptions`, `BitmapCacheOption`, `BitmapPalettes` and `XamlReader` are tagged `M:` because they are
+    `CS0103` names. They are types.
+  - `KeyboardFocusChangedEventArgs` is 4 apps, not 5. EditBoxControlLibrary is a library that ExpenseItDemo compiles
+    again.
+  - `BitmapFrame` is 8 apps: 6 under `M:` and 2 under `T:`.
+- **Windows-only demand is dropped from the ranking:** `System.Windows.Forms` (7), `Form` (6), `Forms` (3),
+  `AutomationElement` (3) and `DpiScale` (3). For `System.Windows.Interop` (3), only SaveWindowState is portable.
+  `UserControl` (3) is 1 portable app (WPFGallery); the other 2 are Windows-only libraries.
+- **Reported as generator errors, but actually layer gaps:**
+  - `Button.FocusVisualStyleProperty`: the layer has no `FocusVisualStyle` at all.
+  - `TextBlock.SetForeground`: WPF's `TextBlock` has static attached accessors, and the layer only has them on
+    `TextElement`.
+  - A Page root with no `Background`: 9 apps. These were generator artefacts in `9ca5b30b`. The generator now emits the
+    `Page` base, and `Page : FrameworkElement` has no `Background`.
+- **Reported as missing symbols, but actually generator bugs:**
+  - `TreeViewItem`: `{x:Type}` nested in another markup extension.
+  - `TextBlock.SetTextTrimming` (VideoViewerDemo): an owner-qualified property on its own type is emitted as an
+    attached setter.
+- **CustomApplicationClass is a recipe artefact.** Its recorded `NU1201` is the sibling client not yet converted. The
+  manual rebuild fails with `CS5001` (no `Main`) and `CS2002`.
+- **New error codes in 4 still-failing apps are not regressions.** Fixed blockers uncovered errors further on:
+  - the two CommandSource samples (`RoutedCommand()`, `Slider.DecreaseSmall`/`IncreaseSmall`);
+  - MediaGallery (`x:Name` fields, `Slider.ValueChanged` delegate);
+  - AppCompat-Quirks (`Run.FontWeight` CLR conversion).
 
 ## Per category
 
-These are portable apps on the strict recipe. Δ is the change since `3deb4dba`.
+These are portable apps on the strict recipe. Δ is the change since `9ca5b30b`.
 
 | Category | Projects | Windows-only apps | Portable apps | Build | Δ | Run | Δ |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| Accessibility | 12 | 10 | 2 | 1 | +1 | 1 | +1 |
-| Animation | 11 | 0 | 11 | 0 | −1 | 0 | 0 |
+| Accessibility | 12 | 10 | 2 | 1 | 0 | 1 | 0 |
+| Animation | 11 | 0 | 11 | 2 | +2 | 0 | 0 |
 | Application Management | 10 | 0 | 9 | 4 | 0 | 4 | 0 |
 | Clipboard | 2 | 0 | 2 | 0 | 0 | 0 | 0 |
 | Compatibility | 1 | 0 | 1 | 0 | 0 | 0 | 0 |
-| Data Binding | 31 | 1 | 30 | 15 | +5 | 7 | +2 |
-| Documents | 17 | 1 | 16 | 3 | 0 | 3 | 0 |
-| Drag and Drop | 6 | 0 | 6 | 4 | +2 | 3 | +2 |
+| Data Binding | 31 | 1 | 30 | 25 | +10 | 24 | +17 |
+| Documents | 17 | 1 | 16 | 4 | +1 | 4 | +1 |
+| Drag and Drop | 6 | 0 | 6 | 5 | +1 | 3 | 0 |
 | Element Tree | 2 | 0 | 2 | 1 | 0 | 1 | 0 |
-| Elements | 10 | 0 | 10 | 7 | +4 | 7 | +4 |
-| Events | 4 | 0 | 4 | 3 | +1 | 3 | +1 |
-| Getting Started | 8 | 0 | 8 | 3 | −1 | 3 | +1 |
-| Globalization and Localization | 14 | 0 | 14 | 3 | 0 | 1 | 0 |
-| Graphics | 26 | 0 | 25 | 2 | 0 | 2 | 0 |
-| Input and Commands | 18 | 1 | 16 | 6 | +1 | 6 | +3 |
+| Elements | 10 | 0 | 10 | 7 | 0 | 7 | 0 |
+| Events | 4 | 0 | 4 | 3 | 0 | 3 | 0 |
+| Getting Started | 8 | 0 | 8 | 5 | +2 | 5 | +2 |
+| Globalization and Localization | 14 | 0 | 14 | 4 | +1 | 2 | +1 |
+| Graphics | 26 | 0 | 25 | 3 | +1 | 2 | 0 |
+| Input and Commands | 18 | 1 | 16 | 7 | +1 | 7 | +1 |
 | Migration and Interoperability | 23 | 15 | 0 | 0 | 0 | 0 | 0 |
 | PerMonitorDPI | 4 | 4 | 0 | 0 | 0 | 0 | 0 |
 | Properties | 3 | 0 | 3 | 1 | 0 | 1 | 0 |
-| Resources | 3 | 0 | 3 | 2 | +1 | 1 | 0 |
-| Sample Applications | 23 | 1 | 21 | 1 | 0 | 1 | +1 |
+| Resources | 3 | 0 | 3 | 2 | 0 | 2 | +1 |
+| Sample Applications | 23 | 1 | 21 | 2 | +1 | 2 | +1 |
 | Speech and Media | 2 | 1 | 1 | 0 | 0 | 0 | 0 |
-| Styles & Templates | 5 | 0 | 5 | 1 | 0 | 1 | 0 |
+| Styles & Templates | 5 | 0 | 5 | 3 | +2 | 2 | +1 |
 | Threading | 3 | 0 | 3 | 0 | 0 | 0 | 0 |
 | Tools | 3 | 0 | 2 | 0 | 0 | 0 | 0 |
 | Visual Layer | 3 | 1 | 2 | 0 | 0 | 0 | 0 |
-| Windows | 12 | 2 | 10 | 2 | +1 | 2 | +1 |
-| **Total** | **256** | **37** | **206** | **59** | **+14** | **47** | **+16** |
+| Windows | 12 | 2 | 10 | 4 | +2 | 4 | +2 |
+| **Total** | **256** | **37** | **206** | **83** | **+24** | **74** | **+27** |
 
-The library CustomApplicationClient also builds, so 60 projects build in all. Migration gained the 3 native projects.
+The library CustomApplicationClient also builds, so 84 projects build in all.
 
 ## What moved
 
-**Fail→pass, 16 apps.** In each case, the change shown removed the only blocker recorded in `3deb4dba`.
+**Fail→pass, 24 apps.** In each case, the change shown removed the only blocker recorded in `9ca5b30b`.
 
-| Cause | Apps | Run result now |
+| Round 45 change | Apps | Run result now |
 |---|---:|---|
-| XAML content model, `[ContentProperty]` (`2e11abf4`) | 14 | 10 run: Target, BindingDPToDP, SimpleBinding, DragDropTextOps (also `xml:space`), HeightProperties, UsingElements, VisibiltyChanges, WidthProperties, MousePointer, WindowSizingOrder. 4 crash: BindingToMethod, Linq, XmlnsBind, DefiningResources |
-| Content model + event surface (`2e11abf4`, `a812d07b`: `CheckBox.Click`) | 1 | DragDropOpenTextFile runs |
-| Event surface (`a812d07b`: `ButtonBase.OnClick` overridable) | 1 | CustomRoutedEvents runs |
+| items-data-dialog (`f7938bd5`): `IsSynchronizedWithCurrentItem`, `CollectionView`, `UpdateSource`, `DataTransferEventArgs`, `DataContextChanged` | 9 | All run: CollectionBinding, Colors, MasterDetail, MasterDetailXml, MultiBinding, SortFilter, Grouping, UpdateSource, DirectionalBinding |
+| long-tail-members (`4c6d28e9`): one or two members each | 10 | 8 run: HierarchicalDataTemplate, SpellChecking, GlobalizationRunDialog, HandlingEventOnCommandUsingCode, HtmlToXamlDemo, ContentControlStyle, MessageBox, ShowWindowWithoutActivation. 2 crash: DragDropEvents, IntroToStylingAndTemplating |
+| generator-v2 (`50731e8b`): root base type, element triggers, CLR string→`ImageSource`/`Uri` | 5 | 2 run: HelloWorld, MultiPage (both regressions from `9ca5b30b` are fixed). 3 crash: OpacityAnimation, TargetValues, OpacityMasking |
 
-**Crash/hang→runs, 4 apps** (they built before too):
+**Crash/hang→runs, 8 apps.** These were all caused by startup resources (`50731e8b`: resource objects plus
+parse-time `{StaticResource}`):
 
-- ComplexLayout: length units such as `30px` (`19a2a945`).
-- DropShadow: string→`Transform` (`19a2a945`).
-- HandlingEventOnCommand: command name→`ICommand` (`19a2a945`).
-- EventOnGainAndLooseFocus: hang→runs. This was never diagnosed and was not isolated now. The window is a plain
-  `StackPanel` of `Button`s with text content, so the content-model text handling is the likely cause.
+- BindConversion, BindingToMethod, BusinessLayerValidation, BindingToStringFomat, PropertyChangeNotification,
+  XmlnsBind and DefiningResources were crashes.
+- XmlDataSource was a hang.
 
-LocalizationResources still crashes, but further in: the `ImageSource` crash is fixed (`19a2a945`), and it now
-fails on a manifest resource name.
+**Error landscape**, counted as portable apps per code, `9ca5b30b` → now:
 
-The Page-`StartupUri` hosting (`19a2a945`/`64d3f2fe`) does not yet turn either Page-startup hang into a run. Both
-now fail to build (below).
-
-**Error landscape**, counted as portable apps per code, `3deb4dba` → now:
-
-- `CS1061`: 90 → 64. This is the content model.
-- `CS0123`: 11 → 4. This is the event surface. The 4 left are `Slider.ValueChanged`/`SelectionChanged` delegates.
-- `CS0246`: 66 → 65.
-- Flat: `CS0117` 34, `CS0103` 27, `CS0234` 20, `CS0534` 9 (`CreateWidget`), `CS0102` 8.
-- `CS0029`: 8 → 9.
-- `CS2002` (a generated `.g.cs` is specified twice) is now a warning in 55 of the 59 portable builds. The 4 without it
-  are the three code-only apps and CustomDictionaries.
+- `CS1061`: 64 → 45.
+- `CS0246`: 65 → 57.
+- `CS0029`: 9 → 4. CLR string conversions.
+- Flat: `CS0117` 34 → 33, `CS0103` 27, `CS0234` 20, `CS0534` 9 (`CreateWidget`), `CS0102` 8.
+- `CS2002` (a generated `.g.cs` is specified twice) is still a warning in 78 of the 83 portable builds.
 
 ## Regressions
 
-There are 2 pass→fail regressions. Both apps hung before, so the run count does not drop, but the build count does.
-Both have the same trigger: `64d3f2fe` ("StartupUri registry for x:Class-less pages",
-`XamlCodeGenerator.ImplicitClass.cs`) now generates a class for a `Page`/`Window` XAML that has no `x:Class`.
-
-- Before, these pages produced no code at all. The app built, and then hung because the page never loaded.
-- Now the page is compiled, and its generated code hits generator gaps that were already there:
-
-| App | New error | Root cause |
-|---|---|---|
-| Animation/TargetValues | `CS1061 'Button' does not contain a definition for 'AttachElementTriggers'` in `AnimationTargetValuesExample.g.cs` | The generator emits a call to `FrameworkElement.AttachElementTriggers()`, which is `internal` (13 portable apps hit it) |
-| Getting Started/MultiPage | `CS0029 Cannot implicitly convert type 'string' to 'System.Uri'` in `Page1.g.cs` (`__e11.NavigateUri = "Page2.xaml";`) | `Hyperlink.NavigateUri` is a CLR property of type `Uri?`. The CLR-property path emits the raw string with no conversion |
-
-Each fix is small. Make element triggers reachable from generated code (public/`EditorBrowsable(Never)`, or emit
-`Triggers` wiring the layer applies itself), and convert strings for `Uri`-typed CLR properties. With both fixed,
-the two apps exercise the new `NavigationWindow` Page host end to end.
+None. No project went pass→fail, and no app went runs→crash/hang. Linq, LocalizationResources and
+StringLocalizationSample crash for the same reason as before. DragDropThumbOps hangs, as before.
 
 ## API demand
 
-The counts are failing portable apps that report the symbol. Generator artefacts and Windows-only demand are
-excluded. They are floors: a missing base type on generated roots still hides errors in 16 apps.
+The counts are failing portable apps that report the symbol. Windows-only demand is excluded.
 
 | Theme | Symbols (samples) | Apps |
 |---|---|---:|
-| Items, data and dialog semantics | `Selector.IsSynchronizedWithCurrentItem` (10), `ValueConversionAttribute` (6), `Button.IsDefault`/`IsCancel` (3), `CollectionView` (2), `BindingExpressionBase.UpdateSource` (2), `DataTransferEventArgs` (2), `ContentPresenter.ContentSource` (2), settable `Window.DialogResult` (2), concrete `HeaderedContentControl` (2), `Grid.ShowGridLines` (2), `Panel.IsItemsHost` (2), `MenuItem.ItemsSourceProperty`, `Grid.IsSharedSizeScope`, `ContentControl.HasContent` | 31 |
-| Documents and text | `FlowDocument.ColumnWidth`/`ColumnGap`/`IsColumnWidthFlexible` (2–3), `Run`/`Span.SetValue` (`Inline` as a `DependencyObject`, 2), `Table` (2), `PrintDialog` (2), `System.Windows.Annotations` (2), `TextRange` `Load`/`Save`, `FlowDocument.ContentStart`/`End`, `TextElement.BackgroundProperty` | 21 |
-| Graphics (2D) | `Vector` (4), `Point.Parse`/`Add`/`Multiply` (2), `Matrix` operations, `SystemColors.*Brush`/`*Color` (2), `VisualBrush.Viewbox` (2), `TextBlock.SetForeground` (2), `CompositionTarget`, `GeometryHitTestParameters` | 15 |
-| Input | `KeyboardFocusChangedEventArgs` (4), `Expander.FocusVisualStyle` (2), `Cursors.ScrollWE`, `Cursor.Dispose`, `Mouse.SetCursor`, `EditingCommands`, `RoutedCommand()`, `ContextMenuEventArgs` | 13 |
-| Extensibility | `UIElement.CreateWidget()` leaking as abstract (`CS0534`, 9), `RoutedPropertyChangedEventArgs<T>` (3), overridable `OnApplyTemplate`/`OnRender`/`LogicalChildren` | 12 |
-| Flow direction | `FlowDirection` enum and `FrameworkElement.FlowDirection` (`TextBlock` 4, `StackPanel` 2), `Inline.FlowDirection` (`Span` 3, `Run` 2), `FlowDocument.FlowDirection` (2) | 11 |
-| Imaging | `BitmapCreateOptions`/`BitmapCacheOption` (7), `BitmapFrame` (6), `PixelFormats.Indexed*` (5), `BitmapPalettes` (5), `Png`/`Jpeg`/`Gif`/`Tiff`/`Bmp`/`Wmp` decoders and encoders | 10 |
-| Animation | `TranslateTransform.X/YProperty` + `BeginAnimation` (3), `DoubleAnimationBase` (2), `Clock` (2), `Storyboard.Seek`/`TimeSeekOrigin`/`HandoffBehavior`, `SolidColorBrush.ColorProperty` | 9 |
+| Graphics (2D) | `Page.Background`/`BackgroundProperty` (9, including Page roots), `Vector` (5), `Point.Parse` (2), `SystemColors.*Brush` (2), `VisualBrush.Viewbox` (2), `TextBlock.SetForeground` attached accessors (2), `UIElement.Clip`, `GeneralTransform`, `CompositionTarget`, `HitTestResultBehavior`, `GeometryHitTestParameters`, `BrushConverter`/`ThicknessConverter` | 25 |
+| Documents and text | `FlowDocument.ColumnWidth` (3), `ColumnGap`/`IsColumnWidthFlexible` (2), `Table`/`TableRow`/`TableCell` (3), `System.Windows.Annotations` (2), `PrintDialog` (2), `TextRange` `Load`/`Save`, `FlowDocument.ContentStart`/`End`, `TextEffect`, `FlowDocumentPageViewer` | 19 |
+| Input and focus | `KeyboardFocusChangedEventArgs` (4), `FocusVisualStyle` (3), `RoutedCommand()` (3), `Slider.AutoToolTipPlacement`/`Precision` (3), `Slider.DecreaseSmall`/`IncreaseSmall` (2), `Cursors.ScrollWE`, `Cursor.Dispose`, `Mouse.SetCursor`, `EditingCommands`, `ContextMenuEventArgs`, `FocusNavigationDirection` | 17 |
+| Animation | `TranslateTransform.X/YProperty` + `BeginAnimation` (3: `TranslateTransform` is not a `DependencyObject`), `DoubleAnimationBase` (2), `Clock` (2), `Storyboard.GetCurrentTime`/`Seek`/`TimeSeekOrigin` (2), `HandoffBehavior`, `SolidColorBrush.ColorProperty` | 13 |
+| Extensibility | `UIElement.CreateWidget()` leaking as abstract (`CS0534`, 9), overridable `OnRender`/`LogicalChildren`/`Slider.OnValueChanged`, `ICommandSource.CommandTarget` typed as `UIElement` | 12 |
+| Flow direction | `FlowDirection` enum and `FrameworkElement.FlowDirection` (`TextBlock` 4, `StackPanel` 2, `Window` 2), `Inline.FlowDirection` (`Span` 3, `Run` 2), `FlowDocument.FlowDirection` (2), `Span.Language`, `NumberSubstitution` | 11 |
+| Imaging | `BitmapFrame` (8), `BitmapCreateOptions`/`BitmapCacheOption` (7), `PixelFormats.Indexed*` (5), `BitmapPalettes` (5), `Png`/`Jpeg`/`Gif`/`Tiff`/`Bmp`/`Wmp` decoders and encoders, `BitmapImage.Format`, `BitmapMetadata` | 11 |
 | 3D | `System.Windows.Media.Media3D`: `Viewport3D` (5), `Vector3D` (5), `Quaternion` (4), `Point3D` (2), `GeometryModel3D` (2) | 8 |
-| Navigation and pages | `NavigationEventArgs` (3), `Page.Background(Property)` (2), `UserControl`, `PageFunction<T>` | 8 |
-| XAML at runtime | `XamlReader` (4), `XamlWriter` (3), `XamlParseException` (3), `Application.LoadComponent` | 6 |
-| Dialogs, clipboard, threading, automation | `Microsoft.Win32.OpenFileDialog`/`SaveFileDialog` (3), `MessageBoxOptions`, `Clipboard.Contains*`; static `Dispatcher.Run` (2), `DispatcherOperationCallback` (2), `DispatcherObject.Dispatcher` on elements; `System.Windows.Automation.Peers` (4) | 5 / 5 / 4 |
-| Window | `Window.DragMove` (2), `Window.ShowActivated`, `AllowsTransparency` | 3 |
+| XAML at runtime | `XamlReader` (4), `XamlWriter` (3), `XamlParseException` (3), `Application.LoadComponent` | 8 |
+| Navigation and pages | `NavigationEventArgs` (3), `PageFunction<T>`/`ReturnEventArgs<T>`, `UserControl` | 6 |
+| Items and validation | `IEditableCollectionView`, `BindingGroup.GetValue`/`TryGetValue`, `Validation.ErrorProperty`, `Binding.UpdateSourceExceptionFilter`, `Label.Target`, `ItemContainerGenerator`, `ItemsControl.ContainerFromElement`, `FilterEventArgs` | 6 |
+| Threading | `DispatcherOperationCallback` (2), static `Dispatcher.Run` (2), `DispatcherObject.Dispatcher` on elements (2) | 5 |
+| Dialogs and clipboard | `Microsoft.Win32.OpenFileDialog`/`SaveFileDialog` (3), `CommonDialog`, `Clipboard.ContainsAudio`/`ContainsImage`/`ContainsFileDropList` | 5 |
+| Automation peers | `System.Windows.Automation.Peers` (4) | 4 |
+| Window | `Window.DragMove` (2), `AllowsTransparency` (2) | 2 |
 
 ## Crashes and hangs (built, did not run)
 
 | Sample | Result | Cause |
 |---|---|---|
-| BindConversion, BusinessLayerValidation, BindingToStringFomat, PropertyChangeNotification, XmlnsBind, DefiningResources | crash | `Resource with key '…' not found` from the generated `InitializeComponent` |
-| XmlDataSource | hang | Same `FindResource` failure (`InventoryData`). The process stays alive after the unhandled exception |
-| BindingToMethod | crash | `InvalidCastException`: `string` → `IValueConverter` at `MainWindow.g.cs:38` |
-| Linq | crash | `NullReferenceException` in the sample's `ListBox_SelectionChanged`. It is raised during `InitializeComponent`, before the fields it uses are assigned; WPF does not raise it there |
-| LocalizationResources | crash | `MissingManifestResourceException` for `LocalizationResources.data.stringtable.resources` (resource naming of a localised `.resx`) |
-| StringLocalizationSample | crash | `Resource with key 'LocalizedMessage' not found` (a merged/localised dictionary) |
-| DragDropThumbOps | hang | Alive with no top-level window, empty logs. Not diagnosed |
-
-The 8 resource failures have two generator root causes, verified in the generated code of BindConversion,
-BindingToMethod, XmlnsBind and DefiningResources:
-
-1. **Resource objects of user or unsupported types are emitted as an empty-string placeholder.** For example,
-   `<local:MyData x:Key="MyDataSource"/>`, `<local:DoubleToString/>` and `XmlDataProvider` all become
-   `Resources["key"] = "";`. That is the `InvalidCastException` in BindingToMethod.
-2. **`{StaticResource}` is resolved with `FindResource` on the wrong scope.**
-   - It is called on `this` when the dictionary is on an inner element. In BindConversion, the dictionary is on a
-     `StackPanel`.
-   - Or it is called on an element before it is parented. In DefiningResources, `__e15.FindResource` runs before
-     `__e15` is in the tree.
-   - WPF resolves it at parse time against the enclosing dictionaries.
+| OpacityAnimation, TargetValues | crash | `'' is not a valid value for property 'Background'`. The `DrawingBrush` resources in `App.xaml` are still emitted as `Resources["…"] = "";`. The resource-object fix does not yet cover `DrawingBrush`/`DrawingGroup` |
+| OpacityMasking | crash | `'GradientBrushExample.xaml' is not a valid value for property 'Source'`. `Frame.Source` is a `Uri` dependency property. The DP path (`XamlValueConverter.Convert`) has no string→`Uri` conversion; Round 45 added it only to the CLR-property path |
+| IntroToStylingAndTemplating | crash | `BasedOn="{StaticResource {x:Type TextBlock}}"` is emitted as `FindResource("{x:Type TextBlock")`. The nested markup extension is truncated instead of becoming `typeof(TextBlock)` |
+| DragDropEvents | crash | Exits with code 1 about 0.6 s after its window appears, with no managed exception. Re-run alone: same. stdout shows `Marshaling layout signal`: GtkSharp caught an exception in a GTK signal callback and exited the process. The likely trigger is the sample's `SizeChanged` handler, which sets `TextBox.Height` from `RowDefinitions[1].ActualHeight` during layout. The layer does not route GTK-callback exceptions to `Dispatcher.UnhandledException`, so the exception is never printed |
+| Linq | crash | Unchanged. Setting `SelectedIndex` in `InitializeComponent` raises `SelectionChanged` before later named elements exist, which is a `NullReferenceException` in the sample handler |
+| LocalizationResources | crash | Unchanged. `MissingManifestResourceException` for `LocalizationResources.data.stringtable.resources`: the manifest name of a `.resx` outside `Properties/` |
+| StringLocalizationSample | crash | Unchanged. `Resource with key 'LocalizedMessage' not found` (a merged or localised dictionary) |
+| DragDropThumbOps | hang | Unchanged. Alive with no top-level window after 38 s, and the logs are empty. Not diagnosed |
 
 ## XAML generator errors
 
-The counts are failing portable apps; per-project messages are in the JSON (`xamlErrors`). The generator is involved
-in 42 apps, and 14 fail on nothing else:
+These counts are failing portable apps. Per-project messages are in the JSON (`xamlErrors`). Generator v2 removed the
+two largest classes: the root base type for x:Class with no code-behind (16 apps), and internal
+`AttachElementTriggers` (13 apps). What is left:
 
-- OpacityAnimation, PropertyAnimation, TargetValues, DataTemplatingIntro, RoutedEventHandling, HelloWorld, MultiPage;
-- GlobalizationHomepage, 2DTransforms, OpacityMasking, ShapeElements, CaptureUnCaptureMouse;
-- AlternatingAppearanceOfItems, WindowActivationAndDeactivation.
-
-The error classes:
-
-1. **No base type for an x:Class with no code-behind: 16 apps.** For example: 2DTransforms, OpacityMasking,
-   ClipRegion, KeyFrameAnimation, OpacityAnimation, VisualBrush, ShapeElements, Concepts, ControlsAndLayout.
-2. **`AttachElementTriggers` is `internal`: 13 apps.** This includes the TargetValues regression.
-3. **Name scopes: 10 apps.** An `x:Name` inside a template or resource becomes a root field that collides
-   (`CS0102`):
-   - AnimationExamples, DataTemplatingIntro, Brushes, Callbacks, DataBindingDemo, PhotoStoreDemo, DocumentMerge,
-     GlobalizationHomepage;
-   - WPFGallery has a duplicate `Main` (`CS0111`);
-   - PropertyAnimation's Page partial conflicts with the user partial (`CS0111`/`CS0260`/`CS0262`).
-4. **Value conversion (`CS0029`): 8 apps.**
-   - `Polygon.Points` → `PointCollection`.
-   - `Window.Icon` and `ImageBrush.ImageSource` → `ImageSource`.
-   - `Hyperlink.NavigateUri` → `Uri`: the MultiPage regression.
-   - `int` → `string`.
-5. **Delegate types (`CS0123`): 4 apps.** `Slider.ValueChanged` is wired as `EventHandler`, and
-   `ComboBox`/`ListBox.SelectionChanged` as `EventHandler<SelectionChangedEventArgs>`.
-6. **Attached routed-event syntax: 2 apps.** `Button.Click="…"` or `RadioButton.Checked="…"` on a non-button element is
-   emitted as an attached property (`Button.SetClick`, `RadioButton.CheckedProperty`), and `PreviewMouseDown`/`Up` are
-   missing on `StackPanel` (RoutedEventHandling, CaptureUnCaptureMouse).
-7. **`{x:Type}` inside a nested markup extension** is emitted unqualified, e.g. `typeof(TreeViewItem)`
-   (AlternatingAppearanceOfItems).
-8. **Missing `x:Name` fields** for some elements: `mediaElement`, `FlowDocRdr` and keyframe names
-   (WindowActivationAndDeactivation, FindText, KeySplineAnimations).
-9. **Not a generator bug:** DocumentStructure's `fixedpage1_structure.xaml` is malformed XML.
+1. **Name scopes (`CS0102`/`CS0111`/`CS0260`/`CS0262`): 10 apps.** An `x:Name` inside a template or resource becomes
+   a root field, and it collides.
+   - DataTemplatingIntro and GlobalizationHomepage fail on nothing else.
+   - AnimationExamples, Brushes, Callbacks, DataBindingDemo, PhotoStoreDemo and DocumentMerge also hit it.
+   - WPFGallery has a duplicate `Main`.
+   - PropertyAnimation's code-behind class lacks `partial`. WPF tolerates this.
+2. **Routed delegate and attached-event syntax: 6 apps.**
+   - `Slider.ValueChanged` is wired as `EventHandler` and `SelectionChanged` as `EventHandler<…>`: KeySplineAnimations,
+     ParagraphAndHyphenation, MediaGallery, BitmapEffectsGallery.
+   - `Button.Click`/`RadioButton.Checked` on another element are emitted as attached properties. RoutedEventHandling
+     and CaptureUnCaptureMouse fail on nothing else.
+3. **Root base type when the code-behind partial declares none: 3 apps.** ControlsAndLayout (`Scene`), FindText (`App`)
+   and MediaGallery. Generator v2 emits the base only when there is no code-behind.
+4. **Value conversion (`CS0029`): 3 apps.**
+   - `Run.FontWeight` (a CLR `FontWeight?`) gets a raw string. AppCompat-Quirks fails on nothing else.
+   - `int` → `string` (2DTransforms).
+   - `FontFamily` → `string` (FontProperties).
+5. **`{x:Type}` nested in another markup extension.** It is emitted unqualified at compile time
+   (AlternatingAppearanceOfItems, which fails on nothing else). At run time it is truncated (the
+   IntroToStylingAndTemplating crash).
+6. **An owner-qualified property on its own type** (`<TextBlock TextBlock.TextTrimming=…>`) is emitted as
+   `TextBlock.SetTextTrimming` (VideoViewerDemo, which fails on nothing else).
+7. **Missing `x:Name` fields:** `mediaElement` (WindowActivationAndDeactivation, which fails on nothing else),
+   `myMediaElement` (MediaGallery), keyframe names (KeySplineAnimations), `trg1` (TableRows) and `root`
+   (MergedResources).
+8. **Not a generator bug:** DocumentStructure's `fixedpage1_structure.xaml` is malformed XML.
 
 ## Next rounds
 
 These are ranked by portable samples unblocked. "Only" means samples whose sole remaining blocker is the track.
 
-1. **Startup resources.** Up to 11 more runs; every one of these apps already builds.
-   - Instantiate resource elements of `clr-namespace` and unsupported types (`XmlDataProvider`) instead of emitting
-     `""`.
-   - Resolve `{StaticResource}` at parse time against the enclosing dictionaries, not with `FindResource` on `this`
-     or on an unparented element. This covers 9 apps: BindConversion, BindingToMethod, BusinessLayerValidation,
-     BindingToStringFomat, PropertyChangeNotification, XmlnsBind, XmlDataSource, DefiningResources, and
-     StringLocalizationSample if its dictionary path is the same.
+1. **Startup crashes: up to 8 more runs, and every one of these apps already builds.**
+   - Instantiate `DrawingBrush`/`DrawingGroup` resource objects (OpacityAnimation, TargetValues).
+   - Add string→`Uri` in the DP converter path, as the CLR path has (OpacityMasking).
+   - Resolve `{StaticResource {x:Type T}}` (IntroToStylingAndTemplating).
    - Don't raise `SelectionChanged` during `InitializeComponent` (Linq).
-   - Use the localised `.resx` manifest name (LocalizationResources).
-2. **XAML generator v2.** This fixes both regressions. It is involved in 42 apps, and 14 fail only on it.
-   - Emit the root base type for an x:Class with no code-behind.
-   - Make element triggers reachable from generated code.
+   - Use the localised `.resx` manifest name (LocalizationResources), and resolve merged dictionaries
+     (StringLocalizationSample).
+   - Route exceptions from GTK signal callbacks to `Dispatcher.UnhandledException` and print them, then fix what
+     DragDropEvents reveals.
+2. **XAML generator v3: 9 only.**
+   - Only: DataTemplatingIntro, GlobalizationHomepage, RoutedEventHandling, CaptureUnCaptureMouse,
+     AlternatingAppearanceOfItems, VideoViewerDemo, AppCompat-Quirks, WindowActivationAndDeactivation, PropertyAnimation.
    - Template and resource name scopes.
-   - CLR-property string conversion (`Uri`, `ImageSource`, `PointCollection`).
-   - Routed delegate types for `Slider.ValueChanged` and `SelectionChanged`.
-   - Attached routed-event syntax and `PreviewMouseDown`/`Up`.
-   - `{x:Type}` in nested markup extensions.
+   - Routed delegate types and attached-event syntax.
+   - A base type even when the code-behind partial has none.
+   - Nested `{x:Type}`.
+   - Owner-qualified properties.
+   - Nullable/struct CLR conversions.
    - Missing `x:Name` fields.
-3. **Items, data and dialog semantics.** Involved in 31 apps, 12 only.
-   - Only: CollectionBinding, Colors, DirectionalBinding, EditingCollections, Grouping, MasterDetail,
-     MasterDetailXml, MultiBinding, UpdateSource, ValidateItemSample and two CommandSource samples.
-   - Covers: `IsSynchronizedWithCurrentItem`, `ValueConversionAttribute`, `IsDefault`/`IsCancel`, `CollectionView`,
-     `UpdateSource`, `DataTransferEventArgs`, `ContentSource`, settable `DialogResult`, concrete
-     `HeaderedContentControl`.
-4. **Long tail: one or two members each.** About 12 apps are blocked by nothing else.
-   - `MenuItem.ItemsSourceProperty` (HierarchicalDataTemplate)
-   - `TextBox.SpellCheck`/`GetSpellingError` (SpellChecking)
-   - `RowDefinition.ActualHeight` (DragDropEvents)
-   - `Grid.IsSharedSizeScope` (GlobalizationRunDialog)
-   - `AddChild` (HandlingEventOnCommandUsingCode)
-   - `TextBox.Copy` and `TextElement.BackgroundProperty` (HtmlToXamlDemo)
-   - `RoutedPropertyChangedEventArgs<T>` (MediaGallery)
-   - `ContentControl.HasContent` and `Grid.ShowGridLines` (ContentControlStyle)
-   - `Panel.IsItemsHost` (IntroToStylingAndTemplating)
-   - `MessageBoxOptions` (MessageBox)
-   - `Window.ShowActivated` (ShowWindowWithoutActivation)
-   - `FontFamily` typed as `string` (FontProperties)
-5. **Input and focus.** Involved in 13 apps, 7 only.
+3. **Flow direction: 11 involved, 9 essentially only.**
+   - Only: FlowDirection, Gradient, Image, LTRRTL, Paths; plus FlowContentProperty, LangAttribute (`Span.Language`),
+     RunSpan, Span.
+   - Covers: the `FlowDirection` enum, `FrameworkElement.FlowDirection` (inherited), `Inline.FlowDirection`, and
+     `FlowDocument.FlowDirection`.
+4. **Input and focus: 17 involved, 8 only.**
    - Only: ContextMenuOpening, FocusVisualStyle, CursorType, CustomRoutedCommand, EditingCommands, KeyStrokeCounter,
-     CalculatorDemo.
-   - Covers: `KeyboardFocusChangedEventArgs` and the `(Preview)Got/LostKeyboardFocus` overrides,
-     `FocusVisualStyle`, `Cursors.*`, `Cursor.Dispose`, `EditingCommands`, `RoutedCommand()`,
-     `ContextMenuEventArgs`.
-   - Also hide `CreateWidget` from user subclasses (`CS0534`, 9 apps).
-6. **Flow direction and flow documents.** Involved in about 29 apps, 8 only.
-   - Covers: the `FlowDirection` enum, `FrameworkElement`/`Inline`/`FlowDocument.FlowDirection`, `FlowDocument`
-     columns, `Inline` as a `DependencyObject` and `Table`.
+     CalculatorDemo, ProgrammaticFocusControl.
+   - Covers: `KeyboardFocusChangedEventArgs` and the `(Preview)Got/LostKeyboardFocus` overrides, `FocusVisualStyle`,
+     `RoutedCommand()`, `Cursors.ScrollWE`, `Cursor.Dispose`, `EditingCommands`, `ContextMenuEventArgs`,
+     `FocusNavigationDirection`, and the `Slider` `AutoToolTip*`/`DecreaseSmall`/`IncreaseSmall` members.
+5. **2D graphics, Page and Window long tail: about 9 only.**
+   - Only: ShapeElements, PathAnimations (`Page.Background`), DrawingBrush (`TextBlock` attached accessors),
+     ClipRegion (`UIElement.Clip`), Vector, SystemBrushesAndColors, CompositionTarget, CustomWindowUI and
+     NonRectangularWindow (`DragMove`, `AllowsTransparency`).
+   - Also: `Page.Background` unblocks part of 9 apps.
+6. **Threading, dialogs and clipboard: 7 only.**
+   - Threading only: ExceptionHandlingSecondaryUIThread, ExceptionHandlingSecondaryWorkerThread,
+     MultiThreadingWebBrowser, SingleThreadedApplication. Covers `DispatcherOperationCallback`, static `Dispatcher.Run`
+     and `DispatcherObject.Dispatcher` on elements.
+   - Dialogs and clipboard only: ClipboardSpy (`Clipboard.Contains*`) and CommonDialogs (`Microsoft.Win32.CommonDialog`
+     with `OpenFileDialog`/`SaveFileDialog`).
 
 Deliberately not next:
 
-- Imaging codecs and Media3D: 18 apps, 10 only, but large.
+- Imaging codecs and Media3D: 19 apps, 9 only, but large.
+- Animation clocks (`TranslateTransform` as an animatable `DependencyObject`, `Clock`, `DoubleAnimationBase`): 13
+  involved, 1 only.
+- Extensibility (`CreateWidget` leaking as abstract): 9 apps, but always alongside other gaps. Fold it into whichever
+  round touches `UIElement`.
 - System.Xaml/BAML tooling.
-- Legacy (non-SDK) csproj conversion: 21 projects, only 1 of them a portable app.
-- The packaging hygiene item from the previous report is still open: `CS2002` in 55 of 59 builds, and `NU1201` in
-  converted ProjectReference chains (CustomApplicationClass, BamlReflector).
+- Legacy (non-SDK) csproj conversion: 21 projects.
+- Packaging hygiene, still open: `CS2002` in 78 of 83 builds, and `NU1201` in converted ProjectReference chains
+  (CustomApplicationClass, BamlReflector).
 
 ## Method
 
 - **Source.** The local `WPF-Samples` tree, split into six category batches. Each batch was copied under
-  `.claude/samples3/batchN`, with empty `Directory.Build.props`/`.targets` (so `TreatWarningsAsErrors` was off) and an
-  isolated NuGet cache. No original or tracked file was modified.
+  `.claude/samples4/batchN`, with empty `Directory.Build.props`/`.targets` (so `TreatWarningsAsErrors` was off) and a
+  fresh isolated NuGet cache (`samples4/.nuget-packages`). No original or tracked file was modified.
 - **Recipe (strict).**
   1. Add a `PackageReference` to `Gtk4.Forms.Wpf 1.0.0.26324` from the repo `Packages/` feed.
   2. Build once. The converter rewrites the csproj and stops with exit 10.
   3. Build again; this result is recorded.
   - Nothing else is changed. The diff is saved as `csproj.diff` beside each copy.
   - Exception: CustomApplicationClass was rebuilt once by hand after its sibling client had converted.
-- **Pass/fail.** Pass means `Build succeeded` and `0 Error(s)` in the final build log. The error codes and
-  messages in the JSON were re-parsed uniformly from the final logs of all six batches (UTF-8 and UTF-16), and
-  deduplicated by code and message. The parse agreed with every batch's own pass/fail.
-- **Run.** Each app that built got a smoke run on Windows of about 10 s.
+- **Pass/fail.** Pass means `Build succeeded` and `0 Error(s)` in the final build log. The error codes and messages in
+  the JSON were re-parsed uniformly from the final logs of all six batches (UTF-8 and UTF-16). The parse agreed with
+  every batch's own pass/fail.
+- **Run.** Each app that built got a serial smoke run on Windows of about 10 s.
   - "Runs" means alive with a visible top-level window.
   - "Crash" means an unhandled exception or an exit with no window.
   - "Hang" means alive with no window.
   - The run proves nothing about visual or behavioural correctness.
+  - DragDropEvents was re-run alone for this report.
 - **Windows-only.** The verified classification from the earlier runs, plus the native C++ projects.
 - **Limits.**
   - Only Windows was measured; Linux and macOS were not run.
   - Legacy (non-SDK) csproj files are not converted, so they were not built: 21 projects.
   - The theme counts come from a regex classification of compiler messages (`blockerThemes` in the JSON). They are a
     ranking aid, not an exact partition.
-  - The attribution of the 16 moves is by elimination: the removed blocker was the only one recorded before. It was
-    not bisected.
+  - The attribution of the moves is by elimination: the removed blocker was the only one recorded before. It was not
+    bisected.
 
 ## History
 
@@ -320,3 +289,4 @@ Deliberately not next:
 | 2026-11-19 | `3b73e4f5` | 1.0.0.26323 | 0 / 206 | 0 | +CM diagnostic: 16 build, 10 run |
 | 2026-11-20 | `db9526db` | 1.0.0.26324 | 45 / 206 | 31 | 10 crash, 4 hang; no regressions |
 | 2026-11-20 | `64cddd04` | 1.0.0.26324 | 59 / 206 | 47 | Round 44; 10 crash, 2 hang; 2 regressions (TargetValues, MultiPage: x:Class-less Page now compiled) |
+| 2026-11-20 | `ea4c17ae` | 1.0.0.26324 | 83 / 206 | 74 | Round 45; 8 crash, 1 hang; no regressions (both Round 44 regressions fixed) |
