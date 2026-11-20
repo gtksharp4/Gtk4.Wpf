@@ -15,7 +15,8 @@ namespace Gtk4.Forms.Wpf.ProjectConverter;
 /// 10.0.0: the Gtk4.Forms.Wpf package now flows those versions, and a lower pin would fail restore with NU1605
 /// (under the WindowsDesktop shared framework they came from the framework, so no downgrade arose). Only literal
 /// versions in the project file are rewritten; <c>Directory.Packages.props</c>, property-based versions and ranges
-/// are not, so NU1605 can still occur there.</para>
+/// are not, so NU1605 can still occur there. Also not rewritten: <c>PackageReference Update</c>, single-quoted
+/// <c>Version=</c> attributes and <c>VersionOverride</c>.</para>
 /// </summary>
 /// <remarks>
 /// All edits are textual and minimal; unrelated content is left byte-for-byte unchanged.
@@ -167,7 +168,7 @@ internal static class CsprojConverter
 		});
 	}
 
-	/// <summary>True for a literal version whose leading numeric major is below 10 (prerelease included).</summary>
+	/// <summary>True for a literal version below 10.0.0: major below 10, or a <c>10.0.0-*</c> prerelease.</summary>
 	static bool IsBelowFloor(string version)
 	{
 		version = version.Trim();
@@ -177,6 +178,9 @@ internal static class CsprojConverter
 		var end = 0;
 		while (end < version.Length && char.IsDigit(version[end]))
 			end++;
+
+		if (version.StartsWith("10.0.0-", StringComparison.Ordinal))
+			return true;
 
 		return end > 0 && int.TryParse(version.Substring(0, end), out var major) && major < 10;
 	}

@@ -1397,10 +1397,8 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `UnhandledExceptionHandling` pins EventLog 4.6.0-preview8) raised NU1605. Under WindowsDesktop these came from the shared
   framework, so no downgrade arose. `CsprojConverter` now raises literal direct pins of those three packages below 10 to
   10.0.0 (attribute or `<Version>` child, case-insensitive; ranges, `$(...)`, missing and >= 10 untouched; textual,
-  idempotent). Limitation: `Directory.Packages.props`, property versions and ranges are not rewritten. **Verified
-  limitation**: restore runs before the converter target, so a plain `dotnet build` still fails restore with NU1605 on the
-  first pass; the rewrite happens only when a build runs without restore (`--no-restore`), after which the next restore
-  succeeds. A restore-time fix is carry-over. The D2 audit note "EventLog is fine because CM pulls it in" was wrong: a lower
+  idempotent). Limitation: `Directory.Packages.props`, property versions and ranges are not rewritten. The first-build
+  flow works with a plain `dotnet build` (see the Round 42 follow-up). The D2 audit note "EventLog is fine because CM pulls it in" was wrong: a lower
   direct pin caused NU1605. **A-F2 (Nit)** the two CM version facts were merged
   (`Wpf_package_depends_on_ConfigurationManager_10x`); the nuspec check moved from `Integration.Tests` (not run in CI, skipped
   when no package) into `ProjectConverter.Tests` (ProjectReference for build order; fails instead of skipping).
@@ -1409,8 +1407,15 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   Microsoft.WindowsDesktop.App.Ref lists).
   **Round 42 totals: 3657 tests** (190 WindowsBase + 3125 PresentationFramework + 311 MarkupCompiler + 31 ProjectConverter),
   all pass; `dotnet build Gtk4.Forms.sln` 0 warnings. A-F1 tests were observed failing first (5 of 13 failed before the fix).
-- **Carry-over (Round 42)**: NU1605 on first restore for a lower direct pin (needs a restore-time hook or a different
-  dependency strategy); `gf42/xtype-qualified-names`, `gf42/colors-text-gaps` and `gf39/xaml-content-model` still to be
+- **Round 42 follow-up (DONE).** The "Verified limitation" (plain `dotnet build` fails restore with NU1605 on the first
+  pass) was wrong for the real flow: the unconverted project is still evaluated against WindowsDesktop, so build 1 restores
+  cleanly, the converter raises the pin and stops with exit 10, and build 2 succeeds (re-verified on the untouched
+  `UnhandledExceptionHandling` sample). NU1605 on restore only arises when a lower pin is added to an already-converted
+  project. `IsBelowFloor` now also treats `10.0.0-*` prereleases as below the floor (NuGet orders them below 10.0.0); the
+  class comment names the unhandled forms (`PackageReference Update`, single-quoted `Version=`, `VersionOverride`).
+  **Totals: 3659 tests** (190 + 3125 + 311 + 33), all pass, 0 warnings; the new prerelease test was observed failing first.
+- **Carry-over (Round 42)**: NU1605 for a lower pin added to an already-converted project (restore-time only; not a
+  first-build issue); `gf42/xtype-qualified-names`, `gf42/colors-text-gaps` and `gf39/xaml-content-model` still to be
   reviewed and merged.
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking

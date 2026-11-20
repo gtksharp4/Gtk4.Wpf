@@ -113,4 +113,24 @@ public class CsprojConverterWpfFrameworkPackageTests
 		Assert.True(changed);
 		Assert.Contains("Version=\"10.0.0\"", result);
 	}
+
+	[Fact]
+	public void Raises_10_0_0_prerelease_pin()
+	{
+		var result = CsprojConverter.Transform(
+			Project("<PackageReference Include=\"System.Diagnostics.EventLog\" Version=\"10.0.0-rc.2.25502.107\" />"),
+			out var changed);
+
+		Assert.True(changed);
+		Assert.Contains("Version=\"10.0.0\"", result);
+	}
+
+	[Fact]
+	public void Leaves_10_0_1_prerelease_pin()
+	{
+		var input = Project("<PackageReference Include=\"System.Diagnostics.EventLog\" Version=\"10.0.1-rc.1\" />");
+
+		Assert.Equal(input, CsprojConverter.Transform(input, out var changed));
+		Assert.False(changed);
+	}
 }
