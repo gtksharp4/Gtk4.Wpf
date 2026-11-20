@@ -4,7 +4,7 @@ using System.Windows.Media;
 namespace System.Windows.Documents;
 
 /// <summary>Base class for all inline flow-content elements.</summary>
-public abstract class Inline : TextElement
+public abstract partial class Inline : TextElement
 {
 	/// <summary>
 	/// Builds the Pango markup fragment for this inline and appends it to
@@ -85,7 +85,7 @@ public class Span : Inline
 	internal override void AppendMarkup(System.Text.StringBuilder sb)
 	{
 		foreach (var child in Inlines)
-			child.AppendMarkup(sb);
+			child.AppendWrappedMarkup(sb);
 	}
 }
 

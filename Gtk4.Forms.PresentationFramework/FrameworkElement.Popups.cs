@@ -127,6 +127,7 @@ public partial class FrameworkElement
 		// Apply any Cursor set before widget creation.
 		// Implemented in FrameworkElement.Cursor.cs.
 		ApplyCursorOnCreated(widget);
+		ApplyFlowDirectionOnCreated(widget);
 	}
 
 	/// <summary>
@@ -135,4 +136,7 @@ public partial class FrameworkElement
 	/// Implemented in <c>FrameworkElement.Cursor.cs</c>.
 	/// </summary>
 	partial void ApplyCursorOnCreated(Gtk.Widget widget);
+
+	/// <summary>Implemented in <c>FrameworkElement.FlowDirection.cs</c>.</summary>
+	partial void ApplyFlowDirectionOnCreated(Gtk.Widget widget);
 }

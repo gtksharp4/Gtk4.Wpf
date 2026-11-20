@@ -32,7 +32,7 @@ public class Section : Block
 		{
 			if (!first) sb.Append('\n');
 			first = false;
-			block.AppendMarkup(sb);
+			block.AppendWrappedMarkup(sb);
 		}
 	}
 }

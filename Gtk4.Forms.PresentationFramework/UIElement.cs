@@ -36,6 +36,9 @@ public abstract partial class UIElement : Media.Visual
 	/// </summary>
 	internal virtual bool IsWidgetCreated => _widget != null;
 
+	/// <summary>True once <see cref="Widget"/> exists, independent of subclass <see cref="IsWidgetCreated"/> overrides.</summary>
+	internal bool IsWidgetMaterialized => _widget != null;
+
 	/// <summary>
 	/// Called once immediately after <see cref="Widget"/> is first created.
 	/// Override to apply deferred state (e.g. <c>TooltipText</c>) to the new widget.
