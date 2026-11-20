@@ -7,7 +7,8 @@ namespace Gtk4.Forms.MarkupCompiler
 	public partial class XamlCodeGenerator
 	{
 		const string MediaNs = "System.Windows.Media.";
-		internal const string PresentationOptionsNs = "http://schemas.microsoft.com/winfx/2006/xaml/presentation/options";
+		internal const string PresentationOptionsNs =
+			"http://schemas.microsoft.com/winfx/2006/xaml/presentation/options";
 
 		// Brushes, drawings, geometries: plain object-model types built from attributes and property elements.
 		static bool IsMediaObjectType(string fq)
@@ -15,7 +16,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				&& !fq.StartsWith(MediaNs + "Animation.", StringComparison.Ordinal)
 				&& !fq.StartsWith(MediaNs + "Media3D.", StringComparison.Ordinal);
 
-		/// <summary>The type of a keyed media resource element that is built, else <c>null</c> (plain emission).</summary>
+		/// <summary>The type of a keyed media resource element that is built, else <c>null</c>.</summary>
 		string MediaResourceType(XElement item)
 		{
 			if (item.Name.NamespaceName != WpfXmlnsMap.PresentationNs) return null;

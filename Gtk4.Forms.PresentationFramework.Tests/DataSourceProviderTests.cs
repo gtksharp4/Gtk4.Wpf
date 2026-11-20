@@ -174,3 +174,25 @@ public class DataSourceProviderTests
 		Assert.Equal(1, fires);
 	}
 }
+
+public class DataSourceProviderLazyLoadTests
+{
+	public class Item { public int Value { get; set; } = 7; }
+
+	[Fact]
+	public void Data_loads_the_provider_on_first_read()
+	{
+		var odp = new ObjectDataProvider { ObjectType = typeof(Item) };
+		var item = Assert.IsType<Item>(odp.Data);
+		Assert.Same(item, odp.Data);
+	}
+
+	[Fact]
+	public void Data_does_not_load_when_the_initial_load_is_disabled()
+	{
+		var odp = new ObjectDataProvider { ObjectType = typeof(Item), IsInitialLoadEnabled = false };
+		Assert.Null(odp.Data);
+		odp.Refresh();
+		Assert.IsType<Item>(odp.Data);
+	}
+}

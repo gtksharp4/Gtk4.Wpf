@@ -70,6 +70,15 @@ public class GeneratorV3PropertyTests : GeneratorV2TestBase
 	}
 
 	[Fact]
+	public void G5_Localization_attributes_are_localisation_metadata_and_ignored()
+	{
+		string code = Gen($@"<Window x:Class=""A.W"" {Head} Localization.Comments=""$Content(Hi)"">
+<Border Localization.Attributes=""$Content (Readable Modifiable)"" Localization.Comments=""$Content(x)""/></Window>");
+		Assert.DoesNotContain("Localization", code);
+		AssertCompiles(code, Stub);
+	}
+
+	[Fact]
 	public void G5_no_code_behind_still_emits_base_and_constructor()
 	{
 		string code = Gen(Window("<Button/>"), hasCodeBehind: false);

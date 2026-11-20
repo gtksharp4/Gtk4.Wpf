@@ -59,7 +59,8 @@ namespace Gtk4.Forms.MarkupCompiler
 		bool UserClassExists(string className)
 		{
 			if (CodeBehindSources == null) return false;
-			var re = new Regex(@"\bclass\s+" + Regex.Escape(className.Substring(className.LastIndexOf('.') + 1)) + @"\b");
+			string name = Regex.Escape(className.Substring(className.LastIndexOf('.') + 1));
+			var re = new Regex(@"\bclass\s+" + name + @"\b");
 			foreach (string s in CodeBehindSources)
 				if (re.IsMatch(s)) return true;
 			return false;

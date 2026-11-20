@@ -19,7 +19,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				if (ResolveTypeRefName(m.Groups[1].Value) is string name) _typeKeyRefs.Add(name);
 		}
 
-		/// <summary>The key of a Style with a <c>{x:Type}</c> key, or an implicit one that is referenced by type.</summary>
+		/// <summary>The key of a Style: its <c>x:Key</c>, or its type when a <c>{x:Type}</c> reference needs it.</summary>
 		string StyleResourceKey(string key, string targetTypeAttr)
 		{
 			if (key != null) return ResourceKeyExpression(EscapeString(key));
@@ -27,7 +27,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				? $"typeof({t})" : null;
 		}
 
-		/// <summary>A resource key as C#: <c>typeof(T)</c> for an <c>{x:Type T}</c> key, else a string literal.</summary>
+		/// <summary>A resource key as C#: <c>typeof(T)</c> for <c>{x:Type T}</c>, else a string literal.</summary>
 		string ResourceKeyExpression(string escapedKey)
 			=> escapedKey.StartsWith("{x:Type", StringComparison.Ordinal) && ResolveTypeRefName(escapedKey) is string t
 				? $"typeof({t})" : "\"" + escapedKey + "\"";

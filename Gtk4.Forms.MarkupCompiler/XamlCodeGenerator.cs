@@ -340,11 +340,13 @@ namespace Gtk4.Forms.MarkupCompiler
 				{
 					// Style="{StaticResource k}" special-case; generic for other props.
 					if (propName == "Style")
-						w.Line($"this.Style = (System.Windows.Style)this.FindResource({ResourceKeyExpression(EscapeString(resourceKey))});");
+						w.Line($"this.Style = (System.Windows.Style)this.FindResource(" +
+							$"{ResourceKeyExpression(EscapeString(resourceKey))});");
 					else
 					{
 						string fqType = string.IsNullOrEmpty(rootFqType) ? "this" : rootFqType;
-						w.Line($"this.SetValue({fqType}.{propName}Property, this.FindResource({ResourceKeyExpression(EscapeString(resourceKey))}));");
+						w.Line($"this.SetValue({fqType}.{propName}Property, " +
+							$"this.FindResource({ResourceKeyExpression(EscapeString(resourceKey))}));");
 					}
 				}
 				else if (IsXNull(val))
@@ -555,9 +557,10 @@ namespace Gtk4.Forms.MarkupCompiler
 			return set;
 		}
 
-		/// <summary>True when the attribute belongs to a compile-time-ignored namespace.</summary>
+		/// <summary>True for an attribute in a compile-time-ignored namespace, or a LocBaml <c>Localization.*</c> one.</summary>
 		bool IsIgnorableAttribute(XAttribute attr) =>
-			_ignorableNamespaces.Contains(attr.Name.Namespace.NamespaceName);
+			_ignorableNamespaces.Contains(attr.Name.Namespace.NamespaceName)
+			|| attr.Name.LocalName == "Localization.Attributes" || attr.Name.LocalName == "Localization.Comments";
 
 		/// <summary>
 		/// Recursively emits construction + wiring for direct children of <paramref name="parentVar"/>.
@@ -651,7 +654,8 @@ namespace Gtk4.Forms.MarkupCompiler
 				int dotPos = propName.IndexOf('.');
 				if (dotPos > 0)
 				{
-					Qualified q = ClassifyQualified(w, fqType, varName, propName.Substring(0, dotPos), ref propName, val);
+					string owner = propName.Substring(0, dotPos);
+					Qualified q = ClassifyQualified(w, fqType, varName, owner, ref propName, val);
 					if (q == Qualified.Emitted) continue;
 					if (q == Qualified.OwnMember) dotPos = -1;
 				}

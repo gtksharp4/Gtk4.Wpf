@@ -22,7 +22,8 @@ namespace Gtk4.Forms.MarkupCompiler
 				if (field == null || field.FieldType.Name != "RoutedEvent") return false;
 				for (Type t = owner; t != null; t = SafeBase(t))
 				{
-					EventInfo ev = t.GetEvent(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+					EventInfo ev = t.GetEvent(
+						name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 					if (ev == null) continue;
 					if (ev.EventHandlerType.IsGenericType) return false;
 					handlerType = ev.EventHandlerType.FullName.Replace('+', '.');

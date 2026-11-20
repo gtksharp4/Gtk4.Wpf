@@ -43,7 +43,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			return null;
 		}
 
-		/// <summary>True when an instance of <paramref name="typeFullName"/> can be assigned to <paramref name="target"/>.</summary>
+		/// <summary>True when an instance of <paramref name="typeFullName"/> is assignable to <paramref name="target"/>.</summary>
 		internal bool IsAssignable(string typeFullName, Type target)
 		{
 			try
