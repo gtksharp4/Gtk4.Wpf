@@ -120,7 +120,7 @@ public class XamlCodeGeneratorTemplateTests
 </Button>");
 		string code = _gen.Generate(xaml, out _);
 
-		Assert.Contains("typeof(System.Windows.Controls.Button)", code);
+		Assert.Contains("typeof(global::System.Windows.Controls.Button)", code);
 	}
 
 	// ── Keyed <ControlTemplate x:Key="t"> in resources ──────────────────────

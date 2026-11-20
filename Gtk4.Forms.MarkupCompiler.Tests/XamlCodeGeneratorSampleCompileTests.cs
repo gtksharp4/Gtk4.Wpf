@@ -1,0 +1,112 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Xml.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Xunit;
+
+namespace Gtk4.Forms.MarkupCompiler.Tests;
+
+/// <summary>
+/// Generates code from real WPF-Samples XAML (copied under Samples/) and runs it through Roslyn
+/// against the built layer assemblies: it must parse cleanly and never name a layer type unqualified.
+/// </summary>
+public class XamlCodeGeneratorSampleCompileTests
+{
+	readonly ITestOutputHelper _output;
+
+	public XamlCodeGeneratorSampleCompileTests(ITestOutputHelper output) => _output = output;
+
+	static readonly string Dir = Path.GetDirectoryName(typeof(XamlCodeGeneratorSampleCompileTests).Assembly.Location)!;
+
+	public static IEnumerable<object[]> Samples()
+		=> Directory.GetFiles(Path.Combine(Dir, "Samples"), "*.xaml")
+			.Select(f => new object[] { Path.GetFileName(f) });
+
+	// Samples whose generated code compiles with no errors at all.
+	static readonly HashSet<string> Clean = new()
+	{
+		"OpacityAnimation.App.xaml", "BitmapEffectsGallery.App.xaml", "PropertyAnimation.App.xaml",
+		"Converter.App.xaml", "DataTrigger.MainWindow.xaml", "AnimationTiming.HandoffVersusComposeExample.xaml",
+	};
+
+	static readonly string[] Unqualified =
+		{ "ListBoxItem", "Ellipse", "Rectangle", "Polygon", "Shape", "ScrollViewer", "SpellCheck" };
+
+	static List<MetadataReference> References()
+	{
+		var refs = new List<MetadataReference>();
+		string tpa = (string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!;
+		foreach (string p in tpa.Split(Path.PathSeparator))
+		{
+			string n = Path.GetFileName(p);
+			if (n.StartsWith("WindowsBase", StringComparison.OrdinalIgnoreCase)) continue;
+			if (n.StartsWith("System.", StringComparison.Ordinal) || n == "mscorlib.dll" || n == "netstandard.dll")
+				refs.Add(MetadataReference.CreateFromFile(p));
+		}
+		foreach (string f in Directory.GetFiles(Dir, "*.dll"))
+		{
+			string n = Path.GetFileName(f);
+			if (n.StartsWith("Gtk4.Forms.PresentationFramework") || n.StartsWith("Gtk4.Forms.WindowsBase")
+				|| n.StartsWith("GtkSharp") || n.StartsWith("GLibSharp") || n.StartsWith("Gtk4.Forms.Gtk"))
+				refs.Add(MetadataReference.CreateFromFile(f));
+		}
+		return refs;
+	}
+
+	static string Generate(string file)
+	{
+		string pf = Path.Combine(Dir, "Gtk4.Forms.PresentationFramework.dll");
+		string wb = Path.Combine(Dir, "Gtk4.Forms.WindowsBase.dll");
+		using var gen = new XamlCodeGenerator();
+		gen.SetReferencePaths(new[] { pf, wb });
+		gen.SetXmlnsDefinitionSource(new AssemblyXmlnsDefinitionSource(new[] { pf }));
+		string code = gen.Generate(File.ReadAllText(Path.Combine(Dir, "Samples", file)), out _);
+		Assert.NotNull(code);
+		return code;
+	}
+
+	// Stands in for the code-behind: declares the partial class with the root element's base type.
+	static string CodeBehind(string file)
+	{
+		XElement root = XDocument.Load(Path.Combine(Dir, "Samples", file)).Root!;
+		string cls = (string)root.Attributes().First(a => a.Name.LocalName == "Class");
+		string baseType = root.Name.LocalName switch
+		{
+			"Window" => "System.Windows.Window",
+			"Application" => "System.Windows.Application",
+			var n => "System.Windows.Controls." + n,
+		};
+		int dot = cls.LastIndexOf('.');
+		string ns = dot < 0 ? "" : cls.Substring(0, dot);
+		string name = cls.Substring(dot + 1);
+		return $"namespace {ns} {{ public partial class {name} : {baseType} {{ }} }}";
+	}
+
+	[Theory]
+	[MemberData(nameof(Samples))]
+	public void Sample_generated_code_parses_and_names_layer_types_qualified(string file)
+	{
+		string code = Generate(file);
+		CancellationToken ct = TestContext.Current.CancellationToken;
+		SyntaxTree tree = CSharpSyntaxTree.ParseText(code, cancellationToken: ct);
+		var syntax = tree.GetDiagnostics(ct).Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+		Assert.True(syntax.Count == 0, file + ": " + string.Join("; ", syntax.Take(3)));
+
+		SyntaxTree stub = CSharpSyntaxTree.ParseText(CodeBehind(file), cancellationToken: ct);
+		CSharpCompilation compilation = CSharpCompilation.Create("g", new[] { tree, stub }, References(),
+			new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+		var errors = compilation.GetDiagnostics(ct).Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+		_output.WriteLine($"{file}: {errors.Count} semantic error(s)");
+		foreach (Diagnostic d in errors.Take(8)) _output.WriteLine("  " + d);
+
+		if (Clean.Contains(file)) Assert.True(errors.Count == 0, file + ": " + string.Join("; ", errors));
+
+		var unresolved = errors.Where(d => (d.Id == "CS0246" || d.Id == "CS0103")
+			&& Unqualified.Any(n => d.GetMessage().Contains("'" + n + "'"))).ToList();
+		Assert.True(unresolved.Count == 0, file + ": " + string.Join("; ", unresolved));
+	}
+}

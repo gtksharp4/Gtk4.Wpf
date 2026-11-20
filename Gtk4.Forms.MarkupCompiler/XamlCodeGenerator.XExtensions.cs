@@ -42,7 +42,8 @@ namespace Gtk4.Forms.MarkupCompiler
 		internal static bool IsXType(
 			string value,
 			out string typeofExpr,
-			IReadOnlyDictionary<string, string> prefixMap = null)
+			IReadOnlyDictionary<string, string> prefixMap = null,
+			Func<string, string> probe = null)
 		{
 			typeofExpr = null;
 			if (value == null) return false;
@@ -61,7 +62,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			string prefix = colon >= 0 ? inner.Substring(0, colon).Trim() : string.Empty;
 			string localName = colon >= 0 ? inner.Substring(colon + 1).Trim() : inner;
 
-			string fqType = ResolveXType(prefix, localName, prefixMap, errorOnUnresolvableBare: true);
+			string fqType = ResolveXType(prefix, localName, prefixMap, true, probe);
 			typeofExpr = $"typeof(global::{fqType})";
 			return true;
 		}
@@ -81,7 +82,8 @@ namespace Gtk4.Forms.MarkupCompiler
 		internal static bool IsXStatic(
 			string value,
 			out string staticExpr,
-			IReadOnlyDictionary<string, string> prefixMap = null)
+			IReadOnlyDictionary<string, string> prefixMap = null,
+			Func<string, string> probe = null)
 		{
 			staticExpr = null;
 			if (value == null) return false;
@@ -107,7 +109,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			string typePart = qualified.Substring(0, dot);
 			string member = qualified.Substring(dot + 1);
 
-			string fqType = ResolveXType(prefix, typePart, prefixMap);
+			string fqType = ResolveXType(prefix, typePart, prefixMap, false, probe);
 			staticExpr = $"global::{fqType}.{member}";
 			return true;
 		}
@@ -132,7 +134,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			string prefix,
 			string localName,
 			IReadOnlyDictionary<string, string> prefixMap,
-			bool errorOnUnresolvableBare = false)
+			bool errorOnUnresolvableBare = false,
+			Func<string, string> probe = null)
 		{
 			// 1. User-defined clr-namespace prefix.
 			if (!string.IsNullOrEmpty(prefix) && prefixMap != null)
@@ -146,6 +149,9 @@ namespace Gtk4.Forms.MarkupCompiler
 			// 2. Built-in WPF presentation map (handles "Button" → "System.Windows.Controls.Button").
 			string mapped = WpfXmlnsMap.Resolve(localName);
 			if (mapped != null) return mapped;
+
+			string probed = probe?.Invoke(localName);
+			if (probed != null) return probed;
 
 			// 3. Prefix present, namespace context supplied, but prefix not found → diagnostic.
 			if (!string.IsNullOrEmpty(prefix) && prefixMap != null)

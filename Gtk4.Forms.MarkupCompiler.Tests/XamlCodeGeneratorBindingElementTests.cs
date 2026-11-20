@@ -27,7 +27,7 @@ public class XamlCodeGeneratorBindingElementTests
 		Assert.Contains(".Mode = System.Windows.Data.BindingMode.TwoWay;", code);
 		Assert.Contains(".UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged;", code);
 		Assert.Contains(".ValidatesOnExceptions = true;", code);
-		Assert.Contains("SetBinding(System.Windows.Controls.TextBox.TextProperty, __b", code);
+		Assert.Contains("SetBinding(global::System.Windows.Controls.TextBox.TextProperty, __b", code);
 	}
 
 	[Fact]
@@ -39,7 +39,7 @@ public class XamlCodeGeneratorBindingElementTests
 		Assert.Contains(".Min = 0;", code);
 		Assert.Contains(@".Label = ""x"";", code);
 		Assert.Contains(".ValidationRules.Add(__vr", code);
-		Assert.Contains("SetBinding(System.Windows.Controls.TextBox.TextProperty", code);
+		Assert.Contains("SetBinding(global::System.Windows.Controls.TextBox.TextProperty", code);
 	}
 
 	[Fact]

@@ -33,7 +33,7 @@ public class XamlCodeGeneratorResourceTests
 <Grid />");
 		string code = _gen.Generate(xaml, out _);
 
-		Assert.Contains("new System.Windows.Style(typeof(System.Windows.Controls.Button))", code);
+		Assert.Contains("new System.Windows.Style(typeof(global::System.Windows.Controls.Button))", code);
 		Assert.Contains("btnStyle", code);
 		Assert.Contains("Background", code);
 		Assert.Contains("Red", code);

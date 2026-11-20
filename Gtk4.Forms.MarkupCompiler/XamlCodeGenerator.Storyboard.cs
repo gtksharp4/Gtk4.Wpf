@@ -233,7 +233,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			{
 				string ownerName = reAttr.Substring(0, dot);
 				string evName = reAttr.Substring(dot + 1);
-				string fqOwner = WpfXmlnsMap.Resolve(ownerName) ?? ownerName;
+				string fqOwner = Emitted(QualifyTypeName(ownerName));
 				reExpr = $"System.Windows.EventManager.GetRoutedEvent(typeof({fqOwner}), \"{EscapeString(evName)}\")";
 			}
 			w.Line($"var {trigVar} = new System.Windows.EventTrigger {{ RoutedEvent = {reExpr} }};");
