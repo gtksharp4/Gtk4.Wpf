@@ -84,10 +84,15 @@ public partial class TextBox : Control
 
 	// ── TextWrapping DP ──────────────────────────────────────────────────────
 
-	/// <summary>Text wrapping behaviour (applies in multiline mode).</summary>
+	/// <summary>
+	/// Text wrapping. Any value other than <see cref="TextWrapping.NoWrap"/> selects the multiline
+	/// <see cref="Gtk.TextView"/> backing, read at widget creation like <see cref="AcceptsReturn"/>;
+	/// a single-line <see cref="Gtk.Entry"/> cannot wrap. Enter still inserts a newline only when
+	/// <see cref="AcceptsReturn"/> is set in WPF; GTK's <see cref="Gtk.TextView"/> always accepts it.
+	/// </summary>
 	public static readonly DependencyProperty TextWrappingProperty =
 		DependencyProperty.Register(nameof(TextWrapping), typeof(TextWrapping), typeof(TextBox),
-			new PropertyMetadata(TextWrapping.NoWrap));
+			new PropertyMetadata(TextWrapping.NoWrap, OnTextWrappingChanged));
 
 	/// <summary>Gets or sets text wrapping.</summary>
 	public TextWrapping TextWrapping
@@ -144,12 +149,12 @@ public partial class TextBox : Control
 /// <summary>Text-wrapping mode.</summary>
 public enum TextWrapping
 {
+	/// <summary>Wraps between words only; a long word overflows.</summary>
+	WrapWithOverflow = 0,
 	/// <summary>No wrapping.</summary>
-	NoWrap = 0,
-	/// <summary>Wraps at word boundaries.</summary>
-	Wrap   = 1,
-	/// <summary>Wraps at any character.</summary>
-	WrapWithOverflow = 2,
+	NoWrap = 1,
+	/// <summary>Wraps at word boundaries, and inside a word that does not fit.</summary>
+	Wrap = 2,
 }
 
 /// <summary>Event data for <see cref="TextBox.TextChanged"/>.</summary>
@@ -158,4 +163,4 @@ public sealed class TextChangedEventArgs : EventArgs
 	/// <summary>The text box whose text changed.</summary>
 	public TextBox Source { get; }
 	internal TextChangedEventArgs(TextBox source) => Source = source;
-}
+}

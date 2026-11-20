@@ -156,5 +156,6 @@ public partial class TextBlock
 		ApplyTextTrimming();
 		ApplyPadding();
 		ApplyLineHeight();
+		ApplyTextWrapping();
 	}
 }

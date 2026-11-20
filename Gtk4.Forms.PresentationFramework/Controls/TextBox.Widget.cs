@@ -25,7 +25,7 @@ public partial class TextBox
 	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
-		if (AcceptsReturn)
+		if (IsMultiline)
 			return CreateMultilineWidget();
 		return CreateSingleLineWidget();
 	}
@@ -49,6 +49,7 @@ public partial class TextBox
 		_textView.Buffer.Changed += OnBufferChanged;
 
 		_scrolled = new Gtk.ScrolledWindow();
+		ApplyScrollPolicy();
 		_scrolled.Child = _textView;
 		return _scrolled;
 	}
@@ -112,12 +113,7 @@ public partial class TextBox
 	void ApplyWrapMode()
 	{
 		if (_textView == null) return;
-		_textView.WrapMode = TextWrapping switch
-		{
-			TextWrapping.Wrap             => Gtk.WrapMode.Word,
-			TextWrapping.WrapWithOverflow => Gtk.WrapMode.Char,
-			_                             => Gtk.WrapMode.None,
-		};
+		_textView.WrapMode = TextWrappingMap.ToTextView(TextWrapping);
 	}
 
 	/// <summary>
@@ -150,4 +146,4 @@ public partial class TextBox
 			buf.SelectRange(start, end);
 		}
 	}
-}
+}
