@@ -40,6 +40,17 @@
 	</PropertyGroup>
 
 	<!--
+	  The WindowsDesktop shared framework supplied System.Configuration.ConfigurationManager (the
+	  ApplicationSettingsBase behind every WPF Properties/Settings.Designer.cs) implicitly; the
+	  converter drops it with UseWPF. Declaring it here puts it in this package's nuspec, so it
+	  reaches direct and transitive consumers and survives re-conversion, with no edit to the
+	  consumer csproj. No TFM condition: the package ships netstandard2.0, net8.0 and net10.0 assets.
+	-->
+	<ItemGroup>
+		<PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.0" />
+	</ItemGroup>
+
+	<!--
 	  nuspec dependencies: NuGet turns each ProjectReference (without ReferenceOutputAssembly=false
 	  / PrivateAssets=all) into a <dependency> in the generated .nuspec, so consumers get the
 	  full WPF-compat stack pulled in automatically on restore.
