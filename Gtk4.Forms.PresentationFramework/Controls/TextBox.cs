@@ -84,10 +84,15 @@ public partial class TextBox : Control
 
 	// ── TextWrapping DP ──────────────────────────────────────────────────────
 
-	/// <summary>Text wrapping behaviour (applies in multiline mode).</summary>
+	/// <summary>
+	/// Text wrapping (the <see cref="TextBlock"/> property). Stored for every box; it is applied to the
+	/// multiline <see cref="Gtk.TextView"/> backing only. A single-line <see cref="Gtk.Entry"/> cannot wrap,
+	/// so the backing is still chosen by <see cref="AcceptsReturn"/> alone and the value is store-only there.
+	/// </summary>
 	public static readonly DependencyProperty TextWrappingProperty =
-		DependencyProperty.Register(nameof(TextWrapping), typeof(TextWrapping), typeof(TextBox),
-			new PropertyMetadata(TextWrapping.NoWrap));
+		TextBlock.TextWrappingProperty.AddOwner(typeof(TextBox),
+			new FrameworkPropertyMetadata(TextWrapping.NoWrap, FrameworkPropertyMetadataOptions.AffectsMeasure,
+				OnTextWrappingChanged));
 
 	/// <summary>Gets or sets text wrapping.</summary>
 	public TextWrapping TextWrapping
@@ -139,17 +144,6 @@ public partial class TextBox : Control
 		get => (bool)(GetValue(IsReadOnlyProperty) ?? false);
 		set => SetValue(IsReadOnlyProperty, value);
 	}
-}
-
-/// <summary>Text-wrapping mode.</summary>
-public enum TextWrapping
-{
-	/// <summary>No wrapping.</summary>
-	NoWrap = 0,
-	/// <summary>Wraps at word boundaries.</summary>
-	Wrap   = 1,
-	/// <summary>Wraps at any character.</summary>
-	WrapWithOverflow = 2,
 }
 
 /// <summary>Event data for <see cref="TextBox.TextChanged"/>.</summary>

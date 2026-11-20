@@ -58,9 +58,30 @@ public partial class ScrollViewer : ContentControl
 		set => SetValue(VerticalScrollBarVisibilityProperty, value);
 	}
 
+	/// <summary>Gets the horizontal scroll bar visibility set on <paramref name="element"/>.</summary>
+	public static ScrollBarVisibility GetHorizontalScrollBarVisibility(DependencyObject element)
+		=> (ScrollBarVisibility)(Require(element).GetValue(HorizontalScrollBarVisibilityProperty)
+			?? ScrollBarVisibility.Auto);
+
+	/// <summary>Sets the horizontal scroll bar visibility on <paramref name="element"/>.</summary>
+	public static void SetHorizontalScrollBarVisibility(DependencyObject element, ScrollBarVisibility value)
+		=> Require(element).SetValue(HorizontalScrollBarVisibilityProperty, value);
+
+	/// <summary>Gets the vertical scroll bar visibility set on <paramref name="element"/>.</summary>
+	public static ScrollBarVisibility GetVerticalScrollBarVisibility(DependencyObject element)
+		=> (ScrollBarVisibility)(Require(element).GetValue(VerticalScrollBarVisibilityProperty)
+			?? ScrollBarVisibility.Auto);
+
+	/// <summary>Sets the vertical scroll bar visibility on <paramref name="element"/>.</summary>
+	public static void SetVerticalScrollBarVisibility(DependencyObject element, ScrollBarVisibility value)
+		=> Require(element).SetValue(VerticalScrollBarVisibilityProperty, value);
+
+	static DependencyObject Require(DependencyObject element)
+		=> element ?? throw new ArgumentNullException(nameof(element));
+
 	static void OnScrollBarVisibilityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
-		((ScrollViewer)d).ApplyScrollPolicy();
+		(d as ScrollViewer)?.ApplyScrollPolicy();
 	}
 
 	// ── GTK backing ──────────────────────────────────────────────────────────
@@ -114,7 +135,7 @@ public partial class ScrollViewer : ContentControl
 		_scroll.VscrollbarPolicy = ToGtkPolicy(VerticalScrollBarVisibility);
 	}
 
-	static Gtk.PolicyType ToGtkPolicy(ScrollBarVisibility v) => v switch
+	internal static Gtk.PolicyType ToGtkPolicy(ScrollBarVisibility v) => v switch
 	{
 		ScrollBarVisibility.Disabled => Gtk.PolicyType.Never,
 		ScrollBarVisibility.Hidden   => Gtk.PolicyType.External,

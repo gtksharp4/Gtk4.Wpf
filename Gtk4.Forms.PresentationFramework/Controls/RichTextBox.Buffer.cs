@@ -21,6 +21,7 @@ public partial class RichTextBox
 		};
 		_scrolledWindow = new Gtk.ScrolledWindow();
 		_scrolledWindow.Child = _textView;
+		ApplyScrollPolicy();
 
 		SyncBufferFromDocument();
 		// Enable undo AFTER loading initial content so the document is not itself on the undo stack.
@@ -197,4 +198,4 @@ public partial class RichTextBox
 			finally { _updating = false; }
 		}
 	}
-}
+}
