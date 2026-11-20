@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Markup;
 using System.Windows.Navigation;
 using Xunit;
 
@@ -52,5 +53,27 @@ public class StartupPageHostTests : WpfGtkTestBase, IDisposable
 		app.RunCore(new string[0]);
 
 		Assert.Equal("Probe page title", main!.Title);
+	});
+
+	[Fact]
+	public void Registered_factory_creates_the_startup_page_in_a_NavigationWindow() => Run(() =>
+	{
+		GtkFormsXamlRegistry.Register("Start.xaml", () => new StartupPageProbe());
+		var app = new RecordingApp();
+
+		Window? host = app.CreateWindowFromStartupUri(new Uri("Start.xaml", UriKind.Relative));
+
+		var nav = Assert.IsType<NavigationWindow>(host);
+		Assert.IsType<StartupPageProbe>(nav.Content);
+	});
+
+	[Fact]
+	public void Registry_matches_pack_uris_and_leaf_names() => Run(() =>
+	{
+		GtkFormsXamlRegistry.Register("Views/Other.xaml", () => new StartupPageProbe());
+		Assert.IsType<StartupPageProbe>(
+			GtkFormsXamlRegistry.TryCreate(new Uri("pack://application/Views/Other.xaml")));
+		Assert.IsType<StartupPageProbe>(GtkFormsXamlRegistry.TryCreate(new Uri("Other.xaml", UriKind.Relative)));
+		Assert.Null(GtkFormsXamlRegistry.TryCreate(new Uri("Missing.xaml", UriKind.Relative)));
 	});
 }

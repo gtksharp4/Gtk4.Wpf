@@ -1459,6 +1459,59 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `x:Class="MyApp.System.MainWindow"` compile test expecting zero CS0234; today 7 CS0234; about 110 literal sites);
   `ScrollViewer.*ScrollBarVisibility` not applied to `ListBox`/`DataGrid`; re-measure samples coverage;
   `gf39/xaml-content-model` still to be reviewed and merged.
+- **Pre-round CI fixes (already on main).** `d5100042` CI packs `Gtk4.Forms.Wpf` before `PackedNuspecTests` so the test
+  checks the real package; `39c894b5` forward-slash `PackagePath`s so packing works on Linux/macOS (NU5129).
+- **Round 44 track A - content-model (DONE, merged).** `gf44/content-model`: the XAML content model honours
+  `[ContentProperty]` for element children and text (`Border.Child`, `ListBox.Items`, `TextBlock.Inlines` with `Run`
+  text, `Button.Content`, transform/geometry/gradient collections, `FlowDocument.Blocks`), with a name-keyed fallback when
+  no reference is available; 410 MarkupCompiler tests at merge. Samples evidence: the `.Content` artefacts listed in
+  `docs/samples-coverage.md` are generator output, not API gaps; the in-repo sample compile is the evidence (no
+  official-samples re-measure).
+- **Round 44 track B - startup-robustness (DONE, merged).** `gf44/startup-robustness`: string to `Transform` /
+  `ImageSource` / `ICommand` conversion, `LengthConverter` units (`px`/`in`/`cm`/`pt`/`Auto`), and a `Page` named by
+  `StartupUri` hosted in a `NavigationWindow`. Samples evidence (corrected by the review): of the 6 targeted samples
+  (DropShadow, ComplexLayout, LocalizationResources, HandlingEventOnCommand, TargetValues, MultiPage) **3 are fixed**;
+  TargetValues and MultiPage are **still hangs**. Not re-measured against the official checkout here.
+- **Round 44 track C - event-surface (DONE, merged).** `gf44/event-surface`: `RoutedEventHandler` for
+  `Checked`/`Unchecked`/`Indeterminate`/`Click`, `ButtonBase`/`ToggleButton` hierarchy, `RadioButton : ToggleButton`,
+  routed `ButtonBase.Click`; 14 tests at merge.
+- **Round 44 review (Opus) + fixes - DONE.** **C-F1 (Major)** `CheckBox`/`RadioButton` raised `Click` only from
+  `Gtk.CheckButton.Activate`, which GTK 4 does not emit for a mouse click; both now raise it from `Toggled` through
+  `ToggleButton.RaisesClickOnToggled(active)` (after `Checked`; a radio only when it becomes active; programmatic
+  `IsChecked` raises none; the plain `ToggleButton` keeps `Clicked` so it does not double-raise). GTK ignores a click on an
+  already-active grouped radio, where WPF raises `Click` (documented). **C-F2** `OnToggle` is `protected virtual`.
+  **C-F3** ungrouped `RadioButton` peers come from the visual parent's children, falling back to the logical parent
+  when the visual parent does not list the button; here `LogicalParent` and `VisualParent` are the same object, so the
+  two paths agree today, and an `ItemsControl` item sits in its own presenter (not exclusive, as in WPF). **C-F4** the
+  `OnClick` test pins `["OnClick", "handler"]`; the radio tests moved to `RadioButtonEventTests.cs`. **C-F5** blank lines
+  in `MenuItem.cs`. **A-F1** `InlineUIContainer` (store-only; rendering inside text not implemented) now exists, so the
+  `Inlines` wrap is emitted unconditionally for a `UIElement` child. **A-F2** `MenuItem.Items` is `IList<object>`: a
+  `MenuItem` is an item, a `Separator` is a `Gtk.Separator` in the popover box, other objects are store-only (the menu is a
+  `Gtk.Box` popover, not a `Gio.Menu`). **A-F3** content-model tests assert `.Children.Add(`/`.Figures.Add(` and
+  `.Document = `; `SimpleBinding`/`InvokeTarget` joined `Clean`; `HeightProperties` asserts its exact residual
+  diagnostics (5 missing code-behind handlers). **A-F4** whitespace next to `LineBreak` (or any
+  `[TrimSurroundingWhitespace]` type) is trimmed. **A-F5** `xml:lang` is a directive (dropped until the layer has
+  `FrameworkElement.Language`). **A-F6** `[ContentProperty(Name = "...")]` is read and the reflection helpers no longer
+  throw. **A-F7** the wrap condition fits 120 columns. **B-F1 (High)** a `Page`/`Window` XAML with no `x:Class` gets a
+  generated `internal sealed partial class <File>` in the project root namespace with an `[assembly:
+  GtkFormsXamlRegistration("<path>", typeof(...))]` entry; `CreateWindowFromStartupUri` asks `GtkFormsXamlRegistry`
+  (explicit factories, then the assembly attributes; exact path, then leaf name) before the `x:Class` name lookup.
+  **B-F2** a root-relative image path (`/Images/a.png`) stays relative instead of becoming `file:///` on Unix and
+  resolves under `AppContext.BaseDirectory`. **B-F3** `ParseTransform` tokenizes like WPF (one comma or whitespace; an
+  empty, missing or extra token is `InvalidOperationException`, a non-number `FormatException`); `Identity` is
+  `Transform.Identity`. **B-F4** `CommandConverters` is case-sensitive, `""` is null, whitespace or a namespace-qualified
+  name throws `NotSupportedException`, and the search order is WPF's. **B-F5** `1,000` parses to 1000 for lengths and
+  doubles. **B-F6** `NavigationWindow` no longer dereferences a null `WindowTitle`. **B-F7** `ImageBrush` and
+  `Window.Icon` use `ImageSourceLocation.ResolveUri` (relative and `pack://application` paths resolve under the base
+  directory; the old relative-icon test now expects that full path). **B-F8** `XamlValueConverter.Units.cs` renamed
+  `UnitConverters.cs`; `pack://application:,,,` is normalised so `UriSource` does not round-trip the original string.
+  Rejected in triage: none.
+  **Round 44 totals: 4455 tests** (190 WindowsBase + 3811 PresentationFramework + 421 MarkupCompiler + 33
+  ProjectConverter), all pass; `dotnet build Gtk4.Forms.sln` 0 warnings. `Integration.Tests` not run.
+- **Carry-over (Round 44)**: two generated Page/Window classes with the same file name in different folders collide in
+  the root namespace; `NavigationService` does not yet use `GtkFormsXamlRegistry` for `NavigateUri`; the C-F3 visual-peer
+  path is untested against a genuinely distinct visual parent; `xml:lang`/`FrameworkElement.Language` missing;
+  `MenuItem` is still a `Gtk.Box` popover (no `Gio.Menu`/`Gtk.PopoverMenu`); official samples coverage not re-measured.
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a

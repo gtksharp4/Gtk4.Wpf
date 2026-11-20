@@ -31,6 +31,18 @@ public class XamlCodeGeneratorSampleCompileTests
 	{
 		"OpacityAnimation.App.xaml", "BitmapEffectsGallery.App.xaml", "PropertyAnimation.App.xaml",
 		"Converter.App.xaml", "DataTrigger.MainWindow.xaml", "AnimationTiming.HandoffVersusComposeExample.xaml",
+		"InlineContainers.MainWindow.xaml", "MenuSeparator.MainWindow.xaml",
+		"SimpleBinding.MainWindow.xaml", "InvokeTarget.MainWindow.xaml",
+	};
+
+	// Samples that miss only their code-behind handlers (the stub declares none): the exact diagnostics.
+	static readonly Dictionary<string, string[]> Residual = new()
+	{
+		["HeightProperties.MainWindow.xaml"] = new[]
+		{
+			"CS1061:ChangeHeight", "CS1061:ChangeMaxHeight", "CS1061:ChangeMinHeight",
+			"CS1061:ClipRect", "CS1061:UnclipRect",
+		},
 	};
 
 	static readonly string[] Unqualified =
@@ -104,6 +116,13 @@ public class XamlCodeGeneratorSampleCompileTests
 		foreach (Diagnostic d in errors.Take(8)) _output.WriteLine("  " + d);
 
 		if (Clean.Contains(file)) Assert.True(errors.Count == 0, file + ": " + string.Join("; ", errors));
+
+		if (Residual.TryGetValue(file, out string[] expected))
+		{
+			var actual = errors.Select(d => d.Id + ":" + System.Text.RegularExpressions.Regex
+				.Match(d.GetMessage(), @"definition for '(\w+)'").Groups[1].Value).OrderBy(s => s, StringComparer.Ordinal);
+			Assert.Equal(expected, actual);
+		}
 
 		var contentGaps = errors.Where(d => d.Id == "CS1061" && d.GetMessage().Contains("'Content'")).ToList();
 		Assert.True(contentGaps.Count == 0, file + ": " + string.Join("; ", contentGaps));

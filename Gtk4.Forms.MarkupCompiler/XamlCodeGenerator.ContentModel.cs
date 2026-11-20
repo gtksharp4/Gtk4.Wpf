@@ -78,7 +78,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			}
 			else if (!ci.IsCollection)
 				w.Line($"{parentVar}.{ci.Name} = {childVar};");
-			else if (ci.Name == "Inlines" && IsUIElement(childFq) && _resolver.TypeExists(PresDocs + "InlineUIContainer"))
+			else if (ci.Name == "Inlines"
+					&& IsUIElement(childFq))
 				w.Line($"{parentVar}.Inlines.Add(new global::{PresDocs}InlineUIContainer({childVar}));");
 			else
 				w.Line($"{parentVar}.{ci.Name}.Add({childVar});");

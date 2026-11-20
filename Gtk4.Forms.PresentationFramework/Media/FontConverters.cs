@@ -79,7 +79,8 @@ internal static class FontConverters
 	internal static double ParseFontSize(string raw) => ParseWithUnits(raw, "FontSize", allowNonFinite: false);
 
 	/// <summary>Parses a number with an optional px/in/cm/pt suffix into device-independent px.</summary>
-	internal static double ParseWithUnits(string raw, string what, bool allowNonFinite)
+	internal static double ParseWithUnits(string raw, string what, bool allowNonFinite,
+		NumberStyles styles = NumberStyles.Float)
 	{
 		string s = raw.Trim();
 		double factor = 1.0;
@@ -89,7 +90,7 @@ internal static class FontConverters
 		else if (EndsWith(s, "cm")) { factor = 96.0 / 2.54; number = s.Substring(0, s.Length - 2); }
 		else if (EndsWith(s, "pt")) { factor = 96.0 / 72.0; number = s.Substring(0, s.Length - 2); }
 
-		if (!double.TryParse(number.Trim(), NumberStyles.Float, Inv, out double value)
+		if (!double.TryParse(number.Trim(), styles, Inv, out double value)
 			|| (!allowNonFinite && (double.IsNaN(value) || double.IsInfinity(value))))
 			throw new FormatException($"Cannot parse {what} from \"{raw}\".");
 		return value * factor;

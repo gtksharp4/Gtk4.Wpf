@@ -4,7 +4,10 @@ using System.Windows.Media.Imaging;
 
 namespace System.Windows.Media;
 
-/// <summary>Maps an image source to a file on disk. Relative and pack://application URIs resolve to the app directory.</summary>
+/// <summary>
+/// Maps an image source to a file on disk. Relative, root-relative and pack://application URIs
+/// resolve under the app directory.
+/// </summary>
 static class ImageSourceLocation
 {
 	internal static string ResolveFilePath(ImageSource source)

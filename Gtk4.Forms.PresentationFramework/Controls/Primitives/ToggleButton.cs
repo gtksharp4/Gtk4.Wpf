@@ -44,10 +44,18 @@ public partial class ToggleButton : ButtonBase
 			OnToggle();
 	}
 
+	/// <summary>
+	/// Whether a user toggle to <paramref name="active"/> raises Click. GTK check buttons emit Toggled
+	/// (not Clicked) for mouse and keyboard activation, so they raise it here.
+	/// </summary>
+	internal virtual bool RaisesClickOnToggled(bool active) => false;
+
 	internal void GtkToggled(bool active)
 	{
-		if (!_syncing)
-			GtkActiveChanged(active);
+		if (_syncing) return;
+		GtkActiveChanged(active);
+		if (RaisesClickOnToggled(active))
+			GtkClicked();
 	}
 
 	// The toggle already happened in GTK (Toggled precedes Clicked), so OnClick must not toggle again.

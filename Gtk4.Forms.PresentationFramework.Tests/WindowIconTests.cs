@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -37,10 +38,10 @@ public class WindowIconTests : WpfGtkTestBase
 	}
 
 	[Fact]
-	public void BitmapImage_relative_uri_resolves_to_original_string()
+	public void BitmapImage_relative_uri_resolves_under_the_app_directory()
 	{
 		var bmp = new BitmapImage(new Uri("Assets/logo.png", UriKind.Relative));
-		Assert.Equal("Assets/logo.png", WpfWindow.ResolveIconPath(bmp));
+		Assert.Equal(Path.Combine(AppContext.BaseDirectory, "Assets", "logo.png"), WpfWindow.ResolveIconPath(bmp));
 	}
 
 	// ── GTK: titlebar hosts the icon ───────────────────────────────────────────

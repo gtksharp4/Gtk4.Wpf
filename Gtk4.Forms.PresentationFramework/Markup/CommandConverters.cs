@@ -7,20 +7,26 @@ namespace System.Windows.Markup;
 /// <summary>String to <see cref="ICommand"/> for the built-in command libraries (WPF CommandConverter).</summary>
 static class CommandConverters
 {
+	// WPF's lookup order.
 	static readonly Type[] _libraries =
 	{
 		typeof(ApplicationCommands), typeof(ComponentCommands), typeof(NavigationCommands),
-		typeof(EditingCommands), typeof(MediaCommands),
+		typeof(MediaCommands), typeof(EditingCommands),
 	};
 
-	/// <summary>Accepts "Open", "ApplicationCommands.Open" or a namespace-qualified form.</summary>
+	/// <summary>
+	/// Accepts "Open" or "ApplicationCommands.Open" (case-sensitive); the empty string is null.
+	/// </summary>
+	/// <remarks>
+	/// Prefixed custom owners (<c>local:MyCommands.Exit</c>) and namespace-qualified names are not supported.
+	/// </remarks>
 	internal static ICommand? ParseCommand(string raw)
 	{
-		string name = raw.Trim();
-		if (name.Length == 0)
+		if (raw.Length == 0)
 			return null;
 
-		int dot = name.LastIndexOf('.');
+		string name = raw.Trim();
+		int dot = name.IndexOf('.');
 		if (dot < 0)
 		{
 			foreach (Type library in _libraries)
@@ -32,9 +38,6 @@ static class CommandConverters
 		}
 
 		string typeName = name.Substring(0, dot);
-		int typeDot = typeName.LastIndexOf('.');
-		if (typeDot >= 0)
-			typeName = typeName.Substring(typeDot + 1);
 		string member = name.Substring(dot + 1);
 		foreach (Type library in _libraries)
 		{
@@ -46,8 +49,7 @@ static class CommandConverters
 
 	static ICommand? Find(Type library, string member)
 	{
-		PropertyInfo? p = library.GetProperty(member,
-			BindingFlags.Public | BindingFlags.Static | BindingFlags.IgnoreCase);
+		PropertyInfo? p = library.GetProperty(member, BindingFlags.Public | BindingFlags.Static);
 		return p?.GetValue(null) as ICommand;
 	}
 

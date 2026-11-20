@@ -186,7 +186,7 @@ Error masking is much lower than in the first run, but the counts are still floo
 | ComplexLayout | crash | `Cannot convert "30px" for Button.Height`. LengthConverter units are not supported. |
 | LocalizationResources | crash | `'data\picture1.jpg' is not a valid value for property 'Source'`. A string is not converted to an `ImageSource`. |
 | HandlingEventOnCommand | crash | `'ApplicationCommands.Open' is not a valid value for property 'Command'`. A command name is not converted to an `ICommand`. |
-| TargetValues, MultiPage | hang | The process is alive with no window. `StartupUri` is a `Page`, which is not hosted in a window. |
+| TargetValues, MultiPage | hang | The process is alive with no window. `StartupUri` is a `Page`, which was not hosted in a window. Round 44 hosts it in a `NavigationWindow`, but both are still hangs (not re-measured), so 3 of the 6 samples that track targeted are fixed. |
 | EventOnGainAndLooseFocus, DragDropThumbOps | hang | The process is alive with no window and the logs are empty. Both have a `Window` startup. Not diagnosed. |
 
 There are two root causes:

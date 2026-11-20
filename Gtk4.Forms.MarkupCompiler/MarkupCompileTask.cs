@@ -27,6 +27,9 @@ namespace Gtk4.Forms.MarkupCompiler
 		/// </summary>
 		public ITaskItem[] ReferencePaths { get; set; }
 
+		/// <summary>Namespace for classes generated from XAML files without <c>x:Class</c>.</summary>
+		public string RootNamespace { get; set; }
+
 		/// <summary>Directory under which generated <c>.g.cs</c> files are written.</summary>
 		[Required]
 		public string OutputDirectory { get; set; }
@@ -34,6 +37,9 @@ namespace Gtk4.Forms.MarkupCompiler
 		/// <summary>Generated <c>.g.cs</c> files; added to <c>@(Compile)</c> by the .targets.</summary>
 		[Output]
 		public ITaskItem[] GeneratedFiles { get; private set; }
+
+		static string ImplicitKey(string xamlPath) =>
+			IOPath.IsPathRooted(xamlPath) ? IOPath.GetFileName(xamlPath) : xamlPath;
 
 		/// <inheritdoc />
 		public override bool Execute()
@@ -80,12 +86,12 @@ namespace Gtk4.Forms.MarkupCompiler
 				try
 				{
 					string xaml = File.ReadAllText(xamlPath);
-					string code = generator.Generate(xaml, out string className);
+					string code = generator.Generate(xaml, out string className, ImplicitKey(xamlPath), RootNamespace);
 
 					if (code == null)
 					{
 						Log.LogMessage(MessageImportance.Low,
-							"  Skipped {0}: no x:Class attribute.", xamlPath);
+							"  Skipped {0}: no x:Class attribute and not an implicit Page/Window.", xamlPath);
 						continue;
 					}
 

@@ -11,7 +11,7 @@ namespace Gtk4.Forms.MarkupCompiler
 		/// (property elements excluded) and processed text strings. Text follows the XAML
 		/// whitespace rules unless <c>xml:space="preserve"</c> is in effect.
 		/// </summary>
-		static List<object> CollectContent(XElement parent, bool keepInnerSpace)
+		List<object> CollectContent(XElement parent, bool keepInnerSpace)
 		{
 			bool preserve = IsSpacePreserved(parent);
 			var raw = new List<object>();
@@ -45,14 +45,25 @@ namespace Gtk4.Forms.MarkupCompiler
 				if (!preserve)
 				{
 					s = CollapseWhitespace(s);
-					if (!HasContentBefore(raw, i)) s = s.TrimStart(' ');
-					if (!HasContentAfter(raw, i)) s = s.TrimEnd(' ');
+					if (!HasContentBefore(raw, i) || IsTrimming(Neighbour(raw, i, -1))) s = s.TrimStart(' ');
+					if (!HasContentAfter(raw, i) || IsTrimming(Neighbour(raw, i, 1))) s = s.TrimEnd(' ');
 					if (s == " " && !keepInnerSpace) s = string.Empty;
 				}
 				if (s.Length > 0) result.Add(s);
 			}
 			return result;
 		}
+
+		static XElement Neighbour(List<object> items, int index, int step)
+		{
+			for (int i = index + step; i >= 0 && i < items.Count; i += step)
+				if (items[i] is XElement e) return e.Name.LocalName.IndexOf('.') < 0 ? e : null;
+			return null;
+		}
+
+		// LineBreak and [TrimSurroundingWhitespace] types drop the whitespace around them.
+		bool IsTrimming(XElement e) => e != null
+			&& (ResolveType(e) is string fq) && _resolver.TrimsSurroundingWhitespace(fq.Replace("global::", ""));
 
 		static bool IsContentElement(object o) => o is XElement e && e.Name.LocalName.IndexOf('.') < 0;
 

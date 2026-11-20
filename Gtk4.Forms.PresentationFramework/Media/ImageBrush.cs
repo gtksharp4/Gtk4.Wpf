@@ -89,19 +89,12 @@ public class ImageBrush : TileBrush
 		}
 	}
 
-	string? ResolvePath()
+	internal string? ResolvePath()
 	{
 		var src = ImageSource;
 		if (src == null) return null;
 
-		// FilePath set directly (ImageSource.FromFile or derived class with a path).
-		if (!string.IsNullOrEmpty(src.FilePath))
-			return src.FilePath;
-
-		// BitmapImage with a local-file URI.
-		if (src is BitmapImage bmp && bmp.UriSource is Uri uri && uri.IsFile)
-			return uri.LocalPath;
-
-		return null;
+		string path = ImageSourceLocation.ResolveFilePath(src);
+		return string.IsNullOrEmpty(path) ? null : path;
 	}
 }

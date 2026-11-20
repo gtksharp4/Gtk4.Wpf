@@ -61,9 +61,12 @@ public class XamlCodeGeneratorContentModelTests
 	[Fact]
 	public void Transform_and_geometry_collections_use_their_content_property()
 	{
-		string code = Gen("<Border><Border.RenderTransform><TransformGroup><ScaleTransform/></TransformGroup>"
-			+ "</Border.RenderTransform></Border>");
-		Assert.DoesNotContain(".Content = ", code.Replace("this.Content", ""));
+		// Odd placement, but it exercises the content property of the nested collection types.
+		string group = Gen("<Grid><TransformGroup><ScaleTransform/></TransformGroup></Grid>");
+		string geometry = Gen("<Grid><PathGeometry><PathFigure/></PathGeometry></Grid>");
+		Assert.Contains("__e1.Children.Add(__e2);", group);
+		Assert.Contains("__e1.Figures.Add(__e2);", geometry);
+		Assert.DoesNotContain(".Content = ", (group + geometry).Replace("this.Content", ""));
 	}
 
 	[Fact]
@@ -72,6 +75,7 @@ public class XamlCodeGeneratorContentModelTests
 		string code = Gen("<FlowDocumentScrollViewer><FlowDocument><Paragraph/></FlowDocument>"
 			+ "</FlowDocumentScrollViewer>");
 		Assert.Contains(".Blocks.Add(", code);
+		Assert.Contains(".Document = ", code);
 	}
 
 	[Theory]

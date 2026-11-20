@@ -103,9 +103,7 @@ public partial class Window
 			case null:
 				return null;
 			case BitmapImage bmp when bmp.UriSource != null:
-				return bmp.UriSource.IsAbsoluteUri
-					? bmp.UriSource.LocalPath
-					: bmp.UriSource.OriginalString;
+				return ImageSourceLocation.ResolveUri(bmp.UriSource);
 			default:
 				var fp = icon.FilePath;
 				return string.IsNullOrEmpty(fp) ? null : fp;

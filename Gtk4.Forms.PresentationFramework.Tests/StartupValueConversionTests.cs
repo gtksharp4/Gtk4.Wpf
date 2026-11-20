@@ -30,12 +30,35 @@ public class StartupValueConversionTests
 		Assert.True(t.Matrix.IsIdentity);
 	}
 
+	[Fact]
+	public void Transform_identity_is_one_shared_instance()
+	{
+		var dp = UIElement.RenderTransformProperty;
+		Assert.Same(Conv(dp, "Identity"), Conv(dp, "Identity"));
+	}
+
 	[Theory]
 	[InlineData("1,0,0,1,3")]
-	[InlineData("a,b,c,d,e,f")]
-	public void Transform_bad_string_throws_FormatException(string raw)
+	[InlineData("1,,0,0,1,3,3")]
+	[InlineData("1,0,0,1,3,3,7")]
+	[InlineData("1,0,0,1,3,3,")]
+	[InlineData("")]
+	public void Transform_malformed_token_list_throws_InvalidOperationException(string raw)
 	{
-		Assert.ThrowsAny<FormatException>(() => Conv(UIElement.RenderTransformProperty, raw));
+		Assert.Throws<InvalidOperationException>(() => Conv(UIElement.RenderTransformProperty, raw));
+	}
+
+	[Fact]
+	public void Transform_non_numeric_token_throws_FormatException()
+	{
+		Assert.Throws<FormatException>(() => Conv(UIElement.RenderTransformProperty, "a,0,0,1,3,3"));
+	}
+
+	[Fact]
+	public void Transform_accepts_whitespace_separators()
+	{
+		var t = Assert.IsType<MatrixTransform>(Conv(UIElement.RenderTransformProperty, "1 0 0 1 3, 3"));
+		Assert.Equal(new Matrix(1, 0, 0, 1, 3, 3), t.Matrix);
 	}
 
 	// ── Length units ─────────────────────────────────────────────────────────
@@ -47,6 +70,7 @@ public class StartupValueConversionTests
 	[InlineData("72pt", 96.0)]
 	[InlineData("10", 10.0)]
 	[InlineData("Infinity", double.PositiveInfinity)]
+	[InlineData("1,000", 1000.0)]
 	public void Length_units_convert_to_device_units(string raw, double expected)
 	{
 		Assert.Equal(expected, (double)Conv(FrameworkElement.HeightProperty, raw)!, 9);
@@ -106,6 +130,20 @@ public class StartupValueConversionTests
 	}
 
 	[Fact]
+	public void ParseLength_accepts_thousands_with_units()
+	{
+		Assert.Equal(1000.0, UnitConverters.ParseLength("1,000px"));
+	}
+
+	[Fact]
+	public void ImageSource_root_relative_path_stays_relative_and_resolves_under_base_directory()
+	{
+		var img = (BitmapImage)Conv(Image.SourceProperty, "/data/a.png")!;
+		Assert.False(img.UriSource!.IsAbsoluteUri);
+		Assert.Equal(System.IO.Path.Combine(AppContext.BaseDirectory, "data", "a.png"), ImageSourceLocation.ResolveUri(img.UriSource));
+	}
+
+	[Fact]
 	public void ImageSource_absolute_file_path_is_kept()
 	{
 		var full = System.IO.Path.GetFullPath(System.IO.Path.Combine(AppContext.BaseDirectory, "z.png"));
@@ -122,7 +160,6 @@ public class StartupValueConversionTests
 	[InlineData("EditingCommands.ToggleBold", "ToggleBold")]
 	[InlineData("NavigationCommands.BrowseBack", "BrowseBack")]
 	[InlineData("MoveLeft", "MoveLeft")]
-	[InlineData("System.Windows.Input.ApplicationCommands.Save", "Save")]
 	public void Command_name_resolves(string raw, string name)
 	{
 		var cmd = Assert.IsAssignableFrom<RoutedCommand>(Conv(Button.CommandProperty, raw));
@@ -145,6 +182,9 @@ public class StartupValueConversionTests
 	[InlineData("NoSuchCommand")]
 	[InlineData("ApplicationCommands.NoSuch")]
 	[InlineData("Foo.Open")]
+	[InlineData("open")]
+	[InlineData("  ")]
+	[InlineData("System.Windows.Input.ApplicationCommands.Save")]
 	public void Command_unknown_throws_NotSupportedException(string raw)
 	{
 		Assert.Throws<NotSupportedException>(() => Conv(Button.CommandProperty, raw));

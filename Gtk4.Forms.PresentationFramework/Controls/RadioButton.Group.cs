@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Windows.Media;
 
 namespace System.Windows.Controls;
 
@@ -65,6 +66,23 @@ public partial class RadioButton
 			foreach (var wr in list.ToArray())
 				if (wr.TryGetTarget(out var rb) && !ReferenceEquals(rb, this))
 					yield return rb;
+			yield break;
+		}
+		// Ungrouped: siblings under the visual parent (templated/generated); when the parent does not
+		// expose this button as a visual child, the logical parent and its children.
+		var siblings = new List<RadioButton>();
+		bool found = false;
+		var visualParent = VisualTreeHelper.GetParent(this);
+		int count = visualParent == null ? 0 : VisualTreeHelper.GetChildrenCount(visualParent);
+		for (int i = 0; i < count; i++)
+		{
+			if (VisualTreeHelper.GetChild(visualParent!, i) is not RadioButton rb) continue;
+			if (ReferenceEquals(rb, this)) found = true;
+			else if (rb.GroupName.Length == 0) siblings.Add(rb);
+		}
+		if (found)
+		{
+			foreach (var sibling in siblings) yield return sibling;
 			yield break;
 		}
 		var parent = LogicalTreeHelper.GetParent(this);

@@ -85,7 +85,7 @@ public partial class ToggleButton
 	}
 
 	/// <summary>Advances the state: checked to unchecked (or indeterminate when three-state), else checked.</summary>
-	protected internal virtual void OnToggle()
+	protected virtual void OnToggle()
 	{
 		bool? next;
 		if (IsChecked == true)

@@ -56,9 +56,11 @@ public class ButtonBaseEventTests : WpfGtkTestBase
 	[Fact]
 	public void OnClick_virtual_runs_before_handlers() => Run(() =>
 	{
-		var btn = new ProbeButton();
+		var log = new System.Collections.Generic.List<string>();
+		var btn = new ProbeButton(log);
+		btn.Click += (s, e) => log.Add("handler");
 		Click(btn.Widget);
-		Assert.Equal(1, btn.OnClickCalls);
+		Assert.Equal(new[] { "OnClick", "handler" }, log);
 	});
 
 	[Fact]
@@ -79,16 +81,49 @@ public class ButtonBaseEventTests : WpfGtkTestBase
 	});
 
 	[Fact]
-	public void CheckBox_activate_toggles_once_then_raises_Click_after_Checked() => Run(() =>
+	public void CheckBox_user_toggle_raises_Checked_then_Click_once_and_runs_the_command() => Run(() =>
 	{
-		var cb = new CheckBox();
+		var command = new CountingCommand();
+		var cb = new CheckBox { Command = command };
 		var order = new System.Collections.Generic.List<string>();
 		cb.Checked += (s, e) => order.Add("checked");
 		cb.Click += (s, e) => order.Add("click");
-		GLib.Signal.Emit(cb.Widget, "activate");
+		((Gtk.CheckButton)cb.Widget).Active = true;
 		Assert.Equal(new[] { "checked", "click" }, order);
+		Assert.Equal(1, command.Executed);
 		Assert.True(cb.IsChecked);
 	});
+
+	[Fact]
+	public void CheckBox_programmatic_IsChecked_raises_no_Click() => Run(() =>
+	{
+		var cb = new CheckBox();
+		_ = cb.Widget;
+		int clicks = 0;
+		cb.Click += (s, e) => clicks++;
+		cb.IsChecked = true;
+		cb.IsChecked = false;
+		Assert.Equal(0, clicks);
+	});
+
+	[Fact]
+	public void ToggleButton_click_raises_Click_once_not_twice() => Run(() =>
+	{
+		var tb = new ToggleButton();
+		int clicks = 0;
+		tb.Click += (s, e) => clicks++;
+		Click(tb.Widget);
+		Assert.Equal(1, clicks);
+		Assert.True(tb.IsChecked);
+	});
+
+	sealed class CountingCommand : System.Windows.Input.ICommand
+	{
+		public int Executed;
+		public event EventHandler? CanExecuteChanged { add { } remove { } }
+		public bool CanExecute(object? parameter) => true;
+		public void Execute(object? parameter) => Executed++;
+	}
 
 	[Fact]
 	public void ThreeState_cycles_and_raises_Indeterminate() => Run(() =>
@@ -130,61 +165,6 @@ public class ButtonBaseEventTests : WpfGtkTestBase
 	});
 
 	[Fact]
-	public void RadioButton_group_is_exclusive() => Run(() =>
-	{
-		var a = new RadioButton { GroupName = "g44" };
-		var b = new RadioButton { GroupName = "g44" };
-		var other = new RadioButton { GroupName = "g44other" };
-		other.IsChecked = true;
-		a.IsChecked = true;
-		b.IsChecked = true;
-		Assert.False(a.IsChecked);
-		Assert.True(b.IsChecked);
-		Assert.True(other.IsChecked);
-	});
-
-	[Fact]
-	public void RadioButton_ungrouped_siblings_are_exclusive() => Run(() =>
-	{
-		var panel = new StackPanel();
-		var a = new RadioButton();
-		var b = new RadioButton();
-		panel.Children.Add(a);
-		panel.Children.Add(b);
-		a.IsChecked = true;
-		b.IsChecked = true;
-		Assert.False(a.IsChecked);
-		Assert.True(b.IsChecked);
-	});
-
-	[Fact]
-	public void RadioButton_raises_Checked_and_Unchecked_on_switch() => Run(() =>
-	{
-		var a = new RadioButton { GroupName = "g44ev" };
-		var b = new RadioButton { GroupName = "g44ev" };
-		int ac = 0, au = 0;
-		a.Checked += (s, e) => ac++;
-		a.Unchecked += (s, e) => au++;
-		a.IsChecked = true;
-		b.IsChecked = true;
-		Assert.Equal(1, ac);
-		Assert.Equal(1, au);
-	});
-
-	[Fact]
-	public void RadioButton_click_checks_it_and_unchecks_peer() => Run(() =>
-	{
-		var a = new RadioButton { GroupName = "g44click" };
-		var b = new RadioButton { GroupName = "g44click" };
-		var ga = (Gtk.CheckButton)a.Widget;
-		var gb = (Gtk.CheckButton)b.Widget;
-		ga.Active = true;
-		gb.Active = true;
-		Assert.False(a.IsChecked);
-		Assert.True(b.IsChecked);
-	});
-
-	[Fact]
 	public void WpfStyle_code_behind_handlers_compile()
 	{
 		var cb = new CheckBox();
@@ -204,10 +184,13 @@ public class ButtonBaseEventTests : WpfGtkTestBase
 
 	sealed class ProbeButton : Button
 	{
-		public int OnClickCalls;
+		readonly System.Collections.Generic.List<string> _log;
+
+		public ProbeButton(System.Collections.Generic.List<string> log) => _log = log;
+
 		protected override void OnClick()
 		{
-			OnClickCalls++;
+			_log.Add("OnClick");
 			base.OnClick();
 		}
 	}

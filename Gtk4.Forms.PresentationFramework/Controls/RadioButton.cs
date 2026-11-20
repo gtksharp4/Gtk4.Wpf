@@ -7,6 +7,9 @@ namespace System.Windows.Controls;
 /// <see cref="GroupName"/> (or, with no name, the same parent) are mutually exclusive; the
 /// group registry is in <c>RadioButton.Group.cs</c>.
 /// </summary>
+/// <remarks>
+/// GTK ignores a click on an already-active grouped radio, where WPF still raises Click.
+/// </remarks>
 public partial class RadioButton : ToggleButton
 {
 	static RadioButton()
@@ -22,10 +25,12 @@ public partial class RadioButton : ToggleButton
 	{
 		_button = new Gtk.CheckButton { Active = IsChecked == true };
 		_button.Toggled += (s, e) => GtkToggled(_button.Active);
-		_button.Activate += (s, e) => GtkClicked();
 		ApplyGtkGroup();
 		return _button;
 	}
+
+	// GTK ignores a click on an already-active grouped radio, so no Click is raised for it.
+	internal override bool RaisesClickOnToggled(bool active) => active;
 
 	internal override void SetGtkActive(bool active)
 	{
@@ -48,7 +53,7 @@ public partial class RadioButton : ToggleButton
 	}
 
 	/// <summary>Checks this button (a radio button cannot be toggled off by the user).</summary>
-	protected internal override void OnToggle() => IsChecked = true;
+	protected override void OnToggle() => IsChecked = true;
 
 	/// <inheritdoc/>
 	protected override void OnChecked(RoutedEventArgs e)

@@ -21,9 +21,10 @@ public class CheckBox : ToggleButton
 	{
 		_check = new Gtk.CheckButton { Active = IsChecked == true };
 		_check.Toggled += (s, e) => GtkToggled(_check.Active);
-		_check.Activate += (s, e) => GtkClicked();
 		return _check;
 	}
+
+	internal override bool RaisesClickOnToggled(bool active) => true;
 
 	internal override void SetGtkActive(bool active)
 	{

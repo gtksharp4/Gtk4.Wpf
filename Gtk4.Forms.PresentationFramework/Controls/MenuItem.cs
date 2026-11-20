@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Input;
 
 namespace System.Windows.Controls;
@@ -80,7 +81,6 @@ public partial class MenuItem : FrameworkElement, ICommandSource, IDisposable
 		set => SetValue(IsCheckedProperty, value);
 	}
 
-
 	// ── InputGestureText DP ───────────────────────────────────────────────────
 
 	/// <summary>Display text for the keyboard shortcut (e.g. "Ctrl+S").</summary>
@@ -97,9 +97,11 @@ public partial class MenuItem : FrameworkElement, ICommandSource, IDisposable
 
 	// ── Items collection (sub-items) ──────────────────────────────────────────
 
-	/// <summary>Child menu items. When non-empty the item shows a sub-menu popover.</summary>
-	public IList<MenuItem> Items { get; } = new List<MenuItem>();
-
+	/// <summary>
+	/// Sub-menu entries. A <see cref="MenuItem"/> is rendered as an item and a <see cref="Separator"/> as a
+	/// section break; other objects are stored only.
+	/// </summary>
+	public IList<object> Items { get; } = new List<object>();
 
 	// ── GTK backing ───────────────────────────────────────────────────────────
 
@@ -110,13 +112,18 @@ public partial class MenuItem : FrameworkElement, ICommandSource, IDisposable
 	protected override Gtk.Widget CreateWidget()
 	{
 		var label = Header?.ToString() ?? string.Empty;
-		if (Items.Count > 0)
+		if (Items.OfType<MenuItem>().Any())
 		{
 			_gtkMenuButton = new Gtk.MenuButton { Label = label };
 			var popover = new Gtk.Popover();
 			var box = new Gtk.Box(Gtk.Orientation.Vertical, 2);
 			foreach (var child in Items)
-				box.Add(child.Widget);
+			{
+				if (child is MenuItem item)
+					box.Add(item.Widget);
+				else if (child is Separator separator)
+					box.Add(separator.Widget);
+			}
 			popover.Child = box;
 			_gtkMenuButton.Popover = popover;
 			return _gtkMenuButton;

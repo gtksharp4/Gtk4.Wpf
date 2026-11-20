@@ -76,6 +76,15 @@ public class NavigationWindowTests
 	}
 
 	[Fact]
+	public void Navigate_page_with_null_WindowTitle_falls_back_to_Title()
+	{
+		var win = new NavigationWindow();
+		var page = new TestPage { WindowTitle = null!, Title = "T" };
+		win.Navigate(page);
+		Assert.Equal("T", win.Title);
+	}
+
+	[Fact]
 	public void Navigate_page_without_WindowTitle_does_not_clear_Title()
 	{
 		var win = new NavigationWindow();

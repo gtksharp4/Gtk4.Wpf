@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using System.Windows.Markup;
 
 namespace System.Windows;
 
@@ -29,18 +30,21 @@ public partial class Application
 	/// A <see cref="Controls.Page"/> is hosted in a <see cref="Navigation.NavigationWindow"/>, as WPF does.
 	/// Returns <c>null</c> when no matching type is found.
 	/// </summary>
-	Window? CreateWindowFromStartupUri(Uri startupUri)
+	internal Window? CreateWindowFromStartupUri(Uri startupUri)
 	{
+		object? registered = GtkFormsXamlRegistry.TryCreate(startupUri, GetType().Assembly);
+		if (registered != null) return Host(registered);
 		string leaf = StartupUriToTypeName(startupUri);
-		if (CreateInstance(typeof(Window), leaf) is Window window)
-			return window;
-		if (CreateInstance(typeof(Controls.Page), leaf) is Controls.Page page)
-		{
-			var host = new Navigation.NavigationWindow();
-			host.Navigate(page);
-			return host;
-		}
-		return null;
+		return Host(CreateInstance(typeof(Window), leaf) ?? CreateInstance(typeof(Controls.Page), leaf));
+	}
+
+	static Window? Host(object? element)
+	{
+		if (element is Window window) return window;
+		if (element is not Controls.Page page) return null;
+		var host = new Navigation.NavigationWindow();
+		host.Navigate(page);
+		return host;
 	}
 
 	object? CreateInstance(Type baseType, string leaf)

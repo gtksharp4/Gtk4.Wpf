@@ -53,5 +53,5 @@ public class NavigationWindow : Window
 			Title = title;
 	}
 
-	static string PageTitle(Page p) => p.WindowTitle.Length > 0 ? p.WindowTitle : p.Title;
+	static string? PageTitle(Page p) => !string.IsNullOrEmpty(p.WindowTitle) ? p.WindowTitle : p.Title;
 }

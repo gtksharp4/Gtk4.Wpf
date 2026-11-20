@@ -48,11 +48,32 @@ namespace Gtk4.Forms.MarkupCompiler
 			return false;
 		}
 
+		/// <summary>
+		/// True for <c>LineBreak</c> and any type carrying <c>[TrimSurroundingWhitespace]</c>.
+		/// </summary>
+		internal bool TrimsSurroundingWhitespace(string typeFullName)
+		{
+			if (typeFullName == "System.Windows.Documents.LineBreak") return true;
+			if (!_hasReferences) return false;
+			try
+			{
+				for (Type t = FindType(typeFullName); t != null; t = SafeBase(t))
+					foreach (CustomAttributeData a in t.GetCustomAttributesData())
+						if (a.AttributeType.Name == "TrimSurroundingWhitespaceAttribute") return true;
+			}
+			catch { }
+			return false;
+		}
+
 		/// <summary>The type of the property, or <c>null</c> when unresolved.</summary>
 		internal Type FindPropertyType(string typeFullName, string propName)
 		{
-			Type type = FindType(typeFullName);
-			return type == null ? null : FindProperty(type, propName)?.PropertyType;
+			try
+			{
+				Type type = FindType(typeFullName);
+				return type == null ? null : FindProperty(type, propName)?.PropertyType;
+			}
+			catch { return null; }
 		}
 
 		static Type SafeBase(Type t)
@@ -68,6 +89,8 @@ namespace Gtk4.Forms.MarkupCompiler
 				if (a.AttributeType.Name != "ContentPropertyAttribute") continue;
 				if (a.ConstructorArguments.Count > 0 && a.ConstructorArguments[0].Value is string s)
 					return s;
+				foreach (CustomAttributeNamedArgument n in a.NamedArguments)
+					if (n.MemberName == "Name" && n.TypedValue.Value is string named) return named;
 			}
 			return null;
 		}
@@ -76,8 +99,13 @@ namespace Gtk4.Forms.MarkupCompiler
 		{
 			for (Type t = type; t != null; t = SafeBase(t))
 			{
-				PropertyInfo pi = t.GetProperty(propName,
-					BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+				PropertyInfo pi;
+				try
+				{
+					pi = t.GetProperty(propName,
+						BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+				}
+				catch { return null; }
 				if (pi != null) return pi;
 			}
 			return null;
