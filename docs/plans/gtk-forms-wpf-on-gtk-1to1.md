@@ -1417,6 +1417,41 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
 - **Carry-over (Round 42)**: NU1605 for a lower pin added to an already-converted project (restore-time only; not a
   first-build issue); `gf42/xtype-qualified-names`, `gf42/colors-text-gaps` and `gf39/xaml-content-model` still to be
   reviewed and merged.
+- **Round 43 track B - xtype-qualified-names (DONE, merged; the Round 42 track B reworked).**
+  `gf42/xtype-qualified-names`: `{x:Type X}` / `{x:TypeExtension}` in `TargetType`/`DataType`, plain-string `DataType`
+  kept as a string, unparseable type refs throw, layer type names emitted `global::`-qualified.
+- **Round 43 track C - colors-text-gaps (DONE, merged; the Round 42 track C reworked).** `gf42/colors-text-gaps`: the full
+  Colors/Brushes tables, `TextBlock`/`TextBox` `TextWrapping`, `TextBox` scrolling members and scroll-bar visibility,
+  `UIElement.ClipToBounds`.
+- **Round 43 review (Opus) + fixes - DONE.** **B-N-A (Medium)** `DataType` emitted every non-`{x:Type` value as a string, so
+  `{Binding Foo}` became a literal. `{}Hero` now emits `"Hero"` (escape stripped), `{x:Type}`/`{x:TypeExtension}` stay
+  `typeof`, `{x:Static}` emits the member, and any other markup extension (`{Binding}`, `{StaticResource}`,
+  `{DynamicResource}`) throws `XamlCodeGeneratorException` because `DataType` is not a DP. **B-N-B (Medium)** `WpfXmlnsMap`
+  mapped `SpellCheck` but the type did not exist; added a store-only `System.Windows.Controls.SpellCheck`
+  (`IsEnabled` default false, `CustomDictionaries` created lazily per element; GTK spell checking is not applied), and the
+  sample-compile filter now counts CS0234. **B-N-C (Low)** the `Emitted()` doc promised that a user namespace with a `System`
+  segment cannot shadow emitted names; reworded to what it does. **B-N-D (Medium)** the presentation xmlns now also maps
+  `Controls.Primitives`, `Documents`, `Input`, `Media`, `Media.Animation`, `Media.Effects`, `Media.Imaging` and `Navigation`
+  (no short-name collisions across the 447 public types), so `TargetType="RepeatButton"`/`"Paragraph"` emit qualified
+  `typeof`. **C-N1** stray trailing CR removed from `TextBox.Widget.cs`, `RichTextBox.Buffer.cs`, `UIElement.cs`. **C-N2**
+  `TextGapsTests`/`TextScrollingTests` class summary and over-120 lines wrapped (the box-drawing section comments measure
+  under 120 characters and were left). **C-N3** the static `Get/Set{Horizontal,Vertical}ScrollBarVisibility` docs now say
+  only `ScrollViewer`, `TextBox` and `RichTextBox` apply the value. **C-N4** `TextBox.AppendText` on the multiline backing
+  inserts at the buffer end under the `_updating` guard instead of rewriting the buffer, so the caret survives.
+  Rejected in triage: none.
+  Consequence of B-N-D: `PropertyAnimation.App.xaml` (a `Clean` sample) now gets 5 semantic errors, because the
+  `DrawingBrush` it used to drop silently now resolves and the generator emits string literals for `Rect`/enum
+  properties (`Viewport`, `ViewportUnits`, `TileMode`) and `AlignmentX/Y` is missing. It was removed from the `Clean` set.
+  In-repo sample compile is otherwise unchanged. The official WPF-Samples coverage was **not** re-measured (no checkout
+  or harness in this environment); `docs/samples-coverage.md` is still the Round 42 measurement.
+  **Round 43 totals: 4331 tests** (190 WindowsBase + 3730 PresentationFramework + 378 MarkupCompiler + 33 ProjectConverter),
+  all pass; `dotnet build Gtk4.Forms.sln` 0 warnings. Failing-first was observed for the `AppendText` caret test and the
+  RepeatButton/Brush namespace cases; the DataType, SpellCheck and namespace tests were written alongside their fixes.
+- **Carry-over (Round 43)**: B-N-C follow-up (emit `global::` on every generated `System.*` reference, then a
+  `x:Class="MyApp.System.MainWindow"` compile test expecting zero CS0234; today 7 CS0234; about 110 literal sites);
+  setter value elements emit string literals for non-string properties (`Rect`, enum, `TileMode`) of newly resolvable
+  Media types; `ScrollViewer.*ScrollBarVisibility` not applied to `ListBox`/`DataGrid`; re-measure samples coverage;
+  `gf39/xaml-content-model` still to be reviewed and merged.
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a

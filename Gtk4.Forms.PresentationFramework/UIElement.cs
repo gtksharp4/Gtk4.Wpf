@@ -188,4 +188,4 @@ public abstract partial class UIElement : Media.Visual
 	/// Implemented in <c>UIElement.Lifecycle.cs</c>.
 	/// </summary>
 	partial void OnLogicalParentChangedLifecycle(UIElement? oldParent, UIElement? newParent);
-}
+}

@@ -61,8 +61,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			=> WpfXmlnsMap.Resolve(localName) ?? ProbePresentationType(localName) ?? localName;
 
 		/// <summary>
-		/// <paramref name="name"/> as an emitted type name: resolved (dotted) names get <c>global::</c> so a
-		/// user namespace with a <c>System</c> segment cannot shadow them; bare unresolved names stay as is.
+		/// <paramref name="name"/> as an emitted type name: resolved (dotted) names get <c>global::</c> so they bind
+		/// to the root namespace; bare unresolved names stay as is.
 		/// </summary>
 		static string Emitted(string name)
 			=> name.IndexOf('.') > 0 && !name.StartsWith("global::", StringComparison.Ordinal)
@@ -95,13 +95,23 @@ namespace Gtk4.Forms.MarkupCompiler
 		}
 
 		/// <summary>
-		/// The <c>DataType</c> expression: <c>typeof</c> for <c>{x:Type}</c>, else the plain string
-		/// (an XML element name for XmlDataProvider templates), or <c>null</c> when absent.
+		/// The <c>DataType</c> expression: <c>typeof</c> for <c>{x:Type}</c>/<c>{x:TypeExtension}</c>, the member for
+		/// <c>{x:Static}</c>, else the plain string (an XML element name for XmlDataProvider templates; a leading
+		/// <c>{}</c> escape is stripped), or <c>null</c> when absent. <c>DataType</c> is not a dependency property,
+		/// so other markup extensions are rejected.
 		/// </summary>
+		/// <exception cref="XamlCodeGeneratorException">The value is an unsupported markup extension.</exception>
 		string DataTypeExpression(string value)
 		{
 			if (value == null) return "null";
-			if (value.TrimStart().StartsWith("{x:Type", StringComparison.Ordinal)) return TypeRefExpression(value);
+			string t = value.TrimStart();
+			if (t.StartsWith("{}", StringComparison.Ordinal)) return "\"" + EscapeString(t.Substring(2)) + "\"";
+			if (t.StartsWith("{x:Type", StringComparison.Ordinal)) return TypeRefExpression(value);
+			if (t.StartsWith("{", StringComparison.Ordinal))
+			{
+				if (IsXStatic(value, out string staticExpr, _prefixMap, ProbePresentationType)) return staticExpr;
+				throw new XamlCodeGeneratorException("Unsupported DataType value: " + value);
+			}
 			return "\"" + EscapeString(value) + "\"";
 		}
 	}

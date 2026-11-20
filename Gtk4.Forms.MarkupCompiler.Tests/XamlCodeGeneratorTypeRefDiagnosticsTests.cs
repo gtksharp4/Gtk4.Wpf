@@ -97,6 +97,18 @@ public class XamlCodeGeneratorTypeRefDiagnosticsTests
 			DataTemplate("{x:Type Button, }"), out _));
 
 	[Fact]
+	public void DataTemplate_brace_escaped_DataType_is_the_plain_string()
+		=> Assert.Contains(".DataType = \"Hero\";", Gen(DataTemplate("{}Hero")));
+
+	[Theory]
+	[InlineData("{Binding Foo}")]
+	[InlineData("{DynamicResource t}")]
+	[InlineData("{StaticResource t}")]
+	public void DataTemplate_markup_extension_DataType_throws(string form)
+		=> Assert.Throws<XamlCodeGeneratorException>(() => new XamlCodeGenerator().Generate(
+			DataTemplate(form), out _));
+
+	[Fact]
 	public void Layer_types_are_global_qualified_in_every_position()
 	{
 		string code = Gen(Window(@"<Button Grid.Row=""1"" TextElement.FontSize=""4"">

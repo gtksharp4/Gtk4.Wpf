@@ -56,7 +56,21 @@ public partial class TextBox
 	public void AppendText(string text)
 	{
 		if (text == null) throw new ArgumentNullException(nameof(text));
-		if (text.Length > 0) Text += text;
+		if (text.Length == 0) return;
+		if (_textView == null)
+		{
+			Text += text;
+			return;
+		}
+		// Insert at the end so the caret and undo history survive; _updating skips the buffer rewrite.
+		_updating = true;
+		try
+		{
+			var end = _textView.Buffer.EndIter;
+			_textView.Buffer.Insert(ref end, text);
+			SetValue(TextProperty, _textView.Buffer.Text);
+		}
+		finally { _updating = false; }
 	}
 
 	/// <summary>Scrolls to the start of the content. No-op for the single-line backing.</summary>

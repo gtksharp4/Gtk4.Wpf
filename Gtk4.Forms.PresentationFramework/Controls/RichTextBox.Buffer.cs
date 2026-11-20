@@ -198,4 +198,4 @@ public partial class RichTextBox
 			finally { _updating = false; }
 		}
 	}
-}
+}

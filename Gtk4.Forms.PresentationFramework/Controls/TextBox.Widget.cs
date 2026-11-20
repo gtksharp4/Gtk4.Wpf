@@ -146,4 +146,4 @@ public partial class TextBox
 			buf.SelectRange(start, end);
 		}
 	}
-}
+}

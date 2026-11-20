@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Gtk4.Forms.PresentationFramework.Tests;
 
-/// <summary>TextWrapping, AppendText, scroll members, scroll-bar visibility and ClipToBounds on real GTK widgets.</summary>
+/// <summary>TextWrapping and AppendText on real GTK widgets.</summary>
 public class TextGapsTests : WpfGtkTestBase
 {
 	static Gtk.TextView View(TextBox tb) => (Gtk.TextView)((Gtk.ScrolledWindow)tb.Widget).Child!;
@@ -28,7 +28,8 @@ public class TextGapsTests : WpfGtkTestBase
 	[InlineData(TextWrapping.NoWrap, false, Pango.WrapMode.Word)]
 	[InlineData(TextWrapping.Wrap, true, Pango.WrapMode.WordChar)]
 	[InlineData(TextWrapping.WrapWithOverflow, true, Pango.WrapMode.Word)]
-	public void TextBlock_TextWrapping_maps_to_label_wrap(TextWrapping value, bool wrap, Pango.WrapMode mode) => Run(() =>
+	public void TextBlock_TextWrapping_maps_to_label_wrap(
+		TextWrapping value, bool wrap, Pango.WrapMode mode) => Run(() =>
 	{
 		var tb = new TextBlock { Text = "a b c", TextWrapping = value };
 		var label = (Gtk.Label)tb.Widget;
@@ -144,6 +145,21 @@ public class TextGapsTests : WpfGtkTestBase
 		multi.AppendText("\ncd");
 		Assert.Equal("ab\ncd", view.Buffer.Text);
 		Assert.Equal("ab\ncd", multi.Text);
+	});
+
+	[Fact]
+	public void AppendText_on_multiline_keeps_the_caret() => Run(() =>
+	{
+		var tb = new TextBox { AcceptsReturn = true, Text = "abc" };
+		var buf = View(tb).Buffer;
+		buf.PlaceCursor(buf.GetIterAtOffset(1));
+		var count = 0;
+		tb.TextChanged += (_, _) => count++;
+		tb.AppendText("def");
+		Assert.Equal("abcdef", tb.Text);
+		Assert.Equal("abcdef", buf.Text);
+		Assert.Equal(1, buf.CursorPosition);
+		Assert.Equal(1, count);
 	});
 
 	[Fact]

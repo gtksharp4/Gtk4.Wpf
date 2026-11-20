@@ -58,21 +58,37 @@ public partial class ScrollViewer : ContentControl
 		set => SetValue(VerticalScrollBarVisibilityProperty, value);
 	}
 
-	/// <summary>Gets the horizontal scroll bar visibility set on <paramref name="element"/>.</summary>
+	/// <summary>
+	/// Gets the horizontal scroll bar visibility set on <paramref name="element"/>.
+	/// Only ScrollViewer, TextBox and RichTextBox apply this value; on other elements (ListBox, DataGrid,
+	/// ItemsControl) it is stored but has no effect.
+	/// </summary>
 	public static ScrollBarVisibility GetHorizontalScrollBarVisibility(DependencyObject element)
 		=> (ScrollBarVisibility)(Require(element).GetValue(HorizontalScrollBarVisibilityProperty)
 			?? ScrollBarVisibility.Auto);
 
-	/// <summary>Sets the horizontal scroll bar visibility on <paramref name="element"/>.</summary>
+	/// <summary>
+	/// Sets the horizontal scroll bar visibility on <paramref name="element"/>.
+	/// Only ScrollViewer, TextBox and RichTextBox apply this value; on other elements (ListBox, DataGrid,
+	/// ItemsControl) it is stored but has no effect.
+	/// </summary>
 	public static void SetHorizontalScrollBarVisibility(DependencyObject element, ScrollBarVisibility value)
 		=> Require(element).SetValue(HorizontalScrollBarVisibilityProperty, value);
 
-	/// <summary>Gets the vertical scroll bar visibility set on <paramref name="element"/>.</summary>
+	/// <summary>
+	/// Gets the vertical scroll bar visibility set on <paramref name="element"/>.
+	/// Only ScrollViewer, TextBox and RichTextBox apply this value; on other elements (ListBox, DataGrid,
+	/// ItemsControl) it is stored but has no effect.
+	/// </summary>
 	public static ScrollBarVisibility GetVerticalScrollBarVisibility(DependencyObject element)
 		=> (ScrollBarVisibility)(Require(element).GetValue(VerticalScrollBarVisibilityProperty)
 			?? ScrollBarVisibility.Auto);
 
-	/// <summary>Sets the vertical scroll bar visibility on <paramref name="element"/>.</summary>
+	/// <summary>
+	/// Sets the vertical scroll bar visibility on <paramref name="element"/>.
+	/// Only ScrollViewer, TextBox and RichTextBox apply this value; on other elements (ListBox, DataGrid,
+	/// ItemsControl) it is stored but has no effect.
+	/// </summary>
 	public static void SetVerticalScrollBarVisibility(DependencyObject element, ScrollBarVisibility value)
 		=> Require(element).SetValue(VerticalScrollBarVisibilityProperty, value);
 

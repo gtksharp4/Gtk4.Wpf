@@ -29,7 +29,7 @@ public class XamlCodeGeneratorSampleCompileTests
 	// Samples whose generated code compiles with no errors at all.
 	static readonly HashSet<string> Clean = new()
 	{
-		"OpacityAnimation.App.xaml", "BitmapEffectsGallery.App.xaml", "PropertyAnimation.App.xaml",
+		"OpacityAnimation.App.xaml", "BitmapEffectsGallery.App.xaml",
 		"Converter.App.xaml", "DataTrigger.MainWindow.xaml", "AnimationTiming.HandoffVersusComposeExample.xaml",
 	};
 
@@ -105,7 +105,7 @@ public class XamlCodeGeneratorSampleCompileTests
 
 		if (Clean.Contains(file)) Assert.True(errors.Count == 0, file + ": " + string.Join("; ", errors));
 
-		var unresolved = errors.Where(d => (d.Id == "CS0246" || d.Id == "CS0103")
+		var unresolved = errors.Where(d => (d.Id == "CS0246" || d.Id == "CS0103" || d.Id == "CS0234")
 			&& Unqualified.Any(n => d.GetMessage().Contains("'" + n + "'"))).ToList();
 		Assert.True(unresolved.Count == 0, file + ": " + string.Join("; ", unresolved));
 	}

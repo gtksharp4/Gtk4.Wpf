@@ -25,7 +25,8 @@ public class TextScrollingTests : WpfGtkTestBase
 	{
 		Assert.Same(ScrollViewer.HorizontalScrollBarVisibilityProperty, TextBox.HorizontalScrollBarVisibilityProperty);
 		Assert.Same(ScrollViewer.VerticalScrollBarVisibilityProperty, TextBox.VerticalScrollBarVisibilityProperty);
-		Assert.Same(ScrollViewer.HorizontalScrollBarVisibilityProperty, RichTextBox.HorizontalScrollBarVisibilityProperty);
+		Assert.Same(ScrollViewer.HorizontalScrollBarVisibilityProperty,
+			RichTextBox.HorizontalScrollBarVisibilityProperty);
 	}
 
 	[Fact]
