@@ -14,6 +14,12 @@ public class ColumnDefinition
 
 	/// <summary>Maximum column width in pixels.</summary>
 	public double MaxWidth { get; set; } = double.PositiveInfinity;
+
+	/// <summary>Gets the rendered width, set by the grid's last arrange pass (0 before it).</summary>
+	public double ActualWidth { get; internal set; }
+
+	/// <summary>Gets or sets the shared-size group name. Stored only: sizes are not shared across columns.</summary>
+	public string? SharedSizeGroup { get; set; }
 }
 
 /// <summary>Defines the height of a row in a <see cref="Grid"/>.</summary>
@@ -27,6 +33,12 @@ public class RowDefinition
 
 	/// <summary>Maximum row height in pixels.</summary>
 	public double MaxHeight { get; set; } = double.PositiveInfinity;
+
+	/// <summary>Gets the rendered height, set by the grid's last arrange pass (0 before it).</summary>
+	public double ActualHeight { get; internal set; }
+
+	/// <summary>Gets or sets the shared-size group name. Stored only: sizes are not shared across rows.</summary>
+	public string? SharedSizeGroup { get; set; }
 }
 
 /// <summary>Collection of <see cref="ColumnDefinition"/> items.</summary>
