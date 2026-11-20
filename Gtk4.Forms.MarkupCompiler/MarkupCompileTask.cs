@@ -27,6 +27,9 @@ namespace Gtk4.Forms.MarkupCompiler
 		/// </summary>
 		public ITaskItem[] ReferencePaths { get; set; }
 
+		/// <summary>The project's C# sources (<c>@(Compile)</c>); used to detect code-behind.</summary>
+		public ITaskItem[] CompileFiles { get; set; }
+
 		/// <summary>Namespace for classes generated from XAML files without <c>x:Class</c>.</summary>
 		public string RootNamespace { get; set; }
 
@@ -37,6 +40,18 @@ namespace Gtk4.Forms.MarkupCompiler
 		/// <summary>Generated <c>.g.cs</c> files; added to <c>@(Compile)</c> by the .targets.</summary>
 		[Output]
 		public ITaskItem[] GeneratedFiles { get; private set; }
+
+		static string[] ReadSources(ITaskItem[] items)
+		{
+			var texts = new List<string>();
+			foreach (ITaskItem i in items)
+			{
+				try { texts.Add(File.ReadAllText(i.ItemSpec)); }
+				catch (IOException) { }
+				catch (UnauthorizedAccessException) { }
+			}
+			return texts.ToArray();
+		}
 
 		static string ImplicitKey(string xamlPath) =>
 			IOPath.IsPathRooted(xamlPath) ? IOPath.GetFileName(xamlPath) : xamlPath;
@@ -59,6 +74,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			bool success = true;
 			var generated = new List<ITaskItem>();
 			var generator = new XamlCodeGenerator();
+			if (CompileFiles != null)
+				generator.CodeBehindSources = ReadSources(CompileFiles);
 
 			// Thread reference paths into the DP symbol resolver and xmlns-definition source.
 			if (ReferencePaths != null && ReferencePaths.Length > 0)

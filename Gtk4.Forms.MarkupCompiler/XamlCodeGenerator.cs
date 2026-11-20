@@ -87,9 +87,13 @@ namespace Gtk4.Forms.MarkupCompiler
 			XAttribute classAttr = root.Attribute(xNs + "Class");
 			string implicitBase = null;
 			className = classAttr?.Value.Trim() ?? ImplicitClass(root, xamlPath, rootNamespace, out implicitBase);
+			string rootBase = null;
+			if (classAttr != null && !HasCodeBehindFor(className) && ResolveType(root) is string rootFq)
+				rootBase = "global::" + rootFq;
 			if (className == null) return null;
 
 			_scopeVars.Clear();
+			_activeScopeVars = _scopeVars;
 			_classFqName = "global::" + className;
 			int lastDot = className.LastIndexOf('.');
 			string ns = lastDot >= 0 ? className.Substring(0, lastDot) : string.Empty;
@@ -111,9 +115,11 @@ namespace Gtk4.Forms.MarkupCompiler
 				w.Indent++;
 			}
 
-			w.Line(implicitBase == null
-				? $"public partial class {typeName} {{"
-				: $"internal sealed partial class {typeName} : {implicitBase} {{");
+			w.Line(implicitBase != null
+				? $"internal sealed partial class {typeName} : {implicitBase} {{"
+				: rootBase != null
+					? $"public partial class {typeName} : {rootBase} {{"
+					: $"public partial class {typeName} {{");
 			w.Indent++;
 
 			// Collect named fields
@@ -125,7 +131,7 @@ namespace Gtk4.Forms.MarkupCompiler
 
 			w.Line("bool _contentLoaded;");
 			w.Line();
-			if (implicitBase != null)
+			if (implicitBase != null || (rootBase != null && !isAppDef))
 			{
 				w.Line($"public {typeName}() {{ InitializeComponent(); }}");
 				w.Line();
@@ -631,7 +637,8 @@ namespace Gtk4.Forms.MarkupCompiler
 
 			// x:Name / Name field assignment
 			string xName = (string)(el.Attribute(xNs + "Name") ?? el.Attribute("Name"));
-			if (xName != null)
+			bool hasField = ResolveType(el) != null; // user-type resource objects get no field
+			if (xName != null && hasField)
 				w.Line($"this.{xName} = {varName};");
 
 			// Emit <X.Resources> children first (before attr assignments that may reference them).
@@ -644,7 +651,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				if (attr.Name.Namespace == xNs) continue;
 				if (attr.Name.Namespace == XNamespace.Xml) continue; // xml:space/xml:lang directives
 				if (IsIgnorableAttribute(attr)) continue;  // mc:Ignorable, d: design attrs
-				if (attr.Name.LocalName == "Name") continue;
+				if (attr.Name.LocalName == "Name" && hasField) continue;
 
 				string propName = attr.Name.LocalName;
 				string val = attr.Value;
@@ -678,10 +685,13 @@ namespace Gtk4.Forms.MarkupCompiler
 					w.Line($"{varName}.SetBinding({fqType}.{propName}Property, {bindingInit});");
 				else if (IsStaticOrDynamicResource(val, out string resourceKey))
 				{
+					string find = val.TrimStart().StartsWith("{StaticResource", StringComparison.Ordinal)
+						? StaticResourceLookup(varName, EscapeString(resourceKey))
+						: $"{varName}.FindResource(\"{EscapeString(resourceKey)}\")";
 					if (propName == "Style")
-						w.Line($"{varName}.Style = (System.Windows.Style){varName}.FindResource(\"{EscapeString(resourceKey)}\");");
+						w.Line($"{varName}.Style = (System.Windows.Style){find};");
 					else
-						w.Line($"{varName}.SetValue({fqType}.{propName}Property, {varName}.FindResource(\"{EscapeString(resourceKey)}\"));");
+						w.Line($"{varName}.SetValue({fqType}.{propName}Property, {find});");
 				}
 				else if (IsXNull(val))
 				{
@@ -865,6 +875,10 @@ namespace Gtk4.Forms.MarkupCompiler
 				{
 					EmitStoryboardResource(w, item, xNs, ownerVar, key, ref counter);
 				}
+				else if (key != null && ResourceObjectType(item) is string objType)
+				{
+					EmitResourceObject(w, item, xNs, ownerVar, key, objType, ref counter);
+				}
 				else if (key != null)
 				{
 					// Simple keyed value — emit as string for now; type-converter is later.
@@ -991,7 +1005,7 @@ namespace Gtk4.Forms.MarkupCompiler
 
 			w.Line($"var {styleVar} = new System.Windows.Style({targetTypeExpr});");
 			if (basedOnKey != null)
-				w.Line($"{styleVar}.BasedOn = (System.Windows.Style){ownerVar}.FindResource(\"{EscapeString(basedOnKey)}\");");
+				w.Line($"{styleVar}.BasedOn = (System.Windows.Style){StaticResourceLookup(ownerVar, EscapeString(basedOnKey))};");
 
 			// Setter children.
 			foreach (XElement ch in styleEl.Elements())

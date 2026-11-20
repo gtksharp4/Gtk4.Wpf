@@ -19,6 +19,12 @@ namespace Gtk4.Forms.MarkupCompiler
 			"System.Windows.Media.Animation.RepeatBehavior",
 		};
 
+		// Reference types with a built-in converter that CLR (non-DP) properties of exactly that type use.
+		internal static readonly HashSet<string> ConverterBackedClasses = new HashSet<string>
+		{
+			"System.Windows.Media.ImageSource", "System.Windows.Shapes.PointCollection",
+		};
+
 		/// <summary>
 		/// C# expression for a plain attribute value on a CLR (non-DP) property. Enums and structs with a
 		/// registered converter are converted to their type; everything else keeps the literal rules of
@@ -29,6 +35,14 @@ namespace Gtk4.Forms.MarkupCompiler
 			Type t = string.IsNullOrEmpty(ownerFqType) ? null : _resolver.GetPropertyType(ownerFqType, propName);
 			if (t == null || t.IsGenericType) return ClrValueExpression(propName, val);
 			if (t.IsEnum) return ClrEnumExpression(t, propName, val);
+			if (t.FullName == "System.Uri")
+				return $"new System.Uri(\"{EscapeString(val)}\", System.UriKind.RelativeOrAbsolute)";
+			if (!t.IsValueType && ConverterBackedClasses.Contains(t.FullName))
+			{
+				string cn = "global::" + t.FullName;
+				return $"({cn})System.Windows.Markup.XamlValueConverter.ConvertByType(" +
+					$"typeof({cn}), \"{EscapeString(val)}\")";
+			}
 			if (!t.IsValueType || !ConverterBackedStructs.Contains(t.FullName))
 				return ClrValueExpression(propName, val);
 			string name = "global::" + t.FullName.Replace('+', '.');

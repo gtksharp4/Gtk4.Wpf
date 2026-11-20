@@ -33,7 +33,7 @@ public class XamlCodeGeneratorBindingArgsTests
 
 	[Fact]
 	public void ConverterParameter_StaticResource_emits_FindResource()
-		=> Assert.Contains(@"ConverterParameter = this.FindResource(""p"")",
+		=> Assert.Contains(@"ConverterParameter = System.Windows.Markup.StaticResourceScope.Find(""p"", this",
 			Gen("{Binding Age, ConverterParameter={StaticResource p}}"));
 
 	[Fact]
@@ -43,7 +43,7 @@ public class XamlCodeGeneratorBindingArgsTests
 
 	[Fact]
 	public void Source_StaticResource_emits_FindResource()
-		=> Assert.Contains(@"Source = this.FindResource(""src"")", Gen("{Binding Age, Source={StaticResource src}}"));
+		=> Assert.Contains(@"Source = System.Windows.Markup.StaticResourceScope.Find(""src"", this", Gen("{Binding Age, Source={StaticResource src}}"));
 
 	[Fact]
 	public void Source_XStatic_emits_the_member()
@@ -65,7 +65,7 @@ public class XamlCodeGeneratorBindingArgsTests
 	public void Nested_braces_stay_intact_with_following_args()
 	{
 		string code = Gen("{Binding Age, Source={StaticResource src}, Mode=TwoWay, ValidatesOnExceptions=True}");
-		Assert.Contains(@"Source = this.FindResource(""src"")", code);
+		Assert.Contains(@"Source = System.Windows.Markup.StaticResourceScope.Find(""src"", this", code);
 		Assert.Contains("Mode = System.Windows.Data.BindingMode.TwoWay", code);
 		Assert.Contains("ValidatesOnExceptions = true", code);
 	}

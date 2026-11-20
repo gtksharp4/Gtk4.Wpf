@@ -67,7 +67,7 @@ public class XamlCodeGeneratorConverterTests
 	{
 		string xaml = Window("<Border Background=\"{StaticResource myBrush}\" />");
 		string code = _gen.Generate(xaml, out _);
-		Assert.Contains("FindResource(", code);
+		Assert.Contains("StaticResourceScope.Find(", code);
 		Assert.DoesNotContain("XamlValueConverter.Convert(", code);
 	}
 

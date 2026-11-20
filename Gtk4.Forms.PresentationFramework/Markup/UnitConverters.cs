@@ -80,4 +80,24 @@ static class UnitConverters
 			s = "pack://application" + s.Substring("pack://application:,,,".Length);
 		return new Uri(s, UriKind.RelativeOrAbsolute);
 	}
+
+	/// <summary>
+	/// WPF PointCollectionConverter: numbers separated by whitespace and/or commas, read as x,y pairs.
+	/// An odd count is a FormatException.
+	/// </summary>
+	internal static System.Windows.Shapes.PointCollection ParsePointCollection(string raw)
+	{
+		var result = new System.Windows.Shapes.PointCollection();
+		string[] parts = raw.Split(new[] { ',', ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+		if (parts.Length % 2 != 0)
+			throw new FormatException($"Cannot parse PointCollection from \"{raw}\": odd number of coordinates.");
+		for (int i = 0; i < parts.Length; i += 2)
+		{
+			if (!double.TryParse(parts[i], NumberStyles.Float, CultureInfo.InvariantCulture, out double x)
+				|| !double.TryParse(parts[i + 1], NumberStyles.Float, CultureInfo.InvariantCulture, out double y))
+				throw new FormatException($"Cannot parse PointCollection from \"{raw}\".");
+			result.Add(new Point(x, y));
+		}
+		return result;
+	}
 }

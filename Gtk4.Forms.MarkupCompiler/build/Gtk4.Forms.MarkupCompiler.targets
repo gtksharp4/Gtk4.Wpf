@@ -56,7 +56,8 @@
         XamlFiles="@(_GFWpfXamlInputs)"
         OutputDirectory="$(GFMarkupOutputDir)"
         RootNamespace="$(RootNamespace)"
-        ReferencePaths="@(ReferencePath)">
+        ReferencePaths="@(ReferencePath)"
+        CompileFiles="@(Compile)">
       <Output TaskParameter="GeneratedFiles" ItemName="_GFGeneratedCs" />
     </MarkupCompileTask>
 
