@@ -32,10 +32,12 @@ public partial class Application
 	/// </summary>
 	internal Window? CreateWindowFromStartupUri(Uri startupUri)
 	{
-		object? registered = GtkFormsXamlRegistry.TryCreate(startupUri, GetType().Assembly);
+		// Exact registry path, then the x:Class name, then the registry's leaf-name match.
+		object? registered = GtkFormsXamlRegistry.TryCreate(startupUri, GetType().Assembly, true);
 		if (registered != null) return Host(registered);
 		string leaf = StartupUriToTypeName(startupUri);
-		return Host(CreateInstance(typeof(Window), leaf) ?? CreateInstance(typeof(Controls.Page), leaf));
+		object? byName = CreateInstance(typeof(Window), leaf) ?? CreateInstance(typeof(Controls.Page), leaf);
+		return Host(byName ?? GtkFormsXamlRegistry.TryCreate(startupUri, GetType().Assembly));
 	}
 
 	static Window? Host(object? element)

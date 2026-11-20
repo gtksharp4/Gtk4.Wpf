@@ -76,4 +76,34 @@ public class StartupPageHostTests : WpfGtkTestBase, IDisposable
 		Assert.IsType<StartupPageProbe>(GtkFormsXamlRegistry.TryCreate(new Uri("Other.xaml", UriKind.Relative)));
 		Assert.Null(GtkFormsXamlRegistry.TryCreate(new Uri("Missing.xaml", UriKind.Relative)));
 	});
+
+	[Fact]
+	public void X_class_match_wins_over_a_leaf_match_from_another_folder() => Run(() =>
+	{
+		GtkFormsXamlRegistry.Register("Dialogs/StartupProbeWindow.xaml", () => new StartupPageProbe());
+		var app = new RecordingApp();
+
+		Window? host = app.CreateWindowFromStartupUri(new Uri("Views/StartupProbeWindow.xaml", UriKind.Relative));
+
+		Assert.IsType<StartupProbeWindow>(host);
+	});
+
+	[Fact]
+	public void Leaf_match_is_the_last_resort_when_no_type_has_the_name() => Run(() =>
+	{
+		GtkFormsXamlRegistry.Register("Dialogs/NoSuchType.xaml", () => new StartupPageProbe());
+		var app = new RecordingApp();
+
+		Window? host = app.CreateWindowFromStartupUri(new Uri("Views/NoSuchType.xaml", UriKind.Relative));
+
+		Assert.IsType<NavigationWindow>(host);
+	});
+
+	[Fact]
+	public void Registry_unescapes_absolute_uris() => Run(() =>
+	{
+		GtkFormsXamlRegistry.Register("Views/My Page.xaml", () => new StartupPageProbe());
+		Assert.IsType<StartupPageProbe>(
+			GtkFormsXamlRegistry.TryCreate(new Uri("pack://application/Views/My%20Page.xaml")));
+	});
 }

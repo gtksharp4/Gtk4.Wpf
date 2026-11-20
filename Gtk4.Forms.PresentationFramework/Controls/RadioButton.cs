@@ -8,7 +8,7 @@ namespace System.Windows.Controls;
 /// group registry is in <c>RadioButton.Group.cs</c>.
 /// </summary>
 /// <remarks>
-/// GTK ignores a click on an already-active grouped radio, where WPF still raises Click.
+/// GTK ignores a click on an already-active radio that shares a GTK group, where WPF still raises Click.
 /// </remarks>
 public partial class RadioButton : ToggleButton
 {
@@ -38,7 +38,8 @@ public partial class RadioButton : ToggleButton
 			_button.Active = active;
 	}
 
-	// GTK flips the old member off when a peer is checked; an ungrouped radio clicked off stays checked.
+	// GTK flips the old member off when a peer is checked; a radio clicked off with no checked peer stays
+	// checked and, when ungrouped for GTK, still raises Click as in WPF.
 	internal override void GtkActiveChanged(bool active)
 	{
 		if (active)
@@ -48,7 +49,10 @@ public partial class RadioButton : ToggleButton
 			if (HasCheckedPeer())
 				IsChecked = false;
 			else
+			{
 				SyncGtk(true);
+				if (GroupName.Length == 0) GtkClicked();
+			}
 		}
 	}
 

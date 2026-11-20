@@ -1,0 +1,9 @@
+<Window x:Class="XmlLang.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xml:lang="en-US" Title="MainWindow" Height="200" Width="300">
+    <StackPanel>
+        <TextBlock xml:lang="de-DE" Text="Hallo"/>
+        <Button Content="OK"/>
+    </StackPanel>
+</Window>

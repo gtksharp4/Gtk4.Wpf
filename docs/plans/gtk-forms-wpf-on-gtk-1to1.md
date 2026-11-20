@@ -1479,10 +1479,10 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `Gtk.CheckButton.Activate`, which GTK 4 does not emit for a mouse click; both now raise it from `Toggled` through
   `ToggleButton.RaisesClickOnToggled(active)` (after `Checked`; a radio only when it becomes active; programmatic
   `IsChecked` raises none; the plain `ToggleButton` keeps `Clicked` so it does not double-raise). GTK ignores a click on an
-  already-active grouped radio, where WPF raises `Click` (documented). **C-F2** `OnToggle` is `protected virtual`.
+  already-active radio that shares a GTK group, where WPF raises `Click` (documented). **C-F2** `OnToggle` is `protected virtual`.
   **C-F3** ungrouped `RadioButton` peers come from the visual parent's children, falling back to the logical parent
   when the visual parent does not list the button; here `LogicalParent` and `VisualParent` are the same object, so the
-  two paths agree today, and an `ItemsControl` item sits in its own presenter (not exclusive, as in WPF). **C-F4** the
+  two paths agree except where logical children omit visual ones (see the follow-up). **C-F4** the
   `OnClick` test pins `["OnClick", "handler"]`; the radio tests moved to `RadioButtonEventTests.cs`. **C-F5** blank lines
   in `MenuItem.cs`. **A-F1** `InlineUIContainer` (store-only; rendering inside text not implemented) now exists, so the
   `Inlines` wrap is emitted unconditionally for a `UIElement` child. **A-F2** `MenuItem.Items` is `IList<object>`: a
@@ -1508,9 +1508,19 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   Rejected in triage: none.
   **Round 44 totals: 4455 tests** (190 WindowsBase + 3811 PresentationFramework + 421 MarkupCompiler + 33
   ProjectConverter), all pass; `dotnet build Gtk4.Forms.sln` 0 warnings. `Integration.Tests` not run.
+- **Round 44 follow-up - DONE.** **C-F3** now has a failing-first test (a panel whose logical children omit its visual
+  children; the logical-only code left the radios non-exclusive); a `UIElement` item in this layer's `ItemsControl` sits
+  in a `ContentPresenter`, so ungrouped radio items there are not exclusive, unlike WPF (carry-over). **B-F1**
+  `StartupUri` resolves exact registry path, then `x:Class` name, then leaf name, so an `x:Class`-less page in another
+  folder no longer wins; absolute URIs are unescaped before matching (`My%20Page.xaml`). **C-F1** an ungrouped radio
+  clicked while checked raises `Click` and stays checked (named groups: GTK still swallows it, documented). **A-F5**
+  `xml:lang` also compiles through Roslyn via the `XmlLang.MainWindow.xaml` Clean sample (the directive test itself cannot
+  fail-first). **Follow-up totals: 4461 tests** (190 + 3816 + 422 + 33), all pass; build 0 warnings.
 - **Carry-over (Round 44)**: two generated Page/Window classes with the same file name in different folders collide in
   the root namespace; `NavigationService` does not yet use `GtkFormsXamlRegistry` for `NavigateUri`; the C-F3 visual-peer
-  path is untested against a genuinely distinct visual parent; `xml:lang`/`FrameworkElement.Language` missing;
+  path was untested (now covered, see the follow-up); `xml:lang`/`FrameworkElement.Language` missing; `ItemsControl` wraps a
+  `UIElement` item in a `ContentPresenter` although `IsItemItsOwnContainerOverride` says it is its own container (WPF: an
+  ungrouped radio item is then exclusive with its siblings; only wrapped data items are not);
   `MenuItem` is still a `Gtk.Box` popover (no `Gio.Menu`/`Gtk.PopoverMenu`); official samples coverage not re-measured.
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking

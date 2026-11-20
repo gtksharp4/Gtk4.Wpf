@@ -1,8 +1,16 @@
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Controls;
 using Xunit;
 
 namespace Gtk4.Forms.PresentationFramework.Tests.Controls;
+
+/// <summary>A panel whose visual children are not reported as logical children (as in generated trees).</summary>
+public class VisualOnlyPanel : StackPanel, System.Windows.ILogicalChildren
+{
+	IEnumerable System.Windows.ILogicalChildren.LogicalChildrenCore => new object[0];
+}
 
 /// <summary>RadioButton grouping, Checked/Unchecked and Click through the real GTK signal path.</summary>
 public class RadioButtonEventTests : WpfGtkTestBase
@@ -57,6 +65,21 @@ public class RadioButtonEventTests : WpfGtkTestBase
 	});
 
 	[Fact]
+	public void RadioButton_ungrouped_peers_come_from_the_visual_tree_when_logical_children_omit_them() => Run(() =>
+	{
+		var panel = new VisualOnlyPanel();
+		var a = new RadioButton();
+		var b = new RadioButton();
+		panel.Children.Add(a);
+		panel.Children.Add(b);
+		Assert.Empty(System.Windows.LogicalTreeHelper.GetChildren(panel).Cast<object>());
+		a.IsChecked = true;
+		b.IsChecked = true;
+		Assert.False(a.IsChecked);
+		Assert.True(b.IsChecked);
+	});
+
+	[Fact]
 	public void RadioButton_raises_Checked_and_Unchecked_on_switch() => Run(() =>
 	{
 		var a = new RadioButton { GroupName = "g44ev" };
@@ -99,6 +122,25 @@ public class RadioButtonEventTests : WpfGtkTestBase
 		ga.Active = true;
 
 		Assert.Equal(new[] { "a.checked", "a.click" }, log);
+	});
+
+	[Fact]
+	public void RadioButton_clicked_while_checked_and_alone_raises_Click_and_stays_checked() => Run(() =>
+	{
+		var a = new RadioButton();
+		var ga = (Gtk.CheckButton)a.Widget;
+		a.IsChecked = true;
+		int clicks = 0;
+		int unchecks = 0;
+		a.Click += (s, e) => clicks++;
+		a.Unchecked += (s, e) => unchecks++;
+
+		ga.Active = false;
+
+		Assert.Equal(1, clicks);
+		Assert.Equal(0, unchecks);
+		Assert.True(a.IsChecked);
+		Assert.True(ga.Active);
 	});
 
 	[Fact]

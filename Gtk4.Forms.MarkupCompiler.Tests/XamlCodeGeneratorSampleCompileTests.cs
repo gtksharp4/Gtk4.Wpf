@@ -32,7 +32,7 @@ public class XamlCodeGeneratorSampleCompileTests
 		"OpacityAnimation.App.xaml", "BitmapEffectsGallery.App.xaml", "PropertyAnimation.App.xaml",
 		"Converter.App.xaml", "DataTrigger.MainWindow.xaml", "AnimationTiming.HandoffVersusComposeExample.xaml",
 		"InlineContainers.MainWindow.xaml", "MenuSeparator.MainWindow.xaml",
-		"SimpleBinding.MainWindow.xaml", "InvokeTarget.MainWindow.xaml",
+		"SimpleBinding.MainWindow.xaml", "InvokeTarget.MainWindow.xaml", "XmlLang.MainWindow.xaml",
 	};
 
 	// Samples that miss only their code-behind handlers (the stub declares none): the exact diagnostics.

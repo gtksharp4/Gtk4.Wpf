@@ -43,18 +43,22 @@ public static class GtkFormsXamlRegistry
 	}
 
 	/// <summary>Creates the element registered for <paramref name="uri"/>, or <c>null</c>.</summary>
-	public static object? TryCreate(Uri uri, Assembly? assembly = null)
+	public static object? TryCreate(Uri uri, Assembly? assembly = null) => TryCreate(uri, assembly, false);
+
+	// exactOnly: match the full path only, never the leaf file name.
+	internal static object? TryCreate(Uri uri, Assembly? assembly, bool exactOnly)
 	{
-		string path = Normalize(uri.IsAbsoluteUri ? uri.AbsolutePath : uri.OriginalString);
+		string raw = uri.IsAbsoluteUri ? Uri.UnescapeDataString(uri.AbsolutePath) : uri.OriginalString;
+		string path = Normalize(raw);
 		Func<object>? factory;
-		lock (_factories) factory = Find(path, _factories);
+		lock (_factories) factory = Find(path, _factories, exactOnly);
 		if (factory != null) return factory();
 		if (assembly == null) return null;
 
 		var types = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase);
 		foreach (var a in assembly.GetCustomAttributes<GtkFormsXamlRegistrationAttribute>())
 			types[Normalize(a.Path)] = a.Type;
-		Type? type = Find(path, types);
+		Type? type = Find(path, types, exactOnly);
 		return type == null ? null : Activator.CreateInstance(type);
 	}
 
@@ -67,9 +71,10 @@ public static class GtkFormsXamlRegistry
 	}
 
 	// Exact path first, then the leaf file name.
-	static T? Find<T>(string path, Dictionary<string, T> map) where T : class
+	static T? Find<T>(string path, Dictionary<string, T> map, bool exactOnly) where T : class
 	{
 		if (map.TryGetValue(path, out T? exact)) return exact;
+		if (exactOnly) return null;
 		string leaf = Leaf(path);
 		foreach (KeyValuePair<string, T> kv in map)
 			if (string.Equals(Leaf(kv.Key), leaf, StringComparison.OrdinalIgnoreCase)) return kv.Value;
