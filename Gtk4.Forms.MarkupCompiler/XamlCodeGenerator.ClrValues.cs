@@ -10,12 +10,12 @@ namespace Gtk4.Forms.MarkupCompiler
 	{
 		// Struct types with a built-in XamlValueConverter registration (XamlValueConverter.RegisterBuiltIns).
 		// ConvertByType returns the raw string for any other type, so a cast to it would throw at run time.
-		static readonly HashSet<string> ConverterBackedStructs = new HashSet<string>
+		internal static readonly HashSet<string> ConverterBackedStructs = new HashSet<string>
 		{
 			"System.Windows.Thickness", "System.Windows.CornerRadius", "System.Windows.GridLength",
 			"System.Windows.Point", "System.Windows.Size", "System.Windows.Rect",
-			"System.Windows.Media.Color", "System.Windows.Media.FontWeight", "System.Windows.Media.FontStyle",
-			"System.Windows.Media.FontStretch", "System.Windows.Media.Animation.Duration",
+			"System.Windows.Media.Color", "System.Windows.FontWeight", "System.Windows.FontStyle",
+			"System.Windows.FontStretch", "System.Windows.Media.Animation.Duration",
 			"System.Windows.Media.Animation.RepeatBehavior",
 		};
 
