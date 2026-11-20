@@ -28,12 +28,27 @@ namespace Gtk4.Forms.MarkupCompiler
 		}
 
 		/// <summary>
+		/// True when a code-behind partial of the class declares a base list (a class or interfaces).
+		/// </summary>
+		bool CodeBehindDeclaresBase(string className)
+		{
+			if (CodeBehindSources == null) return true;
+			string name = System.Text.RegularExpressions.Regex.Escape(
+				className.Substring(className.LastIndexOf('.') + 1));
+			var re = new System.Text.RegularExpressions.Regex(@"\bpartial\s+class\s+" + name + @"\b\s*(<[^>]*>)?\s*:");
+			foreach (string s in CodeBehindSources)
+				if (re.IsMatch(s)) return true;
+			return false;
+		}
+
+		/// <summary>
 		/// The base type to declare on the generated partial: the root element type when the x:Class has no
-		/// code-behind, else <c>null</c> (the code-behind supplies it).
+		/// code-behind or its code-behind partial declares no base, else <c>null</c> (the code-behind supplies it).
 		/// </summary>
 		string RootBaseFor(XElement root, bool hasClassAttr, string className)
 		{
-			if (hasClassAttr && !HasCodeBehindFor(className) && ResolveType(root) is string rootFq)
+			if (hasClassAttr && (!HasCodeBehindFor(className) || !CodeBehindDeclaresBase(className))
+				&& ResolveType(root) is string rootFq)
 				return "global::" + rootFq;
 			return null;
 		}

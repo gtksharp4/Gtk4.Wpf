@@ -134,7 +134,7 @@ namespace Gtk4.Forms.MarkupCompiler
 
 			w.Line("bool _contentLoaded;");
 			w.Line();
-			if (implicitBase != null || (rootBase != null && !isAppDef))
+			if (implicitBase != null || (rootBase != null && !isAppDef && !HasCodeBehindFor(className)))
 			{
 				w.Line($"public {typeName}() {{ InitializeComponent(); }}");
 				w.Line();
@@ -314,6 +314,11 @@ namespace Gtk4.Forms.MarkupCompiler
 
 				string propName = attr.Name.LocalName;
 				string val = attr.Value;
+				int rootDot = propName.IndexOf('.');
+				if (rootDot > 0 && !string.IsNullOrEmpty(rootFqType)
+					&& ClassifyQualified(w, rootFqType, "this", propName.Substring(0, rootDot), ref propName, val)
+						== Qualified.Emitted)
+					continue;
 
 				if (IsKnownEvent(rootFqType, propName))
 				{
@@ -644,6 +649,12 @@ namespace Gtk4.Forms.MarkupCompiler
 
 				// Attached-property syntax: "Owner.Prop" (e.g. Grid.Row, Canvas.Left).
 				int dotPos = propName.IndexOf('.');
+				if (dotPos > 0)
+				{
+					Qualified q = ClassifyQualified(w, fqType, varName, propName.Substring(0, dotPos), ref propName, val);
+					if (q == Qualified.Emitted) continue;
+					if (q == Qualified.OwnMember) dotPos = -1;
+				}
 				if (dotPos > 0)
 				{
 					string ownerLocalName = propName.Substring(0, dotPos);
