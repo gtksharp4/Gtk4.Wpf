@@ -33,6 +33,7 @@ internal static partial class BindingEngine
 			}
 
 			if (!WriteSource(target, source, sourceValue)) return;
+			RaiseDataTransfer(target, Binding.SourceUpdatedEvent, _binding.NotifyOnSourceUpdated);
 
 			AttachNotifyErrors(target, source, ResolvePath(source, _binding.Path));
 			RefreshNotifyErrors();

@@ -28,8 +28,9 @@ public abstract partial class FrameworkElement : UIElement
 
 	static void OnDataContextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
-		if (d is FrameworkElement fe)
-			fe.OnDataContextChanged(e.OldValue, e.NewValue);
+		if (d is not FrameworkElement fe) return;
+		fe.OnDataContextChanged(e.OldValue, e.NewValue);
+		fe.RaiseDataContextChanged(e);
 	}
 
 	/// <summary>

@@ -12,8 +12,8 @@ namespace System.Windows.Data;
 public class CollectionViewSource
 {
 	// Cache: source object → its default ListCollectionView.
-	static readonly ConditionalWeakTable<object, ListCollectionView> _cache =
-		new ConditionalWeakTable<object, ListCollectionView>();
+	static readonly ConditionalWeakTable<object, CollectionView> _cache =
+		new ConditionalWeakTable<object, CollectionView>();
 
 	// ── Source ───────────────────────────────────────────────────────────────
 
@@ -32,7 +32,7 @@ public class CollectionViewSource
 
 	// ── View ─────────────────────────────────────────────────────────────────
 
-	ListCollectionView? _view;
+	CollectionView? _view;
 
 	/// <summary>Gets the <see cref="ICollectionView"/> over <see cref="Source"/>.</summary>
 	public ICollectionView? View
@@ -42,7 +42,7 @@ public class CollectionViewSource
 			if (_source == null) return null;
 			if (_view == null)
 			{
-				_view = new ListCollectionView(_source);
+				_view = CreateView(_source);
 				// U6: forward instance SortDescriptions/GroupDescriptions to the view.
 				foreach (var sd in SortDescriptions)
 					_view.SortDescriptions.Add(sd);
@@ -56,24 +56,29 @@ public class CollectionViewSource
 	}
 
 	/// <summary>Sort descriptions applied to the view when it is created.</summary>
-	public ObservableCollection<SortDescription> SortDescriptions { get; } =
-		new ObservableCollection<SortDescription>();
+	public SortDescriptionCollection SortDescriptions { get; } = new SortDescriptionCollection();
 
 	/// <summary>Group descriptions applied to the view when it is created.</summary>
 	public ObservableCollection<GroupDescription> GroupDescriptions { get; } =
 		new ObservableCollection<GroupDescription>();
 
+	// WPF: an IList gets a ListCollectionView, any other sequence a plain CollectionView.
+	static CollectionView CreateView(IEnumerable source) =>
+		source is IList list ? new ListCollectionView(list) : new CollectionView(source);
+
 	// ── Static helper ────────────────────────────────────────────────────────
 
 	/// <summary>
-	/// Returns a stable cached <see cref="ListCollectionView"/> for <paramref name="source"/>.
-	/// Multiple calls with the same object return the same view instance.
+	/// Returns a stable cached <see cref="CollectionView"/> for <paramref name="source"/>, or <see langword="null"/>
+	/// when it is not an <see cref="IEnumerable"/> (a string is not a collection). Multiple calls with the same object return the same view.
 	/// </summary>
-	public static ICollectionView GetDefaultView(IEnumerable source)
+	public static ICollectionView? GetDefaultView(object source)
 	{
 		if (source == null) throw new ArgumentNullException(nameof(source));
 		// ICollectionView is its own view.
 		if (source is ICollectionView cv) return cv;
-		return _cache.GetValue(source, s => new ListCollectionView((IEnumerable)s));
+		// A string is enumerable but is a single value, never a collection.
+		if (source is string || source is not IEnumerable seq) return null;
+		return _cache.GetValue(seq, s => CreateView((IEnumerable)s));
 	}
 }

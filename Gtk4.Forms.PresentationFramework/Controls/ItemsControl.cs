@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Windows.Data;
 using System.Windows.Markup;
 
@@ -96,12 +97,17 @@ public partial class ItemsControl : Control
 		{
 			// Wrap the source in a default CollectionView (honours filter/sort/group).
 			_collectionView = CollectionViewSource.GetDefaultView(newSource);
+			// A string has no view: it is enumerated as plain items.
 			_incc = _collectionView;
-			_incc.CollectionChanged += OnCollectionChanged;
+			if (_incc != null) _incc.CollectionChanged += OnCollectionChanged;
 		}
 
 		RebuildItems();
+		OnCollectionViewChanged(_collectionView);
 	}
+
+	/// <summary>Called after ItemsSource changed, with its default view (or null).</summary>
+	internal virtual void OnCollectionViewChanged(ICollectionView? view) { }
 
 	void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 	{

@@ -32,6 +32,7 @@ public partial class Window
 	{
 		_application = Application.Current;
 		_application?.RegisterWindow(this);
+		InitDefaultButtons();
 	}
 
 	static Window()

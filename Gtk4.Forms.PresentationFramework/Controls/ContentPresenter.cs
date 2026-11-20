@@ -34,6 +34,12 @@ public class ContentPresenter : FrameworkElement
 		set => SetValue(ContentProperty, value);
 	}
 
+	/// <summary>
+	/// Gets or sets the name of the templated parent property this presenter takes its content from
+	/// (WPF default <c>Content</c>). Store-only: the layer does not auto-bind presenters to their templated parent.
+	/// </summary>
+	public string ContentSource { get; set; } = "Content";
+
 	// ── ContentTemplate DP ───────────────────────────────────────────────────
 
 	/// <summary>The template used to present a non-UIElement content item.</summary>

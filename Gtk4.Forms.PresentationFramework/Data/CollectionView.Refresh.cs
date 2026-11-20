@@ -1,0 +1,130 @@
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Reflection;
+
+namespace System.Windows.Data;
+
+public partial class CollectionView
+{
+	/// <inheritdoc/>
+	public virtual IDisposable DeferRefresh()
+	{
+		_deferLevel++;
+		return new DeferScope(this);
+	}
+
+	/// <inheritdoc/>
+	public virtual void Refresh()
+	{
+		var oldItem = CurrentItem;
+		int oldPosition = _currentPosition;
+		int oldCount = _view.Count;
+		Rebuild();
+
+		// Keep the current item when it survives; otherwise stay at its position, clamped into the view.
+		int position = oldItem != null ? _view.IndexOf(oldItem) : -1;
+		if (position < 0) position = _view.Count == 0 ? -1 : Math.Min(Math.Max(oldPosition, 0), _view.Count - 1);
+		bool itemChanged = !ReferenceEquals(oldItem, position >= 0 ? _view[position] : null);
+		bool positionChanged = position != _currentPosition;
+		_currentPosition = position;
+
+		CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+		if (oldCount != _view.Count)
+		{
+			OnPropertyChanged(nameof(Count));
+			OnPropertyChanged(nameof(IsEmpty));
+		}
+		if (itemChanged) RaiseCurrentChanged(positionChanged);
+		else if (positionChanged) OnPropertyChanged(nameof(CurrentPosition));
+	}
+
+	void RefreshOrDefer()
+	{
+		if (_deferLevel == 0) Refresh();
+	}
+
+	void Rebuild()
+	{
+		_view.Clear();
+		_groupObjects.Clear();
+
+		// Null items pass through when there is no filter or the filter accepts them.
+		foreach (var item in _source)
+		{
+			if (_filter != null && !_filter(item!)) continue;
+			_view.Add(item);
+		}
+
+		if (SortDescriptions.Count > 0)
+			_view.Sort(CompareItems);
+
+		if (GroupDescriptions.Count > 0)
+		{
+			foreach (var g in BuildGroups()) _groupObjects.Add(g);
+			Groups = new ReadOnlyObservableCollection<object>(_groupObjects);
+		}
+		else
+		{
+			Groups = null;
+		}
+	}
+
+	int CompareItems(object? x, object? y)
+	{
+		foreach (var sd in SortDescriptions)
+		{
+			var xv = GetPropertyValue(x, sd.PropertyName);
+			var yv = GetPropertyValue(y, sd.PropertyName);
+			int c = Comparer<object?>.Default.Compare(xv, yv);
+			if (c != 0) return sd.Direction == ListSortDirection.Ascending ? c : -c;
+		}
+		return 0;
+	}
+
+	static object? GetPropertyValue(object? obj, string? propertyName)
+	{
+		if (obj == null || string.IsNullOrEmpty(propertyName)) return obj;
+		var prop = obj.GetType().GetProperty(propertyName!, BindingFlags.Public | BindingFlags.Instance);
+		return prop?.GetValue(obj);
+	}
+
+	List<CollectionViewGroup> BuildGroups()
+	{
+		var gd = GroupDescriptions[0]; // single-level only
+		var dict = new Dictionary<string, CollectionViewGroup>();
+		var order = new List<string>();
+		foreach (var item in _view)
+		{
+			if (item == null) continue; // no meaningful group key
+			var rawKey = gd.GroupNameFromItem(item, 0, _culture);
+			var key = rawKey?.ToString() ?? string.Empty;
+			if (!dict.TryGetValue(key, out var grp))
+			{
+				grp = new CollectionViewGroup(rawKey);
+				dict[key] = grp;
+				order.Add(key);
+			}
+			grp.AddItem(item);
+		}
+		var result = new List<CollectionViewGroup>();
+		foreach (var k in order) result.Add(dict[k]);
+		return result;
+	}
+
+	sealed class DeferScope : IDisposable
+	{
+		CollectionView? _owner;
+
+		internal DeferScope(CollectionView owner) => _owner = owner;
+
+		public void Dispose()
+		{
+			var owner = _owner;
+			if (owner == null) return;
+			_owner = null;
+			if (--owner._deferLevel == 0) owner.Refresh();
+		}
+	}
+}

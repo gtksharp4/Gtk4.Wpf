@@ -4,7 +4,7 @@ namespace System.Windows.Controls;
 /// Base class for controls that have a <see cref="Header"/> and a <see cref="ContentControl.Content"/>.
 /// Used by <see cref="Expander"/>, <see cref="GroupBox"/>, and <see cref="TabItem"/>.
 /// </summary>
-public abstract class HeaderedContentControl : ContentControl
+public class HeaderedContentControl : ContentControl
 {
 	// ── Header DP ────────────────────────────────────────────────────────────
 

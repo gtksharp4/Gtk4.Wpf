@@ -143,10 +143,11 @@ public class CollectionViewTests
 		int count = 0;
 		view.CurrentChanged += (_, _) => count++;
 
+		// WPF starts a non-empty view on its first item, so the first move is a no-op.
 		view.MoveCurrentToFirst();
 		view.MoveCurrentToNext();
 
-		Assert.Equal(2, count);
+		Assert.Equal(1, count);
 	}
 
 	// ── CollectionViewSource ─────────────────────────────────────────────────
