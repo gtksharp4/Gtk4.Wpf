@@ -89,3 +89,4 @@ artifacts/
 # Gtk4.Forms markup-compiler generated sources (emitted under obj at build time)
 gf-wpf-generated/
 /.claude/scheduled_tasks.lock
+/.claude/samples
