@@ -17,7 +17,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			string fq = ResolveType(root);
 			if (fq != "System.Windows.Controls.Page" && fq != "System.Windows.Window") return null;
 
-			string stem = Path.GetFileNameWithoutExtension(xamlPath);
+			// Backslash is not a separator on Unix, so normalise first: the class name must not depend on the OS.
+			string stem = Path.GetFileNameWithoutExtension(xamlPath.Replace('\\', '/'));
 			var sb = new StringBuilder();
 			foreach (char c in stem)
 				sb.Append(char.IsLetterOrDigit(c) || c == '_' ? c : '_');
