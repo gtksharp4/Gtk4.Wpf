@@ -131,6 +131,7 @@ public partial class TextBlock : FrameworkElement
 		var blockDec = TextDecorations;
 		string typographyFeatures = Documents.TypographyPango.BuildFontFeatures(this);
 		if (_inlines.Count == 1 && _inlines[0] is Run r &&
+		    !r.HasFlowOrLanguage &&
 		    r.Foreground == null && !r.FontWeight.HasValue && !r.FontStyle.HasValue &&
 		    (r.TextDecorations == null || r.TextDecorations.Count == 0) &&
 		    (blockDec == null || blockDec.Count == 0) &&
@@ -155,7 +156,7 @@ public partial class TextBlock : FrameworkElement
 	{
 		var sb = new System.Text.StringBuilder();
 		foreach (var inline in _inlines)
-			inline.AppendMarkup(sb);
+			inline.AppendWrappedMarkup(sb);
 		string inner = sb.ToString();
 		string withDecorations = Documents.TextDecorationMarkup.WrapWithDecorations(TextDecorations, inner);
 		return Documents.TypographyPango.WrapWithFontFeatures(this, withDecorations);

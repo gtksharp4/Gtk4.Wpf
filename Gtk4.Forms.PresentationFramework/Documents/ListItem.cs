@@ -31,7 +31,7 @@ public class ListItem
 		{
 			if (!first) sb.Append(' ');
 			first = false;
-			block.AppendMarkup(sb);
+			block.AppendWrappedMarkup(sb);
 		}
 	}
 }

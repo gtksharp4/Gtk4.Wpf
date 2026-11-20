@@ -6,7 +6,7 @@ namespace System.Windows.Documents;
 /// Base class for block-level flow-document elements.
 /// Carries optional layout properties that influence Pango markup rendering.
 /// </summary>
-public abstract class Block : TextElement
+public abstract partial class Block : TextElement
 {
 	/// <summary>Outer margin. Default is zero on all sides.</summary>
 	public Thickness Margin { get; set; }

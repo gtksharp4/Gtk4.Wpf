@@ -20,7 +20,7 @@ public class Paragraph : Block
 	internal override void AppendMarkup(System.Text.StringBuilder sb)
 	{
 		foreach (var inline in Inlines)
-			inline.AppendMarkup(sb);
+			inline.AppendWrappedMarkup(sb);
 	}
 
 	static void AppendInlinePlainText(Inline inline, System.Text.StringBuilder sb)

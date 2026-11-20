@@ -252,6 +252,16 @@ These are ranked by portable samples unblocked. "Only" means samples whose sole 
      FlowContentProperty and NumbersMultipleLangauges (`NumberSubstitution`) are close.
    - Covers: the `FlowDirection` enum, inherited `FrameworkElement.FlowDirection`, `Inline.FlowDirection`, and
      `FlowDocument.FlowDirection`.
+   - **Done in Round 47 (branch `gf47/flow-direction`, pinned feed, package 1.0.0.26325).** All 90 building
+     projects still build and all 83 running apps still run. The 7 only-flow-direction apps now build and run, as do
+     FlowContentProperty and NumbersMultipleLangauges (9 new). GlobalizationHomepage (`Frame.Source` on a Window
+     class) and LangAttribute (the generator emits `Language="ar-SA"` as a string, not `XmlLanguage`) still fail;
+     the second is a MarkupCompiler change.
+   - GTK gaps: `FrameworkElement.FlowDirection` sets `Widget.Direction` per element (GTK does not inherit it), so
+     native widgets mirror but panels laid out by this layer do not. `Inline`/`Block`/`FlowDocument` are not
+     `DependencyObject`s, so their `FlowDirection`/`Language` are plain properties rendered only when set (bidi
+     isolate, Pango `lang`) and do not inherit. `FrameworkElement.Language` and `NumberSubstitution` are stored
+     only.
 4. **2D graphics, Page and Window long tail: about 11 only.**
    - `Page.Background`: PathAnimations, ShapeElements.
    - `UIElement.Clip`: ClipRegion.

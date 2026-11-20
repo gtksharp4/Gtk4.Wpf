@@ -174,6 +174,7 @@ public static partial class XamlValueConverter
 		Register<Brush>(MediaConverters.ParseBrush);
 		Register<SolidColorBrush>(raw => (SolidColorBrush)MediaConverters.ParseBrush(raw));
 		Register<FontFamily>(FontConverters.ParseFontFamily);
+		Register<System.Windows.Markup.XmlLanguage>(System.Windows.Markup.XmlLanguage.GetLanguage);
 		Register<FontWeight>(FontConverters.ParseFontWeight);
 		Register<FontStyle>(FontConverters.ParseFontStyle);
 		Register<FontStretch>(FontConverters.ParseFontStretch);
