@@ -27,6 +27,21 @@ public abstract partial class UIElement
 		set => SetValue(ClipToBoundsProperty, value);
 	}
 
+	// Overflow before ClipToBounds first wrote it, so false restores the widget's own default
+	// (Hidden for Gtk.Frame/Border, Visible for most others).
+	Gtk.Overflow? _overflowBeforeClip;
+
 	void ApplyClipToBounds(Gtk.Widget widget)
-		=> widget.Overflow = ClipToBounds ? Gtk.Overflow.Hidden : Gtk.Overflow.Visible;
+	{
+		if (ClipToBounds)
+		{
+			_overflowBeforeClip ??= widget.Overflow;
+			widget.Overflow = Gtk.Overflow.Hidden;
+		}
+		else if (_overflowBeforeClip is { } original)
+		{
+			widget.Overflow = original;
+			_overflowBeforeClip = null;
+		}
+	}
 }

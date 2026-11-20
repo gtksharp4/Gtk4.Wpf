@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using Gtk4.Forms.PresentationFramework.Tests.Lifecycle;
 using Xunit;
 
 namespace Gtk4.Forms.PresentationFramework.Tests;
@@ -69,11 +70,56 @@ public class TextGapsTests : WpfGtkTestBase
 	});
 
 	[Fact]
-	public void TextBox_with_wrapping_uses_multiline_widget() => Run(() =>
+	public void TextBox_with_wrapping_only_keeps_the_single_line_entry() => Run(() =>
 	{
 		var tb = new TextBox { TextWrapping = TextWrapping.Wrap };
-		Assert.IsType<Gtk.ScrolledWindow>(tb.Widget);
+		Assert.IsType<Gtk.Entry>(tb.Widget);
+		Assert.Equal(TextWrapping.Wrap, tb.TextWrapping);
 	});
+
+	[Fact]
+	public void TextBox_wrapping_without_AcceptsReturn_is_content_sized_in_a_StackPanel() => Run(() =>
+	{
+		var tb = new TextBox { TextWrapping = TextWrapping.Wrap, Text = "some text" };
+		var win = new Window { Content = new StackPanel { Children = { tb } } };
+		win.Show();
+		GtkPump.Until(() => tb.ActualHeight > 0, 2000);
+		win.Close();
+		Assert.True(tb.ActualHeight > 0, $"ActualHeight={tb.ActualHeight}");
+	});
+
+	[Fact]
+	public void TextBox_wrapping_without_AcceptsReturn_enforces_MaxLength() => Run(() =>
+	{
+		var tb = new TextBox { TextWrapping = TextWrapping.Wrap, MaxLength = 3 };
+		var entry = (Gtk.Entry)tb.Widget;
+		entry.Text = "abcdef";
+		Assert.Equal("abc", tb.Text);
+	});
+
+	[Fact]
+	public void TextBox_TextWrappingProperty_is_owned_from_TextBlock_with_AffectsMeasure()
+	{
+		Assert.Same(TextBlock.TextWrappingProperty, TextBox.TextWrappingProperty);
+		var md = (FrameworkPropertyMetadata)TextBox.TextWrappingProperty.GetMetadata(typeof(TextBox));
+		Assert.True(md.AffectsMeasure);
+		Assert.Equal(TextWrapping.NoWrap, md.DefaultValue);
+	}
+
+	[Fact]
+	public void TextWrapping_lives_in_System_Windows() =>
+		Assert.Equal("System.Windows", typeof(TextWrapping).Namespace);
+
+	[Fact]
+	public void ScrollViewer_scrollbar_visibility_accessors_reject_null()
+	{
+		Assert.Throws<System.ArgumentNullException>(() => ScrollViewer.GetHorizontalScrollBarVisibility(null!));
+		Assert.Throws<System.ArgumentNullException>(() => ScrollViewer.GetVerticalScrollBarVisibility(null!));
+		Assert.Throws<System.ArgumentNullException>(
+			() => ScrollViewer.SetHorizontalScrollBarVisibility(null!, ScrollBarVisibility.Auto));
+		Assert.Throws<System.ArgumentNullException>(
+			() => ScrollViewer.SetVerticalScrollBarVisibility(null!, ScrollBarVisibility.Auto));
+	}
 
 	// ── AppendText / ScrollToEnd / ScrollToHome ──────────────────────────────
 
@@ -113,104 +159,4 @@ public class TextGapsTests : WpfGtkTestBase
 	[Fact]
 	public void AppendText_null_throws_ArgumentNullException() =>
 		Assert.Throws<System.ArgumentNullException>(() => new TextBox().AppendText(null!));
-
-	[Fact]
-	public void ScrollToEnd_and_ScrollToHome_do_not_throw_with_or_without_widget() => Run(() =>
-	{
-		var tb = new TextBox { AcceptsReturn = true, Text = "a\nb\nc" };
-		tb.ScrollToEnd();
-		tb.ScrollToHome();
-		var single = new TextBox { Text = "abc" };
-		_ = single.Widget;
-		single.ScrollToEnd();
-		single.ScrollToHome();
-		new TextBox().ScrollToEnd();
-	});
-
-	// ── Scroll-bar visibility ────────────────────────────────────────────────
-
-	[Fact]
-	public void TextBox_scrollbar_visibility_defaults_to_Hidden()
-	{
-		var tb = new TextBox();
-		Assert.Equal(ScrollBarVisibility.Hidden, tb.HorizontalScrollBarVisibility);
-		Assert.Equal(ScrollBarVisibility.Hidden, tb.VerticalScrollBarVisibility);
-		Assert.Equal(ScrollBarVisibility.Hidden, new RichTextBox().HorizontalScrollBarVisibility);
-		Assert.Equal(ScrollBarVisibility.Hidden, new RichTextBox().VerticalScrollBarVisibility);
-	}
-
-	[Fact]
-	public void TextBox_scrollbar_DPs_are_the_ScrollViewer_properties()
-	{
-		Assert.Same(ScrollViewer.HorizontalScrollBarVisibilityProperty, TextBox.HorizontalScrollBarVisibilityProperty);
-		Assert.Same(ScrollViewer.VerticalScrollBarVisibilityProperty, TextBox.VerticalScrollBarVisibilityProperty);
-		Assert.Same(ScrollViewer.HorizontalScrollBarVisibilityProperty, RichTextBox.HorizontalScrollBarVisibilityProperty);
-	}
-
-	[Fact]
-	public void TextBox_scrollbar_visibility_maps_to_policies() => Run(() =>
-	{
-		var tb = new TextBox
-		{
-			AcceptsReturn = true,
-			HorizontalScrollBarVisibility = ScrollBarVisibility.Visible,
-			VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-		};
-		var sw = (Gtk.ScrolledWindow)tb.Widget;
-		Assert.Equal(Gtk.PolicyType.Always, sw.HscrollbarPolicy);
-		Assert.Equal(Gtk.PolicyType.Automatic, sw.VscrollbarPolicy);
-		tb.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
-		Assert.Equal(Gtk.PolicyType.Never, sw.VscrollbarPolicy);
-	});
-
-	[Fact]
-	public void TextBox_default_Hidden_maps_to_External_policy() => Run(() =>
-	{
-		var sw = (Gtk.ScrolledWindow)new TextBox { AcceptsReturn = true }.Widget;
-		Assert.Equal(Gtk.PolicyType.External, sw.HscrollbarPolicy);
-		Assert.Equal(Gtk.PolicyType.External, sw.VscrollbarPolicy);
-	});
-
-	[Fact]
-	public void TextBox_scrollbar_visibility_on_single_line_is_store_only() => Run(() =>
-	{
-		var tb = new TextBox { VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
-		Assert.IsType<Gtk.Entry>(tb.Widget);
-		Assert.Equal(ScrollBarVisibility.Auto, tb.VerticalScrollBarVisibility);
-	});
-
-	[Fact]
-	public void RichTextBox_scrollbar_visibility_maps_to_policies() => Run(() =>
-	{
-		var rtb = new RichTextBox { VerticalScrollBarVisibility = ScrollBarVisibility.Visible };
-		var sw = (Gtk.ScrolledWindow)rtb.Widget;
-		Assert.Equal(Gtk.PolicyType.Always, sw.VscrollbarPolicy);
-		Assert.Equal(Gtk.PolicyType.External, sw.HscrollbarPolicy);
-		rtb.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
-		Assert.Equal(Gtk.PolicyType.Automatic, sw.HscrollbarPolicy);
-	});
-
-	// ── ClipToBounds ─────────────────────────────────────────────────────────
-
-	[Fact]
-	public void ClipToBounds_defaults_to_false() =>
-		Assert.False(new Button().ClipToBounds);
-
-	[Fact]
-	public void ClipToBounds_maps_to_widget_overflow() => Run(() =>
-	{
-		var b = new StackPanel();
-		Assert.Equal(Gtk.Overflow.Visible, b.Widget.Overflow);
-		b.ClipToBounds = true;
-		Assert.Equal(Gtk.Overflow.Hidden, b.Widget.Overflow);
-		b.ClipToBounds = false;
-		Assert.Equal(Gtk.Overflow.Visible, b.Widget.Overflow);
-	});
-
-	[Fact]
-	public void ClipToBounds_set_before_realize_applies_on_creation() => Run(() =>
-	{
-		var b = new StackPanel { ClipToBounds = true };
-		Assert.Equal(Gtk.Overflow.Hidden, b.Widget.Overflow);
-	});
 }

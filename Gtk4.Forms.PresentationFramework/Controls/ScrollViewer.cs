@@ -60,19 +60,24 @@ public partial class ScrollViewer : ContentControl
 
 	/// <summary>Gets the horizontal scroll bar visibility set on <paramref name="element"/>.</summary>
 	public static ScrollBarVisibility GetHorizontalScrollBarVisibility(DependencyObject element)
-		=> (ScrollBarVisibility)(element?.GetValue(HorizontalScrollBarVisibilityProperty) ?? ScrollBarVisibility.Auto);
+		=> (ScrollBarVisibility)(Require(element).GetValue(HorizontalScrollBarVisibilityProperty)
+			?? ScrollBarVisibility.Auto);
 
 	/// <summary>Sets the horizontal scroll bar visibility on <paramref name="element"/>.</summary>
 	public static void SetHorizontalScrollBarVisibility(DependencyObject element, ScrollBarVisibility value)
-		=> element.SetValue(HorizontalScrollBarVisibilityProperty, value);
+		=> Require(element).SetValue(HorizontalScrollBarVisibilityProperty, value);
 
 	/// <summary>Gets the vertical scroll bar visibility set on <paramref name="element"/>.</summary>
 	public static ScrollBarVisibility GetVerticalScrollBarVisibility(DependencyObject element)
-		=> (ScrollBarVisibility)(element?.GetValue(VerticalScrollBarVisibilityProperty) ?? ScrollBarVisibility.Auto);
+		=> (ScrollBarVisibility)(Require(element).GetValue(VerticalScrollBarVisibilityProperty)
+			?? ScrollBarVisibility.Auto);
 
 	/// <summary>Sets the vertical scroll bar visibility on <paramref name="element"/>.</summary>
 	public static void SetVerticalScrollBarVisibility(DependencyObject element, ScrollBarVisibility value)
-		=> element.SetValue(VerticalScrollBarVisibilityProperty, value);
+		=> Require(element).SetValue(VerticalScrollBarVisibilityProperty, value);
+
+	static DependencyObject Require(DependencyObject element)
+		=> element ?? throw new ArgumentNullException(nameof(element));
 
 	static void OnScrollBarVisibilityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
@@ -137,4 +142,4 @@ public partial class ScrollViewer : ContentControl
 		ScrollBarVisibility.Visible  => Gtk.PolicyType.Always,
 		_                            => Gtk.PolicyType.Automatic,
 	};
-}
+}

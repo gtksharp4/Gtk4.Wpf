@@ -12,7 +12,7 @@ public partial class TextBlock
 				OnTextWrappingChanged));
 
 	static void OnTextWrappingChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		=> ((TextBlock)d).ApplyTextWrapping();
+		=> (d as TextBlock)?.ApplyTextWrapping();
 
 	/// <summary>
 	/// Gets or sets text wrapping. <see cref="TextWrapping.Wrap"/> breaks inside a word when it does not

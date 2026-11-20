@@ -1,5 +1,3 @@
-using System;
-
 namespace System.Windows.Controls;
 
 public partial class TextBox
@@ -37,7 +35,11 @@ public partial class TextBox
 		set => SetValue(VerticalScrollBarVisibilityProperty, value);
 	}
 
-	bool IsMultiline => AcceptsReturn || TextWrapping != TextWrapping.NoWrap;
+	Gtk.TextMark? _scrollMark;
+	bool _scrollToStart;
+	uint _scrollRepeat;
+
+	bool IsMultiline => AcceptsReturn;
 
 	static void OnTextWrappingChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		=> ((TextBox)d).ApplyWrapMode();
@@ -63,10 +65,32 @@ public partial class TextBox
 	/// <summary>Scrolls to the end of the content. No-op for the single-line backing.</summary>
 	public void ScrollToEnd() => ScrollTo(toStart: false);
 
+	// A mark, not an iter: GTK applies a mark scroll after line heights are validated. GTK can still
+	// apply it against heights estimated before the whole buffer is laid out, so it is repeated once the
+	// main loop is idle (validation runs at a higher priority).
 	void ScrollTo(bool toStart)
 	{
 		if (_textView == null) return;
+		_scrollToStart = toStart;
+		ScrollToMark();
+		if (_scrollRepeat != 0) return;
+		_scrollRepeat = GLib.Idle.Add(GLib.Priority.DefaultIdle, () =>
+		{
+			_scrollRepeat = 0;
+			ScrollToMark();
+			return false;
+		});
+	}
+
+	void ScrollToMark()
+	{
+		if (_textView == null) return;
 		var buffer = _textView.Buffer;
-		_textView.ScrollToIter(toStart ? buffer.StartIter : buffer.EndIter, 0.0, false, 0.0, 0.0);
+		var iter = _scrollToStart ? buffer.StartIter : buffer.EndIter;
+		if (_scrollMark == null)
+			_scrollMark = buffer.CreateMark(null, iter, false);
+		else
+			buffer.MoveMark(_scrollMark, iter);
+		_textView.ScrollToMark(_scrollMark, 0.0, true, 0.0, _scrollToStart ? 0.0 : 1.0);
 	}
 }
