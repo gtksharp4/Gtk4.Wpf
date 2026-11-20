@@ -548,7 +548,7 @@ namespace Gtk4.Forms.MarkupCompiler
 		/// </summary>
 		static HashSet<string> CollectIgnorableNamespaces(XElement root)
 		{
-			var set = new HashSet<string>(StringComparer.Ordinal) { WpfXmlnsMap.McNs };
+			var set = new HashSet<string>(StringComparer.Ordinal) { WpfXmlnsMap.McNs, PresentationOptionsNs };
 
 			string ignorable = (string)root.Attribute(XNamespace.Get(WpfXmlnsMap.McNs) + "Ignorable");
 			if (!string.IsNullOrWhiteSpace(ignorable))
@@ -653,6 +653,7 @@ namespace Gtk4.Forms.MarkupCompiler
 
 				string propName = attr.Name.LocalName;
 				string val = attr.Value;
+				if (SkipsUnknownMediaProperty(fqType, propName)) continue;
 
 				// Attached-property syntax: "Owner.Prop" (e.g. Grid.Row, Canvas.Left).
 				int dotPos = propName.IndexOf('.');
@@ -767,6 +768,8 @@ namespace Gtk4.Forms.MarkupCompiler
 				EmitVisualStateGroups(w, propEl, xNs, parentVar, ref counter);
 				return;
 			}
+
+			if (TryEmitMediaPropertyElement(w, propEl, xNs, parentVar, propName, ref counter)) return;
 
 			// {AnyElement}.Triggers — element-level trigger block.
 			if (propName == "Triggers")

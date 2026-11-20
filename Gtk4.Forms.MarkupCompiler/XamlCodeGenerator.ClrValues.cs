@@ -33,10 +33,14 @@ namespace Gtk4.Forms.MarkupCompiler
 		string ClrPropertyExpression(string ownerFqType, string propName, string val)
 		{
 			Type t = string.IsNullOrEmpty(ownerFqType) ? null : _resolver.GetPropertyType(ownerFqType, propName);
+			if (t != null && Nullable.GetUnderlyingType(t) is Type under)
+				return ClrNullableExpression(under, propName, val);
 			if (t == null || t.IsGenericType) return ClrValueExpression(propName, val);
 			if (t.IsEnum) return ClrEnumExpression(t, propName, val);
 			if (t.FullName == "System.Uri")
 				return $"new System.Uri(\"{EscapeString(val)}\", System.UriKind.RelativeOrAbsolute)";
+			if (t.FullName == MediaNs + "Geometry")
+				return $"global::{t.FullName}.Parse(\"{EscapeString(val)}\")";
 			if (!t.IsValueType && ConverterBackedClasses.Contains(t.FullName))
 			{
 				string cn = "global::" + t.FullName;
@@ -47,6 +51,20 @@ namespace Gtk4.Forms.MarkupCompiler
 				return ClrValueExpression(propName, val);
 			string name = "global::" + t.FullName.Replace('+', '.');
 			return $"({name})System.Windows.Markup.XamlValueConverter.ConvertByType(" +
+				$"typeof({name}), \"{EscapeString(val)}\")";
+		}
+
+		// FontWeight? and other nullable converter-backed or enum properties convert like their underlying type.
+		string ClrNullableExpression(Type under, string propName, string val)
+		{
+			string name = "global::" + under.FullName.Replace('+', '.');
+			if (under.IsEnum)
+			{
+				string e = ClrEnumExpression(under, propName, val);
+				return e.StartsWith("\"", StringComparison.Ordinal) ? e : $"({name}?)({e})";
+			}
+			if (!ConverterBackedStructs.Contains(under.FullName)) return ClrValueExpression(propName, val);
+			return $"({name}?)System.Windows.Markup.XamlValueConverter.ConvertByType(" +
 				$"typeof({name}), \"{EscapeString(val)}\")";
 		}
 
