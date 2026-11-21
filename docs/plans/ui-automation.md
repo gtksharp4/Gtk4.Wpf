@@ -554,6 +554,48 @@ and EventTriggers ran when re-run alone with a 30 s limit, the same load noise e
 
 Review-fix gate (same recipe, package 1.0.0.26325 repacked from the fixed tree): 90 of 90 samples with `build=pass` still build, and 83 of 83 with `run=runs` ran (81 in the 10 s pass; OpacityMasking and MousePointer ran when re-run alone with a 30 s limit).
 
+### Phase 5 — done
+
+Phase 0 decided the scope: Windows is no-go (the bundled GTK has AccessKit disabled, UIA sees an empty window),
+Linux and macOS are unverifiable on this machine. So no out-of-process UIA client was written; nothing in it could be
+proved here. What landed, in `Gtk4.Forms.Wpf.Testing`:
+
+- `NativeInput` (`App.Native`): opt-in operating-system input through `SendInput` on Windows. `MoveTo`, `Click`
+  (left or right, optional point in the element's coordinates) and `TypeText` (Unicode keystrokes). It finds the GTK
+  top-level by process, class `gdkSurfaceToplevel` and title, and waits for the app to be idle after each action. On
+  other platforms it throws `PlatformNotSupportedException`; `NativeInput.IsSupported` says which.
+- `WpfNativeFactAttribute`: the test is skipped unless the OS is Windows and `XF_NATIVE_INPUT=1`, so it never gates
+  CI. Test classes also carry `[Trait("UI", "Native")]` for selection by trait.
+- Measured, and handled in `NativeInput.Target`: GDK's Win32 window is larger than the GTK surface (428x529 around a
+  400x500 window at 96 dpi, an invisible frame of 14 px per side, 15 at the top), so a click at the plain client
+  origin missed by about 15 px. The frame is derived from the client size minus the GTK window size. Unverified: other
+  DPI scales and multi-monitor setups.
+- Run with `XF_NATIVE_INPUT=1 dotnet test Gtk4.Forms.Wpf.Testing.Tests --filter "Trait=Native"`. The cursor moves, so
+  keep the desktop unlocked and do not touch the mouse meanwhile.
+
+Follow-up steps for the platforms not delivered (each needs the named check first):
+
+- **Linux (AT-SPI).** In CI under Xvfb: `dbus-run-session -- xvfb-run ... ` with `at-spi2-core` and `python3-pyatspi`,
+  start the sample, dump the registry tree with `pyatspi` and check that the Button node has role `push button` and
+  name `Accept`. Only on success add a client over `org.a11y.atspi` (Tmds.DBus or the `at-spi2` C library) behind the
+  existing `AutomationElement` shape; peers map to AT-SPI nodes by role and name, with `AutomationId` unavailable
+  because GTK 4 exposes no such property (match on name and role, or on a unique accessible description).
+- **macOS.** On the runner: `GTK_A11Y=help` must list `accesskit` as available or the macOS backend as enabled;
+  then inspect a window with Accessibility Inspector. If available, drive it with `AXUIElement` (P/Invoke to
+  ApplicationServices) and `CGEvent` for native input. Otherwise stay no-go.
+- **Windows UIA.** Becomes possible only with a GTK runtime built with AccessKit. Check with
+  `GTK_A11Y=help` on that runtime, then repeat the Phase 0 UIAutomationClient query.
+- **Any OS without exposure.** Option 1 of the open questions below (an in-app automation server over a named pipe)
+  stays the portable alternative; it was not started.
+
+Tests: 4 new in `Wpf.Testing.Tests` (`NativeInputTests`): three native tests (click a button, click a check box, type
+into a text box; run and passed with `XF_NATIVE_INPUT=1`, skipped otherwise) and one that checks the opt-in rule.
+
+
+Observed on Windows: `WindowsBase.Tests` 201, `MarkupCompiler.Tests` 575, `Wpf.ProjectConverter.Tests` 34,
+`PresentationFramework.Tests` 4264 passed; `Wpf.Testing.Tests` 61 passed + 4 skipped (the 3 native tests and the
+earlier skip), and with `XF_NATIVE_INPUT=1 --filter "UI=Native"` 4 passed; `dotnet build Gtk4.Forms.sln`
+warning-clean. Linux and macOS were not run. The samples gate was not re-run: no product code changed.
 
 1. Should the driver package also host the app **out-of-process** (launch the converted app and attach)
    before Phase 5, using an in-app automation server over a named pipe? That gives process isolation on

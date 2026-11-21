@@ -28,3 +28,28 @@ public static class WpfUiEnvironment
 		!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("XF_GTK_REQUIRE_NATIVE"))
 		|| GtkThread.UnavailableReason == null;
 }
+
+/// <summary>
+/// A UI test that injects real operating-system input (<see cref="NativeInput"/>). It runs only on Windows and only
+/// when <c>XF_NATIVE_INPUT=1</c> is set, because it moves the user's cursor and needs an unlocked desktop. Put
+/// <c>[Trait("UI", "Native")]</c> on the class so a run can also select or exclude these tests by trait.
+/// </summary>
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+public sealed class WpfNativeFactAttribute : FactAttribute
+{
+	public WpfNativeFactAttribute([CallerFilePath] string? sourceFilePath = null,
+		[CallerLineNumber] int sourceLineNumber = -1) : base(sourceFilePath, sourceLineNumber)
+	{
+		SkipUnless = nameof(WpfNativeEnvironment.CanRun);
+		SkipType = typeof(WpfNativeEnvironment);
+		Skip = "Native input tests are opt-in: Windows only, with XF_NATIVE_INPUT=1 on an interactive desktop.";
+	}
+}
+
+/// <summary>What <see cref="WpfNativeFactAttribute"/> asks at run time.</summary>
+public static class WpfNativeEnvironment
+{
+	public static bool CanRun =>
+		NativeInput.IsSupported && Environment.GetEnvironmentVariable("XF_NATIVE_INPUT") == "1"
+		&& WpfUiEnvironment.CanRun;
+}

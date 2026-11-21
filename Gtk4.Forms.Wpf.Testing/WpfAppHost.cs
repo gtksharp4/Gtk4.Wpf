@@ -20,6 +20,7 @@ public sealed partial class WpfAppHost : IDisposable
 		Application = application;
 		Window = window;
 		Input = new UiInput(this);
+		Native = new NativeInput(this);
 	}
 
 	/// <summary>The running application.</summary>
@@ -30,6 +31,9 @@ public sealed partial class WpfAppHost : IDisposable
 
 	/// <summary>Routed keyboard and mouse input.</summary>
 	public UiInput Input { get; }
+
+	/// <summary>Opt-in operating-system input; see <see cref="NativeInput"/>.</summary>
+	public NativeInput Native { get; }
 
 	/// <summary>The main window as a UI Automation element: the default scope of <see cref="Find"/>.</summary>
 	public AutomationElement MainWindow => GtkThread.Invoke(() =>
