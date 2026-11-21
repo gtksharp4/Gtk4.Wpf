@@ -4,31 +4,146 @@ using System.IO;
 namespace System.Windows.Media.Imaging;
 
 /// <summary>
-/// Phase-1 stand-in for WPF's <c>System.Windows.Media.Imaging.BitmapImage</c> — the workhorse
-/// consumers use to load an image from a URI or stream. It supports the standard WPF shapes:
-/// the <see cref="Uri"/> constructor and the <see cref="ISupportInitialize"/> batch
-/// (<c>BeginInit()</c>/set <see cref="UriSource"/>/<c>EndInit()</c>). Decoding is deferred to a
-/// later phase; the source is carried so <see cref="ImageSource"/>-typed consumers compile and
-/// round-trip their inputs.
+/// WPF <c>BitmapImage</c>: loads an image from a URI or stream. Decoding is lazy (first size, format or
+/// pixel access) and goes through the same codecs as <see cref="BitmapDecoder"/>; a failure raises
+/// <see cref="DecodeFailed"/> and leaves the bitmap empty instead of throwing.
 /// </summary>
-public sealed class BitmapImage : BitmapSource, ISupportInitialize
+public sealed partial class BitmapImage : BitmapSource, ISupportInitialize
 {
+	bool _initializing;
+	bool _initialized;
+	bool _decoded;
+	byte[] _pixels = Array.Empty<byte>();
+	Uri? _uriSource;
+	Stream? _streamSource;
+
 	/// <summary>Creates an empty bitmap; set <see cref="UriSource"/> between
 	/// <see cref="BeginInit"/> and <see cref="EndInit"/>.</summary>
 	public BitmapImage() { }
 
 	/// <summary>Creates a bitmap whose content is loaded from <paramref name="uriSource"/>.</summary>
-	public BitmapImage(Uri uriSource) => UriSource = uriSource;
+	public BitmapImage(Uri uriSource)
+	{
+		if (uriSource == null)
+			throw new ArgumentNullException(nameof(uriSource));
+		BeginInit();
+		UriSource = uriSource;
+		EndInit();
+	}
+
+	/// <summary>Raised when the image cannot be decoded.</summary>
+	public event EventHandler<ExceptionEventArgs>? DecodeFailed;
 
 	/// <summary>The URI the image is loaded from, or <see langword="null"/> when none is set.</summary>
-	public Uri? UriSource { get; set; }
+	/// <exception cref="InvalidOperationException">Set after initialization.</exception>
+	public Uri? UriSource
+	{
+		get => _uriSource;
+		set
+		{
+			ThrowIfInitialized();
+			_uriSource = value;
+		}
+	}
 
 	/// <summary>The stream the image is loaded from, or <see langword="null"/> when none is set.</summary>
-	public Stream? StreamSource { get; set; }
+	/// <exception cref="InvalidOperationException">Set after initialization.</exception>
+	public Stream? StreamSource
+	{
+		get => _streamSource;
+		set
+		{
+			ThrowIfInitialized();
+			_streamSource = value;
+		}
+	}
 
-	/// <summary>Begins a batch of property initialisation (WPF <see cref="ISupportInitialize"/>).</summary>
-	public void BeginInit() { }
+	/// <summary>Begins a batch of property initialisation.</summary>
+	/// <exception cref="InvalidOperationException">Already initializing.</exception>
+	public void BeginInit()
+	{
+		if (_initializing)
+			throw new InvalidOperationException("BeginInit was already called.");
+		_initializing = true;
+	}
 
-	/// <summary>Ends a batch of property initialisation (WPF <see cref="ISupportInitialize"/>).</summary>
-	public void EndInit() { }
+	/// <summary>Ends a batch of property initialisation.</summary>
+	/// <exception cref="InvalidOperationException">No BeginInit, or neither source is set.</exception>
+	public void EndInit()
+	{
+		if (!_initializing)
+			throw new InvalidOperationException("EndInit requires a matching BeginInit.");
+		if (_uriSource == null && _streamSource == null)
+			throw new InvalidOperationException("Set UriSource or StreamSource before EndInit.");
+		_initializing = false;
+		_initialized = true;
+	}
+
+	void ThrowIfInitialized()
+	{
+		if (_initialized)
+			throw new InvalidOperationException("The property cannot be changed after initialization.");
+	}
+
+	/// <inheritdoc/>
+	public override int PixelWidth
+	{
+		get { Decode(); return base.PixelWidth; }
+	}
+
+	/// <inheritdoc/>
+	public override int PixelHeight
+	{
+		get { Decode(); return base.PixelHeight; }
+	}
+
+	/// <inheritdoc/>
+	public override double DpiX
+	{
+		get { Decode(); return base.DpiX; }
+	}
+
+	/// <inheritdoc/>
+	public override double DpiY
+	{
+		get { Decode(); return base.DpiY; }
+	}
+
+	/// <inheritdoc/>
+	public override PixelFormat Format
+	{
+		get { Decode(); return base.Format; }
+	}
+
+	/// <inheritdoc/>
+	public override BitmapPalette? Palette
+	{
+		get { Decode(); return base.Palette; }
+	}
+
+	internal override byte[] GetPixelData()
+	{
+		Decode();
+		return _pixels;
+	}
+
+	void Decode()
+	{
+		if (_decoded)
+			return;
+		_decoded = true;
+		if (_uriSource == null && _streamSource == null)
+			return;
+		try
+		{
+			var frame = (_streamSource != null
+				? BitmapDecoder.Create(_streamSource, CreateOptions, CacheOption)
+				: BitmapDecoder.Create(_uriSource!, CreateOptions, CacheOption)).Frames[0];
+			Apply(DecodedImage.FromSource(frame));
+		}
+		catch (Exception e)
+		{
+			DecodeFailed?.Invoke(this, new ExceptionEventArgs(e));
+		}
+	}
 }
