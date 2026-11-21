@@ -152,7 +152,7 @@ public class XamlCodeGeneratorResourceTests
 	// ── {DynamicResource k} resolved like StaticResource at load ─────────────
 
 	[Fact]
-	public void DynamicResource_emits_FindResource_call()
+	public void DynamicResource_on_a_DP_emits_a_deferred_reference()
 	{
 		string xaml = Window(@"
 <StackPanel>
@@ -160,7 +160,7 @@ public class XamlCodeGeneratorResourceTests
 </StackPanel>");
 		string code = _gen.Generate(xaml, out _);
 
-		Assert.Contains("FindResource(", code);
+		Assert.Contains("SetResourceReference(", code);
 		Assert.Contains(@"""btnStyle""", code);
 	}
 

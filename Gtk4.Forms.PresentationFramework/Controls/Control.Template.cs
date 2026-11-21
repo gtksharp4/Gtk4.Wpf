@@ -39,7 +39,11 @@ public abstract partial class Control
 	protected virtual void OnTemplateChanged(ControlTemplate? template)
 	{
 		_templateRoot = null;
-		if (template == null || !template.HasContent) return;
+		if (template == null || !template.HasContent)
+		{
+			ApplyTemplateRoot();
+			return;
+		}
 
 		_templateRoot = template.CreateVisualTree();
 		if (_templateRoot == null) return;
@@ -51,10 +55,7 @@ public abstract partial class Control
 		// registered while TemplatedParent was still null (the compiler-emitted path).
 		Data.BindingEngine.RefreshTemplatedParentBindings(_templateRoot);
 
-		// If the backing widget has already been created, swap in the template widget.
-		// If it has not, Widget property creation will be skipped for the default path
-		// — override OnApplyTemplate in the concrete class if needed.
-		// For the minimal Phase-2 wire-up we re-host only when already materialised.
+		// Re-host into the default widget when the control uses it.
 		ApplyTemplateRoot();
 	}
 
@@ -71,11 +72,34 @@ public abstract partial class Control
 			StampTemplatedParent(child, templatedParent);
 	}
 
+	// The default host created by CreateWidget; null for controls that supply their own widget.
+	Gtk.Box? _templateHost;
+
+	/// <inheritdoc/>
+	protected override Gtk.Widget CreateWidget()
+	{
+		var host = new Gtk.Box(Gtk.Orientation.Vertical, 0);
+		_templateHost = host;
+		ApplyTemplateRoot();
+		return host;
+	}
+
 	/// <summary>
-	/// Hosts the current <see cref="_templateRoot"/> inside this control's GTK widget.
-	/// Base implementation does nothing — concrete controls override as needed.
+	/// Hosts the current template root in the default widget. Controls that override
+	/// <see cref="UIElement.CreateWidget"/> with their own widget keep this a no-op.
 	/// </summary>
-	protected virtual void ApplyTemplateRoot() { }
+	protected virtual void ApplyTemplateRoot()
+	{
+		if (_templateHost == null) return;
+		for (var child = _templateHost.FirstChild; child != null; child = _templateHost.FirstChild)
+			_templateHost.Remove(child);
+		if (_templateRoot == null) return;
+		_templateHost.Append(_templateRoot.Widget);
+		OnApplyTemplate();
+	}
+
+	/// <summary>Called after the template visual tree has been built and hosted.</summary>
+	public virtual void OnApplyTemplate() { }
 
 	/// <summary>
 	/// Calls <see cref="ApplyTemplateRoot"/> after the backing widget is first created.
