@@ -16,7 +16,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			"System.Windows.Point", "System.Windows.Size", "System.Windows.Rect",
 			"System.Windows.Media.Color", "System.Windows.FontWeight", "System.Windows.FontStyle",
 			"System.Windows.FontStretch", "System.Windows.Media.Animation.Duration",
-			"System.Windows.Media.Animation.RepeatBehavior",
+			"System.Windows.Media.Animation.RepeatBehavior", "System.DateTime",
 		};
 
 		// Reference types with a built-in converter that CLR (non-DP) properties of exactly that type use.

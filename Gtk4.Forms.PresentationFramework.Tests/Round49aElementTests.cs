@@ -145,6 +145,15 @@ public class Round49aControlHostTests : WpfGtkTestBase
 	});
 
 	[Fact]
+	public void A_Window_content_reports_the_Window_as_its_Parent() => Run(() =>
+	{
+		var panel = new StackPanel();
+		var window = new Window { Content = panel };
+		Assert.Same(window, panel.Parent);
+		Assert.Null(window.Parent);
+	});
+
+	[Fact]
 	public void A_Control_subclass_without_a_template_still_gets_a_widget() => Run(() =>
 		Assert.NotNull(new Gauge().Widget));
 }
