@@ -32,6 +32,9 @@ internal static class AnimationScheduler
 	// knows whether to enforce the GTK-thread contract.
 	static bool _gtkReady;
 
+	// The thread that initialised GTK; it owns the UI before the main loop starts (OnStartup).
+	static int _uiThreadId;
+
 	/// <summary>
 	/// Override hook used by unit tests to inject a custom "is on GLib main-loop thread"
 	/// predicate.  When null and <see cref="_gtkReady"/> is false the check is skipped.
@@ -44,7 +47,7 @@ internal static class AnimationScheduler
 	/// </summary>
 	internal static void NotifyGtkInitialised()
 	{
-		lock (_lock) { _gtkReady = true; }
+		lock (_lock) { _gtkReady = true; _uiThreadId = Environment.CurrentManagedThreadId; }
 	}
 
 	/// <summary>
@@ -163,7 +166,7 @@ internal static class AnimationScheduler
 		// Only enforce when GTK is actually running.
 		if (!_gtkReady) return;
 
-		if (!GLib.MainContext.Default.IsOwner)
+		if (Environment.CurrentManagedThreadId != _uiThreadId && !GLib.MainContext.Default.IsOwner)
 			throw new InvalidOperationException(
 				"AnimationScheduler.Register must be called on the GLib main-loop thread. "
 				+ "Marshal the call via GLib.Idle.Add or the application dispatcher.");
