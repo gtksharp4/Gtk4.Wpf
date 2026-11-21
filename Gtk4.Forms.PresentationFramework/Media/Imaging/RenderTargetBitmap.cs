@@ -20,7 +20,7 @@ namespace System.Windows.Media.Imaging;
 /// </para>
 /// <para>
 /// <b>Pixel format:</b> the internal buffer is always pre-multiplied BGRA (Cairo ARGB32).
-/// <see cref="CopyPixels"/> copies raw BGRA bytes; pass
+/// <c>CopyPixels</c> copies raw BGRA bytes; pass
 /// <see cref="PixelFormats.Pbgra32"/> to the constructor as WPF convention — the value is
 /// accepted but does not change the backing format.
 /// </para>
@@ -112,43 +112,7 @@ public sealed class RenderTargetBitmap : BitmapSource
 		Array.Copy(data, 0, pixels, 0, len);
 	}
 
-	// ── CopyPixels ───────────────────────────────────────────────────────────
-
-	/// <summary>
-	/// Copies the rendered BGRA pixel data into <paramref name="pixels"/>.
-	/// </summary>
-	/// <param name="pixels">
-	/// Destination buffer.  Must have length &gt;= <c>stride * PixelHeight + offset</c>.
-	/// </param>
-	/// <param name="stride">Row stride in bytes; must be &gt;= <c>PixelWidth * 4</c>.</param>
-	/// <param name="offset">Start offset within <paramref name="pixels"/>.</param>
-	/// <exception cref="ArgumentNullException"><paramref name="pixels"/> is null.</exception>
-	/// <exception cref="ArgumentException">Buffer too small or stride too narrow.</exception>
-	public void CopyPixels(byte[] pixels, int stride, int offset)
-	{
-		if (pixels == null)
-			throw new ArgumentNullException(nameof(pixels));
-		if (stride < PixelWidth * 4)
-			throw new ArgumentException(
-				$"stride ({stride}) must be >= PixelWidth * 4 ({PixelWidth * 4}).",
-				nameof(stride));
-
-		int required = stride * PixelHeight + offset;
-		if (pixels.Length < required)
-			throw new ArgumentException(
-				$"Buffer length ({pixels.Length}) < stride * PixelHeight + offset ({required}).",
-				nameof(pixels));
-
-		byte[] src = _pixels ?? new byte[PixelHeight * PixelWidth * 4];
-		int srcStride = PixelWidth * 4;
-
-		for (int row = 0; row < PixelHeight; row++)
-		{
-			int srcOff = row * srcStride;
-			int dstOff = offset + row * stride;
-			Array.Copy(src, srcOff, pixels, dstOff, srcStride);
-		}
-	}
+	internal override byte[] GetPixelData() => _pixels ?? new byte[PixelHeight * PixelWidth * 4];
 
 	// ── Internal pixel access for tests ──────────────────────────────────────
 

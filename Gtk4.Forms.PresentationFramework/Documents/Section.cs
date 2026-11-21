@@ -7,10 +7,13 @@ namespace System.Windows.Documents;
 /// Renders as its child blocks concatenated (with blank-line separators).
 /// </summary>
 [ContentProperty("Blocks")]
-public class Section : Block
+public partial class Section : Block
 {
 	/// <summary>Child blocks in this section.</summary>
-	public BlockCollection Blocks { get; } = new BlockCollection();
+	public BlockCollection Blocks { get; }
+
+	/// <summary>Creates an empty section.</summary>
+	public Section() => Blocks = new BlockCollection(this);
 
 	/// <inheritdoc/>
 	internal override void AppendPlainText(System.Text.StringBuilder sb)

@@ -4,24 +4,16 @@ using System.Windows.Markup;
 namespace System.Windows.Documents;
 
 /// <summary>
-/// Flow direction and language for flow content. <see cref="TextElement"/> is not a DependencyObject here, so
-/// these are plain properties that are rendered only when set explicitly: direction as a Unicode bidi isolate
-/// (<see cref="BidiMarks"/>) and language as a Pango <c>lang</c> span. Unlike WPF they do not inherit from the
-/// parent element and are not dependency properties.
+/// Flow direction and language for flow content. Flow direction is a plain property here, so
+/// it is rendered only when set explicitly: direction as a Unicode bidi isolate
+/// (<see cref="BidiMarks"/>) and language as a Pango <c>lang</c> span. Unlike WPF it does not inherit from the
+/// parent element and is not a dependency property.
 /// </summary>
 public abstract partial class TextElement
 {
 	FlowDirection? _flowDirection;
-	XmlLanguage? _language;
 
-	/// <summary>The localization language (default en-US).</summary>
-	public XmlLanguage Language
-	{
-		get => _language ?? XmlLanguage.GetLanguage("en-US");
-		set => _language = value ?? throw new ArgumentNullException(nameof(value));
-	}
-
-	internal bool HasFlowOrLanguage => _flowDirection != null || _language != null;
+	internal bool HasFlowOrLanguage => _flowDirection != null || HasLocalLanguage;
 
 	internal FlowDirection GetFlowDirection() => _flowDirection ?? FlowDirection.LeftToRight;
 
@@ -52,11 +44,15 @@ public abstract partial class TextElement
 		else AppendLanguage(sb, body);
 	}
 
+	/// <summary>Wraps <paramref name="body"/> in the local font size and language spans (nothing when unset).</summary>
 	internal void AppendLanguage(StringBuilder sb, System.Action<StringBuilder> body)
 	{
-		if (_language != null)
-			sb.Append("<span lang=\"").Append(PangoMarkup.Escape(_language.IetfLanguageTag)).Append("\">");
+		string? size = PangoSizeAttribute();
+		if (size != null) sb.Append("<span ").Append(size).Append('>');
+		if (HasLocalLanguage)
+			sb.Append("<span lang=\"").Append(PangoMarkup.Escape(Language.IetfLanguageTag)).Append("\">");
 		body(sb);
-		if (_language != null) sb.Append("</span>");
+		if (HasLocalLanguage) sb.Append("</span>");
+		if (size != null) sb.Append("</span>");
 	}
 }

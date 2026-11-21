@@ -1891,6 +1891,77 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   from the markup on every apply (no `x:Shared`/`TemplateBinding` tracking beyond the builder's own); the
   `SerializationInfo` ctor of `XamlParseException` is missing; `Style.Triggers` content-model entries other than
   `Setters` are not read from bare content; `samples-coverage.json` is still the Round 48 measurement.
+- **Round 50 (lane B) track A - imaging-codecs (DONE, merged).** `gf50b/imaging-codecs` (merge `2063d423`): the pixel
+  model (`PixelFormats`, indexed formats, `BitmapPalette(s)`), `BitmapFrame`, `BitmapDecoder`/`BitmapEncoder` for BMP,
+  GIF, JPEG, PNG and TIFF on gdk-pixbuf plus managed BMP/GIF codecs (WDP is a documented gap), `BitmapMetadata`,
+  `BitmapCacheOption`/`BitmapCreateOptions` and `BitmapImage.Format`. Samples: the imaging apps that read
+  `BitmapFrame`, `BitmapCacheOption`, `BitmapCreateOptions`, `BitmapPalettes` and `PixelFormats.Indexed1` are the
+  targets.
+- **Round 50 (lane B) track B - flow-document-tables (DONE, merged).** `gf50b/flow-document-tables` (merge
+  `adbdfb87`): `FrameworkContentElement` as the base of flow content, `FlowDocument` column, page and typography
+  properties, the `Table`/`TableRowGroup`/`TableRow`/`TableCell`/`TableColumn` family and `FlowDocumentReader`.
+- **Round 50 (lane B) track C - text-ranges-typefaces (DONE, merged).** `gf50b/text-ranges-typefaces` (merge
+  `d969770b`): `TextPointer`, `TextRange` `Load`/`Save` (Text, Xaml, Rtf, XamlPackage), `FlowDocument.ContentStart`/
+  `ContentEnd`, `Typeface`/`GlyphTypeface`/`Fonts`/`FamilyTypeface` on Pango and the `Typography` tail.
+- **Round 50 (lane B) review (Opus) + fixes - DONE.** **A-F1** `BitmapImage.EndInit` reads a stream source, and a
+  local file with `BitmapCacheOption.OnLoad`, into memory at once (decode stays lazy), so the stream or file can go
+  away; a plain file `UriSource` keeps the `Gtk.Picture` file path. **A-F2** multi-page TIFF: the decoder walks the
+  IFD chain and hands each page to gdk-pixbuf as its own file (header pointing at that IFD, next link cleared); the
+  encoder is a managed baseline writer (one little-endian IFD per frame, 8-bit RGB or RGBA, None or LZW). `Zip` is
+  written as LZW because the bundled libtiff cannot read Zip strips; `SupportsMultipleFrames` is now true. **A-F3**
+  `BitmapFrame`, `BitmapDecoder`, `BitmapEncoder` and `BitmapCodecInfo` have protected constructors (a derived
+  `BitmapEncoder` overrides `Save`), `BitmapFrame.BaseUri` has a public setter and `ImageMetadata` is the base of
+  `BitmapMetadata`; `Frame.Metadata` is typed `ImageMetadata`. **A-F4** `BitmapSource.Create` throws
+  `InvalidOperationException` for an indexed format without a palette and names `pixels`/`buffer` for a short buffer.
+  **A-F6** `Width`/`Height` fall back to 96 dpi. **A-F7** fixed palettes are built once; the BW and gray "Transparent"
+  palettes stay opaque (WIC ignores the transparent flag for them; only the halftone ones gain an entry). **A-F8** exact-value tests for Bgr565, Bgr555, Rgb24, Gray16 and Cmyk32 and
+  odd-width, padded-stride Indexed2/4 and Gray2/4 (the converter was right); a GTK test pins the file-path route
+  (`Picture.File` set; a `Gdk.MemoryTexture` check was dropped because GTK itself loads a file into a memory texture).
+  **A-F9** long lines wrapped, `CodecRoundTripTests` split, the stale imaging scratch folder removed. **B-F1**
+  `FlowDocumentScrollViewer` shares `ScrollViewer`'s scroll-bar properties through `AddOwner` (vertical default
+  Visible, horizontal Auto); `ScrollViewer` now validates the enum like WPF. **B-F2** the four `Table*Collection`
+  types are sealed `IList<T>`/`IList` over an internal parented list; the public `TextElementCollection<T>` is gone.
+  **B-F3** `FrameworkContentElement.NameProperty` backs `Name` (WPF shares it with `FrameworkElement.NameProperty`
+  through `AddOwner`; lane A should make the generator assign `Name` for `x:Name` on a content element). **B-F4** the
+  `TextElement` DP doc is current. **B-F6** `TableCell.TextAlignment` inherits; the Block-DP gap is recorded on
+  `TableCell`. **C-B50b-1** `DeleteRange` logs the measured symbol difference, so pointers after a delete that starts
+  outside a paragraph land correctly. **C-B50b-2** RTF `\ucN` is tracked per group, the `\uN` fallback skips N units
+  (a `\'hh` escape counts as one) and negative values wrap. **C-B50b-3** an Underline-location `TextDecorations` is
+  written as RTF `\ul` and as `TextDecorations="Underline"` in XAML, and read back. **C-B50b-4** XamlPackage is an OPC
+  package with `_rels/.rels` and a relationships content type; the entry part is resolved through the entry
+  relationship with `Xaml/Document.xaml` as the fallback. Only the XAML part is carried (no images). The relationship
+  type `http://schemas.microsoft.com/wpf/2005/10/xaml/entry` (WpfPayload `XamlRelationshipFromPackageToEntryPart`) is
+  from memory and was not checked against the dotnet/wpf source. **C-B50b-5** a whole-document replace or delete that
+  empties the blocks leaves one empty paragraph. **C-B50b-6** `TextPointer.Offset` clamps to the content. **C-B50b-7**
+  `FontModelTests`, `TextRangeTests` and `TextRangeIOTests` split and wrapped. **CI-2** `ImageBrush` paints any
+  `BitmapSource` from its decoded pixels (premultiplied into an Argb32 surface); a local PNG still uses the cairo fast
+  path. Rejected in triage: **B-F5** (the three MarkupCompiler test edits follow from `TextElement` becoming a
+  `DependencyObject`; a note for the lane A hand-off) and **CI-1** (`Image` already sets `CanShrink = false` for
+  `Stretch.None`). Not applied: **A-F5** (see Carry-over), **B-F6**'s `TableColumn.Width` validator (`GridLength`
+  already rejects negative and NaN values, so it could never fire) (see the follow-up). **Round 50 (lane B) totals: 5691 tests** (255
+  WindowsBase + 4747 PresentationFramework + 584 MarkupCompiler (1 skipped, Windows) + 34 ProjectConverter + 71
+  Wpf.Testing (5 skipped)), all pass; `dotnet build Gtk4.Wpf.sln` 0 warnings. `Integration.Tests` not run. **Samples
+  gate:** Gtk4.Forms.Wpf and its three Gtk4.Forms dependencies packed from the fixed tree into a lane-private feed
+  (isolated cache, `Gtk4.*` mapped to that feed only). All 130 `build=pass` projects still build through the two-build
+  recipe (126 in two builds; CustomApplicationClass needs its sibling CustomApplicationClient converted first, so it
+  was built as a pair; three were re-run after an aborted batch) and all 119 `run=runs` apps still start with a window
+  for 10 s, one at a time. Thirteen showed as hangs under load in the first pass and ran when re-run alone
+  (BindingDPToDP, DataBindingToStringFomat, DataTrigger, MasterDetail, SimpleBinding, SpellChecking,
+  FindingElementInPanel, WidthProperties, CustomRoutedEvents, RoutedEventHandling, CustomRoutedCommand,
+  HandlingEventOnCommandUsingCode, VideoViewerDemo); no regression.
+- **Carry-over (Round 50 lane B)**: `FileFormatException` stays in `Gtk4.Forms.PresentationFramework`: moving it to
+  `WindowsBase` makes every `-windows` target ambiguous with the framework's `System.IO.Packaging` type (CS0433), so
+  it needs a `#if` per target rather than a move; JPEG XR (WDP) has no codec; TIFF decoding reads no resolution tags
+  and encodes only 8-bit RGB(A); the `Name` generator hand-off to lane A (B-F3) is open.
+- **Round 50 (lane B) follow-up.** `BitmapPalettes` BW/gray "Transparent" palettes reverted to opaque (WIC ignores
+  the flag; only the caching stays). `BitmapImage.LoadedBytes` feeds the clipboard image and makes an OnLoad `UriSource`
+  image an in-memory `Image` texture. `Typeface.Equals(Typeface)` is no longer public (Learn lists only
+  `Equals(object)`; the earlier "WPF declares it" claim was wrong). `ImageSource.Metadata` is virtual and
+  `BitmapSource`/`BitmapFrame` override it (typed `ImageMetadata`; null for a `BitmapImage`). Table collections gain
+  `AddRange`, `RemoveRange`, `Capacity`, `TrimToSize` and public `IsSynchronized`/`SyncRoot`/`CopyTo(Array,int)`.
+  `FrameworkContentElement.Name` validates XAML identifiers. Long lines wrapped; the `end=9` text-range test now
+  asserts the surviving text. Not applied: `TextPointer.Offset` caching (direct tree edits are not versioned, and a
+  test pins the clamp) and `FileFormatException` (still open, an actual move was not attempted).
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a

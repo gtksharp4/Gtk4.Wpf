@@ -35,12 +35,12 @@ public class GeneratorV2FixTests : GeneratorV2TestBase
 	}
 
 	[Fact]
-	public void A_Run_with_Background_and_Foreground_uses_CLR_assignment_and_compiles()
+	public void A_Run_with_Background_and_Foreground_uses_the_dependency_properties_and_compiles()
 	{
 		string code = Gen($@"<Window x:Class=""A.W"" {Head}><TextBlock>"
 			+ @"<Run Background=""Yellow"" Foreground=""Red"" Text=""x""/></TextBlock></Window>");
-		Assert.DoesNotContain("Run.BackgroundProperty", code);
-		Assert.DoesNotContain("Run.ForegroundProperty", code);
+		Assert.Contains("SetValue(System.Windows.Documents.Run.BackgroundProperty,", code);
+		Assert.Contains("SetValue(System.Windows.Documents.Run.ForegroundProperty,", code);
 		AssertCompiles(code, WindowStub);
 	}
 

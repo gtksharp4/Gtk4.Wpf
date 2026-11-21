@@ -1,0 +1,28 @@
+using System.Globalization;
+
+namespace System.Windows;
+
+public partial class FrameworkContentElement
+{
+	// WPF NameValidationHelper: null and empty are allowed, otherwise a XAML identifier.
+	static bool IsValidName(object? value)
+	{
+		if (value == null)
+			return true;
+		if (!(value is string name))
+			return false;
+		for (int i = 0; i < name.Length; i++)
+		{
+			var category = char.GetUnicodeCategory(name[i]);
+			bool start = name[i] == '_' || category == UnicodeCategory.LetterNumber
+				|| (category >= UnicodeCategory.UppercaseLetter && category <= UnicodeCategory.OtherLetter);
+			bool part = start || category == UnicodeCategory.NonSpacingMark
+				|| category == UnicodeCategory.SpacingCombiningMark
+				|| category == UnicodeCategory.DecimalDigitNumber
+				|| category == UnicodeCategory.ConnectorPunctuation || category == UnicodeCategory.Format;
+			if (!(i == 0 ? start : part))
+				return false;
+		}
+		return true;
+	}
+}

@@ -89,8 +89,10 @@ internal sealed partial class GtkClipboardBackend
 		return copy.ToArray();
 	}
 
-	static byte[]? ImageBytes(BitmapImage image)
+	internal static byte[]? ImageBytes(BitmapImage image)
 	{
+		if (image.LoadedBytes != null)
+			return image.LoadedBytes;
 		if (image.StreamSource != null)
 			return ReadAll(image.StreamSource);
 		return image.UriSource is { IsFile: true } uri && File.Exists(uri.LocalPath)

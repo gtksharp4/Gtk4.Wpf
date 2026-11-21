@@ -101,6 +101,8 @@ public partial class Image : FrameworkElement
 	{
 		if (source == null)
 			_picture.Paintable = null;
+		else if (IsInMemory(source))
+			ApplyBitmap((System.Windows.Media.Imaging.BitmapSource)source);
 		else
 			_picture.Filename = ImageSourceLocation.ResolveFilePath(source);
 	}
@@ -108,5 +110,8 @@ public partial class Image : FrameworkElement
 	void ApplyStretch(Media.Stretch stretch)
 	{
 		_picture.ContentFit = ImageStretchMap.ToContentFit(stretch);
+		// GTK has no natural-size fit: ScaleDown never enlarges, and a picture that cannot shrink
+		// requests the intrinsic (pixel) size of its paintable, so Stretch.None shows the image 1:1.
+		_picture.CanShrink = stretch != Media.Stretch.None;
 	}
 }

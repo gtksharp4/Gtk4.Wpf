@@ -10,7 +10,7 @@ namespace System.Windows.Documents;
 /// attribute, Pango silently ignores the unknown attribute; no runtime error occurs.
 /// </para>
 /// </summary>
-internal static class TypographyPango
+internal static partial class TypographyPango
 {
 	/// <summary>
 	/// Builds the Pango <c>font_features</c> token list from the Typography attached-property
@@ -28,7 +28,9 @@ internal static class TypographyPango
 		bool kerning = Typography.GetKerning(element);
 		var variants = Typography.GetVariants(element);
 
-		return BuildFontFeatures(capitals, numeralStyle, fraction, stdLigatures, kerning, variants);
+		var basic = BuildFontFeatures(capitals, numeralStyle, fraction, stdLigatures, kerning, variants);
+		var tail = BuildTailFeatures(element);
+		return basic.Length == 0 ? tail : tail.Length == 0 ? basic : basic + "," + tail;
 	}
 
 	/// <summary>
