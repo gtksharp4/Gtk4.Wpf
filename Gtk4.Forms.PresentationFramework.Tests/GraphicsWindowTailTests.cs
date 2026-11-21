@@ -197,4 +197,15 @@ public class GraphicsWindowTailTests : WpfGtkTestBase
 		}
 		finally { w.Hide(); }
 	});
+
+	[Fact]
+	public void PathMarkupConvertsToGeometryForClipAndData()
+	{
+		var g = System.Windows.Markup.XamlValueConverter.Convert(
+			typeof(Image), UIElement.ClipProperty, "M0,150 L100,0 200,150Z");
+		Assert.IsType<PathGeometry>(g);
+		var data = System.Windows.Markup.XamlValueConverter.Convert(
+			typeof(Path), Path.DataProperty, "M10,100 C 100,0 200,200 300,100 z");
+		Assert.IsType<PathGeometry>(data);
+	}
 }
