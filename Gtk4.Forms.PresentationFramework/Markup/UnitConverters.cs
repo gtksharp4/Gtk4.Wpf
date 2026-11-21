@@ -75,10 +75,27 @@ static class UnitConverters
 	{
 		var s = raw.Trim();
 		if (s.Length == 0) return new Uri("", UriKind.Relative);
-		// .NET reads a leading '/' as file:/// on Unix; WPF keeps it relative.
-		if (s[0] == '/' && !s.StartsWith("//", StringComparison.Ordinal)) return new Uri(s, UriKind.Relative);
+		// .NET reads a leading '/' as file:/// on Unix; WPF keeps it relative (app-root). A real Unix file path
+		// also starts with '/', so it stays absolute when its parent directory exists below the filesystem root.
+		if (s[0] == '/' && !s.StartsWith("//", StringComparison.Ordinal))
+			return IsUnixFilePath(s, IO.Path.DirectorySeparatorChar == '/', IO.Directory.Exists)
+				? new Uri(s, UriKind.Absolute)
+				: new Uri(s, UriKind.Relative);
 		try { return new Uri(s, UriKind.RelativeOrAbsolute); }
 		catch (UriFormatException) { return MakeUri(s); }
+	}
+
+	/// <summary>
+	/// True for an absolute Unix filesystem path (<c>/home/u/a.png</c>) as opposed to WPF's app-root-relative
+	/// form (<c>/images/a.png</c>, <c>/a.xaml</c>): only on Unix, and only when the parent directory exists and is
+	/// not the root itself.
+	/// </summary>
+	internal static bool IsUnixFilePath(string s, bool isUnix, Func<string, bool> directoryExists)
+	{
+		if (!isUnix) return false;
+		int slash = s.LastIndexOf('/');
+		if (slash <= 0) return false;
+		return directoryExists(s.Substring(0, slash));
 	}
 
 	static Uri MakeUri(string s)
@@ -86,9 +103,12 @@ static class UnitConverters
 		if (s.Length == 0)
 			throw new FormatException("Cannot parse ImageSource from an empty string.");
 		s = s.Replace('\\', '/');
-		// A root-relative path would otherwise become file:///... on Unix; keep it app-relative.
+		// A root-relative path would otherwise become file:///... on Unix; keep it app-relative, unless it is a
+		// real Unix file path (see IsUnixFilePath).
 		if (s.StartsWith("/", StringComparison.Ordinal) && !s.StartsWith("//", StringComparison.Ordinal))
-			return new Uri(s, UriKind.Relative);
+			return IsUnixFilePath(s, IO.Path.DirectorySeparatorChar == '/', IO.Directory.Exists)
+				? new Uri(s, UriKind.Absolute)
+				: new Uri(s, UriKind.Relative);
 		// .NET cannot parse the ",,," authority of pack://application:,,, URIs; keep the host and path.
 		// The URI is normalised to pack://application/..., so UriSource does not round-trip the original.
 		if (s.StartsWith("pack://application:,,,", StringComparison.OrdinalIgnoreCase))

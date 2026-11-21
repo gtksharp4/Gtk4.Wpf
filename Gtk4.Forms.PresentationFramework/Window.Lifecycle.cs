@@ -25,6 +25,7 @@ public partial class Window
 	bool _contentRenderPending;
 	bool _paintedBeforeLoaded;
 	bool _afterPaintHooked;
+	bool _laidOut;
 	Gdk.FrameClock? _frameClock;
 
 	/// <summary>Raised once when the native window has been created (GTK realize), before it is shown.</summary>
@@ -67,6 +68,7 @@ public partial class Window
 
 	void OnNativeUnrealized()
 	{
+		_laidOut = false;
 		if (_frameClock != null)
 		{
 			_frameClock.Layout -= OnFrameLayout;
@@ -92,6 +94,7 @@ public partial class Window
 
 	void OnFrameLayout(object? sender, EventArgs e)
 	{
+		_laidOut = true;
 		if (IsLoaded)
 			GtkAllocationSync.Sync(this);
 	}
@@ -119,10 +122,13 @@ public partial class Window
 		{
 			if (_closed) return;
 			LifecycleBroadcaster.BroadcastLoaded(this);
-			// GTK has usually allocated (and laid out) before this idle work runs, and a static
-			// window lays out no further frames: publish the current allocation now.
-			if (_window != null && _window.IsMapped)
+			// If GTK already laid out a frame, a static window lays out no further frames: publish the allocation
+			// now. Otherwise (dispatcher work runs ahead of GTK layout) the first layout pass syncs, so the window
+			// is never published with children that are still 0x0.
+			if (_window != null && _window.IsMapped && _laidOut)
 				GtkAllocationSync.Sync(this);
+			else
+				_window?.QueueResize();   // guarantees the layout pass (and its sync) rather than assuming it
 			// A frame painted before Loaded ran (GTK paints at a higher priority than idle work)
 			// already rendered the content: report it now rather than waiting for another frame.
 			if (_paintedBeforeLoaded)
