@@ -23,7 +23,7 @@ internal static class AnimationScheduler
 {
 	const uint TickIntervalMs = 16; // ~60 fps
 
-	static readonly List<AnimationClock> _active = new List<AnimationClock>();
+	static readonly List<Clock> _active = new List<Clock>();
 	static bool _running;
 	static DateTime _lastTick = DateTime.UtcNow;
 	static readonly object _lock = new object();
@@ -55,12 +55,12 @@ internal static class AnimationScheduler
 	/// When GTK is not running (pure unit tests) the GLib timer is not started and
 	/// the clock is added to the list only (ticked via <see cref="AnimationClock.Tick"/>).
 	/// </summary>
-	internal static void Register(AnimationClock clock)
+	internal static void Register(Clock clock)
 	{
 		AssertGtkThread();
 		lock (_lock)
 		{
-			_active.Add(clock);
+			if (!_active.Contains(clock)) _active.Add(clock);
 			if (_gtkReady && !_running)
 			{
 				_running = true;
@@ -74,7 +74,7 @@ internal static class AnimationScheduler
 	/// Removes <paramref name="clock"/> from the scheduler. The clock's own
 	/// <see cref="AnimationClock.Stop"/> still removes the animation value.
 	/// </summary>
-	internal static void Unregister(AnimationClock clock)
+	internal static void Unregister(Clock clock)
 	{
 		lock (_lock)
 			_active.Remove(clock);
@@ -84,18 +84,26 @@ internal static class AnimationScheduler
 	/// Test-only entry point that calls <see cref="Register"/> (and thus the GTK-thread
 	/// assertion).  Used to verify that the guard fires when called from a non-GTK thread.
 	/// </summary>
-	internal static void RegisterForTest(AnimationClock clock) => Register(clock);
+	internal static void RegisterForTest(Clock clock) => Register(clock);
 
 	/// <summary>
 	/// Test-only entry point that calls <see cref="Unregister"/> without requiring the
 	/// GTK thread (cleanup after a failed <see cref="RegisterForTest"/> call that threw).
 	/// </summary>
-	internal static void UnregisterForTest(AnimationClock clock) => Unregister(clock);
+	internal static void UnregisterForTest(Clock clock) => Unregister(clock);
+
+	/// <summary>Test-only: ticks every registered clock by <paramref name="delta"/> without a GLib loop.</summary>
+	internal static void TickAllForTest(TimeSpan delta)
+	{
+		Clock[] snapshot;
+		lock (_lock) snapshot = _active.ToArray();
+		foreach (var clock in snapshot) clock.Tick(delta);
+	}
 
 	// Called on the GLib main-loop thread every ~16 ms.
 	static bool OnTick()
 	{
-		List<AnimationClock> snapshot;
+		List<Clock> snapshot;
 		lock (_lock)
 		{
 			if (_active.Count == 0)
@@ -103,14 +111,14 @@ internal static class AnimationScheduler
 				_running = false;
 				return false; // stop the timeout source
 			}
-			snapshot = new List<AnimationClock>(_active);
+			snapshot = new List<Clock>(_active);
 		}
 
 		var now = DateTime.UtcNow;
 		var delta = now - _lastTick;
 		_lastTick = now;
 
-		var completed = new List<AnimationClock>();
+		var completed = new List<Clock>();
 		foreach (var clock in snapshot)
 		{
 			clock.Tick(delta);
