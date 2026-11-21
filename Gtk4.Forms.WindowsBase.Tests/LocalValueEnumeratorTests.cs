@@ -86,4 +86,14 @@ public class LocalValueEnumeratorTests
 		e3.MoveNext();
 		Assert.True(e1.Current != e3.Current);
 	}
+
+	static readonly DependencyPropertyKey RoKey =
+		DependencyProperty.RegisterReadOnly("Ro", typeof(int), typeof(Subject), new PropertyMetadata(0));
+
+	[Fact]
+	public void DependencyPropertyReadOnlyReflectsRegistration()
+	{
+		Assert.True(RoKey.DependencyProperty.ReadOnly);
+		Assert.False(Subject.AProperty.ReadOnly);
+	}
 }
