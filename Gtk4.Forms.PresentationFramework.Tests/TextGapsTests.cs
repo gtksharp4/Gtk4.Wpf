@@ -84,9 +84,12 @@ public class TextGapsTests : WpfGtkTestBase
 		var tb = new TextBox { TextWrapping = TextWrapping.Wrap, Text = "some text" };
 		var win = new Window { Content = new StackPanel { Children = { tb } } };
 		win.Show();
-		GtkPump.Until(() => tb.ActualHeight > 0, 2000);
-		win.Close();
-		Assert.True(tb.ActualHeight > 0, $"ActualHeight={tb.ActualHeight}");
+		try
+		{
+			// The size arrives with GTK's first layout pass; slow runners (macOS) need more than 2 s.
+			GtkState.Require(() => tb.ActualHeight > 0, "TextBox ActualHeight > 0", win, tb);
+		}
+		finally { win.Close(); }
 	});
 
 	[Fact]

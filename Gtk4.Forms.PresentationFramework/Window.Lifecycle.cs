@@ -127,6 +127,8 @@ public partial class Window
 			// is never published with children that are still 0x0.
 			if (_window != null && _window.IsMapped && _laidOut)
 				GtkAllocationSync.Sync(this);
+			else
+				_window?.QueueResize();   // guarantees the layout pass (and its sync) rather than assuming it
 			// A frame painted before Loaded ran (GTK paints at a higher priority than idle work)
 			// already rendered the content: report it now rather than waiting for another frame.
 			if (_paintedBeforeLoaded)
