@@ -29,7 +29,7 @@ dpkg -s libgtk-4-1 2>/dev/null | grep -i '^Version' || true
 
 echo "== build (Debug; GeneratePackageOnBuild off - CI tests, it does not pack) =="
 # The filter leaves out the WPF HelloWorld sample (net10.0-windows): it needs the Windows SDK.
-dotnet build Gtk4.Forms.CrossPlatform.slnf -c Debug -p:GeneratePackageOnBuild=false
+dotnet build Gtk4.Wpf.CrossPlatform.slnf -c Debug -p:GeneratePackageOnBuild=false
 
 # The logic suites (WindowsBase DP/dispatcher, MarkupCompiler XAML->code, Wpf.ProjectConverter) need
 # no GTK runtime or display.

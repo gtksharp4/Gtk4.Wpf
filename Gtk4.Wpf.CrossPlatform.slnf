@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "Gtk4.Forms.sln",
+    "path": "Gtk4.Wpf.sln",
     "projects": [
       "Gtk4.Forms.WindowsBase\\Gtk4.Forms.WindowsBase.csproj",
       "Gtk4.Forms.WindowsBase.Tests\\Gtk4.Forms.WindowsBase.Tests.csproj",

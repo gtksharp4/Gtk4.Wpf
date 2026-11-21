@@ -11,7 +11,7 @@ public class PackedNuspecTests
 	static string LatestNupkg()
 	{
 		var dir = new DirectoryInfo(AppContext.BaseDirectory);
-		while (dir != null && !File.Exists(Path.Combine(dir.FullName, "Gtk4.Forms.sln")))
+		while (dir != null && !File.Exists(Path.Combine(dir.FullName, "Gtk4.Wpf.sln")))
 			dir = dir.Parent;
 		Assert.NotNull(dir);
 

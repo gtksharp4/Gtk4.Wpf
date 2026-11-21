@@ -9,7 +9,7 @@ static class PackageFeed
 {
 	/// <summary>
 	/// Walks up from the test assembly location to the repository root (identified by
-	/// <c>Gtk4.Forms.sln</c>) and returns its <c>Packages</c> folder, or null when not found.
+	/// <c>Gtk4.Wpf.sln</c>) and returns its <c>Packages</c> folder, or null when not found.
 	/// </summary>
 	public static string? FindPackagesDirectory()
 	{
@@ -17,7 +17,7 @@ static class PackageFeed
 		while (dir != null)
 		{
 			string packages = Path.Combine(dir.FullName, "Packages");
-			if (File.Exists(Path.Combine(dir.FullName, "Gtk4.Forms.sln")) && Directory.Exists(packages))
+			if (File.Exists(Path.Combine(dir.FullName, "Gtk4.Wpf.sln")) && Directory.Exists(packages))
 				return packages;
 			dir = dir.Parent;
 		}

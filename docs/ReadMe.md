@@ -40,11 +40,11 @@ external WPF or `Microsoft.WindowsDesktop` SDK.
 Plain `dotnet` / MSBuild. `global.json` pins .NET SDK **10.0.100** (`rollForward: latestFeature`).
 
 ```powershell
-dotnet build Gtk4.Forms.sln                 # whole solution (11 projects)
-dotnet build Gtk4.Forms.sln -c Release
+dotnet build Gtk4.Wpf.sln                 # whole solution (11 projects)
+dotnet build Gtk4.Wpf.sln -c Release
 ```
 
-`Gtk4.Forms.sln` is the only solution in the tree. Build-wide settings live in
+`Gtk4.Wpf.sln` is the only solution in the tree. Build-wide settings live in
 `Directory.Build.props` / `Environment.Build.props`: `TreatWarningsAsErrors=true` everywhere, and
 `UseOSSpecificOutputPaths=true` (redirects to `bin-wsl/` / `obj-wsl/` so a Windows and a WSL build of
 the same tree do not fight over `obj/`).
@@ -62,7 +62,7 @@ Five suites, all **xUnit v3 on `net10.0`**, run with `dotnet test`:
 | `Gtk4.Forms.Integration.Tests` | few | yes | end-to-end: convert + build + run the embedded WPF sample (Windows-only, not in CI) |
 
 ```powershell
-dotnet test Gtk4.Forms.sln
+dotnet test Gtk4.Wpf.sln
 ```
 
 `PresentationFramework.Tests` drives real GTK 4 windows. On **Windows** it initialises GTK on an STA

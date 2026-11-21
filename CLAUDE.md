@@ -14,7 +14,7 @@ Lineage: this started as a fork of `xamarin/Xamarin.Forms` (the GTK leg) and onc
 full Xamarin.Forms→GTK 4 port. That port has been **removed** — the repository is now only the
 WPF-on-GTK layer. Branch/history notes for the earlier prune live under `docs/plans/`.
 
-**Solution:** `Gtk4.Forms.sln` is the only solution in the tree, with 11 projects (6 product + 5
+**Solution:** `Gtk4.Wpf.sln` is the only solution in the tree, with 11 projects (6 product + 5
 test). Project/package names use the `Gtk4.Forms.*` prefix; the reimplemented WPF types keep their
 `System.Windows.*` namespaces (that identity is the whole point — it is what lets WPF code compile
 unchanged).
@@ -38,8 +38,8 @@ only within this set. There is no dependency on any external WPF or `Microsoft.W
 Plain `dotnet` / MSBuild. `global.json` pins .NET SDK **10.0.100** (`rollForward: latestFeature`).
 
 ```powershell
-dotnet build Gtk4.Forms.sln                 # whole solution
-dotnet build Gtk4.Forms.sln -c Release
+dotnet build Gtk4.Wpf.sln                 # whole solution
+dotnet build Gtk4.Wpf.sln -c Release
 ```
 
 The native GTK 4 runtime arrives with the `GtkSharp4` package (GTK 4.22, floated `4.22.4.*` via
@@ -66,7 +66,7 @@ Five suites, all **xUnit v3 on `net10.0`**, run with `dotnet test`:
 | `Gtk4.Forms.Integration.Tests` | few | yes | end-to-end: add `Gtk4.Forms.Wpf` to the embedded WPF sample, build (converts), run, detect the window |
 
 ```powershell
-dotnet test Gtk4.Forms.sln                              # everything
+dotnet test Gtk4.Wpf.sln                              # everything
 dotnet test Gtk4.Forms.WindowsBase.Tests --no-build
 dotnet test Gtk4.Forms.PresentationFramework.Tests --no-build
 ```

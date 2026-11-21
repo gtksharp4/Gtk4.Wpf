@@ -24,7 +24,7 @@ if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
 Write-Host '== build (Debug; installs the gvsbuild GTK 4 runtime via GtkSharp4.targets) =='
 # GeneratePackageOnBuild is disabled: CI builds to test, not to pack. Debug is the tested config.
-dotnet build Gtk4.Forms.sln -c Debug -p:GeneratePackageOnBuild=false
+dotnet build Gtk4.Wpf.sln -c Debug -p:GeneratePackageOnBuild=false
 if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
 # XF_GTK_REQUIRE_NATIVE turns "no display / no GTK runtime" from a harness skip into a failure, so a
