@@ -55,7 +55,8 @@ public class GridItemPattern : BasePattern
 	public static readonly AutomationProperty ColumnProperty = GridItemPatternIdentifiers.ColumnProperty;
 	public static readonly AutomationProperty RowSpanProperty = GridItemPatternIdentifiers.RowSpanProperty;
 	public static readonly AutomationProperty ColumnSpanProperty = GridItemPatternIdentifiers.ColumnSpanProperty;
-	public static readonly AutomationProperty ContainingGridProperty = GridItemPatternIdentifiers.ContainingGridProperty;
+	public static readonly AutomationProperty ContainingGridProperty =
+		GridItemPatternIdentifiers.ContainingGridProperty;
 
 	readonly IGridItemProvider _provider;
 	readonly GridItemPatternInformation _cached;
@@ -156,7 +157,8 @@ public class TablePattern : BasePattern
 public class TableItemPattern : BasePattern
 {
 	public static readonly AutomationPattern Pattern = TableItemPatternIdentifiers.Pattern;
-	public static readonly AutomationProperty RowHeaderItemsProperty = TableItemPatternIdentifiers.RowHeaderItemsProperty;
+	public static readonly AutomationProperty RowHeaderItemsProperty =
+		TableItemPatternIdentifiers.RowHeaderItemsProperty;
 	public static readonly AutomationProperty ColumnHeaderItemsProperty =
 		TableItemPatternIdentifiers.ColumnHeaderItemsProperty;
 

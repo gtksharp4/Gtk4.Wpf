@@ -71,6 +71,7 @@ public partial class DataGrid
 		// Rebuild GTK grid if the widget has been realized.
 		if (_grid != null)
 			RebuildGrid();
+		ExistingAutomationPeer?.NotifyChildrenChanged();
 	}
 
 	/// <summary>

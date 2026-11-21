@@ -25,7 +25,8 @@ public class ScrollViewerAutomationPeer : FrameworkElementAutomationPeer, IScrol
 
 	protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Pane;
 
-	protected override bool IsControlElementCore() => false;
+	protected override bool IsControlElementCore() =>
+		Viewer.TemplatedParent == null || Viewer.TemplatedParent is ContentPresenter;
 
 	bool Horizontal => Viewer.ScrollableWidth > 0;
 

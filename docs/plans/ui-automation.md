@@ -367,6 +367,7 @@ The 4 `Automation.Peers` samples (ExpenseItIntro, CustomComboBox, DataBindingDem
 peer or automation error; they still fail on other layer gaps (`DataGrid` parts, `Popup`/`MenuItem` members,
 generator output, `FilterEventArgs`, `UserControl`, `System.Windows.Shell`).
 
+
 Review-fix gate (same recipe, package 1.0.0.26325 repacked from the fixed tree): 90 of 90 samples with `build=pass` still build, and 83 of 83 with `run=runs` ran in the smoke run (80 in the first 10 s pass; AddingEventHandler, ProcessingCommandLineArguments and IntroToStylingAndTemplating ran when re-run alone with a 30 s limit).
 
 ### Phase 2 — done
@@ -509,13 +510,14 @@ Landed in `Gtk4.Forms.PresentationFramework/Automation` (no new project):
   single new selection, added/removed events otherwise, one `Invalidated` above 20 changes); structure events carry
   `ChildAdded`, `ChildRemoved`, `ChildrenBulkAdded`, `ChildrenBulkRemoved`, `ChildrenReordered` or
   `ChildrenInvalidated`, from a children diff on every items change (a lone added child is the event's sender, a
-  removed one is reported by the parent with the child's runtime id); `Invoked` also for `MenuItem` (not a checkable
-  one); text selection and text changed events from `TextBox` and `RichTextBox`; property events for expand state,
+  removed one is reported by the parent with the child's runtime id; a sort raises `ChildrenReordered`); `Invoked`
+  also for `MenuItem`, checkable ones included (after their toggle); text selection and text changed events from `TextBox` and `RichTextBox`; property events for expand state,
   progress and scroll position.
-- GTK: `LabeledBy` is pushed as `AccessibleRelation.LabelledBy` (a GtkAccessibleList value built through P/Invoke,
-  because GtkSharp4 binds none of it) and reset when cleared. `LiveRegionChanged` on a peer whose `LiveSetting` is not
-  `Off`, and every `Notification` event, call `gtk_accessible_announce`. `gtk_accessible_list_new_from_array`
-  returned NULL here, so the list is built with `g_list_append` and `gtk_accessible_list_new_from_list`.
+- GTK: `LabeledBy` is pushed as `AccessibleRelation.LabelledBy` through `AccessibleExtensions.UpdateRelation` (the
+  `IAccessible[]` overload, which writes the value) and reset with `Widget.ResetRelation`. It is pushed again from the
+  label's widget creation when the labelled element's widget came first. `LiveRegionChanged` on a peer whose `LiveSetting`
+  is not `Off`, and every `Notification` event, call `Widget.Announce`. Tests read the relation target back through
+  `gtk_test_accessible_check_relation`.
 - `AutomationPeer.NotifyChildrenChanged` is the one hook `ItemsControl` and `DataGrid` call when their items change.
 - Snapshot tests of the automation tree for the five Phase 3 samples (`Wpf.Testing.Tests/Samples/
   AccessibilityTreeTests.cs`).
@@ -524,7 +526,13 @@ Deviations from the plan and WPF:
 
 - `DataGrid` is not an `ItemsControl` here, so its rows, cells and headers derive from a new public
   `GridPartAutomationPeer` rather than `ItemAutomationPeer`, and rows are cached per item reference (a repeated item
-  shares one peer). Cell values are read-only; the layer cannot edit cells.
+  shares one peer). Cell values are read-only; the layer cannot edit cells. `GridPartAutomationPeer` is not in WPF: it
+  is public only because public peers derive from it, with an internal constructor and `EditorBrowsable(Never)`.
+  `DataGridItemAutomationPeer`, `DataGridCellItemAutomationPeer` and `DataGridColumnHeaderAutomationPeer` have
+  internal constructors (WPF's are public, with other signatures), and the header peer does not derive from
+  `ButtonBaseAutomationPeer`.
+- Text ranges hold character offsets that are clamped to the current text on every use, instead of tracking text
+  positions through edits as WPF does.
 - `Hyperlink` is not an element (no widget), so `HyperlinkAutomationPeer` derives from `AutomationPeer`; there is no
   `ContentElementAutomationPeer`.
 - `TreeView.SelectedItem` is a `TreeViewItem` in this layer, so the tree's selection holds node peers.
@@ -534,16 +542,17 @@ Deviations from the plan and WPF:
 - Items added to a `ListBox` through `Items` after the widget exists still do not reach GTK (a layer gap that
   predates this phase); the peers report them anyway.
 
-Tests: 37 new in `PresentationFramework.Tests` (peer patterns, `DataGrid`, text provider ranges, events in order,
+Tests: 44 new in `PresentationFramework.Tests` (37 at the first landing, 7 from the review fixes) (peer patterns, `DataGrid`, text provider ranges, events in order,
 GTK relation, role and announcements, and the client grid and text patterns) and 5 snapshot tests in
 `Wpf.Testing.Tests`. Observed on Windows: `WindowsBase.Tests` 201, `MarkupCompiler.Tests` 575,
-`Wpf.ProjectConverter.Tests` 34, `PresentationFramework.Tests` 4257, `Wpf.Testing.Tests` 60 passed + 1 skipped, all
-passing; `dotnet build Gtk4.Forms.sln` warning-clean. Linux and macOS were not run; the P/Invoke names for
-`gtk_accessible_announce` and the relation list on those two are unverified.
+`Wpf.ProjectConverter.Tests` 34, `PresentationFramework.Tests` 4264, `Wpf.Testing.Tests` 60 passed + 1 skipped, all
+passing; `dotnet build Gtk4.Forms.sln` warning-clean. Linux and macOS were not run.
 
 Samples gate (pinned recipe, package 1.0.0.26325 packed from this branch): 90 of 90 samples with `build=pass` still
 build, and 83 of 83 with `run=runs` ran (79 in the first 10 s pass; FindingSourceElement, SimpleLayout, OpacityMasking
 and EventTriggers ran when re-run alone with a 30 s limit, the same load noise earlier phases recorded).
+
+Review-fix gate (same recipe, package 1.0.0.26325 repacked from the fixed tree): 90 of 90 samples with `build=pass` still build, and 83 of 83 with `run=runs` ran (81 in the 10 s pass; OpacityMasking and MousePointer ran when re-run alone with a 30 s limit).
 
 
 1. Should the driver package also host the app **out-of-process** (launch the converted app and attach)

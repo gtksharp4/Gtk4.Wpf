@@ -83,7 +83,8 @@ public class BreadthClientTests : UiaTestBase
 		Assert.Equal("beta", text.GetSelection()[0].GetText(-1));
 		Assert.Equal(0, found.CompareEndpoints(TextPatternRangeEndpoint.Start, text.GetSelection()[0],
 			TextPatternRangeEndpoint.Start));
-		Assert.True(document.CompareEndpoints(TextPatternRangeEndpoint.Start, found, TextPatternRangeEndpoint.Start) < 0);
+		Assert.True(document.CompareEndpoints(
+			TextPatternRangeEndpoint.Start, found, TextPatternRangeEndpoint.Start) < 0);
 		Assert.Throws<System.InvalidOperationException>(found.AddToSelection);
 		window.Close();
 	});

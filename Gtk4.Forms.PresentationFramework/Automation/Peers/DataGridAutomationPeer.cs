@@ -13,7 +13,8 @@ namespace System.Windows.Automation.Peers;
 public class DataGridAutomationPeer : FrameworkElementAutomationPeer, IGridProvider, ITableProvider,
 	ISelectionProvider
 {
-	readonly Dictionary<object, DataGridItemAutomationPeer> _rows = new Dictionary<object, DataGridItemAutomationPeer>();
+	readonly Dictionary<object, DataGridItemAutomationPeer> _rows =
+		new Dictionary<object, DataGridItemAutomationPeer>();
 	readonly Dictionary<int, DataGridColumnHeaderAutomationPeer> _headers =
 		new Dictionary<int, DataGridColumnHeaderAutomationPeer>();
 
@@ -103,7 +104,11 @@ public class DataGridAutomationPeer : FrameworkElementAutomationPeer, IGridProvi
 
 	internal override void OwnerPropertyChanged(DependencyPropertyChangedEventArgs e)
 	{
-		if (e.Property == DataGrid.SelectedItemProperty && Grid.AutomationRowIndex(e.NewValue) >= 0)
+		if (e.Property != DataGrid.SelectedItemProperty) return;
+		if (e.OldValue != null && Grid.AutomationRowIndex(e.NewValue) < 0
+			&& _rows.TryGetValue(e.OldValue, out var old))
+			old.RaiseAutomationEvent(AutomationEvents.SelectionItemPatternOnElementRemovedFromSelection);
+		if (Grid.AutomationRowIndex(e.NewValue) >= 0)
 			RowPeer(e.NewValue!).RaiseAutomationEvent(AutomationEvents.SelectionItemPatternOnElementSelected);
 	}
 }

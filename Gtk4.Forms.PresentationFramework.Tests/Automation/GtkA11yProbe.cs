@@ -83,6 +83,12 @@ static class GtkA11yProbe
 	internal static bool HasRelation(Gtk.Widget w, Gtk.AccessibleRelation r) =>
 		Fn<HasFn>("gtk_test_accessible_has_relation")(w.Handle, (int)r) != 0;
 
+	delegate IntPtr CheckRefFn(IntPtr accessible, int id, IntPtr target, IntPtr end);
+
+	/// <summary>True when the relation holds exactly the single target (the variadic list ends with NULL).</summary>
+	internal static bool RelationTargetEquals(Gtk.Widget w, Gtk.AccessibleRelation r, Gtk.Widget target) =>
+		Ok(Fn<CheckRefFn>("gtk_test_accessible_check_relation")(w.Handle, (int)r, target.Handle, IntPtr.Zero));
+
 	internal static bool StateEquals(Gtk.Widget w, Gtk.AccessibleState s, int value) =>
 		Ok(Fn<CheckIntFn>("gtk_test_accessible_check_state")(w.Handle, (int)s, value));
 }

@@ -61,6 +61,8 @@ public class TextPatternRange
 		_range = range;
 	}
 
+	public TextPattern TextPattern => _pattern;
+
 	T Run<T>(Func<T> work) => _pattern.Call(work);
 
 	void Run(Action work) => _pattern.Call(() =>

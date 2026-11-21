@@ -7,7 +7,8 @@ namespace System.Windows.Automation.Peers;
 /// <summary>The automation peer of a row of a <see cref="DataGrid"/>.</summary>
 public class DataGridItemAutomationPeer : GridPartAutomationPeer, ISelectionItemProvider
 {
-	readonly Dictionary<int, DataGridCellItemAutomationPeer> _cells = new Dictionary<int, DataGridCellItemAutomationPeer>();
+	readonly Dictionary<int, DataGridCellItemAutomationPeer> _cells =
+		new Dictionary<int, DataGridCellItemAutomationPeer>();
 
 	internal DataGridItemAutomationPeer(object item, DataGridAutomationPeer grid) : base(grid)
 	{
@@ -71,8 +72,10 @@ public class DataGridItemAutomationPeer : GridPartAutomationPeer, ISelectionItem
 	void ISelectionItemProvider.AddToSelection()
 	{
 		if (!IsEnabled()) throw new ElementNotEnabledException();
-		if (!Equals(Peer.Grid.SelectedItem, Item))
+		var selected = Peer.Grid.SelectedItem;
+		if (selected != null && !Equals(selected, Item))
 			throw new InvalidOperationException("The grid allows a single selection.");
+		Peer.Grid.AutomationSelectRow(Item);
 	}
 
 	void ISelectionItemProvider.RemoveFromSelection()

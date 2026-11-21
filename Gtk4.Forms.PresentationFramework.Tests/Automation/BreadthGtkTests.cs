@@ -25,6 +25,8 @@ public class BreadthGtkTests : WpfGtkTestBase
 		Assert.False(GtkA11yProbe.HasRelation(target, Gtk.AccessibleRelation.LabelledBy));
 		AutomationProperties.SetLabeledBy(box, label);
 		Assert.True(GtkA11yProbe.HasRelation(target, Gtk.AccessibleRelation.LabelledBy));
+		Assert.True(GtkA11yProbe.RelationTargetEquals(
+			target, Gtk.AccessibleRelation.LabelledBy, ((UIElementAutomationPeer)PeerOf(label)).Target(label.Widget)));
 		AutomationProperties.SetLabeledBy(box, null);
 		Assert.False(GtkA11yProbe.HasRelation(target, Gtk.AccessibleRelation.LabelledBy));
 	});

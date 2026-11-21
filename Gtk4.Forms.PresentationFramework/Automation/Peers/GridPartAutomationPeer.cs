@@ -6,6 +6,7 @@ namespace System.Windows.Automation.Peers;
 /// Base of the peers for things inside a grid that are not elements of their own: rows, cells and headers.
 /// They report the owning grid peer as their parent and take their state from it.
 /// </summary>
+[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 public abstract class GridPartAutomationPeer : AutomationPeer
 {
 	internal GridPartAutomationPeer(FrameworkElementAutomationPeer grid)

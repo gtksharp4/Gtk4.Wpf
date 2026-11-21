@@ -46,6 +46,7 @@ sealed partial class TextRangeProvider
 
 	public void ExpandToEnclosingUnit(TextUnit unit)
 	{
+		Normalize();
 		Enclose(Boundaries(unit), _start, out int start, out int end);
 		_start = start;
 		_end = end;
@@ -53,18 +54,22 @@ sealed partial class TextRangeProvider
 
 	public int Move(TextUnit unit, int count)
 	{
+		if (count == 0) return 0;
+		Normalize();
 		var bounds = Boundaries(unit);
 		Enclose(bounds, _start, out int start, out _);
 		int index = bounds.IndexOf(start);
 		int last = bounds.Count - 1;
 		int target = Math.Max(0, Math.Min(index + count, Math.Max(0, last - 1)));
+		bool degenerate = _start == _end;
 		_start = bounds[target];
-		_end = bounds[Math.Min(target + 1, last)];
+		_end = degenerate ? _start : bounds[Math.Min(target + 1, last)];
 		return target - index;
 	}
 
 	public int MoveEndpointByUnit(TextPatternRangeEndpoint endpoint, TextUnit unit, int count)
 	{
+		Normalize();
 		var bounds = Boundaries(unit);
 		int offset = Get(endpoint);
 		int moved = 0;

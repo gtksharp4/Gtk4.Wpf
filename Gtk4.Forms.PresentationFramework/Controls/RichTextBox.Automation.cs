@@ -26,6 +26,8 @@ public partial class RichTextBox
 		}
 	}
 
+	bool _suppressMarkSet;
+
 	internal void AutomationSelect(int start, int length)
 	{
 		_ = Widget;
@@ -33,7 +35,10 @@ public partial class RichTextBox
 		int count = buffer.CharCount;
 		start = Math.Max(0, Math.Min(start, count));
 		int end = Math.Max(start, Math.Min(start + length, count));
-		buffer.SelectRange(buffer.GetIterAtOffset(start), buffer.GetIterAtOffset(end));
+		// SelectRange sets both marks; the event is raised once, not per mark.
+		_suppressMarkSet = true;
+		try { buffer.SelectRange(buffer.GetIterAtOffset(start), buffer.GetIterAtOffset(end)); }
+		finally { _suppressMarkSet = false; }
 		RaiseSelectionChanged();
 	}
 }

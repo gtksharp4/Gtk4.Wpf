@@ -9,38 +9,6 @@ using Gtk4.Forms.PresentationFramework.Tests.Lifecycle;
 using Xunit;
 
 namespace Gtk4.Forms.PresentationFramework.Tests.Automation;
-
-/// <summary>Records every peer event (in order) for the duration of a test.</summary>
-sealed class EventLog : IDisposable
-{
-	static readonly AutomationEvents[] _all = (AutomationEvents[])Enum.GetValues(typeof(AutomationEvents));
-
-	public readonly List<string> Entries = new List<string>();
-
-	public EventLog()
-	{
-		foreach (var e in _all) AutomationPeer.AddListener(e);
-		AutomationPeer.EventRaised += OnEvent;
-		AutomationPeer.PropertyChangedRaised += OnProperty;
-	}
-
-	void OnEvent(AutomationPeer peer, AutomationEvents e)
-	{
-		var detail = e == AutomationEvents.StructureChanged ? ":" + AutomationPeer.PendingStructure?.Type : "";
-		Entries.Add($"{e}{detail} {peer.GetName()}");
-	}
-
-	void OnProperty(AutomationPeer peer, AutomationProperty p, object? o, object? n) =>
-		Entries.Add($"{p.ProgrammaticName} {peer.GetName()} {o}->{n}");
-
-	public void Dispose()
-	{
-		AutomationPeer.EventRaised -= OnEvent;
-		AutomationPeer.PropertyChangedRaised -= OnProperty;
-		foreach (var e in _all) AutomationPeer.RemoveListener(e);
-	}
-}
-
 public class BreadthEventTests : WpfGtkTestBase
 {
 	static AutomationPeer PeerOf(UIElement e) => UIElementAutomationPeer.CreatePeerForElement(e)!;
@@ -149,7 +117,7 @@ public class BreadthEventTests : WpfGtkTestBase
 	});
 
 	[Fact]
-	public void Menu_item_invoke_raises_Invoked_but_a_checkable_one_raises_its_state() => Run(() =>
+	public void Menu_item_invoke_raises_Invoked_and_a_checkable_one_also_raises_its_state() => Run(() =>
 	{
 		var item = new MenuItem { Header = "Open" };
 		var check = new MenuItem { Header = "Wrap", IsCheckable = true };
@@ -158,8 +126,12 @@ public class BreadthEventTests : WpfGtkTestBase
 		Assert.True(GtkPump.Until(() => log.Entries.Count > 0));
 		Assert.Equal(new[] { "InvokePatternOnInvoked Open" }, log.Entries);
 		log.Entries.Clear();
-		((IToggleProvider)PeerOf(check).GetPattern(PatternInterface.Toggle)!).Toggle();
-		Assert.Equal(new[] { "TogglePatternIdentifiers.ToggleStateProperty Wrap Off->On" }, log.Entries);
+		((IInvokeProvider)PeerOf(check).GetPattern(PatternInterface.Invoke)!).Invoke();
+		Assert.True(GtkPump.Until(() => log.Entries.Count > 1));
+		Assert.Equal(new[]
+		{
+			"TogglePatternIdentifiers.ToggleStateProperty Wrap Off->On", "InvokePatternOnInvoked Wrap",
+		}, log.Entries);
 	});
 
 	[Fact]
@@ -196,6 +168,12 @@ public class BreadthEventTests : WpfGtkTestBase
 		box.Text = "changed";
 		Assert.Equal(1, log.Entries.FindAll(e => e.StartsWith("TextPatternOnTextChanged")).Count);
 		Assert.Equal(1, log.Entries.FindAll(e => e.StartsWith("ValuePatternIdentifiers.ValueProperty")).Count);
+		var rich = new RichTextBox();
+		rich.AppendText("hello world");
+		var richText = (ITextProvider)PeerOf(rich).GetPattern(PatternInterface.Text)!;
+		log.Entries.Clear();
+		richText.DocumentRange.FindText("world", false, false).Select();
+		Assert.Equal(new[] { "TextPatternOnTextSelectionChanged " }, log.Entries);
 	});
 
 	[Fact]

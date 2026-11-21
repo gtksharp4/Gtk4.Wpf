@@ -34,6 +34,8 @@ public abstract partial class UIElement
 		AutomationAccessiblePush.Push(widget, this, created: true);
 		try { peer?.PushAccessible(widget, created: true); }
 		catch (Exception e) { LogPeerFailure("peer", e); }
+		try { UIElementAutomationPeer.ResyncLabelledElements(this); }
+		catch (Exception e) { LogPeerFailure("labelled-by", e); }
 	}
 
 	void LogPeerFailure(string what, Exception e) =>

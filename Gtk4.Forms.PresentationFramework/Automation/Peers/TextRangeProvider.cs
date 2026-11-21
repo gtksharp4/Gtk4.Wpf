@@ -17,7 +17,19 @@ sealed partial class TextRangeProvider : ITextRangeProvider
 		_end = end;
 	}
 
-	public ITextRangeProvider Clone() => new TextRangeProvider(_owner, _start, _end);
+	// The text may have shrunk since the range was taken.
+	void Normalize()
+	{
+		int length = _owner.Text.Length;
+		_end = Math.Max(0, Math.Min(_end, length));
+		_start = Math.Max(0, Math.Min(_start, _end));
+	}
+
+	public ITextRangeProvider Clone()
+	{
+		Normalize();
+		return new TextRangeProvider(_owner, _start, _end);
+	}
 
 	TextRangeProvider Same(ITextRangeProvider range)
 	{
@@ -28,6 +40,8 @@ sealed partial class TextRangeProvider : ITextRangeProvider
 	public bool Compare(ITextRangeProvider range)
 	{
 		var other = Same(range);
+		Normalize();
+		other.Normalize();
 		return other._start == _start && other._end == _end;
 	}
 
@@ -35,7 +49,11 @@ sealed partial class TextRangeProvider : ITextRangeProvider
 		TextPatternRangeEndpoint targetEndpoint) =>
 		Math.Sign(Get(endpoint) - Same(targetRange).Get(targetEndpoint));
 
-	int Get(TextPatternRangeEndpoint endpoint) => endpoint == TextPatternRangeEndpoint.Start ? _start : _end;
+	int Get(TextPatternRangeEndpoint endpoint)
+	{
+		Normalize();
+		return endpoint == TextPatternRangeEndpoint.Start ? _start : _end;
+	}
 
 	void Set(TextPatternRangeEndpoint endpoint, int value)
 	{
@@ -57,6 +75,7 @@ sealed partial class TextRangeProvider : ITextRangeProvider
 	public string GetText(int maxLength)
 	{
 		if (maxLength < -1) throw new ArgumentOutOfRangeException(nameof(maxLength));
+		Normalize();
 		var text = _owner.Text.Substring(_start, _end - _start);
 		return maxLength >= 0 && text.Length > maxLength ? text.Substring(0, maxLength) : text;
 	}
@@ -66,6 +85,7 @@ sealed partial class TextRangeProvider : ITextRangeProvider
 		if (text == null) throw new ArgumentNullException(nameof(text));
 		if (text.Length == 0) throw new ArgumentException("The text to find must not be empty.", nameof(text));
 		var comparison = ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+		Normalize();
 		var inside = _owner.Text.Substring(_start, _end - _start);
 		int at = backward ? inside.LastIndexOf(text, comparison) : inside.IndexOf(text, comparison);
 		return at < 0 ? null! : new TextRangeProvider(_owner, _start + at, _start + at + text.Length);
@@ -78,6 +98,7 @@ sealed partial class TextRangeProvider : ITextRangeProvider
 
 	public double[] GetBoundingRectangles()
 	{
+		Normalize();
 		if (_start == _end) return new double[0];
 		var r = _owner.Peer.GetBoundingRectangle();
 		return r.IsEmpty ? new double[0] : new[] { r.X, r.Y, r.Width, r.Height };
@@ -87,7 +108,11 @@ sealed partial class TextRangeProvider : ITextRangeProvider
 
 	public IRawElementProviderSimple[] GetChildren() => new IRawElementProviderSimple[0];
 
-	public void Select() => _owner.Select(_start, _end - _start);
+	public void Select()
+	{
+		Normalize();
+		_owner.Select(_start, _end - _start);
+	}
 
 	public void AddToSelection() => throw new InvalidOperationException("The text supports a single selection.");
 

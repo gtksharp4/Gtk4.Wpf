@@ -23,7 +23,7 @@ public partial class MenuItem
 
 	void RaiseAutomationInvoked()
 	{
-		if (!IsCheckable && AutomationPeer.ListenerExists(AutomationEvents.InvokePatternOnInvoked))
+		if (AutomationPeer.ListenerExists(AutomationEvents.InvokePatternOnInvoked))
 			GetAutomationPeer()?.RaiseAutomationEvent(AutomationEvents.InvokePatternOnInvoked);
 	}
 }

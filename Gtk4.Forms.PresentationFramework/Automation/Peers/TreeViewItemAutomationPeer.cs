@@ -66,11 +66,15 @@ public class TreeViewItemAutomationPeer : ItemsControlAutomationPeer, IExpandCol
 		else Node.IsSelected = true;
 	}
 
-	// A tree selects one node, so adding is only valid for the node that is already selected.
+	// A tree selects one node: adding throws only while a different node is selected.
 	void ISelectionItemProvider.AddToSelection()
 	{
 		if (!IsEnabled()) throw new ElementNotEnabledException();
-		if (!Node.IsSelected) throw new InvalidOperationException("A tree allows a single selection.");
+		var selected = Tree?.SelectedItem;
+		if (selected != null && !ReferenceEquals(selected, Node))
+			throw new InvalidOperationException("A tree allows a single selection.");
+		if (Tree is { } tree) tree.SelectedItem = Node;
+		else Node.IsSelected = true;
 	}
 
 	void ISelectionItemProvider.RemoveFromSelection()
