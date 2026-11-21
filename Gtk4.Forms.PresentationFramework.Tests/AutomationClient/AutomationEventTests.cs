@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Automation;
 using System.Windows.Automation.Peers;
+using Gtk4.Forms.PresentationFramework.Tests.Lifecycle;
 using Auto = System.Windows.Automation.Automation;
 using Xunit;
 
@@ -115,7 +116,11 @@ public class AutomationEventTests : UiaTestBase
 	[Fact]
 	public void Focus_changed_reports_the_newly_focused_element() => Run(() =>
 	{
-		OpenForm();
+		var f = OpenForm();
+		// Activation (which focuses the window) is up to the window manager and can land late (macOS):
+		// let it settle so it is not reported as the first focus change.
+		GtkPump.Until(() => f.Window.Widget is Gtk.Window { IsActive: true }, 2000);
+		GtkPump.Until(() => !GLib.MainContext.Pending(), 500);
 		var seen = new List<AutomationElement>();
 		AutomationFocusChangedEventHandler handler = (s, e) => seen.Add((AutomationElement)s);
 		Auto.AddAutomationFocusChangedEventHandler(handler);
