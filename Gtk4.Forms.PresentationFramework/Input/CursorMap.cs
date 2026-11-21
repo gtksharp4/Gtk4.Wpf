@@ -37,6 +37,7 @@ internal static class CursorMap
 		CursorType.ScrollW     => "w-resize",
 		CursorType.ScrollNS    => "ns-resize",
 		CursorType.ScrollEW    => "ew-resize",
+		CursorType.ScrollWE    => "ew-resize",
 		CursorType.ScrollNE    => "ne-resize",
 		CursorType.ScrollNW    => "nw-resize",
 		CursorType.ScrollSE    => "se-resize",

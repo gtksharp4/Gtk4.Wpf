@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 
 namespace System.Windows.Input;
@@ -12,7 +13,7 @@ namespace System.Windows.Input;
 /// <c>default</c>.
 /// </para>
 /// </summary>
-public sealed class Cursor
+public sealed class Cursor : IDisposable
 {
 	/// <summary>
 	/// The GTK / CSS cursor name used by <c>Gtk.Widget.CursorFromName</c>.
@@ -53,6 +54,15 @@ public sealed class Cursor
 		_ = cursorStream; // accepted but unused
 		GdkName = "default";
 	}
+
+	/// <summary>Creates a cursor from a file; same fallback as <see cref="Cursor(string)"/>.</summary>
+	public Cursor(string cursorFile, bool scaleWithDpi) : this(cursorFile) { }
+
+	/// <summary>Creates a cursor from a stream; same fallback as <see cref="Cursor(Stream)"/>.</summary>
+	public Cursor(Stream cursorStream, bool scaleWithDpi) : this(cursorStream) { }
+
+	/// <summary>Releases the cursor. GTK cursors are looked up by name, so there is nothing to free.</summary>
+	public void Dispose() { }
 
 	/// <inheritdoc/>
 	public override string ToString() => GdkName;

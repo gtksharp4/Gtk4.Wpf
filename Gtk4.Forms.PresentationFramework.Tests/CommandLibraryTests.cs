@@ -1,3 +1,4 @@
+using System.Windows.Documents;
 using System.Windows.Input;
 using Xunit;
 

@@ -1,5 +1,8 @@
 using System;
+using System.Linq;
 using System.Reflection;
+using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 
 namespace System.Windows.Markup;
@@ -13,6 +16,9 @@ static class CommandConverters
 		typeof(ApplicationCommands), typeof(ComponentCommands), typeof(NavigationCommands),
 		typeof(MediaCommands), typeof(EditingCommands),
 	};
+
+	// Controls that own commands; only the qualified form ("Slider.DecreaseSmall") names them.
+	static readonly Type[] _controlOwners = { typeof(Slider) };
 
 	/// <summary>
 	/// Accepts "Open" or "ApplicationCommands.Open" (case-sensitive); the empty string is null.
@@ -39,7 +45,7 @@ static class CommandConverters
 
 		string typeName = name.Substring(0, dot);
 		string member = name.Substring(dot + 1);
-		foreach (Type library in _libraries)
+		foreach (Type library in _libraries.Concat(_controlOwners))
 		{
 			if (string.Equals(library.Name, typeName, StringComparison.Ordinal))
 				return Find(library, member) ?? throw NotSupported(raw);

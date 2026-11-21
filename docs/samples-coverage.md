@@ -365,6 +365,35 @@ that the flow-direction round moved) was not re-run, so these are lower bounds. 
   - The theme counts are a regex ranking aid (`blockerThemes`), not an exact partition.
   - Moves are attributed by elimination, not bisected.
 
+## Round 48 Track A: input API surface (branch `gf48/input-api`, not re-measured in the JSON)
+
+Same API surface as the held `gf46/input-focus`, without its focus-transaction changes: GTK focus detection
+(`UIElement.GtkInput.cs`) and the Enter/Esc rules are unchanged. Programmatic `Focus()`/`Keyboard.Focus()`/`MoveFocus`
+raise one WPF-ordered transaction (PreviewLost, PreviewGot, Lost, Got, LostFocus, GotFocus) with both elements.
+
+Open gap, owned by the Round 49 focus-behaviour design: a focus move that starts in GTK is still reported as Leave on
+the old widget, then Enter on the new one, so `LostKeyboardFocus` and `GotKeyboardFocus` are raised as two
+transactions (`NewFocus` is null on the first, `OldFocus` is null on the second) and a `Preview*` cancel cannot restore
+GTK focus.
+
+Also added: `Slider.Ticks` (explicit marks via `Gtk.Scale.AddMark`, replacing `TickFrequency` when non-empty).
+`ScrollBar` derives from `Control`, not `RangeBase`, so it keeps its own `ValueChanged`.
+
+Gate (`Gtk4.Forms.Wpf 1.0.0.26325` packed from the worktree into a private feed, pinned, isolated cache):
+
+- **No regressions.** All 90 projects with `build=pass` still build (converted, then built), and all 83 apps with
+  `run=runs` still start and stay up about 10 s, one at a time. The apps that first showed no window in the
+  sequential pass ran when re-run alone; the crash/hang apps of the baseline (AppCompat-Quirks,
+  LocalizationResources, DragDropThumbOps) are unchanged.
+- Target samples that now build and run: CursorType, CustomRoutedCommand, EditingCommands, KeyStrokeCounter,
+  ProgrammaticFocusControl, CommandSourceControlWithDispatcherTimer.
+- Build but do not run: ContextMenuOpening (no window), FocusVisualStyle (crash: `{DynamicResource}` on a Style DP
+  is emitted as an eager `FindResource`), ICommandSourceImplementation (crash: a `{ StaticResource ...}` key with
+  inner whitespace). Its CS0738/CS0115 errors are gone.
+- Still not building, outside this track's files: CommandSourceControlUsingSystemTimer
+  (`Dispatcher.Invoke(DispatcherPriority, Delegate)`), CalculatorDemo (`FrameworkElement.Parent`; `x:Name` fields for
+  `local:` types in the MarkupCompiler).
+
 ## History
 
 | Date | Main SHA | Package | Pinned | Portable build | Portable run | Note |

@@ -61,4 +61,6 @@ public enum CursorType
 	ScrollSW,
 	/// <summary>Arrow cursor with a no-drop badge.</summary>
 	ArrowCD,
+	/// <summary>West-east scroll cursor (WPF <c>CursorType.ScrollWE</c>).</summary>
+	ScrollWE,
 }

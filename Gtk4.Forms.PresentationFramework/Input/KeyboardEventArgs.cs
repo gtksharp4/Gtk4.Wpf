@@ -1,0 +1,60 @@
+namespace System.Windows.Input;
+
+/// <summary>Handler for <see cref="KeyboardFocusChangedEventArgs"/> events.</summary>
+public delegate void KeyboardFocusChangedEventHandler(object sender, KeyboardFocusChangedEventArgs e);
+
+/// <summary>Base class for input-device event data.</summary>
+public abstract class InputEventArgs : RoutedEventArgs
+{
+	/// <param name="inputDevice">The device that raised the event.</param>
+	/// <param name="timestamp">The time of the event, in milliseconds.</param>
+	protected InputEventArgs(InputDevice inputDevice, int timestamp)
+	{
+		Device = inputDevice;
+		Timestamp = timestamp;
+	}
+
+	/// <summary>The device that raised the event.</summary>
+	public InputDevice Device { get; }
+
+	/// <summary>The time of the event, in milliseconds.</summary>
+	public int Timestamp { get; }
+}
+
+/// <summary>Base class for keyboard event data.</summary>
+public class KeyboardEventArgs : InputEventArgs
+{
+	/// <param name="keyboard">The keyboard.</param>
+	/// <param name="timestamp">The time of the event, in milliseconds.</param>
+	/// <exception cref="ArgumentNullException"><paramref name="keyboard"/> is null.</exception>
+	public KeyboardEventArgs(KeyboardDevice keyboard, int timestamp)
+		: base(keyboard ?? throw new ArgumentNullException(nameof(keyboard)), timestamp)
+	{
+		KeyboardDevice = keyboard;
+	}
+
+	/// <summary>The keyboard that raised the event.</summary>
+	public KeyboardDevice KeyboardDevice { get; }
+}
+
+/// <summary>Data for the (Preview)Got/LostKeyboardFocus events.</summary>
+public class KeyboardFocusChangedEventArgs : KeyboardEventArgs
+{
+	/// <param name="keyboard">The keyboard.</param>
+	/// <param name="timestamp">The time of the event, in milliseconds.</param>
+	/// <param name="oldFocus">The element that had focus.</param>
+	/// <param name="newFocus">The element that gets focus.</param>
+	public KeyboardFocusChangedEventArgs(
+		KeyboardDevice keyboard, int timestamp, IInputElement? oldFocus, IInputElement? newFocus)
+		: base(keyboard, timestamp)
+	{
+		OldFocus = oldFocus;
+		NewFocus = newFocus;
+	}
+
+	/// <summary>The element that had keyboard focus.</summary>
+	public IInputElement? OldFocus { get; }
+
+	/// <summary>The element that gets keyboard focus.</summary>
+	public IInputElement? NewFocus { get; }
+}

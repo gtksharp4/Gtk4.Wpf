@@ -11,11 +11,18 @@ public class RoutedCommand : ICommand
 	/// <summary>Name of this command.</summary>
 	public string Name { get; }
 
-	/// <summary>Type that declares this command as a static field.</summary>
-	public Type OwnerType { get; }
+	/// <summary>Declaring type of this static command; <c>null</c> for the parameterless constructor.</summary>
+	public Type? OwnerType { get; }
 
 	/// <summary>Keyboard/mouse gestures that trigger this command.</summary>
 	public InputGestureCollection InputGestures { get; }
+
+	/// <summary>Creates an unnamed command with no owner type.</summary>
+	public RoutedCommand()
+	{
+		Name = string.Empty;
+		InputGestures = new InputGestureCollection();
+	}
 
 	/// <param name="name">Command name.</param>
 	/// <param name="ownerType">Declaring type.</param>
@@ -28,6 +35,7 @@ public class RoutedCommand : ICommand
 	public RoutedCommand(string name, Type ownerType, InputGestureCollection inputGestures)
 	{
 		Name = name ?? throw new ArgumentNullException(nameof(name));
+		if (name.Length == 0) throw new ArgumentException("The name must not be empty.", nameof(name));
 		OwnerType = ownerType ?? throw new ArgumentNullException(nameof(ownerType));
 		InputGestures = inputGestures ?? new InputGestureCollection();
 	}
@@ -44,8 +52,8 @@ public class RoutedCommand : ICommand
 		CanExecute(parameter, null);
 
 	/// <summary>Routed overload: walks <paramref name="target"/>'s element tree.</summary>
-	public bool CanExecute(object? parameter, System.Windows.UIElement? target) =>
-		CommandManager.CanExecute(this, parameter, target);
+	public bool CanExecute(object? parameter, System.Windows.IInputElement? target) =>
+		CommandManager.CanExecute(this, parameter, target as System.Windows.UIElement);
 
 	/// <inheritdoc/>
 	/// <remarks>Delegates to <see cref="CommandManager.Execute"/>.</remarks>
@@ -53,8 +61,8 @@ public class RoutedCommand : ICommand
 		Execute(parameter, null);
 
 	/// <summary>Routed overload: walks <paramref name="target"/>'s element tree.</summary>
-	public void Execute(object? parameter, System.Windows.UIElement? target) =>
-		CommandManager.Execute(this, parameter, target);
+	public void Execute(object? parameter, System.Windows.IInputElement? target) =>
+		CommandManager.Execute(this, parameter, target as System.Windows.UIElement);
 
 	/// <inheritdoc/>
 	public event EventHandler? CanExecuteChanged
@@ -71,6 +79,9 @@ public class RoutedUICommand : RoutedCommand
 {
 	/// <summary>Display text for this command.</summary>
 	public string Text { get; set; }
+
+	/// <summary>Creates a command with empty text and no owner type.</summary>
+	public RoutedUICommand() { Text = string.Empty; }
 
 	/// <param name="text">Display text.</param>
 	/// <param name="name">Command name.</param>

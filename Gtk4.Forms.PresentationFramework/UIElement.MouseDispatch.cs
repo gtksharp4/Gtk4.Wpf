@@ -86,8 +86,12 @@ public abstract partial class UIElement
 		if (key.HasValue && MouseDispatchDedupe.IsDuplicate(key.Value)) return false;
 		if (!MouseButtonMap.TryFromGdk(gdkButton, out var button)) return false;
 		RaiseMouseButton(button, position, clickCount, pressed);
+		if (!pressed && button == MouseButton.Right) OnContextMenuRequested(position);
 		return true;
 	}
+
+	/// <summary>Called after a right-button release; <see cref="FrameworkElement"/> raises ContextMenuOpening.</summary>
+	internal virtual void OnContextMenuRequested(Point position) { }
 
 	/// <summary>The GTK motion controller's dispatch decision (single delivery per GDK event).</summary>
 	internal bool DispatchGtkMotion(MouseEventKey? key, Point position)

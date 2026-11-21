@@ -1,13 +1,15 @@
-namespace System.Windows.Input;
+using System.Windows.Input;
+
+namespace System.Windows.Documents;
 
 /// <summary>
 /// Standard WPF rich-text editing commands.
 /// Each command targets <see cref="System.Windows.Controls.RichTextBox"/> or any
 /// control that handles these commands via <see cref="CommandBinding"/>.
 /// </summary>
-public static class EditingCommands
+public static partial class EditingCommands
 {
-	static readonly Type Owner = typeof(EditingCommands);
+	static Type Owner => typeof(EditingCommands);
 
 	static InputGestureCollection Gestures(params InputGesture[] g)
 	{

@@ -14,7 +14,7 @@ namespace System.Windows.Controls;
 /// placement widget shows the popover anchored to that widget.
 /// </para>
 /// </summary>
-public class ContextMenu : ItemsControl
+public partial class ContextMenu : ItemsControl
 {
 	// ── IsOpen DP ─────────────────────────────────────────────────────────────
 
@@ -102,7 +102,8 @@ public class ContextMenu : ItemsControl
 		// Ensure the widget tree is built.
 		_ = Widget;
 		if (_popover == null) return;
-		_popover.Parent = parentWidget;
+		if (_popover.Parent is { } current && current.Handle != parentWidget.Handle) _popover.Unparent();
+		if (_popover.Parent == null) _popover.Parent = parentWidget;
 		ShowPopover();
 	}
 
@@ -125,6 +126,7 @@ public class ContextMenu : ItemsControl
 		_updating = true;
 		try { SetValue(IsOpenProperty, false); }
 		finally { _updating = false; }
+		OnClosedCore();
 	}
 
 	/// <inheritdoc/>
