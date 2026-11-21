@@ -34,4 +34,7 @@ internal interface IClipboardBackend
 
 	/// <summary>Stores the data object. Implementations should also push text to the native clipboard.</summary>
 	void SetDataObject(IDataObject data);
+
+	/// <summary>Returns the data stored for <paramref name="format"/>, including content another process offers, or null.</summary>
+	object? GetData(string format);
 }

@@ -37,6 +37,9 @@ internal sealed class InMemoryClipboardBackend : IClipboardBackend
 	public bool ContainsData(string format) => _data?.GetDataPresent(format) == true;
 
 	/// <inheritdoc/>
+	public object? GetData(string format) => _data?.GetData(format);
+
+	/// <inheritdoc/>
 	public IDataObject? GetDataObject() => _data;
 
 	/// <inheritdoc/>

@@ -19,7 +19,7 @@ namespace System.Windows;
 /// <see cref="GtkClipboardBackend"/> silently falls back to the in-memory store; nothing throws.
 /// </para>
 /// </remarks>
-public static class Clipboard
+public static partial class Clipboard
 {
 	/// <summary>
 	/// Injectable clipboard backend. Defaults to <see cref="GtkClipboardBackend"/>;

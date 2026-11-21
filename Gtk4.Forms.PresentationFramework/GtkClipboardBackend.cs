@@ -22,7 +22,7 @@ namespace System.Windows;
 /// all operations silently delegate to the in-memory store and nothing throws.
 /// </para>
 /// </remarks>
-internal sealed class GtkClipboardBackend : IClipboardBackend
+internal sealed partial class GtkClipboardBackend : IClipboardBackend
 {
 	readonly InMemoryClipboardBackend _mirror = new();
 
@@ -87,7 +87,7 @@ internal sealed class GtkClipboardBackend : IClipboardBackend
 	}
 
 	/// <inheritdoc/>
-	public bool ContainsData(string format) => _mirror.ContainsData(format);
+	public bool ContainsData(string format) => _mirror.ContainsData(format) || ForeignHas(format);
 
 	/// <inheritdoc/>
 	public IDataObject? GetDataObject() => _mirror.GetDataObject();
@@ -96,6 +96,7 @@ internal sealed class GtkClipboardBackend : IClipboardBackend
 	public void SetDataObject(IDataObject data)
 	{
 		_mirror.SetDataObject(data);
+		PushMedia(data);
 
 		// Best-effort: push any text to the native clipboard so other apps see it.
 		string? text = data.GetData(DataFormats.UnicodeText) as string
