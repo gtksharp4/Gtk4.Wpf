@@ -603,3 +603,51 @@ warning-clean. Linux and macOS were not run. The samples gate was not re-run: no
    after Phase 3.
 2. Package naming: `Gtk4.Forms.Wpf.Testing`, or ship the client API in its own package
    (`Gtk4.Forms.UIAutomationClient`) so non-test tools can reference it without the driver.
+
+## Open issues after the phase checks
+
+Left open by the per-phase Opus confirm checks when `ua/automation` merged into `main` (`f977d105`). None of them
+regresses existing behaviour. Fix them before new automation scope.
+
+Peers and names:
+- `ComboBoxItemAutomationPeer` derives from `SelectorItemAutomationPeer`; WPF uses `ListBoxItemAutomationPeer`.
+  `ListBoxItemWrapperAutomationPeer` is internal and sealed; WPF has it public, deriving from
+  `FrameworkElementAutomationPeer`. The plan's "Deviations" bullet wrongly calls both "as in WPF".
+- ListBox item names lose underscores: `ContentName` goes through `PeerText.FromContent`, so `"file_name.txt"` becomes
+  `"filename.txt"`. Only `ButtonBase`/`Label` content strips access keys in WPF.
+- `PeerText.RemoveAccessKey` drops every `_`. WPF drops the first marker and turns `__` into `_` (`"a_b_c"` →
+  `"ab_c"`). `PeerNameTests` asserts the non-WPF result.
+- The GTK label taken from `LabeledBy` is not re-pushed when the labelling element's text changes.
+- Peers are still created eagerly in `ApplyAutomationOnCreated` (documented deviation). The test
+  `CreatePeerForElement_caches_and_FromElement_does_not_create` passes only because of call order.
+- `RepeatButtonAutomationPeer.Invoke` defers the click; WPF clicks synchronously (only `Button` defers).
+- `RaiseAsyncContentLoadedEvent` resets `PendingAsyncContentLoaded` to null instead of restoring it on re-entry.
+- `PeerAccessible.Announce` calls `gtk_accessible_announce` unguarded; it exists only since GTK 4.14.
+- `TextRangeProvider.Move` breaks the contract for degenerate ranges: a caret at the end moves backward on a
+  forward move, a mid-word `Move(Word, -1)` returns 0 but moves, and a caret never reaches the document end.
+
+Client:
+- `ElementCache.Take` ignores `TreeScope.Descendants` (it never recurses) and caches properties and patterns on the
+  root even when the scope excludes `Element`.
+- `CachedParent` on the root of a cached subtree throws; check WPF, which likely returns null there.
+- `ScrollPattern.HorizontalViewSize`/`VerticalViewSize` default to 0; the UIA schema default is 100.
+
+Driver:
+- `WpfAppHost.Launch` waits for idle with no tolerance, so an app with an always-ready source cannot be launched.
+- `UiInput.Keyboard.Up` can throw before clearing `Keyboard.Modifiers`, leaking held modifiers into later tests.
+- `x:Name` sets `Name` only for types found in reference assemblies, not for the app's own types.
+- Native input: `RequireMainWindow` accepts popover content (ContextMenu, Popup, submenus), whose clicks land in the
+  wrong place. A second window with the main window's title makes `Handle()` pick the wrong HWND. `MoveTo` moves the
+  cursor before the cover check. Foreground and cover are not re-checked before each `SendInput`. Fractional
+  Windows scales (125%, 150%) are not detected.
+
+Tests that would pass without their fix:
+- `WaitForIdle_is_bounded_when_a_zero_interval_timer_is_always_ready`: the timer is clamped to 1 ms, so it is never
+  always-ready, and the catch accepts either outcome.
+- `Disabled_state_follows_IsEnabled` and `Selected_state_follows_the_selection` check states GTK sets by itself.
+- `DataGrid_clearing_the_selection_and_sorting_raise_their_events` accepts any `StructureChanged`, not
+  `ChildrenReordered`.
+- `Input_record_is_the_size_of_the_platform_INPUT_structure` cannot fail on x64; the foreground and cover checks
+  have no tests.
+
+Housekeeping: `GridPatterns.cs` exceeds ~200 lines; some lines in this plan exceed ~120 columns.
