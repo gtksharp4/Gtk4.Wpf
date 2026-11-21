@@ -46,6 +46,8 @@ public class DialogSemanticsTests : WpfGtkTestBase
 
 		public Form()
 		{
+			// Keyboard focus is process-wide: an element an earlier test left focused would swallow Enter/Esc.
+			Keyboard.ClearFocus();
 			var panel = new StackPanel();
 			panel.Children.Add(Input);
 			panel.Children.Add(Ok);
