@@ -80,6 +80,9 @@ static class GtkA11yProbe
 			w.Handle, (int)p, BitConverter.DoubleToInt64Bits(value)));
 	}
 
+	internal static bool HasRelation(Gtk.Widget w, Gtk.AccessibleRelation r) =>
+		Fn<HasFn>("gtk_test_accessible_has_relation")(w.Handle, (int)r) != 0;
+
 	internal static bool StateEquals(Gtk.Widget w, Gtk.AccessibleState s, int value) =>
 		Ok(Fn<CheckIntFn>("gtk_test_accessible_check_state")(w.Handle, (int)s, value));
 }

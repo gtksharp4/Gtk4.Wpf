@@ -6,10 +6,21 @@ namespace System.Windows.Automation.Peers;
 /// <summary>The automation peer of a <see cref="TextBox"/>.</summary>
 public class TextBoxAutomationPeer : FrameworkElementAutomationPeer, IValueProvider
 {
-	public TextBoxAutomationPeer(TextBox owner) : base(owner) { }
+	TextProvider? _text;
 
-	public override object? GetPattern(PatternInterface patternInterface) =>
-		patternInterface == PatternInterface.Value ? this : base.GetPattern(patternInterface);
+	public TextBoxAutomationPeer(TextBox owner) : base(owner)
+	{
+		owner.SelectionChanged += (s, e) => RaiseAutomationEvent(AutomationEvents.TextPatternOnTextSelectionChanged);
+		owner.TextChanged += (s, e) => RaiseAutomationEvent(AutomationEvents.TextPatternOnTextChanged);
+	}
+
+	public override object? GetPattern(PatternInterface patternInterface)
+	{
+		if (patternInterface == PatternInterface.Value) return this;
+		if (patternInterface == PatternInterface.Text)
+			return _text ??= new TextProvider(new TextBoxTextSource((TextBox)Owner), this);
+		return base.GetPattern(patternInterface);
+	}
 
 	protected override string GetClassNameCore() => "TextBox";
 
@@ -88,6 +99,15 @@ public class TextBlockAutomationPeer : FrameworkElementAutomationPeer
 	protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Text;
 
 	internal override string ContentName() => ((TextBlock)Owner).Text ?? string.Empty;
+
+	// The hyperlinks the block shows are its children.
+	protected override System.Collections.Generic.List<AutomationPeer>? GetChildrenCore()
+	{
+		var result = new System.Collections.Generic.List<AutomationPeer>();
+		foreach (var link in ((TextBlock)Owner).AutomationHyperlinks())
+			result.Add(HyperlinkAutomationPeer.For(link, this));
+		return result.Count == 0 ? null : result;
+	}
 }
 
 /// <summary>The automation peer of a <see cref="Label"/>.</summary>

@@ -8,7 +8,7 @@ namespace System.Windows.Controls;
 /// A tab-strip control backed by <see cref="Gtk.Notebook"/>.
 /// Children must be <see cref="TabItem"/> instances.
 /// </summary>
-public class TabControl : Selector
+public partial class TabControl : Selector
 {
 	internal override DependencyProperty SelectedItemDependencyProperty => SelectedItemProperty;
 

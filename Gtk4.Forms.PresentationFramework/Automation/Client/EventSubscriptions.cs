@@ -97,8 +97,9 @@ static class EventSubscriptions
 					Deliver(() => focus(sender, new AutomationFocusChangedEventArgs(-1, 0)));
 					break;
 				case StructureChangedEventHandler structure:
-					var args = new StructureChangedEventArgs(StructureChangeType.ChildrenInvalidated,
-						AutomationElement.RuntimeIdOf(peer));
+					var pending = AutomationPeer.PendingStructure;
+					var args = new StructureChangedEventArgs(pending?.Type ?? StructureChangeType.ChildrenInvalidated,
+						AutomationElement.RuntimeIdOf(pending?.Subject ?? peer));
 					Deliver(() => structure(sender, args));
 					break;
 				case AutomationEventHandler plain:

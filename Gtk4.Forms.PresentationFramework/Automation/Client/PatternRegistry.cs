@@ -62,6 +62,11 @@ static class PatternRegistry
 		Add<IRangeValueProvider>(RangeValuePattern.Pattern, (e, p, c) => new RangeValuePattern(e, p, c));
 		Add<IScrollProvider>(ScrollPattern.Pattern, (e, p, c) => new ScrollPattern(e, p, c));
 		Add<IWindowProvider>(WindowPattern.Pattern, (e, p, c) => new WindowPattern(e, p, c));
+		Add<IGridProvider>(GridPattern.Pattern, (e, p, c) => new GridPattern(e, p, c));
+		Add<IGridItemProvider>(GridItemPattern.Pattern, (e, p, c) => new GridItemPattern(e, p, c));
+		Add<ITableProvider>(TablePattern.Pattern, (e, p, c) => new TablePattern(e, p, c));
+		Add<ITableItemProvider>(TableItemPattern.Pattern, (e, p, c) => new TableItemPattern(e, p, c));
+		Add<ITextProvider>(TextPattern.Pattern, (e, p, c) => new TextPattern(e, p, c));
 		return map;
 	}
 }

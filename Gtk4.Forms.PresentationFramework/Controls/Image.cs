@@ -9,7 +9,7 @@ namespace System.Windows.Controls;
 /// <see cref="StretchDirection"/> (UpOnly/DownOnly) has no direct GTK
 /// equivalent and is stored only; actual clamping is not applied by GTK.
 /// </summary>
-public class Image : FrameworkElement
+public partial class Image : FrameworkElement
 {
 	// ── Source DP ────────────────────────────────────────────────────────────
 

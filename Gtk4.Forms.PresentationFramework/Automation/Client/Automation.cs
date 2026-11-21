@@ -56,6 +56,8 @@ public static partial class Automation
 			SelectionItemPatternIdentifiers.ElementRemovedFromSelectionEvent),
 		(AutomationEvents.SelectionItemPatternOnElementSelected, SelectionItemPatternIdentifiers.ElementSelectedEvent),
 		(AutomationEvents.SelectionPatternOnInvalidated, SelectionPatternIdentifiers.InvalidatedEvent),
+		(AutomationEvents.TextPatternOnTextSelectionChanged, TextPatternIdentifiers.TextSelectionChangedEvent),
+		(AutomationEvents.TextPatternOnTextChanged, TextPatternIdentifiers.TextChangedEvent),
 		(AutomationEvents.AsyncContentLoaded, AutomationElementIdentifiers.AsyncContentLoadedEvent),
 		(AutomationEvents.PropertyChanged, AutomationElementIdentifiers.AutomationPropertyChangedEvent),
 		(AutomationEvents.StructureChanged, AutomationElementIdentifiers.StructureChangedEvent),

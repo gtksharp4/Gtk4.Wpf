@@ -11,6 +11,7 @@ namespace System.Windows.Automation.Peers;
 public abstract partial class AutomationPeer : DispatcherObject
 {
 	AutomationPeer? _parent;
+	List<AutomationPeer>? _lastChildren;
 	AutomationPeer? _eventsSource;
 	IRawElementProviderSimple? _provider;
 
@@ -32,6 +33,7 @@ public abstract partial class AutomationPeer : DispatcherObject
 	public List<AutomationPeer>? GetChildren()
 	{
 		var children = GetChildrenCore();
+		_lastChildren = children == null ? new List<AutomationPeer>() : new List<AutomationPeer>(children);
 		if (children != null)
 			foreach (var child in children)
 				child._parent = this;

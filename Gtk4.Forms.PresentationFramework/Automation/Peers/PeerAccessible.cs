@@ -12,6 +12,9 @@ static partial class PeerAccessible
 	internal static void SetProperty(Gtk.Widget widget, Gtk.AccessibleProperty property, bool value) =>
 		Gtk.AccessibleExtensions.UpdateProperty(widget, new[] { property }, new[] { new GLib.Value(value) });
 
+	internal static void SetProperty(Gtk.Widget widget, Gtk.AccessibleProperty property, int value) =>
+		Gtk.AccessibleExtensions.UpdateProperty(widget, new[] { property }, new[] { new GLib.Value(value) });
+
 	internal static void SetProperty(Gtk.Widget widget, Gtk.AccessibleProperty property, double value) =>
 		Gtk.AccessibleExtensions.UpdateProperty(widget, new[] { property }, new[] { new GLib.Value(value) });
 

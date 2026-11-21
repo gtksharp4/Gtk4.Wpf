@@ -7,7 +7,7 @@ namespace System.Windows.Controls;
 /// with a label widget derived from <see cref="HeaderedContentControl.Header"/>.
 /// </summary>
 [ContentProperty("Content")]
-public class GroupBox : HeaderedContentControl
+public partial class GroupBox : HeaderedContentControl
 {
 	// ── GTK backing ─────────────────────────────────────────────────────────
 

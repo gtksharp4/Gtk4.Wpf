@@ -11,7 +11,9 @@ static class Ids
 			typeof(RangeValuePatternIdentifiers), typeof(ScrollPatternIdentifiers),
 			typeof(ExpandCollapsePatternIdentifiers), typeof(WindowPatternIdentifiers),
 			typeof(SelectionItemPatternIdentifiers), typeof(TogglePatternIdentifiers),
-			typeof(ScrollItemPatternIdentifiers),
+			typeof(ScrollItemPatternIdentifiers), typeof(GridPatternIdentifiers),
+			typeof(GridItemPatternIdentifiers), typeof(TablePatternIdentifiers), typeof(TableItemPatternIdentifiers),
+			typeof(TextPatternIdentifiers),
 		})
 			System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(t.TypeHandle);
 	}

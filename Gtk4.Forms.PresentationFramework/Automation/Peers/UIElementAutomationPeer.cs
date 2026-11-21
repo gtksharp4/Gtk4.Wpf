@@ -68,7 +68,7 @@ public partial class UIElementAutomationPeer : AutomationPeer
 	}
 
 	// An element without a peer is transparent: its children are reported in its place.
-	static void Collect(UIElement parent, List<AutomationPeer> into)
+	internal static void Collect(UIElement parent, List<AutomationPeer> into)
 	{
 		foreach (var child in parent.VisualChildren)
 		{

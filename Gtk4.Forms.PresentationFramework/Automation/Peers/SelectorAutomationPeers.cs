@@ -7,7 +7,7 @@ using System.Windows.Controls.Primitives;
 namespace System.Windows.Automation.Peers;
 
 /// <summary>The automation peer of a <see cref="Selector"/>.</summary>
-public abstract class SelectorAutomationPeer : ItemsControlAutomationPeer, ISelectionProvider
+public abstract partial class SelectorAutomationPeer : ItemsControlAutomationPeer, ISelectionProvider
 {
 	protected SelectorAutomationPeer(Selector owner) : base(owner) { }
 
@@ -22,7 +22,9 @@ public abstract class SelectorAutomationPeer : ItemsControlAutomationPeer, ISele
 
 	bool ISelectionProvider.CanSelectMultiple => CanSelectMultipleCore;
 
-	bool ISelectionProvider.IsSelectionRequired => false;
+	internal virtual bool IsSelectionRequiredCore => false;
+
+	bool ISelectionProvider.IsSelectionRequired => IsSelectionRequiredCore;
 
 	internal virtual IEnumerable<object> SelectedItemsList()
 	{
@@ -63,11 +65,6 @@ public abstract class SelectorAutomationPeer : ItemsControlAutomationPeer, ISele
 		}
 	}
 
-	internal override void OwnerPropertyChanged(DependencyPropertyChangedEventArgs e)
-	{
-		if (e.Property == SelectedItemProperty)
-			RaiseAutomationEvent(AutomationEvents.SelectionPatternOnInvalidated);
-	}
 }
 
 /// <summary>The automation peer of an item of a <see cref="Selector"/>.</summary>

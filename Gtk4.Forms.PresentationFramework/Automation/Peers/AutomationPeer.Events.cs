@@ -48,6 +48,7 @@ public abstract partial class AutomationPeer
 	/// <summary>Raises <paramref name="eventId"/> for listening clients.</summary>
 	public void RaiseAutomationEvent(AutomationEvents eventId)
 	{
+		if (eventId == AutomationEvents.LiveRegionChanged) AnnounceLiveRegion();
 		if (!ListenerExists(eventId)) return;
 		EventRaised?.Invoke(EventsSource ?? this, eventId);
 	}
@@ -64,6 +65,10 @@ public abstract partial class AutomationPeer
 	public void RaiseNotificationEvent(AutomationNotificationKind notificationKind,
 		AutomationNotificationProcessing notificationProcessing, string? displayString, string? activityId)
 	{
+		if (!string.IsNullOrEmpty(displayString))
+			(EventsSource ?? this).Announce(displayString!, notificationProcessing
+				<= AutomationNotificationProcessing.ImportantMostRecent
+				? Gtk.AccessibleAnnouncementPriority.High : Gtk.AccessibleAnnouncementPriority.Medium);
 		NotificationRaised?.Invoke(EventsSource ?? this, notificationKind, notificationProcessing,
 			displayString, activityId);
 	}
@@ -77,5 +82,18 @@ public abstract partial class AutomationPeer
 		finally { PendingAsyncContentLoaded = null; }
 	}
 
-	void RaiseStructureChanged() => RaiseAutomationEvent(AutomationEvents.StructureChanged);
+	/// <summary>The structure change being raised, for subscribers to pass on.</summary>
+	[ThreadStatic]
+	internal static (StructureChangeType Type, AutomationPeer Subject)? PendingStructure;
+
+	void RaiseStructureChanged() => RaiseStructureChanged(StructureChangeType.ChildrenInvalidated, this);
+
+	// A child raises ChildAdded about itself; its parent raises ChildRemoved about the removed child.
+	internal void RaiseStructureChanged(StructureChangeType type, AutomationPeer subject)
+	{
+		if (!ListenerExists(AutomationEvents.StructureChanged)) return;
+		PendingStructure = (type, subject);
+		try { RaiseAutomationEvent(AutomationEvents.StructureChanged); }
+		finally { PendingStructure = null; }
+	}
 }

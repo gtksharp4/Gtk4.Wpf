@@ -38,6 +38,7 @@ public partial class MenuItem
 	/// <summary>Raises <see cref="Click"/>, then executes <see cref="Command"/>.</summary>
 	protected virtual void OnClick()
 	{
+		RaiseAutomationInvoked();
 		RaiseEvent(new RoutedEventArgs(ClickEvent) { Source = this });
 		if (CommandHelper.QueryCanExecute())
 			CommandHelper.InvokeCommand();

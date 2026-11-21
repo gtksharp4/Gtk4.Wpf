@@ -88,7 +88,7 @@ run in `dotnet test`, and be deterministic in CI.
 - Provider interfaces (`System.Windows.Automation.Provider`): `IInvokeProvider`, `IValueProvider`,
   `IToggleProvider`, `ISelectionProvider`, `ISelectionItemProvider`, `IExpandCollapseProvider`,
   `IRangeValueProvider`, `IScrollProvider`, `IScrollItemProvider`, `IGridProvider`, `IGridItemProvider`,
-  `ITableProvider`, `ITableItemProvider`, `IWindowProvider`, `ITransformProvider`; `ITextProvider` later.
+  `ITableProvider`, `ITableItemProvider`, `IWindowProvider`, `ITransformProvider`; `ITextProvider` (Phase 4, flat character model).
 - Types shared with the client (`System.Windows.Automation`, `UIAutomationTypes` on real WPF):
   `ControlType`, `AutomationProperty`, `AutomationEvent`, `AutomationPattern`, `PatternInterface`,
   `AutomationControlType`, `ToggleState`, `ExpandCollapseState`, `RowOrColumnMajor`, `ScrollAmount`,
@@ -132,6 +132,7 @@ The peer pushes into `Gtk.Accessible` on realise and on every relevant change:
 | DataGrid / row / cell | `Grid` / `Row` / `GridCell` |
 | Window | `Window` (`Dialog` when modal); `Modal` |
 | `AutomationProperties.Name`, `HelpText`, `LabeledBy` | `Label`, `Description`, `AccessibleRelation.LabelledBy` |
+| `AutomationProperties.LiveSetting`, `LiveRegionChanged`, `Notification` events | `gtk_accessible_announce` (GTK 4.14+), high priority for `Assertive` and `ImportantAll`/`ImportantMostRecent`, medium otherwise; no persistent GTK property |
 | `IsEnabled=false`, `IsOffscreen` | `AccessibleState.Disabled`, `Hidden`: GTK derives both from sensitivity and visibility, so the peer does not push them (verified for `Disabled`) |
 
 GtkSharp4 rules found in Phase 1: use the `Update*` array overloads (the single-value ones leave the value unchanged), and pass states as `int` values (tristate and boolean states ignore a boolean `GLib.Value`). Phase 0 found that the role can only be set before the widget is realized, so the role is applied at widget creation (`AccessibleRole` on the widget the peer targets). Only explicit names (`AutomationProperties.Name`, then the labelling element) are pushed; a name GTK derives from content stays with GTK, and clearing an explicit value calls `gtk_accessible_reset_property` (GtkSharp4 does not bind it, so `PeerAccessible.Native.cs` P/Invokes it). `Label` (a `Gtk.Box`) and the editable `ComboBox` host push to their inner widget through `Target()`, so the AT tree has no nested duplicates.
@@ -484,6 +485,65 @@ Deviations from the plan and WPF, all documented in code or here:
 - Not fixed (layer gap): nothing calls `CommandManager.InvalidateRequerySuggested` after `Loaded` adds a binding, so
   a command button stays disabled; tracked in `samples-coverage.md`, with a skipped test in `CommandSampleTests`.
 - Unverified: the GTK snapshot path and the `Wpf.Testing.Tests` suite on Linux (Xvfb) and macOS; only Windows ran.
+
+### Phase 4 — done
+
+Landed in `Gtk4.Forms.PresentationFramework/Automation` (no new project):
+
+- Peers: `ListView` (+ `ListViewItem`), `TabControl` (+ `TabItem`; children are the tabs, then the selected content),
+  `TreeView` and `TreeViewItem` (expand/collapse with `LeafNode`, selection item, GTK `Level`/`Expanded`/`Selected`),
+  `Menu` (`MenuBar`) and `MenuItem` (Invoke without sub-items, ExpandCollapse with them, Toggle when checkable),
+  `ScrollViewer` (scroll pattern with WPF's validation), `ProgressBar` (read-only range, none when indeterminate),
+  `Image`, `Expander`, `GroupBox`, `StatusBar`, `ToolBar`, `Hyperlink` (child of its `TextBlock`'s peer), `RichTextBox`
+  (`Document`), and `DataGrid` with column headers, rows and cells (`IGridProvider`, `ITableProvider`,
+  `ISelectionProvider`; rows `ISelectionItemProvider`; cells `IGridItemProvider`, `ITableItemProvider`, read-only
+  `IValueProvider`).
+- Providers and client: `IGridProvider`, `IGridItemProvider`, `ITableProvider`, `ITableItemProvider`, `ITextProvider`,
+  `ITextRangeProvider`, `TextUnit`, `TextPatternRangeEndpoint`; client `GridPattern`, `GridItemPattern`,
+  `TablePattern`, `TableItemPattern`, `TextPattern`, `TextPatternRange`, with the identifier classes and the text
+  events in the client event map. The text model is flat character offsets: `Line` and `Paragraph` split at line
+  feeds, `Format`, `Page` and `Document` are the whole text, visible ranges are the whole text, a point maps to
+  offset 0, `ScrollIntoView` is a no-op, text attributes are not modelled (`GetAttributeValue` returns
+  `NotSupported`, `FindAttribute` returns null and the client has no `AutomationTextAttribute`).
+- Events, all raised from the peers: selection events follow WPF's `Selector` rules (one `ElementSelected` for a
+  single new selection, added/removed events otherwise, one `Invalidated` above 20 changes); structure events carry
+  `ChildAdded`, `ChildRemoved`, `ChildrenBulkAdded`, `ChildrenBulkRemoved`, `ChildrenReordered` or
+  `ChildrenInvalidated`, from a children diff on every items change (a lone added child is the event's sender, a
+  removed one is reported by the parent with the child's runtime id); `Invoked` also for `MenuItem` (not a checkable
+  one); text selection and text changed events from `TextBox` and `RichTextBox`; property events for expand state,
+  progress and scroll position.
+- GTK: `LabeledBy` is pushed as `AccessibleRelation.LabelledBy` (a GtkAccessibleList value built through P/Invoke,
+  because GtkSharp4 binds none of it) and reset when cleared. `LiveRegionChanged` on a peer whose `LiveSetting` is not
+  `Off`, and every `Notification` event, call `gtk_accessible_announce`. `gtk_accessible_list_new_from_array`
+  returned NULL here, so the list is built with `g_list_append` and `gtk_accessible_list_new_from_list`.
+- `AutomationPeer.NotifyChildrenChanged` is the one hook `ItemsControl` and `DataGrid` call when their items change.
+- Snapshot tests of the automation tree for the five Phase 3 samples (`Wpf.Testing.Tests/Samples/
+  AccessibilityTreeTests.cs`).
+
+Deviations from the plan and WPF:
+
+- `DataGrid` is not an `ItemsControl` here, so its rows, cells and headers derive from a new public
+  `GridPartAutomationPeer` rather than `ItemAutomationPeer`, and rows are cached per item reference (a repeated item
+  shares one peer). Cell values are read-only; the layer cannot edit cells.
+- `Hyperlink` is not an element (no widget), so `HyperlinkAutomationPeer` derives from `AutomationPeer`; there is no
+  `ContentElementAutomationPeer`.
+- `TreeView.SelectedItem` is a `TreeViewItem` in this layer, so the tree's selection holds node peers.
+- `ListView` has no `GridView`, so the grid pattern WPF adds for one is absent. `ContextMenu` and `StatusBarItem`
+  have no peers. `PropertyCondition` and `GetCurrentPropertyValue` still cover only the nine Phase 2 patterns.
+- `TabItem` pushes no role: its widget is the page box, and GTK's notebook owns the tab role.
+- Items added to a `ListBox` through `Items` after the widget exists still do not reach GTK (a layer gap that
+  predates this phase); the peers report them anyway.
+
+Tests: 37 new in `PresentationFramework.Tests` (peer patterns, `DataGrid`, text provider ranges, events in order,
+GTK relation, role and announcements, and the client grid and text patterns) and 5 snapshot tests in
+`Wpf.Testing.Tests`. Observed on Windows: `WindowsBase.Tests` 201, `MarkupCompiler.Tests` 575,
+`Wpf.ProjectConverter.Tests` 34, `PresentationFramework.Tests` 4257, `Wpf.Testing.Tests` 60 passed + 1 skipped, all
+passing; `dotnet build Gtk4.Forms.sln` warning-clean. Linux and macOS were not run; the P/Invoke names for
+`gtk_accessible_announce` and the relation list on those two are unverified.
+
+Samples gate (pinned recipe, package 1.0.0.26325 packed from this branch): 90 of 90 samples with `build=pass` still
+build, and 83 of 83 with `run=runs` ran (79 in the first 10 s pass; FindingSourceElement, SimpleLayout, OpacityMasking
+and EventTriggers ran when re-run alone with a 30 s limit, the same load noise earlier phases recorded).
 
 
 1. Should the driver package also host the app **out-of-process** (launch the converted app and attach)

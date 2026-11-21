@@ -10,7 +10,7 @@ namespace System.Windows.Controls;
 /// phase. <c>Gtk.PopoverMenuBar</c> integration is a future phase.
 /// </para>
 /// </summary>
-public class Menu : ItemsControl
+public partial class Menu : ItemsControl
 {
 	Gtk.Box? _bar;
 

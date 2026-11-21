@@ -38,11 +38,13 @@ public partial class UIElementAutomationPeer
 		if (string.IsNullOrEmpty(name)) name = GetLabeledBy()?.GetName();
 		SyncLabel(widget, name);
 		SyncRequired(widget, IsRequiredForForm());
+		SyncLabelledBy(widget);
 		PushState(widget);
 	}
 
 	bool _labelPushed;
 	bool _requiredPushed;
+	bool _labelledByPushed;
 
 	// Push a value, or reset the property when it was pushed before and is now empty.
 	void SyncLabel(Gtk.Widget widget, string? name)
