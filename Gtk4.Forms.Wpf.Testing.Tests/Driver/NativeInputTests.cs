@@ -41,8 +41,34 @@ public class NativeInputTests : WpfUiWindowTest<FormWindow>
 		Assert.True(App.Invoke(() => Form.Login.IsEnabled));
 	}
 
-	[WpfUiFact]
-	public void Native_input_is_skipped_unless_opted_in() =>
-		Assert.Equal(NativeInput.IsSupported && Environment.GetEnvironmentVariable("XF_NATIVE_INPUT") == "1"
-			&& WpfUiEnvironment.CanRun, WpfNativeEnvironment.CanRun);
+	[Theory]
+	[InlineData(null, false)]
+	[InlineData("", false)]
+	[InlineData("0", false)]
+	[InlineData("true", false)]
+	[InlineData("1", true)]
+	public void Native_input_needs_exactly_XF_NATIVE_INPUT_equal_1(string value, bool optedIn) =>
+		Assert.Equal(optedIn, WpfNativeEnvironment.OptedIn(value));
+
+	[Fact]
+	public void Input_record_is_the_size_of_the_platform_INPUT_structure() =>
+		Assert.Equal(Environment.Is64BitProcess ? 40 : 28, NativeInput.InputRecordSize);
+
+	[WpfNativeFact]
+	public void Native_input_refuses_an_element_outside_the_main_window()
+	{
+		var second = App.Invoke(() => new System.Windows.Window { Title = "Second" });
+		try
+		{
+			App.Invoke(() => second.Show());
+			App.WaitForIdle();
+			var element = AutomationElement.Wrap(
+				System.Windows.Automation.Peers.UIElementAutomationPeer.CreatePeerForElement(second)!, null);
+			Assert.Throws<NotSupportedException>(() => App.Native.MoveTo(element));
+		}
+		finally
+		{
+			App.Invoke(() => second.Close());
+		}
+	}
 }

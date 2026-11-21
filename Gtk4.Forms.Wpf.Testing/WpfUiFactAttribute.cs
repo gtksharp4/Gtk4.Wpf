@@ -49,7 +49,10 @@ public sealed class WpfNativeFactAttribute : FactAttribute
 /// <summary>What <see cref="WpfNativeFactAttribute"/> asks at run time.</summary>
 public static class WpfNativeEnvironment
 {
+	/// <summary>True only for <c>XF_NATIVE_INPUT</c> set to exactly <c>1</c>.</summary>
+	public static bool OptedIn(string? value) => value == "1";
+
 	public static bool CanRun =>
-		NativeInput.IsSupported && Environment.GetEnvironmentVariable("XF_NATIVE_INPUT") == "1"
+		NativeInput.IsSupported && OptedIn(Environment.GetEnvironmentVariable("XF_NATIVE_INPUT"))
 		&& WpfUiEnvironment.CanRun;
 }

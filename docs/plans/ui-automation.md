@@ -570,7 +570,8 @@ proved here. What landed, in `Gtk4.Forms.Wpf.Testing`:
   400x500 window at 96 dpi, an invisible frame of 14 px per side, 15 at the top), so a click at the plain client
   origin missed by about 15 px. The frame is derived from the client size minus the GTK window size. Unverified: other
   DPI scales and multi-monitor setups.
-- Run with `XF_NATIVE_INPUT=1 dotnet test Gtk4.Forms.Wpf.Testing.Tests --filter "Trait=Native"`. The cursor moves, so
+- Safety checks (review fixes): before any click or keystroke the window must be confirmed foreground  (`GetForegroundWindow`, retried briefly), else `InvalidOperationException`; a click also checks that the main  window is the root under the target point. `App.Native` targets elements of the main window only: elements in  another window, dialog or popup throw `NotSupportedException` (their bounds are relative to their own root), and  the window is found by title, so two top-levels with the same title are ambiguous. `INPUT` is laid out as a type  plus a union, so x86 hosts get the 28-byte record. Input is delivered asynchronously: wait for the expected  effect. Scaling uses GTK's integer scale factor, so fractional Windows scales stay unverified.
+- Run with `XF_NATIVE_INPUT=1 dotnet test Gtk4.Forms.Wpf.Testing.Tests --filter "UI=Native"`. The cursor moves, so
   keep the desktop unlocked and do not touch the mouse meanwhile.
 
 Follow-up steps for the platforms not delivered (each needs the named check first):
@@ -588,13 +589,12 @@ Follow-up steps for the platforms not delivered (each needs the named check firs
 - **Any OS without exposure.** Option 1 of the open questions below (an in-app automation server over a named pipe)
   stays the portable alternative; it was not started.
 
-Tests: 4 new in `Wpf.Testing.Tests` (`NativeInputTests`): three native tests (click a button, click a check box, type
-into a text box; run and passed with `XF_NATIVE_INPUT=1`, skipped otherwise) and one that checks the opt-in rule.
+Tests: `Wpf.Testing.Tests` `NativeInputTests`: four native tests (click a button, click a check box, type into a text box, refuse an element of another window; run and passed with `XF_NATIVE_INPUT=1`, skipped otherwise), the opt-in rule for `null`, empty, `0`, `true` and `1`, and the `INPUT` size.
 
 
 Observed on Windows: `WindowsBase.Tests` 201, `MarkupCompiler.Tests` 575, `Wpf.ProjectConverter.Tests` 34,
-`PresentationFramework.Tests` 4264 passed; `Wpf.Testing.Tests` 61 passed + 4 skipped (the 3 native tests and the
-earlier skip), and with `XF_NATIVE_INPUT=1 --filter "UI=Native"` 4 passed; `dotnet build Gtk4.Forms.sln`
+`PresentationFramework.Tests` 4264 passed; `Wpf.Testing.Tests` 66 passed + 5 skipped (the 4 native tests and the
+earlier skip), and with `XF_NATIVE_INPUT=1 --filter "UI=Native"` 10 passed; `dotnet build Gtk4.Forms.sln`
 warning-clean. Linux and macOS were not run. The samples gate was not re-run: no product code changed.
 
 1. Should the driver package also host the app **out-of-process** (launch the converted app and attach)

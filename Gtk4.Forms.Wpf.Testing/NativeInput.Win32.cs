@@ -39,14 +39,23 @@ public sealed partial class NativeInput
 		public UIntPtr dwExtraInfo;
 	}
 
-	// The union is sized by its largest member, MOUSEINPUT, which makes INPUT 40 bytes on x64.
+	// INPUT is a type followed by a union; the union's alignment follows the pointer size, so the layout is
+	// 40 bytes on x64 and 28 on x86 (a fixed offset of 8 would be wrong in a 32-bit process).
 	[StructLayout(LayoutKind.Explicit)]
+	struct InputUnion
+	{
+		[FieldOffset(0)] public MouseInputData mouse;
+		[FieldOffset(0)] public KeyInputData key;
+	}
+
+	[StructLayout(LayoutKind.Sequential)]
 	struct InputRecord
 	{
-		[FieldOffset(0)] public uint type;
-		[FieldOffset(8)] public MouseInputData mouse;
-		[FieldOffset(8)] public KeyInputData key;
+		public uint type;
+		public InputUnion data;
 	}
+
+	internal static int InputRecordSize => Marshal.SizeOf<InputRecord>();
 
 	[StructLayout(LayoutKind.Sequential)]
 	struct NativePoint
@@ -102,17 +111,21 @@ public sealed partial class NativeInput
 
 	static void Send(params InputRecord[] inputs)
 	{
-		if (SendInput((uint)inputs.Length, inputs, Marshal.SizeOf<InputRecord>()) != inputs.Length)
+		if (SendInput((uint)inputs.Length, inputs, InputRecordSize) != inputs.Length)
 			throw new InvalidOperationException("SendInput injected fewer events than requested (error "
 				+ Marshal.GetLastWin32Error() + "); the desktop may be locked or the target elevated.");
 	}
 
 	static InputRecord Mouse(uint flags) =>
-		new InputRecord { type = InputMouse, mouse = new MouseInputData { dwFlags = flags } };
+		new InputRecord
+		{
+			type = InputMouse,
+			data = new InputUnion { mouse = new MouseInputData { dwFlags = flags } },
+		};
 
 	static InputRecord Char(char c, bool up) => new InputRecord
 	{
 		type = InputKeyboard,
-		key = new KeyInputData { wScan = c, dwFlags = KeyUnicode | (up ? KeyUp : 0) },
+		data = new InputUnion { key = new KeyInputData { wScan = c, dwFlags = KeyUnicode | (up ? KeyUp : 0) } },
 	};
 }

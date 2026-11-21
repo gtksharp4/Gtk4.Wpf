@@ -10,7 +10,8 @@ namespace Gtk4.Forms.Wpf.Testing;
 /// Opt-in operating-system input (Windows <c>SendInput</c>): a real cursor move, click or keystroke that goes
 /// through the window system and GTK's event controllers, not the layer's routed-input seam. It moves the user's
 /// cursor and needs an interactive, unlocked desktop, so tests using it are not part of the CI gate (see
-/// <see cref="WpfNativeFactAttribute"/>). Other platforms throw <see cref="PlatformNotSupportedException"/>.
+/// <see cref="WpfNativeFactAttribute"/>). Each action waits for the app to be idle, but the OS delivers input
+/// asynchronously, so wait for the expected effect. Other platforms throw <see cref="PlatformNotSupportedException"/>.
 /// </summary>
 public sealed partial class NativeInput
 {
@@ -21,8 +22,21 @@ public sealed partial class NativeInput
 	/// <summary>True where native injection is implemented (Windows).</summary>
 	public static bool IsSupported => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
-	/// <summary>Moves the cursor to the element's centre, or to <paramref name="at"/> in its own coordinates.</summary>
-	public void MoveTo(AutomationElement element, Point? at = null) => MoveCursor(Target(element, at));
+	/// <summary>
+	/// Moves the cursor to the element's centre, or to <paramref name="at"/> in its own coordinates. Brings the window
+	/// to the foreground first and throws <see cref="InvalidOperationException"/> if it cannot, or if another window
+	/// covers the point; throws <see cref="NotSupportedException"/> for elements outside the main window.
+	/// </summary>
+	public void MoveTo(AutomationElement element, Point? at = null)
+	{
+		RequireSupported();
+		RequireMainWindow(element);
+		IntPtr hwnd = Handle();
+		Activate(hwnd);
+		Point target = Target(element, at, hwnd);
+		MoveCursor(target);
+		RequireTopmostAt(hwnd, target);
+	}
 
 	/// <summary>Moves the cursor onto the element and presses and releases the button.</summary>
 	public void Click(AutomationElement element, MouseButton button = MouseButton.Left, Point? at = null)
@@ -39,7 +53,7 @@ public sealed partial class NativeInput
 	{
 		if (text == null) throw new ArgumentNullException(nameof(text));
 		RequireSupported();
-		SetForegroundWindow(Handle());
+		Activate(Handle());
 		foreach (char c in text)
 			Send(Char(c, up: false), Char(c, up: true));
 		Settle();
@@ -56,13 +70,12 @@ public sealed partial class NativeInput
 	/// invisible frame (measured 14 px per side, one more at the top). The frame width is the horizontal excess
 	/// over the GTK window's size, halved; the top gets the vertical excess minus that.
 	/// </summary>
-	Point Target(AutomationElement element, Point? at)
+	Point Target(AutomationElement element, Point? at, IntPtr hwnd)
 	{
 		RequireSupported();
 		Rect bounds = element.Current.BoundingRectangle;
 		if (bounds.IsEmpty)
 			throw new InvalidOperationException("The element has no bounds, so it cannot be targeted.");
-		IntPtr hwnd = Handle();
 		var origin = new NativePoint();
 		ClientToScreen(hwnd, ref origin);
 		GetClientRect(hwnd, out NativeRect client);
@@ -83,7 +96,7 @@ public sealed partial class NativeInput
 			: throw new InvalidOperationException("No visible top-level window titled '" + title + "' was found.");
 	}
 
-	// The OS queues the input; GTK handles it on its own thread, so wait until the app is idle.
+	// The OS queues input asynchronously: this drains what GTK already has, it does not prove delivery.
 	void Settle() => _host.WaitForIdle();
 
 	static void RequireSupported()
