@@ -50,7 +50,8 @@ public class DuplicateXamlItemTests : IDisposable
 	[Fact]
 	public void Case_differing_names_are_distinct_files_on_case_sensitive_systems()
 	{
-		Assert.SkipWhen(OperatingSystem.IsWindows(), "Case-insensitive file system.");
+		Assert.SkipUnless(
+			FileSystemCase.IsCaseSensitive(_dir), "Case-insensitive file system.");
 		string upper = Write("Pages/A.xaml", $"<Window x:Class=\"A.Pages.A\" {Head}/>");
 		string lower = Write("Pages/a.xaml", $"<Window x:Class=\"A.Pages.Lower\" {Head}/>");
 		var task = Task(upper, lower);
@@ -58,5 +59,24 @@ public class DuplicateXamlItemTests : IDisposable
 		Assert.True(task.Execute(), string.Join("; ", _engine.Errors));
 		Assert.Equal(2, task.GeneratedFiles.Length);
 		Assert.DoesNotContain(_engine.Messages, m => m.Message!.Contains("duplicate"));
+	}
+
+	[Fact]
+	public void Case_variant_spellings_of_one_file_generate_once_on_case_insensitive_systems()
+	{
+		Assert.SkipWhen(FileSystemCase.IsCaseSensitive(_dir), "Case-sensitive file system.");
+		string upper = Write("Pages/A.xaml", $"<Window x:Class=\"A.Pages.A\" {Head}/>");
+		string lower = Path.Combine(Path.GetDirectoryName(upper)!, "a.xaml");
+		var task = Task(upper, lower);
+
+		Assert.True(task.Execute(), string.Join("; ", _engine.Errors));
+		Assert.Single(task.GeneratedFiles);
+	}
+
+	[Fact]
+	public void The_probe_leaves_no_file_behind()
+	{
+		_ = FileSystemCase.IsCaseSensitive(_dir);
+		Assert.Empty(Directory.GetFiles(_dir));
 	}
 }

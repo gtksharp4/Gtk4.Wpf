@@ -8,7 +8,7 @@ namespace Microsoft.Win32;
 
 /// <summary>Lets the user choose one or more folders.</summary>
 /// <remarks>
-/// GTK's folder dialog has no equivalent for <see cref="AddToRecent"/>, <see cref="ClientGuid"/>,
+/// GTK's folder dialog has no equivalent for <see cref="CommonItemDialog.AddToRecent"/>, <see cref="ClientGuid"/>,
 /// <see cref="DefaultDirectory"/> beyond the start folder, <see cref="DereferenceLinks"/>,
 /// <see cref="RootDirectory"/>, <see cref="ShowHiddenItems"/> and <see cref="ValidateNames"/>; they are store-only.
 /// </remarks>
@@ -21,9 +21,6 @@ public sealed class OpenFolderDialog : CommonItemDialog
 	{
 		Reset();
 	}
-
-	/// <summary>Whether the folder is added to the recent list. Default true. Store-only.</summary>
-	public bool AddToRecent { get; set; }
 
 	/// <summary>The last segment of <see cref="FolderName"/>, or empty.</summary>
 	public string SafeFolderName => SafeName(FolderName);
@@ -64,7 +61,6 @@ public sealed class OpenFolderDialog : CommonItemDialog
 	{
 		base.Reset();
 		_folderNames = null;
-		AddToRecent = true;
 		Multiselect = false;
 	}
 

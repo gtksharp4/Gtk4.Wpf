@@ -45,4 +45,41 @@ public class WindowDragMoveControllerTests : WpfGtkTestBase
 			w.Hide();
 		}
 	});
+
+	[Fact]
+	public void A_press_whose_button_is_no_longer_down_is_stale() => Run(() =>
+	{
+		var w = new Window();
+		w.Show();
+		bool moved = false;
+		try
+		{
+			var pointer = Gdk.Display.Default?.DefaultSeat?.Pointer;
+			Assert.SkipUnless(pointer != null, "No pointer device.");
+			Window.BeginMoveOverride = (_, _, _, _, _) => moved = true;
+
+			Window.PrimaryDownOverride = _ => false;
+			w.RecordPress(pointer, 1, 1, 1);
+			Assert.Throws<InvalidOperationException>(() => w.DragMove());
+			Assert.False(moved);
+
+			Window.PrimaryDownOverride = _ => true;
+			w.RecordPress(pointer, 1, 1, 1);
+			w.DragMove();
+			Assert.True(moved);
+
+			// A backend that cannot report the button state (GDK Win32) gives the press the benefit of the doubt.
+			moved = false;
+			Window.PrimaryDownOverride = _ => null;
+			w.RecordPress(pointer, 1, 1, 1);
+			w.DragMove();
+			Assert.True(moved);
+		}
+		finally
+		{
+			Window.BeginMoveOverride = null;
+			Window.PrimaryDownOverride = null;
+			w.Hide();
+		}
+	});
 }

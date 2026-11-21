@@ -20,6 +20,8 @@ public partial class MultiDataTrigger : TriggerBase
 	/// <summary>Setters applied when all conditions are active.</summary>
 	public SetterBaseCollection Setters { get; } = new SetterBaseCollection();
 
+	internal override void Seal() => Setters.IsSealed = true;
+
 	/// <summary>Actions run when all conditions become active.</summary>
 	public TriggerActionCollection EnterActions { get; } = new TriggerActionCollection();
 

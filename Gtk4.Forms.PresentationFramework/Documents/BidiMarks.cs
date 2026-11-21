@@ -5,11 +5,11 @@ namespace System.Windows.Documents;
 /// <summary>Unicode bidi controls used to render <see cref="FlowDirection"/> in Pango text.</summary>
 internal static class BidiMarks
 {
-	internal const char Lri = '⁦';
-	internal const char Rli = '⁧';
-	internal const char Pdi = '⁩';
-	internal const char Lrm = '‎';
-	internal const char Rlm = '‏';
+	internal const char Lri = '\u2066';
+	internal const char Rli = '\u2067';
+	internal const char Pdi = '\u2069';
+	internal const char Lrm = '\u200E';
+	internal const char Rlm = '\u200F';
 
 	/// <summary>The isolate opener for <paramref name="direction"/>.</summary>
 	internal static char Isolate(FlowDirection direction) =>

@@ -41,7 +41,11 @@ public class EventSetter : SetterBase
 	public RoutedEvent? Event
 	{
 		get => _event;
-		set => _event = value ?? throw new ArgumentNullException(nameof(value));
+		set
+		{
+			CheckSealed();
+			_event = value ?? throw new ArgumentNullException(nameof(value));
+		}
 	}
 
 	/// <summary>The handler to attach.</summary>
@@ -53,6 +57,7 @@ public class EventSetter : SetterBase
 		set
 		{
 			if (value == null) throw new ArgumentNullException(nameof(value));
+			CheckSealed();
 			if (_event != null && value.GetType() != _event.HandlerType && value is not RoutedEventHandler)
 				throw new ArgumentException(
 					$"Handler type {value.GetType()} does not match {_event.HandlerType}.", nameof(value));

@@ -49,9 +49,11 @@ public abstract partial class UIElement
 
 	// ── Key controller ───────────────────────────────────────────────────────
 
+	internal Gtk.EventControllerKey? _keyController;
+
 	void AttachKeyController(Gtk.Widget widget)
 	{
-		var key = new Gtk.EventControllerKey();
+		var key = _keyController = new Gtk.EventControllerKey();
 		key.KeyPressed  += OnGtkKeyPressed;
 		key.KeyReleased += OnGtkKeyReleased;
 		widget.AddController(key);
@@ -77,7 +79,8 @@ public abstract partial class UIElement
 			}
 		}
 
-		RaiseKeyDown(key, mods);
+		// Handled keys must not reach the widget class bindings (a Gtk.Scale would step a second time).
+		args.RetVal = RaiseKeyDown(key, mods);
 	}
 
 	void OnGtkKeyReleased(object o, Gtk.KeyReleasedArgs args)

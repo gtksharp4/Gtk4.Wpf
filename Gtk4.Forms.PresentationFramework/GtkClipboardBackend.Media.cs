@@ -21,7 +21,9 @@ internal sealed partial class GtkClipboardBackend
 		return formats.GetMimeTypes(out count) ?? Array.Empty<string>();
 	}
 
-	/// <summary>Whether <paramref name="formats"/> offers something that maps to the WPF <paramref name="format"/>.</summary>
+	/// <summary>
+	/// Whether <paramref name="formats"/> offers something that maps to the WPF <paramref name="format"/>.
+	/// </summary>
 	internal static bool FormatsContain(Gdk.ContentFormats formats, string format)
 	{
 		var mimes = MimeTypes(formats);
@@ -31,11 +33,14 @@ internal sealed partial class GtkClipboardBackend
 		return false;
 	}
 
-	/// <summary>Converts a <c>text/uri-list</c> body to local file paths, skipping comments and non-file URIs.</summary>
+	/// <summary>
+	/// Converts a <c>text/uri-list</c> body to local file paths, skipping comments and non-file URIs.
+	/// </summary>
 	internal static string[] ParseUriList(string text) =>
 		text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
 			.Where(line => !line.StartsWith("#", StringComparison.Ordinal))
-			.Select(line => Uri.TryCreate(line.Trim(), UriKind.Absolute, out var uri) && uri.IsFile ? uri.LocalPath : null)
+			.Select(line => Uri.TryCreate(line.Trim(), UriKind.Absolute, out var uri) && uri.IsFile
+				? uri.LocalPath : null)
 			.OfType<string>()
 			.ToArray();
 
@@ -68,7 +73,8 @@ internal sealed partial class GtkClipboardBackend
 		catch { /* best effort */ }
 	}
 
-	static Gdk.ContentProvider Provider(string mime, byte[] bytes) => new Gdk.ContentProvider(mime, new GLib.Bytes(bytes));
+	static Gdk.ContentProvider Provider(string mime, byte[] bytes) =>
+		new Gdk.ContentProvider(mime, new GLib.Bytes(bytes));
 
 	static string ToUriList(string[] paths) =>
 		string.Concat(paths.Select(p => new Uri(Path.GetFullPath(p)).AbsoluteUri + "\r\n"));
@@ -87,7 +93,8 @@ internal sealed partial class GtkClipboardBackend
 	{
 		if (image.StreamSource != null)
 			return ReadAll(image.StreamSource);
-		return image.UriSource is { IsFile: true } uri && File.Exists(uri.LocalPath) ? File.ReadAllBytes(uri.LocalPath) : null;
+		return image.UriSource is { IsFile: true } uri && File.Exists(uri.LocalPath)
+			? File.ReadAllBytes(uri.LocalPath) : null;
 	}
 
 	/// <inheritdoc/>
@@ -115,7 +122,8 @@ internal sealed partial class GtkClipboardBackend
 		var bytes = mime == null ? null : ReadMime(native, mime);
 		if (bytes == null)
 			return null;
-		return format == DataFormats.Bitmap ? new BitmapImage { StreamSource = new MemoryStream(bytes) } : new MemoryStream(bytes);
+		return format == DataFormats.Bitmap
+			? new BitmapImage { StreamSource = new MemoryStream(bytes) } : new MemoryStream(bytes);
 	}
 
 	// The clipboard only offers async reads, so spin a nested loop until the stream arrives or time runs out.

@@ -46,4 +46,18 @@ public class CommonItemDialogTests
 			null, System.Type.EmptyTypes, null)!;
 		Assert.True(method.IsVirtual);
 	}
+
+	[Fact]
+	public void AddToRecent_is_on_every_item_dialog_and_defaults_true()
+	{
+		CommonItemDialog[] dialogs = { new OpenFileDialog(), new SaveFileDialog(), new OpenFolderDialog() };
+		foreach (var dialog in dialogs)
+		{
+			Assert.True(dialog.AddToRecent);
+			dialog.AddToRecent = false;
+			dialog.Reset();
+			Assert.True(dialog.AddToRecent);
+		}
+		Assert.Equal(typeof(CommonItemDialog), typeof(CommonItemDialog).GetProperty("AddToRecent")!.DeclaringType);
+	}
 }

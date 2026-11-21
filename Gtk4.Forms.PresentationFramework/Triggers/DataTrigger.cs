@@ -20,6 +20,8 @@ public partial class DataTrigger : TriggerBase
 	/// <summary>Setters applied when the condition is active.</summary>
 	public SetterBaseCollection Setters { get; } = new SetterBaseCollection();
 
+	internal override void Seal() => Setters.IsSealed = true;
+
 	/// <summary>Actions run when the condition becomes active.</summary>
 	public TriggerActionCollection EnterActions { get; } = new TriggerActionCollection();
 

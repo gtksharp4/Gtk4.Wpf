@@ -74,7 +74,8 @@ public class DispatcherHostGtkTests : WpfGtkTestBase
 		{
 			int uiThread = Environment.CurrentManagedThreadId;
 			Dispatcher.IsOnDispatcherThread = () => Environment.CurrentManagedThreadId == uiThread;
-			Dispatcher.BeginInvokePriorityAction = (a, p) => GLib.Idle.Add((int)GLib.Priority.Default, () => { a(); return false; });
+			Dispatcher.BeginInvokePriorityAction = (a, p) =>
+				GLib.Idle.Add((int)GLib.Priority.Default, () => { a(); return false; });
 			object? result = null;
 			var worker = new System.Threading.Thread(() =>
 				result = ui.Invoke(DispatcherPriority.Send,

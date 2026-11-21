@@ -46,12 +46,11 @@ public abstract partial class UIElement
 		var mode = KeyboardNavigationMode.Continue;
 		for (var n = this; n != null; n = n.LogicalParent)
 		{
-			if (n.ReadLocalValue(KeyboardNavigation.TabNavigationProperty) != DependencyProperty.UnsetValue)
-				mode = KeyboardNavigation.GetTabNavigation(n);
-			else if (n is Window)
-				mode = KeyboardNavigationMode.Cycle;
-			else
-				continue;
+			// Continue defers to the next ancestor; the effective value includes style setters.
+			var m = KeyboardNavigation.GetTabNavigation(n);
+			if (m == KeyboardNavigationMode.Continue && n is Window) m = KeyboardNavigationMode.Cycle;
+			if (m == KeyboardNavigationMode.Continue) continue;
+			mode = m;
 			container = n;
 			break;
 		}
@@ -90,11 +89,12 @@ public abstract partial class UIElement
 		return order[next];
 	}
 
-	// A non-Control only counts when Focusable was set on it explicitly: Focusable defaults to true on every
-	// UIElement here, where WPF defaults it to false outside controls.
+	// Focusable defaults to true on every UIElement here, where WPF defaults it to false outside controls. A
+	// non-Control counts when something set it: a local, style or trigger value, or an overridden default.
 	static bool IsFocusCandidate(UIElement e) =>
 		e is not Window && e.Focusable && e.IsEnabled && KeyboardNavigation.GetIsTabStop(e)
-		&& (e is Controls.Control || e.ReadLocalValue(FocusableProperty) != DependencyProperty.UnsetValue);
+		&& (e is Controls.Control || e.HasNonInheritedValue(FocusableProperty)
+			|| !ReferenceEquals(FocusableProperty.GetMetadata(e.GetType()), FocusableProperty.DefaultMetadata));
 
 	static void CollectFocusCandidates(DependencyObject node, List<UIElement> into)
 	{

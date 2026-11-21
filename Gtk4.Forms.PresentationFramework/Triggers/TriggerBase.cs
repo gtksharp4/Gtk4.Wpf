@@ -20,12 +20,25 @@ public abstract class TriggerBase
 	/// Called when a <see cref="Style"/> is replaced/nulled or the element is unloaded.
 	/// </summary>
 	internal abstract void Detach(FrameworkElement target);
+
+	/// <summary>Seals the setters this trigger owns (called when its style is sealed).</summary>
+	internal virtual void Seal() { }
 }
 
 /// <summary>Collection of <see cref="TriggerBase"/> items.</summary>
 public class TriggerCollection : Collection<TriggerBase>
 {
-	internal bool IsSealed { get; set; }
+	bool _sealed;
+
+	internal bool IsSealed
+	{
+		get => _sealed;
+		set
+		{
+			_sealed = value;
+			if (value) foreach (var trigger in this) trigger.Seal();
+		}
+	}
 
 	void CheckSealed()
 	{

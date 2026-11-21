@@ -101,17 +101,17 @@ public abstract partial class UIElement : IInputElement
 
 	// ── Internal helper used by GTK wiring too ───────────────────────────────
 
-	internal void RaiseKeyDown(Key key, ModifierKeys modifiers)
+	internal bool RaiseKeyDown(Key key, ModifierKeys modifiers)
 	{
 		var preview = new KeyEventArgs(PreviewKeyDownEvent, key, KeyStates.Down, modifiers);
 		RaiseEvent(preview);
-		if (preview.Handled) return;
+		if (preview.Handled) return true;
 
 		var e = new KeyEventArgs(KeyDownEvent, key, KeyStates.Down, modifiers);
 		RaiseEvent(e);
-		if (e.Handled) return;
+		if (e.Handled) return true;
 
 		// Dispatch any matching InputBindings.
-		InvokeInputBinding(new KeyGestureEventArgs(key, modifiers));
+		return InvokeInputBinding(new KeyGestureEventArgs(key, modifiers));
 	}
 }

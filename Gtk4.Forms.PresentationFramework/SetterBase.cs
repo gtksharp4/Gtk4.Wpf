@@ -6,7 +6,17 @@ namespace System.Windows;
 /// <summary>Collection of <see cref="SetterBase"/> items.</summary>
 public class SetterBaseCollection : Collection<SetterBase>
 {
-	internal bool IsSealed { get; set; }
+	bool _sealed;
+
+	internal bool IsSealed
+	{
+		get => _sealed;
+		set
+		{
+			_sealed = value;
+			if (value) foreach (var setter in this) setter.Seal();
+		}
+	}
 
 	void CheckSealed()
 	{
@@ -61,6 +71,17 @@ public class SetterBaseCollection : Collection<SetterBase>
 /// <summary>Base class for all setter types.</summary>
 public abstract class SetterBase
 {
+	/// <summary>Whether the setter is sealed (it belongs to a sealed style) and can no longer be modified.</summary>
+	public bool IsSealed { get; private set; }
+
+	internal void Seal() => IsSealed = true;
+
+	/// <summary>Throws when the setter is sealed.</summary>
+	protected void CheckSealed()
+	{
+		if (IsSealed) throw new InvalidOperationException("Cannot modify a sealed Style.");
+	}
+
 	/// <summary>Applies this setter to <paramref name="target"/> as a local value (direct apply).</summary>
 	internal abstract void Apply(DependencyObject target);
 

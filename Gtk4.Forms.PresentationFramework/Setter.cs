@@ -19,6 +19,8 @@ public partial class Setter : SetterBase
 {
 	DependencyProperty? _property;
 	object? _value;
+	string? _propertyName;
+	string? _targetName;
 
 	/// <summary>Creates an empty setter.</summary>
 	public Setter() { }
@@ -47,6 +49,7 @@ public partial class Setter : SetterBase
 		set
 		{
 			CheckValidProperty(value);
+			CheckSealed();
 			_property = value;
 		}
 	}
@@ -63,7 +66,11 @@ public partial class Setter : SetterBase
 	/// String property name, resolved against the target when <see cref="Property"/> is null.
 	/// Non-WPF; emitted by the markup compiler.
 	/// </summary>
-	public string? PropertyName { get; set; }
+	public string? PropertyName
+	{
+		get => _propertyName;
+		set { CheckSealed(); _propertyName = value; }
+	}
 
 	/// <summary>The value to assign. A string is type-converted on apply.</summary>
 	/// <exception cref="ArgumentException">The value is <see cref="DependencyProperty.UnsetValue"/>.</exception>
@@ -75,6 +82,7 @@ public partial class Setter : SetterBase
 			if (ReferenceEquals(value, DependencyProperty.UnsetValue))
 				throw new ArgumentException(
 					"'UnsetValue' is not a valid value for the 'Setter.Value' property.", nameof(value));
+			CheckSealed();
 			_value = value;
 		}
 	}
@@ -83,7 +91,11 @@ public partial class Setter : SetterBase
 	/// Name of a template part this setter targets. Store-only: template triggers apply the setter to
 	/// the trigger's own target and do not yet route by name.
 	/// </summary>
-	public string? TargetName { get; set; }
+	public string? TargetName
+	{
+		get => _targetName;
+		set { CheckSealed(); _targetName = value; }
+	}
 
 	/// <inheritdoc/>
 	internal override void Apply(DependencyObject target) => ApplyAt(target, Layer.Local, null, null);

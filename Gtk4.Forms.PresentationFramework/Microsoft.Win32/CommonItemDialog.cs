@@ -3,11 +3,14 @@ using System.Collections.Generic;
 
 namespace Microsoft.Win32;
 
-/// <summary>Base class of the dialogs that pick file-system items: <see cref="FileDialog"/> and <see cref="OpenFolderDialog"/>.</summary>
+/// <summary>
+/// Base class of the dialogs that pick file-system items: <see cref="FileDialog"/> and <see cref="OpenFolderDialog"/>.
+/// </summary>
 /// <remarks>
-/// GTK's dialogs have no equivalent for <see cref="DereferenceLinks"/>, <see cref="ShowHiddenItems"/>,
-/// <see cref="CustomPlaces"/>, <see cref="ClientGuid"/>, <see cref="RootDirectory"/> and
-/// <see cref="ValidateNames"/>; they are stored and have no effect on the native dialog.
+/// GTK's dialogs have no equivalent for <see cref="AddToRecent"/>, <see cref="DereferenceLinks"/>,
+/// <see cref="ShowHiddenItems"/>, <see cref="CustomPlaces"/>, <see cref="ClientGuid"/>,
+/// <see cref="RootDirectory"/> and <see cref="ValidateNames"/>; they are stored and
+/// have no effect on the native dialog.
 /// </remarks>
 public abstract class CommonItemDialog : CommonDialog
 {
@@ -16,6 +19,9 @@ public abstract class CommonItemDialog : CommonDialog
 	{
 		ResetItemDefaults();
 	}
+
+	/// <summary>Whether the chosen item is added to the recent list. Default true. Store-only.</summary>
+	public bool AddToRecent { get; set; }
 
 	/// <summary>An id that scopes the dialog's remembered state. Store-only.</summary>
 	public Guid? ClientGuid { get; set; }
@@ -49,6 +55,7 @@ public abstract class CommonItemDialog : CommonDialog
 
 	void ResetItemDefaults()
 	{
+		AddToRecent = true;
 		ClientGuid = null;
 		CustomPlaces = new List<FileDialogCustomPlace>();
 		DefaultDirectory = "";

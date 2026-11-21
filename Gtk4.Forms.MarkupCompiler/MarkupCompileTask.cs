@@ -87,9 +87,9 @@ namespace Gtk4.Forms.MarkupCompiler
 
 			bool success = true;
 			var generated = new List<ITaskItem>();
-			// Paths compare case-insensitively only where the file system does.
-			bool windowsPaths = IOPath.DirectorySeparatorChar == (char)92;
-			var pathComparer = windowsPaths ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+			// Paths compare case-insensitively only where the output file system does.
+			var pathComparer = FileSystemCase.IsCaseSensitive(OutputDirectory)
+				? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase;
 			var seen = new Dictionary<string, string>(pathComparer);
 			var generator = new XamlCodeGenerator();
 			if (CompileFiles != null)

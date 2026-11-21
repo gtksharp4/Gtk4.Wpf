@@ -52,16 +52,27 @@ public partial class Window
 		if (!_leftDown)
 			throw new InvalidOperationException("Can only call DragMove when primary mouse button is down.");
 		_leftDown = false;
+		var surface = _window?.Surface;
+		// A press whose button has since been released (e.g. the release went to another window) is stale.
+		if (_pressDevice != null && IsPrimaryDown(surface, _pressDevice) == false)
+			throw new InvalidOperationException("Can only call DragMove when primary mouse button is down.");
 		if (BeginMoveOverride is { } hook)
 		{
 			hook(_pressDevice, 1, _pressX, _pressY, _pressTime);
 			return;
 		}
-		var surface = _window?.Surface;
 		if (surface == null) return;
-		if (_pressDevice != null && surface.GetDevicePosition(_pressDevice, out _, out _, out var mask)
-			&& !mask.HasFlag(Gdk.ModifierType.Button1Mask))
-			throw new InvalidOperationException("Can only call DragMove when primary mouse button is down.");
 		Gdk.ToplevelAdapter.GetObject(surface)?.BeginMove(_pressDevice!, 1, _pressX, _pressY, _pressTime);
+	}
+
+	/// <summary>Replaces the live pointer probe so tests can drive the stale-press check.</summary>
+	internal static Func<Gdk.Device, bool?>? PrimaryDownOverride;
+
+	// Null when the backend cannot say (GDK Win32 reports no device position).
+	static bool? IsPrimaryDown(Gdk.Surface? surface, Gdk.Device device)
+	{
+		if (PrimaryDownOverride is { } probe) return probe(device);
+		if (surface == null || !surface.GetDevicePosition(device, out _, out _, out var mask)) return null;
+		return mask.HasFlag(Gdk.ModifierType.Button1Mask);
 	}
 }

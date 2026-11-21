@@ -38,6 +38,23 @@ public class SliderClassBindingTests : WpfGtkTestBase
 	});
 
 	[Fact]
+	public void A_gesture_the_class_handles_is_reported_handled_to_GTK() => Run(() =>
+	{
+		var s = new WpfSlider { Minimum = 0, Maximum = 100, SmallChange = 2, LargeChange = 20, Value = 50 };
+		_ = s.Widget;
+		var controller = s._keyController!;
+		// GTK's own Range bindings run when key-pressed is not handled; a handled key must stop them.
+		Assert.True(EmitKeyPressed(controller, 0xFF52)); // Up
+		Assert.Equal(52, s.Value);
+		Assert.True(EmitKeyPressed(controller, 0xFF55)); // Page_Up
+		Assert.Equal(72, s.Value);
+		Assert.False(EmitKeyPressed(controller, 0x61)); // 'a': no gesture
+	});
+
+	static bool EmitKeyPressed(Gtk.EventControllerKey controller, uint keyval) =>
+		(bool)GLib.Signal.Emit(controller, "key-pressed", keyval, 0u, Gdk.ModifierType.None)!;
+
+	[Fact]
 	public void Registration_validates_arguments()
 	{
 		Assert.Throws<ArgumentNullException>(() => CommandManager.RegisterClassCommandBinding(null!,

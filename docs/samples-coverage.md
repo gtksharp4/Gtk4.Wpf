@@ -338,14 +338,27 @@ Newly built and started in this gate (not in the recorded set, which is stale as
   by the sample.
 - EditingCollections builds and starts.
 
-That is 92 of 204 apps built and 89 running by what was re-measured here (the 89 recorded apps, 86 of them running,
-plus the three above). CustomApplicationClass and LangAttribute were not re-run; counting them from the Round 47 gate
-gives 94 / 91. `samples-coverage.json` is still the `1b50a528` measurement.
+Counts for this gate: it exercised 83 recorded runners and the three new apps, which is 86 running. The other 3 of the
+89 (DragDropEvents, StringLocalizationSample and AlternatingAppearanceOfItems) are carried over from the Round 47 gate
+and were not re-measured here. So **92 of 204 build and 89 run**, of which 86 were re-measured here. CustomApplicationClass
+and LangAttribute were not re-run; counting them from the Round 47 gate gives 94 / 91. `samples-coverage.json` is
+still the `1b50a528` measurement.
 
 Known gap (input API): `KeyEventArgs : KeyboardEventArgs`, `MouseEventArgs : InputEventArgs` and
 `TextCompositionEventArgs : InputEventArgs` are not rebased yet. They still derive from `RoutedEventArgs`;
 `InputEventArgs` is now a public, non-abstract class with the WPF constructor `InputEventArgs(InputDevice, int)`, so
 code that constructs one compiles, but a handler typed `InputEventArgs` does not receive a key or mouse event.
+
+## Round 48 follow-up gate
+
+Pinned feed, `Gtk4.Forms.Wpf 1.0.0.26325` packed from `main` plus the Round 48 follow-up fixes (this changes the
+focus-navigation, Slider key handling, binding-group lookup, `Style.Seal`, `DragMove` and the MarkupCompiler's duplicate
+detection). All 93 projects built through the two-build recipe: the 90 recorded as `build=pass` plus ValidateItemSample,
+ValidateItemsInItemsControl and EditingCollections. All 83 recorded runners still start and stay up with a window for
+about 10 s, run one at a time, and so do the 3 recorded non-runners from Round 47 and the 3 new apps: **89 running,
+all re-measured in this gate**, no regression. The non-runners are unchanged: AppCompat-Quirks (crash), DragDropThumbOps
+(hang, also alone) and LocalizationResources (crash in the serial pass, hang when re-run alone). CustomApplicationClient
+is a library. CustomApplicationClass and LangAttribute were not re-run.
 
 ## Method
 
@@ -433,4 +446,5 @@ Gate (`Gtk4.Forms.Wpf 1.0.0.26325` packed from the worktree into a private feed,
 | 2026-11-20 | `1b50a528` | 1.0.0.26324 | **yes** | 89 / 204 | 83 | Round 46; 5 crash, 1 hang; no regressions; the earlier runs are confirmed local-feed |
 | 2026-11-21 | `2c67b72c` + generator-v4 | 1.0.0.26325 | **yes** | 90 / 204 | 87 | Generator v4; the recorded 89 plus CustomApplicationClass (fail -> builds, runs in this gate); no regressions |
 | 2026-11-21 | `5f92acd0` + Round 47 review fixes | 1.0.0.26325 | **yes** | 91 / 204 | 88 | Lower bounds: the recorded 90 projects, CustomApplicationClass and LangAttribute re-run; no regressions |
-| 2026-11-21 | `28d1eef2` + Round 48 review fixes | 1.0.0.26325 | **yes** | 92 / 204 | 89 | Lower bounds, re-measured here: 89 recorded apps (86 run) plus ValidateItemSample, ValidateItemsInItemsControl and EditingCollections (build and start); CustomApplicationClass and LangAttribute (Round 47: 94 / 91 with them) were not re-run; no regressions |
+| 2026-11-21 | `28d1eef2` + Round 48 review fixes | 1.0.0.26325 | **yes** | 92 / 204 | 89 | Lower bounds: 86 re-measured here (83 recorded runners plus ValidateItemSample, ValidateItemsInItemsControl and EditingCollections), 3 carried over from Round 47 (DragDropEvents, StringLocalizationSample, AlternatingAppearanceOfItems); CustomApplicationClass and LangAttribute (Round 47: 94 / 91 with them) were not re-run; no regressions |
+| 2026-11-21 | `40db59fe` + Round 48 follow-up fixes | 1.0.0.26325 | **yes** | 92 / 204 | 89 | Lower bounds, all 89 re-measured here: the 83 recorded runners, the 3 apps that ran since Round 47 and the 3 new apps; CustomApplicationClass and LangAttribute were not re-run; no regressions |

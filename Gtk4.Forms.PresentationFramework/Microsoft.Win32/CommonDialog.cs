@@ -3,7 +3,9 @@ using System.Windows;
 
 namespace Microsoft.Win32;
 
-/// <summary>Base class for the file dialogs. A dialog is shown modally and returns whether the user accepted it.</summary>
+/// <summary>
+/// Base class for the file dialogs. A dialog is shown modally and returns whether the user accepted it.
+/// </summary>
 public abstract class CommonDialog
 {
 	/// <summary>Injectable native presenter; replace in tests so no real dialog opens.</summary>

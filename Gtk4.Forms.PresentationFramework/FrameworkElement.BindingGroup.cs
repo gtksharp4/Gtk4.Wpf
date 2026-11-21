@@ -18,7 +18,7 @@ public partial class FrameworkElement
 	{
 		var element = (FrameworkElement)d;
 		if (e.OldValue is BindingGroup oldGroup) BindingGroupEnlister.WithdrawSubtree(element, oldGroup);
-		if (e.NewValue is BindingGroup newGroup) BindingGroupEnlister.EnlistSubtree(element, newGroup);
+		if (e.NewValue is BindingGroup) BindingGroupEnlister.EnlistSubtree(element);
 	}
 
 	// A subtree that moves under (or out from) a group joins (or leaves) it.
