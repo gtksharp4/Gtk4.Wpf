@@ -1,0 +1,43 @@
+namespace System.Windows.Automation.Peers;
+
+public partial class UIElementAutomationPeer
+{
+	/// <summary>The GTK role this peer wants on its widget, or <c>null</c> to keep the widget's own.</summary>
+	internal virtual Gtk.AccessibleRole? AccessibleRole => AutomationRoleMap.For(GetAutomationControlType());
+
+	/// <summary>Whether a change of <paramref name="property"/> must be pushed to GTK again.</summary>
+	internal virtual bool AffectsAccessible(DependencyProperty property) =>
+		property == UIElement.IsEnabledProperty || property == AutomationProperties.NameProperty
+		|| property == AutomationProperties.HelpTextProperty || property == AutomationProperties.LabeledByProperty
+		|| property == AutomationProperties.IsRequiredForFormProperty;
+
+	/// <summary>The widget that carries the accessible node; the element's widget unless a wrapper hides it.</summary>
+	internal virtual Gtk.Widget Target(Gtk.Widget widget) => widget;
+
+	/// <summary>Raises automation events for a change of an owner property.</summary>
+	internal virtual void OwnerPropertyChanged(DependencyPropertyChangedEventArgs e) { }
+
+	/// <summary>Pushes peer-specific state (checked, value, expanded...) to <paramref name="widget"/>.</summary>
+	internal virtual void PushState(Gtk.Widget widget) { }
+
+	/// <summary>
+	/// Pushes role (only when <paramref name="created"/>: GTK freezes it once the AT context is realized),
+	/// name and state to <paramref name="widget"/>.
+	/// </summary>
+	internal void PushAccessible(Gtk.Widget widget, bool created)
+	{
+		widget = Target(widget);
+		if (created)
+		{
+			var role = AccessibleRole;
+			if (role.HasValue && widget.AccessibleRole != role.Value)
+				widget.AccessibleRole = role.Value;
+		}
+		var name = GetName();
+		if (name.Length > 0)
+			PeerAccessible.SetProperty(widget, Gtk.AccessibleProperty.Label, name);
+		if (IsRequiredForForm())
+			PeerAccessible.SetProperty(widget, Gtk.AccessibleProperty.Required, true);
+		PushState(widget);
+	}
+}

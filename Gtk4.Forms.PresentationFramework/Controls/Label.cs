@@ -17,6 +17,10 @@ public class Label : ContentControl
 	}
 
 	/// <inheritdoc/>
+	protected override System.Windows.Automation.Peers.AutomationPeer? OnCreateAutomationPeer() =>
+		new System.Windows.Automation.Peers.LabelAutomationPeer(this);
+
+	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
 		_box = new Gtk.Box(Gtk.Orientation.Horizontal, 0);

@@ -4,7 +4,7 @@ namespace System.Windows.Automation;
 /// Pushes <see cref="AutomationProperties"/> values to the GTK 4 accessible API.
 /// </summary>
 /// <remarks>
-/// <b>GTK API used:</b> <c>Gtk.AccessibleExtensions.UpdateProperty(IAccessible, AccessibleProperty, GLib.Value)</c>.
+/// <b>GTK API used:</b> <c>Gtk.AccessibleExtensions.UpdateProperty(IAccessible, AccessibleProperty[], GLib.Value[])</c>\n/// (the single-value overload leaves the value unchanged, see <c>PeerAccessible</c>).
 /// <c>Gtk.Widget</c> implements <c>Gtk.IAccessible</c>, so any realized widget is a valid target.
 /// <para>
 /// <b>Name → <c>Gtk.AccessibleProperty.Label</c></b><br/>
@@ -28,19 +28,13 @@ internal static class AutomationAccessiblePush
 	{
 		string? name = source.GetValue(AutomationProperties.NameProperty) as string;
 		if (name == null) return;
-		Gtk.AccessibleExtensions.UpdateProperty(
-			widget,
-			Gtk.AccessibleProperty.Label,
-			new GLib.Value(name));
+		Peers.PeerAccessible.SetProperty(widget, Gtk.AccessibleProperty.Label, name);
 	}
 
 	static void PushHelpText(Gtk.Widget widget, DependencyObject source)
 	{
 		string? help = source.GetValue(AutomationProperties.HelpTextProperty) as string;
 		if (help == null) return;
-		Gtk.AccessibleExtensions.UpdateProperty(
-			widget,
-			Gtk.AccessibleProperty.HelpText,
-			new GLib.Value(help));
+		Peers.PeerAccessible.SetProperty(widget, Gtk.AccessibleProperty.HelpText, help);
 	}
 }

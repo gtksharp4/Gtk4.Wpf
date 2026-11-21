@@ -45,6 +45,7 @@ public abstract partial class Selector
 	internal void RaiseSelectionChanged(IList added, IList removed)
 	{
 		if (added.Count == 0 && removed.Count == 0) return; // WPF never raises an empty change
+		OnAutomationSelectionChanged();
 		var args = new SelectionChangedEventArgs(SelectionChangedEvent, removed, added) { Source = this };
 		FrameworkElement? holder = InitHolder();
 		if (holder == null) OnSelectionChanged(args);

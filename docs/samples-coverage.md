@@ -223,6 +223,8 @@ conversion. What is left:
 
 These are ranked by portable samples unblocked. "Only" means samples whose sole remaining blocker is the track.
 
+**Not eligible: `System.Windows.Automation.Peers` (4 samples).** It belongs to `docs/plans/ui-automation.md` (branch `ua/automation`, Phase 1 landed the peers); the parity scout must not pick it.
+
 1. **Rework `gf46/input-focus` (held): 10 only, plus 3 `CS0123` apps.**
    - Only: ContextMenuOpening, FocusVisualStyle, CursorType, CustomRoutedCommand, EditingCommands, KeyStrokeCounter,
      ProgrammaticFocusControl, CalculatorDemo, and both CommandSource samples. It also removes `CS0123` from

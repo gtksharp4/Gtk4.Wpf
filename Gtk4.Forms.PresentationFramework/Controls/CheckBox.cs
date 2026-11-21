@@ -17,6 +17,10 @@ public class CheckBox : ToggleButton
 	Gtk.CheckButton _check = null!;
 
 	/// <inheritdoc/>
+	protected override System.Windows.Automation.Peers.AutomationPeer? OnCreateAutomationPeer() =>
+		new System.Windows.Automation.Peers.CheckBoxAutomationPeer(this);
+
+	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
 		_check = new Gtk.CheckButton { Active = IsChecked == true };
