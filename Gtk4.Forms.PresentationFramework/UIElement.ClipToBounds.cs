@@ -33,7 +33,7 @@ public abstract partial class UIElement
 
 	void ApplyClipToBounds(Gtk.Widget widget)
 	{
-		if (ClipToBounds)
+		if (ClipToBounds || NativeClipActive)
 		{
 			_overflowBeforeClip ??= widget.Overflow;
 			widget.Overflow = Gtk.Overflow.Hidden;

@@ -95,6 +95,7 @@ public partial class Window
 	{
 		// GTK4 removed gtk_window_move() — CenterScreen/CenterOwner cannot be implemented.
 		// The switch is intentionally empty; the value is stored in the DP for round-trip fidelity.
+		ApplyTransparencyOnShow();
 		_ = win;
 		_ = WindowStartupLocation;
 	}
@@ -116,5 +117,6 @@ public partial class Window
 		WireStateNotifications(win);
 		// SourceInitialized / Loaded / ContentRendered / live size sync (Window.Lifecycle.cs).
 		WireLifecycleSignals(win);
+		WireDragMove(win);
 	}
 }

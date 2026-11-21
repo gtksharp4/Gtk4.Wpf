@@ -87,6 +87,10 @@ public abstract partial class Shape : FrameworkElement, IDisposable
 	/// <summary>Forces the DrawingArea to re-render on the next GTK frame.</summary>
 	protected void QueueRedraw() => _area?.QueueDraw();
 
+	internal override void OnClipChanged() => QueueRedraw();
+
+	internal override bool PaintsClipItself => true;
+
 	// ── Draw callback ─────────────────────────────────────────────────────────
 
 	void OnDraw(Gtk.DrawingArea area, Cairo.Context cr, int width, int height)
@@ -102,6 +106,7 @@ public abstract partial class Shape : FrameworkElement, IDisposable
 	void PaintShape(Cairo.Context cr, int width, int height)
 	{
 		cr.Save();
+		ApplyClip(cr);
 
 		BuildShapePath(cr, width, height);
 

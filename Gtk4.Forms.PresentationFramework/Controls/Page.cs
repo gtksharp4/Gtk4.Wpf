@@ -8,7 +8,7 @@ namespace System.Windows.Controls;
 /// by the host immediately after navigation.
 /// Backed by a <see cref="Gtk.Box"/> that hosts its <see cref="Content"/> widget.
 /// </summary>
-public class Page : FrameworkElement
+public partial class Page : FrameworkElement
 {
 	// ── Content DP ───────────────────────────────────────────────────────────
 

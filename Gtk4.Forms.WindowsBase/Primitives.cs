@@ -132,7 +132,7 @@ public struct Rect : IEquatable<Rect>
 }
 
 /// <summary>Represents an X,Y coordinate pair in 2D space.</summary>
-public struct Point : IEquatable<Point>
+public partial struct Point : IEquatable<Point>
 {
 	/// <summary>X coordinate.</summary>
 	public double X { get; set; }

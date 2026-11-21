@@ -168,6 +168,7 @@ public static partial class XamlValueConverter
 		Register<Point>(PrimitiveConverters.ParsePoint);
 		Register<Size>(PrimitiveConverters.ParseSize);
 		Register<Rect>(PrimitiveConverters.ParseRect);
+		Register<Media.Geometry>(Media.Geometry.Parse);
 
 		// Media (PresentationFramework)
 		Register<Color>(MediaConverters.ParseColor);

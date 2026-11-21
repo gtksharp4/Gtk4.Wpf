@@ -40,7 +40,6 @@ public partial class Application
 			value = style;
 			return true;
 		}
-		value = null;
-		return false;
+		return SystemResources.TryFind(key, out value);
 	}
 }

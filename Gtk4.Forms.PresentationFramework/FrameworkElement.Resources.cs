@@ -76,8 +76,7 @@ public partial class FrameworkElement
 		}
 		if (Application.Current?.Resources.TryGetValue(key, out value) == true)
 			return true;
-		value = null;
-		return false;
+		return SystemResources.TryFind(key, out value);
 	}
 
 	/// <summary>
