@@ -17,7 +17,7 @@ run in `dotnet test`, and be deterministic in CI.
 | `System.Windows.Automation.Provider` (pattern interfaces) | Missing. |
 | UIA client API (`AutomationElement`, `TreeWalker`, `Condition`, patterns) | Missing. On real WPF it lives in `UIAutomationClient`/`UIAutomationTypes`. |
 | GTK accessibility | GtkSharp4 exposes the full GTK 4 model: `Gtk.AccessibleRole` (85 roles), `AccessibleState` (9), `AccessibleProperty` (20), and `AccessibleExtensions.UpdateProperty/UpdateState/UpdateRelation/InitValue`. |
-| Out-of-process exposure | Linux: GTK 4 exports its accessible tree over AT-SPI. Windows/macOS: the bundled `gtk-4-1.dll` (4.22.4) contains `accesskit`, which suggests an AccessKit backend, but that is **unverified**. It would surface the tree to UIA and NSAccessibility. |
+| Out-of-process exposure | Linux: GTK 4 exports its accessible tree over AT-SPI. Windows: the bundled `gtk-4-1.dll` (4.22.4) has AccessKit **disabled at build time**, so UIA sees no GTK tree (Phase 0). macOS: unverified. |
 | Test harness | `WpfGtkFixture`/`WpfGtkTestBase` run tests on the GTK thread (STA on Windows, thread 0 on macOS); `GtkPump` refuses off-thread use. `Integration.Tests` builds and runs a converted sample but detects its window only on Windows (`NativeWindowProbe`). |
 | Input in tests | Tests emit signals on the layer's own event controllers. Round 46/47 reviews showed this **skips native GTK handling** (e.g. `Gtk.Text` consuming Enter), so it cannot prove end-to-end behaviour. |
 
@@ -228,6 +228,77 @@ and the pinned samples gate (no currently building or running sample may regress
 - The parity scout must not pick `System.Windows.Automation.Peers` (4 samples) while this plan is active.
   Record that in `docs/samples-coverage.md` "Next rounds" when Phase 1 starts.
 - A new project must be added to both `Gtk4.Forms.sln` and `Gtk4.Forms.CrossPlatform.slnf`.
+
+## Phase 0 findings
+
+Spike run on Windows 11, GtkSharp4 `4.22.4.26325`, runtime `%LOCALAPPDATA%\Gtk\4.22.4` (gvsbuild). The
+scratch projects were deleted after the spike.
+
+**1. Roles can be set until the AT context is realized, not after.**
+- Reflection over `GtkSharp.dll`: `Gtk.Widget.AccessibleRole { get; set; }` is the generated wrapper of the
+  GObject property `accessible-role` (`[GLib.Property("accessible-role")]`, not `[Obsolete]`). The same
+  setter exists on `IAccessible` and `ATContext`. There is no other role API.
+- Real GTK probe: `new Gtk.Button()` has role `Button`. Setting `Checkbox` before the window is presented
+  works: the widget, its `ATContext` and `gtk_accessible_get_accessible_role` all report `Checkbox`. After
+  `Present()` the context is `Realized == true`. Setting a new role then logs
+  `Gtk-CRITICAL: Widget of type "GtkButton" already has an accessible role of type
+  "GTK_ACCESSIBLE_ROLE_CHECKBOX"` and the role stays unchanged.
+- While `AtContext.Realized` is false, the role can still be changed: on a fresh widget, on a widget that
+  was added to a shown window after it was shown, on a hidden child and on a widget that was removed from
+  its parent. When realization happens depends on the backend.
+- **Decision:** the peer applies the role in `ApplyAutomationOnCreated`, right after `CreateWidget` and
+  before the widget is parented, from `GetAutomationControlType()`. Name, states and value can be updated
+  at any time with `UpdateProperty/UpdateState`. If a role changes after realization, the push is skipped
+  (`AtContext.Realized` guard) and that is a documented gap. Built-in WPF control types are fixed per class,
+  so only custom peers whose control type changes at runtime are affected.
+
+**2. Windows: GTK does not reach UI Automation.** The bundled GTK is built without AccessKit.
+- `GTK_A11Y=help` prints `accesskit - Disabled during GTK build`, `atspi - Not available on this
+  platform`, plus `test` and `none`. Every widget's context is a `GtkTestATContext`. The DLL has no
+  `accesskit_*` and no `UiaReturnRawElementProvider` strings: the AccessKit name in it is only the backend
+  table entry.
+- UIA probe (Windows PowerShell `UIAutomationClient`) against a shown GTK window with a labelled button,
+  a check button and an entry. The window appears as `Name='<title>'`, `ControlType.Window`, class
+  `gdkSurfaceToplevel`, framework `Win32`, `WindowPattern` only. That comes from the HWND, not from GTK.
+  Descendants: **0** (raw view and `FindAll`). A desktop-wide search by the button's accessible name:
+  not found.
+- Exposing the tree to UIA would need a GTK built with `-Daccesskit=enabled`. gvsbuild support for that
+  is unverified.
+
+**3. macOS and Linux could not be tested on this machine.**
+- Linux: the AT-SPI backend is GTK 4's platform backend. Indirect evidence: the Windows build calls it
+  "not available on this platform", and CI already installs `dbus-x11` because the GTK 4 a11y stack
+  wants a session bus. A tree dump under Xvfb (`at-spi2-core`, `python3-pyatspi`, `dbus-run-session`)
+  has not been run yet. The local WSL has no GTK 4.
+- macOS: the Homebrew `gtk4` used in CI is a different build. Whether its AccessKit is enabled is
+  unknown. Checking it means running `GTK_A11Y=help` and looking at a window in Accessibility Inspector
+  on the runner.
+
+**4. Prototype (scratch real-GTK test, passed on Windows).** The path was a WPF `Button` with
+`AutomationProperties.Name`, then a minimal peer, then a push before parenting: `AccessibleRole = Button`
+and `UpdateProperty(Label)`. Next, `Window.Show()` and a pump until `AtContext.Realized`. Finally the
+test walked `FirstAccessibleChild/NextAccessibleSibling` from the `Gtk.Window` to the button node.
+- `gtk_test_accessible_has_role(Button)` is true. `gtk_test_accessible_check_property(Label, "Accept")`
+  matches, and a wrong value is rejected.
+- Invoke through `Gtk.Widget.Activate()` raised `Button.Click` **asynchronously**: it needs a pump, and
+  arrives about one GTK activate timeout later. That fits WPF, where `ButtonAutomationPeer.Invoke` also
+  dispatches asynchronously. Client calls must wait for the dispatcher and GTK to be idle (Decision 2).
+- A second push after realization reported the role as frozen.
+- The in-process GTK tree can be asserted in tests through GTK's public test API
+  (`gtk_test_accessible_has_role/has_property/check_property/check_state`, exported by `gtk-4-1.dll`).
+  GtkSharp4 does not bind it, so Phase 1 needs a small P/Invoke helper in the test project. That it
+  behaves the same on the Linux AT-SPI backend is unverified (`GTK_A11Y=test` is the fallback).
+
+**Phase 5 go/no-go**
+
+| OS | Verdict | Why |
+|---|---|---|
+| Windows | **No-go** with the current runtime | AccessKit is disabled in the bundled GTK. UIA sees only the top-level HWND, with 0 children. It becomes a go only with a GTK runtime built with AccessKit, which is unverified. |
+| Linux | **Conditional go** | AT-SPI is GTK's native backend. The first Phase 5 task is an AT-SPI tree dump in CI under Xvfb and `dbus-run-session`. If the dump does not show the role and name, Linux becomes a no-go. |
+| macOS | **No-go until verified** | It depends on the Homebrew GTK build (AccessKit), which is untested. One CI check (`GTK_A11Y=help`) decides. |
+
+Phases 1–4 (in-process) are unaffected on all three OSes. The in-process GTK tree, test API included,
+works on Windows.
 
 ## Open questions
 
