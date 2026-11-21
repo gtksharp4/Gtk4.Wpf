@@ -8,9 +8,10 @@ public abstract partial class TextElement
 	public static readonly DependencyProperty BackgroundProperty = DependencyProperty.Register(
 		"Background", typeof(Brush), typeof(TextElement), new FrameworkPropertyMetadata(null));
 
-	/// <summary>
-	/// Gets or sets the background brush. Stored only: TextElement is not a DependencyObject here and the
-	/// Pango text path does not paint it.
-	/// </summary>
-	public Brush? Background { get; set; }
+	/// <summary>Gets or sets the background brush. Stored only: the Pango text path does not paint it.</summary>
+	public Brush? Background
+	{
+		get => (Brush?)GetValue(BackgroundProperty);
+		set => SetValue(BackgroundProperty, value);
+	}
 }

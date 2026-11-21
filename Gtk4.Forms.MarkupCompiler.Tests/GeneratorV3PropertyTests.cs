@@ -36,10 +36,10 @@ public class GeneratorV3PropertyTests : GeneratorV2TestBase
 	}
 
 	[Fact]
-	public void G5_a_nullable_FontWeight_clr_property_converts()
+	public void G5_a_flow_content_FontWeight_goes_through_its_dependency_property()
 	{
 		string code = Gen(Window(@"<TextBlock><Run FontWeight=""Bold"" Text=""x""/></TextBlock>"));
-		Assert.Contains("(global::System.Windows.FontWeight?)System.Windows.Markup.XamlValueConverter.ConvertByType(", code);
+		Assert.Contains("SetValue(System.Windows.Documents.Run.FontWeightProperty, System.Windows.Markup.XamlValueConverter.Convert(", code);
 		AssertCompiles(code, Stub);
 	}
 
