@@ -153,6 +153,8 @@ public class DependencyPropertyTests
 	[Fact]
 	public void Register_duplicate_name_on_same_owner_throws()
 	{
+		// nameof is a constant, so run the type initializer first: Widget.NameProp must exist already.
+		System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Widget).TypeHandle);
 		Assert.Throws<InvalidOperationException>(() =>
 			DependencyProperty.Register(nameof(Widget.NameProp), typeof(string), typeof(Widget)));
 	}

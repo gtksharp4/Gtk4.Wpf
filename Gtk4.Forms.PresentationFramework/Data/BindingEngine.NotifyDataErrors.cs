@@ -100,7 +100,7 @@ internal static partial class BindingEngine
 			bool relevant = string.IsNullOrEmpty(property)
 			                || (ReferenceEquals(sender, _ndOwner) && property == _ndProp);
 			if (!relevant || !_targetRef.TryGetTarget(out var target)) return;
-			var dispatcher = Dispatcher.CurrentDispatcher;
+			var dispatcher = target.Dispatcher;
 			if (dispatcher.CheckAccess()) ApplyNotifyErrors(target);
 			else dispatcher.BeginInvoke(() => ApplyNotifyErrors(target));
 		}

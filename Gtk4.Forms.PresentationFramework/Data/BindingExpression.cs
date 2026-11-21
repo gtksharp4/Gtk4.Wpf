@@ -22,6 +22,10 @@ public class BindingExpression : BindingExpressionBase
 		_binding = binding;
 	}
 
+	internal FrameworkElement? TargetElement => _targetRef.TryGetTarget(out var target) ? target : null;
+
+	internal DependencyProperty TargetDependencyProperty => _dp;
+
 	/// <summary>The <see cref="Binding"/> that produced this expression.</summary>
 	public Binding ParentBinding => _binding;
 

@@ -63,13 +63,14 @@ public class BindingGroupTests
 	}
 
 	/// <summary>
-	/// Validates a PersonVm as a whole — rejects negative Age on the source.
+	/// Validates the group as a whole, as WPF passes the group as the value: rejects a negative proposed Age.
 	/// </summary>
 	sealed class RejectNegativeAgeRule : ValidationRule
 	{
 		public override ValidationResult Validate(object? value, CultureInfo cultureInfo)
 		{
-			if (value is PersonVm vm && vm.Age < 0)
+			var group = (BindingGroup)value!;
+			if (group.TryGetValue(group.Items[0], "Age", out var age) && (int)age! < 0)
 				return new ValidationResult(false, "Age must be non-negative");
 			return ValidationResult.ValidResult;
 		}
