@@ -69,7 +69,7 @@ static class PrimitiveConverters
 	// ── GridLength ───────────────────────────────────────────────────────────
 
 	/// <summary>
-	/// Parses "Auto" | "*" | "2*" | "100" (invariant, case-insensitive Auto).
+	/// Parses "Auto" | "*" | "2*" | "100" | "100px" (also in, cm, pt; invariant, case-insensitive Auto).
 	/// </summary>
 	internal static GridLength ParseGridLength(string raw)
 	{
@@ -84,7 +84,7 @@ static class PrimitiveConverters
 			double val = ParseDouble(numPart);
 			return new GridLength(val, GridUnitType.Star);
 		}
-		double px = ParseDouble(trimmed);
+		double px = LengthUnits.Parse(trimmed);
 		return new GridLength(px, GridUnitType.Pixel);
 	}
 

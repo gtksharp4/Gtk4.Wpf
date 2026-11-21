@@ -32,7 +32,7 @@ namespace Gtk4.Forms.MarkupCompiler
 		/// WPF. C# accepts the same base repeated across partials; a different one is CS0263.
 		/// </summary>
 		string RootBaseFor(XElement root, bool hasClassAttr, string className)
-			{
+		{
 			if (!hasClassAttr) return null;
 			if (ResolveType(root) is string rootFq) return "global::" + rootFq;
 			// A custom Application subclass must be the base even without code-behind (Main runs it).

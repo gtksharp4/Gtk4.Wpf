@@ -11,6 +11,12 @@ public abstract partial class UIElement : Media.Visual
 {
 	Gtk.Widget? _widget;
 
+	// Backing widget → owning element; lets a widget walk tell its own parts from another element's widget.
+	static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Gtk.Widget, UIElement> _owners =
+		new System.Runtime.CompilerServices.ConditionalWeakTable<Gtk.Widget, UIElement>();
+
+	internal static UIElement? OwnerOf(Gtk.Widget widget) => _owners.TryGetValue(widget, out var owner) ? owner : null;
+
 	/// <summary>
 	/// Creates the backing GTK widget. Called once; result is cached in <see cref="Widget"/>.
 	/// </summary>
@@ -25,6 +31,8 @@ public abstract partial class UIElement : Media.Visual
 		{
 			if (_widget != null) return _widget;
 			_widget = CreateWidget();
+			_owners.Remove(_widget);
+			_owners.Add(_widget, this);
 			OnWidgetCreated(_widget);
 			return _widget;
 		}
@@ -35,9 +43,6 @@ public abstract partial class UIElement : Media.Visual
 	/// Safe to call without forcing widget creation.
 	/// </summary>
 	internal virtual bool IsWidgetCreated => _widget != null;
-
-	/// <summary>True once <see cref="Widget"/> exists, independent of subclass <see cref="IsWidgetCreated"/> overrides.</summary>
-	internal bool IsWidgetMaterialized => _widget != null;
 
 	/// <summary>
 	/// Called once immediately after <see cref="Widget"/> is first created.

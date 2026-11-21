@@ -43,12 +43,39 @@ namespace Gtk4.Forms.MarkupCompiler
 			return false;
 		}
 
-		/// <summary>True when the project's sources declare an entry point, so <c>Main</c> is not added.</summary>
-		bool SourcesDeclareMain()
+		/// <summary>
+		/// The MSBuild item type of the XAML being generated (<c>Page</c>, <c>ApplicationDefinition</c>). Only an
+		/// <c>ApplicationDefinition</c> gets <c>Main</c>; <c>null</c> (direct callers) treats an Application root as
+		/// one.
+		/// </summary>
+		public string ItemType { get; set; }
+
+		bool ShouldEmitMain(bool isAppDef, string className) =>
+			isAppDef && (ItemType == null || ItemType == "ApplicationDefinition")
+			&& !ClassDeclaresMain(className.Substring(className.LastIndexOf('.') + 1));
+
+		// True when a source declares Main inside the class itself (else it would be CS0111); an unrelated
+		// class's Main is a different type's entry point.
+		bool ClassDeclaresMain(string typeName)
 		{
 			if (CodeBehindSources == null) return false;
+			var decl = new Regex(@"\bclass\s+" + Regex.Escape(typeName) + @"\b");
 			foreach (string s in CodeBehindSources)
-				if (MainMethod.IsMatch(StripCommentsAndStrings(s))) return true;
+			{
+				string code = StripCommentsAndStrings(s);
+				foreach (Match m in decl.Matches(code))
+				{
+					int open = code.IndexOf('{', m.Index);
+					if (open < 0) continue;
+					int depth = 0, i = open;
+					for (; i < code.Length; i++)
+					{
+						if (code[i] == '{') depth++;
+						else if (code[i] == '}' && --depth == 0) break;
+					}
+					if (MainMethod.IsMatch(code.Substring(open, i - open))) return true;
+				}
+			}
 			return false;
 		}
 	}

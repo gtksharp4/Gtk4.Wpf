@@ -101,7 +101,10 @@ internal static partial class MultiBindingEngine
 			_subs.Clear();
 		}
 
-		static object? ResolveChildSource(FrameworkElement target, Binding b)
+		static object? ResolveChildSource(FrameworkElement target, Binding b) =>
+			CollectionViewSource.UnwrapView(RawChildSource(target, b));
+
+		static object? RawChildSource(FrameworkElement target, Binding b)
 		{
 			if (b.Source != null) return b.Source;
 			if (b.ElementName != null) return target.FindName(b.ElementName) as FrameworkElement;

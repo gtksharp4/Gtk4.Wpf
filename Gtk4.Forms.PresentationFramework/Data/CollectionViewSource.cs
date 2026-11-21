@@ -69,6 +69,11 @@ public class CollectionViewSource
 	static CollectionView CreateView(IEnumerable source) =>
 		source is IList list ? new ListCollectionView(list) : new CollectionView(source);
 
+	// A CollectionViewSource used as a binding source stands for its view (WPF binds to CollectionViewSource.View).
+	// The source raises no change notification here, so a later Source change is seen on the next resolve only.
+	internal static object? UnwrapView(object? source) =>
+		source is CollectionViewSource cvs ? (object?)cvs.View ?? cvs : source;
+
 	// ── Static helper ────────────────────────────────────────────────────────
 
 	/// <summary>

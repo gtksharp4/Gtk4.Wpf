@@ -55,14 +55,23 @@ public class List : Block
 	}
 
 	/// <inheritdoc/>
-	internal override void AppendMarkup(System.Text.StringBuilder sb)
+	internal override void AppendMarkup(System.Text.StringBuilder sb) => AppendItems(sb, null);
+
+	/// <inheritdoc/>
+	internal override void AppendFlowMarkup(System.Text.StringBuilder sb, FlowDirection? effective) =>
+		AppendLanguage(sb, s => AppendItems(s, effective));
+
+	// Each item line is its own paragraph, so it carries its own isolate.
+	void AppendItems(System.Text.StringBuilder sb, FlowDirection? effective)
 	{
 		int number = 1;
 		foreach (var item in ListItems)
 		{
+			if (effective is FlowDirection d) sb.Append(BidiMarks.Mark(d)).Append(BidiMarks.Isolate(d));
 			sb.Append(PangoMarkup.Escape(GetMarker(MarkerStyle, number)));
 			sb.Append(' ');
 			item.AppendMarkup(sb);
+			if (effective != null) sb.Append(BidiMarks.Pdi);
 			sb.Append('\n');
 			number++;
 		}

@@ -252,13 +252,14 @@ These are ranked by portable samples unblocked. "Only" means samples whose sole 
      FlowContentProperty and NumbersMultipleLangauges (`NumberSubstitution`) are close.
    - Covers: the `FlowDirection` enum, inherited `FrameworkElement.FlowDirection`, `Inline.FlowDirection`, and
      `FlowDocument.FlowDirection`.
-   - **Done in Round 47 (branch `gf47/flow-direction`, pinned feed, package 1.0.0.26325).** All 90 building
-     projects still build and all 83 running apps still run. The 7 only-flow-direction apps now build and run, as do
-     FlowContentProperty and NumbersMultipleLangauges (9 new). GlobalizationHomepage (`Frame.Source` on a Window
-     class) and LangAttribute (the generator emits `Language="ar-SA"` as a string, not `XmlLanguage`) still fail;
-     the second is a MarkupCompiler change.
-   - GTK gaps: `FrameworkElement.FlowDirection` sets `Widget.Direction` per element (GTK does not inherit it), so
-     native widgets mirror but panels laid out by this layer do not. `Inline`/`Block`/`FlowDocument` are not
+   - **Done in Round 47 (pinned feed, package 1.0.0.26325).** All 90 building projects still build and all 83
+     running apps still run. The 7 only-flow-direction apps now build and run, as do FlowContentProperty and
+     NumbersMultipleLangauges (9 new). GlobalizationHomepage (`Frame.Source` on a Window class) still fails.
+     LangAttribute failed because the generator emitted `Language="ar-SA"` as a string; after the review fix
+     (`XmlLanguage` is converter-backed) it builds and runs.
+   - GTK gaps: `FrameworkElement.FlowDirection` sets `Widget.Direction` per element (GTK does not inherit it), and
+     so does every widget the control owns (an Entry's text child, a TextView, a DropDown's parts). `Gtk.Box`-based
+     panels (StackPanel, DockPanel) and `Gtk.Grid` mirror; panels placed by this layer (Canvas) do not. `Inline`/`Block`/`FlowDocument` are not
      `DependencyObject`s, so their `FlowDirection`/`Language` are plain properties rendered only when set (bidi
      isolate, Pango `lang`) and do not inherit. `FrameworkElement.Language` and `NumberSubstitution` are stored
      only.
@@ -291,9 +292,9 @@ Deliberately not next:
   them is a converter feature, not a layer gap.
 - Packaging hygiene, still open: `CS2002` in 83 of 89 builds.
 
-## Generator v4 (branch `gf47/generator-v4`, gate run)
+## Generator v4 (gate run)
 
-Gate on the pinned feed with `Gtk4.Forms.Wpf 1.0.0.26325` packed from the branch: all 90 build, and 86 of the 89 apps
+Gate on the pinned feed with `Gtk4.Forms.Wpf 1.0.0.26325` packed from the generator-v4 branch: all 90 build, and 86 of the 89 apps
 run (was 83). No regressions after one fix: `CollectionViewSource.Source` is now `object` (as in WPF), so a data
 provider such as `XmlDataProvider` is accepted. Without it the `CollectionViewSource` sample crashed.
 
@@ -302,10 +303,22 @@ provider such as `XmlDataProvider` is accepted. Without it the `CollectionViewSo
 | DragDropEvents | `Grid.RowDefinitions`/`ColumnDefinitions` emitted | crash → runs |
 | StringLocalizationSample | merged `ResourceDictionary` files compiled and loaded at parse time | crash → runs |
 | AlternatingAppearanceOfItems | `HierarchicalDataTemplate`, `CollectionViewSource`, `AlternationConverter` as objects | crash → runs |
-| CustomApplicationClass | `Main` for a custom `Application` subclass root | fail → builds, runs |
+| CustomApplicationClass | `Main` for a custom `Application` subclass root | fail → builds, runs (confirmed again in the Round 47 gate) |
 | WPFGallery | no duplicate `Main` (`CS0111` gone); still fails on layer gaps (`UserControl`, `Automation.Peers`, ...) | fail |
 
 A property element the generator cannot emit is now reported as a build message with file, line and name.
+
+## Round 47 review gate
+
+Pinned feed, `Gtk4.Forms.Wpf 1.0.0.26325` packed from `main` (`5f92acd0`) plus the Round 47 review fixes. All 90
+projects recorded as `build=pass` in `samples-coverage.json` (89 apps and the CustomApplicationClient library) build
+through the two-build recipe. Of the 89 apps, 86 run (alive with a window after about 10 s): all 83 recorded as
+`runs`, plus DragDropEvents, StringLocalizationSample and AlternatingAppearanceOfItems. ProcessingCommandLineArguments
+and RoutedEventHandling showed as hangs in the serial pass and run when re-run alone (twice each). The same recipe also
+builds and runs CustomApplicationClass and LangAttribute, which were not in the recorded set. That is 91 apps built
+and 88 running, so **91 / 204 build and 88 run** by what was re-measured. The rest of the 204 (including the 9 apps
+that the flow-direction round moved) was not re-run, so these are lower bounds. `samples-coverage.json` is stale as of
+`1b50a528` and was not regenerated.
 
 ## Method
 
@@ -362,4 +375,5 @@ A property element the generator cannot emit is now reported as a build message 
 | 2026-11-20 | `ea4c17ae` | 1.0.0.26324 | no | 83 / 206 | 74 | Round 45; 8 crash, 1 hang; no regressions |
 | 2026-11-20 | `a37d3b17` + `gf46/startup-runtime` | 1.0.0.26324 | no | 83 / 206 | 76 | Gate run: Linq and OpacityMasking run |
 | 2026-11-20 | `1b50a528` | 1.0.0.26324 | **yes** | 89 / 204 | 83 | Round 46; 5 crash, 1 hang; no regressions; the earlier runs are confirmed local-feed |
-| 2026-11-21 | `2c67b72c` + `gf47/generator-v4` | 1.0.0.26325 | **yes** | 90 projects | 86 | Generator v4; no regressions |
+| 2026-11-21 | `2c67b72c` + generator-v4 | 1.0.0.26325 | **yes** | 89 / 204 | 86 | Generator v4; 90 projects incl. 1 library; no regressions |
+| 2026-11-21 | `5f92acd0` + Round 47 review fixes | 1.0.0.26325 | **yes** | 91 / 204 | 88 | Lower bounds: the recorded 90 projects, CustomApplicationClass and LangAttribute re-run; no regressions |

@@ -65,6 +65,19 @@ namespace Gtk4.Forms.MarkupCompiler
 				string.Join(", ", scopes) + ")";
 		}
 
+		// {DynamicResource} on a media property is resolved once when the markup runs: enclosing scopes the element
+		// is not yet parented to are probed first, as for {StaticResource}.
+		string DynamicMediaLookup(string escapedKey)
+		{
+			string key = ResourceKeyExpression(escapedKey);
+			var scopes = new System.Collections.Generic.List<string>();
+			for (int i = _scopeVars.Count - 1; i >= 0; i--)
+				if (_scopeVars[i] != "this") scopes.Add(_scopeVars[i]);
+			if (scopes.Count == 0) return $"this.TryFindResource({key})";
+			return $"(System.Windows.Markup.StaticResourceScope.TryFind({key}, this, {string.Join(", ", scopes)}) "
+				+ $"?? this.TryFindResource({key}))";
+		}
+
 		string EmitSetterValueElement(IndentedWriter w, XElement valueEl, string receiver)
 		{
 			XNamespace xNs = _xNs ?? XNamespace.Get(WpfXmlnsMap.XNs2006);

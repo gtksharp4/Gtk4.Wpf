@@ -49,13 +49,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <_GFWpfXamlInputs Include="@(Page);@(ApplicationDefinition)" />
+      <_GFWpfXamlInputs Include="@(ApplicationDefinition)" GFItemType="ApplicationDefinition" />
+      <_GFWpfXamlInputs Include="@(Page)" GFItemType="Page" />
     </ItemGroup>
 
     <MarkupCompileTask
         XamlFiles="@(_GFWpfXamlInputs)"
         OutputDirectory="$(GFMarkupOutputDir)"
         RootNamespace="$(RootNamespace)"
+        ProjectDirectory="$(MSBuildProjectDirectory)"
         ReferencePaths="@(ReferencePath)"
         CompileFiles="@(Compile)">
       <Output TaskParameter="GeneratedFiles" ItemName="_GFGeneratedCs" />

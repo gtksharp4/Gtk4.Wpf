@@ -175,7 +175,10 @@ internal static partial class BindingEngine
 
 		internal object? GetResolvedSource(FrameworkElement target) => ResolveSource(target);
 
-		object? ResolveSource(FrameworkElement target)
+		object? ResolveSource(FrameworkElement target) =>
+			CollectionViewSource.UnwrapView(ResolveRawSource(target));
+
+		object? ResolveRawSource(FrameworkElement target)
 		{
 			if (_binding.Source != null) return _binding.Source;
 			if (_binding.ElementName != null)

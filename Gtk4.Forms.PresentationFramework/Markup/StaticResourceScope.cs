@@ -14,6 +14,31 @@ public static class StaticResourceScope
 	{
 		if (key == null) throw new ArgumentNullException(nameof(key));
 		if (root == null) throw new ArgumentNullException(nameof(root));
+		if (TryFindInScopes(key, scopes, out var value)) return value;
+		return root switch
+		{
+			FrameworkElement fe => fe.FindResource(key),
+			Application app => app.FindResource(key),
+			_ => throw new InvalidOperationException($"Resource with key '{key}' not found."),
+		};
+	}
+
+	/// <summary>As <see cref="Find"/>, but returns <c>null</c> instead of throwing when the key is not found.</summary>
+	public static object? TryFind(object key, object root, params object?[] scopes)
+	{
+		if (key == null) throw new ArgumentNullException(nameof(key));
+		if (root == null) throw new ArgumentNullException(nameof(root));
+		if (TryFindInScopes(key, scopes, out var value)) return value;
+		return root switch
+		{
+			FrameworkElement fe => fe.TryFindResource(key),
+			Application app => app.TryFindResource(key),
+			_ => null,
+		};
+	}
+
+	static bool TryFindInScopes(object key, object?[] scopes, out object? value)
+	{
 		foreach (var scope in scopes)
 		{
 			var dict = scope switch
@@ -23,14 +48,9 @@ public static class StaticResourceScope
 				ResourceDictionary rd => rd,
 				_ => null,
 			};
-			if (dict != null && dict.TryGetValue(key, out var value))
-				return value;
+			if (dict != null && dict.TryGetValue(key, out value)) return true;
 		}
-		return root switch
-		{
-			FrameworkElement fe => fe.FindResource(key),
-			Application app => app.FindResource(key),
-			_ => throw new InvalidOperationException($"Resource with key '{key}' not found."),
-		};
+		value = null;
+		return false;
 	}
 }

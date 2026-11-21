@@ -1664,6 +1664,63 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `BeginInit`); `SelectedIndex` set before items exist stays -1 (WPF keeps it and selects the first item when they
   arrive); `FillRule` lives in `System.Windows.Shapes` here, not `System.Windows.Media`;
   `docs/samples-coverage.md` is the `a37d3b17` measurement.
+- **Round 47 pre-round commits on main.** `1b50a528` derives the implicit class name OS-independently (backslash paths
+  on Linux/macOS; Linux/macOS CI), and `2c67b72c` re-measures the samples on the pinned feed: 89 of 204 portable apps
+  build and 83 run (earlier unpinned runs verified to have used the local feed).
+- **Round 47 track A - generator-v4 (DONE, merged).** `gf47/generator-v4` (merge `d78faffa`): `Grid.RowDefinitions`/
+  `ColumnDefinitions` emitted, any other dropped property element reported as a build message, `HierarchicalDataTemplate`,
+  `CollectionViewSource` and `AlternationConverter` resources built as objects, merged `ResourceDictionary` files
+  compiled, registered and loaded at parse time, `Main` for a custom `Application` root. Samples evidence (gate on
+  the branch, pinned feed): all 90 build, 86 of 89 apps run (was 83); DragDropEvents, StringLocalizationSample and
+  AlternatingAppearanceOfItems crash to runs, CustomApplicationClass fail to runs.
+- **Round 47 track B - flow-direction (DONE, merged).** `gf47/flow-direction` (merge `5f92acd0`): the `FlowDirection`
+  enum, inherited `FrameworkElement.FlowDirection` applied to GTK text direction, `Inline`/`Block`/`FlowDocument`
+  `FlowDirection` and `Language`, `XmlLanguage`, `NumberSubstitution` (store-only). Samples evidence: the 7
+  only-flow-direction apps plus FlowContentProperty and NumbersMultipleLangauges build and run; all 90 still build.
+- **Round 47 track C - input-focus (NOT merged; the Round 46 track C reworked).** `gf46/input-focus` is now 6 commits
+  on `2c67b72c`, tip `a4876520` ("Rework input and focus after Round 46 review"). It was not merged: it is not rebased
+  onto `main` (generator-v3/v4 and flow-direction overlap) and no review of the rework is recorded, so it still needs
+  the re-review against the fixed `main` that the Round 46 note asks for.
+- **Round 47 review (Opus) + fixes - DONE.** **B-F1** an `x:Class` `ResourceDictionary` is registered too (a note and no
+  registration when its code-behind has no public parameterless constructor); `GtkFormsXamlRegistry` parses
+  `/Asm;component/path` and `pack://application:,,,/Asm;component/path` (named assembly only, exact then leaf; with no
+  assembly the given one, then every loaded assembly with registrations, exact only); generated code loads
+  `Source`/merged dictionaries through the non-throwing `GtkFormsXamlRegistry.TryLoadDictionary` (a string overload,
+  because `new Uri("pack://application:,,,/...")` itself throws at startup); the public `Source` setter still throws.
+  No build message is emitted for an unresolvable `Source` (the generator cannot tell statically). **B-F2** implicit
+  dictionary classes are named from the project-relative path (`Themes_Dark_Colors`), pages keep the stem, and
+  `MarkupCompileTask` mirrors the item's relative directory under the output directory, skips duplicate items and takes a
+  `ProjectDirectory` so rooted items key by relative path. **B-F3** `ObjectDataProvider` parameter lists are no longer
+  reported as dropped. **B-F4** `GridLength` text accepts `px`/`in`/`cm`/`pt` (new `LengthUnits` in WindowsBase; the
+  PresentationFramework length parsers keep their own, richer parsing). **B-F5** a `CollectionViewSource` used as a
+  binding source (single, multi and priority bindings, from `Source`, `DataContext`, `ElementName` or `RelativeSource`)
+  binds its `View`; a later `Source` change is seen on the next resolve only (the source raises no notification).
+  **B-F6** Roslyn-compile tests over real DragDropEvents, StringLocalization and CustomApplicationClass XAML, and a
+  real-GTK test of a window whose `InitializeComponent` the markup compiler generated at build time (the test project
+  now imports the compiler targets). **B-F7** `Main` is generated only for an `ApplicationDefinition` item (new
+  `GFItemType` metadata and `XamlCodeGenerator.ItemType`; `null` keeps the old behaviour) and suppressed only when the
+  class itself declares `Main`. **B-F8** generator notes log at `High`. **B-F9** brace indent, `EmitResourceItems` moved
+  to a partial (main file 1228 lines), `AlternationConverter` moved to `Controls/` and made WPF-exact (negative
+  index wraps, `ConvertBack(null)` matches a null entry). **B-F10** `docs/samples-coverage.md` corrected. **C-F1** each
+  paragraph, `Section` child and list item line carries its own directional mark (U+200E/U+200F) plus isolate, a block's
+  explicit direction wins, containers no longer wrap isolates across separators. **C-F2** `FlowDirection` is applied to
+  every widget a control owns (walk stops at another element's backing widget, tracked by a new widget-owner table);
+  `StackPanel`/`DockPanel`/`Grid` mirror, `Canvas` does not. **C-F3** `NumberSubstitution` and `XmlLanguage` are
+  unsealed, `NumberSubstitution` gains the constructors and instance properties (default `CultureSource` is `Text`, as
+  reflected from the real `PresentationCore`, not `User` as the brief said) and `Equals`; `XmlLanguage.GetLanguage`
+  validates RFC 3066. **C-F4** a `TextBlock` label is prefixed with a directional mark. **C-F5** `XmlLanguage` is
+  converter-backed. **C-F6** `IsWidgetMaterialized` removed, bidi characters named in `BidiMarks`. **CI-1**
+  `{DynamicResource}` on a media property probes the enclosing parse scopes through the new `StaticResourceScope.TryFind`.
+  **CI-2** the outermost `GeometryGroup` `FillRule` wins. Not reproduced as specified: CI-1's `Rectangle.Fill` scenario
+  does not go through the media path; a DP-level `{DynamicResource}` still emits a one-shot `FindResource` (pinned by
+  `G5_DynamicResource_keeps_FindResource`), so the test uses `GeometryDrawing.Brush`. Rejected in triage: none.
+  **Round 47 totals: 4879 tests** (201 WindowsBase + 4075 PresentationFramework + 569 MarkupCompiler + 34 ProjectConverter), all pass; `dotnet build Gtk4.Forms.sln` 0 warnings. `Integration.Tests` not run.
+  **Samples gate (after the fixes, Gtk4.Forms.Wpf packed from the fixed tree):** all 90 `build=pass` projects of `docs/samples-coverage.json` build through the two-build recipe and all 83 `run=runs` apps stay alive with a window for 10 s (two showed as hangs in the serial pass and run when re-run alone), plus DragDropEvents, StringLocalizationSample, AlternatingAppearanceOfItems, CustomApplicationClass and LangAttribute build and run; no regression.
+- **Carry-over (Round 47)**: `gf46/input-focus` is unmerged (above); a DP-level `{DynamicResource}` on an unparented
+  element still throws at `InitializeComponent` when the key lives on an ancestor in the same XAML; a
+  `CollectionViewSource.Source` change is not re-resolved by existing bindings; the dictionary class name mangling can
+  still collide for `A_B/C` and `A/B_C`; `docs/samples-coverage.json` is the `1b50a528` measurement (stale); the XAML-backed
+  grid test shows the second row's widget at Y 34 while `RowDefinition.ActualHeight` is 40 (not investigated).
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a

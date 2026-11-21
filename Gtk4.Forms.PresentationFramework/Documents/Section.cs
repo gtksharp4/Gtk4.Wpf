@@ -25,14 +25,21 @@ public class Section : Block
 	}
 
 	/// <inheritdoc/>
-	internal override void AppendMarkup(System.Text.StringBuilder sb)
+	internal override void AppendMarkup(System.Text.StringBuilder sb) => AppendBlocks(sb, null);
+
+	/// <inheritdoc/>
+	internal override void AppendFlowMarkup(System.Text.StringBuilder sb, FlowDirection? effective) =>
+		AppendLanguage(sb, s => AppendBlocks(s, effective));
+
+	// Each child block opens and closes its own isolate: a container's isolate would end at the first separator.
+	void AppendBlocks(System.Text.StringBuilder sb, FlowDirection? effective)
 	{
 		bool first = true;
 		foreach (var block in Blocks)
 		{
 			if (!first) sb.Append('\n');
 			first = false;
-			block.AppendWrappedMarkup(sb);
+			block.AppendBlockMarkup(sb, effective);
 		}
 	}
 }

@@ -32,8 +32,40 @@ public enum NumberSubstitutionMethod
 /// Digit substitution settings. GTK gap: Pango has no digit-substitution control, so these are stored only
 /// (not inherited, as in WPF) and text keeps the digits it was given.
 /// </summary>
-public sealed class NumberSubstitution
+public class NumberSubstitution
 {
+	/// <summary>Creates settings with the defaults: Text, no override, AsCulture.</summary>
+	public NumberSubstitution()
+	{
+	}
+
+	/// <summary>Creates settings with the given values.</summary>
+	public NumberSubstitution(
+		NumberCultureSource source, CultureInfo? cultureOverride, NumberSubstitutionMethod substitution)
+	{
+		CultureSource = source;
+		CultureOverride = cultureOverride;
+		Substitution = substitution;
+	}
+
+	/// <summary>Gets or sets where the culture comes from.</summary>
+	public NumberCultureSource CultureSource { get; set; } = NumberCultureSource.Text;
+
+	/// <summary>Gets or sets the culture used when <see cref="CultureSource"/> is Override.</summary>
+	public CultureInfo? CultureOverride { get; set; }
+
+	/// <summary>Gets or sets how digits are substituted.</summary>
+	public NumberSubstitutionMethod Substitution { get; set; } = NumberSubstitutionMethod.AsCulture;
+
+	/// <inheritdoc />
+	public override bool Equals(object? obj) =>
+		obj is NumberSubstitution other && CultureSource == other.CultureSource
+			&& Equals(CultureOverride, other.CultureOverride) && Substitution == other.Substitution;
+
+	/// <inheritdoc />
+	public override int GetHashCode() =>
+		((int)CultureSource * 397 ^ (int)Substitution) * 397 ^ (CultureOverride?.GetHashCode() ?? 0);
+
 	/// <summary>Identifies CultureSource (default Text).</summary>
 	public static readonly DependencyProperty CultureSourceProperty = DependencyProperty.RegisterAttached(
 		"CultureSource", typeof(NumberCultureSource), typeof(NumberSubstitution),

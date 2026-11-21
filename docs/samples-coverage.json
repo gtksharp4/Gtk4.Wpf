@@ -1,6 +1,7 @@
 {
 	"schema": "gtk4forms-wpf-samples-coverage/3",
 	"mainSha": "1b50a52853e61ac5abaebc5f106a19c192ff85bd",
+	"staleNote": "json stale as of 5f92acd0: not regenerated after Round 47; see the Round 47 review gate in samples-coverage.md",
 	"packageVersion": "1.0.0.26324",
 	"date": "2026-11-20",
 	"source": "microsoft/WPF-Samples (local copy under WPF-Samples/), each project copied and built in isolation under .claude/samples5/batchN",

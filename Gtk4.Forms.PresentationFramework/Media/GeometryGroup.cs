@@ -16,7 +16,8 @@ public class GeometryCollection : Collection<Geometry> { }
 /// </summary>
 /// <remarks>
 /// <b>Rendering gap:</b> the children paths are appended to one Cairo path filled with
-/// <see cref="FillRule"/>. <c>Geometry.Transform</c> of the group and of the children is not applied.
+/// <see cref="FillRule"/>; the outermost group's rule applies. <c>Geometry.Transform</c> of the group and of the
+/// children is not applied.
 /// </remarks>
 [ContentProperty("Children")]
 public class GeometryGroup : Geometry
@@ -41,7 +42,9 @@ public class GeometryGroup : Geometry
 	/// <inheritdoc/>
 	internal override void BuildPath(Cairo.Context cr)
 	{
-		cr.FillRule = FillRule == FillRule.Nonzero ? Cairo.FillRule.Winding : Cairo.FillRule.EvenOdd;
 		foreach (Geometry g in Children) g.BuildPath(cr);
+		// Cairo has one fill rule per fill and WPF fills the combined shape with the outermost group's rule, so the
+		// outer group, which finishes last, decides.
+		cr.FillRule = FillRule == FillRule.Nonzero ? Cairo.FillRule.Winding : Cairo.FillRule.EvenOdd;
 	}
 }

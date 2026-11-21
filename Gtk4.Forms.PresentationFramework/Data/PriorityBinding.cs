@@ -149,7 +149,10 @@ internal static class PriorityBindingEngine
 			_subs.Clear();
 		}
 
-		static object? ResolveSource(FrameworkElement target, Binding b)
+		static object? ResolveSource(FrameworkElement target, Binding b) =>
+			CollectionViewSource.UnwrapView(RawResolveSource(target, b));
+
+		static object? RawResolveSource(FrameworkElement target, Binding b)
 		{
 			if (b.Source != null) return b.Source;
 			if (b.ElementName != null) return target.FindName(b.ElementName) as FrameworkElement;

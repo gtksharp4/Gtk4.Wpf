@@ -20,9 +20,8 @@ public class Generator47DictionaryTests : GeneratorV2TestBase
 	public void V4_merged_dictionary_with_Source_is_loaded_when_the_markup_runs()
 	{
 		string code = Gen(Merged);
-		Assert.Contains("this.Resources.MergedDictionaries.Add(new System.Windows.ResourceDictionary " +
-			"{ Source = new System.Uri(\"Strings.xaml\"", code);
-		Assert.True(code.IndexOf("MergedDictionaries.Add") >= 0);
+		Assert.Contains("GtkFormsXamlRegistry.TryLoadDictionary(__d, \"Strings.xaml\"", code);
+		Assert.Contains("this.Resources.MergedDictionaries.Add(__d)", code);
 		AssertCompiles(code, AppStub);
 	}
 
@@ -49,7 +48,7 @@ public class Generator47DictionaryTests : GeneratorV2TestBase
 	{
 		string code = Gen($@"<Application x:Class=""A.App"" {Head}><Application.Resources>
 <ResourceDictionary Source=""Strings.xaml""/></Application.Resources></Application>");
-		Assert.Contains("this.Resources.Source = new System.Uri(\"Strings.xaml\"", code);
+		Assert.Contains("TryLoadDictionary(this.Resources, \"Strings.xaml\"", code);
 		AssertCompiles(code, AppStub);
 	}
 

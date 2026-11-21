@@ -8,9 +8,11 @@ namespace Gtk4.Forms.PresentationFramework.Tests.FlowDirectionTests;
 
 public class FlowDirectionDocumentTests
 {
-	const string Rli = "⁧";
-	const string Lri = "⁦";
-	const string Pdi = "⁩";
+	const string Rli = "\u2067";
+	const string Lri = "\u2066";
+	const string Pdi = "\u2069";
+	const string Rlm = "\u200F";
+	const string Lrm = "\u200E";
 
 	[Fact]
 	public void Inline_FlowDirection_defaults_to_LeftToRight_and_validates()
@@ -73,12 +75,12 @@ public class FlowDirectionDocumentTests
 		p.Inlines.Add(new Run { Text = "t" });
 		doc.Blocks.Add(p);
 		doc.FlowDirection = FlowDirection.RightToLeft;
-		Assert.Equal(Rli + "t" + Pdi, doc.BuildMarkup());
+		Assert.Equal(Rlm + Rli + "t" + Pdi, doc.BuildMarkup());
 		doc = new FlowDocument();
 		doc.Blocks.Add(p);
 		p.FlowDirection = FlowDirection.RightToLeft;
 		Assert.Equal(FlowDirection.RightToLeft, p.FlowDirection);
-		Assert.Equal(Rli + "t" + Pdi, doc.BuildMarkup());
+		Assert.Equal(Rlm + Rli + "t" + Pdi, doc.BuildMarkup());
 		Assert.Throws<System.ArgumentException>(() => doc.FlowDirection = (FlowDirection)3);
 	}
 }

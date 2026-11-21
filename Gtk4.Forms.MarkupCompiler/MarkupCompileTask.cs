@@ -41,8 +41,34 @@ namespace Gtk4.Forms.MarkupCompiler
 		[Output]
 		public ITaskItem[] GeneratedFiles { get; private set; }
 
-		static string ImplicitKey(string xamlPath) =>
-			IOPath.IsPathRooted(xamlPath) ? IOPath.GetFileName(xamlPath) : xamlPath;
+		// Mirrors the item's relative directory so same-named files in different folders never share an output.
+		string OutputPathFor(string xamlPath)
+		{
+			var dirs = new List<string>();
+			string[] parts = ImplicitKey(xamlPath).Replace('\\', '/').Split('/');
+			for (int i = 0; i < parts.Length - 1; i++)
+				if (parts[i].Length > 0 && parts[i] != "." && parts[i] != "..") dirs.Add(parts[i]);
+			string dir = IOPath.Combine(OutputDirectory, IOPath.Combine(dirs.ToArray()));
+			if (dirs.Count > 0) Directory.CreateDirectory(dir);
+			return IOPath.Combine(dir, IOPath.GetFileNameWithoutExtension(xamlPath) + ".g.cs");
+		}
+
+		/// <summary>The project directory; a rooted XAML path below it keys by its relative path.</summary>
+		public string ProjectDirectory { get; set; }
+
+		string ImplicitKey(string xamlPath)
+		{
+			if (!IOPath.IsPathRooted(xamlPath)) return xamlPath;
+			if (!string.IsNullOrEmpty(ProjectDirectory))
+			{
+				string root = IOPath.GetFullPath(ProjectDirectory)
+					.TrimEnd(IOPath.DirectorySeparatorChar, IOPath.AltDirectorySeparatorChar)
+					+ IOPath.DirectorySeparatorChar;
+				string full = IOPath.GetFullPath(xamlPath);
+				if (full.StartsWith(root, StringComparison.OrdinalIgnoreCase)) return full.Substring(root.Length);
+			}
+			return IOPath.GetFileName(xamlPath);
+		}
 
 		/// <inheritdoc />
 		public override bool Execute()
@@ -61,6 +87,7 @@ namespace Gtk4.Forms.MarkupCompiler
 
 			bool success = true;
 			var generated = new List<ITaskItem>();
+			var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 			var generator = new XamlCodeGenerator();
 			if (CompileFiles != null)
 				generator.CodeBehindSources = CodeBehindScan.ReadSources(
@@ -85,9 +112,10 @@ namespace Gtk4.Forms.MarkupCompiler
 				else if (IOPath.DirectorySeparatorChar == '\\' && xamlPath.Contains("/"))
 					xamlPath = xamlPath.Replace('/', '\\');
 
-				string outputPath = IOPath.Combine(
-					OutputDirectory,
-					IOPath.GetFileNameWithoutExtension(xamlPath) + ".g.cs");
+				string outputPath = OutputPathFor(xamlPath);
+				if (!seen.Add(outputPath)) continue;
+				string itemType = item.GetMetadata("GFItemType");
+				generator.ItemType = string.IsNullOrEmpty(itemType) ? null : itemType;
 
 				try
 				{
@@ -102,7 +130,7 @@ namespace Gtk4.Forms.MarkupCompiler
 					}
 
 					foreach (string note in generator.Messages)
-						Log.LogMessage(null, null, null, xamlPath, 0, 0, 0, 0, MessageImportance.Normal, note);
+						Log.LogMessage(null, null, null, xamlPath, 0, 0, 0, 0, MessageImportance.High, note);
 
 					File.WriteAllText(outputPath, code);
 					Log.LogMessage(MessageImportance.Low,

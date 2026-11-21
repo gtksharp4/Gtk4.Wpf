@@ -22,17 +22,33 @@ public partial class ResourceDictionary
 		{
 			if (value == null || string.IsNullOrEmpty(value.OriginalString))
 				throw new ArgumentException("The string cannot be empty.", nameof(value));
-			var assembly = Application.Current?.GetType().Assembly ?? Assembly.GetEntryAssembly();
-			var loaded = GtkFormsXamlRegistry.TryCreate(value, assembly)
+			var loaded = Locate(value)
 				?? throw new IOException("Cannot locate resource '" + value.OriginalString + "'.");
 			if (loaded is not ResourceDictionary dictionary)
 				throw new InvalidOperationException(
 					"'" + value.OriginalString + "' does not have a ResourceDictionary as its root element.");
-			_source = value;
-			Clear();
-			MergedDictionaries.Clear();
-			foreach (var pair in dictionary) this[pair.Key] = pair.Value;
-			foreach (var merged in dictionary.MergedDictionaries) MergedDictionaries.Add(merged);
+			Apply(value, dictionary);
 		}
+	}
+
+	// Non-throwing variant for generated code: false when nothing is registered or it is no dictionary.
+	internal bool TrySetSource(Uri value)
+	{
+		if (value == null || string.IsNullOrEmpty(value.OriginalString)) return false;
+		if (Locate(value) is not ResourceDictionary dictionary) return false;
+		Apply(value, dictionary);
+		return true;
+	}
+
+	static object? Locate(Uri value) =>
+		GtkFormsXamlRegistry.TryCreate(value, Application.Current?.GetType().Assembly ?? Assembly.GetEntryAssembly());
+
+	void Apply(Uri value, ResourceDictionary dictionary)
+	{
+		_source = value;
+		Clear();
+		MergedDictionaries.Clear();
+		foreach (var pair in dictionary) this[pair.Key] = pair.Value;
+		foreach (var merged in dictionary.MergedDictionaries) MergedDictionaries.Add(merged);
 	}
 }

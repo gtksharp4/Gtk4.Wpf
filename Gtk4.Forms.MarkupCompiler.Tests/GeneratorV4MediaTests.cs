@@ -60,7 +60,7 @@ Brush=""{{{ext} {{x:Static SystemColors.ControlBrushKey}}}}""/>"));
 	public void F3_a_DynamicResource_media_reference_does_not_throw_for_a_missing_key()
 	{
 		string code = Gen(Win(@"<GeometryDrawing x:Key=""g"" Brush=""{DynamicResource later}""/>"));
-		Assert.Contains("this.TryFindResource(\"later\") as global::System.Windows.Media.Brush;", code);
+		Assert.Contains("?? this.TryFindResource(\"later\")) as global::System.Windows.Media.Brush;", code);
 		AssertCompiles(code, WinStub);
 	}
 	[Fact]

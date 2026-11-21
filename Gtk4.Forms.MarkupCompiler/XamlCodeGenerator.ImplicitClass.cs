@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace Gtk4.Forms.MarkupCompiler
@@ -19,7 +20,11 @@ namespace Gtk4.Forms.MarkupCompiler
 				return null;
 
 			// Backslash is not a separator on Unix, so normalise first: the class name must not depend on the OS.
-			string stem = Path.GetFileNameWithoutExtension(xamlPath.Replace('\\', '/'));
+			string normalized = xamlPath.Replace('\\', '/');
+			// Dictionaries are looked up by path, so same-named files in different folders need distinct classes.
+			string stem = fq == DictionaryType
+				? normalized.Substring(0, normalized.Length - Path.GetExtension(normalized).Length).TrimStart('/')
+				: Path.GetFileNameWithoutExtension(normalized);
 			var sb = new StringBuilder();
 			foreach (char c in stem)
 				sb.Append(char.IsLetterOrDigit(c) || c == '_' ? c : '_');
@@ -39,6 +44,33 @@ namespace Gtk4.Forms.MarkupCompiler
 				sb.Append(char.IsLetterOrDigit(c) || c == '_' ? c : '_');
 			int dot = className.LastIndexOf('.');
 			return dot < 0 ? sb.ToString() : className.Substring(0, dot + 1) + sb;
+		}
+
+		// An x:Class dictionary is registered too, so Source/merged lookups find it; it needs a public parameterless
+		// constructor for the registry to create it.
+		bool RegistersDictionary(XElement root, XAttribute classAttr, string xamlPath, string className)
+		{
+			if (classAttr == null || string.IsNullOrEmpty(xamlPath) || !IsDictionaryRoot(root)) return false;
+			if (HasPublicDefaultConstructor(className)) return true;
+			Note(xamlPath + ": ResourceDictionary " + className
+				+ " has no public parameterless constructor; it is not registered for Source/merge lookup.");
+			return false;
+		}
+
+		bool HasPublicDefaultConstructor(string className)
+		{
+			if (CodeBehindSources == null || !HasCodeBehindFor(className)) return true;
+			string name = Regex.Escape(className.Substring(className.LastIndexOf('.') + 1));
+			var declared = new Regex(@"\b(?:public|internal|protected|private)\s+" + name + @"\s*\(");
+			var open = new Regex(@"\bpublic\s+" + name + @"\s*\(\s*\)");
+			bool any = false;
+			foreach (string s in CodeBehindSources)
+			{
+				string code = StripCommentsAndStrings(s);
+				if (open.IsMatch(code)) return true;
+				any |= declared.IsMatch(code);
+			}
+			return !any;
 		}
 
 		/// <summary>Registers the class under its XAML path for <c>StartupUri</c> and navigation lookup.</summary>

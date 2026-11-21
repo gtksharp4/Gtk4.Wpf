@@ -40,6 +40,31 @@ public class AlternationConverterTests
 		Assert.Equal(-1, Two().ConvertBack("z", typeof(int), null, CultureInfo.InvariantCulture));
 	}
 
+
+	[Theory]
+	[InlineData(-1, "c")]
+	[InlineData(-4, "c")]
+	[InlineData(-3, "a")]
+	public void Convert_of_a_negative_index_wraps_from_the_end(int index, string expected)
+	{
+		var c = new AlternationConverter();
+		c.Values.Add("a");
+		c.Values.Add("b");
+		c.Values.Add("c");
+
+		Assert.Equal(expected, c.Convert(index, typeof(object), null, CultureInfo.InvariantCulture));
+	}
+
+	[Fact]
+	public void ConvertBack_matches_null_entries_and_returns_minus_one_when_nothing_matches()
+	{
+		var withNull = new AlternationConverter();
+		withNull.Values.Add("a");
+		withNull.Values.Add(null);
+
+		Assert.Equal(1, withNull.ConvertBack(null, typeof(int), null, CultureInfo.InvariantCulture));
+		Assert.Equal(-1, Two().ConvertBack(null, typeof(int), null, CultureInfo.InvariantCulture));
+	}
 	[Fact]
 	public void PropertyGroupDescription_PropertyName_is_settable()
 		=> Assert.Equal("State", new PropertyGroupDescription { PropertyName = "State" }.PropertyName);

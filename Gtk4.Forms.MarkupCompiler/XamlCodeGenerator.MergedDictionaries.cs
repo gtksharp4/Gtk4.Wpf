@@ -7,16 +7,16 @@ namespace Gtk4.Forms.MarkupCompiler
 	{
 		const string DictionaryType = "System.Windows.ResourceDictionary";
 
-		bool IsDictionaryRoot(XElement root) => ResolveType(root) == DictionaryType;
+		// An unresolvable Source must not throw at startup, so generated code loads through the non-throwing path.
+		const string TryLoad = "global::System.Windows.Markup.GtkFormsXamlRegistry.TryLoadDictionary";
 
-		static string SourceExpression(string source)
-			=> $"new System.Uri(\"{EscapeString(source)}\", System.UriKind.RelativeOrAbsolute)";
+		bool IsDictionaryRoot(XElement root) => ResolveType(root) == DictionaryType;
 
 		// <ResourceDictionary Source="X.xaml"> as the whole resource value loads that dictionary.
 		void EmitDictionarySource(IndentedWriter w, XElement dictionary, string ownerVar)
 		{
 			string source = (string)dictionary.Attribute("Source");
-			if (source != null) w.Line($"{ownerVar}.Resources.Source = {SourceExpression(source)};");
+			if (source != null) w.Line($"{TryLoad}({ownerVar}.Resources, \"{EscapeString(source)}\");");
 		}
 
 		// <ResourceDictionary.MergedDictionaries>: each Source dictionary is loaded when the markup runs, so
@@ -31,8 +31,8 @@ namespace Gtk4.Forms.MarkupCompiler
 					NoteDropped(child, "merged dictionary " + child.Name.LocalName + " without Source");
 					continue;
 				}
-				w.Line($"{ownerVar}.Resources.MergedDictionaries.Add(" +
-					$"new {DictionaryType} {{ Source = {SourceExpression(source)} }});");
+				w.Line($"{{ var __d = new {DictionaryType}(); if ({TryLoad}(__d, \"{EscapeString(source)}\")) " +
+					$"{ownerVar}.Resources.MergedDictionaries.Add(__d); }}");
 			}
 		}
 

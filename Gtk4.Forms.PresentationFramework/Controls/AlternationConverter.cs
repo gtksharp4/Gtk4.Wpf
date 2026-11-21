@@ -17,16 +17,17 @@ public class AlternationConverter : Data.IValueConverter
 	/// <inheritdoc />
 	public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 	{
-		if (Values.Count == 0 || value is not int index || index < 0) return DependencyProperty.UnsetValue;
-		return Values[index % Values.Count];
+		if (Values.Count == 0 || value is not int index) return DependencyProperty.UnsetValue;
+		int i = index % Values.Count;
+		if (i < 0) i += Values.Count;
+		return Values[i];
 	}
 
 	/// <inheritdoc />
 	public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
 	{
-		if (value == null) return -1;
 		for (int i = 0; i < Values.Count; i++)
-			if (Equals(Values[i], value)) return i;
+			if (object.Equals(Values[i], value)) return i;
 		return -1;
 	}
 }

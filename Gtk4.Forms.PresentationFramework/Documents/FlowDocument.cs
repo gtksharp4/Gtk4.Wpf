@@ -37,23 +37,20 @@ public class FlowDocument
 	public string BuildMarkup()
 	{
 		var sb = new System.Text.StringBuilder();
-		if (_flowDirection is FlowDirection d)
-			sb.Append(d == FlowDirection.RightToLeft ? '⁧' : '⁦');
 		bool first = true;
 		foreach (var block in Blocks)
 		{
 			if (!first) sb.Append("\n\n");
 			first = false;
-			block.AppendWrappedMarkup(sb);
+			block.AppendBlockMarkup(sb, _flowDirection);
 		}
-		if (_flowDirection != null) sb.Append('⁩');
 		return sb.ToString();
 	}
 
 	FlowDirection? _flowDirection;
 
 	/// <summary>Gets or sets the flow direction of the document (default LeftToRight). Rendered as a bidi
-	/// isolate around <see cref="BuildMarkup"/>; not inherited and not a dependency property here.</summary>
+	/// isolate inside each paragraph of <see cref="BuildMarkup"/>; not inherited, not a dependency property here.</summary>
 	public FlowDirection FlowDirection
 	{
 		get => _flowDirection ?? FlowDirection.LeftToRight;
