@@ -51,6 +51,7 @@ public partial class Application
 		// Notify the animation scheduler that the GLib event loop is now live.
 		System.Windows.Media.Animation.AnimationScheduler.NotifyGtkInitialised();
 		// Wire Dispatcher delegates to the GLib main loop.
+		DispatcherGlibHost.Attach();
 		Threading.Dispatcher.IsOnDispatcherThread = () => GLib.MainContext.Default.IsOwner;
 		Threading.Dispatcher.BeginInvokeAction = action => PostToMainLoop(action, Threading.DispatcherPriority.Normal);
 		Threading.Dispatcher.BeginInvokePriorityAction = PostToMainLoop;

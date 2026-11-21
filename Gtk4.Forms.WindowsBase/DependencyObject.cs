@@ -7,7 +7,7 @@ namespace System.Windows;
 /// Base class for all objects that participate in the dependency-property and
 /// routed-event systems.
 /// </summary>
-public partial class DependencyObject
+public partial class DependencyObject : System.Windows.Threading.DispatcherObject
 {
 	// Local value store: only entries explicitly set by the caller live here.
 	readonly Dictionary<DependencyProperty, object?> _localValues =
