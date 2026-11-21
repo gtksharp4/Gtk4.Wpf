@@ -22,13 +22,22 @@ public abstract partial class UIElement
 	/// <summary>
 	/// Called from <see cref="OnWidgetCreated"/>: pushes <see cref="AutomationProperties"/> values and, when
 	/// the element has a peer, its role, name and state. The role is set here because GTK freezes it once
-	/// the widget's accessible context is realized.
+	/// the widget's accessible context is realized. Unlike WPF, which creates peers when a client asks, the
+	/// peer is created here, so a throwing <see cref="OnCreateAutomationPeer"/> is logged and skipped: it
+	/// must never break widget creation.
 	/// </summary>
 	partial void ApplyAutomationOnCreated(Gtk.Widget widget)
 	{
-		AutomationAccessiblePush.Push(widget, this);
-		(GetAutomationPeer() as UIElementAutomationPeer)?.PushAccessible(widget, created: true);
+		UIElementAutomationPeer? peer = null;
+		try { peer = GetAutomationPeer() as UIElementAutomationPeer; }
+		catch (Exception e) { LogPeerFailure("OnCreateAutomationPeer", e); }
+		AutomationAccessiblePush.Push(widget, this, created: true);
+		try { peer?.PushAccessible(widget, created: true); }
+		catch (Exception e) { LogPeerFailure("peer", e); }
 	}
+
+	void LogPeerFailure(string what, Exception e) =>
+		System.Diagnostics.Trace.TraceWarning($"{GetType().Name} {what} threw {e.GetType().Name}: {e.Message}");
 
 	// Called when a selector's selection changed, so its items' selected state reaches GTK.
 	internal void OnAutomationSelectionChanged()

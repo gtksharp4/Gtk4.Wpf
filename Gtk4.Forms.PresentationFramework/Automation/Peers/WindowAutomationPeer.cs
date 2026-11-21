@@ -17,11 +17,7 @@ public class WindowAutomationPeer : FrameworkElementAutomationPeer
 
 	protected override bool IsDialogCore() => ((Window)Owner).IsShowingAsDialog;
 
-	protected override string GetNameCore()
-	{
-		var name = base.GetNameCore();
-		return name.Length > 0 ? name : ((Window)Owner).Title ?? string.Empty;
-	}
+	internal override string ContentName() => ((Window)Owner).Title ?? string.Empty;
 
 	internal override Gtk.AccessibleRole? AccessibleRole =>
 		IsDialog() ? Gtk.AccessibleRole.Dialog : Gtk.AccessibleRole.Window;

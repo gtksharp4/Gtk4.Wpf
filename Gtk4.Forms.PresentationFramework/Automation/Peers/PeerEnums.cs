@@ -47,24 +47,21 @@ public enum AutomationEvents
 	InputReachedOtherElement,
 	InputDiscarded,
 	LiveRegionChanged,
+	Notification,
+	ActiveTextPositionChanged,
 }
 
-/// <summary>The kind of a notification raised by <see cref="AutomationPeer.RaiseNotificationEvent"/>.</summary>
-public enum AutomationNotificationKind
+/// <summary>The heading level a peer reports.</summary>
+public enum AutomationHeadingLevel
 {
-	ItemAdded,
-	ItemRemoved,
-	ActionCompleted,
-	ActionAborted,
-	Other,
-}
-
-/// <summary>How a notification is processed by a client.</summary>
-public enum AutomationNotificationProcessing
-{
-	ImportantAll,
-	ImportantMostRecent,
-	All,
-	MostRecent,
-	CurrentThenMostRecent,
+	None,
+	Level1,
+	Level2,
+	Level3,
+	Level4,
+	Level5,
+	Level6,
+	Level7,
+	Level8,
+	Level9,
 }

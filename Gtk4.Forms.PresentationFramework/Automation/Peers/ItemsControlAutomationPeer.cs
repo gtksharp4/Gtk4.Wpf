@@ -4,11 +4,11 @@ using System.Windows.Controls;
 namespace System.Windows.Automation.Peers;
 
 /// <summary>The automation peer of an <see cref="ItemsControl"/>; its children are one peer per item.</summary>
-public class ItemsControlAutomationPeer : FrameworkElementAutomationPeer
+public abstract class ItemsControlAutomationPeer : FrameworkElementAutomationPeer
 {
 	readonly Dictionary<object, ItemAutomationPeer> _itemPeers = new Dictionary<object, ItemAutomationPeer>();
 
-	public ItemsControlAutomationPeer(ItemsControl owner) : base(owner) { }
+	protected ItemsControlAutomationPeer(ItemsControl owner) : base(owner) { }
 
 	public override object? GetPattern(PatternInterface patternInterface) => null;
 
@@ -17,7 +17,7 @@ public class ItemsControlAutomationPeer : FrameworkElementAutomationPeer
 	protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.List;
 
 	/// <summary>Creates the peer for one item.</summary>
-	protected virtual ItemAutomationPeer CreateItemAutomationPeer(object item) => new ItemAutomationPeer(item, this);
+	protected abstract ItemAutomationPeer CreateItemAutomationPeer(object item);
 
 	/// <summary>Returns the cached peer of <paramref name="item"/>, creating it on first use.</summary>
 	internal ItemAutomationPeer ItemPeerFor(object item)
@@ -43,9 +43,9 @@ public class ItemsControlAutomationPeer : FrameworkElementAutomationPeer
 }
 
 /// <summary>The automation peer of one data item of an <see cref="ItemsControl"/>.</summary>
-public class ItemAutomationPeer : AutomationPeer
+public abstract class ItemAutomationPeer : AutomationPeer
 {
-	public ItemAutomationPeer(object item, ItemsControlAutomationPeer itemsControlPeer)
+	protected ItemAutomationPeer(object item, ItemsControlAutomationPeer itemsControlPeer)
 	{
 		Item = item ?? throw new ArgumentNullException(nameof(item));
 		ItemsControlAutomationPeer = itemsControlPeer ?? throw new ArgumentNullException(nameof(itemsControlPeer));
@@ -70,11 +70,19 @@ public class ItemAutomationPeer : AutomationPeer
 
 	protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.ListItem;
 
+	// The name of the container's peer (its content's plain text), else the item itself.
 	protected override string GetNameCore()
 	{
-		if (Container != null && AutomationProperties.GetName(Container) is { Length: > 0 } explicitName)
-			return explicitName;
-		return Item as string ?? Item.ToString() ?? string.Empty;
+		if (Item is DependencyObject itemObject && AutomationProperties.GetName(itemObject) is { Length: > 0 } itemName)
+			return itemName;
+		var container = Container;
+		if (container != null)
+		{
+			var name = container.GetAutomationPeer()?.GetName();
+			if (string.IsNullOrEmpty(name)) name = AutomationProperties.GetName(container);
+			if (!string.IsNullOrEmpty(name)) return name!;
+		}
+		return PeerText.Plain(Item);
 	}
 
 	protected override string GetAutomationIdCore() =>

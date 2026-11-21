@@ -10,7 +10,7 @@ using Xunit;
 namespace Gtk4.Forms.PresentationFramework.Tests.Automation;
 
 /// <summary>Patterns called directly on the providers, checked against the real GTK widgets.</summary>
-public class PatternTests : WpfGtkTestBase
+public partial class PatternTests : WpfGtkTestBase
 {
 	static T Pattern<T>(UIElement element, PatternInterface kind) where T : class =>
 		(T)UIElementAutomationPeer.CreatePeerForElement(element)!.GetPattern(kind)!;
@@ -30,7 +30,8 @@ public class PatternTests : WpfGtkTestBase
 	public void Invoke_on_a_disabled_button_throws() => Run(() =>
 	{
 		var button = new Button { IsEnabled = false };
-		Assert.Throws<ElementNotEnabledException>(() => Pattern<IInvokeProvider>(button, PatternInterface.Invoke).Invoke());
+		var invoke = Pattern<IInvokeProvider>(button, PatternInterface.Invoke);
+		Assert.Throws<ElementNotEnabledException>(invoke.Invoke);
 	});
 
 	[Fact]
@@ -99,15 +100,33 @@ public class PatternTests : WpfGtkTestBase
 	static string GtkEntryText(TextBox box) => ((Gtk.Entry)box.Widget).Text;
 
 	[Fact]
-	public void TextBox_SetValue_rejects_read_only_and_disabled() => Run(() =>
+	public void TextBox_SetValue_rejects_disabled_then_read_only_then_null() => Run(() =>
 	{
-		var box = new TextBox { IsReadOnly = true };
+		var box = new TextBox { IsReadOnly = true, IsEnabled = false };
 		var value = Pattern<IValueProvider>(box, PatternInterface.Value);
 		Assert.True(value.IsReadOnly);
-		Assert.Throws<InvalidOperationException>(() => value.SetValue("x"));
-		box.IsReadOnly = false;
-		box.IsEnabled = false;
+		Assert.Throws<ElementNotEnabledException>(() => value.SetValue(null!));
+		box.IsEnabled = true;
 		Assert.Throws<ElementNotEnabledException>(() => value.SetValue("x"));
+		Assert.Equal("", box.Text);
+		box.IsReadOnly = false;
+		Assert.Throws<ArgumentNullException>(() => value.SetValue(null!));
+	});
+
+	[Fact]
+	public void ElementNotEnabledException_is_an_InvalidOperationException() => Run(() =>
+	{
+		Assert.IsAssignableFrom<InvalidOperationException>(new ElementNotEnabledException());
+		Assert.IsAssignableFrom<SystemException>(new ElementNotAvailableException());
+	});
+
+	[Fact]
+	public void Radio_button_supports_SelectionItem_but_not_Toggle() => Run(() =>
+	{
+		var peer = UIElementAutomationPeer.CreatePeerForElement(new RadioButton())!;
+		Assert.NotNull(peer.GetPattern(PatternInterface.SelectionItem));
+		Assert.Null(peer.GetPattern(PatternInterface.Toggle));
+		Assert.Null(peer.GetPattern(PatternInterface.Value));
 	});
 
 	[Fact]
@@ -134,127 +153,5 @@ public class PatternTests : WpfGtkTestBase
 		Assert.Equal(7, ((Gtk.Scale)slider.Widget).Adjustment.Value);
 		Assert.Throws<ArgumentOutOfRangeException>(() => range.SetValue(11));
 		Assert.Throws<ArgumentOutOfRangeException>(() => range.SetValue(-1));
-	});
-
-	[Fact]
-	public void ComboBox_selection_value_and_expand_collapse() => Run(() =>
-	{
-		var combo = new ComboBox();
-		combo.Items.Add("one");
-		combo.Items.Add("two");
-		var peer = UIElementAutomationPeer.CreatePeerForElement(combo)!;
-		var items = peer.GetChildren()!;
-		Assert.Equal(new[] { "one", "two" }, new[] { items[0].GetName(), items[1].GetName() });
-
-		var item = (ISelectionItemProvider)items[1].GetPattern(PatternInterface.SelectionItem)!;
-		item.Select();
-		Assert.Equal("two", combo.SelectedItem);
-		Assert.Equal(1, combo.SelectedIndex);
-		Assert.True(item.IsSelected);
-		var selection = (ISelectionProvider)peer.GetPattern(PatternInterface.Selection)!;
-		Assert.Single(selection.GetSelection());
-		Assert.False(selection.CanSelectMultiple);
-
-		var expand = (IExpandCollapseProvider)peer.GetPattern(PatternInterface.ExpandCollapse)!;
-		Assert.Equal(ExpandCollapseState.Collapsed, expand.ExpandCollapseState);
-		expand.Expand();
-		Assert.True(combo.IsDropDownOpen);
-		Assert.Equal(ExpandCollapseState.Expanded, expand.ExpandCollapseState);
-		expand.Collapse();
-		Assert.False(combo.IsDropDownOpen);
-
-		var value = (IValueProvider)peer.GetPattern(PatternInterface.Value)!;
-		Assert.True(value.IsReadOnly);
-		Assert.Throws<InvalidOperationException>(() => value.SetValue("x"));
-	});
-
-	[Fact]
-	public void ListBox_items_select_through_the_provider_and_change_the_widget() => Run(() =>
-	{
-		var list = new ListBox();
-		list.Items.Add("a");
-		list.Items.Add("b");
-		list.Items.Add("c");
-		var window = new Window { Content = list };
-		_ = list.Widget;
-		var peer = UIElementAutomationPeer.CreatePeerForElement(list)!;
-		var items = peer.GetChildren()!;
-		Assert.Equal(3, items.Count);
-		Assert.Same(items[0], peer.GetChildren()![0]);
-		Assert.Same(peer, items[0].GetParent());
-
-		var b = (ISelectionItemProvider)items[1].GetPattern(PatternInterface.SelectionItem)!;
-		b.Select();
-		Assert.Equal("b", list.SelectedItem);
-		Assert.True(b.IsSelected);
-		Assert.False(((ISelectionItemProvider)items[0].GetPattern(PatternInterface.SelectionItem)!).IsSelected);
-		var selected = ((ISelectionProvider)peer.GetPattern(PatternInterface.Selection)!).GetSelection();
-		Assert.Single(selected);
-		Assert.Same(items[1], ((PeerProvider)selected[0]).Peer);
-	});
-
-	[Fact]
-	public void ListBox_multiple_selection_adds_and_removes() => Run(() =>
-	{
-		var list = new ListBox { SelectionMode = SelectionMode.Multiple };
-		list.Items.Add("a");
-		list.Items.Add("b");
-		var window = new Window { Content = list };
-		_ = list.Widget;
-		var peer = UIElementAutomationPeer.CreatePeerForElement(list)!;
-		var items = peer.GetChildren()!;
-		var a = (ISelectionItemProvider)items[0].GetPattern(PatternInterface.SelectionItem)!;
-		var b = (ISelectionItemProvider)items[1].GetPattern(PatternInterface.SelectionItem)!;
-		a.AddToSelection();
-		b.AddToSelection();
-		Assert.True(a.IsSelected && b.IsSelected);
-		Assert.Equal(2, list.SelectedItems.Count);
-		a.RemoveFromSelection();
-		Assert.False(a.IsSelected);
-		Assert.Single(list.SelectedItems);
-		Assert.True(((ISelectionProvider)peer.GetPattern(PatternInterface.Selection)!).CanSelectMultiple);
-	});
-
-	[Fact]
-	public void Window_pattern_reports_and_changes_chrome_state() => Run(() =>
-	{
-		var window = new Window { Title = "Main", Topmost = true };
-		var peer = UIElementAutomationPeer.CreatePeerForElement(window)!;
-		Assert.Equal("Main", peer.GetName());
-		Assert.Equal(AutomationControlType.Window, peer.GetAutomationControlType());
-		var provider = (IWindowProvider)peer.GetPattern(PatternInterface.Window)!;
-		Assert.True(provider.IsTopmost);
-		Assert.False(provider.IsModal);
-		Assert.True(provider.Maximizable);
-		Assert.Equal(WindowVisualState.Normal, provider.VisualState);
-		provider.SetVisualState(WindowVisualState.Maximized);
-		Assert.Equal(WindowState.Maximized, window.WindowState);
-		Assert.Equal(WindowVisualState.Maximized, provider.VisualState);
-		window.ResizeMode = ResizeMode.NoResize;
-		Assert.Throws<InvalidOperationException>(() => provider.SetVisualState(WindowVisualState.Minimized));
-	});
-
-	[Fact]
-	public void Window_Close_closes_the_window() => Run(() =>
-	{
-		var window = new Window();
-		bool closed = false;
-		window.Closed += (s, e) => closed = true;
-		window.Show();
-		Pattern<IWindowProvider>(window, PatternInterface.Window).Close();
-		Assert.True(GtkPump.Until(() => closed));
-	});
-
-	[Fact]
-	public void Slider_orientation_and_text_peers_report_their_types() => Run(() =>
-	{
-		var slider = UIElementAutomationPeer.CreatePeerForElement(new Slider { Orientation = Orientation.Vertical })!;
-		Assert.Equal(AutomationOrientation.Vertical, slider.GetOrientation());
-		var text = UIElementAutomationPeer.CreatePeerForElement(new TextBlock { Text = "Hi" })!;
-		Assert.Equal(AutomationControlType.Text, text.GetAutomationControlType());
-		Assert.Equal("Hi", text.GetName());
-		var label = UIElementAutomationPeer.CreatePeerForElement(new Label { Content = "Name" })!;
-		Assert.Equal("Name", label.GetName());
-		Assert.Equal("Label", label.GetClassName());
 	});
 }

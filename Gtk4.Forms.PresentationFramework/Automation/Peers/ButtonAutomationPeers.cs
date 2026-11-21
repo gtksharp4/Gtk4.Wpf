@@ -9,11 +9,7 @@ public abstract class ButtonBaseAutomationPeer : FrameworkElementAutomationPeer
 {
 	protected ButtonBaseAutomationPeer(ButtonBase owner) : base(owner) { }
 
-	protected override string GetNameCore()
-	{
-		var name = base.GetNameCore();
-		return name.Length > 0 ? name : (((ContentControl)Owner).Content as string) ?? string.Empty;
-	}
+	internal override string ContentName() => PeerText.FromContent(((ContentControl)Owner).Content);
 }
 
 /// <summary>The automation peer of a <see cref="Button"/>.</summary>
@@ -28,8 +24,8 @@ public class ButtonAutomationPeer : ButtonBaseAutomationPeer, IInvokeProvider
 
 	protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Button;
 
-	/// <summary>Clicks the button. Like WPF, the click runs through the dispatcher.</summary>
-	public void Invoke()
+	// Like WPF, the click runs through the dispatcher.
+	void IInvokeProvider.Invoke()
 	{
 		if (!IsEnabled()) throw new ElementNotEnabledException();
 		var owner = (ButtonBase)Owner;
@@ -49,11 +45,9 @@ public class ToggleButtonAutomationPeer : ButtonBaseAutomationPeer, IToggleProvi
 
 	protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Button;
 
-	/// <summary>The current toggle state.</summary>
-	public ToggleState ToggleState => ToState(((ToggleButton)Owner).IsChecked);
+	ToggleState IToggleProvider.ToggleState => ToState(((ToggleButton)Owner).IsChecked);
 
-	/// <summary>Cycles the button to its next state.</summary>
-	public void Toggle()
+	void IToggleProvider.Toggle()
 	{
 		if (!IsEnabled()) throw new ElementNotEnabledException();
 		((ToggleButton)Owner).AutomationToggle();
@@ -98,8 +92,11 @@ public class RadioButtonAutomationPeer : ToggleButtonAutomationPeer, ISelectionI
 {
 	public RadioButtonAutomationPeer(RadioButton owner) : base(owner) { }
 
+	// A radio button is selected, not toggled: WPF exposes SelectionItem only.
 	public override object? GetPattern(PatternInterface patternInterface) =>
-		patternInterface == PatternInterface.SelectionItem ? this : base.GetPattern(patternInterface);
+		patternInterface == PatternInterface.SelectionItem ? this
+			: patternInterface == PatternInterface.SynchronizedInput ? base.GetPattern(patternInterface)
+			: null;
 
 	protected override string GetClassNameCore() => "RadioButton";
 
@@ -110,25 +107,27 @@ public class RadioButtonAutomationPeer : ToggleButtonAutomationPeer, ISelectionI
 	internal override void PushState(Gtk.Widget widget) =>
 		PeerAccessible.SetTristate(widget, Gtk.AccessibleState.Checked, ((ToggleButton)Owner).IsChecked);
 
-	public bool IsSelected => ((ToggleButton)Owner).IsChecked == true;
+	bool ISelectionItemProvider.IsSelected => ((ToggleButton)Owner).IsChecked == true;
 
-	public IRawElementProviderSimple SelectionContainer => null!;
+	IRawElementProviderSimple ISelectionItemProvider.SelectionContainer => null!;
 
-	public void Select()
+	void ISelectionItemProvider.Select()
 	{
 		if (!IsEnabled()) throw new ElementNotEnabledException();
-		if (!IsSelected) ((ToggleButton)Owner).AutomationToggle();
+		if (((ToggleButton)Owner).IsChecked != true) ((ToggleButton)Owner).AutomationToggle();
 	}
 
-	public void AddToSelection()
+	void ISelectionItemProvider.AddToSelection()
 	{
 		if (!IsEnabled()) throw new ElementNotEnabledException();
-		if (!IsSelected) throw new InvalidOperationException("A radio button cannot be added to a selection.");
+		if (((ToggleButton)Owner).IsChecked != true)
+			throw new InvalidOperationException("A radio button cannot be added to a selection.");
 	}
 
-	public void RemoveFromSelection()
+	void ISelectionItemProvider.RemoveFromSelection()
 	{
 		if (!IsEnabled()) throw new ElementNotEnabledException();
-		if (IsSelected) throw new InvalidOperationException("A radio button cannot be removed from a selection.");
+		if (((ToggleButton)Owner).IsChecked == true)
+			throw new InvalidOperationException("A radio button cannot be removed from a selection.");
 	}
 }

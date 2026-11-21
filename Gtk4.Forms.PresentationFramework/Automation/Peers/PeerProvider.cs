@@ -62,11 +62,11 @@ sealed class PeerProvider : IRawElementProviderSimple
 
 static class PatternMap
 {
-	// PatternInterface order -> UI Automation pattern id; -1 where the layer has no pattern id.
+	// PatternInterface order -> UI Automation pattern id.
 	static readonly int[] _ids =
 	{
 		10000, 10001, 10002, 10003, 10004, 10017, 10005, 10006, 10007, 10008, 10009, 10010, 10011, 10012,
-		10013, 10015, 10016, 10014, 10019, 10020, -1,
+		10013, 10015, 10016, 10014, 10019, 10020, 10021,
 	};
 
 	internal static PatternInterface? ToInterface(int patternId)

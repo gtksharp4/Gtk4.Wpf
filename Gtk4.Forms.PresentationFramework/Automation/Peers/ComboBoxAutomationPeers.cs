@@ -13,8 +13,10 @@ public class ComboBoxAutomationPeer : SelectorAutomationPeer, IValueProvider, IE
 
 	ComboBox ComboBox => (ComboBox)Owner;
 
+	// Value exists only for an editable box, as in WPF.
 	public override object? GetPattern(PatternInterface patternInterface) =>
-		patternInterface == PatternInterface.Value || patternInterface == PatternInterface.ExpandCollapse
+		patternInterface == PatternInterface.ExpandCollapse
+		|| (patternInterface == PatternInterface.Value && ComboBox.IsEditable)
 			? this : base.GetPattern(patternInterface);
 
 	protected override string GetClassNameCore() => "ComboBox";
@@ -24,28 +26,30 @@ public class ComboBoxAutomationPeer : SelectorAutomationPeer, IValueProvider, IE
 	protected override ItemAutomationPeer CreateItemAutomationPeer(object item) =>
 		new ComboBoxItemAutomationPeer(item, this);
 
-	public bool IsReadOnly => !ComboBox.IsEditable;
+	// The editable host box is a wrapper; the drop-down carries the accessible node.
+	internal override Gtk.Widget Target(Gtk.Widget widget) => ComboBox.AccessibleTarget;
 
-	public string Value => ComboBox.Text;
+	bool IValueProvider.IsReadOnly => !IsEnabled() || ComboBox.IsReadOnly;
 
-	public void SetValue(string value)
+	string IValueProvider.Value => ComboBox.Text;
+
+	void IValueProvider.SetValue(string value)
 	{
 		if (value == null) throw new ArgumentNullException(nameof(value));
 		if (!IsEnabled()) throw new ElementNotEnabledException();
-		if (IsReadOnly) throw new InvalidOperationException("The combo box is not editable.");
 		ComboBox.Text = value;
 	}
 
-	public ExpandCollapseState ExpandCollapseState =>
+	ExpandCollapseState IExpandCollapseProvider.ExpandCollapseState =>
 		ComboBox.IsDropDownOpen ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed;
 
-	public void Expand()
+	void IExpandCollapseProvider.Expand()
 	{
 		if (!IsEnabled()) throw new ElementNotEnabledException();
 		ComboBox.IsDropDownOpen = true;
 	}
 
-	public void Collapse()
+	void IExpandCollapseProvider.Collapse()
 	{
 		if (!IsEnabled()) throw new ElementNotEnabledException();
 		ComboBox.IsDropDownOpen = false;

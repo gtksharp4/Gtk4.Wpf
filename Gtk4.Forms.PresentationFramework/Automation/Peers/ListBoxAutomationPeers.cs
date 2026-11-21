@@ -18,7 +18,7 @@ public class ListBoxAutomationPeer : SelectorAutomationPeer
 	protected override ItemAutomationPeer CreateItemAutomationPeer(object item) =>
 		new ListBoxItemAutomationPeer(item, this);
 
-	public override bool CanSelectMultiple => ListBox.SelectionMode != SelectionMode.Single;
+	internal override bool CanSelectMultipleCore => ListBox.SelectionMode != SelectionMode.Single;
 
 	internal override IEnumerable<object> SelectedItemsList()
 	{
@@ -58,6 +58,8 @@ sealed class ListBoxItemWrapperAutomationPeer : FrameworkElementAutomationPeer
 	internal ListBoxItemWrapperAutomationPeer(ListBoxItem owner) : base(owner) { }
 
 	protected override string GetClassNameCore() => Owner.GetType().Name;
+
+	internal override string ContentName() => PeerText.FromContent(((ListBoxItem)Owner).Content);
 
 	protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.ListItem;
 

@@ -7,9 +7,9 @@ using System.Windows.Controls.Primitives;
 namespace System.Windows.Automation.Peers;
 
 /// <summary>The automation peer of a <see cref="Selector"/>.</summary>
-public class SelectorAutomationPeer : ItemsControlAutomationPeer, ISelectionProvider
+public abstract class SelectorAutomationPeer : ItemsControlAutomationPeer, ISelectionProvider
 {
-	public SelectorAutomationPeer(Selector owner) : base(owner) { }
+	protected SelectorAutomationPeer(Selector owner) : base(owner) { }
 
 	internal Selector Selector => (Selector)Owner;
 
@@ -18,9 +18,11 @@ public class SelectorAutomationPeer : ItemsControlAutomationPeer, ISelectionProv
 	public override object? GetPattern(PatternInterface patternInterface) =>
 		patternInterface == PatternInterface.Selection ? this : base.GetPattern(patternInterface);
 
-	public virtual bool CanSelectMultiple => false;
+	internal virtual bool CanSelectMultipleCore => false;
 
-	public bool IsSelectionRequired => false;
+	bool ISelectionProvider.CanSelectMultiple => CanSelectMultipleCore;
+
+	bool ISelectionProvider.IsSelectionRequired => false;
 
 	internal virtual IEnumerable<object> SelectedItemsList()
 	{
@@ -28,7 +30,7 @@ public class SelectorAutomationPeer : ItemsControlAutomationPeer, ISelectionProv
 		if (item != null) yield return item;
 	}
 
-	public IRawElementProviderSimple[] GetSelection()
+	IRawElementProviderSimple[] ISelectionProvider.GetSelection()
 	{
 		var result = new List<IRawElementProviderSimple>();
 		foreach (var item in SelectedItemsList())
@@ -69,9 +71,9 @@ public class SelectorAutomationPeer : ItemsControlAutomationPeer, ISelectionProv
 }
 
 /// <summary>The automation peer of an item of a <see cref="Selector"/>.</summary>
-public class SelectorItemAutomationPeer : ItemAutomationPeer, ISelectionItemProvider
+public abstract class SelectorItemAutomationPeer : ItemAutomationPeer, ISelectionItemProvider
 {
-	public SelectorItemAutomationPeer(object owner, SelectorAutomationPeer selectorAutomationPeer)
+	protected SelectorItemAutomationPeer(object owner, SelectorAutomationPeer selectorAutomationPeer)
 		: base(owner, selectorAutomationPeer) { }
 
 	SelectorAutomationPeer Selector => (SelectorAutomationPeer)ItemsControlAutomationPeer;
@@ -79,7 +81,9 @@ public class SelectorItemAutomationPeer : ItemAutomationPeer, ISelectionItemProv
 	public override object? GetPattern(PatternInterface patternInterface) =>
 		patternInterface == PatternInterface.SelectionItem ? this : base.GetPattern(patternInterface);
 
-	public bool IsSelected
+	bool ISelectionItemProvider.IsSelected => IsItemSelected;
+
+	bool IsItemSelected
 	{
 		get
 		{
@@ -89,23 +93,24 @@ public class SelectorItemAutomationPeer : ItemAutomationPeer, ISelectionItemProv
 		}
 	}
 
-	public IRawElementProviderSimple SelectionContainer => ProviderFromPeer(Selector);
+	IRawElementProviderSimple ISelectionItemProvider.SelectionContainer => ProviderFromPeer(Selector);
 
-	public void Select()
+	void ISelectionItemProvider.Select()
 	{
 		if (!IsEnabled()) throw new ElementNotEnabledException();
 		Selector.SelectOnly(Item);
 	}
 
-	public void AddToSelection()
+	void ISelectionItemProvider.AddToSelection()
 	{
 		if (!IsEnabled()) throw new ElementNotEnabledException();
-		if (!Selector.CanSelectMultiple && Selector.SelectedItemsList().GetEnumerator().MoveNext() && !IsSelected)
+		if (!Selector.CanSelectMultipleCore && !IsItemSelected
+			&& Selector.SelectedItemsList().GetEnumerator().MoveNext())
 			throw new InvalidOperationException("The container does not allow multiple selection.");
 		Selector.SetSelected(Item, true);
 	}
 
-	public void RemoveFromSelection()
+	void ISelectionItemProvider.RemoveFromSelection()
 	{
 		if (!IsEnabled()) throw new ElementNotEnabledException();
 		Selector.SetSelected(Item, false);

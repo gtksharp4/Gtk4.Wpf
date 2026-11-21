@@ -15,16 +15,18 @@ public class TextBoxAutomationPeer : FrameworkElementAutomationPeer, IValueProvi
 
 	protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Edit;
 
-	public bool IsReadOnly => ((TextBox)Owner).IsReadOnly;
+	bool IValueProvider.IsReadOnly => ((TextBox)Owner).IsReadOnly;
 
-	public string Value => ((TextBox)Owner).Text ?? string.Empty;
+	string IValueProvider.Value => ((TextBox)Owner).Text ?? string.Empty;
 
-	public void SetValue(string value)
+	// WPF checks in this order: enabled, read-only, then the value.
+	void IValueProvider.SetValue(string value)
 	{
-		if (value == null) throw new ArgumentNullException(nameof(value));
+		var box = (TextBox)Owner;
 		if (!IsEnabled()) throw new ElementNotEnabledException();
-		if (IsReadOnly) throw new InvalidOperationException("The text box is read-only.");
-		((TextBox)Owner).Text = value;
+		if (box.IsReadOnly) throw new ElementNotEnabledException();
+		if (value == null) throw new ArgumentNullException(nameof(value));
+		box.Text = value;
 	}
 
 	// A multi-line box wraps its text view in a scrolled window; the editor is the accessible node.
@@ -64,11 +66,11 @@ public class PasswordBoxAutomationPeer : FrameworkElementAutomationPeer, IValueP
 
 	protected override bool IsPasswordCore() => true;
 
-	public bool IsReadOnly => false;
+	bool IValueProvider.IsReadOnly => false;
 
-	public string Value => throw new InvalidOperationException("The value of a password box cannot be read.");
+	string IValueProvider.Value => throw new InvalidOperationException("The value of a password box cannot be read.");
 
-	public void SetValue(string value)
+	void IValueProvider.SetValue(string value)
 	{
 		if (value == null) throw new ArgumentNullException(nameof(value));
 		if (!IsEnabled()) throw new ElementNotEnabledException();
@@ -85,11 +87,7 @@ public class TextBlockAutomationPeer : FrameworkElementAutomationPeer
 
 	protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Text;
 
-	protected override string GetNameCore()
-	{
-		var name = base.GetNameCore();
-		return name.Length > 0 ? name : ((TextBlock)Owner).Text ?? string.Empty;
-	}
+	internal override string ContentName() => ((TextBlock)Owner).Text ?? string.Empty;
 }
 
 /// <summary>The automation peer of a <see cref="Label"/>.</summary>
@@ -101,9 +99,8 @@ public class LabelAutomationPeer : FrameworkElementAutomationPeer
 
 	protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Text;
 
-	protected override string GetNameCore()
-	{
-		var name = base.GetNameCore();
-		return name.Length > 0 ? name : ((Label)Owner).Content as string ?? string.Empty;
-	}
+	internal override string ContentName() => PeerText.FromContent(((Label)Owner).Content);
+
+	// Label wraps its Gtk.Label in a box; the inner label is the accessible node.
+	internal override Gtk.Widget Target(Gtk.Widget widget) => ((Label)Owner).AccessibleTarget;
 }

@@ -24,22 +24,22 @@ public class SliderAutomationPeer : FrameworkElementAutomationPeer, IRangeValueP
 		Slider.Orientation == Orientation.Horizontal ? AutomationOrientation.Horizontal
 			: AutomationOrientation.Vertical;
 
-	public bool IsReadOnly => false;
+	bool IRangeValueProvider.IsReadOnly => false;
 
-	public double LargeChange => Slider.LargeChange;
+	double IRangeValueProvider.LargeChange => Slider.LargeChange;
 
-	public double SmallChange => Slider.SmallChange;
+	double IRangeValueProvider.SmallChange => Slider.SmallChange;
 
-	public double Maximum => Slider.Maximum;
+	double IRangeValueProvider.Maximum => Slider.Maximum;
 
-	public double Minimum => Slider.Minimum;
+	double IRangeValueProvider.Minimum => Slider.Minimum;
 
-	public double Value => Slider.Value;
+	double IRangeValueProvider.Value => Slider.Value;
 
-	public void SetValue(double value)
+	void IRangeValueProvider.SetValue(double value)
 	{
 		if (!IsEnabled()) throw new ElementNotEnabledException();
-		if (value < Minimum || value > Maximum) throw new ArgumentOutOfRangeException(nameof(value));
+		if (value < Slider.Minimum || value > Slider.Maximum) throw new ArgumentOutOfRangeException(nameof(value));
 		Slider.Value = value;
 	}
 
@@ -49,9 +49,9 @@ public class SliderAutomationPeer : FrameworkElementAutomationPeer, IRangeValueP
 
 	internal override void PushState(Gtk.Widget widget)
 	{
-		PeerAccessible.SetProperty(widget, Gtk.AccessibleProperty.ValueMin, Minimum);
-		PeerAccessible.SetProperty(widget, Gtk.AccessibleProperty.ValueMax, Maximum);
-		PeerAccessible.SetProperty(widget, Gtk.AccessibleProperty.ValueNow, Value);
+		PeerAccessible.SetProperty(widget, Gtk.AccessibleProperty.ValueMin, Slider.Minimum);
+		PeerAccessible.SetProperty(widget, Gtk.AccessibleProperty.ValueMax, Slider.Maximum);
+		PeerAccessible.SetProperty(widget, Gtk.AccessibleProperty.ValueNow, Slider.Value);
 	}
 
 	internal override void OwnerPropertyChanged(DependencyPropertyChangedEventArgs e)

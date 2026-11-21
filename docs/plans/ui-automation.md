@@ -134,8 +134,7 @@ The peer pushes into `Gtk.Accessible` on realise and on every relevant change:
 | `AutomationProperties.Name`, `HelpText`, `LabeledBy` | `Label`, `Description`, `AccessibleRelation.LabelledBy` |
 | `IsEnabled=false`, `IsOffscreen` | `AccessibleState.Disabled`, `Hidden`: GTK derives both from sensitivity and visibility, so the peer does not push them (verified for `Disabled`) |
 
-GtkSharp4 rules found in Phase 1: use the `Update*` array overloads (the single-value ones leave the value unchanged), and pass states as `int` values (tristate and boolean states ignore a boolean `GLib.Value`). Phase 0 decides from GtkSharp4 reflection whether the role can be set after widget creation. If it can't,
-the role is applied at widget creation through the widget type's `accessible-role` property.
+GtkSharp4 rules found in Phase 1: use the `Update*` array overloads (the single-value ones leave the value unchanged), and pass states as `int` values (tristate and boolean states ignore a boolean `GLib.Value`). Phase 0 found that the role can only be set before the widget is realized, so the role is applied at widget creation (`AccessibleRole` on the widget the peer targets). Only explicit names (`AutomationProperties.Name`, then the labelling element) are pushed; a name GTK derives from content stays with GTK, and clearing an explicit value calls `gtk_accessible_reset_property` (GtkSharp4 does not bind it, so `PeerAccessible.Native.cs` P/Invokes it). `Label` (a `Gtk.Box`) and the editable `ComboBox` host push to their inner widget through `Target()`, so the AT tree has no nested duplicates.
 
 ### Test driver (`Gtk4.Forms.Wpf.Testing`, new project and package)
 
@@ -313,7 +312,7 @@ Landed in `Gtk4.Forms.PresentationFramework` (no new project):
 - `System.Windows.Automation.Provider`: `IRawElementProviderSimple` and the ten pattern interfaces.
 - `System.Windows.Automation.Peers`: `AutomationPeer` (full template-method surface, notification and
   property-changed events with internal listener registry for Phase 2), `UIElementAutomationPeer` (`FromElement`
-  does not create, `CreatePeerForElement` creates and caches), `FrameworkElementAutomationPeer`
+  does not create unless the widget exists, see below; `CreatePeerForElement` creates and caches), `FrameworkElementAutomationPeer`
   (`AutomationProperties` then labelling element for the name; `x:Name` for the id), `ItemsControlAutomationPeer`
   and `ItemAutomationPeer`, and peers for Button, ToggleButton, CheckBox, RadioButton, TextBox, PasswordBox,
   TextBlock, Label, ComboBox (+ items), ListBox (+ items), Slider and Window.
@@ -324,6 +323,19 @@ Landed in `Gtk4.Forms.PresentationFramework` (no new project):
 
 Deviations and gaps (all documented in code):
 
+- Provider interfaces are implemented explicitly, as in WPF; overridable behaviour goes through internal hooks
+  (`CanSelectMultipleCore`). `ItemsControlAutomationPeer`, `SelectorAutomationPeer`, `ItemAutomationPeer` and
+  `SelectorItemAutomationPeer` are abstract with protected constructors. `ComboBoxItemAutomationPeer` derives from
+  `SelectorItemAutomationPeer` and `ListBoxItemWrapperAutomationPeer` stays internal, as in WPF.
+- Peers are created eagerly when the widget is created (the role must be set before realization), unlike WPF, which
+  creates them when a client asks. So `FromElement` returns a peer for any element with a widget. A throwing
+  `OnCreateAutomationPeer` is logged through `Trace` and skipped; it never breaks widget creation.
+- Names: content-bearing peers use the content's plain text with access-key markers removed (`_OK` is `OK`),
+  then a string `ToolTip`; item peers use their container's peer name.
+- Gaps against WPF: `GetControlledPeersCore`/`GetHeadingLevelCore` only return their defaults, `ResetChildrenCache` is a
+  no-op (nothing is cached), `IsHwndHost` is internal and always false, and `ButtonBase.OnClick` does not raise
+  `InvokePatternOnInvoked` yet (events arrive in Phase 4). `ComboBox.IsDropDownOpen` is store-only on GTK, so
+  expand/collapse is checked on the property, not on a popup.
 - `GetChildren` is recomputed on every call (no cache), so the peer tree always mirrors the visual tree; elements
   without a peer are transparent, as in WPF. Item peers are cached per item.
 - No `RangeBase` in the layer, so `SliderAutomationPeer` derives from `FrameworkElementAutomationPeer`.
@@ -338,11 +350,12 @@ Deviations and gaps (all documented in code):
 - A role changed after realization is not applied (Phase 0 finding). Custom peers whose control type changes at
   runtime are the only affected case.
 - GTK value checks use the variadic `gtk_test_accessible_check_*` API through a P/Invoke probe in the test project.
-  They skip on macOS ARM64, whose varargs ABI cannot be called that way; role and `has_*` checks still run.
+  They skip on macOS ARM64, whose varargs ABI cannot be called that way, and the double-valued checks run on
+  Windows only (a non-variadic delegate leaves AL unset on the SysV ABI); role and `has_*` checks still run.
 
-Tests: 75 new in `PresentationFramework.Tests/Automation` (identifiers, peer core and tree, every pattern through
+Tests: 98 in `PresentationFramework.Tests/Automation` (75 at the first landing, 23 added by the review fixes) (identifiers, peer core and tree, every pattern through
 direct provider calls against real GTK widgets, GTK role/name/state through GTK's test API). Observed on Windows:
-`WindowsBase.Tests` 201, `MarkupCompiler.Tests` 574, `Wpf.ProjectConverter.Tests` 34, `PresentationFramework.Tests` 4127,
+`WindowsBase.Tests` 201, `MarkupCompiler.Tests` 574, `Wpf.ProjectConverter.Tests` 34, `PresentationFramework.Tests` 4150,
 all passing; `dotnet build Gtk4.Forms.sln` warning-clean. Linux and macOS were not run here.
 
 Samples gate (pinned recipe, package 1.0.0.26325 packed from this branch): all 90 samples that had `build=pass` still
@@ -352,6 +365,8 @@ WindowSizingOrder) ran when re-run alone with a 30 s limit (the same load noise 
 The 4 `Automation.Peers` samples (ExpenseItIntro, CustomComboBox, DataBindingDemo, WPFGallery) no longer report any
 peer or automation error; they still fail on other layer gaps (`DataGrid` parts, `Popup`/`MenuItem` members,
 generator output, `FilterEventArgs`, `UserControl`, `System.Windows.Shell`).
+
+Review-fix gate (same recipe, package 1.0.0.26325 repacked from the fixed tree): 90 of 90 samples with `build=pass` still build, and 83 of 83 with `run=runs` ran in the smoke run (80 in the first 10 s pass; AddingEventHandler, ProcessingCommandLineArguments and IntroToStylingAndTemplating ran when re-run alone with a 30 s limit).
 
 ## Open questions
 

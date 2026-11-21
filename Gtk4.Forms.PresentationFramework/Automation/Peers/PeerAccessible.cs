@@ -4,7 +4,7 @@ namespace System.Windows.Automation.Peers;
 /// Typed wrappers over <c>Gtk.AccessibleExtensions.Update*</c>. They use the array overloads: the
 /// single-value overloads of GtkSharp4 leave the accessible value unchanged.
 /// </summary>
-static class PeerAccessible
+static partial class PeerAccessible
 {
 	internal static void SetProperty(Gtk.Widget widget, Gtk.AccessibleProperty property, string value) =>
 		Gtk.AccessibleExtensions.UpdateProperty(widget, new[] { property }, new[] { new GLib.Value(value) });

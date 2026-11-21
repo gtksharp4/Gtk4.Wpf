@@ -73,25 +73,3 @@ public abstract partial class AutomationPeer
 
 	void RaiseStructureChanged() => RaiseAutomationEvent(AutomationEvents.StructureChanged);
 }
-
-/// <summary>The state of an asynchronous content load, reported to clients.</summary>
-public enum AsyncContentLoadedState
-{
-	Beginning,
-	Progress,
-	Completed,
-}
-
-/// <summary>Event data for <see cref="AutomationPeer.RaiseAsyncContentLoadedEvent"/>.</summary>
-public class AsyncContentLoadedEventArgs : EventArgs
-{
-	public AsyncContentLoadedEventArgs(AsyncContentLoadedState asyncContentState, double percentComplete)
-	{
-		AsyncContentLoadedState = asyncContentState;
-		PercentComplete = percentComplete;
-	}
-
-	public AsyncContentLoadedState AsyncContentLoadedState { get; }
-
-	public double PercentComplete { get; }
-}

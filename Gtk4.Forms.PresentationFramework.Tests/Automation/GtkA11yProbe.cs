@@ -6,7 +6,7 @@ namespace Gtk4.Forms.PresentationFramework.Tests.Automation;
 /// <summary>
 /// Reads the GTK accessible tree through GTK's public test API (<c>gtk_test_accessible_*</c>), which
 /// GtkSharp4 does not bind. The checks are variadic in C, so they are called with the argument shape
-/// of each property: strings and integers pass as-is, doubles go through the platform's variadic ABI.
+/// of each property: strings and integers pass as-is, doubles only where the variadic ABI allows.
 /// </summary>
 static class GtkA11yProbe
 {
@@ -18,8 +18,6 @@ static class GtkA11yProbe
 
 	delegate IntPtr CheckBitsFn(IntPtr accessible, int id, long bits);
 
-	delegate IntPtr CheckDoubleFn(IntPtr accessible, int id, double value);
-
 	[DllImport("kernel32", CharSet = CharSet.Unicode)]
 	static extern IntPtr GetModuleHandleW(string name);
 
@@ -27,7 +25,14 @@ static class GtkA11yProbe
 
 	/// <summary>False where the variadic call cannot be made (macOS on ARM64 passes varargs on the stack).</summary>
 	internal static bool CanCheckValues =>
-		!(RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && RuntimeInformation.ProcessArchitecture == Architecture.Arm64);
+		!(RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
+			&& RuntimeInformation.ProcessArchitecture == Architecture.Arm64);
+
+	/// <summary>
+	/// Doubles are variadic arguments: the SysV ABI wants AL set to the vector register count, which a
+	/// non-variadic delegate never does, so only Windows (doubles also travel in integer registers) is reliable.
+	/// </summary>
+	internal static bool CanCheckDoubles => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
 	static IntPtr Load()
 	{
@@ -70,10 +75,9 @@ static class GtkA11yProbe
 
 	internal static bool PropertyEquals(Gtk.Widget w, Gtk.AccessibleProperty p, double value)
 	{
-		if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-			return Ok(Fn<CheckBitsFn>("gtk_test_accessible_check_property")(
-				w.Handle, (int)p, BitConverter.DoubleToInt64Bits(value)));
-		return Ok(Fn<CheckDoubleFn>("gtk_test_accessible_check_property")(w.Handle, (int)p, value));
+		if (!CanCheckDoubles) throw new PlatformNotSupportedException("Check CanCheckDoubles first.");
+		return Ok(Fn<CheckBitsFn>("gtk_test_accessible_check_property")(
+			w.Handle, (int)p, BitConverter.DoubleToInt64Bits(value)));
 	}
 
 	internal static bool StateEquals(Gtk.Widget w, Gtk.AccessibleState s, int value) =>

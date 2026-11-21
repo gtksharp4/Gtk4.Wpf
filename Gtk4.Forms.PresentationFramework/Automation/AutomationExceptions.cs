@@ -1,7 +1,7 @@
 namespace System.Windows.Automation;
 
 /// <summary>Thrown when a pattern is used on a disabled element.</summary>
-public class ElementNotEnabledException : SystemException
+public class ElementNotEnabledException : InvalidOperationException
 {
 	public ElementNotEnabledException() : base("The element is not enabled.") { }
 

@@ -60,6 +60,10 @@ public abstract partial class AutomationPeer
 
 	protected virtual bool IsDialogCore() => false;
 
+	protected virtual AutomationHeadingLevel GetHeadingLevelCore() => AutomationHeadingLevel.None;
+
+	protected virtual List<AutomationPeer>? GetControlledPeersCore() => null;
+
 	protected virtual string GetLocalizedControlTypeCore()
 	{
 		var type = ControlType.LookupById(50000 + (int)GetAutomationControlType());

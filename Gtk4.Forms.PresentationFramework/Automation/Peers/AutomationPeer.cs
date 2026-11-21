@@ -86,6 +86,16 @@ public abstract partial class AutomationPeer : DispatcherObject
 
 	public int GetLevel() => GetLevelCore();
 
+	public AutomationHeadingLevel GetHeadingLevel() => GetHeadingLevelCore();
+
+	public List<AutomationPeer>? GetControlledPeers() => GetControlledPeersCore();
+
+	/// <summary>Discards the cached children. The layer rebuilds them on every call, so nothing is cached.</summary>
+	public void ResetChildrenCache() { }
+
+	/// <summary>Whether the peer hosts a native window; never the case on GTK.</summary>
+	internal virtual bool IsHwndHost => false;
+
 	public bool HasKeyboardFocus() => HasKeyboardFocusCore();
 
 	public bool IsContentElement() => IsContentElementCore();
