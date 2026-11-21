@@ -14,9 +14,11 @@ public abstract class PageFunctionBase : Page
 	public bool RemoveFromJournal { get; set; } = true;
 
 	/// <summary>Called once when the page is first navigated to; override to start the task it represents.</summary>
-	protected internal virtual void Start()
+	protected virtual void Start()
 	{
 	}
+
+	internal void InvokeStart() => Start();
 
 	internal bool Started { get; set; }
 

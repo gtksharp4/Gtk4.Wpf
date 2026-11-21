@@ -50,6 +50,7 @@ internal sealed partial class XamlObjectBuilder
 
 	void ApplyAttribute(XElement el, XAttribute attr, object instance)
 	{
+		if (TryApplySetterProperty(el, attr, instance)) return;
 		string name = attr.Name.LocalName;
 		Type type = instance.GetType();
 		Member? member = FindMemberForAttribute(el, attr, type);

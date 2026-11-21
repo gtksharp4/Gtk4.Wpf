@@ -98,9 +98,6 @@ public abstract partial class Control
 		OnApplyTemplate();
 	}
 
-	/// <summary>Called after the template visual tree has been built and hosted.</summary>
-	public virtual void OnApplyTemplate() { }
-
 	/// <summary>
 	/// Calls <see cref="ApplyTemplateRoot"/> after the backing widget is first created.
 	/// Subclasses that override <see cref="UIElement.CreateWidget"/> should call this.

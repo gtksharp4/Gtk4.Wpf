@@ -25,14 +25,16 @@ public class XamlReaderTests : WpfGtkTestBase, IDisposable
 
 	internal const string Ns = "xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" " +
 		"xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\" " +
-		"xmlns:t=\"clr-namespace:Gtk4.Forms.PresentationFramework.Tests;assembly=Gtk4.Forms.PresentationFramework.Tests\"";
+		"xmlns:t=\"clr-namespace:Gtk4.Forms.PresentationFramework.Tests;" +
+		"assembly=Gtk4.Forms.PresentationFramework.Tests\"";
 
 	static T Parse<T>(string xaml) => (T)XamlReader.Parse(xaml);
 
 	[Fact]
 	public void Parse_builds_an_element_and_converts_attributes() => Run(() =>
 	{
-		var b = Parse<Button>("<Button " + Ns + " Width=\"42\" Margin=\"1,2,3,4\" Content=\"Hi\" IsEnabled=\"False\"/>");
+		var b = Parse<Button>(
+			"<Button " + Ns + " Width=\"42\" Margin=\"1,2,3,4\" Content=\"Hi\" IsEnabled=\"False\"/>");
 		Assert.Equal(42, b.Width);
 		Assert.Equal(new Thickness(1, 2, 3, 4), b.Margin);
 		Assert.Equal("Hi", b.Content);
@@ -78,7 +80,8 @@ public class XamlReaderTests : WpfGtkTestBase, IDisposable
 	{
 		GtkFormsXamlRegistry.Register("Round49/Reader.xaml", () => new ResourceDictionary { ["Z"] = 1 });
 		var rd = Parse<ResourceDictionary>("<ResourceDictionary " + Ns + "><ResourceDictionary.MergedDictionaries>" +
-			"<ResourceDictionary Source=\"Round49/Reader.xaml\"/></ResourceDictionary.MergedDictionaries></ResourceDictionary>");
+			"<ResourceDictionary Source=\"Round49/Reader.xaml\"/>" +
+			"</ResourceDictionary.MergedDictionaries></ResourceDictionary>");
 		Assert.Single(rd.MergedDictionaries);
 		Assert.Equal(1, rd["Z"]);
 	});
@@ -86,7 +89,8 @@ public class XamlReaderTests : WpfGtkTestBase, IDisposable
 	[Fact]
 	public void Style_without_a_key_is_keyed_by_its_TargetType() => Run(() =>
 	{
-		var rd = Parse<ResourceDictionary>("<ResourceDictionary " + Ns + "><Style TargetType=\"Button\"/></ResourceDictionary>");
+		var rd = Parse<ResourceDictionary>(
+			"<ResourceDictionary " + Ns + "><Style TargetType=\"Button\"/></ResourceDictionary>");
 		Assert.True(rd.ContainsKey(typeof(Button)));
 	});
 
@@ -102,7 +106,8 @@ public class XamlReaderTests : WpfGtkTestBase, IDisposable
 	[Fact]
 	public void StaticResource_resolves_from_an_ancestor_Resources_property_element() => Run(() =>
 	{
-		var g = Parse<StackPanel>("<StackPanel " + Ns + "><StackPanel.Resources><SolidColorBrush x:Key=\"R\" Color=\"Blue\"/>" +
+		var g = Parse<StackPanel>("<StackPanel " + Ns + "><StackPanel.Resources>" +
+			"<SolidColorBrush x:Key=\"R\" Color=\"Blue\"/>" +
 			"</StackPanel.Resources><Border Background=\"{StaticResource R}\"/></StackPanel>");
 		Assert.Equal(Colors.Blue, ((SolidColorBrush)((Border)g.Children[0]).Background!).Color);
 	});
@@ -132,7 +137,8 @@ public class XamlReaderTests : WpfGtkTestBase, IDisposable
 	[Fact]
 	public void Static_Null_and_Type_extensions() => Run(() =>
 	{
-		var w = Parse<XamlReaderTestWidget>("<t:XamlReaderTestWidget " + Ns + " Label=\"{x:Static t:XamlReaderTestWidget.Greeting}\"/>");
+		var w = Parse<XamlReaderTestWidget>(
+			"<t:XamlReaderTestWidget " + Ns + " Label=\"{x:Static t:XamlReaderTestWidget.Greeting}\"/>");
 		Assert.Equal("hello", w.Label);
 		var n = Parse<XamlReaderTestWidget>("<t:XamlReaderTestWidget " + Ns + " Label=\"{x:Null}\"/>");
 		Assert.Null(n.Label);
@@ -162,43 +168,10 @@ public class XamlReaderTests : WpfGtkTestBase, IDisposable
 	[Fact]
 	public void mc_Ignorable_attributes_are_skipped() => Run(() =>
 	{
-		var b = Parse<Button>("<Button " + Ns + " xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" " +
-			"xmlns:d=\"http://schemas.microsoft.com/expression/blend/2008\" mc:Ignorable=\"d\" d:DesignWidth=\"10\" Width=\"5\"/>");
+		var b = Parse<Button>("<Button " + Ns +
+			" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" " +
+			"xmlns:d=\"http://schemas.microsoft.com/expression/blend/2008\" " +
+			"mc:Ignorable=\"d\" d:DesignWidth=\"10\" Width=\"5\"/>");
 		Assert.Equal(5, b.Width);
-	});
-
-	[Fact]
-	public void Unknown_type_throws_with_one_based_position() => Run(() =>
-	{
-		var ex = Assert.Throws<XamlParseException>(() =>
-			XamlReader.Parse("<StackPanel " + Ns + ">\n  <Bogus/></StackPanel>"));
-		Assert.Equal(2, ex.LineNumber);
-		Assert.Equal(4, ex.LinePosition);
-	});
-
-	[Fact]
-	public void Unknown_member_and_bad_value_throw_XamlParseException() => Run(() =>
-	{
-		Assert.Throws<XamlParseException>(() => XamlReader.Parse("<Button " + Ns + " Nope=\"1\"/>"));
-		var ex = Assert.Throws<XamlParseException>(() => XamlReader.Parse("<Button " + Ns + " Width=\"abc\"/>"));
-		Assert.NotNull(ex.InnerException);
-		Assert.Equal(1, ex.LineNumber);
-	});
-
-	[Fact]
-	public void Event_handlers_and_x_Class_throw() => Run(() =>
-	{
-		Assert.Throws<XamlParseException>(() => XamlReader.Parse("<Button " + Ns + " Click=\"OnClick\"/>"));
-		Assert.Throws<XamlParseException>(() => XamlReader.Parse("<Button " + Ns + " x:Class=\"A.B\"/>"));
-	});
-
-	[Fact]
-	public void Malformed_xml_missing_resource_and_null_arguments_throw() => Run(() =>
-	{
-		Assert.Throws<XamlParseException>(() => XamlReader.Parse("<Button"));
-		Assert.Throws<XamlParseException>(() =>
-			XamlReader.Parse("<Border " + Ns + " Background=\"{StaticResource Missing}\"/>"));
-		Assert.Throws<ArgumentNullException>(() => XamlReader.Parse(null!));
-		Assert.Throws<ArgumentNullException>(() => XamlReader.Load((Stream)null!));
 	});
 }

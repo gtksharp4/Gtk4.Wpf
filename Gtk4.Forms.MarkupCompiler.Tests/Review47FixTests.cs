@@ -83,8 +83,8 @@ public class Review47FixTests : GeneratorV2TestBase
 		string light = Gen(xaml, out string lightCls, false, xamlPath: "Themes/Light/Colors.xaml", rootNamespace: "A");
 		string dark = Gen(xaml, out string darkCls, false, xamlPath: "Themes\\Dark\\Colors.xaml", rootNamespace: "A");
 
-		Assert.Equal("A.Themes_Light_Colors", lightCls);
-		Assert.Equal("A.Themes_Dark_Colors", darkCls);
+		Assert.Equal("A.Themes_S_Light_S_Colors", lightCls);
+		Assert.Equal("A.Themes_S_Dark_S_Colors", darkCls);
 		Assert.Contains("GtkFormsXamlRegistration(\"Themes/Light/Colors.xaml\"", light);
 		Assert.Contains("GtkFormsXamlRegistration(\"Themes/Dark/Colors.xaml\"", dark);
 		AssertCompiles(light, dark);

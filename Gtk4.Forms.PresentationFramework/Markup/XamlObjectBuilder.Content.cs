@@ -67,6 +67,7 @@ internal sealed partial class XamlObjectBuilder
 	void ApplyContent(XElement el, object instance, List<Node> nodes)
 	{
 		string? name = ContentPropertyName(instance);
+		if (name == null && TryApplyTemplateContent(el, instance, nodes)) return;
 		if (name == null && (instance is ResourceDictionary || instance is System.Collections.IList))
 		{
 			foreach (Node n in nodes) AddItem(instance, n, instance, el);
@@ -82,12 +83,14 @@ internal sealed partial class XamlObjectBuilder
 			return;
 		}
 		if (name == null) throw Fail(el, "'" + instance.GetType().Name + "' does not accept content.");
-		Member member = FindMember(instance.GetType(), name) ?? throw Fail(el, "Content property '" + name + "' not found.");
+		Member member = FindMember(instance.GetType(), name)
+			?? throw Fail(el, "Content property '" + name + "' not found.");
 		Fill(instance, member, nodes, el);
 	}
 
 	static string? ContentPropertyName(object instance) =>
-		instance.GetType().GetCustomAttribute<ContentPropertyAttribute>(true)?.Name;
+		instance.GetType().GetCustomAttribute<ContentPropertyAttribute>(true)?.Name
+		?? FallbackContentProperty(instance.GetType());
 
 	void Fill(object instance, Member member, List<Node> nodes, XElement source)
 	{

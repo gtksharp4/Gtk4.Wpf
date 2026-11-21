@@ -179,7 +179,7 @@ public class Scale { public static double Conv(double d, int t) => d; } }";
 	public void G5_DynamicResource_on_a_DP_is_a_deferred_reference()
 	{
 		string code = Gen($@"<Window x:Class=""A.W"" {Head}><Border Background=""{{DynamicResource B}}""/></Window>");
-		Assert.Matches(@"__e\d+\.SetResourceReference\(.*BackgroundProperty, ""B""\)", code);
+		Assert.Matches(@"SetLocalResourceReference\(__e\d+, .*BackgroundProperty, ""B""\)", code);
 		Assert.DoesNotContain("FindResource(\"B\")", code);
 	}
 

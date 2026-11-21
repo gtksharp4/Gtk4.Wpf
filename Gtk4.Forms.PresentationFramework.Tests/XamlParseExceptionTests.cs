@@ -26,14 +26,13 @@ public class XamlParseExceptionTests
 	}
 
 	[Fact]
-	public void Context_properties_default_to_null_and_BaseUri_is_settable()
+	public void Context_properties_default_to_null_and_BaseUri_has_no_public_setter()
 	{
 		var ex = new XamlParseException();
 		Assert.Null(ex.BaseUri);
 		Assert.Null(ex.KeyContext);
 		Assert.Null(ex.NameContext);
 		Assert.Null(ex.UidContext);
-		ex.BaseUri = new Uri("http://example.com/a.xaml");
-		Assert.Equal("http://example.com/a.xaml", ex.BaseUri.ToString());
+		Assert.False(typeof(XamlParseException).GetProperty("BaseUri")!.SetMethod!.IsPublic);
 	}
 }

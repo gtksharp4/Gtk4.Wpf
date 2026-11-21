@@ -366,7 +366,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				}
 				else if (IsDynamicResourceValue(val, out string dynKey) && !string.IsNullOrEmpty(rootFqType)
 					&& IsKnownDp(rootFqType, propName))
-					w.Line($"this.SetResourceReference({rootFqType}.{propName}Property, " +
+					w.Line($"{Converter}.SetLocalResourceReference(this, {rootFqType}.{propName}Property, " +
 						$"{ResourceKeyExpression(EscapeString(dynKey))});");
 				else if (IsStaticOrDynamicResource(val, out string resourceKey))
 				{
@@ -564,7 +564,8 @@ namespace Gtk4.Forms.MarkupCompiler
 		bool IsKnownEvent(string fqType, string propName)
 		{
 			if (string.IsNullOrEmpty(fqType)) return false;
-			if (IsHookedUserType(fqType)) return UserEventDeclared(propName);
+			if (IsHookedUserType(fqType))
+				return UserEventDeclared(propName) || UserBaseHasEvent(fqType, propName);
 			return _resolver.IsEvent(fqType, propName);
 		}
 
@@ -745,8 +746,12 @@ namespace Gtk4.Forms.MarkupCompiler
 						: DynamicMediaLookup(EscapeString(mediaKey)))
 						+ " as global::" + mediaType.FullName.Replace('+', '.') + ";");
 				else if (IsDynamicResourceValue(val, out string dynKey) && IsKnownDp(fqType, propName))
-					w.Line($"{varName}.SetResourceReference({fqType}.{propName}Property, " +
+					w.Line($"{Converter}.SetLocalResourceReference({varName}, {fqType}.{propName}Property, " +
 						$"{ResourceKeyExpression(EscapeString(dynKey))});");
+				else if (varName == _hookVar && IsDynamicResourceValue(val, out string hookDynKey))
+					w.Line($"if ((object){varName} is global::System.Windows.FrameworkElement {varName}_fe) " +
+						$"{Converter}.SetLocalResourceReference({varName}_fe, {fqType}.{propName}Property, " +
+						$"{ResourceKeyExpression(EscapeString(hookDynKey))});");
 				else if (IsStaticOrDynamicResource(val, out string resourceKey))
 				{
 					string find = val.TrimStart().StartsWith("{StaticResource", StringComparison.Ordinal)

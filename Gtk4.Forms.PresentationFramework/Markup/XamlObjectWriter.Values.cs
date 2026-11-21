@@ -29,7 +29,7 @@ internal sealed partial class XamlObjectWriter
 			case SolidColorBrush brush when brush.Opacity == 1: return brush.Color.ToString();
 			case FontFamily family: return family.Source;
 			case Uri uri: return uri.OriginalString;
-			case Type type: return "{x:Type " + PrefixedName(type) + "}";
+			case Type type: return XType(type);
 		}
 		return RoundTrips(value);
 	}

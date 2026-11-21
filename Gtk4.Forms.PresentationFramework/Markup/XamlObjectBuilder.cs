@@ -90,9 +90,18 @@ internal sealed partial class XamlObjectBuilder
 			|| (type.IsValueType && !el.HasElements && text != null);
 		if (valueLike && text != null) return ConvertString(type, text, null)!;
 		if (type.IsAbstract || type.IsInterface) throw Fail(el, "Cannot create an instance of '" + type.Name + "'.");
-		if (!type.IsValueType && type.GetConstructor(Type.EmptyTypes) == null)
+		if (!type.IsValueType && !HasDefaultConstructor(type))
 			throw Fail(el, "'" + type.Name + "' has no public parameterless constructor.");
-		return Activator.CreateInstance(type)!;
+		return Activator.CreateInstance(type, BindingFlags.Public | BindingFlags.Instance | BindingFlags.CreateInstance
+			| BindingFlags.OptionalParamBinding, null, new object[0], null)!;
+	}
+
+	// A parameterless constructor, or one whose parameters are all optional (RotateTransform(double angle = 0)).
+	static bool HasDefaultConstructor(Type type)
+	{
+		foreach (ConstructorInfo c in type.GetConstructors())
+			if (System.Linq.Enumerable.All(c.GetParameters(), p => p.IsOptional)) return true;
+		return false;
 	}
 
 	// The element's text when it has no child elements and non-blank text.

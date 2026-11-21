@@ -190,6 +190,7 @@ public abstract partial class UIElement : Media.Visual
 			// Re-coerce IsEnabled/IsHitTestVisible, recompute IsVisible (UIElement.IsVisible.cs).
 			OnLogicalParentChangedVisibilityState();
 			OnLogicalParentChangedBindingGroup(oldParent, value);
+			OnLogicalParentChangedResources();
 		}
 	}
 
@@ -200,4 +201,6 @@ public abstract partial class UIElement : Media.Visual
 	partial void OnLogicalParentChangedLifecycle(UIElement? oldParent, UIElement? newParent);
 
 	internal virtual void OnLogicalParentChangedBindingGroup(UIElement? oldParent, UIElement? newParent) { }
+
+	internal virtual void OnLogicalParentChangedResources() { }
 }

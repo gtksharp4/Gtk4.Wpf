@@ -13,7 +13,7 @@ public class PageFunctionStartTests
 		public int Starts;
 		public NavigationService? ServiceAtStart;
 		protected override Gtk.Widget CreateWidget() => throw new NotSupportedException("pure test");
-		protected internal override void Start()
+		protected override void Start()
 		{
 			Starts++;
 			ServiceAtStart = NavigationService;

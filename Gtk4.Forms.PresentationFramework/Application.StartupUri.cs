@@ -27,7 +27,8 @@ public partial class Application
 	/// The markup compiler compiles each XAML's <c>x:Class</c> into a partial class whose constructor
 	/// calls <c>InitializeComponent</c>; this resolves the URI's leaf file name (e.g.
 	/// <c>MainWindow.xaml</c> → <c>MainWindow</c>) to that type in the application assembly.
-	/// A <see cref="Controls.Page"/> is hosted in a <see cref="Navigation.NavigationWindow"/>, as WPF does.
+	/// Any other FrameworkElement root (a <see cref="Controls.Page"/>, a panel) is hosted in a
+	/// <see cref="Navigation.NavigationWindow"/>, as WPF does.
 	/// Returns <c>null</c> when no matching type is found.
 	/// </summary>
 	internal Window? CreateWindowFromStartupUri(Uri startupUri)
@@ -43,9 +44,9 @@ public partial class Application
 	static Window? Host(object? element)
 	{
 		if (element is Window window) return window;
-		if (element is not Controls.Page page) return null;
+		if (element is not FrameworkElement root) return null;
 		var host = new Navigation.NavigationWindow();
-		host.Navigate(page);
+		host.Navigate(root);
 		return host;
 	}
 

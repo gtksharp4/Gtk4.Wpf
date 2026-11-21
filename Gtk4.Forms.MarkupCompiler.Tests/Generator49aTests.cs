@@ -37,7 +37,7 @@ public class Generator49aTests : GeneratorV2TestBase
 	public void A_dynamic_resource_on_a_DP_is_a_deferred_reference_not_an_eager_lookup()
 	{
 		string code = Gen(Window("<Button FocusVisualStyle=\"{DynamicResource MyFocusVisual}\"/>"));
-		Assert.Contains("SetResourceReference(System.Windows.Controls.Button.FocusVisualStyleProperty", code);
+		Assert.Contains("SetLocalResourceReference(__e0, System.Windows.Controls.Button.FocusVisualStyleProperty", code);
 		Assert.DoesNotContain("FindResource(\"MyFocusVisual\")", code);
 		AssertCompiles(code, WindowStub);
 	}
@@ -46,7 +46,7 @@ public class Generator49aTests : GeneratorV2TestBase
 	public void A_dynamic_resource_on_a_root_DP_is_deferred()
 	{
 		string code = Gen(Window("", "Background=\"{DynamicResource bg}\""));
-		Assert.Contains("this.SetResourceReference(", code);
+		Assert.Contains("SetLocalResourceReference(this, ", code);
 		Assert.DoesNotContain("FindResource(\"bg\")", code);
 		AssertCompiles(code, WindowStub);
 	}
@@ -130,5 +130,39 @@ public class Generator49aTests : GeneratorV2TestBase
 		string code = Gen(Window("<Canvas LayoutUpdated=\"OnLu\"/>"), sources: new[] { stub });
 		Assert.Matches(new Regex(@"\.LayoutUpdated \+= this\.OnLu;"), code);
 		AssertCompiles(code, stub);
+	}
+
+	[Fact]
+	public void A_dynamic_resource_on_a_local_FrameworkElement_type_is_a_local_reference_not_FindResource()
+	{
+		const string stub = "namespace A { public class Pane : System.Windows.Controls.Border { "
+			+ "public static readonly System.Windows.DependencyProperty AccentProperty = "
+			+ "System.Windows.DependencyProperty.Register(\"Accent\", typeof(object), typeof(Pane)); } "
+			+ "public partial class W : System.Windows.Window { } }";
+		string code = Gen(Window("<local:Pane Accent=\"{DynamicResource k}\"/>"), sources: new[] { stub });
+		Assert.Contains("SetLocalResourceReference(__e0_fe, global::A.Pane.AccentProperty, \"k\")", code);
+		Assert.DoesNotContain("FindResource(\"k\")", code);
+		AssertCompiles(code, stub);
+	}
+
+	[Fact]
+	public void An_inherited_event_on_a_local_type_is_subscribed_not_set_as_a_property()
+	{
+		const string stub = "namespace A { public class Btn : System.Windows.Controls.Button { } "
+			+ "public partial class W : System.Windows.Window { "
+			+ "void OnClick(object s, System.Windows.RoutedEventArgs e) { } } }";
+		string code = Gen(Window("<local:Btn Click=\"OnClick\"/>"), sources: new[] { stub });
+		Assert.Contains(".Click += this.OnClick;", code);
+		Assert.DoesNotContain("SetClrProperty", code);
+		AssertCompiles(code, stub);
+	}
+
+	[Fact]
+	public void Dictionary_paths_that_differ_only_by_underscore_or_slash_get_distinct_classes()
+	{
+		const string xaml = "<ResourceDictionary " + Head + "/>";
+		Gen(xaml, out string a, false, xamlPath: "A_B/C.xaml", rootNamespace: "N");
+		Gen(xaml, out string b, false, xamlPath: "A/B_C.xaml", rootNamespace: "N");
+		Assert.NotEqual(a, b);
 	}
 }

@@ -19,12 +19,21 @@ internal sealed partial class XamlObjectWriter
 	{
 		if (IsPresentationType(type)) return PresentationNs;
 		string uri = "clr-namespace:" + type.Namespace + ";assembly=" + type.Assembly.GetName().Name;
-		if (!_clrPrefixes.ContainsKey(uri)) _clrPrefixes[uri] = _clrPrefixes.Count == 0 ? "clr" : "clr" + _clrPrefixes.Count;
+		if (!_clrPrefixes.ContainsKey(uri))
+			_clrPrefixes[uri] = _clrPrefixes.Count == 0 ? "clr" : "clr" + _clrPrefixes.Count;
 		return uri;
 	}
 
 	static bool IsPresentationType(Type type) =>
-		type.Namespace != null && (type.Namespace == "System.Windows.Markup" || XamlObjectBuilder.IsPresentationNamespace(type.Namespace));
+		type.Namespace != null
+		&& (type.Namespace == "System.Windows.Markup" || XamlObjectBuilder.IsPresentationNamespace(type.Namespace));
+
+	// {x:Type ...} needs the x prefix declared on the root.
+	string XType(Type type)
+	{
+		_usesX = true;
+		return "{x:Type " + PrefixedName(type) + "}";
+	}
 
 	IEnumerable<XAttribute> NamespaceDeclarations() =>
 		_clrPrefixes.Select(p => new XAttribute(XNamespace.Xmlns + p.Value, p.Key));
@@ -46,7 +55,8 @@ internal sealed partial class XamlObjectWriter
 		foreach (PropertyInfo p in type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
 			.OrderBy(x => x.Name, StringComparer.Ordinal))
 		{
-			if (p.GetIndexParameters().Length > 0 || p.GetMethod == null || p.SetMethod == null || !p.SetMethod.IsPublic) continue;
+			if (p.GetIndexParameters().Length > 0 || p.GetMethod == null) continue;
+			if (p.SetMethod == null || !p.SetMethod.IsPublic) continue;
 			if (p.Name == contentName || FindDp(type, p.Name) != null) continue;
 			object? value = p.GetValue(obj);
 			if (value == null || fresh != null && Equals(value, p.GetValue(fresh))) continue;

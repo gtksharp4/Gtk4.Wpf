@@ -3,6 +3,9 @@ using System;
 namespace System.Windows.Markup;
 
 /// <summary>The error <see cref="XamlReader"/> throws; carries the 1-based position of the failing node.</summary>
+// The protected (SerializationInfo, StreamingContext) ctor of WPF is omitted: base(info, context) is
+// SYSLIB0051 (an error under TreatWarningsAsErrors) on the supported TFMs.
+[Serializable]
 public class XamlParseException : SystemException
 {
 	/// <summary>Creates an exception with no message.</summary>
@@ -42,7 +45,7 @@ public class XamlParseException : SystemException
 	public int LinePosition { get; internal set; }
 
 	/// <summary>The base URI of the document, when known.</summary>
-	public Uri? BaseUri { get; set; }
+	public Uri? BaseUri { get; internal set; }
 
 	/// <summary>The <c>x:Key</c> of the entry being parsed, when known.</summary>
 	public object? KeyContext { get; internal set; }

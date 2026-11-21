@@ -129,4 +129,33 @@ public sealed class ProjectReferenceConversionTests : IDisposable
 		Assert.True(CsprojConverter.TryConvertFile(client));
 		Assert.Equal(converted, File.ReadAllText(client));
 	}
+
+	const string WinOnly = "<Project Sdk=\"Microsoft.NET.Sdk\">\n  <PropertyGroup>\n" +
+		"    <TargetFramework>net8.0-windows</TargetFramework>\n  </PropertyGroup>\n</Project>";
+
+	const string WinForms = "<Project Sdk=\"Microsoft.NET.Sdk\">\n  <PropertyGroup>\n" +
+		"    <TargetFramework>net8.0-windows</TargetFramework>\n    <UseWindowsForms>true</UseWindowsForms>\n" +
+		"  </PropertyGroup>\n</Project>";
+
+	[Fact]
+	public void Leaves_a_windows_only_sibling_without_UseWPF_or_UseWindowsForms_alone()
+	{
+		var client = Write("App/App.csproj", Client(Reference("../Win/Win.csproj"), Package));
+		var lib = Write("Win/Win.csproj", WinOnly);
+
+		CsprojConverter.TryConvertFile(client);
+
+		Assert.Equal(WinOnly, File.ReadAllText(lib));
+	}
+
+	[Fact]
+	public void Converts_a_UseWindowsForms_sibling()
+	{
+		var client = Write("App/App.csproj", Client(Reference("../Forms/Forms.csproj"), Package));
+		var lib = Write("Forms/Forms.csproj", WinForms);
+
+		CsprojConverter.TryConvertFile(client);
+
+		Assert.Contains("Gtk4.Forms.Wpf", File.ReadAllText(lib));
+	}
 }

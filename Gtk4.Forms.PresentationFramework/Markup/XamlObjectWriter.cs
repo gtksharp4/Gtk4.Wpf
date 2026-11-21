@@ -53,7 +53,8 @@ internal sealed partial class XamlObjectWriter
 	void WriteDictionary(ResourceDictionary rd, XElement el, XNamespace ns)
 	{
 		if (rd.MergedDictionaries.Count > 0)
-			el.Add(new XElement(ns + "ResourceDictionary.MergedDictionaries", rd.MergedDictionaries.Select(WriteObject)));
+			el.Add(new XElement(
+				ns + "ResourceDictionary.MergedDictionaries", rd.MergedDictionaries.Select(WriteObject)));
 		foreach (var pair in rd)
 		{
 			if (pair.Value == null) continue;
@@ -64,7 +65,9 @@ internal sealed partial class XamlObjectWriter
 		}
 	}
 
-	string KeyText(object key) => key is Type t ? "{x:Type " + PrefixedName(t) + "}" : Convert.ToString(key, System.Globalization.CultureInfo.InvariantCulture)!;
+	string KeyText(object key) => key is Type t
+		? XType(t)
+		: Convert.ToString(key, System.Globalization.CultureInfo.InvariantCulture)!;
 
 	void WriteLocalValues(DependencyObject d, XElement el, XNamespace ns, string? contentName, List<object> content)
 	{
@@ -86,12 +89,16 @@ internal sealed partial class XamlObjectWriter
 				continue;
 			}
 			if (IsWritableObject(e.Value))
-				el.Add(new XElement(ns + (NameOf(attached ? dp.OwnerType : type) + "." + dp.Name), ChildrenOf(e.Value)));
+			{
+				string owner = NameOf(attached ? dp.OwnerType : type);
+				el.Add(new XElement(ns + (owner + "." + dp.Name), ChildrenOf(e.Value)));
+			}
 		}
 	}
 
 	object[] ChildrenOf(object value) =>
-		value is IEnumerable items && value is not string && value is not ResourceDictionary && !(value is DependencyObject)
+		value is IEnumerable items && value is not string && value is not ResourceDictionary
+		&& !(value is DependencyObject)
 			? items.Cast<object>().Select(WriteObject).ToArray()
 			: new object[] { WriteObject(value) };
 

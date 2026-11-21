@@ -22,7 +22,11 @@ internal sealed partial class XamlObjectBuilder
 		foreach (string part in SplitTopLevel(body.Substring(space)))
 		{
 			int eq = IndexOfTopLevel(part, '=');
-			if (eq > 0) named.Add(new KeyValuePair<string, string>(part.Substring(0, eq).Trim(), Unquote(part.Substring(eq + 1))));
+			if (eq > 0)
+			{
+				string value = Unquote(part.Substring(eq + 1));
+				named.Add(new KeyValuePair<string, string>(part.Substring(0, eq).Trim(), value));
+			}
 			else if (part.Trim().Length > 0) positional.Add(Unquote(part));
 		}
 		string kind = KindOf(name);
@@ -32,7 +36,8 @@ internal sealed partial class XamlObjectBuilder
 			case "Null": return null;
 			case "Type": return ResolveTypeName(first ?? Named(named, "TypeName") ?? "", _ctx);
 			case "Static":
-				return new StaticExtension(first ?? Named(named, "Member") ?? "").ProvideValue(Provider(_ctx, target, (object?)member?.Dp ?? member?.Prop));
+				return new StaticExtension(first ?? Named(named, "Member") ?? "")
+					.ProvideValue(Provider(_ctx, target, (object?)member?.Dp ?? member?.Prop));
 			case "StaticResource": return LookupStatic(Argument(first ?? Named(named, "ResourceKey")));
 			case "DynamicResource": return Dynamic(Argument(first ?? Named(named, "ResourceKey")), target, member);
 			case "TemplateBinding":
@@ -85,7 +90,8 @@ internal sealed partial class XamlObjectBuilder
 			object? value = EvaluateValue(pair.Value, instance, m);
 			if (!ReferenceEquals(value, Applied)) Assign(instance, m, value);
 		}
-		if (instance is MarkupExtension me) return me.ProvideValue(Provider(_ctx, target, (object?)member?.Dp ?? member?.Prop));
+		if (instance is MarkupExtension me)
+			return me.ProvideValue(Provider(_ctx, target, (object?)member?.Dp ?? member?.Prop));
 		return instance;
 	}
 
@@ -115,11 +121,13 @@ internal sealed partial class XamlObjectBuilder
 						: ConvertString(ps[i].ParameterType, positional[i], null);
 				return ctor.Invoke(args);
 			}
-			catch (Exception ex) when (ex is FormatException || ex is TargetInvocationException || ex is InvalidCastException)
+			catch (Exception ex) when (
+				ex is FormatException || ex is TargetInvocationException || ex is InvalidCastException)
 			{
 			}
 		}
-		throw new InvalidOperationException("No constructor of '" + type.Name + "' takes " + positional.Count + " argument(s).");
+		throw new InvalidOperationException(
+			"No constructor of '" + type.Name + "' takes " + positional.Count + " argument(s).");
 	}
 
 	static List<string> SplitTopLevel(string text)
@@ -159,7 +167,8 @@ internal sealed partial class XamlObjectBuilder
 	static string Unquote(string text)
 	{
 		string t = text.Trim();
-		if (t.Length >= 2 && (t[0] == '\'' || t[0] == '"') && t[t.Length - 1] == t[0]) return t.Substring(1, t.Length - 2);
+		bool quoted = t.Length >= 2 && (t[0] == '\'' || t[0] == '"') && t[t.Length - 1] == t[0];
+		if (quoted) return t.Substring(1, t.Length - 2);
 		return t;
 	}
 }

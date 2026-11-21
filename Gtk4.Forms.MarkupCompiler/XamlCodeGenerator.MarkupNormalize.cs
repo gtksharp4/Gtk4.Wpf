@@ -25,7 +25,8 @@ namespace Gtk4.Forms.MarkupCompiler
 		internal static string NormalizeMarkupValue(string value)
 		{
 			string t = value.Trim();
-			if (t.Length < 2 || t[0] != '{' || t[t.Length - 1] != '}' || t.StartsWith("{}", System.StringComparison.Ordinal))
+			bool braced = t.Length >= 2 && t[0] == '{' && t[t.Length - 1] == '}';
+			if (!braced || t.StartsWith("{}", System.StringComparison.Ordinal))
 				return value;
 
 			var sb = new StringBuilder(t.Length);

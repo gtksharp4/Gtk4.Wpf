@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace System.Windows;
 
 public abstract partial class UIElement
 {
-	static readonly List<UIElement> _layoutUpdatedSubscribers = new List<UIElement>();
+	// Weak: a subscribed element must not be kept alive by the static registry.
+	static readonly List<WeakReference<UIElement>> _layoutUpdatedSubscribers = new List<WeakReference<UIElement>>();
 	static bool _layoutWorkPending;
 	static bool _firingLayoutUpdated;
 
@@ -21,17 +21,23 @@ public abstract partial class UIElement
 		add
 		{
 			if (value == null) return;
-			if (_layoutUpdated == null) _layoutUpdatedSubscribers.Add(this);
+			if (_layoutUpdated == null) _layoutUpdatedSubscribers.Add(new WeakReference<UIElement>(this));
 			_layoutUpdated += value;
 		}
 		remove
 		{
 			_layoutUpdated -= value;
-			if (_layoutUpdated == null) _layoutUpdatedSubscribers.Remove(this);
+			if (_layoutUpdated == null) PruneLayoutUpdatedSubscribers(this);
 		}
 	}
 
 	internal static void NoteLayoutWork() => _layoutWorkPending = true;
+
+	// Drops dead entries and, when given, the entry for <paramref name="remove"/>.
+	static void PruneLayoutUpdatedSubscribers(UIElement? remove)
+	{
+		_layoutUpdatedSubscribers.RemoveAll(w => !w.TryGetTarget(out var el) || ReferenceEquals(el, remove));
+	}
 
 	internal static void FireLayoutUpdated()
 	{
@@ -41,7 +47,11 @@ public abstract partial class UIElement
 		_firingLayoutUpdated = true;
 		try
 		{
-			foreach (var el in _layoutUpdatedSubscribers.ToArray())
+			var live = new List<UIElement>();
+			foreach (var w in _layoutUpdatedSubscribers.ToArray())
+				if (w.TryGetTarget(out var el)) live.Add(el);
+			PruneLayoutUpdatedSubscribers(null);
+			foreach (var el in live)
 				el._layoutUpdated?.Invoke(null, EventArgs.Empty);
 		}
 		finally

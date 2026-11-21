@@ -129,7 +129,7 @@ public sealed class NavigationService
 		if (content is PageFunctionBase { Started: false } starting)
 		{
 			starting.Started = true;
-			starting.Start();
+			starting.InvokeStart();
 		}
 		return true;
 	}

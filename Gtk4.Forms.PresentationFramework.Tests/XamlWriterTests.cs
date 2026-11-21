@@ -155,4 +155,12 @@ public class XamlWriterTests : WpfGtkTestBase, IDisposable
 		Assert.Throws<ArgumentNullException>(() => XamlWriter.Save(new Button(), (TextWriter)null!));
 		Assert.Throws<ArgumentNullException>(() => XamlWriter.Save(new Button(), (XmlWriter)null!));
 	});
+
+	[Fact]
+	public void Style_round_trips_its_TargetType_through_an_x_Type_attribute() => Run(() =>
+	{
+		var xaml = XamlWriter.Save(new Style(typeof(Button)));
+		Assert.Contains("xmlns:x=", xaml);
+		Assert.Equal(typeof(Button), ((Style)XamlReader.Parse(xaml)).TargetType);
+	});
 }

@@ -4,7 +4,7 @@ namespace System.Windows.Navigation;
 public class PageFunction<T> : PageFunctionBase
 {
 	/// <summary>Creates the page function.</summary>
-	protected PageFunction()
+	public PageFunction()
 	{
 	}
 

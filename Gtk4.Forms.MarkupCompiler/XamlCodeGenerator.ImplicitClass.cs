@@ -26,13 +26,30 @@ namespace Gtk4.Forms.MarkupCompiler
 				? normalized.Substring(0, normalized.Length - Path.GetExtension(normalized).Length).TrimStart('/')
 				: Path.GetFileNameWithoutExtension(normalized);
 			var sb = new StringBuilder();
-			foreach (char c in stem)
-				sb.Append(char.IsLetterOrDigit(c) || c == '_' ? c : '_');
+			if (fq == DictionaryType) sb.Append(InjectiveIdentifier(stem));
+			else
+				foreach (char c in stem)
+					sb.Append(char.IsLetterOrDigit(c) || c == '_' ? c : '_');
 			if (sb.Length == 0) return null;
 			if (char.IsDigit(sb[0])) sb.Insert(0, '_');
 
 			baseType = "global::" + fq;
 			return string.IsNullOrEmpty(rootNamespace) ? sb.ToString() : rootNamespace + "." + sb;
+		}
+
+		// Injective, so A_B/C and A/B_C get different classes: '_' doubles, '/' becomes _S_, other
+		// non-identifier characters become _xHHHH_.
+		static string InjectiveIdentifier(string stem)
+		{
+			var sb = new StringBuilder();
+			foreach (char c in stem)
+			{
+				if (c == '_') sb.Append("__");
+				else if (c == '/') sb.Append("_S_");
+				else if (char.IsLetterOrDigit(c)) sb.Append(c);
+				else sb.Append("_x").Append(((int)c).ToString("X4")).Append('_');
+			}
+			return sb.ToString();
 		}
 
 		// A hand-written class owns the derived name: keep the XAML's own class under a name that cannot clash.

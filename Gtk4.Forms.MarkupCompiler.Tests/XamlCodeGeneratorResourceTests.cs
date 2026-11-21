@@ -160,7 +160,7 @@ public class XamlCodeGeneratorResourceTests
 </StackPanel>");
 		string code = _gen.Generate(xaml, out _);
 
-		Assert.Contains("SetResourceReference(", code);
+		Assert.Contains("SetLocalResourceReference(", code);
 		Assert.Contains(@"""btnStyle""", code);
 	}
 

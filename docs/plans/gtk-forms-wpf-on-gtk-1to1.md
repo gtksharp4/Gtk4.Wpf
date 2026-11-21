@@ -1825,6 +1825,64 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `Binding`s only (not `MultiBinding`/`PriorityBinding`) and `FrameworkElement.BindingGroup` does not inherit;
   `ItemBindingGroup` shares rule instances between containers; styles are
   not sealed on first use; `samples-coverage.json` is the `1b50a528` measurement (stale).
+- **Round 49 track A (lane A) - startup-build-sweep (DONE, merged).** `gf49a/startup-build-sweep` (merge `9a38e05e`):
+  the startup-crash and build sweep: string converters for the layer value types, deferred `{DynamicResource}` in
+  generated code, local (`clr-namespace`) element types with typed fields and event wiring, `x:TypeArguments`, the
+  `CreateWidget` CS0534 fold. Samples: the apps that crashed at startup on a missing converter or an eager
+  `FindResource` now build and start (see `samples-coverage.md`).
+- **Round 49 track B (lane A) - runtime-xaml-navigation (DONE, merged).** `gf49a/runtime-xaml-navigation` (merge
+  `8c44b817`): `XamlReader`/`XamlWriter`/`XamlParseException`, `Application.LoadComponent` and a settable
+  `Application.Resources`, `NavigationEventArgs` and `PageFunction<T>`/`ReturnEventArgs<T>`, and the project
+  converter's `ProjectReference` handling (a referenced WPF sibling converts with the client). Samples: the Wizard
+  and navigation apps are the targets.
+- **Round 49 track C (lane A) - animation-clocks (NOT merged).** `gf49a/animation-clocks` (`Clock`/`AnimationClock`,
+  `BeginAnimation`, typed animation bases, `PropertyPath`/`NameScope`, `Storyboard` seek) is not on `lane/a`: it was
+  not part of the integrated set when this wrap-up ran, so nothing in it is reviewed here. Its apps
+  (`TranslateTransform.BeginAnimation` and friends) stay on the carry-over list.
+- **Round 49 review (lane A) + fixes - DONE.** **A-F1** a XAML-attribute `{DynamicResource}` now keeps Local
+  precedence as in WPF: the generator emits `XamlValueConverter.SetLocalResourceReference` (internal
+  `FrameworkElement.SetLocalResourceReference`), which resolves live but stores the value in the local slot, so a style
+  trigger on the same DP no longer overrides it; dictionary changes and reparenting refresh it, an explicit
+  `SetValue`/`ClearValue` detaches it (`DependencyObject.OnExplicitLocalChange`), `ReadLocalValue` reports it. Plain
+  `SetResourceReference` (public, style/template use) is unchanged. **A-F2 / CI-2** a `{DynamicResource}` on a hooked
+  local `FrameworkElement` type emits the same local reference instead of an eager `FindResource` (which threw when
+  the key sat on an ancestor); closes the Round 47 carry-over. **A-F3** `IsKnownEvent` for a hooked user type also
+  accepts events of the code-behind base (`class Btn : Button` gets `Click`), falling back to
+  ButtonBase/Control/FrameworkElement/UIElement. **A-F4** `OnApplyTemplate` is declared on `FrameworkElement` (still
+  only `Control` calls it; a `FrameworkElement` with its own `CreateWidget` never applies a template). **A-F5** the
+  converter audit walks every public type's static DPs (attached DPs on static owners); newly found `IList`,
+  `CultureInfo` and `ReadOnlyObservableCollection<>` are listed, `ImageSource` and `ICommand` left the list,
+  `TextDecorationCollection` is noted as the documents lane's. **A-F6** `LayoutUpdated` subscribers are weak. **A-F7**
+  deferred resource references refresh on attach and on detach through their own logical-parent hook. **A-F8**
+  `StartupUri` with any non-`Window` `FrameworkElement` root is hosted in a `NavigationWindow`. **A-F9 / C-F5** long
+  lines wrapped, `XamlReaderTests` split (`XamlReaderErrorTests`). **C-F1** `SubscribeToResourceChain` forgets the
+  dictionaries it unsubscribed, so `Application.Resources` swaps A,B,A,B keep refreshing. **C-F2** the runtime
+  `XamlReader` copies the compiler's content-model table (plus `Setters` for `Style`/triggers, `Children` for
+  `Storyboard`), reads a `ControlTemplate`/`DataTemplate` body as a rebuilt visual tree, resolves `Setter`/`Trigger`
+  `Property` against the enclosing `TargetType`, and instantiates types whose constructor parameters are all optional
+  (`RotateTransform`); a theory loads the ControlsAndLayout snippets (excluding InkCanvas, FlowDocumentPageViewer,
+  `TabItem.IsSelected`; skipped when `WPF-Samples` is absent). **C-F3** `XamlWriter` declares `xmlns:x` for any
+  `{x:Type}`. **C-F4** `PageFunction<T>()` is public and `PageFunctionBase.Start` is `protected` (the
+  `NavigationService` calls it through `InvokeStart`). **C-F5** `XamlParseException.BaseUri` has an internal setter and
+  the type is `[Serializable]`; the protected `(SerializationInfo, StreamingContext)` ctor is omitted because
+  `base(info, context)` is SYSLIB0051 (an error under `TreatWarningsAsErrors`). **C-F6** the converter only converts and
+  injects `Gtk4.Forms.Wpf` into siblings with `UseWPF` or `UseWindowsForms`; a plain `-windows` library is left alone
+  and keeps its Windows-only target (retarget it by hand). **CI-1** dictionary class names are injective (`_` doubles,
+  `/` becomes `_S_`, other characters `_xHHHH_`), so `A_B/C` and `A/B_C` differ (`Themes_S_Light_S_Colors`).
+  Failing-first was observed for the local-reference, resource-swap and weak `LayoutUpdated` tests and the widened
+  converter audit; the rest are new-API or reflection tests that cannot compile or pass before the change.
+  **Round 49 (lane A) totals: 5474 tests** (255 WindowsBase + 4576 PresentationFramework + 600 MarkupCompiler (1
+  skipped, Windows) + 43 ProjectConverter), all pass, plus 66 Wpf.Testing.Tests (5 skipped); `dotnet build
+  Gtk4.Wpf.sln` 0 warnings, 0 errors. `Integration.Tests` not run.
+  **Samples gate (`Gtk4.Forms.Wpf` packed from the fixed tree, lane-private pinned feed, isolated cache):**
+  all 130 `build=pass` projects build through the two-build recipe and all 119 `run=runs` apps start and stay up with
+  a window for 10 s, one at a time (19 first read as no-window while the other lane was running; all 19 re-checked
+  alone run); no regression.
+- **Carry-over (Round 49 lane A)**: `gf49a/animation-clocks` is unmerged; a runtime `{DynamicResource}` read by
+  `XamlReader` still resolves through the dyn-res layer (not Local); template bodies read by `XamlReader` rebuild
+  from the markup on every apply (no `x:Shared`/`TemplateBinding` tracking beyond the builder's own); the
+  `SerializationInfo` ctor of `XamlParseException` is missing; `Style.Triggers` content-model entries other than
+  `Setters` are not read from bare content; `samples-coverage.json` is still the Round 48 measurement.
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a

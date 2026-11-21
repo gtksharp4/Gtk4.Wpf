@@ -26,7 +26,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			{
 				if (IsNameScopeHost(child)) continue;
 				string name = NameOf(child, xNs);
-				if (name != null && (ResolveType(child) ?? UserElementFqType(child)) is string fqType && _fieldNames.Add(name))
+				string fqType = name != null ? ResolveType(child) ?? UserElementFqType(child) : null;
+				if (fqType != null && _fieldNames.Add(name))
 				{
 					results.Add((name, fqType));
 					_fieldElements.Add(child);

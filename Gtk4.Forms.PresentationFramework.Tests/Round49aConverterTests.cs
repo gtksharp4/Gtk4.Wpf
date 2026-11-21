@@ -60,13 +60,18 @@ public class Round49aConverterTests
 		"System.Object", "System.Type", "System.Windows.DependencyProperty", "System.Windows.PropertyPath",
 		"System.Collections.IEnumerable", "System.Windows.Style", "System.Windows.Controls.ControlTemplate",
 		"System.Windows.Controls.DataTemplate", "System.Windows.Controls.ItemsPanelTemplate",
-		"System.Windows.Data.Binding", "System.Windows.Data.IValueConverter", "System.Windows.Input.ICommand",
-		"System.Delegate", "System.Windows.UIElement", "System.Windows.FrameworkElement",
-		"System.Windows.Media.ImageSource",
+		"System.Windows.Data.Binding", "System.Windows.Data.IValueConverter", "System.Delegate",
+		"System.Windows.UIElement",
+		"System.Windows.FrameworkElement",
+		// Found by the static-owner walk (attached DPs): object-valued, read-only or culture-typed.
+		"System.Collections.IList", "System.Globalization.CultureInfo",
+		"System.Collections.ObjectModel.ReadOnlyObservableCollection`1",
 		// Object-valued, no string form in WPF either.
 		"System.Windows.Controls.ContextMenu", "System.Windows.Controls.DataTemplateSelector",
 		"System.Windows.Controls.StyleSelector", "System.Windows.Data.BindingGroup", "System.Windows.IInputElement",
 		// Deferred to the documents/effects work (other lane): no sample sets them from plain text yet.
+		// TextDecorationCollection belongs to the documents lane (PerMonitorDPI/TextFormatting sets
+		// TextDecorations="Underline").
 		"System.Windows.Documents.FlowDocument", "System.Windows.Media.Effects.Effect",
 		"System.Windows.TextDecorationCollection",
 	};
@@ -79,7 +84,7 @@ public class Round49aConverterTests
 		var handled = new HashSet<Type>(registry.Keys.Cast<Type>());
 		var missing = new SortedSet<string>();
 		var types = typeof(UIElement).Assembly.GetTypes()
-			.Where(t => t.IsPublic && typeof(DependencyObject).IsAssignableFrom(t));
+			.Where(t => t.IsPublic);
 		foreach (Type t in types)
 		{
 			var fields = t.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
@@ -88,10 +93,9 @@ public class Round49aConverterTests
 			{
 				if (f.GetValue(null) is not DependencyProperty dp) continue;
 				Type pt = Nullable.GetUnderlyingType(dp.PropertyType) ?? dp.PropertyType;
-				if (pt == typeof(string) || pt.IsEnum || handled.Contains(pt)
-					|| Unconverted.Contains(pt.FullName ?? pt.Name))
-					continue;
-				missing.Add(pt.FullName ?? pt.Name);
+				string name = (pt.IsGenericType ? pt.GetGenericTypeDefinition().FullName : pt.FullName) ?? pt.Name;
+				if (pt == typeof(string) || pt.IsEnum || handled.Contains(pt) || Unconverted.Contains(name)) continue;
+				missing.Add(name);
 			}
 		}
 		Assert.True(missing.Count == 0,
