@@ -58,7 +58,8 @@ static class TextRangeXaml
 	{
 		if (el.FontFamily != null) w.WriteAttributeString("FontFamily", el.FontFamily);
 		var size = TextRangeFontSize.Get(el);
-		if (size != null) w.WriteAttributeString("FontSize", size.Value.ToString("R", Globalization.CultureInfo.InvariantCulture));
+		if (size != null)
+			w.WriteAttributeString("FontSize", size.Value.ToString("R", Globalization.CultureInfo.InvariantCulture));
 		if (el.FontWeight != null) w.WriteAttributeString("FontWeight", WeightName(el.FontWeight.Value));
 		if (el.FontStyle != null) w.WriteAttributeString("FontStyle", el.FontStyle.Value.ToString());
 		if (el.Foreground is SolidColorBrush b)

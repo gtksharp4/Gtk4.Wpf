@@ -98,7 +98,10 @@ static class TextRangeXamlReader
 					case "FontSize": TextRangeFontSize.Set(target, FontConverters.ParseFontSize(a.Value)); break;
 					case "FontWeight": target.FontWeight = FontConverters.ParseFontWeight(a.Value); break;
 					case "FontStyle": target.FontStyle = FontConverters.ParseFontStyle(a.Value); break;
-					case "Foreground": target.Foreground = new SolidColorBrush(System.Windows.Markup.MediaConverters.ParseColor(a.Value)); break;
+					case "Foreground":
+						var color = System.Windows.Markup.MediaConverters.ParseColor(a.Value);
+						target.Foreground = new SolidColorBrush(color);
+						break;
 				}
 			}
 			catch (FormatException)

@@ -97,7 +97,8 @@ public sealed partial class TextPointer
 	public TextPointer? GetNextInsertionPosition(LogicalDirection direction)
 	{
 		int off = Offset;
-		int? next = FindInsertion(direction == LogicalDirection.Forward, off + (direction == LogicalDirection.Forward ? 1 : -1));
+		bool forward = direction == LogicalDirection.Forward;
+		int? next = FindInsertion(forward, off + (forward ? 1 : -1));
 		return next == null ? null : new TextPointer(_doc, next.Value, direction);
 	}
 
@@ -132,7 +133,9 @@ public sealed partial class TextPointer
 		{
 			int offset = i < syms.Count ? syms[i].Offset : TextTree.Total(syms);
 			object? parent = stack.Count == 0 ? null : stack[stack.Count - 1];
-			yield return (offset, IsCaretSpot(parent, i > 0 ? syms[i - 1] : (TextSym?)null, i < syms.Count ? syms[i] : (TextSym?)null));
+			TextSym? prev = i > 0 ? syms[i - 1] : (TextSym?)null;
+			TextSym? next = i < syms.Count ? syms[i] : (TextSym?)null;
+			yield return (offset, IsCaretSpot(parent, prev, next));
 			if (i == syms.Count) break;
 			if (syms[i].Kind == TextSymKind.Start) stack.Add(syms[i].Node);
 			else if (syms[i].Kind == TextSymKind.End) stack.RemoveAt(stack.Count - 1);

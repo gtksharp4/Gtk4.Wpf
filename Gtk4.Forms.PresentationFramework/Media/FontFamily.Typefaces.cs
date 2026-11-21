@@ -25,11 +25,12 @@ public partial class FontFamily
 			var info = SystemFamily;
 			var first = Source.Split(',')[0].Trim();
 			int hash = first.LastIndexOf('#');
-			return LanguageSpecificStringDictionary.Single("en-US", info?.Name ?? (hash >= 0 ? first.Substring(hash + 1) : first));
+			var name = info?.Name ?? (hash >= 0 ? first.Substring(hash + 1) : first);
+			return LanguageSpecificStringDictionary.Single("en-US", name);
 		}
 	}
 
-	/// <summary>The faces of the family as <see cref="FamilyTypeface"/> descriptions (empty when it is not a system family).</summary>
+	/// <summary>The faces of the family as <see cref="FamilyTypeface"/> descriptions (empty for a non-system family).</summary>
 	public FamilyTypefaceCollection FamilyTypefaces
 	{
 		get

@@ -65,7 +65,8 @@ public sealed partial class TextPointer
 	public int CompareTo(TextPointer position)
 	{
 		if (position == null) throw new ArgumentNullException(nameof(position));
-		if (!IsInSameDocument(position)) throw new ArgumentException("The position is in a different document.", nameof(position));
+		if (!IsInSameDocument(position))
+			throw new ArgumentException("The position is in a different document.", nameof(position));
 		return Offset.CompareTo(position.Offset);
 	}
 
@@ -73,7 +74,8 @@ public sealed partial class TextPointer
 	public int GetOffsetToPosition(TextPointer position)
 	{
 		if (position == null) throw new ArgumentNullException(nameof(position));
-		if (!IsInSameDocument(position)) throw new ArgumentException("The position is in a different document.", nameof(position));
+		if (!IsInSameDocument(position))
+			throw new ArgumentException("The position is in a different document.", nameof(position));
 		return position.Offset - Offset;
 	}
 
