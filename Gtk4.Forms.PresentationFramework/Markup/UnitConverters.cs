@@ -103,9 +103,12 @@ static class UnitConverters
 		if (s.Length == 0)
 			throw new FormatException("Cannot parse ImageSource from an empty string.");
 		s = s.Replace('\\', '/');
-		// A root-relative path would otherwise become file:///... on Unix; keep it app-relative.
+		// A root-relative path would otherwise become file:///... on Unix; keep it app-relative, unless it is a
+		// real Unix file path (see IsUnixFilePath).
 		if (s.StartsWith("/", StringComparison.Ordinal) && !s.StartsWith("//", StringComparison.Ordinal))
-			return new Uri(s, UriKind.Relative);
+			return IsUnixFilePath(s, IO.Path.DirectorySeparatorChar == '/', IO.Directory.Exists)
+				? new Uri(s, UriKind.Absolute)
+				: new Uri(s, UriKind.Relative);
 		// .NET cannot parse the ",,," authority of pack://application:,,, URIs; keep the host and path.
 		// The URI is normalised to pack://application/..., so UriSource does not round-trip the original.
 		if (s.StartsWith("pack://application:,,,", StringComparison.OrdinalIgnoreCase))
