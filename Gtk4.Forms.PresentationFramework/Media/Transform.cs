@@ -1,83 +1,15 @@
 using System;
+using System.Runtime.CompilerServices;
+
+[assembly: TypeForwardedTo(typeof(System.Windows.Media.Matrix))]
 
 namespace System.Windows.Media;
 
-/// <summary>
-/// A 3×3 affine matrix for 2D transformations, stored as the six non-trivial elements.
-/// Mirrors <c>System.Windows.Media.Matrix</c>.
-/// Layout (row-major):  | M11  M12  0 |
-///                      | M21  M22  0 |
-///                      | OffsetX  OffsetY  1 |
-/// </summary>
-public struct Matrix : IEquatable<Matrix>
+static class MatrixCairo
 {
-	/// <summary>M11 — X scale component.</summary>
-	public double M11 { get; set; }
-	/// <summary>M12 — X shear component.</summary>
-	public double M12 { get; set; }
-	/// <summary>M21 — Y shear component.</summary>
-	public double M21 { get; set; }
-	/// <summary>M22 — Y scale component.</summary>
-	public double M22 { get; set; }
-	/// <summary>X translation.</summary>
-	public double OffsetX { get; set; }
-	/// <summary>Y translation.</summary>
-	public double OffsetY { get; set; }
-
-	/// <summary>The identity matrix.</summary>
-	public static Matrix Identity => new Matrix(1, 0, 0, 1, 0, 0);
-
-	/// <summary>Creates a matrix from its six elements.</summary>
-	public Matrix(double m11, double m12, double m21, double m22, double offsetX, double offsetY)
-	{
-		M11 = m11; M12 = m12; M21 = m21; M22 = m22;
-		OffsetX = offsetX; OffsetY = offsetY;
-	}
-
-	/// <summary>Returns true when this is the identity matrix.</summary>
-	public bool IsIdentity => M11 == 1 && M12 == 0 && M21 == 0 && M22 == 1
-	                          && OffsetX == 0 && OffsetY == 0;
-
-	/// <summary>Multiplies two matrices (this × <paramref name="b"/>).</summary>
-	public Matrix Multiply(Matrix b) => new Matrix(
-		M11 * b.M11 + M12 * b.M21,
-		M11 * b.M12 + M12 * b.M22,
-		M21 * b.M11 + M22 * b.M21,
-		M21 * b.M12 + M22 * b.M22,
-		OffsetX * b.M11 + OffsetY * b.M21 + b.OffsetX,
-		OffsetX * b.M12 + OffsetY * b.M22 + b.OffsetY);
-
-	/// <summary>Transforms a <see cref="System.Windows.Point"/>.</summary>
-	public System.Windows.Point Transform(System.Windows.Point p) => new System.Windows.Point(
-		p.X * M11 + p.Y * M21 + OffsetX,
-		p.X * M12 + p.Y * M22 + OffsetY);
-
 	/// <summary>Converts to a <see cref="Cairo.Matrix"/>.</summary>
-	internal Cairo.Matrix ToCairo() => new Cairo.Matrix(M11, M12, M21, M22, OffsetX, OffsetY);
-
-	/// <inheritdoc/>
-	public bool Equals(Matrix o) =>
-		M11 == o.M11 && M12 == o.M12 && M21 == o.M21 && M22 == o.M22
-		&& OffsetX == o.OffsetX && OffsetY == o.OffsetY;
-	/// <inheritdoc/>
-	public override bool Equals(object? obj) => obj is Matrix m && Equals(m);
-	/// <inheritdoc/>
-	public override int GetHashCode()
-	{
-		unchecked
-		{
-			int h = M11.GetHashCode();
-			h = h * 397 ^ M12.GetHashCode();
-			h = h * 397 ^ M21.GetHashCode();
-			h = h * 397 ^ M22.GetHashCode();
-			h = h * 397 ^ OffsetX.GetHashCode();
-			return h * 397 ^ OffsetY.GetHashCode();
-		}
-	}
-	/// <inheritdoc/>
-	public static bool operator ==(Matrix a, Matrix b) => a.Equals(b);
-	/// <inheritdoc/>
-	public static bool operator !=(Matrix a, Matrix b) => !a.Equals(b);
+	internal static Cairo.Matrix ToCairo(this Matrix m) =>
+		new Cairo.Matrix(m.M11, m.M12, m.M21, m.M22, m.OffsetX, m.OffsetY);
 }
 
 /// <summary>Abstract base for WPF 2D transforms.</summary>
