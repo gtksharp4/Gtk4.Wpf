@@ -14,7 +14,7 @@ internal static partial class BindingEngine
 		/// step stops the rest. There is no BindingGroup/IEditableObject commit cycle, so committed rules
 		/// run directly after the updated rules.
 		/// </summary>
-		void WriteBackCore(FrameworkElement target, object source)
+		void WriteBackCore(DependencyObject target, object source)
 		{
 			var culture = ResolveCulture(_binding.ConverterCulture);
 			var errors = new List<ValidationError>();
@@ -44,7 +44,7 @@ internal static partial class BindingEngine
 		}
 
 		bool TryConvertBack(
-			FrameworkElement target, object source, object? raw, CultureInfo culture, out object? sourceValue)
+			DependencyObject target, object source, object? raw, CultureInfo culture, out object? sourceValue)
 		{
 			sourceValue = raw;
 			if (_binding.Converter != null)
@@ -74,7 +74,7 @@ internal static partial class BindingEngine
 			return true;
 		}
 
-		bool WriteSource(FrameworkElement target, object source, object? sourceValue)
+		bool WriteSource(DependencyObject target, object source, object? sourceValue)
 		{
 			if (!_binding.ValidatesOnExceptions)
 			{
@@ -92,7 +92,7 @@ internal static partial class BindingEngine
 		}
 
 		/// <summary>Runs ValidatesOnTargetUpdated rules (and IDataErrorInfo) after a source-to-target transfer.</summary>
-		void RunTargetUpdatedValidation(FrameworkElement target, object? source, object? resolved)
+		void RunTargetUpdatedValidation(DependencyObject target, object? source, object? resolved)
 		{
 			AttachNotifyErrors(target, source, resolved);
 			RefreshNotifyErrors();
@@ -115,7 +115,7 @@ internal static partial class BindingEngine
 			SetStepErrors(target, errors);
 		}
 
-		void ReportError(FrameworkElement target, Exception ex)
+		void ReportError(DependencyObject target, Exception ex)
 		{
 			var err = new ValidationError(ExceptionValidationRule.Instance, ex.Message, ex);
 			SetStepErrors(target, new List<ValidationError> { err });

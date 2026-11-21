@@ -6,7 +6,7 @@ internal static partial class BindingEngine
 	{
 		PropertyChangedCallback? _targetChangedCallback;
 
-		void SubscribeTargetChanges(FrameworkElement target)
+		void SubscribeTargetChanges(DependencyObject target)
 		{
 			UnsubscribeTargetChanges();
 			_targetChangedCallback = OnTargetPropertyChanged;

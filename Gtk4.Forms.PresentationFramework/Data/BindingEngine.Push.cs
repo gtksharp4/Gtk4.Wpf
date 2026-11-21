@@ -8,10 +8,10 @@ internal static partial class BindingEngine
 {
 	internal sealed partial class BindingRecord
 	{
-		void ApplyFallback(FrameworkElement target)
+		void ApplyFallback(DependencyObject target)
 			=> SetFallbackOrDefault(target, _dp, _binding.FallbackValue);
 
-		void ApplyTargetNullValue(FrameworkElement target)
+		void ApplyTargetNullValue(DependencyObject target)
 		{
 			var tnv = _binding.TargetNullValue;
 			if (tnv == null) return;
@@ -21,9 +21,9 @@ internal static partial class BindingEngine
 				SetFallbackOrDefault(target, _dp, _binding.FallbackValue);
 		}
 
-		internal void PushToTargetPublic(FrameworkElement target) => PushToTarget(target, ResolveSource(target));
+		internal void PushToTargetPublic(DependencyObject target) => PushToTarget(target, ResolveSource(target));
 
-		void PushToTarget(FrameworkElement target, object? source)
+		void PushToTarget(DependencyObject target, object? source)
 		{
 			bool transferred = PushToTargetCore(target, source);
 			RunTargetUpdatedValidation(target, source, _lastRaw);
@@ -34,7 +34,7 @@ internal static partial class BindingEngine
 		object? _lastRaw;
 
 		/// <summary>Transfers the source value; <see langword="false"/> when the transfer was aborted.</summary>
-		bool PushToTargetCore(FrameworkElement target, object? source)
+		bool PushToTargetCore(DependencyObject target, object? source)
 		{
 			_pushing = true;
 			try
@@ -97,7 +97,7 @@ internal static partial class BindingEngine
 			}
 		}
 
-		void RaiseDataTransfer(FrameworkElement target, RoutedEvent routedEvent, bool notify)
+		void RaiseDataTransfer(DependencyObject target, RoutedEvent routedEvent, bool notify)
 		{
 			if (notify) target.RaiseEvent(new DataTransferEventArgs(routedEvent, target, _dp) { Source = target });
 		}

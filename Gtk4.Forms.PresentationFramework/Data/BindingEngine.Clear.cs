@@ -14,7 +14,7 @@ internal static partial class BindingEngine
 	/// This is the single authority for per-DP clear; <see cref="BindingOperations.ClearBinding"/>
 	/// routes here and does not duplicate the sub-engine calls.
 	/// </summary>
-	internal static void ClearBinding(FrameworkElement target, DependencyProperty dp)
+	internal static void ClearBinding(DependencyObject target, DependencyProperty dp)
 	{
 		if (_bindings.TryGetValue(target, out var list))
 		{
@@ -27,8 +27,11 @@ internal static partial class BindingEngine
 		}
 
 		// Clear multi/priority records so their INPC handlers don't survive.
-		MultiBindingEngine.ClearForDp(target, dp);
-		PriorityBindingEngine.ClearForDp(target, dp);
+		if (target is FrameworkElement fe)
+		{
+			MultiBindingEngine.ClearForDp(fe, dp);
+			PriorityBindingEngine.ClearForDp(fe, dp);
+		}
 
 		if (_expressions.TryGetValue(target, out var exprMap))
 			exprMap.Remove(dp);
@@ -38,7 +41,7 @@ internal static partial class BindingEngine
 	/// Deactivates and removes ALL bindings (simple, multi, and priority) on
 	/// <paramref name="target"/>, clearing the expression map too.
 	/// </summary>
-	internal static void ClearAllBindings(FrameworkElement target)
+	internal static void ClearAllBindings(DependencyObject target)
 	{
 		if (_bindings.TryGetValue(target, out var list))
 		{
@@ -49,7 +52,8 @@ internal static partial class BindingEngine
 		if (_expressions.TryGetValue(target, out var exprMap))
 			exprMap.Clear();
 
-		MultiBindingEngine.ClearAll(target);
-		PriorityBindingEngine.ClearAll(target);
+		if (target is not FrameworkElement fe) return;
+		MultiBindingEngine.ClearAll(fe);
+		PriorityBindingEngine.ClearAll(fe);
 	}
 }

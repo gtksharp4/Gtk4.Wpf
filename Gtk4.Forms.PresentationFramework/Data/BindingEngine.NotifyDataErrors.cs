@@ -49,7 +49,7 @@ internal static partial class BindingEngine
 		/// Subscribes to the leaf owner (property errors) and, when the bound value is itself
 		/// INotifyDataErrorInfo, to the value (entity errors). No-op while the objects are unchanged.
 		/// </summary>
-		void AttachNotifyErrors(FrameworkElement target, object? source, object? resolvedValue)
+		void AttachNotifyErrors(DependencyObject target, object? source, object? resolvedValue)
 		{
 			INotifyDataErrorInfo? owner = null, value = null;
 			string? prop = null;
@@ -105,7 +105,7 @@ internal static partial class BindingEngine
 			else dispatcher.BeginInvoke(() => ApplyNotifyErrors(target));
 		}
 
-		void ApplyNotifyErrors(FrameworkElement target)
+		void ApplyNotifyErrors(DependencyObject target)
 		{
 			if (_notifyWatcher == null) return;
 			RefreshNotifyErrors();

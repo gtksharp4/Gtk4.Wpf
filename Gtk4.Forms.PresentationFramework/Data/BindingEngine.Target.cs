@@ -41,7 +41,7 @@ internal static partial class BindingEngine
 
 	/// <summary>Sets <paramref name="value"/> when valid for the DP, else the fallback, else the default.</summary>
 	internal static void SetTargetSafe(
-		FrameworkElement target, DependencyProperty dp, object? value, object? fallback)
+		DependencyObject target, DependencyProperty dp, object? value, object? fallback)
 	{
 		if (ReferenceEquals(value, Binding.DoNothing)) return;
 		if (!ReferenceEquals(value, DependencyProperty.UnsetValue) && dp.IsValidValue(value))
@@ -52,7 +52,7 @@ internal static partial class BindingEngine
 
 	/// <summary>Like <see cref="SetTargetSafe"/> but first converts to the DP type (strings, IConvertible).</summary>
 	internal static void SetTargetConverted(
-		FrameworkElement target, DependencyProperty dp, object? value, object? fallback)
+		DependencyObject target, DependencyProperty dp, object? value, object? fallback)
 	{
 		if (ReferenceEquals(value, Binding.DoNothing)) return;
 		if (!ReferenceEquals(value, DependencyProperty.UnsetValue) && TryCoerceValid(dp, value, out var v))
@@ -62,7 +62,7 @@ internal static partial class BindingEngine
 	}
 
 	/// <summary>Sets the converted fallback when valid, otherwise the DP's metadata default.</summary>
-	internal static void SetFallbackOrDefault(FrameworkElement target, DependencyProperty dp, object? fallback)
+	internal static void SetFallbackOrDefault(DependencyObject target, DependencyProperty dp, object? fallback)
 	{
 		if (!ReferenceEquals(fallback, DependencyProperty.UnsetValue) && TryCoerceValid(dp, fallback, out var fb))
 			target.SetValue(dp, fb);

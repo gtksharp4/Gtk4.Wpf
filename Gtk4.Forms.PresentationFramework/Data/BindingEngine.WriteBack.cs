@@ -4,9 +4,9 @@ internal static partial class BindingEngine
 {
 	internal sealed partial class BindingRecord
 	{
-		internal void WriteBackPublic(FrameworkElement target) => WriteBack(target);
+		internal void WriteBackPublic(DependencyObject target) => WriteBack(target);
 
-		void WriteBack(FrameworkElement target)
+		void WriteBack(DependencyObject target)
 		{
 			if (_pushing) return;
 			_dirty = false;

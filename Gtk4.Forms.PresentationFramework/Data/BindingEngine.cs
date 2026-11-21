@@ -16,12 +16,12 @@ namespace System.Windows.Data;
 internal static partial class BindingEngine
 {
 	// Per-element list of active records.
-	static readonly ConditionalWeakTable<FrameworkElement, List<BindingRecord>> _bindings =
-		new ConditionalWeakTable<FrameworkElement, List<BindingRecord>>();
+	static readonly ConditionalWeakTable<DependencyObject, List<BindingRecord>> _bindings =
+		new ConditionalWeakTable<DependencyObject, List<BindingRecord>>();
 
 	// Per-element map of DP → live BindingExpression, for GetBindingExpression.
-	static readonly ConditionalWeakTable<FrameworkElement, Dictionary<DependencyProperty, BindingExpressionBase>> _expressions =
-		new ConditionalWeakTable<FrameworkElement, Dictionary<DependencyProperty, BindingExpressionBase>>();
+	static readonly ConditionalWeakTable<DependencyObject, Dictionary<DependencyProperty, BindingExpressionBase>> _expressions =
+		new ConditionalWeakTable<DependencyObject, Dictionary<DependencyProperty, BindingExpressionBase>>();
 
 	/// <summary>
 	/// Registers <paramref name="binding"/> on <paramref name="dp"/> of
@@ -29,7 +29,7 @@ internal static partial class BindingEngine
 	/// Returns the live <see cref="BindingExpressionBase"/>.
 	/// </summary>
 	internal static BindingExpressionBase? SetBinding(
-		FrameworkElement target,
+		DependencyObject target,
 		DependencyProperty dp,
 		BindingBase bindingBase)
 	{
@@ -44,26 +44,30 @@ internal static partial class BindingEngine
 		}
 
 		// Also clear any existing multi-binding record for this DP (R2: cross-engine leak).
-		MultiBindingEngine.ClearForDp(target, dp);
+		var fe = target as FrameworkElement;
+		if (fe != null) MultiBindingEngine.ClearForDp(fe, dp);
 
 		// Clear any priority-binding record too.
-		PriorityBindingEngine.ClearForDp(target, dp);
+		if (fe != null) PriorityBindingEngine.ClearForDp(fe, dp);
 
 		// Remove old expression entry.
 		var exprMap = _expressions.GetOrCreateValue(target);
-		if (exprMap.TryGetValue(dp, out var replaced)) BindingGroupEnlister.Withdraw(target, replaced);
+		if (fe != null && exprMap.TryGetValue(dp, out var replaced)) BindingGroupEnlister.Withdraw(fe, replaced);
 		exprMap.Remove(dp);
+
+		if (fe == null && bindingBase is not Binding)
+			throw new NotSupportedException("Only Binding is supported on a content element.");
 
 		if (bindingBase is MultiBinding mb)
 		{
-			var mbExpr = MultiBindingEngine.SetBinding(target, dp, mb);
+			var mbExpr = MultiBindingEngine.SetBinding(fe!, dp, mb);
 			exprMap[dp] = mbExpr;
 			return mbExpr;
 		}
 
 		if (bindingBase is PriorityBinding pb)
 		{
-			var pbExpr = PriorityBindingEngine.SetBinding(target, dp, pb);
+			var pbExpr = PriorityBindingEngine.SetBinding(fe!, dp, pb);
 			exprMap[dp] = pbExpr;
 			return pbExpr;
 		}
@@ -76,7 +80,7 @@ internal static partial class BindingEngine
 			list.Add(record);
 			exprMap[dp] = expr;
 			record.Activate();
-			BindingGroupEnlister.Enlist(target, expr);
+			if (fe != null) BindingGroupEnlister.Enlist(fe, expr);
 			return expr;
 		}
 
@@ -85,7 +89,7 @@ internal static partial class BindingEngine
 
 	/// <summary>Returns the live expression for <paramref name="dp"/>, or null.</summary>
 	internal static BindingExpressionBase? GetBindingExpression(
-		FrameworkElement target,
+		DependencyObject target,
 		DependencyProperty dp)
 	{
 		if (!_expressions.TryGetValue(target, out var map)) return null;
@@ -97,7 +101,7 @@ internal static partial class BindingEngine
 
 	internal sealed partial class BindingRecord
 	{
-		readonly WeakReference<FrameworkElement> _targetRef;
+		readonly WeakReference<DependencyObject> _targetRef;
 		readonly DependencyProperty _dp;
 		readonly Binding _binding;
 		readonly BindingExpression _expr;
@@ -117,12 +121,12 @@ internal static partial class BindingEngine
 			_binding.RelativeSource?.Mode == RelativeSourceMode.TemplatedParent;
 
 		internal BindingRecord(
-			FrameworkElement target,
+			DependencyObject target,
 			DependencyProperty dp,
 			Binding binding,
 			BindingExpression expr)
 		{
-			_targetRef = new WeakReference<FrameworkElement>(target);
+			_targetRef = new WeakReference<DependencyObject>(target);
 			_dp = dp;
 			_binding = binding;
 			_expr = expr;
@@ -175,19 +179,19 @@ internal static partial class BindingEngine
 			_published = false;
 		}
 
-		internal object? GetResolvedSource(FrameworkElement target) => ResolveSource(target);
+		internal object? GetResolvedSource(DependencyObject target) => ResolveSource(target);
 
-		object? ResolveSource(FrameworkElement target) =>
+		object? ResolveSource(DependencyObject target) =>
 			CollectionViewSource.UnwrapView(ResolveRawSource(target));
 
-		object? ResolveRawSource(FrameworkElement target)
+		object? ResolveRawSource(DependencyObject target)
 		{
 			if (_binding.Source != null) return _binding.Source;
 			if (_binding.ElementName != null)
-				return target.FindName(_binding.ElementName) as FrameworkElement;
+				return BindingTarget.FindName(target, _binding.ElementName) as FrameworkElement;
 			if (_binding.RelativeSource != null)
-				return _binding.RelativeSource.Resolve(target);
-			return target.DataContext;
+				return BindingTarget.ResolveRelative(target, _binding.RelativeSource);
+			return BindingTarget.DataContextOf(target);
 		}
 	}
 }
