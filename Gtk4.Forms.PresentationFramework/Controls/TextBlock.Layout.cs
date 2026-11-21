@@ -20,7 +20,7 @@ public partial class TextBlock
 			new PropertyMetadata(TextAlignment.Left, OnTextAlignmentChanged));
 
 	static void OnTextAlignmentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		=> ((TextBlock)d).ApplyTextAlignment();
+		=> (d as TextBlock)?.ApplyTextAlignment();
 
 	/// <summary>Gets or sets the horizontal alignment of text.</summary>
 	public TextAlignment TextAlignment
@@ -121,7 +121,7 @@ public partial class TextBlock
 			new PropertyMetadata(double.NaN, OnLineHeightChanged));
 
 	static void OnLineHeightChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		=> ((TextBlock)d).ApplyLineHeight();
+		=> (d as TextBlock)?.ApplyLineHeight();
 
 	/// <summary>
 	/// Gets or sets the line height in device-independent pixels.
