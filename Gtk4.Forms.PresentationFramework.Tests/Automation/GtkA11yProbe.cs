@@ -85,9 +85,20 @@ static class GtkA11yProbe
 
 	delegate IntPtr CheckRefFn(IntPtr accessible, int id, IntPtr target, IntPtr end);
 
+	// Apple ARM64 passes variadic arguments on the stack. Padding the six remaining argument registers (x2-x7)
+	// pushes the target and the NULL terminator onto the stack, where va_arg reads them.
+	delegate IntPtr CheckRefStackFn(IntPtr accessible, int id, IntPtr x2, IntPtr x3, IntPtr x4, IntPtr x5,
+		IntPtr x6, IntPtr x7, IntPtr target, IntPtr end);
+
 	/// <summary>True when the relation holds exactly the single target (the variadic list ends with NULL).</summary>
-	internal static bool RelationTargetEquals(Gtk.Widget w, Gtk.AccessibleRelation r, Gtk.Widget target) =>
-		Ok(Fn<CheckRefFn>("gtk_test_accessible_check_relation")(w.Handle, (int)r, target.Handle, IntPtr.Zero));
+	internal static bool RelationTargetEquals(Gtk.Widget w, Gtk.AccessibleRelation r, Gtk.Widget target)
+	{
+		const string name = "gtk_test_accessible_check_relation";
+		if (CanCheckValues)
+			return Ok(Fn<CheckRefFn>(name)(w.Handle, (int)r, target.Handle, IntPtr.Zero));
+		var z = IntPtr.Zero;
+		return Ok(Fn<CheckRefStackFn>(name)(w.Handle, (int)r, z, z, z, z, z, z, target.Handle, IntPtr.Zero));
+	}
 
 	internal static bool StateEquals(Gtk.Widget w, Gtk.AccessibleState s, int value) =>
 		Ok(Fn<CheckIntFn>("gtk_test_accessible_check_state")(w.Handle, (int)s, value));

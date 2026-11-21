@@ -94,6 +94,10 @@ owns the single thread GTK is initialised on. GTK 4 is thread-sensitive per OS:
 `XF_GTK_REQUIRE_NATIVE=1` turns "no display / no GTK runtime" from a harness skip into a failure, so
 a broken install goes red rather than green-by-absence. Test parallelisation stays disabled.
 
+Known intermittent: on the macOS runner GTK occasionally never allocates a newly shown window (it stays 0x0 and
+inactive), so `TextGapsTests.TextBox_wrapping_without_AcceptsReturn_is_content_sized_in_a_StackPanel` times out.
+It passed on re-run (run 44899539173). Treat a repeat as real.
+
 CI is `.github/workflows/build-and-test.yml` (Windows, Linux, macOS); per-OS logic lives in
 `scripts/ci/test-{windows,linux,macos}`.
 
