@@ -89,6 +89,9 @@ public abstract partial class Shape : FrameworkElement, IDisposable
 
 	internal override void OnClipChanged() => QueueRedraw();
 
+	/// <summary>Paints the shape into <paramref name="cr"/> exactly as the drawing area does.</summary>
+	internal void PaintTo(Cairo.Context cr, int width, int height) => PaintShape(cr, width, height);
+
 	internal override bool PaintsClipItself => true;
 
 	// ── Draw callback ─────────────────────────────────────────────────────────

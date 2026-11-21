@@ -31,22 +31,28 @@ namespace Gtk4.Forms.MarkupCompiler
 				if (prop.Name.LocalName != "Binding.ValidationRules")
 					throw new XamlCodeGeneratorException(
 						"Unsupported Binding property element <" + prop.Name.LocalName + ">.");
-				foreach (XElement rule in prop.Elements())
+				EmitValidationRules(w, prop, bVar + ".ValidationRules", ref counter);
+			}
+		}
+
+		// Each child of a ValidationRules property element becomes a rule added to <rulesVar>.
+		void EmitValidationRules(IndentedWriter w, XElement rulesEl, string rulesVar, ref int counter)
+		{
+			foreach (XElement rule in rulesEl.Elements())
+			{
+				string ruleType = ResolveType(rule) ?? ClrNamespaceType(rule);
+				if (ruleType == null)
+					throw new XamlCodeGeneratorException(
+						"Cannot resolve validation rule type <" + rule.Name.LocalName + ">.");
+				string ruleVar = "__vr" + counter++;
+				w.Line("var " + ruleVar + " = new " + ruleType + "();");
+				foreach (XAttribute ra in rule.Attributes())
 				{
-					string ruleType = ResolveType(rule) ?? ClrNamespaceType(rule);
-					if (ruleType == null)
-						throw new XamlCodeGeneratorException(
-							"Cannot resolve validation rule type <" + rule.Name.LocalName + ">.");
-					string ruleVar = "__vr" + counter++;
-					w.Line("var " + ruleVar + " = new " + ruleType + "();");
-					foreach (XAttribute ra in rule.Attributes())
-					{
-						if (ra.IsNamespaceDeclaration) continue;
-						w.Line(ruleVar + "." + ra.Name.LocalName + " = "
-							+ RuleAttrExpression(ruleType, ra.Name.LocalName, ra.Value) + ";");
-					}
-					w.Line(bVar + ".ValidationRules.Add(" + ruleVar + ");");
+					if (ra.IsNamespaceDeclaration) continue;
+					w.Line(ruleVar + "." + ra.Name.LocalName + " = "
+						+ RuleAttrExpression(ruleType, ra.Name.LocalName, ra.Value) + ";");
 				}
+				w.Line(rulesVar + ".Add(" + ruleVar + ");");
 			}
 		}
 

@@ -61,13 +61,16 @@ namespace Gtk4.Forms.MarkupCompiler
 
 		enum Constructors { None, PublicDefault, Other }
 
+		// A parenthesised group whose inner parentheses balance (default values, attribute arguments).
+		const string BalancedParens = @"\((?>[^()]+|\((?<d>)|\)(?<-d>))*(?(d)(?!))\)";
+
 		// Scans the code-behind for instance constructors; a declaration without a modifier is private, so Other.
 		Constructors DeclaredConstructors(string className)
 		{
 			if (CodeBehindSources == null || !HasCodeBehindFor(className)) return Constructors.None;
 			string name = Regex.Escape(className.Substring(className.LastIndexOf('.') + 1));
 			var declared = new Regex(@"(?<!\bnew\s+)(?<!\bstatic\s+)(?<![\w.])" + name
-				+ @"\s*\([^)]*\)\s*(?::\s*(?:base|this)\s*\([^)]*\)\s*)?\{");
+				+ @"\s*" + BalancedParens + @"\s*(?::\s*(?:base|this)\s*" + BalancedParens + @"\s*)?\{");
 			var open = new Regex(@"\bpublic\s+" + name + @"\s*\(\s*\)");
 			bool any = false;
 			foreach (string s in CodeBehindSources)

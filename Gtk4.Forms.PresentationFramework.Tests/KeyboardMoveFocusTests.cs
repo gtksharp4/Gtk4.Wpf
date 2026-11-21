@@ -28,11 +28,9 @@ public class KeyboardMoveFocusTests : WpfGtkTestBase
 		Assert.True(b.IsKeyboardFocused);
 		Assert.True(b.MoveFocus(new TraversalRequest(FocusNavigationDirection.Last)));
 		Assert.True(c.IsKeyboardFocused);
-		Assert.False(c.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next)));
-		Assert.True(c.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next) { Wrapped = true }));
-		Assert.True(a.IsKeyboardFocused);
-		Assert.True(a.MoveFocus(new TraversalRequest(FocusNavigationDirection.Previous) { Wrapped = true }));
-		Assert.True(c.IsKeyboardFocused);
+		var plain = new TraversalRequest(FocusNavigationDirection.Next);
+		Assert.False(c.MoveFocus(plain));
+		Assert.False(plain.Wrapped);
 		Assert.True(c.MoveFocus(new TraversalRequest(FocusNavigationDirection.First)));
 		Assert.True(a.IsKeyboardFocused);
 		a.SetFocusedInternal(false);
@@ -45,7 +43,9 @@ public class KeyboardMoveFocusTests : WpfGtkTestBase
 		var panel = Panel(a, off, b);
 		a.Focus();
 		Assert.Same(b, a.PredictFocus(FocusNavigationDirection.Down));
-		Assert.Same(b, a.PredictFocus(FocusNavigationDirection.Next));
+		foreach (var d in new[] { FocusNavigationDirection.Next, FocusNavigationDirection.Previous,
+			FocusNavigationDirection.First, FocusNavigationDirection.Last })
+			Assert.Throws<ArgumentOutOfRangeException>(() => a.PredictFocus(d));
 		Assert.Same(a, b.PredictFocus(FocusNavigationDirection.Up));
 		Assert.True(a.IsKeyboardFocused);
 		Assert.Throws<InvalidEnumArgumentException>(() => a.PredictFocus((FocusNavigationDirection)99));
@@ -59,7 +59,7 @@ public class KeyboardMoveFocusTests : WpfGtkTestBase
 		var panel = Panel(a, b);
 		KeyboardNavigation.SetTabIndex(a, 2);
 		KeyboardNavigation.SetTabIndex(b, 1);
-		Assert.Same(a, b.PredictFocus(FocusNavigationDirection.Next));
+		Assert.Same(a, b.PredictFocus(FocusNavigationDirection.Right));
 	});
 
 	[Fact]
@@ -87,4 +87,50 @@ public class KeyboardMoveFocusTests : WpfGtkTestBase
 		Assert.NotNull(b.FocusVisualStyle);
 	});
 
+	[Fact]
+	public void Window_cycles_and_reports_Wrapped() => Run(() =>
+	{
+		var a = new Button(); var b = new Button();
+		var window = new Window { Content = Panel(a, b) };
+		b.Focus();
+		var request = new TraversalRequest(FocusNavigationDirection.Next);
+		Assert.True(b.MoveFocus(request));
+		Assert.True(a.IsKeyboardFocused);
+		Assert.True(request.Wrapped);
+		var plain = new TraversalRequest(FocusNavigationDirection.Next);
+		Assert.True(a.MoveFocus(plain));
+		Assert.False(plain.Wrapped);
+		b.SetFocusedInternal(false);
+		GC.KeepAlive(window);
+	});
+
+	[Fact]
+	public void Contained_container_stops_at_its_end() => Run(() =>
+	{
+		var a = new Button(); var b = new Button(); var outside = new Button();
+		var inner = Panel(a, b);
+		KeyboardNavigation.SetTabNavigation(inner, KeyboardNavigationMode.Contained);
+		var outer = new StackPanel();
+		outer.Children.Add(inner);
+		outer.Children.Add(outside);
+		b.Focus();
+		var request = new TraversalRequest(FocusNavigationDirection.Next);
+		Assert.False(b.MoveFocus(request));
+		Assert.False(request.Wrapped);
+		Assert.True(b.IsKeyboardFocused);
+		b.SetFocusedInternal(false);
+	});
+
+	[Fact]
+	public void Focusable_non_control_takes_part_in_navigation() => Run(() =>
+	{
+		var first = new TextBox(); var last = new TextBox();
+		var mid = new Border { Focusable = true };
+		var panel = Panel(first, mid, last);
+		first.Focus();
+		Assert.Same(mid, first.PredictFocus(FocusNavigationDirection.Down));
+		Assert.True(first.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next)));
+		Assert.True(mid.IsKeyboardFocused);
+		mid.SetFocusedInternal(false);
+	});
 }

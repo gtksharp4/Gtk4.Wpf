@@ -6,9 +6,16 @@ namespace System.Windows;
 /// </summary>
 public partial class FrameworkElement
 {
-	static readonly Style _defaultFocusVisualStyle = new Style();
+	static readonly Style _defaultFocusVisualStyle = CreateDefaultFocusVisualStyle();
 
-	/// <summary>Identifies the <see cref="FocusVisualStyle"/> property. Default: a shared empty style.</summary>
+	static Style CreateDefaultFocusVisualStyle()
+	{
+		var style = new Style();
+		style.Seal();
+		return style;
+	}
+
+	/// <summary>Identifies the <see cref="FocusVisualStyle"/> property. Default: a shared sealed style.</summary>
 	public static readonly DependencyProperty FocusVisualStyleProperty =
 		DependencyProperty.Register(nameof(FocusVisualStyle), typeof(Style), typeof(FrameworkElement),
 			new FrameworkPropertyMetadata(_defaultFocusVisualStyle));

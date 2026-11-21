@@ -28,9 +28,8 @@ public partial class Page
 		typeof(Page), InheritingTextMetadata(TextElement.FontSizeProperty, true));
 
 	/// <summary>Identifies the <see cref="Template"/> dependency property.</summary>
-	public static readonly DependencyProperty TemplateProperty = DependencyProperty.Register(
-		nameof(Template), typeof(ControlTemplate), typeof(Page),
-		new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsMeasure));
+	public static readonly DependencyProperty TemplateProperty = Control.TemplateProperty.AddOwner(
+		typeof(Page), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsMeasure));
 
 	/// <summary>Identifies the <see cref="KeepAlive"/> dependency property.</summary>
 	public static readonly DependencyProperty KeepAliveProperty = DependencyProperty.Register(

@@ -52,7 +52,7 @@ public abstract partial class UIElement : Media.Visual
 	{
 		// Opacity, Visibility, IsEnabled, IsHitTestVisible → GTK widget state (UIElement.Visibility.cs).
 		ApplyVisibilityStateOnCreated(widget);
-		if (ClipToBounds) ApplyClipToBounds(widget);
+		if (ClipToBounds || NativeClipActive) ApplyClipToBounds(widget);
 
 		// Hook: attach GTK input controllers (focus, key, mouse, motion).
 		// Implemented in UIElement.GtkInput.cs as a partial method call.
@@ -188,6 +188,7 @@ public abstract partial class UIElement : Media.Visual
 			OnLogicalParentChangedLifecycle(oldParent, value);
 			// Re-coerce IsEnabled/IsHitTestVisible, recompute IsVisible (UIElement.IsVisible.cs).
 			OnLogicalParentChangedVisibilityState();
+			OnLogicalParentChangedBindingGroup(oldParent, value);
 		}
 	}
 
@@ -196,4 +197,6 @@ public abstract partial class UIElement : Media.Visual
 	/// Implemented in <c>UIElement.Lifecycle.cs</c>.
 	/// </summary>
 	partial void OnLogicalParentChangedLifecycle(UIElement? oldParent, UIElement? newParent);
+
+	internal virtual void OnLogicalParentChangedBindingGroup(UIElement? oldParent, UIElement? newParent) { }
 }

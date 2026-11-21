@@ -4,11 +4,11 @@ namespace System.Windows.Input;
 public delegate void KeyboardFocusChangedEventHandler(object sender, KeyboardFocusChangedEventArgs e);
 
 /// <summary>Base class for input-device event data.</summary>
-public abstract class InputEventArgs : RoutedEventArgs
+public class InputEventArgs : RoutedEventArgs
 {
 	/// <param name="inputDevice">The device that raised the event.</param>
 	/// <param name="timestamp">The time of the event, in milliseconds.</param>
-	protected InputEventArgs(InputDevice inputDevice, int timestamp)
+	public InputEventArgs(InputDevice inputDevice, int timestamp)
 	{
 		Device = inputDevice;
 		Timestamp = timestamp;

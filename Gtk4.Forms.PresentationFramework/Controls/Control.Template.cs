@@ -17,7 +17,8 @@ public abstract partial class Control
 
 	static void OnTemplateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
-		((Control)d).OnTemplateChanged((ControlTemplate?)e.NewValue);
+		// Page shares this property (store-only there), so d is not always a Control.
+		if (d is Control control) control.OnTemplateChanged((ControlTemplate?)e.NewValue);
 	}
 
 	/// <summary>Gets or sets the control template.</summary>

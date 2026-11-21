@@ -27,7 +27,8 @@ public abstract partial class UIElement
 	public bool InvokeInputBinding(EventArgs inputEventArgs)
 	{
 		if (inputEventArgs == null) throw new ArgumentNullException(nameof(inputEventArgs));
-		foreach (var binding in InputBindings)
+		foreach (var binding in System.Linq.Enumerable.Concat(
+			InputBindings, Input.CommandManager.GetClassInputBindings(GetType())))
 		{
 			if (binding.Gesture == null || binding.Command == null) continue;
 			if (!binding.Gesture.Matches(this, inputEventArgs)) continue;

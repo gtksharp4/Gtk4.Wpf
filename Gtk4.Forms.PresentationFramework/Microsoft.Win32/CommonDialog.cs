@@ -23,7 +23,9 @@ public abstract class CommonDialog
 	/// <summary>Restores every property to its default.</summary>
 	public abstract void Reset();
 
-	/// <summary>Runs the dialog. <paramref name="hwndOwner"/> is always <see cref="IntPtr.Zero"/>: GTK has no window handle.</summary>
+	/// <summary>
+	/// Runs the dialog. <paramref name="hwndOwner"/> is always <see cref="IntPtr.Zero"/>: GTK has no window handle.
+	/// </summary>
 	/// <returns><see langword="true"/> when the user accepted the dialog.</returns>
 	protected abstract bool RunDialog(IntPtr hwndOwner);
 
@@ -34,7 +36,7 @@ public abstract class CommonDialog
 
 	/// <summary>Shows the dialog without an owner.</summary>
 	/// <returns><see langword="true"/> when accepted, <see langword="false"/> when cancelled.</returns>
-	public bool? ShowDialog()
+	public virtual bool? ShowDialog()
 	{
 		CheckPermissionsToShowDialog();
 		OwnerWindow = null;

@@ -320,6 +320,33 @@ and 88 running, so **91 / 204 build and 88 run** by what was re-measured. The re
 that the flow-direction round moved) was not re-run, so these are lower bounds. `samples-coverage.json` is stale as of
 `1b50a528` and was not regenerated.
 
+## Round 48 review gate
+
+Pinned feed, `Gtk4.Forms.Wpf 1.0.0.26325` packed from `main` plus the Round 48 review fixes. All 90 projects recorded as
+`build=pass` in `samples-coverage.json` build through the two-build recipe, and all 83 recorded as `runs` still start
+and stay up with a window for about 10 s, run one at a time. **No regressions.** The three recorded non-runners are
+unchanged: AppCompat-Quirks (crash), LocalizationResources (crash on re-run alone, hang in the serial pass) and
+DragDropThumbOps (hang, also alone). CustomApplicationClient is a library.
+
+Newly built and started in this gate (not in the recorded set, which is stale as of `1b50a528`):
+
+- **ValidateItemSample** and **ValidateItemsInItemsControl** build and start. The layer now emits
+  `<X.BindingGroup>` and `ItemsControl.ItemBindingGroup` property elements (with their `ValidationRules`), the
+  `BindingGroup` enlists the `BindingExpression`s of its element and descendants (including bindings made later and
+  subtrees parented later), and each item container gets its own copy of `ItemBindingGroup`. The gate only starts the
+  apps: the Submit/Save click that runs the group rules is not driven, so that behaviour is covered by unit tests, not
+  by the sample.
+- EditingCollections builds and starts.
+
+That is 92 of 204 apps built and 89 running by what was re-measured here (the 89 recorded apps, 86 of them running,
+plus the three above). CustomApplicationClass and LangAttribute were not re-run; counting them from the Round 47 gate
+gives 94 / 91. `samples-coverage.json` is still the `1b50a528` measurement.
+
+Known gap (input API): `KeyEventArgs : KeyboardEventArgs`, `MouseEventArgs : InputEventArgs` and
+`TextCompositionEventArgs : InputEventArgs` are not rebased yet. They still derive from `RoutedEventArgs`;
+`InputEventArgs` is now a public, non-abstract class with the WPF constructor `InputEventArgs(InputDevice, int)`, so
+code that constructs one compiles, but a handler typed `InputEventArgs` does not receive a key or mouse event.
+
 ## Method
 
 - **Source.** The local `WPF-Samples` tree, split into six category batches. Each batch was copied under
@@ -406,3 +433,4 @@ Gate (`Gtk4.Forms.Wpf 1.0.0.26325` packed from the worktree into a private feed,
 | 2026-11-20 | `1b50a528` | 1.0.0.26324 | **yes** | 89 / 204 | 83 | Round 46; 5 crash, 1 hang; no regressions; the earlier runs are confirmed local-feed |
 | 2026-11-21 | `2c67b72c` + generator-v4 | 1.0.0.26325 | **yes** | 90 / 204 | 87 | Generator v4; the recorded 89 plus CustomApplicationClass (fail -> builds, runs in this gate); no regressions |
 | 2026-11-21 | `5f92acd0` + Round 47 review fixes | 1.0.0.26325 | **yes** | 91 / 204 | 88 | Lower bounds: the recorded 90 projects, CustomApplicationClass and LangAttribute re-run; no regressions |
+| 2026-11-21 | `28d1eef2` + Round 48 review fixes | 1.0.0.26325 | **yes** | 92 / 204 | 89 | Lower bounds, re-measured here: 89 recorded apps (86 run) plus ValidateItemSample, ValidateItemsInItemsControl and EditingCollections (build and start); CustomApplicationClass and LangAttribute (Round 47: 94 / 91 with them) were not re-run; no regressions |

@@ -138,6 +138,7 @@ public partial class ItemsControl : Control
 		foreach (var item in Items)
 		{
 			var container = GetContainerForItem(item);
+			ApplyItemBindingGroup(container);
 			// D1: wire logical-parent so TryFindResource walks the full tree.
 			if (container is UIElement uiContainer)
 				uiContainer.LogicalParent = this;

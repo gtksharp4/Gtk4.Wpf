@@ -10,7 +10,7 @@ namespace System.Windows.Input;
 /// and broadcasts <see cref="RequerySuggested"/> so command sources refresh their
 /// enabled state.
 /// </summary>
-public static class CommandManager
+public static partial class CommandManager
 {
 	// ── RequerySuggested — weak-reference handler list (E2) ──────────────────
 
@@ -111,13 +111,13 @@ public static class CommandManager
 	/// </summary>
 	internal static bool CanExecute(ICommand command, object? parameter, UIElement? target)
 	{
-		var binding = FindCommandBinding(command, target);
+		var binding = FindCommandBinding(command, target, out var owner);
 		if (binding != null)
 		{
 			var args = new CanExecuteRoutedEventArgs(
 					CanExecuteEvent, command, parameter)
 				{ Source = target };
-			binding.InvokeCanExecute(target!, args);
+			binding.InvokeCanExecute(owner!, args);
 			return args.CanExecute;
 		}
 		// A RoutedCommand with no matching binding is not executable (WPF semantics).
@@ -135,12 +135,12 @@ public static class CommandManager
 	/// </summary>
 	internal static void Execute(ICommand command, object? parameter, UIElement? target)
 	{
-		var binding = FindCommandBinding(command, target);
+		var binding = FindCommandBinding(command, target, out var owner);
 		if (binding != null)
 		{
 			var args = new ExecutedRoutedEventArgs(ExecutedEvent, command, parameter)
 				{ Source = target };
-			binding.InvokeExecuted(target!, args);
+			binding.InvokeExecuted(owner!, args);
 			return;
 		}
 		// A RoutedCommand with no matching binding is a no-op (WPF semantics).
@@ -175,7 +175,7 @@ public static class CommandManager
 	/// E7: walks <see cref="UIElement.LogicalParent"/> (the documented contract),
 	/// not <see cref="DependencyObject.InheritanceParent"/>.
 	/// </summary>
-	static CommandBinding? FindCommandBinding(ICommand command, UIElement? element)
+	static CommandBinding? FindCommandBinding(ICommand command, UIElement? element, out object? owner)
 	{
 		var current = element;
 		while (current != null)
@@ -183,10 +183,22 @@ public static class CommandManager
 			foreach (var binding in current.CommandBindings)
 			{
 				if (ReferenceEquals(binding.Command, command))
+				{
+					owner = element;
 					return binding;
+				}
+			}
+			foreach (var binding in ForTypeChain(_classCommandBindings, current.GetType()))
+			{
+				if (ReferenceEquals(binding.Command, command))
+				{
+					owner = current;
+					return binding;
+				}
 			}
 			current = current.LogicalParent;
 		}
+		owner = null;
 		return null;
 	}
 }

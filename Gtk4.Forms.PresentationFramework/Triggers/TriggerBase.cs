@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Windows.Data;
 
 namespace System.Windows;
@@ -23,7 +23,43 @@ public abstract class TriggerBase
 }
 
 /// <summary>Collection of <see cref="TriggerBase"/> items.</summary>
-public class TriggerCollection : List<TriggerBase> { }
+public class TriggerCollection : Collection<TriggerBase>
+{
+	internal bool IsSealed { get; set; }
+
+	void CheckSealed()
+	{
+		if (IsSealed) throw new InvalidOperationException("Cannot modify a sealed Style.");
+	}
+
+	/// <inheritdoc/>
+	protected override void InsertItem(int index, TriggerBase item)
+	{
+		CheckSealed();
+		base.InsertItem(index, item);
+	}
+
+	/// <inheritdoc/>
+	protected override void SetItem(int index, TriggerBase item)
+	{
+		CheckSealed();
+		base.SetItem(index, item);
+	}
+
+	/// <inheritdoc/>
+	protected override void RemoveItem(int index)
+	{
+		CheckSealed();
+		base.RemoveItem(index);
+	}
+
+	/// <inheritdoc/>
+	protected override void ClearItems()
+	{
+		CheckSealed();
+		base.ClearItems();
+	}
+}
 
 /// <summary>
 /// A single property=value setter used inside a <see cref="Trigger"/>,

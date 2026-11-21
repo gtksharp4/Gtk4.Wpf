@@ -108,7 +108,7 @@ public partial class BindingGroup
 			ValidationResult result;
 			try
 			{
-				result = rule.Validate(this, BindingEngine.ResolveCulture(null));
+				result = rule.Validate(this, BindingEngine.ResolveCulture(null), this);
 			}
 			catch
 			{

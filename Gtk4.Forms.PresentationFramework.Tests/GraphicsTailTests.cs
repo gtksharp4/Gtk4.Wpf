@@ -8,8 +8,8 @@ using Xunit;
 
 namespace Gtk4.Forms.PresentationFramework.Tests;
 
-/// <summary>Page.Background, UIElement.Clip, TextBlock accessors, SystemColors, Window drag/transparency.</summary>
-public class GraphicsWindowTailTests : WpfGtkTestBase
+/// <summary>Page.Background, UIElement.Clip, TextBlock accessors, SystemColors and path markup.</summary>
+public class GraphicsTailTests : WpfGtkTestBase
 {
 	[Fact]
 	public void PageBackgroundDefaultsToNullAndRendersAsCss() => Run(() =>
@@ -71,7 +71,7 @@ public class GraphicsWindowTailTests : WpfGtkTestBase
 	});
 
 	[Fact]
-	public void TextBlockAttachedAccessorsRoundTripOnAnyElement()
+	public void TextBlockAttachedAccessorsRoundTripOnAnyElement() => Run(() =>
 	{
 		var d = new Border();
 		var brush = new SolidColorBrush(Color.FromRgb(1, 2, 3));
@@ -95,7 +95,7 @@ public class GraphicsWindowTailTests : WpfGtkTestBase
 		Assert.Equal(LineStackingStrategy.BlockLineHeight, TextBlock.GetLineStackingStrategy(d));
 		Assert.Equal(TextAlignment.Center, TextBlock.GetTextAlignment(d));
 		Assert.Equal("Mono", TextBlock.GetFontFamily(d).Source);
-	}
+	});
 
 	[Fact]
 	public void TextBlockAccessorsRejectNull()
@@ -106,7 +106,7 @@ public class GraphicsWindowTailTests : WpfGtkTestBase
 	}
 
 	[Fact]
-	public void SystemColorsHaveUniqueKeysAndCachedBrushes()
+	public void SystemColorsHaveUniqueKeysAndCachedBrushes() => Run(() =>
 	{
 		var keys = new System.Collections.Generic.List<ResourceKey>
 		{
@@ -119,7 +119,7 @@ public class GraphicsWindowTailTests : WpfGtkTestBase
 		Assert.Equal(SystemColors.WindowColor, SystemColors.WindowBrush.Color);
 		Assert.Equal(Color.FromRgb(0, 120, 215), SystemColors.HighlightColor);
 		Assert.Equal(Color.FromRgb(240, 240, 240), SystemColors.MenuBarColor);
-	}
+	});
 
 	[Fact]
 	public void SystemColorKeysResolveThroughFindResource() => Run(() =>
@@ -140,66 +140,7 @@ public class GraphicsWindowTailTests : WpfGtkTestBase
 	});
 
 	[Fact]
-	public void DragMoveThrowsUnlessLeftButtonDown() => Run(() =>
-	{
-		var w = new Window();
-		var ex = Assert.Throws<InvalidOperationException>(() => w.DragMove());
-		Assert.Contains("DragMove", ex.Message);
-	});
-
-	[Fact]
-	public void DragMoveForwardsTheRecordedPress() => Run(() =>
-	{
-		var w = new Window();
-		(int button, double x, double y, uint time)? seen = null;
-		Window.BeginMoveOverride = (_, b, x, y, t) => seen = (b, x, y, t);
-		try
-		{
-			w.RecordPress(null, 10, 20, 777);
-			w.DragMove();
-		}
-		finally { Window.BeginMoveOverride = null; }
-		Assert.NotNull(seen);
-		Assert.Equal(1, seen!.Value.button);
-		Assert.Equal(777u, seen.Value.time);
-		Assert.Throws<InvalidOperationException>(() => w.DragMove());
-	});
-
-	[Fact]
-	public void AllowsTransparencyDefaultsFalseAndEmitsTransparentCss() => Run(() =>
-	{
-		var w = new Window();
-		_ = w.Widget;
-		Assert.False(w.AllowsTransparency);
-		w.WindowStyle = WindowStyle.None;
-		w.AllowsTransparency = true;
-		Assert.Contains("transparent", w.AppearanceCss);
-		w.AllowsTransparency = false;
-		Assert.DoesNotContain("transparent", w.AppearanceCss);
-	});
-
-	[Fact]
-	public void ShowingTransparentWindowWithBorderThrows() => Run(() =>
-	{
-		var w = new Window { AllowsTransparency = true };
-		Assert.Throws<InvalidOperationException>(() => w.Show());
-	});
-
-	[Fact]
-	public void AllowsTransparencyCannotChangeAfterShow() => Run(() =>
-	{
-		var w = new Window { WindowStyle = WindowStyle.None, AllowsTransparency = true };
-		w.Show();
-		try
-		{
-			Assert.Throws<InvalidOperationException>(() => w.AllowsTransparency = false);
-			Assert.True(w.AllowsTransparency);
-		}
-		finally { w.Hide(); }
-	});
-
-	[Fact]
-	public void PathMarkupConvertsToGeometryForClipAndData()
+	public void PathMarkupConvertsToGeometryForClipAndData() => Run(() =>
 	{
 		var g = System.Windows.Markup.XamlValueConverter.Convert(
 			typeof(Image), UIElement.ClipProperty, "M0,150 L100,0 200,150Z");
@@ -207,5 +148,5 @@ public class GraphicsWindowTailTests : WpfGtkTestBase
 		var data = System.Windows.Markup.XamlValueConverter.Convert(
 			typeof(Path), Path.DataProperty, "M10,100 C 100,0 200,200 300,100 z");
 		Assert.IsType<PathGeometry>(data);
-	}
+	});
 }

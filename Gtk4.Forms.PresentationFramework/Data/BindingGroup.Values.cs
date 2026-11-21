@@ -26,7 +26,9 @@ public partial class BindingGroup
 {
 	/// <summary>Gets the value <paramref name="propertyName"/> of <paramref name="item"/> would have after a commit.</summary>
 	/// <exception cref="ArgumentNullException">An argument is null.</exception>
-	/// <exception cref="ValueUnavailableException">No expression of the group binds that property, or its value cannot convert.</exception>
+	/// <exception cref="ValueUnavailableException">
+	/// No expression of the group binds that property, or its value cannot convert.
+	/// </exception>
 	public object? GetValue(object item, string propertyName)
 	{
 		if (!TryGetValue(item, propertyName, out var value))

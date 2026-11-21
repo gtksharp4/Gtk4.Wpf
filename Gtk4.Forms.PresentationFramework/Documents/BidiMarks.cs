@@ -21,8 +21,8 @@ internal static class BidiMarks
 
 	/// <summary>
 	/// Appends the output of <paramref name="body"/> inside an isolate. Pango splits paragraphs at every
-	/// <c>'\n'</c> and an isolate cannot span them, so each line closes and reopens it; every line after the
-	/// first (and the first when <paramref name="markFirst"/>) starts with the directional mark.
+	/// <c>'\n'</c> and an isolate cannot span them, so each line closes and reopens it. A block-level isolate
+	/// (<paramref name="markFirst"/>) starts every line with the directional mark; an inline one has none.
 	/// </summary>
 	internal static void AppendIsolated(StringBuilder sb, FlowDirection direction, bool markFirst,
 		Action<StringBuilder> body)
@@ -35,7 +35,9 @@ internal static class BidiMarks
 		foreach (char c in text)
 		{
 			if (c != '\n') { sb.Append(c); continue; }
-			sb.Append(Pdi).Append('\n').Append(Mark(direction)).Append(Isolate(direction));
+			sb.Append(Pdi).Append('\n');
+			if (markFirst) sb.Append(Mark(direction));
+			sb.Append(Isolate(direction));
 		}
 		sb.Append(Pdi);
 	}

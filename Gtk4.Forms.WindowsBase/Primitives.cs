@@ -143,17 +143,20 @@ public partial struct Point : IEquatable<Point>
 	public Point(double x, double y) { X = x; Y = y; }
 
 	/// <inheritdoc/>
-	public bool Equals(Point other) => X == other.X && Y == other.Y;
+	public bool Equals(Point other) => Equals(this, other);
+	/// <summary>Compares two points with <see cref="double.Equals(double)"/> (NaN equals NaN).</summary>
+	public static bool Equals(Point point1, Point point2) =>
+		point1.X.Equals(point2.X) && point1.Y.Equals(point2.Y);
 	/// <inheritdoc/>
-	public override bool Equals(object? obj) => obj is Point p && Equals(p);
+	public override bool Equals(object? obj) => obj is Point p && Equals(this, p);
 	/// <inheritdoc/>
 	public override int GetHashCode() => PrimitivesHashHelper.CombineHash(X.GetHashCode(), Y.GetHashCode());
 	/// <inheritdoc/>
-	public static bool operator ==(Point a, Point b) => a.Equals(b);
+	public static bool operator ==(Point a, Point b) => a.X == b.X && a.Y == b.Y;
 	/// <inheritdoc/>
-	public static bool operator !=(Point a, Point b) => !a.Equals(b);
+	public static bool operator !=(Point a, Point b) => !(a == b);
 	/// <inheritdoc/>
-	public override string ToString() => $"{X},{Y}";
+	public override string ToString() => ToString(null);
 }
 
 // ── Shared helper (netstandard2.0 lacks System.HashCode) ─────────────────────────

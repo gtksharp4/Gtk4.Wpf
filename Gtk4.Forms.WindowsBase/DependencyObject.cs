@@ -198,5 +198,4 @@ public partial class DependencyObject : System.Windows.Threading.DispatcherObjec
 		return meta.DefaultValue;
 	}
 
-
-}
+}

@@ -51,6 +51,7 @@ internal static partial class BindingEngine
 
 		// Remove old expression entry.
 		var exprMap = _expressions.GetOrCreateValue(target);
+		if (exprMap.TryGetValue(dp, out var replaced)) BindingGroupEnlister.Withdraw(target, replaced);
 		exprMap.Remove(dp);
 
 		if (bindingBase is MultiBinding mb)
@@ -75,6 +76,7 @@ internal static partial class BindingEngine
 			list.Add(record);
 			exprMap[dp] = expr;
 			record.Activate();
+			BindingGroupEnlister.Enlist(target, expr);
 			return expr;
 		}
 

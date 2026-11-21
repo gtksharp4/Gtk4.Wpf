@@ -37,7 +37,8 @@ public class FlowDirectionLineTests : WpfGtkTestBase
 		var tb = new TextBlock();
 		tb.Inlines.Add(span);
 
-		Assert.Equal(Rli + "a" + Pdi + "\n" + Rlm + Rli + "b" + Pdi, tb.BuildMarkup());
+		Assert.Equal(Rli + "a" + Pdi + "\n" + Rli + "b" + Pdi, tb.BuildMarkup());
+		Assert.DoesNotContain("\n" + Rlm, tb.BuildMarkup(), System.StringComparison.Ordinal);
 	}
 
 	[Fact]

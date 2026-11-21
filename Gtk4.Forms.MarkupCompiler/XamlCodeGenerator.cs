@@ -840,6 +840,11 @@ namespace Gtk4.Forms.MarkupCompiler
 					w.Line($"{parentVar}.SetBinding({ownerFqType}.{propName}Property, {bVar});");
 					return;
 				}
+				if (childLocal == "BindingGroup" && (propName == "BindingGroup" || propName == "ItemBindingGroup"))
+				{
+					EmitBindingGroupElement(w, child, parentVar, propName, ref counter);
+					return;
+				}
 				if (childLocal == "ControlTemplate")
 				{
 					string tmplVar = $"__ct{counter++}";

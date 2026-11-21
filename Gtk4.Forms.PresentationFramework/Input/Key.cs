@@ -4,6 +4,7 @@ namespace System.Windows.Input;
 /// WPF key enumeration (subset — extend on demand).
 /// Values map to common keyboard keys; name matches WPF's <c>System.Windows.Input.Key</c>.
 /// </summary>
+[System.ComponentModel.TypeConverter(typeof(KeyConverter))]
 public enum Key
 {
 	None = 0,

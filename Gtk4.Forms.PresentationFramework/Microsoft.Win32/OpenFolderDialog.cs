@@ -12,7 +12,7 @@ namespace Microsoft.Win32;
 /// <see cref="DefaultDirectory"/> beyond the start folder, <see cref="DereferenceLinks"/>,
 /// <see cref="RootDirectory"/>, <see cref="ShowHiddenItems"/> and <see cref="ValidateNames"/>; they are store-only.
 /// </remarks>
-public sealed class OpenFolderDialog : CommonDialog
+public sealed class OpenFolderDialog : CommonItemDialog
 {
 	string[]? _folderNames;
 
@@ -25,14 +25,20 @@ public sealed class OpenFolderDialog : CommonDialog
 	/// <summary>Whether the folder is added to the recent list. Default true. Store-only.</summary>
 	public bool AddToRecent { get; set; }
 
-	/// <summary>An id that scopes the dialog's remembered state. Store-only.</summary>
-	public Guid? ClientGuid { get; set; }
+	/// <summary>The last segment of <see cref="FolderName"/>, or empty.</summary>
+	public string SafeFolderName => SafeName(FolderName);
 
-	/// <summary>The folder used when <see cref="InitialDirectory"/> is empty.</summary>
-	public string DefaultDirectory { get; set; } = "";
+	/// <summary>The last segment of every chosen folder.</summary>
+	public string[] SafeFolderNames => FolderNames.Select(SafeName).ToArray();
 
-	/// <summary>Whether shortcuts resolve to their targets. Default true. Store-only.</summary>
-	public bool DereferenceLinks { get; set; }
+	// Both separators end a segment on every OS, so a Windows path and a Unix path both give their last name.
+	static readonly char[] _separators = { '/', (char)92 };
+
+	static string SafeName(string path)
+	{
+		var trimmed = path.TrimEnd(_separators);
+		return trimmed.Substring(trimmed.LastIndexOfAny(_separators) + 1);
+	}
 
 	/// <summary>The first chosen folder, or empty.</summary>
 	public string FolderName
@@ -44,23 +50,8 @@ public sealed class OpenFolderDialog : CommonDialog
 	/// <summary>Every chosen folder; a copy, empty when nothing is chosen.</summary>
 	public string[] FolderNames => _folderNames == null ? new string[0] : (string[])_folderNames.Clone();
 
-	/// <summary>The folder the dialog opens in.</summary>
-	public string InitialDirectory { get; set; } = "";
-
 	/// <summary>Whether several folders may be chosen. Default false.</summary>
 	public bool Multiselect { get; set; }
-
-	/// <summary>The top of the browsable tree. Store-only.</summary>
-	public string RootDirectory { get; set; } = "";
-
-	/// <summary>Whether hidden folders are listed. Store-only.</summary>
-	public bool ShowHiddenItems { get; set; }
-
-	/// <summary>The dialog title; empty keeps the system default.</summary>
-	public string Title { get; set; } = "";
-
-	/// <summary>Whether names are validated before the dialog closes. Store-only.</summary>
-	public bool ValidateNames { get; set; }
 
 	/// <summary>Raised when the user accepts a selection; setting Cancel keeps the dialog open.</summary>
 	public event CancelEventHandler? FolderOk;
@@ -71,17 +62,10 @@ public sealed class OpenFolderDialog : CommonDialog
 	/// <summary>Restores every property to its default.</summary>
 	public override void Reset()
 	{
+		base.Reset();
 		_folderNames = null;
 		AddToRecent = true;
-		ClientGuid = null;
-		DefaultDirectory = "";
-		DereferenceLinks = true;
-		InitialDirectory = "";
 		Multiselect = false;
-		RootDirectory = "";
-		ShowHiddenItems = false;
-		Title = "";
-		ValidateNames = true;
 	}
 
 	/// <inheritdoc/>

@@ -42,9 +42,11 @@ public partial class Dispatcher
 		return Cast<T>(InvokeCore(priority, func, null));
 	}
 
-	/// <summary>Invokes <paramref name="method"/> with <paramref name="args"/> at Normal priority and returns its result.</summary>
+	/// <summary>
+	/// Invokes <paramref name="method"/> with <paramref name="args"/> at Send priority and returns its result.
+	/// </summary>
 	public object? Invoke(Delegate method, params object?[]? args) =>
-		InvokeCore(DispatcherPriority.Normal, method, args);
+		InvokeCore(DispatcherPriority.Send, method, args);
 
 	/// <summary>Invokes <paramref name="method"/> at <paramref name="priority"/> and returns its result.</summary>
 	public object? Invoke(DispatcherPriority priority, Delegate method) =>

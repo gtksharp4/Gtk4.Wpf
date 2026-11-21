@@ -1,10 +1,46 @@
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace System.Windows;
 
 /// <summary>Collection of <see cref="SetterBase"/> items.</summary>
-public class SetterBaseCollection : List<SetterBase>
+public class SetterBaseCollection : Collection<SetterBase>
 {
+	internal bool IsSealed { get; set; }
+
+	void CheckSealed()
+	{
+		if (IsSealed) throw new InvalidOperationException("Cannot modify a sealed Style.");
+	}
+
+	/// <inheritdoc/>
+	protected override void InsertItem(int index, SetterBase item)
+	{
+		CheckSealed();
+		base.InsertItem(index, item);
+	}
+
+	/// <inheritdoc/>
+	protected override void SetItem(int index, SetterBase item)
+	{
+		CheckSealed();
+		base.SetItem(index, item);
+	}
+
+	/// <inheritdoc/>
+	protected override void RemoveItem(int index)
+	{
+		CheckSealed();
+		base.RemoveItem(index);
+	}
+
+	/// <inheritdoc/>
+	protected override void ClearItems()
+	{
+		CheckSealed();
+		base.ClearItems();
+	}
+
 	/// <summary>Trigger setters can only be <see cref="Setter"/> objects, as in WPF.</summary>
 	internal void EnsureOnlySetters()
 	{

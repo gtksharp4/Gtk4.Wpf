@@ -9,11 +9,42 @@ namespace System.Windows;
 /// </summary>
 public partial class Style
 {
+	Type? _targetType;
+	Style? _basedOn;
+
 	/// <summary>The type this style targets.</summary>
-	public Type? TargetType { get; set; }
+	/// <exception cref="InvalidOperationException">The style is sealed.</exception>
+	public Type? TargetType
+	{
+		get => _targetType;
+		set { CheckSealed(); _targetType = value; }
+	}
 
 	/// <summary>Optional base style — applied before this style's setters.</summary>
-	public Style? BasedOn { get; set; }
+	/// <exception cref="InvalidOperationException">The style is sealed.</exception>
+	public Style? BasedOn
+	{
+		get => _basedOn;
+		set { CheckSealed(); _basedOn = value; }
+	}
+
+	/// <summary>Whether the style is sealed and can no longer be modified.</summary>
+	public bool IsSealed { get; private set; }
+
+	/// <summary>Seals the style (and its <see cref="BasedOn"/> chain) against further modification.</summary>
+	public void Seal()
+	{
+		if (IsSealed) return;
+		IsSealed = true;
+		Setters.IsSealed = true;
+		Triggers.IsSealed = true;
+		_basedOn?.Seal();
+	}
+
+	void CheckSealed()
+	{
+		if (IsSealed) throw new InvalidOperationException("Cannot modify a sealed Style.");
+	}
 
 	/// <summary>Property setters that compose this style.</summary>
 	public SetterBaseCollection Setters { get; } = new SetterBaseCollection();

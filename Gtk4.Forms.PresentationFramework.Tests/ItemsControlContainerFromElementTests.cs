@@ -41,6 +41,30 @@ public class ItemsControlContainerFromElementTests : WpfGtkTestBase
 	{
 		var list = new ItemsControl();
 		Assert.Throws<ArgumentNullException>(() => list.ContainerFromElement(null!));
-		Assert.Throws<ArgumentNullException>(() => ItemsControl.ContainerFromElement(null!, new Button()));
+		Assert.Throws<ArgumentNullException>(() => ItemsControl.ContainerFromElement(list, null!));
+	});
+
+	[Fact]
+	public void A_null_itemsControl_finds_the_nearest_container() => Run(() =>
+	{
+		var button = new Button();
+		var panel = new StackPanel();
+		panel.Children.Add(button);
+		var list = new ItemsControl();
+		list.Items.Add(panel);
+		_ = list.Widget;
+		var container = Assert.IsType<ContentPresenter>(ItemsControl.ContainerFromElement(null, button));
+		Assert.Same(panel, container.Content);
+		Assert.Null(ItemsControl.ContainerFromElement(null, new Button()));
+	});
+
+	[Fact]
+	public void A_direct_child_that_is_not_a_container_returns_null() => Run(() =>
+	{
+		var list = new ItemsControl();
+		list.Items.Add(new StackPanel());
+		_ = list.Widget;
+		var stray = new Button { LogicalParent = list };
+		Assert.Null(ItemsControl.ContainerFromElement(list, stray));
 	});
 }

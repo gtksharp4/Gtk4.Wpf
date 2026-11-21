@@ -114,7 +114,7 @@ public class Review47TaskTests : IDisposable
 		Assert.Single(code, c => c.Contains("static void Main()"));
 	}
 
-	sealed class FakeEngine : IBuildEngine
+	internal sealed class FakeEngine : IBuildEngine
 	{
 		public List<BuildMessageEventArgs> Messages { get; } = new List<BuildMessageEventArgs>();
 		public List<string> Errors { get; } = new List<string>();

@@ -110,7 +110,8 @@ internal sealed partial class GtkClipboardBackend
 			return body == null ? null : ParseUriList(Encoding.UTF8.GetString(body));
 		}
 		var prefix = format == DataFormats.Bitmap ? "image/" : "audio/";
-		var mime = mimes.FirstOrDefault(m => m == prefix + "png") ?? mimes.FirstOrDefault(m => m.StartsWith(prefix, StringComparison.Ordinal));
+		var mime = mimes.FirstOrDefault(m => m == prefix + "png")
+			?? mimes.FirstOrDefault(m => m.StartsWith(prefix, StringComparison.Ordinal));
 		var bytes = mime == null ? null : ReadMime(native, mime);
 		if (bytes == null)
 			return null;

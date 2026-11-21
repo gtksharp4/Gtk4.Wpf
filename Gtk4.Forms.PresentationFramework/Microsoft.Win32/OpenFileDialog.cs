@@ -5,7 +5,9 @@ using System.Linq;
 namespace Microsoft.Win32;
 
 /// <summary>Lets the user choose one or more existing files.</summary>
-/// <remarks><see cref="ForcePreviewPane"/>, <see cref="ReadOnlyChecked"/> and <see cref="ShowReadOnly"/> are store-only on GTK.</remarks>
+/// <remarks>
+/// <see cref="ForcePreviewPane"/>, <see cref="ReadOnlyChecked"/> and <see cref="ShowReadOnly"/> are store-only on GTK.
+/// </remarks>
 public sealed class OpenFileDialog : FileDialog
 {
 	/// <summary>Creates a dialog with default values.</summary>

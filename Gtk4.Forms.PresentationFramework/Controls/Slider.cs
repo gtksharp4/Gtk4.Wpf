@@ -14,8 +14,6 @@ namespace System.Windows.Controls;
 /// </summary>
 public partial class Slider : RangeBase
 {
-	/// <summary>Creates a slider and registers its commands.</summary>
-	public Slider() => InitCommandBindings();
 
 	// ── Minimum DP ───────────────────────────────────────────────────────────
 

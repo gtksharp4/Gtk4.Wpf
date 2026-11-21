@@ -77,7 +77,8 @@ public class DispatcherHostGtkTests : WpfGtkTestBase
 			Dispatcher.BeginInvokePriorityAction = (a, p) => GLib.Idle.Add((int)GLib.Priority.Default, () => { a(); return false; });
 			object? result = null;
 			var worker = new System.Threading.Thread(() =>
-				result = ui.Invoke(DispatcherPriority.Send, (DispatcherOperationCallback)(a => Environment.CurrentManagedThreadId), null!));
+				result = ui.Invoke(DispatcherPriority.Send,
+					(DispatcherOperationCallback)(a => Environment.CurrentManagedThreadId), null!));
 			worker.Start();
 			var deadline = DateTime.UtcNow.AddSeconds(5);
 			while (worker.IsAlive && DateTime.UtcNow < deadline)
@@ -88,6 +89,41 @@ public class DispatcherHostGtkTests : WpfGtkTestBase
 		finally
 		{
 			Dispatcher.IsOnDispatcherThread = oldOn;
+			Dispatcher.BeginInvokePriorityAction = oldPost;
+			Dispatcher.InvokeAction = oldInvoke;
+			DispatcherGlibHost.Detach();
+		}
+	});
+
+	[Fact]
+	public void Invoke_at_Normal_pumps_a_nested_glib_frame_after_the_real_app_wiring() => Run(() =>
+	{
+		var ui = Dispatcher.CurrentDispatcher;
+		DispatcherGlibHost.Attach();
+		var oldOn = Dispatcher.IsOnDispatcherThread;
+		var oldBegin = Dispatcher.BeginInvokeAction;
+		var oldPost = Dispatcher.BeginInvokePriorityAction;
+		var oldInvoke = Dispatcher.InvokeAction;
+		try
+		{
+			int uiThread = Environment.CurrentManagedThreadId;
+			Dispatcher.IsOnDispatcherThread = () => Environment.CurrentManagedThreadId == uiThread;
+			Dispatcher.BeginInvokeAction = a => Application.PostToMainLoop(a, DispatcherPriority.Normal);
+			Dispatcher.BeginInvokePriorityAction = Application.PostToMainLoop;
+			var order = new System.Collections.Generic.List<string>();
+			GLib.Idle.Add((int)GLib.Priority.High, () => { order.Add("idle"); return false; });
+
+			object? value = ui.Invoke(DispatcherPriority.Normal,
+				(DispatcherOperationCallback)(_ => { order.Add("work"); return 42; }), null!);
+
+			Assert.Equal(42, value);
+			Assert.Contains("work", order);
+			Assert.Equal("idle", order[0]);
+		}
+		finally
+		{
+			Dispatcher.IsOnDispatcherThread = oldOn;
+			Dispatcher.BeginInvokeAction = oldBegin;
 			Dispatcher.BeginInvokePriorityAction = oldPost;
 			Dispatcher.InvokeAction = oldInvoke;
 			DispatcherGlibHost.Detach();

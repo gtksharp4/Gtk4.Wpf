@@ -4,7 +4,7 @@ namespace System.Windows;
 
 public partial class Window
 {
-	// The left press recorded by a capture-phase GestureClick on the window (cleared on release).
+	// The left press recorded by a capture-phase GestureClick on the window (cleared on release, cancel or stop).
 	bool _leftDown;
 	Gdk.Device? _pressDevice;
 	double _pressX, _pressY;
@@ -25,6 +25,7 @@ public partial class Window
 		{
 			if (o is Gtk.GestureClick { CurrentButton: 1 }) _leftDown = false;
 		};
+		click.Cancel += (_, _) => _leftDown = false;
 		win.AddController(click);
 	}
 
@@ -58,6 +59,9 @@ public partial class Window
 		}
 		var surface = _window?.Surface;
 		if (surface == null) return;
+		if (_pressDevice != null && surface.GetDevicePosition(_pressDevice, out _, out _, out var mask)
+			&& !mask.HasFlag(Gdk.ModifierType.Button1Mask))
+			throw new InvalidOperationException("Can only call DragMove when primary mouse button is down.");
 		Gdk.ToplevelAdapter.GetObject(surface)?.BeginMove(_pressDevice!, 1, _pressX, _pressY, _pressTime);
 	}
 }

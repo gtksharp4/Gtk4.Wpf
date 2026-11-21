@@ -87,7 +87,10 @@ namespace Gtk4.Forms.MarkupCompiler
 
 			bool success = true;
 			var generated = new List<ITaskItem>();
-			var seen = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+			// Paths compare case-insensitively only where the file system does.
+			bool windowsPaths = IOPath.DirectorySeparatorChar == (char)92;
+			var pathComparer = windowsPaths ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+			var seen = new Dictionary<string, string>(pathComparer);
 			var generator = new XamlCodeGenerator();
 			if (CompileFiles != null)
 				generator.CodeBehindSources = CodeBehindScan.ReadSources(
@@ -112,20 +115,26 @@ namespace Gtk4.Forms.MarkupCompiler
 				else if (IOPath.DirectorySeparatorChar == '\\' && xamlPath.Contains("/"))
 					xamlPath = xamlPath.Replace('/', '\\');
 
+				string fullXamlPath = IOPath.GetFullPath(xamlPath);
 				string outputPath = OutputPathFor(xamlPath);
 				if (seen.TryGetValue(outputPath, out string first))
 				{
 					// The same item listed twice is harmless; two different files sharing an output is not.
-					if (!string.Equals(first, xamlPath, StringComparison.OrdinalIgnoreCase))
+					if (!pathComparer.Equals(first, fullXamlPath))
 					{
 						Log.LogError(null, null, null, xamlPath, 0, 0, 0, 0,
 							"Generated output {0} collides with {1}; give the files distinct names or folders.",
 							outputPath, first);
 						success = false;
 					}
+					else
+					{
+						Log.LogMessage(MessageImportance.Low,
+							"  Skipped duplicate XAML item {0} (already generated).", xamlPath);
+					}
 					continue;
 				}
-				seen[outputPath] = xamlPath;
+				seen[outputPath] = fullXamlPath;
 				string itemType = item.GetMetadata("GFItemType");
 				generator.ItemType = string.IsNullOrEmpty(itemType) ? null : itemType;
 

@@ -97,6 +97,10 @@ public class VectorPointMatrixTests
 		Assert.Throws<InvalidOperationException>(() => Point.Parse("1"));
 		Assert.Throws<InvalidOperationException>(() => Point.Parse("1,2,3"));
 		Assert.Throws<FormatException>(() => Point.Parse("a,2"));
+		Assert.Throws<InvalidOperationException>(() => Point.Parse("1,2,"));
+		Assert.Throws<InvalidOperationException>(() => Point.Parse("1,,2"));
+		Assert.Throws<InvalidOperationException>(() => Vector.Parse("1,,2"));
+		Assert.Throws<InvalidOperationException>(() => Matrix.Parse("1,0,0,1,0,0,"));
 		Assert.Throws<InvalidOperationException>(() => Vector.Parse(""));
 		Assert.Throws<ArgumentNullException>(() => Vector.Parse(null!));
 	}

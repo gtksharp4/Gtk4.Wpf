@@ -1709,7 +1709,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   unsealed, `NumberSubstitution` gains the constructors and instance properties (default `CultureSource` is `Text`, as
   reflected from the real `PresentationCore`, not `User` as the brief said) and `Equals`; `XmlLanguage.GetLanguage`
   validates RFC 3066. **C-F4** a `TextBlock` label is prefixed with a directional mark. **C-F5** `XmlLanguage` is
-  converter-backed. **C-F6** `IsWidgetMaterialized` removed, bidi characters named in `BidiMarks` (the invisible literals became escapes in the follow-up). **CI-1**
+  converter-backed. **C-F6** `IsWidgetMaterialized` removed, bidi characters named in `BidiMarks` (the constants were still raw invisible characters until the Round 48 review turned them into escapes). **CI-1**
   `{DynamicResource}` on a media property probes the enclosing parse scopes through the new `StaticResourceScope.TryFind`.
   **CI-2** the outermost `GeometryGroup` `FillRule` wins. Not reproduced as specified: CI-1's `Rectangle.Fill` scenario
   does not go through the media path; a DP-level `{DynamicResource}` still emits a one-shot `FindResource` (pinned by
@@ -1734,13 +1734,75 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   reopens the isolate (with the directional mark) at every `'\n'`, so text after a `LineBreak`, in a nested
   `Section`/`List` inside a `ListItem`, or in a `Span` with its own direction keeps its direction; `TextBlock` marks
   every line of multi-line text. `ListItem.FlowDirection` was added and a list item's own direction wins over the
-  list's. **C-F6** `BidiMarks` constants are `\u` escapes.
+  list's. **C-F6** `BidiMarks` constants were meant to be `\u` escapes (done in the Round 48 review).
   **Follow-up totals: 4889 tests** (201 WindowsBase + 4080 PresentationFramework + 574 MarkupCompiler + 34
   ProjectConverter), all pass; `dotnet build Gtk4.Forms.sln` 0 warnings. `Integration.Tests` not run.
   **Samples gate (Gtk4.Forms.Wpf packed from the fixed tree, pinned feed, hashes equal the local `Packages/`):** all 90
   `build=pass` projects build through the two-build recipe (12 needed a third build after a parallel restore race) and
   all 83 `run=runs` apps stay alive with a window for 10 s (three showed as hangs in the first pass and run when re-run
   alone, one was skipped by the script and run alone); no regression.
+- **Round 48 track A - input-api (DONE, merged).** `gf48/input-api` (merge `ecf1d70d`): the input API surface split out
+  of `gf46/input-focus`: keyboard-focus events, `MoveFocus`/`PredictFocus`, `KeyConverter`, `EditingCommands`, the full
+  `Cursors` set, `ContextMenuOpening`/`Closing`, a routed `RangeBase.ValueChanged`, `Slider` commands, auto-tooltip and
+  `Ticks`. Samples: CursorType, CustomRoutedCommand, EditingCommands, KeyStrokeCounter, ProgrammaticFocusControl and
+  CommandSourceControlWithDispatcherTimer build and run; ContextMenuOpening, FocusVisualStyle and
+  ICommandSourceImplementation build and do not run (see `samples-coverage.md`).
+- **Round 48 track B - graphics-window-tail (DONE, merged).** `gf48/graphics-window-tail` (merge `5ebf5285`): `Vector`,
+  `Point` arithmetic, `Matrix`, `GetLocalValueEnumerator`, `UIElement.Clip` (native bounds clip, exact in `Shape`),
+  `Page.Background`, `TextBlock` attached accessors, `SystemColors` keys, `Window.DragMove`/`AllowsTransparency` and
+  path-markup conversion to `Geometry`. Unblocks SystemBrushesAndColors, RestoringDefaultValues, CustomWindowUI,
+  NonRectangularWindow and part of 9 apps that read `Page.Background`.
+- **Round 48 track C - threading-dialogs-items (DONE, merged).** `gf48/threading-dialogs-items` (merge `f585c6c8`):
+  `DispatcherObject` on `DependencyObject`, `DispatcherOperation`, frames, shutdown and per-thread queues;
+  `Microsoft.Win32` `CommonDialog`/`FileDialog`/`OpenFileDialog`/`SaveFileDialog`/`OpenFolderDialog`; clipboard media
+  queries; `IEditableCollectionView` on `ListCollectionView`; `BindingGroup.GetValue`/`TryGetValue`;
+  `ItemsControl.ContainerFromElement`; `DependencyProperty.ReadOnly`. Samples: the four threading apps, ClipboardSpy,
+  CommonDialogs and EditingCollections are the targets (EditingCollections re-checked in the review gate).
+- **Round 48 review (Opus) + fixes - DONE.** **A-F1** `PredictFocus` throws `ArgumentOutOfRangeException` for
+  Next/Previous/First/Last (only the four arrows predict). **A-F2** `MoveFocus` wraps only in a `Cycle` container (a
+  `Window` cycles; the nearest `TabNavigation` setter wins, `Contained` stops at its ends) and sets
+  `TraversalRequest.Wrapped` instead of reading it. **A-F3** `CursorType` has the WPF ordinals; `ScrollEW` is a hidden
+  alias of `ScrollWE`. **A-F4** `KeyConverter` knows the WPF aliases (`Ctrl`, `Esc`, `PgUp`, ...) and `Key` carries the
+  converter. **A-F5** `InputEventArgs` is a public concrete class; rebasing key, mouse and text-composition args onto it
+  is a known gap (`samples-coverage.md`). **A-F6** any focusable, enabled, tab-stop `UIElement` is a focus candidate and
+  `MoveFocus`/`PredictFocus` are virtual; deviation: `Focusable` defaults to true on every `UIElement` here (WPF: false
+  outside controls), so a non-`Control` counts only when `Focusable` is set on it, and a `Window` is never a candidate.
+  **A-F7** `CommandManager.RegisterClassCommandBinding`/`RegisterClassInputBinding`; routed lookup consults class
+  bindings after the instance ones; `Slider` registers its six commands and default gestures once (the sender is the
+  element that owns the class binding). **A-F8** `Style.IsSealed`/`Seal()`; a sealed style rejects setter, trigger,
+  `BasedOn` and `TargetType` changes; the default focus-visual style is sealed (`SetterBaseCollection` and
+  `TriggerCollection` are now `Collection<T>`, as in WPF). **B-F1** a `Clip` set before the widget exists is applied on
+  creation. **B-F2** `DragMove`'s recorded press is cleared on a cancelled gesture and checked against the live pointer
+  mask (`Button1Mask`) on the native path; `Stopped` was not used because GTK emits it on click-timeout while the button
+  is still down. **B-F3** `TokenizerHelper` rejects empty tokens and a trailing separator. **B-F4** rendered-pixel
+  test for `Shape.Clip` (fails without `ApplyClip`), `GraphicsWindowTailTests` split in two. **B-F5** `Page.Template`
+  shares `Control.TemplateProperty` (`Control`'s change callback ignores non-controls). **B-F6** `Point.ToString()` uses
+  the culture list separator, `Point.Equals(Point, Point)` uses `double.Equals`, `==` stays exact. **C-F1**
+  `Dispatcher.Invoke(Delegate, params object[])` runs at `Send`. **C-F2** `BindingGroup.ValidateWithoutUpdate` calls the
+  `(value, culture, BindingGroup)` overload. **C-F3** `ItemsControl.Items` implements `IEditableCollectionView` by
+  forwarding to the default view over `ItemsSource` (inline items are not editable). **C-F4** the compiler emits
+  `<X.BindingGroup>` and `ItemsControl.ItemBindingGroup`; a group enlists the expressions of its element and
+  descendants (`BindingBase.BindingGroupName` empty or equal to `Name`; bindings made, or subtrees parented, later
+  too); `ItemBindingGroup` copies name, flags and rule instances onto each container; ValidateItemSample and
+  ValidateItemsInItemsControl build and start (the rules are not driven by the gate). **C-F5**
+  `ItemsControl.ContainerFromElement` null-checks only the element and returns only real containers. **C-F6**
+  `CommonItemDialog`, `OpenFolderDialog.SafeFolderName(s)`, virtual `ShowDialog()`. **C-F7** four oversized files
+  split, long lines wrapped. **C-F8** a GTK test drives `Dispatcher.Invoke` through a nested GLib frame with the real
+  wiring. **CI-1** constructor detection balances parentheses. **CI-2** `BidiMarks` constants are `\u` escapes (the
+  Round 47 note claiming it was already done was wrong). **CI-3** inline isolates no longer emit a directional mark
+  after a newline. **CI-4** `MarkupCompileTask` keys duplicates by full path, compares ordinally off Windows and logs a
+  low-importance message for a skipped duplicate. Rejected in triage: none.
+  **Round 48 totals: 5117 tests** (255 WindowsBase + 4247 PresentationFramework + 581 MarkupCompiler (1 skipped,
+  Windows) + 34 ProjectConverter), all pass; `dotnet build Gtk4.Forms.sln` 0 warnings. `Integration.Tests` not run.
+  **Samples gate (Gtk4.Forms.Wpf packed from the fixed tree, pinned feed, isolated cache):** all 90 `build=pass`
+  projects build through the two-build recipe and all 83 `run=runs` apps stay up with a window for 10 s, one at a time;
+  no regression (AppCompat-Quirks, LocalizationResources and DragDropThumbOps are the unchanged non-runners).
+- **Carry-over (Round 48)**: `KeyEventArgs`, `MouseEventArgs` and `TextCompositionEventArgs` are not rebased onto
+  `KeyboardEventArgs`/`InputEventArgs`; `Focusable` defaults to true on every `UIElement` (WPF: false outside
+  controls); `Once` and `None` `TabNavigation` modes behave like `Continue`; `BindingGroup` enlistment covers simple
+  `Binding`s only (not `MultiBinding`/`PriorityBinding`) and `FrameworkElement.BindingGroup` does not inherit;
+  `ItemBindingGroup` shares rule instances between containers; `Style.Seal` does not seal the setters' values and
+  styles are not sealed on first use; `samples-coverage.json` is the `1b50a528` measurement (stale).
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a

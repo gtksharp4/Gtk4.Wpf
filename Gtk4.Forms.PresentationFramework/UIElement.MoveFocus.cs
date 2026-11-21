@@ -5,73 +5,103 @@ namespace System.Windows;
 
 /// <summary>
 /// <see cref="MoveFocus"/> and <see cref="PredictFocus"/>. Tab-order moves follow the logical tree sorted by
-/// <see cref="KeyboardNavigation.TabIndexProperty"/> (controls only); directional moves pick the nearest
-/// focusable element in
-/// that direction by GTK widget bounds, and fall back to tab order while the tree has no layout.
+/// <see cref="KeyboardNavigation.TabIndexProperty"/>; wrapping at the ends follows the nearest
+/// <see cref="KeyboardNavigation.TabNavigationProperty"/> container (a <see cref="Window"/> cycles). Directional
+/// moves pick the nearest focusable element in that direction by GTK widget bounds, and fall back to tab order
+/// while the tree has no layout.
 /// </summary>
 public abstract partial class UIElement
 {
 	/// <summary>Moves keyboard focus away from this element in the requested direction.</summary>
 	/// <returns><c>true</c> if focus moved to another element.</returns>
 	/// <exception cref="ArgumentNullException"><paramref name="request"/> is null.</exception>
-	public bool MoveFocus(TraversalRequest request)
+	public virtual bool MoveFocus(TraversalRequest request)
 	{
 		if (request == null) throw new ArgumentNullException(nameof(request));
-		var target = FindFocusTarget(request.FocusNavigationDirection, request.Wrapped) as UIElement;
-		return target != null && target.Focus();
+		var target = FindFocusTarget(request.FocusNavigationDirection, out bool wrapped);
+		if (target == null || !target.Focus()) return false;
+		if (wrapped) request.Wrapped = true;
+		return true;
 	}
 
-	/// <summary>The element that would get focus for <paramref name="direction"/>, without moving it.</summary>
-	public DependencyObject? PredictFocus(FocusNavigationDirection direction)
+	/// <summary>The element that would get focus for a directional move, without moving it.</summary>
+	/// <exception cref="ComponentModel.InvalidEnumArgumentException">The direction is not a defined value.</exception>
+	/// <exception cref="ArgumentOutOfRangeException">The direction is Next, Previous, First or Last.</exception>
+	public virtual DependencyObject? PredictFocus(FocusNavigationDirection direction)
 	{
 		if (direction < FocusNavigationDirection.Next || direction > FocusNavigationDirection.Down)
 			throw new ComponentModel.InvalidEnumArgumentException(nameof(direction), (int)direction,
 				typeof(FocusNavigationDirection));
-		return FindFocusTarget(direction, false);
+		if (direction <= FocusNavigationDirection.Last)
+			throw new ArgumentOutOfRangeException(nameof(direction));
+		return FindFocusTarget(direction, out _);
 	}
 
-	UIElement? FindFocusTarget(FocusNavigationDirection direction, bool wrapped)
+	UIElement? FindFocusTarget(FocusNavigationDirection direction, out bool wrapped)
 	{
+		wrapped = false;
 		var root = this;
 		while (root.LogicalParent != null) root = root.LogicalParent;
+		var container = root;
+		var mode = KeyboardNavigationMode.Continue;
+		for (var n = this; n != null; n = n.LogicalParent)
+		{
+			if (n.ReadLocalValue(KeyboardNavigation.TabNavigationProperty) != DependencyProperty.UnsetValue)
+				mode = KeyboardNavigation.GetTabNavigation(n);
+			else if (n is Window)
+				mode = KeyboardNavigationMode.Cycle;
+			else
+				continue;
+			container = n;
+			break;
+		}
+		bool bounded = mode is KeyboardNavigationMode.Cycle or KeyboardNavigationMode.Contained;
 		var order = new List<UIElement>();
-		CollectFocusCandidates(root, order);
+		CollectFocusCandidates(bounded ? container : root, order);
 		order = TabOrderHelper.Order(order, e => KeyboardNavigation.GetTabIndex(e), e => true);
 
 		int at = order.IndexOf(this);
+		bool wrap = mode == KeyboardNavigationMode.Cycle;
 		switch (direction)
 		{
 			case FocusNavigationDirection.First: return order.Count > 0 ? order[0] : null;
 			case FocusNavigationDirection.Last: return order.Count > 0 ? order[order.Count - 1] : null;
 			case FocusNavigationDirection.Next:
-				return Step(order, at, 1, wrapped);
+				return Step(order, at, 1, wrap, out wrapped);
 			case FocusNavigationDirection.Previous:
-				return Step(order, at, -1, wrapped);
+				return Step(order, at, -1, wrap, out wrapped);
 		}
 		return NearestInDirection(order, direction)
 			?? Step(order, at, direction is FocusNavigationDirection.Down or FocusNavigationDirection.Right ? 1 : -1,
-				wrapped);
+				wrap, out wrapped);
 	}
 
-	static UIElement? Step(List<UIElement> order, int at, int delta, bool wrapped)
+	static UIElement? Step(List<UIElement> order, int at, int delta, bool wrap, out bool wrapped)
 	{
+		wrapped = false;
 		if (order.Count == 0) return null;
 		int next = at < 0 ? (delta > 0 ? 0 : order.Count - 1) : at + delta;
 		if (next < 0 || next >= order.Count)
 		{
-			if (!wrapped) return null;
+			if (!wrap) return null;
 			next = (next + order.Count) % order.Count;
+			wrapped = true;
 		}
 		return order[next];
 	}
+
+	// A non-Control only counts when Focusable was set on it explicitly: Focusable defaults to true on every
+	// UIElement here, where WPF defaults it to false outside controls.
+	static bool IsFocusCandidate(UIElement e) =>
+		e is not Window && e.Focusable && e.IsEnabled && KeyboardNavigation.GetIsTabStop(e)
+		&& (e is Controls.Control || e.ReadLocalValue(FocusableProperty) != DependencyProperty.UnsetValue);
 
 	static void CollectFocusCandidates(DependencyObject node, List<UIElement> into)
 	{
 		if (node is UIElement e)
 		{
 			if (!e.IsVisibilityChainVisible) return;
-			if (e is Controls.Control && e.Focusable && e.IsEnabled && KeyboardNavigation.GetIsTabStop(e))
-				into.Add(e);
+			if (IsFocusCandidate(e)) into.Add(e);
 		}
 		foreach (var child in LogicalTreeHelper.GetChildren(node))
 		{

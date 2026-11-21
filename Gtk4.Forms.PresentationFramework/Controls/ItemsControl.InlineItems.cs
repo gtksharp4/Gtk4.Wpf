@@ -23,7 +23,7 @@ public partial class ItemsControl
 		_itemsFromSource = ItemsSource != null;
 	}
 
-	sealed class ItemList : Collection<object?>
+	sealed partial class ItemList : Collection<object?>
 	{
 		readonly ItemsControl _owner;
 
