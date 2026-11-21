@@ -43,15 +43,18 @@ public sealed class CacheRequest
 		if (!_patterns.Contains(pattern)) _patterns.Add(pattern);
 	}
 
-	/// <summary>Which elements around the retrieved one are cached: itself, its children or its parent.</summary>
+	/// <summary>
+	/// Which elements around the retrieved one are cached: itself and its children. Descendants is accepted
+	/// but not cached.
+	/// </summary>
 	public TreeScope TreeScope
 	{
 		get => _scope;
 		set
 		{
 			VerifyNotActive();
-			if ((value & TreeScope.Element) == 0 || (value & (TreeScope.Descendants | TreeScope.Ancestors)) != 0)
-				throw new ArgumentException("The scope must include Element and may add Children and Parent.",
+			if (value == 0 || (value & ~TreeScope.Subtree) != 0)
+				throw new ArgumentException("The scope must combine Element, Children and Descendants.",
 						nameof(value));
 			_scope = value;
 		}

@@ -72,8 +72,12 @@ public class AutomationEventTests : UiaTestBase
 		int count = 0;
 		Auto.AddAutomationPropertyChangedEventHandler(Find("Agree"), TreeScope.Element, (s, e) => count++,
 			AutomationElement.NameProperty);
-		f.Agree.IsChecked = true;
-		Assert.Equal(0, count);
+		try
+		{
+			f.Agree.IsChecked = true;
+			Assert.Equal(0, count);
+		}
+		finally { Auto.RemoveAllEventHandlers(); }
 	});
 
 	[Fact]

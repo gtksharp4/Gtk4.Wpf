@@ -86,6 +86,7 @@ public partial class AutomationElement
 	/// <summary>Returns the properties the element supports: every element property and its patterns'.</summary>
 	public AutomationProperty[] GetSupportedProperties() => AutomationThread.Call(() =>
 	{
+		EnsureAvailable();
 		var result = new List<AutomationProperty>();
 		foreach (var entry in PropertyCatalog.ElementEntries)
 			result.Add(entry.Property);
@@ -114,7 +115,9 @@ public partial class AutomationElement
 
 	static object? DefaultFor(AutomationProperty property)
 	{
-		var type = PropertyCatalog.LookupElement(property)?.Type ?? PropertyCatalog.LookupPattern(property)?.Type;
+		var pattern = PropertyCatalog.LookupPattern(property);
+		if (pattern?.Default != null) return pattern.Default();
+		var type = PropertyCatalog.LookupElement(property)?.Type ?? pattern?.Type;
 		return type == null ? null : PropertyCatalog.DefaultOf(type);
 	}
 

@@ -7,8 +7,9 @@ namespace System.Windows.Automation;
 sealed class PatternPropertyEntry
 {
 	internal PatternPropertyEntry(AutomationProperty property, AutomationPattern pattern, Type type,
-		Func<object, object?> get)
+		Func<object, object?> get, Func<object?>? defaultValue = null)
 	{
+		Default = defaultValue;
 		Property = property;
 		Pattern = pattern;
 		Type = type;
@@ -22,6 +23,9 @@ sealed class PatternPropertyEntry
 	internal Type Type { get; }
 
 	internal Func<object, object?> Get { get; }
+
+	/// <summary>The WPF schema default for an unsupported pattern; <c>null</c> means the type default.</summary>
+	internal Func<object?>? Default { get; }
 }
 
 static partial class PropertyCatalog
@@ -38,25 +42,28 @@ static partial class PropertyCatalog
 	static Dictionary<int, PatternPropertyEntry> BuildPatternEntries()
 	{
 		var map = new Dictionary<int, PatternPropertyEntry>();
-		void Add<TProvider>(AutomationProperty p, AutomationPattern pattern, Type t, Func<TProvider, object?> get) =>
-			map[p.Id] = new PatternPropertyEntry(p, pattern, t, o => get((TProvider)o));
+		void Add<TProvider>(AutomationProperty p, AutomationPattern pattern, Type t, Func<TProvider, object?> get,
+			Func<object?>? defaultValue = null) =>
+			map[p.Id] = new PatternPropertyEntry(p, pattern, t, o => get((TProvider)o), defaultValue);
 
 		var value = ValuePatternIdentifiers.Pattern;
 		Add<IValueProvider>(ValuePatternIdentifiers.ValueProperty, value, typeof(string), x => x.Value);
-		Add<IValueProvider>(ValuePatternIdentifiers.IsReadOnlyProperty, value, typeof(bool), x => x.IsReadOnly);
+		Add<IValueProvider>(ValuePatternIdentifiers.IsReadOnlyProperty, value, typeof(bool), x => x.IsReadOnly,
+			() => true);
 
 		var toggle = TogglePatternIdentifiers.Pattern;
 		Add<IToggleProvider>(TogglePatternIdentifiers.ToggleStateProperty, toggle, typeof(ToggleState),
-			x => x.ToggleState);
+			x => x.ToggleState, () => ToggleState.Indeterminate);
 
 		var expand = ExpandCollapsePatternIdentifiers.Pattern;
 		Add<IExpandCollapseProvider>(ExpandCollapsePatternIdentifiers.ExpandCollapseStateProperty, expand,
-			typeof(ExpandCollapseState), x => x.ExpandCollapseState);
+			typeof(ExpandCollapseState), x => x.ExpandCollapseState,
+			() => ExpandCollapseState.LeafNode);
 
 		var range = RangeValuePatternIdentifiers.Pattern;
 		Add<IRangeValueProvider>(RangeValuePatternIdentifiers.ValueProperty, range, typeof(double), x => x.Value);
 		Add<IRangeValueProvider>(RangeValuePatternIdentifiers.IsReadOnlyProperty, range, typeof(bool),
-			x => x.IsReadOnly);
+			x => x.IsReadOnly, () => true);
 		Add<IRangeValueProvider>(RangeValuePatternIdentifiers.MinimumProperty, range, typeof(double),
 			x => x.Minimum);
 		Add<IRangeValueProvider>(RangeValuePatternIdentifiers.MaximumProperty, range, typeof(double),
@@ -98,7 +105,8 @@ static partial class PropertyCatalog
 		Add<ISelectionProvider>(SelectionPatternIdentifiers.IsSelectionRequiredProperty, selection, typeof(bool),
 			x => x.IsSelectionRequired);
 		Add<ISelectionProvider>(SelectionPatternIdentifiers.SelectionProperty, selection,
-			typeof(AutomationElement[]), x => AutomationElement.FromProviders(x.GetSelection()));
+			typeof(AutomationElement[]), x => AutomationElement.FromProviders(x.GetSelection()),
+			() => new AutomationElement[0]);
 
 		var item = SelectionItemPatternIdentifiers.Pattern;
 		Add<ISelectionItemProvider>(SelectionItemPatternIdentifiers.IsSelectedProperty, item, typeof(bool),

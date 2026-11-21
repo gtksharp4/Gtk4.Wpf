@@ -11,6 +11,7 @@ sealed class ElementCache
 
 	internal List<AutomationElement>? Children { get; set; }
 
+	/// <summary>The cached requesting element, set on its cached children.</summary>
 	internal AutomationElement? Parent { get; set; }
 
 	internal bool ParentCached { get; set; }
@@ -30,13 +31,12 @@ sealed class ElementCache
 		{
 			cache.Children = new List<AutomationElement>();
 			foreach (var child in ElementNavigation.Children(element.Peer, request.TreeFilter))
-				cache.Children.Add(AutomationElement.Wrap(child, related));
-		}
-		if ((request.TreeScope & TreeScope.Parent) != 0)
-		{
-			cache.ParentCached = true;
-			if (ElementNavigation.Parent(element.Peer, request.TreeFilter) is { } parent)
-				cache.Parent = AutomationElement.Wrap(parent, related);
+			{
+				var childElement = new AutomationElement(child, null);
+				var childCache = Take(childElement, related);
+				childCache.ParentCached = true;
+				cache.Children.Add(new AutomationElement(child, childCache));
+			}
 		}
 		return cache;
 	}
@@ -44,7 +44,14 @@ sealed class ElementCache
 
 public partial class AutomationElement
 {
-	AutomationElement WithCache(CacheRequest request) => new AutomationElement(Peer, ElementCache.Take(this, request));
+	AutomationElement WithCache(CacheRequest request)
+	{
+		var cached = new AutomationElement(Peer, ElementCache.Take(this, request));
+		if (cached._cache!.Children != null)
+			foreach (var child in cached._cache.Children)
+				child._cache!.Parent = cached;
+		return cached;
+	}
 
 	/// <summary>The children cached with the element.</summary>
 	/// <exception cref="InvalidOperationException">The children were not cached.</exception>
@@ -52,7 +59,7 @@ public partial class AutomationElement
 		_cache?.Children != null ? new AutomationElementCollection(_cache.Children)
 			: throw new InvalidOperationException("The children were not cached.");
 
-	/// <summary>The parent cached with the element, or <c>null</c> when it has none.</summary>
+	/// <summary>The element whose request cached this one; only cached children have it.</summary>
 	/// <exception cref="InvalidOperationException">The parent was not cached.</exception>
 	public AutomationElement CachedParent =>
 		_cache != null && _cache.ParentCached

@@ -388,8 +388,9 @@ peers it wraps, so there is nothing to add to the solution or the CI scripts):
   are carried back to the caller) and returns after the dispatcher is idle (a bounded GLib pump on the GTK thread,
   an `ApplicationIdle` barrier from another thread). Nested calls and event handlers run inline.
 - Events: `Automation.Add*EventHandler` subscribe to the peers' static events with `TreeScope` filtering. Handlers
-  run synchronously on the GTK thread. `ButtonBase.OnClick` now raises `InvokePatternOnInvoked` (a Phase 1 gap) and
-  `Keyboard.SetFocused` raises `AutomationFocusChanged`.
+  run synchronously on the GTK thread. `Button.OnClick` and `RepeatButton.OnClick` (with a new
+  `RepeatButtonAutomationPeer`) raise `InvokePatternOnInvoked`, as in WPF; toggle buttons do not. `Keyboard.SetFocused`
+  raises `AutomationFocusChanged`. `AsyncContentLoaded` reaches the client as `AsyncContentLoadedEventArgs`.
 
 Deviations from the plan and WPF, all documented in code:
 
@@ -399,9 +400,13 @@ Deviations from the plan and WPF, all documented in code:
   the topmost one containing the point wins.
 - Tree walkers with a condition prune non-matching elements and promote their children. A match whose ancestors all
   fail the condition is a child of the root for sibling purposes.
-- `CacheRequest.TreeScope` accepts `Element`, `Children` and `Parent`; `Descendants` and `Ancestors` throw
-  `ArgumentException` (caching a whole subtree is not implemented). `AutomationElementMode` is stored but always acts as
-  `Full`. Cached children and parent carry the request's properties and patterns.
+- `CacheRequest.TreeScope` takes any non-empty mix of `Element`, `Children` and `Descendants` and rejects `Parent` and
+  `Ancestors`, as WPF does; `Descendants` is accepted but not cached. `AutomationElementMode` is stored but always
+  acts as `Full`. Cached children carry the request's properties and patterns and have the requesting element as
+  `CachedParent`.
+- An unsupported pattern property reads as the WPF schema default (`IsReadOnly` true, `ToggleState` Indeterminate,
+  `ExpandCollapseState` LeafNode, `Selection` empty); other properties read as the type default (unverified against
+  WPF for the scroll percent and view-size properties).
 - Property conditions and `GetCurrentPropertyValue` cover the element properties and the properties of the nine
   patterns above. Other properties throw `ArgumentException`.
 - `WindowOpenedEvent`/`WindowClosedEvent` and the other events with no peer source can be subscribed to but are never

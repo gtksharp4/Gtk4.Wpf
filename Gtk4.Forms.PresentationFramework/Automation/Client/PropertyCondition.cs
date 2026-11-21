@@ -11,9 +11,10 @@ public class PropertyCondition : Condition
 		Property = property ?? throw new ArgumentNullException(nameof(property));
 		var type = PropertyCatalog.LookupElement(property)?.Type ?? PropertyCatalog.LookupPattern(property)?.Type
 			?? throw new ArgumentException("The property is not supported.", nameof(property));
-		if (value == null ? type.IsValueType || type == typeof(string) : !type.IsInstanceOfType(value))
+		if (value == null ? type.IsValueType
+			: !ReferenceEquals(value, AutomationElement.NotSupported) && !type.IsInstanceOfType(value))
 			throw new ArgumentException($"The value must be a {type.Name}.", nameof(value));
-		if ((flags & PropertyConditionFlags.IgnoreCase) != 0 && value is not string)
+		if ((flags & PropertyConditionFlags.IgnoreCase) != 0 && type != typeof(string))
 			throw new ArgumentException("IgnoreCase applies only to string values.", nameof(flags));
 		Value = value;
 		Flags = flags;
@@ -31,7 +32,9 @@ public class PropertyCondition : Condition
 	internal override bool Matches(AutomationElement element)
 	{
 		var actual = element.ReadPropertyCore(Property, ignoreDefault: true);
-		if (ReferenceEquals(actual, AutomationElement.NotSupported)) return false;
+		if (ReferenceEquals(actual, AutomationElement.NotSupported)
+			|| ReferenceEquals(Value, AutomationElement.NotSupported))
+			return ReferenceEquals(actual, Value);
 		if (Value is string expected && actual is string text)
 			return string.Equals(expected, text, (Flags & PropertyConditionFlags.IgnoreCase) != 0
 				? StringComparison.InvariantCultureIgnoreCase : StringComparison.Ordinal);

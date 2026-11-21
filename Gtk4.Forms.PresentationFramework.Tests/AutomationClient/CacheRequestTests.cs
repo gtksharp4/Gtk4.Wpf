@@ -42,16 +42,34 @@ public class CacheRequestTests : UiaTestBase
 	});
 
 	[Fact]
-	public void Cache_covers_the_parent_and_children_when_the_scope_asks_for_them() => Run(() =>
+	public void Cache_covers_the_children_and_gives_them_the_element_as_parent() => Run(() =>
 	{
 		OpenForm();
-		var request = new CacheRequest { TreeScope = TreeScope.Element | TreeScope.Children | TreeScope.Parent };
+		var request = new CacheRequest { TreeScope = TreeScope.Element | TreeScope.Children };
 		request.Add(AutomationElement.AutomationIdProperty);
 		var panel = Find("Panel").GetUpdatedCache(request);
 		Assert.Equal(7, panel.CachedChildren.Count);
 		Assert.Equal("Name", panel.CachedChildren[0].Cached.AutomationId);
-		Assert.Equal("MainWindow", panel.CachedParent.Cached.AutomationId);
+		Assert.Equal("Panel", panel.CachedChildren[0].CachedParent.Cached.AutomationId);
+		Assert.Throws<InvalidOperationException>(() => panel.CachedParent);
 	});
+
+	[Theory]
+	[InlineData(TreeScope.Parent)]
+	[InlineData(TreeScope.Ancestors)]
+	[InlineData(TreeScope.Element | TreeScope.Parent)]
+	[InlineData((TreeScope)0)]
+	public void TreeScope_rejects_scopes_WPF_rejects(TreeScope scope) =>
+		Assert.Throws<ArgumentException>(() => new CacheRequest().TreeScope = scope);
+
+	[Theory]
+	[InlineData(TreeScope.Children)]
+	[InlineData(TreeScope.Element | TreeScope.Descendants)]
+	public void TreeScope_accepts_any_Element_Children_Descendants_combination(TreeScope scope)
+	{
+		var request = new CacheRequest { TreeScope = scope };
+		Assert.Equal(scope, request.TreeScope);
+	}
 
 	[Fact]
 	public void Request_stack_Push_Pop_and_Current() => Run(() =>

@@ -1,3 +1,4 @@
+using System;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
@@ -6,8 +7,15 @@ using Gtk4.Forms.PresentationFramework.Tests.Lifecycle;
 namespace Gtk4.Forms.PresentationFramework.Tests.AutomationClient;
 
 /// <summary>A shown window with the controls the client API tests find and drive.</summary>
-public abstract class UiaTestBase : WpfGtkTestBase
+public abstract class UiaTestBase : WpfGtkTestBase, IDisposable
 {
+	// Subscriptions and listener counts are static; no test may leave any behind for the next.
+	public void Dispose()
+	{
+		if (WpfGtkFixture.Instance.UnavailableReason == null)
+			Run(() => System.Windows.Automation.Automation.RemoveAllEventHandlers());
+	}
+
 	protected sealed class Form
 	{
 		public Application App = null!;

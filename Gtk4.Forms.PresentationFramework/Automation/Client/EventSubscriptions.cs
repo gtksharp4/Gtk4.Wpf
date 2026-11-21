@@ -102,7 +102,9 @@ static class EventSubscriptions
 					Deliver(() => structure(sender, args));
 					break;
 				case AutomationEventHandler plain:
-					var plainArgs = new AutomationEventArgs(subscription.ClientEvent!);
+					var plainArgs = AutomationPeer.PendingAsyncContentLoaded is { } loaded
+						&& source == AutomationEvents.AsyncContentLoaded
+						? loaded : new AutomationEventArgs(subscription.ClientEvent!);
 					Deliver(() => plain(sender, plainArgs));
 					break;
 			}

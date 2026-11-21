@@ -9,6 +9,10 @@ public abstract partial class AutomationPeer
 	/// <summary>Raised for every automation event that has a listener. The client API subscribes here.</summary>
 	internal static event Action<AutomationPeer, AutomationEvents>? EventRaised;
 
+	/// <summary>The args of the async-content-loaded event being raised, for subscribers to pass on.</summary>
+	[ThreadStatic]
+	internal static AsyncContentLoadedEventArgs? PendingAsyncContentLoaded;
+
 	/// <summary>Raised for every property-changed event that has a listener.</summary>
 	internal static event Action<AutomationPeer, AutomationProperty, object?, object?>? PropertyChangedRaised;
 
@@ -68,7 +72,9 @@ public abstract partial class AutomationPeer
 	public void RaiseAsyncContentLoadedEvent(AsyncContentLoadedEventArgs args)
 	{
 		if (args == null) throw new ArgumentNullException(nameof(args));
-		RaiseAutomationEvent(AutomationEvents.AsyncContentLoaded);
+		PendingAsyncContentLoaded = args;
+		try { RaiseAutomationEvent(AutomationEvents.AsyncContentLoaded); }
+		finally { PendingAsyncContentLoaded = null; }
 	}
 
 	void RaiseStructureChanged() => RaiseAutomationEvent(AutomationEvents.StructureChanged);

@@ -99,15 +99,18 @@ public class ThreadMarshalTests : UiaTestBase
 		var f = OpenForm();
 		int gtkThread = Environment.CurrentManagedThreadId;
 		int handlerThread = -1;
-		OnWorker(() =>
+		try
 		{
-			System.Windows.Automation.Automation.AddAutomationPropertyChangedEventHandler(Find("Agree"),
-				TreeScope.Element, (s, e) => handlerThread = Environment.CurrentManagedThreadId,
-				TogglePattern.ToggleStateProperty);
-			((TogglePattern)Find("Agree").GetCurrentPattern(TogglePattern.Pattern)).Toggle();
-		});
-		Assert.Equal(gtkThread, handlerThread);
-		Assert.True(f.Agree.IsChecked);
-		System.Windows.Automation.Automation.RemoveAllEventHandlers();
+			OnWorker(() =>
+			{
+				System.Windows.Automation.Automation.AddAutomationPropertyChangedEventHandler(Find("Agree"),
+					TreeScope.Element, (s, e) => handlerThread = Environment.CurrentManagedThreadId,
+					TogglePattern.ToggleStateProperty);
+				((TogglePattern)Find("Agree").GetCurrentPattern(TogglePattern.Pattern)).Toggle();
+			});
+			Assert.Equal(gtkThread, handlerThread);
+			Assert.True(f.Agree.IsChecked);
+		}
+		finally { System.Windows.Automation.Automation.RemoveAllEventHandlers(); }
 	});
 }

@@ -24,6 +24,7 @@ sealed class PropertyEntry
 /// <summary>The element properties the client reads from a peer.</summary>
 static partial class PropertyCatalog
 {
+	static readonly int _processId = CurrentProcessId();
 	static readonly Dictionary<int, PropertyEntry> _element = BuildElementEntries();
 
 	internal static PropertyEntry? LookupElement(AutomationProperty property)
@@ -36,6 +37,12 @@ static partial class PropertyCatalog
 	/// <summary>The value reported for a property the element does not support, when defaults are wanted.</summary>
 	internal static object? DefaultOf(Type type) =>
 		type == typeof(string) ? string.Empty : type.IsValueType ? Activator.CreateInstance(type) : null;
+
+	static int CurrentProcessId()
+	{
+		using var process = System.Diagnostics.Process.GetCurrentProcess();
+		return process.Id;
+	}
 
 	static Dictionary<int, PropertyEntry> BuildElementEntries()
 	{
@@ -67,8 +74,7 @@ static partial class PropertyCatalog
 			p => (OrientationType)(int)p.GetOrientation());
 		Add(AutomationElementIdentifiers.BoundingRectangleProperty, typeof(Rect), p => p.GetBoundingRectangle());
 		Add(AutomationElementIdentifiers.ClickablePointProperty, typeof(Point), ClickablePoint);
-		Add(AutomationElementIdentifiers.ProcessIdProperty, typeof(int),
-			p => System.Diagnostics.Process.GetCurrentProcess().Id);
+		Add(AutomationElementIdentifiers.ProcessIdProperty, typeof(int), p => _processId);
 		Add(AutomationElementIdentifiers.NativeWindowHandleProperty, typeof(int), p => 0);
 		Add(AutomationElementIdentifiers.RuntimeIdProperty, typeof(int[]), p => AutomationElement.RuntimeIdOf(p));
 		Add(AutomationElementIdentifiers.CultureProperty, typeof(CultureInfo), p => CultureInfo.CurrentCulture);
