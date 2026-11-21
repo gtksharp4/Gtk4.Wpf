@@ -31,6 +31,7 @@ public partial class RichTextBox : Control
 	{
 		var rtb = (RichTextBox)d;
 		rtb._selection = new TextSelection(rtb);
+		rtb.AttachDocumentEdits((FlowDocument?)e.OldValue, (FlowDocument?)e.NewValue);
 		rtb.SyncBufferFromDocument();
 	}
 

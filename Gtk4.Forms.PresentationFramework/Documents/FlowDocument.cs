@@ -9,7 +9,7 @@ namespace System.Windows.Documents;
 /// and <see cref="BuildPlainText"/>; both are pure and testable without GTK.
 /// </summary>
 [ContentProperty("Blocks")]
-public class FlowDocument
+public partial class FlowDocument
 {
 	/// <summary>The blocks in this document.</summary>
 	public BlockCollection Blocks { get; } = new BlockCollection();
