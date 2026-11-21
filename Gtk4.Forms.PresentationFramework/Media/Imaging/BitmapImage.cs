@@ -16,6 +16,7 @@ public sealed partial class BitmapImage : BitmapSource, ISupportInitialize
 	byte[] _pixels = Array.Empty<byte>();
 	Uri? _uriSource;
 	Stream? _streamSource;
+	byte[]? _loaded;
 
 	/// <summary>Creates an empty bitmap; set <see cref="UriSource"/> between
 	/// <see cref="BeginInit"/> and <see cref="EndInit"/>.</summary>
@@ -77,6 +78,29 @@ public sealed partial class BitmapImage : BitmapSource, ISupportInitialize
 			throw new InvalidOperationException("Set UriSource or StreamSource before EndInit.");
 		_initializing = false;
 		_initialized = true;
+		LoadEagerly();
+	}
+
+	/// <summary>Reads the source bytes now when the caller may release the source: a stream always, a local
+	/// file with <see cref="BitmapCacheOption.OnLoad"/>. A failure raises <see cref="DecodeFailed"/>.</summary>
+	void LoadEagerly()
+	{
+		try
+		{
+			if (_streamSource != null)
+				_loaded = BitmapDecoder.ReadStream(_streamSource);
+			else if (_cacheOption == BitmapCacheOption.OnLoad && _uriSource != null)
+			{
+				string path = ImageSourceLocation.ResolveUri(_uriSource);
+				if (File.Exists(path))
+					_loaded = File.ReadAllBytes(path);
+			}
+		}
+		catch (Exception e)
+		{
+			_decoded = true;
+			DecodeFailed?.Invoke(this, new ExceptionEventArgs(e));
+		}
 	}
 
 	void ThrowIfInitialized()
@@ -132,13 +156,14 @@ public sealed partial class BitmapImage : BitmapSource, ISupportInitialize
 		if (_decoded)
 			return;
 		_decoded = true;
-		if (_uriSource == null && _streamSource == null)
+		if (_loaded == null && _uriSource == null && _streamSource == null)
 			return;
 		try
 		{
-			var frame = (_streamSource != null
-				? BitmapDecoder.Create(_streamSource, CreateOptions, CacheOption)
-				: BitmapDecoder.Create(_uriSource!, CreateOptions, CacheOption)).Frames[0];
+			var decoder = _loaded != null || _streamSource != null
+				? BitmapDecoder.Create(_loaded ?? BitmapDecoder.ReadStream(_streamSource!))
+				: BitmapDecoder.Create(_uriSource!, CreateOptions, CacheOption);
+			var frame = decoder.Frames[0];
 			Apply(DecodedImage.FromSource(frame));
 		}
 		catch (Exception e)

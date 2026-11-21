@@ -98,6 +98,10 @@ static class TextRangeXamlReader
 					case "FontSize": TextRangeFontSize.Set(target, FontConverters.ParseFontSize(a.Value)); break;
 					case "FontWeight": target.FontWeight = FontConverters.ParseFontWeight(a.Value); break;
 					case "FontStyle": target.FontStyle = FontConverters.ParseFontStyle(a.Value); break;
+					case "TextDecorations":
+						if (a.Value.IndexOf("Underline", StringComparison.OrdinalIgnoreCase) >= 0)
+							target.TextDecorations = TextDecorations.Underline;
+						break;
 					case "Foreground":
 						var color = System.Windows.Markup.MediaConverters.ParseColor(a.Value);
 						target.Foreground = new SolidColorBrush(color);

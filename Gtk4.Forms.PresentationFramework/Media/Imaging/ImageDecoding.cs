@@ -17,7 +17,7 @@ static class ImageDecoding
 			case ImageContainer.Jpeg:
 				return new List<DecodedImage> { PixbufCodec.Decode(data, "JPEG") };
 			case ImageContainer.Tiff:
-				return new List<DecodedImage> { PixbufCodec.Decode(data, "TIFF") };
+				return DecodeTiff(data);
 			case ImageContainer.Gif:
 				return GifDecoder.Decode(data);
 			case ImageContainer.Bmp:
@@ -26,6 +26,16 @@ static class ImageDecoding
 				throw new NotSupportedException(
 					"JPEG XR (WDP) has no decoder in the GTK runtime, so WmpBitmapDecoder cannot read images.");
 		}
+	}
+
+	static List<DecodedImage> DecodeTiff(byte[] data)
+	{
+		var images = new List<DecodedImage>();
+		foreach (var page in TiffPages.Split(data))
+			images.Add(PixbufCodec.Decode(page, "TIFF"));
+		if (images.Count == 0)
+			images.Add(PixbufCodec.Decode(data, "TIFF"));
+		return images;
 	}
 
 	internal static BitmapMetadata? MetadataOf(DecodedImage image, ImageContainer container)

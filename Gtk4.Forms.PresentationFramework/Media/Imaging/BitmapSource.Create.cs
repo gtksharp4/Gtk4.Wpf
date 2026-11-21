@@ -6,8 +6,8 @@ public abstract partial class BitmapSource
 {
 	/// <summary>Creates a bitmap from a pixel buffer.</summary>
 	/// <exception cref="ArgumentNullException"><paramref name="pixels"/> is null.</exception>
-	/// <exception cref="ArgumentException">The stride or buffer is too small, or an indexed
-	/// <paramref name="pixelFormat"/> has no palette.</exception>
+	/// <exception cref="ArgumentException">The stride or buffer is too small.</exception>
+	/// <exception cref="InvalidOperationException">An indexed <paramref name="pixelFormat"/> has no palette.</exception>
 	public static BitmapSource Create(int pixelWidth, int pixelHeight, double dpiX, double dpiY,
 		PixelFormat pixelFormat, BitmapPalette? palette, Array pixels, int stride)
 	{
@@ -15,7 +15,8 @@ public abstract partial class BitmapSource
 			throw new ArgumentNullException(nameof(pixels));
 		var bytes = new byte[(long)pixels.Length * ElementSize(pixels)];
 		Buffer.BlockCopy(pixels, 0, bytes, 0, bytes.Length);
-		return CreateFromBytes(pixelWidth, pixelHeight, dpiX, dpiY, pixelFormat, palette, bytes, stride);
+		return CreateFromBytes(pixelWidth, pixelHeight, dpiX, dpiY, pixelFormat, palette, bytes, stride,
+			nameof(pixels));
 	}
 
 	/// <summary>Creates a bitmap from unmanaged pixel memory.</summary>
@@ -28,11 +29,12 @@ public abstract partial class BitmapSource
 			throw new ArgumentOutOfRangeException(nameof(bufferSize));
 		var bytes = new byte[bufferSize];
 		Marshal.Copy(buffer, bytes, 0, bufferSize);
-		return CreateFromBytes(pixelWidth, pixelHeight, dpiX, dpiY, pixelFormat, palette, bytes, stride);
+		return CreateFromBytes(pixelWidth, pixelHeight, dpiX, dpiY, pixelFormat, palette, bytes, stride,
+			nameof(buffer));
 	}
 
 	static BitmapSource CreateFromBytes(int width, int height, double dpiX, double dpiY, PixelFormat format,
-		BitmapPalette? palette, byte[] bytes, int stride)
+		BitmapPalette? palette, byte[] bytes, int stride, string bufferName)
 	{
 		if (width <= 0)
 			throw new ArgumentOutOfRangeException(nameof(width), "Must be > 0.");
@@ -44,9 +46,9 @@ public abstract partial class BitmapSource
 		if (stride < rowBytes)
 			throw new ArgumentException($"stride ({stride}) must be >= {rowBytes}.", nameof(stride));
 		if ((long)stride * (height - 1) + rowBytes > bytes.Length)
-			throw new ArgumentException("The buffer is too small.", nameof(bytes));
+			throw new ArgumentException("The buffer is too small.", bufferName);
 		if (format.Name.StartsWith("Indexed", StringComparison.Ordinal) && palette == null)
-			throw new ArgumentException("An indexed pixel format requires a palette.", nameof(palette));
+			throw new InvalidOperationException("An indexed pixel format requires a palette.");
 
 		var data = new byte[rowBytes * height];
 		for (int y = 0; y < height; y++)

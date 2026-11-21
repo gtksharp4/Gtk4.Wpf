@@ -31,7 +31,7 @@ public class BitmapSourceTests
 			BitmapSource.Create(2, 2, 96, 96, PixelFormats.Bgr24, null, new byte[12], 5));
 		Assert.Throws<ArgumentException>(() =>
 			BitmapSource.Create(2, 2, 96, 96, PixelFormats.Bgr24, null, new byte[8], 6));
-		Assert.Throws<ArgumentException>(() =>
+		Assert.Throws<InvalidOperationException>(() =>
 			BitmapSource.Create(2, 2, 96, 96, PixelFormats.Indexed8, null, new byte[4], 2));
 		Assert.Throws<ArgumentOutOfRangeException>(() =>
 			BitmapSource.Create(0, 2, 96, 96, PixelFormats.Bgr24, null, new byte[12], 6));

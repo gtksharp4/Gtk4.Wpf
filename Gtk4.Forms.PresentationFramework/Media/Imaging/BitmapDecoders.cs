@@ -58,7 +58,7 @@ public sealed class PngBitmapDecoder : BitmapDecoder
 		: base(ImageContainer.Png, ReadStream(bitmapStream)) { }
 }
 
-/// <summary>Decodes TIFF files; only the first page is read (gdk-pixbuf limit).</summary>
+/// <summary>Decodes TIFF files; every page of the IFD chain becomes one frame.</summary>
 public sealed class TiffBitmapDecoder : BitmapDecoder
 {
 	internal TiffBitmapDecoder(byte[] data) : base(ImageContainer.Tiff, data) { }

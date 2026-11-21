@@ -29,7 +29,7 @@ static class TextRangeRtf
 		{
 			bool b = bold || i is Bold || (i.FontWeight?.ToOpenTypeWeight() ?? 400) >= 700;
 			bool it = italic || i is Italic || (i.FontStyle != null && i.FontStyle.Value != FontStyles.Normal);
-			bool ul = underline || i is Underline;
+			bool ul = underline || i is Underline || IsUnderlined(i);
 			if (i is LineBreak) sb.Append("\\line ");
 			else if (i is Span s) Inlines(sb, s.Inlines, b, it, ul);
 			else if (i is Run r)
@@ -45,6 +45,15 @@ static class TextRangeRtf
 				sb.Append('}');
 			}
 		}
+	}
+
+	/// <summary>Whether the element carries an Underline-location text decoration.</summary>
+	internal static bool IsUnderlined(TextElement e)
+	{
+		if (e.TextDecorations == null) return false;
+		foreach (var d in e.TextDecorations)
+			if (d.Location == TextDecorationLocation.Underline) return true;
+		return false;
 	}
 
 	static void Escape(StringBuilder sb, string text)

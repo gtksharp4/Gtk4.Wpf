@@ -64,6 +64,7 @@ static class TextRangeXaml
 		if (el.FontStyle != null) w.WriteAttributeString("FontStyle", el.FontStyle.Value.ToString());
 		if (el.Foreground is SolidColorBrush b)
 			w.WriteAttributeString("Foreground", $"#{b.Color.A:X2}{b.Color.R:X2}{b.Color.G:X2}{b.Color.B:X2}");
+		if (TextRangeRtf.IsUnderlined(el)) w.WriteAttributeString("TextDecorations", "Underline");
 		if (el is Hyperlink h && h.NavigateUri != null) w.WriteAttributeString("NavigateUri", h.NavigateUri.OriginalString);
 	}
 

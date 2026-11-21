@@ -30,7 +30,8 @@ public partial class ScrollViewer : ContentControl
 			nameof(HorizontalScrollBarVisibility),
 			typeof(ScrollBarVisibility),
 			typeof(ScrollViewer),
-			new PropertyMetadata(ScrollBarVisibility.Auto, OnScrollBarVisibilityChanged));
+			new PropertyMetadata(ScrollBarVisibility.Auto, OnScrollBarVisibilityChanged),
+			IsValidScrollBarVisibility);
 
 	/// <summary>Gets or sets the horizontal scroll bar visibility.</summary>
 	public ScrollBarVisibility HorizontalScrollBarVisibility
@@ -48,7 +49,8 @@ public partial class ScrollViewer : ContentControl
 			nameof(VerticalScrollBarVisibility),
 			typeof(ScrollBarVisibility),
 			typeof(ScrollViewer),
-			new PropertyMetadata(ScrollBarVisibility.Auto, OnScrollBarVisibilityChanged));
+			new PropertyMetadata(ScrollBarVisibility.Auto, OnScrollBarVisibilityChanged),
+			IsValidScrollBarVisibility);
 
 	/// <summary>Gets or sets the vertical scroll bar visibility.</summary>
 	public ScrollBarVisibility VerticalScrollBarVisibility
@@ -94,6 +96,9 @@ public partial class ScrollViewer : ContentControl
 
 	static DependencyObject Require(DependencyObject element)
 		=> element ?? throw new ArgumentNullException(nameof(element));
+
+	static bool IsValidScrollBarVisibility(object? v) =>
+		v is ScrollBarVisibility s && s >= ScrollBarVisibility.Disabled && s <= ScrollBarVisibility.Visible;
 
 	static void OnScrollBarVisibilityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{

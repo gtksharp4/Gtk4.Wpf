@@ -5,7 +5,8 @@ namespace System.Windows.Media.Imaging;
 /// <summary>Describes a codec (WPF <c>BitmapCodecInfo</c>); values match the WIC built-in codecs.</summary>
 public abstract class BitmapCodecInfo
 {
-	internal BitmapCodecInfo() { }
+	/// <summary>Creates a codec description for a derived class.</summary>
+	protected BitmapCodecInfo() { }
 
 	/// <summary>Codec author.</summary>
 	public abstract string Author { get; }

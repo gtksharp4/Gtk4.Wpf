@@ -51,78 +51,95 @@ public static class BitmapPalettes
 		return list;
 	}
 
-	static BitmapPalette Transparent(IEnumerable<uint> palette) => Make(WithTransparent(palette, false));
+	static BitmapPalette Transparent(IEnumerable<uint> palette) => TransparentOrLast(palette, false);
+
+	// WIC adds a transparent entry, or replaces the last one when the palette is already 256 colours.
+	static BitmapPalette TransparentOrLast(IEnumerable<uint> palette, bool replaceLast) =>
+		Make(WithTransparent(palette, replaceLast));
+
+	static readonly Dictionary<string, BitmapPalette> _cache = new Dictionary<string, BitmapPalette>();
+
+	/// <summary>Builds each fixed palette once (frozen), so repeated access returns the same instance.</summary>
+	static BitmapPalette Cached(Func<BitmapPalette> make, [System.Runtime.CompilerServices.CallerMemberName]
+		string? name = null)
+	{
+		lock (_cache)
+		{
+			if (!_cache.TryGetValue(name!, out var palette))
+				_cache[name!] = palette = make();
+			return palette;
+		}
+	}
 
 	/// <summary>Black and white.</summary>
-	public static BitmapPalette BlackAndWhite => Make(Gray(2));
+	public static BitmapPalette BlackAndWhite => Cached(() => Make(Gray(2)));
 
-	/// <summary>Black and white (WIC adds no transparent entry).</summary>
-	public static BitmapPalette BlackAndWhiteTransparent => Make(Gray(2));
+	/// <summary>Black and white plus a transparent entry.</summary>
+	public static BitmapPalette BlackAndWhiteTransparent => Cached(() => Transparent(Gray(2)));
 
 	/// <summary>Four grays.</summary>
-	public static BitmapPalette Gray4 => Make(Gray(4));
+	public static BitmapPalette Gray4 => Cached(() => Make(Gray(4)));
 
-	/// <summary>Four grays (no transparent entry).</summary>
-	public static BitmapPalette Gray4Transparent => Make(Gray(4));
+	/// <summary>Four grays plus a transparent entry.</summary>
+	public static BitmapPalette Gray4Transparent => Cached(() => Transparent(Gray(4)));
 
 	/// <summary>Sixteen grays.</summary>
-	public static BitmapPalette Gray16 => Make(Gray(16));
+	public static BitmapPalette Gray16 => Cached(() => Make(Gray(16)));
 
-	/// <summary>Sixteen grays (no transparent entry).</summary>
-	public static BitmapPalette Gray16Transparent => Make(Gray(16));
+	/// <summary>Sixteen grays plus a transparent entry.</summary>
+	public static BitmapPalette Gray16Transparent => Cached(() => Transparent(Gray(16)));
 
 	/// <summary>256 grays.</summary>
-	public static BitmapPalette Gray256 => Make(Gray(256));
+	public static BitmapPalette Gray256 => Cached(() => Make(Gray(256)));
 
-	/// <summary>256 grays (no transparent entry).</summary>
-	public static BitmapPalette Gray256Transparent => Make(Gray(256));
+	/// <summary>256 grays with the last entry made transparent.</summary>
+	public static BitmapPalette Gray256Transparent => Cached(() => TransparentOrLast(Gray(256), true));
 
 	/// <summary>2x2x2 halftone plus system colours.</summary>
-	public static BitmapPalette Halftone8 => Make(Cube(2, 2, 2, 8));
+	public static BitmapPalette Halftone8 => Cached(() => Make(Cube(2, 2, 2, 8)));
 
 	/// <summary>Halftone8 plus a transparent entry.</summary>
-	public static BitmapPalette Halftone8Transparent => Transparent(Cube(2, 2, 2, 8));
+	public static BitmapPalette Halftone8Transparent => Cached(() => Transparent(Cube(2, 2, 2, 8)));
 
 	/// <summary>3x3x3 halftone plus gray.</summary>
-	public static BitmapPalette Halftone27 => Make(Cube(3, 3, 3, 1));
+	public static BitmapPalette Halftone27 => Cached(() => Make(Cube(3, 3, 3, 1)));
 
 	/// <summary>Halftone27 plus a transparent entry.</summary>
-	public static BitmapPalette Halftone27Transparent => Transparent(Cube(3, 3, 3, 1));
+	public static BitmapPalette Halftone27Transparent => Cached(() => Transparent(Cube(3, 3, 3, 1)));
 
 	/// <summary>4x4x4 halftone plus system colours.</summary>
-	public static BitmapPalette Halftone64 => Make(Cube(4, 4, 4, 8));
+	public static BitmapPalette Halftone64 => Cached(() => Make(Cube(4, 4, 4, 8)));
 
 	/// <summary>Halftone64 plus a transparent entry.</summary>
-	public static BitmapPalette Halftone64Transparent => Transparent(Cube(4, 4, 4, 8));
+	public static BitmapPalette Halftone64Transparent => Cached(() => Transparent(Cube(4, 4, 4, 8)));
 
 	/// <summary>5x5x5 halftone plus gray.</summary>
-	public static BitmapPalette Halftone125 => Make(Cube(5, 5, 5, 1));
+	public static BitmapPalette Halftone125 => Cached(() => Make(Cube(5, 5, 5, 1)));
 
 	/// <summary>Halftone125 plus a transparent entry.</summary>
-	public static BitmapPalette Halftone125Transparent => Transparent(Cube(5, 5, 5, 1));
+	public static BitmapPalette Halftone125Transparent => Cached(() => Transparent(Cube(5, 5, 5, 1)));
 
 	/// <summary>6x6x6 halftone plus system colours.</summary>
-	public static BitmapPalette Halftone216 => Make(Cube(6, 6, 6, 8));
+	public static BitmapPalette Halftone216 => Cached(() => Make(Cube(6, 6, 6, 8)));
 
 	/// <summary>Halftone216 plus a transparent entry.</summary>
-	public static BitmapPalette Halftone216Transparent => Transparent(Cube(6, 6, 6, 8));
+	public static BitmapPalette Halftone216Transparent => Cached(() => Transparent(Cube(6, 6, 6, 8)));
 
 	/// <summary>6x7x6 halftone.</summary>
-	public static BitmapPalette Halftone252 => Make(Cube(6, 7, 6, 0));
+	public static BitmapPalette Halftone252 => Cached(() => Make(Cube(6, 7, 6, 0)));
 
 	/// <summary>Halftone252 plus a transparent entry.</summary>
-	public static BitmapPalette Halftone252Transparent => Transparent(Cube(6, 7, 6, 0));
+	public static BitmapPalette Halftone252Transparent => Cached(() => Transparent(Cube(6, 7, 6, 0)));
 
 	/// <summary>8x8x4 halftone.</summary>
-	public static BitmapPalette Halftone256 => Make(Cube(8, 8, 4, 0));
+	public static BitmapPalette Halftone256 => Cached(() => Make(Cube(8, 8, 4, 0)));
 
 	/// <summary>Halftone256 with the last entry made transparent.</summary>
-	public static BitmapPalette Halftone256Transparent =>
-		Make(WithTransparent(Cube(8, 8, 4, 0), true));
+	public static BitmapPalette Halftone256Transparent => Cached(() => TransparentOrLast(Cube(8, 8, 4, 0), true));
 
 	/// <summary>The 216 web-safe colours plus 8 system colours.</summary>
-	public static BitmapPalette WebPalette => Make(Cube(6, 6, 6, 8));
+	public static BitmapPalette WebPalette => Cached(() => Make(Cube(6, 6, 6, 8)));
 
 	/// <summary>WebPalette plus a transparent entry.</summary>
-	public static BitmapPalette WebPaletteTransparent => Transparent(Cube(6, 6, 6, 8));
+	public static BitmapPalette WebPaletteTransparent => Cached(() => Transparent(Cube(6, 6, 6, 8)));
 }

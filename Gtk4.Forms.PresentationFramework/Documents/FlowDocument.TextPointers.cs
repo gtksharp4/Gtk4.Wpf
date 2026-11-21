@@ -22,7 +22,8 @@ public partial class FlowDocument
 	internal event Action? ContentEdited;
 
 	// Pointers re-anchor from this log instead of living in a text tree (the gap from WPF). An edit made by
-	// changing Run.Text or a collection directly is not logged; pointers are then only clamped to the content.
+	// changing Run.Text or a collection directly is not logged; pointers are then only clamped to the content
+	// (TextPointer.Offset clamps to [0, total]).
 	internal void RecordTextEdit(int position, int removed, int inserted)
 	{
 		_textEdits.Add(new TextEdit(position, removed, inserted));

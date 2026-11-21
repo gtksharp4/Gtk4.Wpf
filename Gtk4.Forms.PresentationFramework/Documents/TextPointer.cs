@@ -24,13 +24,14 @@ public sealed partial class TextPointer
 
 	internal FlowDocument Document => _doc;
 
-	/// <summary>The symbol offset from the start of the document, after replaying missed edits.</summary>
+	/// <summary>The symbol offset from the start of the document, after replaying missed edits and clamping to the content.</summary>
 	internal int Offset
 	{
 		get
 		{
 			for (; _applied < _doc.TextEditCount; _applied++)
 				_offset = Reanchor(_offset, _direction, _doc.GetTextEdit(_applied));
+			_offset = Math.Max(0, Math.Min(_offset, TextTree.Total(TextTree.Build(_doc))));
 			return _offset;
 		}
 	}

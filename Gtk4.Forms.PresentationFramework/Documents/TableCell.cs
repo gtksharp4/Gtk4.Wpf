@@ -6,6 +6,12 @@ namespace System.Windows.Documents;
 /// <summary>
 /// A cell of a <see cref="TableRow"/> holding blocks. Spans, border, padding, alignment and line height are
 /// stored; see <see cref="Table"/> for what is drawn.
+/// <para>
+/// Gap: <c>Block</c> has no Padding, TextAlignment or LineHeight DPs yet, so <see cref="PaddingProperty"/> and
+/// <see cref="TextAlignmentProperty"/> are registered here and <see cref="LineHeightProperty"/> is owned from
+/// <c>FlowDocument</c>. WPF uses <c>Block.*Property.AddOwner</c> for all three; switch once Block's layout members
+/// are DPs. <see cref="TextAlignmentProperty"/> inherits, as in WPF.
+/// </para>
 /// </summary>
 [ContentProperty("Blocks")]
 public class TableCell : TextElement
@@ -32,10 +38,10 @@ public class TableCell : TextElement
 	public static readonly DependencyProperty PaddingProperty = DependencyProperty.Register(
 		nameof(Padding), typeof(Thickness), typeof(TableCell), new FrameworkPropertyMetadata(new Thickness(0)));
 
-	/// <summary>Identifies the TextAlignment property (default Left).</summary>
+	/// <summary>Identifies the TextAlignment property (default Left; inherits).</summary>
 	public static readonly DependencyProperty TextAlignmentProperty = DependencyProperty.Register(
 		nameof(TextAlignment), typeof(TextAlignment), typeof(TableCell),
-		new FrameworkPropertyMetadata(TextAlignment.Left));
+		new FrameworkPropertyMetadata(TextAlignment.Left, FrameworkPropertyMetadataOptions.Inherits));
 
 	/// <summary>Identifies the LineHeight property (default NaN; otherwise 0.0034 to 160000).</summary>
 	public static readonly DependencyProperty LineHeightProperty =

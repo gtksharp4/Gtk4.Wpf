@@ -23,15 +23,15 @@ public class FlowDocumentViewerGtkTests : WpfGtkTestBase
 	}
 
 	[Fact]
-	public void Viewer_scroll_policies_default_to_automatic_and_follow_the_properties() => Run(() =>
+	public void Viewer_scroll_policies_default_vertical_Always_and_follow_the_properties() => Run(() =>
 	{
 		var viewer = new FlowDocumentScrollViewer();
 		var sw = (Gtk.ScrolledWindow)viewer.Widget;
 		Assert.Equal(Gtk.PolicyType.Automatic, sw.HscrollbarPolicy);
-		Assert.Equal(Gtk.PolicyType.Automatic, sw.VscrollbarPolicy);
-		viewer.VerticalScrollBarVisibility = ScrollBarVisibility.Visible;
-		viewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
 		Assert.Equal(Gtk.PolicyType.Always, sw.VscrollbarPolicy);
+		viewer.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+		viewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
+		Assert.Equal(Gtk.PolicyType.Automatic, sw.VscrollbarPolicy);
 		Assert.Equal(Gtk.PolicyType.Never, sw.HscrollbarPolicy);
 	});
 

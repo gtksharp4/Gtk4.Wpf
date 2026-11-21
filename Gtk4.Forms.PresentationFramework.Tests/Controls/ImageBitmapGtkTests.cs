@@ -49,4 +49,25 @@ public class ImageBitmapGtkTests : WpfGtkTestBase
 		var pic = (Gtk.Picture)img.Widget;
 		Assert.Null(pic.Paintable);
 	});
+
+	[Fact]
+	public void Plain_file_uri_keeps_the_native_file_path() => Run(() =>
+	{
+		string path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "lane-b-" + System.Guid.NewGuid() + ".png");
+		var encoder = new PngBitmapEncoder();
+		encoder.Frames.Add(BitmapFrame.Create(Create(3, 2)));
+		using (var fs = System.IO.File.Create(path))
+			encoder.Save(fs);
+		try
+		{
+			var img = new WpfImage { Source = new BitmapImage(new System.Uri(path)) };
+			var pic = (Gtk.Picture)img.Widget;
+			Assert.NotNull(pic.File);
+
+		}
+		finally
+		{
+			System.IO.File.Delete(path);
+		}
+	});
 }

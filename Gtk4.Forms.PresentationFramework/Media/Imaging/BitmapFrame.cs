@@ -6,7 +6,8 @@ namespace System.Windows.Media.Imaging;
 /// <summary>One frame of an image (WPF <c>BitmapFrame</c>).</summary>
 public abstract class BitmapFrame : BitmapSource
 {
-	internal BitmapFrame() { }
+	/// <summary>Creates a frame for a derived class.</summary>
+	protected BitmapFrame() { }
 
 	/// <summary>The decoder that produced this frame, or <see langword="null"/> for an in-memory frame.</summary>
 	public virtual BitmapDecoder? Decoder => null;
@@ -15,21 +16,21 @@ public abstract class BitmapFrame : BitmapSource
 	public virtual BitmapSource? Thumbnail => null;
 
 	/// <summary>The frame metadata, or <see langword="null"/> when the format has none.</summary>
-	public virtual BitmapMetadata? Metadata => null;
+	public virtual ImageMetadata? Metadata => null;
 
 	/// <summary>The colour profiles of the frame.</summary>
 	public virtual ReadOnlyCollection<ColorContext>? ColorContexts => null;
 
 	/// <summary>The base URI the frame was created from.</summary>
-	public virtual Uri? BaseUri { get; internal set; }
+	public virtual Uri? BaseUri { get; set; }
 
 	/// <summary>Creates a writer for the metadata of this frame. Only decoder frames have one.</summary>
 	/// <exception cref="InvalidOperationException">The frame did not come from a decoder.</exception>
 	public virtual InPlaceBitmapMetadataWriter CreateInPlaceBitmapMetadataWriter()
 	{
-		if (Decoder == null || Metadata == null)
+		if (Decoder == null || !(Metadata is BitmapMetadata metadata))
 			throw new InvalidOperationException("The frame has no metadata that can be written in place.");
-		return new InPlaceBitmapMetadataWriter(Metadata);
+		return new InPlaceBitmapMetadataWriter(metadata);
 	}
 
 	/// <summary>Creates a frame over <paramref name="source"/>.</summary>
@@ -73,7 +74,7 @@ sealed class SourceBitmapFrame : BitmapFrame
 {
 	readonly BitmapSource _source;
 
-	internal SourceBitmapFrame(BitmapSource source, BitmapSource? thumbnail, BitmapMetadata? metadata,
+	internal SourceBitmapFrame(BitmapSource source, BitmapSource? thumbnail, ImageMetadata? metadata,
 		ReadOnlyCollection<ColorContext>? colorContexts, BitmapDecoder? decoder)
 	{
 		_source = source;
@@ -93,7 +94,7 @@ sealed class SourceBitmapFrame : BitmapFrame
 
 	public override BitmapSource? Thumbnail { get; }
 
-	public override BitmapMetadata? Metadata { get; }
+	public override ImageMetadata? Metadata { get; }
 
 	public override ReadOnlyCollection<ColorContext>? ColorContexts { get; }
 

@@ -11,7 +11,20 @@ static class TextRangeRtfReader
 	{
 		internal bool Bold, Italic, Underline;
 		internal double? Size;
+		internal int UnicodeSkip = 1;
 		internal State Copy() => (State)MemberwiseClone();
+	}
+
+	// After \uN the next \ucN units are the ANSI fallback: a \'hh escape or one plain character each.
+	static int SkipFallback(string rtf, int i, int units)
+	{
+		for (int n = 0; n < units && i < rtf.Length; n++)
+		{
+			if (rtf[i] == '\\' && i + 1 < rtf.Length && rtf[i + 1] == '\'') i += 4;
+			else if (rtf[i] == '\\' || rtf[i] == '{' || rtf[i] == '}') break;
+			else i++;
+		}
+		return Math.Min(i, rtf.Length);
 	}
 
 	internal static List<Paragraph> Read(string rtf)
@@ -110,9 +123,12 @@ static class TextRangeRtfReader
 					case "fs":
 						if (hasNum) st.Size = num / 1.5;
 						break;
+					case "uc":
+						if (hasNum) st.UnicodeSkip = Math.Max(0, num);
+						break;
 					case "u":
-						text.Append((char)(short)num);
-						if (i < rtf.Length && rtf[i] != '\\' && rtf[i] != '{' && rtf[i] != '}') i++;
+						text.Append((char)(num < 0 ? num + 65536 : num));
+						i = SkipFallback(rtf, i, st.UnicodeSkip);
 						break;
 					case "fonttbl":
 					case "colortbl":

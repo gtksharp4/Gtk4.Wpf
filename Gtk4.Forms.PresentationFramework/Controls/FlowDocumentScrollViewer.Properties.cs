@@ -7,15 +7,17 @@ namespace System.Windows.Controls;
 /// </summary>
 public partial class FlowDocumentScrollViewer
 {
-	/// <summary>Identifies the VerticalScrollBarVisibility property (default Auto).</summary>
-	public static readonly DependencyProperty VerticalScrollBarVisibilityProperty = DependencyProperty.Register(
-		nameof(VerticalScrollBarVisibility), typeof(ScrollBarVisibility), typeof(FlowDocumentScrollViewer),
-		new FrameworkPropertyMetadata(ScrollBarVisibility.Auto, OnScrollBarChanged), IsValidVisibility);
+	/// <summary>Identifies the VerticalScrollBarVisibility property: <see cref="ScrollViewer"/>'s property, with
+	/// this type's default of Visible.</summary>
+	public static readonly DependencyProperty VerticalScrollBarVisibilityProperty =
+		ScrollViewer.VerticalScrollBarVisibilityProperty.AddOwner(typeof(FlowDocumentScrollViewer),
+			new FrameworkPropertyMetadata(ScrollBarVisibility.Visible, OnScrollBarChanged));
 
-	/// <summary>Identifies the HorizontalScrollBarVisibility property (default Auto).</summary>
-	public static readonly DependencyProperty HorizontalScrollBarVisibilityProperty = DependencyProperty.Register(
-		nameof(HorizontalScrollBarVisibility), typeof(ScrollBarVisibility), typeof(FlowDocumentScrollViewer),
-		new FrameworkPropertyMetadata(ScrollBarVisibility.Auto, OnScrollBarChanged), IsValidVisibility);
+	/// <summary>Identifies the HorizontalScrollBarVisibility property: <see cref="ScrollViewer"/>'s property, with
+	/// this type's default of Auto.</summary>
+	public static readonly DependencyProperty HorizontalScrollBarVisibilityProperty =
+		ScrollViewer.HorizontalScrollBarVisibilityProperty.AddOwner(typeof(FlowDocumentScrollViewer),
+			new FrameworkPropertyMetadata(ScrollBarVisibility.Auto, OnScrollBarChanged));
 
 	/// <summary>Identifies the IsToolBarVisible property (default false).</summary>
 	public static readonly DependencyProperty IsToolBarVisibleProperty = DependencyProperty.Register(
@@ -89,9 +91,6 @@ public partial class FlowDocumentScrollViewer
 		get => (double)GetValue(MaxZoomProperty)!;
 		set => SetValue(MaxZoomProperty, value);
 	}
-
-	static bool IsValidVisibility(object? v) =>
-		v is ScrollBarVisibility s && s >= ScrollBarVisibility.Disabled && s <= ScrollBarVisibility.Visible;
 
 	static bool IsValidZoom(object? v) => v is double d && !double.IsNaN(d) && !double.IsInfinity(d) && d > 0;
 

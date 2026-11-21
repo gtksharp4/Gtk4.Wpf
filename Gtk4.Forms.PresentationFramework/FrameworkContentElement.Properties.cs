@@ -5,6 +5,13 @@ namespace System.Windows;
 
 public partial class FrameworkContentElement
 {
+	/// <summary>
+	/// Identifies the Name property (default empty). WPF shares one property with <c>FrameworkElement.NameProperty</c>
+	/// through <c>AddOwner</c>; <c>FrameworkElement</c> has none yet, so this one is registered here.
+	/// </summary>
+	public static readonly DependencyProperty NameProperty = DependencyProperty.Register(
+		nameof(Name), typeof(string), typeof(FrameworkContentElement), new PropertyMetadata(string.Empty));
+
 	/// <summary>Identifies the DataContext property (inherits from the logical parent).</summary>
 	public static readonly DependencyProperty DataContextProperty = FrameworkElement.DataContextProperty.AddOwner(
 		typeof(FrameworkContentElement),

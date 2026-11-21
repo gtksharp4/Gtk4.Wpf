@@ -31,7 +31,7 @@ public class BitmapPaletteTests
 
 	[Theory]
 	[InlineData("BlackAndWhite", 2, "FF000000", "FFFFFFFF")]
-	[InlineData("BlackAndWhiteTransparent", 2, "FF000000", "FFFFFFFF")]
+	[InlineData("BlackAndWhiteTransparent", 3, "FF000000", "00000000")]
 	[InlineData("Gray4", 4, "FF000000", "FFFFFFFF")]
 	[InlineData("Gray16", 16, "FF000000", "FFFFFFFF")]
 	[InlineData("Gray256", 256, "FF000000", "FFFFFFFF")]

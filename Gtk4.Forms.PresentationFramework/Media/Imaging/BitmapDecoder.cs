@@ -10,6 +10,9 @@ public abstract class BitmapDecoder
 	readonly ImageContainer _container;
 	readonly ReadOnlyCollection<BitmapFrame> _frames;
 
+	/// <summary>Creates a decoder for a derived class; override <see cref="Frames"/> and the other members.</summary>
+	protected BitmapDecoder() => _frames = new List<BitmapFrame>().AsReadOnly();
+
 	internal BitmapDecoder(ImageContainer expected, byte[] data)
 	{
 		_container = expected;
@@ -29,7 +32,9 @@ public abstract class BitmapDecoder
 	public virtual ReadOnlyCollection<BitmapFrame> Frames => _frames;
 
 	/// <summary>Describes the codec.</summary>
-	public virtual BitmapCodecInfo CodecInfo => BuiltInCodecInfo.For(_container, true);
+	public virtual BitmapCodecInfo CodecInfo => _container == ImageContainer.Unknown
+		? throw new NotSupportedException("A derived decoder must override CodecInfo.")
+		: BuiltInCodecInfo.For(_container, true);
 
 	/// <summary>Container level metadata (none for the built-in codecs).</summary>
 	public virtual BitmapMetadata? Metadata => null;
@@ -69,6 +74,8 @@ public abstract class BitmapDecoder
 		stream.CopyTo(copy);
 		return copy.ToArray();
 	}
+
+	internal static BitmapDecoder Create(byte[] data) => Pick(data);
 
 	static BitmapDecoder Pick(byte[] data)
 	{

@@ -10,13 +10,18 @@ public abstract class BitmapEncoder
 	readonly ImageContainer _container;
 	bool _saved;
 
+	/// <summary>Creates an encoder for a derived class; override <see cref="Save"/> to write the frames.</summary>
+	protected BitmapEncoder() { }
+
 	internal BitmapEncoder(ImageContainer container) => _container = container;
 
 	/// <summary>The frames to write.</summary>
 	public virtual IList<BitmapFrame> Frames { get; } = new List<BitmapFrame>();
 
 	/// <summary>Describes the codec.</summary>
-	public virtual BitmapCodecInfo CodecInfo => BuiltInCodecInfo.For(_container, false);
+	public virtual BitmapCodecInfo CodecInfo => _container == ImageContainer.Unknown
+		? throw new NotSupportedException("A derived encoder must override CodecInfo.")
+		: BuiltInCodecInfo.For(_container, false);
 
 	/// <summary>Container level metadata (stored, not written by the built-in codecs).</summary>
 	public virtual BitmapMetadata? Metadata { get; set; }
@@ -48,7 +53,7 @@ public abstract class BitmapEncoder
 		foreach (var frame in Frames)
 		{
 			var image = DecodedImage.FromSource(frame);
-			image.Text = TextOf(frame.Metadata);
+			image.Text = TextOf(frame.Metadata as BitmapMetadata);
 			images.Add(image);
 		}
 		byte[] bytes = Encode(images);
@@ -56,7 +61,8 @@ public abstract class BitmapEncoder
 		_saved = true;
 	}
 
-	internal abstract byte[] Encode(IList<DecodedImage> frames);
+	internal virtual byte[] Encode(IList<DecodedImage> frames) =>
+		throw new NotSupportedException("A derived encoder must override Save.");
 
 	internal static void RequireSingle(IList<DecodedImage> frames, string codec)
 	{

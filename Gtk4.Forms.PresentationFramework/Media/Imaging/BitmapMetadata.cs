@@ -6,7 +6,7 @@ namespace System.Windows.Media.Imaging;
 /// Image metadata addressed by query paths (WPF <c>BitmapMetadata</c>). PNG <c>/Text/key</c> entries are
 /// persisted by the PNG codec; every other path, and the policy properties, are kept in memory only.
 /// </summary>
-public partial class BitmapMetadata : Freezable
+public partial class BitmapMetadata : ImageMetadata
 {
 	static readonly string[] _formats = { "png", "jpg", "gif", "tiff", "ifd", "wmphoto", "bmp" };
 

@@ -7,12 +7,15 @@ static partial class TextTreeEdit
 {
 	/// <summary>
 	/// Deletes the symbols in [start, end): text is cut from runs, fully covered elements are removed, and when
-	/// the range crosses two paragraphs the second one is merged into the first.
+	/// the range crosses two paragraphs the second one is merged into the first. A document left without blocks gets
+	/// one empty paragraph. The logged edit is the measured symbol difference, which is smaller than the range when
+	/// the range starts outside a paragraph and the surviving paragraph keeps its edges.
 	/// </summary>
 	internal static void DeleteRange(FlowDocument doc, int start, int end)
 	{
 		if (end <= start) return;
 		var syms = TextTree.Build(doc);
+		int before = TextTree.Total(syms);
 		var p1 = InnerParagraph(TextTree.OpenElements(syms, start));
 		var p2 = InnerParagraph(TextTree.OpenElements(syms, end));
 		int off = 0;
@@ -23,7 +26,8 @@ static partial class TextTreeEdit
 			p2.Inlines.Clear();
 			FindOwner(doc, p2)?.Remove(p2);
 		}
-		doc.RecordTextEdit(start, end - start, 0);
+		if (doc.Blocks.Count == 0) doc.Blocks.Add(new Paragraph());
+		doc.RecordTextEdit(start, before - TextTree.Total(TextTree.Build(doc)), 0);
 	}
 
 	static Paragraph? InnerParagraph(List<object> open)

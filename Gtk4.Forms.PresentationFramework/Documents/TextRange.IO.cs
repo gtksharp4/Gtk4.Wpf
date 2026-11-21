@@ -98,15 +98,25 @@ public partial class TextRange
 		stream.Write(bytes, 0, bytes.Length);
 	}
 
-	// XamlPackage is a zip holding Xaml/Document.xaml. System.IO.Packaging is not referenced (it is not part of
-	// netstandard2.0), so the container is written directly; it has not been read back by WPF itself.
+	// XamlPackage is an OPC zip: [Content_Types].xml, _rels/.rels pointing at the entry part, and
+	// Xaml/Document.xaml. System.IO.Packaging is not referenced (it is not part of netstandard2.0), so the
+	// container is written directly. Only the XAML part is carried: images and other resources are not.
+	// The relationship type is WPF's WpfPayload.XamlRelationshipFromPackageToEntryPart; its value is taken from
+	// memory, not verified against the dotnet/wpf source.
+	const string EntryRelationshipType = "http://schemas.microsoft.com/wpf/2005/10/xaml/entry";
+	const string RelsNs = "http://schemas.openxmlformats.org/package/2006/relationships";
+
 	static void WritePackage(Stream stream, string xaml)
 	{
 		using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
 		{
 			Entry(zip, "[Content_Types].xml", "<?xml version=\"1.0\" encoding=\"utf-8\"?><Types xmlns=\"http://schemas."
-				+ "openxmlformats.org/package/2006/content-types\"><Default Extension=\"xaml\" ContentType=\"application/"
+				+ "openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/"
+				+ "vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xaml\" ContentType=\"application/"
 				+ "vnd.ms-wpf.xaml+xml\"/></Types>");
+			Entry(zip, "_rels/.rels", "<?xml version=\"1.0\" encoding=\"utf-8\"?><Relationships xmlns=\"" + RelsNs
+				+ "\"><Relationship Id=\"R0\" Type=\"" + EntryRelationshipType + "\" Target=\"/" + PackageDocumentPart
+				+ "\"/></Relationships>");
 			Entry(zip, PackageDocumentPart, xaml);
 		}
 	}
@@ -117,15 +127,38 @@ public partial class TextRange
 			WriteString(s, new UTF8Encoding(false), content);
 	}
 
+	static ZipArchiveEntry? Find(ZipArchive zip, string name) => zip.Entries.FirstOrDefault(x =>
+		string.Equals(x.FullName.TrimStart('/'), name.TrimStart('/'), StringComparison.OrdinalIgnoreCase));
+
+	// The entry part is the target of the entry relationship in _rels/.rels, else Xaml/Document.xaml.
+	static string EntryPartName(ZipArchive zip)
+	{
+		var rels = Find(zip, "_rels/.rels");
+		if (rels == null) return PackageDocumentPart;
+		try
+		{
+			using (var s = rels.Open())
+			{
+				var target = System.Xml.Linq.XDocument.Load(s).Descendants()
+					.Where(e => e.Name.LocalName == "Relationship" && (string?)e.Attribute("Type") == EntryRelationshipType)
+					.Select(e => (string?)e.Attribute("Target")).FirstOrDefault();
+				return string.IsNullOrEmpty(target) ? PackageDocumentPart : target!;
+			}
+		}
+		catch (System.Xml.XmlException)
+		{
+			return PackageDocumentPart;
+		}
+	}
+
 	static string ReadPackage(Stream stream)
 	{
 		try
 		{
 			using (var zip = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true))
 			{
-				var entry = zip.Entries.FirstOrDefault(x => string.Equals(x.FullName.TrimStart('/'), PackageDocumentPart,
-					StringComparison.OrdinalIgnoreCase));
-				if (entry == null) throw new ArgumentException("The XamlPackage has no Xaml/Document.xaml part.");
+				var entry = Find(zip, EntryPartName(zip)) ?? Find(zip, PackageDocumentPart);
+				if (entry == null) throw new ArgumentException("The XamlPackage has no entry part.");
 				using (var s = entry.Open()) return ReadString(s, new UTF8Encoding(false));
 			}
 		}

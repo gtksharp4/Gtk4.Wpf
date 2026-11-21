@@ -19,8 +19,12 @@ public partial class FrameworkContentElement : ContentElement
 	DependencyObject? _parent;
 	ResourceDictionary? _resources;
 
-	/// <summary>Gets or sets the name used by x:Name.</summary>
-	public string Name { get; set; } = string.Empty;
+	/// <summary>Gets or sets the name used by x:Name (backed by <see cref="NameProperty"/>).</summary>
+	public string Name
+	{
+		get => (string)GetValue(NameProperty)!;
+		set => SetValue(NameProperty, value);
+	}
 
 	/// <summary>Gets the logical parent (the owning element, or the hosting viewer for a document).</summary>
 	public DependencyObject? Parent => _parent;

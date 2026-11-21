@@ -34,11 +34,11 @@ public abstract partial class BitmapSource : ImageSource
 	/// <summary>The palette of an indexed bitmap, otherwise <see langword="null"/>.</summary>
 	public virtual BitmapPalette? Palette { get; protected set; }
 
-	/// <summary>Width in device independent units (<c>PixelWidth * 96 / DpiX</c>).</summary>
-	public virtual double Width => DpiX > 0 ? PixelWidth * 96d / DpiX : 0;
+	/// <summary>Width in device independent units (<c>PixelWidth * 96 / DpiX</c>; 96 when DpiX is not positive).</summary>
+	public virtual double Width => PixelWidth * 96d / (DpiX > 0 ? DpiX : 96d);
 
-	/// <summary>Height in device independent units (<c>PixelHeight * 96 / DpiY</c>).</summary>
-	public virtual double Height => DpiY > 0 ? PixelHeight * 96d / DpiY : 0;
+	/// <summary>Height in device independent units (<c>PixelHeight * 96 / DpiY</c>; 96 when DpiY is not positive).</summary>
+	public virtual double Height => PixelHeight * 96d / (DpiY > 0 ? DpiY : 96d);
 
 	/// <summary>The pixels in <see cref="Format"/>, top-down, rows of exactly the minimal stride.</summary>
 	internal virtual byte[] GetPixelData() => new byte[PixelConverter.MinStride(PixelWidth, Format) * PixelHeight];

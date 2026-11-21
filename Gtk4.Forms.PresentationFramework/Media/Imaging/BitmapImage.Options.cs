@@ -91,8 +91,10 @@ public sealed partial class BitmapImage
 		{
 			bgra ??= image.ToBgra32();
 			double ratio = (double)w / h;
-			int nw = _decodePixelWidth > 0 ? _decodePixelWidth : Math.Max(1, (int)Math.Round(_decodePixelHeight * ratio));
-			int nh = _decodePixelHeight > 0 ? _decodePixelHeight : Math.Max(1, (int)Math.Round(_decodePixelWidth / ratio));
+			int nw = _decodePixelWidth > 0
+				? _decodePixelWidth : Math.Max(1, (int)Math.Round(_decodePixelHeight * ratio));
+			int nh = _decodePixelHeight > 0
+				? _decodePixelHeight : Math.Max(1, (int)Math.Round(_decodePixelWidth / ratio));
 			bgra = PixelTransforms.Resize(bgra, w, h, nw, nh);
 			w = nw;
 			h = nh;

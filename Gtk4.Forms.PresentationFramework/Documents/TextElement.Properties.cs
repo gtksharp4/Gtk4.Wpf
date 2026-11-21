@@ -3,10 +3,10 @@ using System.Windows.Media;
 namespace System.Windows.Documents;
 
 /// <summary>
-/// The inheriting text properties. <see cref="TextElement"/> is not a <see cref="DependencyObject"/>
-/// here, so its instance CLR properties (<c>string FontFamily</c>, nullable weight/style/brush) stay as
-/// they were: only the attached DPs below exist, and <c>Control</c>/<c>TextBlock</c> add themselves as owners.
-/// Carry-over: WPF's instance <c>FontFamily</c> is a <see cref="Media.FontFamily"/>, not a string.
+/// The attached, inheriting text DPs (FontFamily, FontSize, FontStyle, FontWeight, FontStretch, Foreground).
+/// <see cref="TextElement"/> is a <see cref="DependencyObject"/>, so its instance members read and write the same
+/// DPs; <c>Control</c> and <c>TextBlock</c> are owners (<c>AddOwner</c>), so values inherit through them.
+/// Carry-over: the instance <c>FontFamily</c> is a string, where WPF's is a <see cref="Media.FontFamily"/>.
 /// </summary>
 public abstract partial class TextElement
 {

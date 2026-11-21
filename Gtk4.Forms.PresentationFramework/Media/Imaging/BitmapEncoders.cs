@@ -62,43 +62,17 @@ public sealed class JpegBitmapEncoder : BitmapEncoder
 	}
 }
 
-/// <summary>Writes TIFF through the gdk-pixbuf saver (single page).</summary>
+/// <summary>Writes TIFF with the managed writer: one 8-bit RGB(A) page per frame.</summary>
 public sealed class TiffBitmapEncoder : BitmapEncoder
 {
 	/// <summary>Creates the encoder.</summary>
 	public TiffBitmapEncoder() : base(ImageContainer.Tiff) { }
 
-	/// <summary>Compression: None, Lzw and Zip are passed to libtiff; unsupported codecs fall back to LZW, then none.</summary>
+	/// <summary>Compression: None and Lzw are written; Default, Zip (the bundled libtiff cannot read it), Rle and
+	/// CCITT are written as LZW.</summary>
 	public TiffCompressOption Compression { get; set; }
 
-	internal override byte[] Encode(IList<DecodedImage> frames)
-	{
-		RequireSingle(frames, "TIFF");
-		var f = frames[0];
-		string? code = Compression switch
-		{
-			TiffCompressOption.None => "1",
-			TiffCompressOption.Lzw => "5",
-			TiffCompressOption.Zip => "8",
-			_ => null,
-		};
-		var bgra = f.ToBgra32();
-		bool alpha = ImageEncoding.HasAlpha(f);
-		// gdk-pixbuf rejects a save with no codec, and the bundled libtiff may lack Zip/CCITT: fall back to LZW, then none.
-		foreach (var c in new[] { code, "5", "1" })
-		{
-			if (c == null)
-				continue;
-			try
-			{
-				return PixbufCodec.Encode(bgra, f.Width, f.Height, "tiff", alpha, new[] { "compression" }, new[] { c });
-			}
-			catch (GLib.GException) when (c != "1")
-			{
-			}
-		}
-		throw new InvalidOperationException("The GTK runtime could not write TIFF.");
-	}
+	internal override byte[] Encode(IList<DecodedImage> frames) => TiffWriter.Encode(frames, Compression);
 }
 
 /// <summary>Writes BMP with the managed writer (24 bit, or palette for indexed frames).</summary>

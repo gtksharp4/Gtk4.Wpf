@@ -16,6 +16,7 @@ static partial class TextTreeEdit
 		{
 			doc.Blocks.Clear();
 			foreach (var b in blocks) doc.Blocks.Add(b);
+			if (doc.Blocks.Count == 0) doc.Blocks.Add(new Paragraph());
 			doc.RecordTextEdit(0, total, TextTree.Total(TextTree.Build(doc)));
 			return;
 		}
