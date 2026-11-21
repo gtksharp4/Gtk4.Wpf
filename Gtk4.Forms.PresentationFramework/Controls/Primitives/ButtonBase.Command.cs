@@ -30,7 +30,7 @@ public abstract partial class ButtonBase
 	public static readonly DependencyProperty CommandTargetProperty =
 		DependencyProperty.Register(
 			nameof(CommandTarget),
-			typeof(UIElement),
+			typeof(IInputElement),
 			typeof(ButtonBase),
 			new PropertyMetadata(null));
 
@@ -61,9 +61,9 @@ public abstract partial class ButtonBase
 	}
 
 	/// <inheritdoc cref="ICommandSource.CommandTarget"/>
-	public UIElement? CommandTarget
+	public IInputElement? CommandTarget
 	{
-		get => (UIElement?)GetValue(CommandTargetProperty);
+		get => (IInputElement?)GetValue(CommandTargetProperty);
 		set => SetValue(CommandTargetProperty, value);
 	}
 

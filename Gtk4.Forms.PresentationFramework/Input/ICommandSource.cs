@@ -17,5 +17,5 @@ public interface ICommandSource
 	/// Optional explicit target for routed command dispatch.
 	/// When <c>null</c> the element itself is the target.
 	/// </summary>
-	System.Windows.UIElement? CommandTarget { get; }
+	System.Windows.IInputElement? CommandTarget { get; }
 }

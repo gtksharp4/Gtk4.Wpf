@@ -74,6 +74,9 @@ public static class Cursors
 	/// <summary>Scroll east–west cursor.</summary>
 	public static Cursor ScrollEW { get; } = new Cursor(CursorType.ScrollEW);
 
+	/// <summary>Scroll west-east cursor.</summary>
+	public static Cursor ScrollWE { get; } = new Cursor(CursorType.ScrollWE);
+
 	/// <summary>Scroll northeast cursor.</summary>
 	public static Cursor ScrollNE { get; } = new Cursor(CursorType.ScrollNE);
 

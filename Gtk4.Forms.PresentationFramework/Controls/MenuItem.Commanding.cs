@@ -19,7 +19,7 @@ public partial class MenuItem
 
 	/// <summary>Optional explicit routing target.</summary>
 	public static readonly DependencyProperty CommandTargetProperty =
-		DependencyProperty.Register(nameof(CommandTarget), typeof(UIElement), typeof(MenuItem),
+		DependencyProperty.Register(nameof(CommandTarget), typeof(IInputElement), typeof(MenuItem),
 			new PropertyMetadata(null));
 
 	static void OnCommandChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -43,9 +43,9 @@ public partial class MenuItem
 	}
 
 	/// <inheritdoc cref="ICommandSource.CommandTarget"/>
-	public UIElement? CommandTarget
+	public IInputElement? CommandTarget
 	{
-		get => (UIElement?)GetValue(CommandTargetProperty);
+		get => (IInputElement?)GetValue(CommandTargetProperty);
 		set => SetValue(CommandTargetProperty, value);
 	}
 

@@ -4,7 +4,7 @@ namespace System.Windows.Input;
 /// Provides keyboard state and focus services. The managed focus state is updated by
 /// <see cref="UIElement"/> when <c>Focus()</c> is called or the GTK focus controller fires.
 /// </summary>
-public static class Keyboard
+public static partial class Keyboard
 {
 	// ── Managed focus state ──────────────────────────────────────────────────
 
@@ -26,16 +26,13 @@ public static class Keyboard
 		new System.Collections.Generic.HashSet<Key>();
 
 	/// <summary>
-	/// Moves keyboard focus to <paramref name="element"/>; calls
-	/// <see cref="UIElement.Focus()"/> and updates the managed focus record.
+	/// Moves keyboard focus to <paramref name="element"/> (see <see cref="UIElement.Focus()"/>).
 	/// </summary>
+	/// <returns>The element with focus afterwards (the previous owner if the move was cancelled).</returns>
 	public static System.Windows.IInputElement? Focus(System.Windows.IInputElement element)
 	{
 		if (element is System.Windows.UIElement uie)
-		{
-			uie.Focus();
-			return element;
-		}
+			return uie.Focus() ? element : FocusedElement;
 		return null;
 	}
 

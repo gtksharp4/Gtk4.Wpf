@@ -29,18 +29,18 @@ public partial class Slider
 		// Always clear existing marks first.
 		_scale.ClearMarks();
 
-		if (TickPlacement == TickPlacement.None || TickFrequency <= 0.0)
+		if (TickPlacement == TickPlacement.None)
 			return;
 
 		var gtkPos = ToGtkPositionType(TickPlacement, Orientation);
-		foreach (var tick in SliderSnap.TickPositions(Minimum, Maximum, TickFrequency))
+		foreach (var tick in TickValues())
 			_scale.AddMark(tick, gtkPos, null);
 
 		// When Both, add a second pass for the opposite side.
 		if (TickPlacement == TickPlacement.Both)
 		{
 			var opp = OppositePosition(gtkPos);
-			foreach (var tick in SliderSnap.TickPositions(Minimum, Maximum, TickFrequency))
+			foreach (var tick in TickValues())
 				_scale.AddMark(tick, opp, null);
 		}
 	}

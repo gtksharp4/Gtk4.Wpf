@@ -52,7 +52,7 @@ internal sealed class CommandSourceHelper
 	{
 		var cmd = _owner.Command;
 		if (cmd == null) return true;
-		var target = _owner.CommandTarget ?? (_owner as System.Windows.UIElement);
+		var target = _owner.CommandTarget ?? (_owner as System.Windows.IInputElement);
 		if (cmd is RoutedCommand rc)
 			return rc.CanExecute(_owner.CommandParameter, target);
 		return cmd.CanExecute(_owner.CommandParameter);
@@ -65,7 +65,7 @@ internal sealed class CommandSourceHelper
 	{
 		var cmd = _owner.Command;
 		if (cmd == null) return;
-		var target = _owner.CommandTarget ?? (_owner as System.Windows.UIElement);
+		var target = _owner.CommandTarget ?? (_owner as System.Windows.IInputElement);
 		if (cmd is RoutedCommand rc)
 			rc.Execute(_owner.CommandParameter, target);
 		else

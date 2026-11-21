@@ -1,3 +1,5 @@
+using System.Windows.Controls.Primitives;
+
 namespace System.Windows.Controls;
 
 /// <summary>
@@ -10,10 +12,10 @@ namespace System.Windows.Controls;
 /// rounded to the nearest tick defined by <see cref="TickFrequency"/>.
 /// </para>
 /// </summary>
-public partial class Slider : Control
+public partial class Slider : RangeBase
 {
-	/// <summary>Raised when <see cref="Value"/> changes.</summary>
-	public event EventHandler? ValueChanged;
+	/// <summary>Creates a slider and registers its commands.</summary>
+	public Slider() => InitCommandBindings();
 
 	// ── Minimum DP ───────────────────────────────────────────────────────────
 
@@ -59,7 +61,7 @@ public partial class Slider : Control
 			typeof(double),
 			typeof(Slider),
 			new FrameworkPropertyMetadata(0.0,
-				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal, OnValueChanged,
+				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal, OnValuePropertyChanged,
 				(d, v) =>
 				{
 					var s = (Slider)d;
@@ -70,7 +72,7 @@ public partial class Slider : Control
 					return (object?)clamped;
 				}));
 
-	static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	static void OnValuePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
 		var s = (Slider)d;
 		if (s._scale != null)
@@ -81,7 +83,7 @@ public partial class Slider : Control
 		}
 		// Raise for every real value change — including GTK-origin changes.
 		// _updating only guards the GTK↔DP write loop (see OnGtkValueChanged).
-		s.ValueChanged?.Invoke(s, EventArgs.Empty);
+		s.OnValueChanged((double?)e.OldValue ?? 0.0, (double?)e.NewValue ?? 0.0);
 	}
 
 	/// <summary>Gets or sets the current value.</summary>

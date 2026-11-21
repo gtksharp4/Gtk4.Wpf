@@ -43,11 +43,6 @@ public abstract partial class UIElement : IInputElement
 	public bool IsFocused => (bool)(GetValue(IsFocusedProperty) ?? false);
 
 	/// <summary>
-	/// Returns <c>true</c> when this element holds keyboard focus (alias for <see cref="IsFocused"/>).
-	/// </summary>
-	public bool IsKeyboardFocused => IsFocused;
-
-	/// <summary>
 	/// Requests keyboard focus. Calls <see cref="Gtk.Widget.GrabFocus"/> when the
 	/// backing widget has been created; otherwise records the request to apply on first creation.
 	/// Returns <c>false</c> when not focusable, disabled, or itself or an ancestor is not
@@ -56,7 +51,7 @@ public abstract partial class UIElement : IInputElement
 	public bool Focus()
 	{
 		if (!Focusable || !IsEnabled || !IsVisibilityChainVisible) return false;
-		SetFocusedInternal(true);
+		if (!SetFocusedInternal(true)) return false;
 		if (IsWidgetCreated)
 			FocusWidget.GrabFocus();
 		else
@@ -118,36 +113,5 @@ public abstract partial class UIElement : IInputElement
 
 		// Dispatch any matching InputBindings.
 		InvokeInputBinding(new KeyGestureEventArgs(key, modifiers));
-	}
-
-	// ── Managed focus helpers (called by GTK focus controller) ───────────────
-
-	/// <summary>
-	/// Sets or clears managed focus state on this element.
-	/// When setting focus, any previously focused element is unfocused first
-	/// so <see cref="Keyboard.FocusedElement"/> is always a single owner.
-	/// </summary>
-	internal void SetFocusedInternal(bool focused)
-	{
-		bool wasFocused = IsFocused;
-
-		if (focused && !wasFocused)
-		{
-			// Unfocus the previously focused element before setting the new one.
-			var prev = Keyboard.FocusedElement as UIElement;
-			if (prev != null && !ReferenceEquals(prev, this))
-				prev.SetFocusedInternal(false);
-
-			SetValue(_isFocusedKey, true);
-			Keyboard.SetFocused(this);
-			FocusManager.SetFocusedElement(this, this);
-			RaiseEvent(new RoutedEventArgs(GotFocusEvent));
-		}
-		else if (!focused && wasFocused)
-		{
-			SetValue(_isFocusedKey, false);
-			Keyboard.ClearFocused(this);
-			RaiseEvent(new RoutedEventArgs(LostFocusEvent));
-		}
 	}
 }

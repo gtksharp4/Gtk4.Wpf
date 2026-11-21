@@ -18,7 +18,7 @@ public enum RoutingStrategy
 /// Identifies and declares a routed event.  Instances are created only via
 /// <see cref="EventManager.RegisterRoutedEvent"/>.
 /// </summary>
-public sealed class RoutedEvent
+public sealed partial class RoutedEvent
 {
 	/// <summary>Name of this routed event.</summary>
 	public string Name { get; }
