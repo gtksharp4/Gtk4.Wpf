@@ -17,13 +17,17 @@ static class AutomationThread
 	[ThreadStatic]
 	static int _depth;
 
+	// Dispatchers are per thread: a client call from a test thread must target the UI (GTK host) dispatcher,
+	// not the caller's own. Without GTK there is no host and the caller's dispatcher runs the call inline.
+	static Dispatcher Target => Dispatcher.Host ?? Dispatcher.CurrentDispatcher;
+
 	internal static T Call<T>(Func<T> func)
 	{
 		if (func == null) throw new ArgumentNullException(nameof(func));
 		bool nested = _depth > 0;
 		T result = default!;
 		ExceptionDispatchInfo? error = null;
-		Dispatcher.CurrentDispatcher.Invoke(() =>
+		Target.Invoke(() =>
 		{
 			_depth++;
 			try { result = func(); }
@@ -52,7 +56,7 @@ static class AutomationThread
 
 	static void Settle()
 	{
-		var dispatcher = Dispatcher.CurrentDispatcher;
+		var dispatcher = Target;
 		if (dispatcher.CheckAccess())
 		{
 			var clock = Stopwatch.StartNew();

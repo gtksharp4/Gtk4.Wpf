@@ -100,6 +100,9 @@ public partial class Dispatcher
 
 	internal static void DetachHost() => _host = null;
 
+	/// <summary>The GTK host's dispatcher (the UI thread), or null when no GTK loop is attached.</summary>
+	internal static Dispatcher? Host => _host;
+
 	// ── Instance ─────────────────────────────────────────────────────────────────
 
 	readonly Thread _thread;
