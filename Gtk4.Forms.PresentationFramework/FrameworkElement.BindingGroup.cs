@@ -27,6 +27,7 @@ public partial class FrameworkElement
 		if (oldParent != null && FindBindingGroup(oldParent) is { } old)
 			BindingGroupEnlister.WithdrawSubtree(this, old);
 		if (newParent != null) BindingGroupEnlister.EnlistSubtree(this);
+		if (newParent != null) RefreshResourceReferencesInSubtree();
 	}
 
 	static BindingGroup? FindBindingGroup(UIElement start)

@@ -233,8 +233,12 @@ namespace Gtk4.Forms.MarkupCompiler
 			{
 				string ownerName = reAttr.Substring(0, dot);
 				string evName = reAttr.Substring(dot + 1);
-				string fqOwner = Emitted(QualifyTypeName(ownerName));
-				reExpr = $"System.Windows.EventManager.GetRoutedEvent(typeof({fqOwner}), \"{EscapeString(evName)}\")";
+				string fqOwner = ownerName.IndexOf(':') > 0
+					? ResolveTypeRefName(ownerName) : Emitted(QualifyTypeName(ownerName));
+				// A prefixed owner is a user type: reference its static RoutedEvent field directly.
+				reExpr = ownerName.IndexOf(':') > 0
+					? $"{fqOwner}.{evName}Event"
+					: $"System.Windows.EventManager.GetRoutedEvent(typeof({fqOwner}), \"{EscapeString(evName)}\")";
 			}
 			w.Line($"var {trigVar} = new System.Windows.EventTrigger {{ RoutedEvent = {reExpr} }};");
 

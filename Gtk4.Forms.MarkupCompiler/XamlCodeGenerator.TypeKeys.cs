@@ -31,8 +31,13 @@ namespace Gtk4.Forms.MarkupCompiler
 
 		/// <summary>A resource key as C#: <c>typeof(T)</c> for <c>{x:Type T}</c>, else a string literal.</summary>
 		string ResourceKeyExpression(string escapedKey)
-			=> escapedKey.StartsWith("{x:Type", StringComparison.Ordinal) && ResolveTypeRefName(escapedKey) is string t
-				? $"typeof({t})" : "\"" + escapedKey + "\"";
+		{
+			if (escapedKey.StartsWith("{x:Type", StringComparison.Ordinal) && ResolveTypeRefName(escapedKey) is string t)
+				return $"typeof({t})";
+			// A nested {x:Static ...} is the key object itself (e.g. a ResourceKey), not its text.
+			if (IsXStatic(escapedKey, out string staticExpr, _prefixMap, ProbePresentationType)) return staticExpr;
+			return "\"" + escapedKey + "\"";
+		}
 
 		// A type name nested in a markup extension: [prefix:]Type, optionally wrapped in {x:Type}.
 		string NestedTypeName(string value)

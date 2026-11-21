@@ -37,6 +37,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			if (t != null && Nullable.GetUnderlyingType(t) is Type under)
 				return ClrNullableExpression(under, propName, val);
 			if (t == null || t.IsGenericType) return ClrValueExpression(propName, val);
+			if (t.FullName == "System.String") return $"\"{EscapeString(val)}\"";
 			if (t.IsEnum) return ClrEnumExpression(t, propName, val);
 			if (t.FullName == "System.Uri")
 				return $"new System.Uri(\"{EscapeString(val)}\", System.UriKind.RelativeOrAbsolute)";

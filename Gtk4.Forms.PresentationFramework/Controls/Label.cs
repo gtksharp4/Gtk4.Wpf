@@ -8,7 +8,7 @@ namespace System.Windows.Controls;
 /// is updated directly; <see cref="UIElement"/> content is not supported
 /// (use <see cref="Border"/> or a layout panel for that case).
 /// </summary>
-public class Label : ContentControl
+public partial class Label : ContentControl
 {
 	static Label()
 	{
