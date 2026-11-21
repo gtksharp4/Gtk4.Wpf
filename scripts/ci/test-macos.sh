@@ -21,7 +21,7 @@ export DOTNET_CLI_TELEMETRY_OPTOUT=1
 # $(VersionPrefix) in Version.targets - see the comment there. No git configuration is needed here.
 echo "== build (Debug; GeneratePackageOnBuild off) =="
 # The filter leaves out the WPF HelloWorld sample (net10.0-windows): it needs the Windows SDK.
-dotnet build Gtk4.Forms.CrossPlatform.slnf -c Debug -p:GeneratePackageOnBuild=false
+dotnet build Gtk4.Wpf.CrossPlatform.slnf -c Debug -p:GeneratePackageOnBuild=false
 
 # The logic suites (WindowsBase DP/dispatcher, MarkupCompiler XAML->code, Wpf.ProjectConverter) need
 # no GTK runtime.

@@ -227,7 +227,7 @@ and the pinned samples gate (no currently building or running sample may regress
   partials.
 - The parity scout must not pick `System.Windows.Automation.Peers` (4 samples) while this plan is active.
   Record that in `docs/samples-coverage.md` "Next rounds" when Phase 1 starts.
-- A new project must be added to both `Gtk4.Forms.sln` and `Gtk4.Forms.CrossPlatform.slnf`.
+- A new project must be added to both `Gtk4.Wpf.sln` and `Gtk4.Wpf.CrossPlatform.slnf`.
 
 ## Open questions
 

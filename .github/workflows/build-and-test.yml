@@ -24,7 +24,7 @@ jobs:
           # GitInfo derives the package version from history; a shallow clone makes it guess and the
           # build emits MSB3073 "could not retrieve first commit" noise.
           fetch-depth: 0
-          # Gtk4.Forms.sln references the unmodified WPF HelloWorld sample in the (public) WPF-Samples
+          # Gtk4.Wpf.sln references the unmodified WPF HelloWorld sample in the (public) WPF-Samples
           # submodule.
           submodules: recursive
       - uses: actions/setup-dotnet@v4
