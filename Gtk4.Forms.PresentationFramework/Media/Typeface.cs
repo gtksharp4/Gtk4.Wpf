@@ -64,7 +64,7 @@ public partial class Typeface
 	public override bool Equals(object? obj) => obj is Typeface t && Equals(t);
 
 	/// <summary>Value equality: family, style, weight, stretch and fallback family.</summary>
-	public bool Equals(Typeface? other) =>
+	bool Equals(Typeface? other) =>
 		other != null && FontFamily.Equals(other.FontFamily) && Style == other.Style && Weight == other.Weight
 		&& Stretch == other.Stretch && Equals(FallbackFontFamily, other.FallbackFontFamily);
 

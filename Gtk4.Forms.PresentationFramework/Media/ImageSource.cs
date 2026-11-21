@@ -19,6 +19,9 @@ public class ImageSource
 	/// </summary>
 	protected ImageSource() => FilePath = string.Empty;
 
+	/// <summary>The image metadata; <see langword="null"/> for a source without any.</summary>
+	public virtual ImageMetadata? Metadata => null;
+
 	/// <summary>Creates an <see cref="ImageSource"/> from a file path.</summary>
 	public static ImageSource FromFile(string path) => new ImageSource(path);
 

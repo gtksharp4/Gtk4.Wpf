@@ -10,7 +10,7 @@ public partial class FrameworkContentElement
 	/// through <c>AddOwner</c>; <c>FrameworkElement</c> has none yet, so this one is registered here.
 	/// </summary>
 	public static readonly DependencyProperty NameProperty = DependencyProperty.Register(
-		nameof(Name), typeof(string), typeof(FrameworkContentElement), new PropertyMetadata(string.Empty));
+		nameof(Name), typeof(string), typeof(FrameworkContentElement), new PropertyMetadata(string.Empty), IsValidName);
 
 	/// <summary>Identifies the DataContext property (inherits from the logical parent).</summary>
 	public static readonly DependencyProperty DataContextProperty = FrameworkElement.DataContextProperty.AddOwner(

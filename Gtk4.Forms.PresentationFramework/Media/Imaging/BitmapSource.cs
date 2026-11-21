@@ -31,13 +31,16 @@ public abstract partial class BitmapSource : ImageSource
 		protected set => _format = value;
 	}
 
+	/// <summary>The metadata of the bitmap; <see langword="null"/> when it has none.</summary>
+	public override ImageMetadata? Metadata => null;
+
 	/// <summary>The palette of an indexed bitmap, otherwise <see langword="null"/>.</summary>
 	public virtual BitmapPalette? Palette { get; protected set; }
 
-	/// <summary>Width in device independent units (<c>PixelWidth * 96 / DpiX</c>; 96 when DpiX is not positive).</summary>
+	/// <summary>Width in device-independent units (<c>PixelWidth * 96 / DpiX</c>; 96 when DpiX <= 0).</summary>
 	public virtual double Width => PixelWidth * 96d / (DpiX > 0 ? DpiX : 96d);
 
-	/// <summary>Height in device independent units (<c>PixelHeight * 96 / DpiY</c>; 96 when DpiY is not positive).</summary>
+	/// <summary>Height in device-independent units (<c>PixelHeight * 96 / DpiY</c>; 96 when DpiY <= 0).</summary>
 	public virtual double Height => PixelHeight * 96d / (DpiY > 0 ? DpiY : 96d);
 
 	/// <summary>The pixels in <see cref="Format"/>, top-down, rows of exactly the minimal stride.</summary>

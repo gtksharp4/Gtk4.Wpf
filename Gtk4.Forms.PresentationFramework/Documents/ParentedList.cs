@@ -58,6 +58,31 @@ sealed class ParentedList<T> : IList<T>, IList
 		return true;
 	}
 
+	public void AddRange(IEnumerable range)
+	{
+		if (range == null) throw new ArgumentNullException(nameof(range));
+		foreach (var item in range) Add(Cast(item));
+	}
+
+	public void RemoveRange(int index, int count)
+	{
+		if (index < 0) throw new ArgumentOutOfRangeException(nameof(index));
+		if (count < 0) throw new ArgumentOutOfRangeException(nameof(count));
+		if (_items.Count - index < count)
+			throw new ArgumentException("index and count do not denote a valid range.");
+		var old = _items.GetRange(index, count);
+		_items.RemoveRange(index, count);
+		foreach (var item in old) ContentParenting.Release(_owner, item);
+	}
+
+	public int Capacity
+	{
+		get => _items.Capacity;
+		set => _items.Capacity = value;
+	}
+
+	public void TrimToSize() => _items.TrimExcess();
+
 	public void Clear()
 	{
 		var old = _items.ToArray();

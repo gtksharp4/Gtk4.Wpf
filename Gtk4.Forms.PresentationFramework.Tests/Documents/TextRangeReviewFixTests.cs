@@ -51,6 +51,7 @@ public class TextRangeReviewFixTests
 
 		Assert.Equal(0, endPtr.CompareTo(d.ContentEnd));
 		Assert.True(mid.CompareTo(d.ContentEnd) <= 0);
+		Assert.Equal("e", mid.GetTextInRun(LogicalDirection.Forward).Substring(0, 1));
 	}
 
 	[Fact]

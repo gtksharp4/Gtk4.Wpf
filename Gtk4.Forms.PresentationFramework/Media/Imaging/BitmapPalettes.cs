@@ -74,26 +74,26 @@ public static class BitmapPalettes
 	/// <summary>Black and white.</summary>
 	public static BitmapPalette BlackAndWhite => Cached(() => Make(Gray(2)));
 
-	/// <summary>Black and white plus a transparent entry.</summary>
-	public static BitmapPalette BlackAndWhiteTransparent => Cached(() => Transparent(Gray(2)));
+	/// <summary>Black and white (WIC adds no transparent entry).</summary>
+	public static BitmapPalette BlackAndWhiteTransparent => Cached(() => Make(Gray(2)));
 
 	/// <summary>Four grays.</summary>
 	public static BitmapPalette Gray4 => Cached(() => Make(Gray(4)));
 
-	/// <summary>Four grays plus a transparent entry.</summary>
-	public static BitmapPalette Gray4Transparent => Cached(() => Transparent(Gray(4)));
+	/// <summary>Four grays (no transparent entry).</summary>
+	public static BitmapPalette Gray4Transparent => Cached(() => Make(Gray(4)));
 
 	/// <summary>Sixteen grays.</summary>
 	public static BitmapPalette Gray16 => Cached(() => Make(Gray(16)));
 
-	/// <summary>Sixteen grays plus a transparent entry.</summary>
-	public static BitmapPalette Gray16Transparent => Cached(() => Transparent(Gray(16)));
+	/// <summary>Sixteen grays (no transparent entry).</summary>
+	public static BitmapPalette Gray16Transparent => Cached(() => Make(Gray(16)));
 
 	/// <summary>256 grays.</summary>
 	public static BitmapPalette Gray256 => Cached(() => Make(Gray(256)));
 
-	/// <summary>256 grays with the last entry made transparent.</summary>
-	public static BitmapPalette Gray256Transparent => Cached(() => TransparentOrLast(Gray(256), true));
+	/// <summary>256 grays (no transparent entry).</summary>
+	public static BitmapPalette Gray256Transparent => Cached(() => Make(Gray(256)));
 
 	/// <summary>2x2x2 halftone plus system colours.</summary>
 	public static BitmapPalette Halftone8 => Cached(() => Make(Cube(2, 2, 2, 8)));

@@ -7,7 +7,8 @@ public abstract partial class BitmapSource
 	/// <summary>Creates a bitmap from a pixel buffer.</summary>
 	/// <exception cref="ArgumentNullException"><paramref name="pixels"/> is null.</exception>
 	/// <exception cref="ArgumentException">The stride or buffer is too small.</exception>
-	/// <exception cref="InvalidOperationException">An indexed <paramref name="pixelFormat"/> has no palette.</exception>
+	/// <exception cref="InvalidOperationException">An indexed <paramref name="pixelFormat"/> has no
+	/// palette.</exception>
 	public static BitmapSource Create(int pixelWidth, int pixelHeight, double dpiX, double dpiY,
 		PixelFormat pixelFormat, BitmapPalette? palette, Array pixels, int stride)
 	{

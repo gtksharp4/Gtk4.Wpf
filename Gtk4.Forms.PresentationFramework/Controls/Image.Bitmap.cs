@@ -11,7 +11,8 @@ public partial class Image
 		if (source is not BitmapSource bitmap)
 			return false;
 		if (bitmap is BitmapImage image)
-			return image.StreamSource != null || image.UriSource == null || image.HasDecodeOptions;
+			return image.LoadedBytes != null || image.StreamSource != null || image.UriSource == null
+				|| image.HasDecodeOptions;
 		return true;
 	}
 

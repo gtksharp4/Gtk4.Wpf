@@ -24,13 +24,14 @@ public sealed partial class TextPointer
 
 	internal FlowDocument Document => _doc;
 
-	/// <summary>The symbol offset from the start of the document, after replaying missed edits and clamping to the content.</summary>
+	/// <summary>The symbol offset from the document start, after replaying missed edits and clamping.</summary>
 	internal int Offset
 	{
 		get
 		{
 			for (; _applied < _doc.TextEditCount; _applied++)
 				_offset = Reanchor(_offset, _direction, _doc.GetTextEdit(_applied));
+			// Direct tree edits are not logged or versioned, so the clamp cannot be cached.
 			_offset = Math.Max(0, Math.Min(_offset, TextTree.Total(TextTree.Build(_doc))));
 			return _offset;
 		}
@@ -83,7 +84,7 @@ public sealed partial class TextPointer
 	/// <summary>A pointer <paramref name="offset"/> symbols away, or null when outside the document.</summary>
 	public TextPointer? GetPositionAtOffset(int offset) => GetPositionAtOffset(offset, _direction);
 
-	/// <summary>A pointer <paramref name="offset"/> symbols away with the given direction, or null when outside.</summary>
+	/// <summary>A pointer <paramref name="offset"/> symbols away in the given direction, or null if outside.</summary>
 	public TextPointer? GetPositionAtOffset(int offset, LogicalDirection direction)
 	{
 		long target = (long)Offset + offset;

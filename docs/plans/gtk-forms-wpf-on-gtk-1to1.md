@@ -1847,9 +1847,8 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `BitmapEncoder` overrides `Save`), `BitmapFrame.BaseUri` has a public setter and `ImageMetadata` is the base of
   `BitmapMetadata`; `Frame.Metadata` is typed `ImageMetadata`. **A-F4** `BitmapSource.Create` throws
   `InvalidOperationException` for an indexed format without a palette and names `pixels`/`buffer` for a short buffer.
-  **A-F6** `Width`/`Height` fall back to 96 dpi. **A-F7** fixed palettes are built once; `BlackAndWhiteTransparent`,
-  `Gray4Transparent` and `Gray16Transparent` carry a transparent entry and `Gray256Transparent` replaces its last
-  entry, like the halftone ones. **A-F8** exact-value tests for Bgr565, Bgr555, Rgb24, Gray16 and Cmyk32 and
+  **A-F6** `Width`/`Height` fall back to 96 dpi. **A-F7** fixed palettes are built once; the BW and gray "Transparent"
+  palettes stay opaque (WIC ignores the transparent flag for them; only the halftone ones gain an entry). **A-F8** exact-value tests for Bgr565, Bgr555, Rgb24, Gray16 and Cmyk32 and
   odd-width, padded-stride Indexed2/4 and Gray2/4 (the converter was right); a GTK test pins the file-path route
   (`Picture.File` set; a `Gdk.MemoryTexture` check was dropped because GTK itself loads a file into a memory texture).
   **A-F9** long lines wrapped, `CodecRoundTripTests` split, the stale imaging scratch folder removed. **B-F1**
@@ -1873,8 +1872,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   path. Rejected in triage: **B-F5** (the three MarkupCompiler test edits follow from `TextElement` becoming a
   `DependencyObject`; a note for the lane A hand-off) and **CI-1** (`Image` already sets `CanShrink = false` for
   `Stretch.None`). Not applied: **A-F5** (see Carry-over), **B-F6**'s `TableColumn.Width` validator (`GridLength`
-  already rejects negative and NaN values, so it could never fire) and **C-B50b-7**'s `Typeface.Equals(Typeface)`
-  change (WPF's `Typeface` does declare that overload, from memory). **Round 50 (lane B) totals: 5691 tests** (255
+  already rejects negative and NaN values, so it could never fire) (see the follow-up). **Round 50 (lane B) totals: 5691 tests** (255
   WindowsBase + 4747 PresentationFramework + 584 MarkupCompiler (1 skipped, Windows) + 34 ProjectConverter + 71
   Wpf.Testing (5 skipped)), all pass; `dotnet build Gtk4.Wpf.sln` 0 warnings. `Integration.Tests` not run. **Samples
   gate:** Gtk4.Forms.Wpf and its three Gtk4.Forms dependencies packed from the fixed tree into a lane-private feed
@@ -1889,6 +1887,15 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `WindowsBase` makes every `-windows` target ambiguous with the framework's `System.IO.Packaging` type (CS0433), so
   it needs a `#if` per target rather than a move; JPEG XR (WDP) has no codec; TIFF decoding reads no resolution tags
   and encodes only 8-bit RGB(A); the `Name` generator hand-off to lane A (B-F3) is open.
+- **Round 50 (lane B) follow-up.** `BitmapPalettes` BW/gray "Transparent" palettes reverted to opaque (WIC ignores
+  the flag; only the caching stays). `BitmapImage.LoadedBytes` feeds the clipboard image and makes an OnLoad `UriSource`
+  image an in-memory `Image` texture. `Typeface.Equals(Typeface)` is no longer public (Learn lists only
+  `Equals(object)`; the earlier "WPF declares it" claim was wrong). `ImageSource.Metadata` is virtual and
+  `BitmapSource`/`BitmapFrame` override it (typed `ImageMetadata`; null for a `BitmapImage`). Table collections gain
+  `AddRange`, `RemoveRange`, `Capacity`, `TrimToSize` and public `IsSynchronized`/`SyncRoot`/`CopyTo(Array,int)`.
+  `FrameworkContentElement.Name` validates XAML identifiers. Long lines wrapped; the `end=9` text-range test now
+  asserts the surviving text. Not applied: `TextPointer.Offset` caching (direct tree edits are not versioned, and a
+  test pins the clamp) and `FileFormatException` (still open, an actual move was not attempted).
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a

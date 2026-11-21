@@ -84,9 +84,9 @@ public class ImagingApiShapeTests : WpfGtkTestBase
 	[InlineData("Gray4Transparent")]
 	[InlineData("Gray16Transparent")]
 	[InlineData("Gray256Transparent")]
-	public void Transparent_gray_palettes_carry_a_transparent_entry(string name)
+	public void Transparent_gray_palettes_stay_opaque_like_WIC(string name)
 	{
 		var palette = (BitmapPalette)typeof(BitmapPalettes).GetProperty(name)!.GetValue(null)!;
-		Assert.Contains(palette.Colors, c => c.A == 0);
+		Assert.All(palette.Colors, c => Assert.Equal(255, c.A));
 	}
 }

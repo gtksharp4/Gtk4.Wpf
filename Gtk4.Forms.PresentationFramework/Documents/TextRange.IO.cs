@@ -14,14 +14,14 @@ public partial class TextRange
 		dataFormat == DataFormats.Text || dataFormat == DataFormats.UnicodeText || dataFormat == DataFormats.Xaml
 		|| dataFormat == DataFormats.Rtf || dataFormat == DataFormats.XamlPackage;
 
-	/// <summary>True when <paramref name="dataFormat"/> can be loaded: Text, UnicodeText, Xaml, Rtf, XamlPackage.</summary>
+	/// <summary>True when <paramref name="dataFormat"/> can be loaded (Text, Xaml, Rtf, ...).</summary>
 	public bool CanLoad(string dataFormat)
 	{
 		if (dataFormat == null) throw new ArgumentNullException(nameof(dataFormat));
 		return IsKnownFormat(dataFormat);
 	}
 
-	/// <summary>True when <paramref name="dataFormat"/> can be saved: Text, UnicodeText, Xaml, Rtf, XamlPackage.</summary>
+	/// <summary>True when <paramref name="dataFormat"/> can be saved (Text, Xaml, Rtf, ...).</summary>
 	public bool CanSave(string dataFormat)
 	{
 		if (dataFormat == null) throw new ArgumentNullException(nameof(dataFormat));
@@ -47,7 +47,8 @@ public partial class TextRange
 	static List<Paragraph> Parse(Stream stream, string format)
 	{
 		if (format == DataFormats.XamlPackage) return TextRangeXamlReader.Read(ReadPackage(stream));
-		string content = ReadString(stream, format == DataFormats.UnicodeText ? Encoding.Unicode : new UTF8Encoding(false));
+		var encoding = format == DataFormats.UnicodeText ? Encoding.Unicode : new UTF8Encoding(false);
+		string content = ReadString(stream, encoding);
 		if (format == DataFormats.Xaml) return TextRangeXamlReader.Read(content);
 		if (format == DataFormats.Rtf) return TextRangeRtfReader.Read(content);
 		var lines = content.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n').ToList();
@@ -88,7 +89,8 @@ public partial class TextRange
 			WriteString(stream, enc, Read(Start.Document, Start.Offset, End.Offset));
 		}
 		else if (dataFormat == DataFormats.Rtf) WriteString(stream, Encoding.ASCII, TextRangeRtf.Write(paragraphs));
-		else if (dataFormat == DataFormats.Xaml) WriteString(stream, new UTF8Encoding(false), TextRangeXaml.Write(paragraphs));
+		else if (dataFormat == DataFormats.Xaml)
+			WriteString(stream, new UTF8Encoding(false), TextRangeXaml.Write(paragraphs));
 		else WritePackage(stream, TextRangeXaml.Write(paragraphs));
 	}
 
@@ -111,8 +113,9 @@ public partial class TextRange
 		using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
 		{
 			Entry(zip, "[Content_Types].xml", "<?xml version=\"1.0\" encoding=\"utf-8\"?><Types xmlns=\"http://schemas."
-				+ "openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/"
-				+ "vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xaml\" ContentType=\"application/"
+				+ "openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" "
+				+ "ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default "
+				+ "Extension=\"xaml\" ContentType=\"application/"
 				+ "vnd.ms-wpf.xaml+xml\"/></Types>");
 			Entry(zip, "_rels/.rels", "<?xml version=\"1.0\" encoding=\"utf-8\"?><Relationships xmlns=\"" + RelsNs
 				+ "\"><Relationship Id=\"R0\" Type=\"" + EntryRelationshipType + "\" Target=\"/" + PackageDocumentPart
@@ -140,7 +143,8 @@ public partial class TextRange
 			using (var s = rels.Open())
 			{
 				var target = System.Xml.Linq.XDocument.Load(s).Descendants()
-					.Where(e => e.Name.LocalName == "Relationship" && (string?)e.Attribute("Type") == EntryRelationshipType)
+					.Where(e => e.Name.LocalName == "Relationship"
+						&& (string?)e.Attribute("Type") == EntryRelationshipType)
 					.Select(e => (string?)e.Attribute("Target")).FirstOrDefault();
 				return string.IsNullOrEmpty(target) ? PackageDocumentPart : target!;
 			}

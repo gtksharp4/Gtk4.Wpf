@@ -55,9 +55,30 @@ public sealed class TableColumnCollection : IList<TableColumn>, IList
 
 	bool IList.IsFixedSize => false;
 
-	bool ICollection.IsSynchronized => false;
+	/// <summary>Always <see langword="false"/>.</summary>
+	public bool IsSynchronized => false;
 
-	object ICollection.SyncRoot => ((ICollection)_items).SyncRoot;
+	/// <summary>The object to lock on.</summary>
+	public object SyncRoot => ((ICollection)_items).SyncRoot;
+
+	/// <summary>Appends every element of <paramref name="range"/>.</summary>
+	public void AddRange(IEnumerable range) => _items.AddRange(range);
+
+	/// <summary>Removes <paramref name="count"/> elements starting at <paramref name="index"/>.</summary>
+	public void RemoveRange(int index, int count) => _items.RemoveRange(index, count);
+
+	/// <summary>The number of elements the collection can hold without resizing.</summary>
+	public int Capacity
+	{
+		get => _items.Capacity;
+		set => _items.Capacity = value;
+	}
+
+	/// <summary>Trims unused capacity.</summary>
+	public void TrimToSize() => _items.TrimToSize();
+
+	/// <summary>Copies the elements to <paramref name="array"/>.</summary>
+	public void CopyTo(Array array, int index) => ((ICollection)_items).CopyTo(array, index);
 
 	object? IList.this[int index]
 	{
@@ -74,6 +95,4 @@ public sealed class TableColumnCollection : IList<TableColumn>, IList
 	void IList.Insert(int index, object? value) => ((IList)_items).Insert(index, value);
 
 	void IList.Remove(object? value) => ((IList)_items).Remove(value);
-
-	void ICollection.CopyTo(Array array, int index) => ((ICollection)_items).CopyTo(array, index);
 }

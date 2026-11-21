@@ -9,6 +9,9 @@ public sealed partial class BitmapImage
 	Rotation _rotation;
 	Int32Rect _sourceRect;
 	Uri? _baseUri;
+
+	/// <summary>The source bytes read at <see cref="EndInit"/>, or null when not read eagerly.</summary>
+	internal byte[]? LoadedBytes => _loaded;
 	System.Net.Cache.RequestCachePolicy? _uriCachePolicy;
 
 	/// <summary>Width the image is scaled to while decoding (0 keeps the source width).</summary>

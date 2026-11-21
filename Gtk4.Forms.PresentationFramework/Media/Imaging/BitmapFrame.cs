@@ -16,7 +16,7 @@ public abstract class BitmapFrame : BitmapSource
 	public virtual BitmapSource? Thumbnail => null;
 
 	/// <summary>The frame metadata, or <see langword="null"/> when the format has none.</summary>
-	public virtual ImageMetadata? Metadata => null;
+	public override ImageMetadata? Metadata => null;
 
 	/// <summary>The colour profiles of the frame.</summary>
 	public virtual ReadOnlyCollection<ColorContext>? ColorContexts => null;
