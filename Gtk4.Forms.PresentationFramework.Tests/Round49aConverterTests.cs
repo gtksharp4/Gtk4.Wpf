@@ -74,6 +74,8 @@ public class Round49aConverterTests
 		// TextDecorations="Underline").
 		"System.Windows.Documents.FlowDocument", "System.Windows.Media.Effects.Effect",
 		"System.Windows.TextDecorationCollection",
+		// FlowDocument.TextEffects (documents lane): TextEffectCollection has no type converter in WPF.
+		"System.Windows.Media.TextEffectCollection",
 	};
 
 	[Fact]
