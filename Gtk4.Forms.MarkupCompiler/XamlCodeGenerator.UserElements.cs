@@ -32,6 +32,16 @@ namespace Gtk4.Forms.MarkupCompiler
 			=> fqType.StartsWith("global::", StringComparison.Ordinal)
 				&& !_resolver.TypeExists(fqType.Substring("global::".Length));
 
+		// An event declared by a code-behind class of a type the resolver cannot inspect.
+		bool UserEventDeclared(string name)
+		{
+			if (CodeBehindSources == null) return false;
+			var re = new System.Text.RegularExpressions.Regex(@"\bevent\s+[\w.<>,\s]+?\s" + name + @"\b\s*[;{]");
+			foreach (string source in CodeBehindSources)
+				if (re.IsMatch(StripCommentsAndStrings(source))) return true;
+			return false;
+		}
+
 		void EmitUserNameProperty(IndentedWriter w, string target, string name)
 		{
 			string literal = "\"" + name.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";

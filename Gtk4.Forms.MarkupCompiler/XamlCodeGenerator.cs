@@ -564,6 +564,7 @@ namespace Gtk4.Forms.MarkupCompiler
 		bool IsKnownEvent(string fqType, string propName)
 		{
 			if (string.IsNullOrEmpty(fqType)) return false;
+			if (IsHookedUserType(fqType)) return UserEventDeclared(propName);
 			return _resolver.IsEvent(fqType, propName);
 		}
 

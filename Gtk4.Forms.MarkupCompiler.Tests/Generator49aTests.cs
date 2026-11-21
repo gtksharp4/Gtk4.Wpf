@@ -112,6 +112,17 @@ public class Generator49aTests : GeneratorV2TestBase
 	}
 
 	[Fact]
+	public void A_routed_event_attribute_on_a_local_type_is_wired_not_set_as_a_property()
+	{
+		const string stub = "namespace A { public class Btn : System.Windows.Controls.Button "
+			+ "{ public event System.Windows.RoutedEventHandler Tap; } "
+			+ "public partial class W : System.Windows.Window { void OnTap(object s, System.Windows.RoutedEventArgs e) { } } }";
+		string code = Gen(Window("<local:Btn Tap=\"OnTap\"/>"), sources: new[] { stub });
+		Assert.Matches(new Regex(@"\.Tap \+= this\.OnTap;"), code);
+		Assert.DoesNotContain("SetClrProperty", code);
+	}
+
+	[Fact]
 	public void LayoutUpdated_is_wired_as_a_clr_event()
 	{
 		const string stub = "namespace A { public partial class W : System.Windows.Window "
