@@ -6,7 +6,7 @@ namespace System.Windows.Media;
 /// A text effect applied to a range of characters. Stored only: the Pango label does not apply it.
 /// Gap: WPF's Transform, Clip and animation support are absent.
 /// </summary>
-public sealed class TextEffect : Freezable
+public sealed partial class TextEffect : Freezable
 {
 	/// <summary>Identifies the Foreground property (default null).</summary>
 	public static readonly DependencyProperty ForegroundProperty = DependencyProperty.Register(
