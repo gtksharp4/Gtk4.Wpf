@@ -27,4 +27,16 @@
     <InternalsVisibleTo Include="Gtk4.Forms.Wpf.Testing.Tests" />
   </ItemGroup>
 
+
+  <!--
+    The driver reaches into PresentationFramework internals (InternalsVisibleTo), so a packed dependency on it must
+    match the build exactly: an open "greater or equal" range would fail with MissingMethodException at run time.
+  -->
+  <Target Name="PinProjectReferenceVersions" AfterTargets="_GetProjectReferenceVersions">
+    <ItemGroup>
+      <_ProjectReferencesWithVersions Update="@(_ProjectReferencesWithVersions)"
+                                      ProjectVersion="[%(ProjectVersion)]" />
+    </ItemGroup>
+  </Target>
+
 </Project>

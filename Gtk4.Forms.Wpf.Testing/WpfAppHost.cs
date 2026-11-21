@@ -79,8 +79,10 @@ public sealed partial class WpfAppHost : IDisposable
 			var host = new WpfAppHost(app, window);
 			try
 			{
-				GtkThread.PumpUntil(() => window.Widget.IsMapped && window.Widget.Width > 0,
-					TimeSpan.FromSeconds(10));
+				if (!GtkThread.PumpUntil(() => window.Widget.IsMapped && window.Widget.Width > 0,
+					TimeSpan.FromSeconds(10)))
+					throw new WaitTimeoutException("The main window was not mapped within 10 s."
+						+ Environment.NewLine + "Automation tree:" + Environment.NewLine + host.DumpTree());
 				GtkThread.WaitForIdle();
 			}
 			catch
@@ -120,7 +122,8 @@ public sealed partial class WpfAppHost : IDisposable
 			System.Windows.Automation.Automation.RemoveAllEventHandlers();
 			foreach (var window in Application.Windows.Cast<Window>().ToArray())
 				window.Close();
-			GtkThread.WaitForIdle();
+			try { GtkThread.WaitForIdle(TimeSpan.FromSeconds(2)); }
+			catch (WaitTimeoutException) { } // a busy app must not block teardown
 			Application.ResetCurrentForTests();
 		});
 	}

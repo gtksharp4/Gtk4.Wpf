@@ -16,20 +16,26 @@ public static class TreeDump
 		{
 			var text = new StringBuilder();
 			int lines = 0;
-			Walk(root, 0, maxDepth, text, ref lines);
-			if (lines >= MaxLines)
+			bool truncated = false;
+			Walk(root, 0, maxDepth, text, ref lines, ref truncated);
+			if (truncated)
 				text.AppendLine("... (truncated)");
 			return text.ToString();
 		});
 
-	static void Walk(AutomationElement element, int depth, int maxDepth, StringBuilder text, ref int lines)
+	static void Walk(AutomationElement element, int depth, int maxDepth, StringBuilder text, ref int lines,
+		ref bool truncated)
 	{
-		if (lines >= MaxLines) return;
+		if (lines >= MaxLines)
+		{
+			truncated = true;
+			return;
+		}
 		lines++;
 		text.Append(' ', depth * 2).AppendLine(Describe(element));
 		if (depth >= maxDepth) return;
 		foreach (AutomationElement child in element.FindAll(TreeScope.Children, Condition.TrueCondition))
-			Walk(child, depth + 1, maxDepth, text, ref lines);
+			Walk(child, depth + 1, maxDepth, text, ref lines, ref truncated);
 	}
 
 	static string Describe(AutomationElement element)
@@ -46,7 +52,7 @@ public static class TreeDump
 
 	static string Shorten(string value)
 	{
-		value = value.Replace("\r", "\r").Replace("\n", "\n");
+		value = value.Replace("\r", "\\r").Replace("\n", "\\n");
 		return value.Length <= 60 ? value : value.Substring(0, 57) + "...";
 	}
 }

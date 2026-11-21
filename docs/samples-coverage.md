@@ -379,3 +379,11 @@ that the flow-direction round moved) was not re-run, so these are lower bounds. 
 | 2026-11-20 | `1b50a528` | 1.0.0.26324 | **yes** | 89 / 204 | 83 | Round 46; 5 crash, 1 hang; no regressions; the earlier runs are confirmed local-feed |
 | 2026-11-21 | `2c67b72c` + generator-v4 | 1.0.0.26325 | **yes** | 90 / 204 | 87 | Generator v4; the recorded 89 plus CustomApplicationClass (fail -> builds, runs in this gate); no regressions |
 | 2026-11-21 | `5f92acd0` + Round 47 review fixes | 1.0.0.26325 | **yes** | 91 / 204 | 88 | Lower bounds: the recorded 90 projects, CustomApplicationClass and LangAttribute re-run; no regressions |
+
+## Known layer defects found by the UI tests
+
+- **No command requery after `Loaded`.** `HandlingEventOnCommandUsingCode` adds its button and `CommandBinding` in
+  `Loaded`. WPF re-queries commands afterwards, so the button is enabled. The layer calls nothing like
+  `CommandManager.InvalidateRequerySuggested` there, so the button stays disabled until another requery happens.
+  `CommandSampleTests` keeps a workaround test (it requeries itself) and a skipped test,
+  `The_button_is_enabled_without_a_manual_requery`, that asserts the correct behaviour. Un-skip it when fixed.

@@ -18,7 +18,7 @@ public class DirectionalBindingTests : WpfUiWindowTest<DirectionalBinding.MainWi
 	[WpfUiFact]
 	public void A_TwoWay_PropertyChanged_edit_updates_the_one_way_savings_text()
 	{
-		var food = App.FindAll(By.ControlType(ControlType.Edit))[0];
+		var food = App.Find(By.AutomationId("FoodText"));
 		food.Type("300");
 		App.WaitUntil(() => App.TryFind(By.Name("2700")) != null, description: "Savings to show 2700");
 		Assert.Equal("300", food.GetText());

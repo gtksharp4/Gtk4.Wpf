@@ -139,4 +139,34 @@ public class HostTests : WpfUiWindowTest<FormWindow>
 		Assert.Contains("\n    Edit id=\"User\"", tree);
 		Assert.Contains("\n      ListItem name=\"Leek\"", tree);
 	}
+
+	[WpfUiFact]
+	public void WaitForIdle_is_bounded_when_a_zero_interval_timer_is_always_ready()
+	{
+		var timer = App.Invoke(() =>
+		{
+			var t = new DispatcherTimer { Interval = TimeSpan.Zero };
+			t.Tick += (s, e) => { };
+			t.Start();
+			return t;
+		});
+		try
+		{
+			var clock = System.Diagnostics.Stopwatch.StartNew();
+			try { App.WaitForIdle(); }
+			catch (WaitTimeoutException error) { Assert.Contains("Window name=\"Form\"", error.Message); }
+			Assert.True(clock.Elapsed < TimeSpan.FromSeconds(8), "WaitForIdle outlived its timeout.");
+		}
+		finally { App.Invoke(timer.Stop); }
+	}
+
+	[WpfUiFact]
+	public void A_multi_line_name_stays_on_one_line_of_the_dump()
+	{
+		App.Invoke(() => Form.Status.Text = "first\r\nsecond");
+		string tree = App.DumpTree();
+		Assert.Contains("name=\"first\\r\\nsecond\"", tree);
+		Assert.DoesNotContain("second\"\r", tree);
+		Assert.DoesNotContain("\nsecond", tree);
+	}
 }

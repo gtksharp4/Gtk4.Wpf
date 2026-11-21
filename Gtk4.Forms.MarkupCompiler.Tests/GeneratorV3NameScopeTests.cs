@@ -106,4 +106,17 @@ public class GeneratorV3NameScopeTests : GeneratorV2TestBase
 			sources: new[] { source }, xamlPath: "P.xaml", rootNamespace: "A");
 		Assert.Equal(expected, name);
 	}
+
+	[Fact]
+	public void F4_x_Name_also_sets_FrameworkElement_Name_but_only_on_framework_elements()
+	{
+		string code = Gen(Window(@"<Border x:Name=""b""/><TextBlock Name=""t""/>
+<Window.Resources><SolidColorBrush x:Key=""k"" x:Name=""brush""/></Window.Resources>", "x:Name=\"root\""));
+		Assert.Contains("this.b = ", code);
+		Assert.Matches(@"__e\d+\.Name = ""b"";", code);
+		Assert.Matches(@"__e\d+\.Name = ""t"";", code);
+		Assert.Contains("this.Name = \"root\";", code);
+		Assert.DoesNotMatch(@"brush\w*\.Name =", code);
+		AssertCompiles(code, WindowStub);
+	}
 }

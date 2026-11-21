@@ -37,7 +37,7 @@ public sealed class FormWindow : Window
 			Status.Text = "Welcome, " + User.Text;
 		};
 		User.KeyDown += (s, e) => KeyDowns++;
-		Login.MouseDown += (s, e) => MouseDowns++;
+		Login.PreviewMouseDown += (s, e) => MouseDowns++;
 		var panel = new StackPanel();
 		foreach (UIElement child in new UIElement[] { User, Login, Remember, Status, Fruit, Veg })
 			panel.Children.Add(child);

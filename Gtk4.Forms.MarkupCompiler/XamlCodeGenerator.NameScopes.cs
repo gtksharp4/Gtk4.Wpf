@@ -44,5 +44,20 @@ namespace Gtk4.Forms.MarkupCompiler
 			fields.Insert(0, (name, fq));
 			return name;
 		}
+
+		const string FrameworkElementType = "System.Windows.FrameworkElement";
+
+		/// <summary>
+		/// WPF's <c>RuntimeNameProperty</c>: <c>x:Name</c> also sets <c>FrameworkElement.Name</c>, which an
+		/// automation peer uses as its AutomationId. Other types keep only the field.
+		/// </summary>
+		void EmitNameProperty(IndentedWriter w, string target, string fqType, string name)
+		{
+			if (fqType == null || !_resolver.HasReferences
+				|| !_resolver.DerivesFromByName(fqType.Replace("global::", ""), FrameworkElementType))
+				return;
+			string literal = "\"" + name.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
+			w.Line($"{target}.Name = {literal};");
+		}
 	}
 }

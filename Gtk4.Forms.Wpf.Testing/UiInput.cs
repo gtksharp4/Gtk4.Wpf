@@ -27,6 +27,14 @@ public sealed partial class UiInput
 	public MouseInput Mouse { get; }
 
 	/// <summary>The WPF element behind <paramref name="element"/>, or the main window when it is <c>null</c>.</summary>
+	/// <summary>
+	/// A disabled element gets no mouse or keyboard input from a real device, so the driver throws
+	/// <see cref="ElementNotEnabledException"/> instead of raising events the layer would never deliver.
+	/// </summary>
+	internal static UIElement RequireEnabled(UIElement target) =>
+		target.IsEnabled ? target : throw new ElementNotEnabledException(
+			"The element is disabled and receives no input: " + target.GetType().Name);
+
 	internal UIElement Resolve(AutomationElement? element) => GtkThread.Invoke(() =>
 		element == null ? _host.Window
 			: element.Peer is UIElementAutomationPeer peer ? peer.Owner
@@ -43,7 +51,7 @@ public sealed partial class UiInput
 		public void Press(Key key, ModifierKeys modifiers = ModifierKeys.None, AutomationElement? target = null) =>
 			GtkThread.Invoke(() =>
 			{
-				var element = Target(target);
+				var element = RequireEnabled(Target(target));
 				try
 				{
 					element.RaiseKeyDownForTest(key, modifiers);
@@ -53,12 +61,12 @@ public sealed partial class UiInput
 			});
 
 		public void Down(Key key, ModifierKeys modifiers = ModifierKeys.None, AutomationElement? target = null) =>
-			GtkThread.Invoke(() => Target(target).RaiseKeyDownForTest(key, modifiers));
+			GtkThread.Invoke(() => RequireEnabled(Target(target)).RaiseKeyDownForTest(key, modifiers));
 
 		public void Up(Key key, ModifierKeys modifiers = ModifierKeys.None, AutomationElement? target = null) =>
 			GtkThread.Invoke(() =>
 			{
-				Target(target).RaiseKeyUpForTest(key, modifiers);
+				RequireEnabled(Target(target)).RaiseKeyUpForTest(key, modifiers);
 				System.Windows.Input.Keyboard.Modifiers = ModifierKeys.None;
 			});
 

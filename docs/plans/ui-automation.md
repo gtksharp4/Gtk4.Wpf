@@ -459,9 +459,9 @@ Landed as two new projects, both in `Gtk4.Forms.sln`, `Gtk4.Forms.CrossPlatform.
   `HandlingEventOnCommandUsingCode` (commands, KeyBinding and a `MessageBox` through a recording presenter) and
   `MousePointer` (cursor enter/leave).
 
-Tests: 49 in `Gtk4.Forms.Wpf.Testing.Tests` (8 locator, 13 host, 6 input, 3 evidence, 19 sample). Observed on Windows:
-`WindowsBase.Tests` 201, `MarkupCompiler.Tests` 574, `Wpf.ProjectConverter.Tests` 34, `PresentationFramework.Tests`
-4220, `Wpf.Testing.Tests` 49, all passing; `dotnet build Gtk4.Forms.sln` warning-clean. A deliberately failing test
+Tests: 56 in `Gtk4.Forms.Wpf.Testing.Tests` (55 run, 1 skipped layer-gap test). Observed on Windows:
+`WindowsBase.Tests` 201, `MarkupCompiler.Tests` 575, `Wpf.ProjectConverter.Tests` 34, `PresentationFramework.Tests`
+4220, `Wpf.Testing.Tests` 55 passed + 1 skipped, all passing; `dotnet build Gtk4.Forms.sln` warning-clean. A deliberately failing test
 showed the evidence files (tree and PNG) written from `Dispose`. Linux and macOS were not run here, and the samples
 gate was not re-run (no sample or layer behaviour changed).
 
@@ -474,11 +474,15 @@ Deviations from the plan and WPF, all documented in code or here:
 - `HandlingEventOnCommand` (the `Window.CommandBindings`/`InputBindings` XAML variant) was replaced by
   `HandlingEventOnCommandUsingCode`: the markup compiler drops those two property elements, so the sample builds and
   runs with its command wiring missing.
-- Not fixed here (layer gaps the tests work around or avoid): `x:Name`/`Name` on a non-root element only sets the
-  generated field, never `FrameworkElement.Name`, so `By.AutomationId` cannot find XAML-named controls (tests use
-  names, control types and class names); nothing calls `CommandManager.InvalidateRequerySuggested` after input or
-  focus changes, so a command button created before its binding stays disabled until the test requeries; the gap
-  is commented in `CommandSampleTests`.
+- Review fixes after Phase 3: no GTK runtime now returns from the loop thread in every case (`GtkThread.RunLoop`);
+  `WaitForIdle` is bounded by count and time and throws `WaitTimeoutException` when the idle marker never fires
+  (a zero-interval timer), and `Dispose` tolerates that; `Mouse`/`Keyboard` input to a disabled element throws
+  `ElementNotEnabledException` (a real device delivers nothing); `x:Name`/`Name` now also sets
+  `FrameworkElement.Name` in the markup compiler, so `By.AutomationId` finds XAML-named controls; `TreeDump` escapes
+  line breaks; `Launch` throws when the window never maps; the package pins its PresentationFramework and
+  WindowsBase dependencies to the exact build version (`[x]`), because the driver uses their internals.
+- Not fixed (layer gap): nothing calls `CommandManager.InvalidateRequerySuggested` after `Loaded` adds a binding, so
+  a command button stays disabled; tracked in `samples-coverage.md`, with a skipped test in `CommandSampleTests`.
 - Unverified: the GTK snapshot path and the `Wpf.Testing.Tests` suite on Linux (Xvfb) and macOS; only Windows ran.
 
 

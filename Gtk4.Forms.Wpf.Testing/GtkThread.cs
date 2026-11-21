@@ -15,7 +15,6 @@ public static partial class GtkThread
 {
 	static readonly object Gate = new object();
 	static bool _started;
-	static bool _adopted;
 	static volatile bool _stop;
 	static int _threadId = -1;
 	static string? _unavailable;
@@ -82,7 +81,6 @@ public static partial class GtkThread
 		{
 			if (_started) throw new InvalidOperationException("GTK is already running.");
 			_started = true;
-			_adopted = true;
 			_ready = new ManualResetEventSlim();
 		}
 		int exit = 0;
@@ -94,7 +92,12 @@ public static partial class GtkThread
 				Console.Error.WriteLine("The test runner crashed: " + e);
 				exit = 1;
 			}
-			finally { _stop = true; Wake(); }
+			finally
+			{
+				_stop = true;
+				_ready.Wait();
+				if (_unavailable == null) Wake();
+			}
 		}) { IsBackground = true, Name = "tests" };
 		worker.Start();
 		StartLoop();
@@ -128,16 +131,35 @@ public static partial class GtkThread
 	static void StartLoop()
 	{
 		_threadId = Environment.CurrentManagedThreadId;
-		try { System.Windows.Application.InitGtk(); }
-		catch (DllNotFoundException e) { _unavailable = NoRuntime(e.Message); }
+		RunLoop(System.Windows.Application.InitGtk, () => Gtk.Application.RunIteration(true),
+			reason =>
+			{
+				_unavailable = reason;
+				_ready!.Set();
+			});
+	}
+
+	/// <summary>
+	/// Initialises GTK and iterates until stopped. Returns why GTK is missing without iterating: touching the
+	/// unloadable native library again from this background thread would kill the test host.
+	/// </summary>
+	internal static string? RunLoop(Action init, Action iterate, Action<string?> ready)
+	{
+		string? reason = null;
+		try { init(); }
+		catch (DllNotFoundException e) { reason = NoRuntime(e.Message); }
 		catch (TypeInitializationException e) when (e.InnerException is DllNotFoundException inner)
 		{
-			_unavailable = NoRuntime(inner.Message);
+			reason = NoRuntime(inner.Message);
 		}
-		finally { _ready!.Set(); }
-		if (_unavailable != null && _adopted) return;
+		finally
+		{
+			ready(reason);
+		}
+		if (reason != null) return reason;
 		while (!_stop)
-			Gtk.Application.RunIteration(true);
+			iterate();
+		return null;
 	}
 
 	static void Wake() => System.Windows.Application.PostToMainLoop(() => { }, DispatcherPriority.Send);

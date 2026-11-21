@@ -1,3 +1,4 @@
+using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Input;
 using Xunit;
@@ -55,13 +56,31 @@ public class InputTests : WpfUiWindowTest<FormWindow>
 	}
 
 	[WpfUiFact]
-	public void Mouse_Click_raises_MouseDown_and_MouseUp()
+	public void Mouse_Click_raises_PreviewMouseDown_and_MouseUp_on_an_enabled_element()
 	{
 		int ups = 0;
-		App.Invoke(() => Form.Login.MouseUp += (s, e) => ups++);
+		App.Invoke(() =>
+		{
+			Form.User.Text = "ada";
+			Form.Login.AddHandler(UIElement.MouseUpEvent, new MouseButtonEventHandler((s, e) => ups++), true);
+		});
 		App.Input.Mouse.Click(App.Find(By.AutomationId("Login")));
 		Assert.Equal(1, App.Invoke(() => Form.MouseDowns));
 		Assert.Equal(1, ups);
+	}
+
+	[WpfUiFact]
+	public void Input_to_a_disabled_element_throws_ElementNotEnabledException_and_raises_nothing()
+	{
+		var login = App.Find(By.AutomationId("Login"));
+		int keys = 0;
+		App.Invoke(() => Form.Login.AddHandler(UIElement.KeyDownEvent, new KeyEventHandler((s, e) => keys++), true));
+		Assert.Throws<ElementNotEnabledException>(() => App.Input.Mouse.Click(login));
+		Assert.Throws<ElementNotEnabledException>(() => App.Input.Mouse.MoveTo(login));
+		Assert.Throws<ElementNotEnabledException>(() => App.Input.Keyboard.Press(Key.A, target: login));
+		Assert.Equal(0, App.Invoke(() => Form.MouseDowns));
+		Assert.Equal(0, keys);
+		Assert.False(App.Invoke(() => Form.Login.IsMouseOver));
 	}
 
 	[WpfUiFact]

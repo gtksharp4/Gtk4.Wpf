@@ -23,6 +23,7 @@ public sealed partial class UiInput
 
 		public void MoveTo(UIElement target, Point? at = null) => GtkThread.Invoke(() =>
 		{
+			RequireEnabled(target);
 			target.SimulateMouseEnterForTest();
 			target.RaiseMouseMove(at ?? Centre(target));
 		});
@@ -39,6 +40,7 @@ public sealed partial class UiInput
 		public void Click(UIElement target, MouseButton button = MouseButton.Left, int clickCount = 1) =>
 			GtkThread.Invoke(() =>
 			{
+				RequireEnabled(target);
 				var point = Centre(target);
 				target.SimulateMouseEnterForTest();
 				target.RaiseMouseMove(point);
