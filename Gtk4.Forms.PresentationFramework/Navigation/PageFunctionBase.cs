@@ -13,6 +13,13 @@ public abstract class PageFunctionBase : Page
 	/// <summary>Whether the page is dropped from the journal once it returns. Defaults to <c>true</c>.</summary>
 	public bool RemoveFromJournal { get; set; } = true;
 
+	/// <summary>Called once when the page is first navigated to; override to start the task it represents.</summary>
+	protected internal virtual void Start()
+	{
+	}
+
+	internal bool Started { get; set; }
+
 	// Set by NavigationService when this page is navigated to from another page.
 	internal object? Caller { get; set; }
 

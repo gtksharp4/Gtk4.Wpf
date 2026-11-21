@@ -126,6 +126,11 @@ public sealed class NavigationService
 			pageFunction.Caller = Content;
 		_journal.Push(content);
 		CommitContent(content, uri, extraData);
+		if (content is PageFunctionBase { Started: false } starting)
+		{
+			starting.Started = true;
+			starting.Start();
+		}
 		return true;
 	}
 
