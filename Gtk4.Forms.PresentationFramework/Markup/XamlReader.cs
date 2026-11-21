@@ -1,0 +1,51 @@
+using System;
+using System.IO;
+using System.Xml;
+using System.Xml.Linq;
+
+namespace System.Windows.Markup;
+
+/// <summary>
+/// Builds an object graph from loose XAML at runtime, by reflection (no <c>x:Class</c>, no events,
+/// no <c>x:TypeArguments</c>; there is no <c>ParserContext</c> overload).
+/// </summary>
+public class XamlReader
+{
+	/// <summary>Loads the object tree described by the XAML in <paramref name="stream"/>.</summary>
+	/// <exception cref="XamlParseException">The XAML is malformed or cannot be built.</exception>
+	public static object Load(Stream stream)
+	{
+		if (stream == null) throw new ArgumentNullException(nameof(stream));
+		using var reader = XmlReader.Create(stream, Settings);
+		return Load(reader);
+	}
+
+	/// <summary>Loads the object tree described by the XAML in <paramref name="reader"/>.</summary>
+	/// <exception cref="XamlParseException">The XAML is malformed or cannot be built.</exception>
+	public static object Load(XmlReader reader)
+	{
+		if (reader == null) throw new ArgumentNullException(nameof(reader));
+		XDocument document;
+		try
+		{
+			document = XDocument.Load(reader, LoadOptions.SetLineInfo);
+		}
+		catch (XmlException ex)
+		{
+			throw new XamlParseException(ex.Message, ex.LineNumber, ex.LinePosition, ex);
+		}
+		return new XamlObjectBuilder().Build(document.Root!);
+	}
+
+	/// <summary>Loads the object tree described by the XAML text <paramref name="xamlText"/>.</summary>
+	/// <exception cref="XamlParseException">The XAML is malformed or cannot be built.</exception>
+	public static object Parse(string xamlText)
+	{
+		if (xamlText == null) throw new ArgumentNullException(nameof(xamlText));
+		using var text = new StringReader(xamlText);
+		using var reader = XmlReader.Create(text, Settings);
+		return Load(reader);
+	}
+
+	static XmlReaderSettings Settings => new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit };
+}
