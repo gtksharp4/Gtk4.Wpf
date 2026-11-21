@@ -45,9 +45,9 @@ public abstract partial class FrameworkElement
 		bool clearAll = key == null;
 		if (clearAll) SubscribeToResourceChain();
 
-		foreach (var r in _resRefs)
+		foreach (var r in _resRefs.ToArray())
 		{
-			if (clearAll || Equals(r.Key, key))
+			if ((clearAll || Equals(r.Key, key)) && _resRefs != null && _resRefs.Contains(r))
 				ApplyResourceRef(r.Dp, r.Key, r.Contributor);
 		}
 	}

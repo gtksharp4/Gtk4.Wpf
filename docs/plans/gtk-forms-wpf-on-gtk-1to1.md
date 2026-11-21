@@ -1878,6 +1878,14 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   all 130 `build=pass` projects build through the two-build recipe and all 119 `run=runs` apps start and stay up with
   a window for 10 s, one at a time (19 first read as no-window while the other lane was running; all 19 re-checked
   alone run); no regression.
+- **Round 49 (lane A) follow-up - DONE.** **A-F2** the hooked-type `{DynamicResource}` emission no longer declares a
+  `__eN_fe` pattern variable (two attributes on one local element was CS0128); it casts per attribute. A runtime test
+  covers the emitted `is FrameworkElement` call and resolution after parenting. **A-F1** the public
+  `SetResourceReference` drops a XAML-attribute (Local) reference on the same property, as WPF's Local-precedence
+  write does; `_applyingLocalDp` replaces the element-wide flag so a callback that sets another property detaches that
+  property's reference. The `XamlReader`/`ProvideValue` divergence (dyn-res layer, not Local) stays open. The
+  ControlsAndLayout theory now uses `SkipTestWithoutData`, so it skips when `WPF-Samples` is absent. Long
+  `Generator49aTests` lines wrapped.
 - **Carry-over (Round 49 lane A)**: `gf49a/animation-clocks` is unmerged; a runtime `{DynamicResource}` read by
   `XamlReader` still resolves through the dyn-res layer (not Local); template bodies read by `XamlReader` rebuild
   from the markup on every apply (no `x:Shared`/`TemplateBinding` tracking beyond the builder's own); the

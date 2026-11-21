@@ -48,6 +48,9 @@ public abstract partial class FrameworkElement
 		if (dp == null) throw new ArgumentNullException(nameof(dp));
 		if (resourceKey == null) throw new ArgumentNullException(nameof(resourceKey));
 
+		// WPF writes at Local precedence: a XAML-attribute reference on this dp is replaced.
+		if (HasLocalResourceRef(dp)) ClearValue(dp);
+
 		// Replace an existing reference for this dp, or add a new one.
 		_resRefs ??= new List<ResRef>();
 		bool replaced = false;

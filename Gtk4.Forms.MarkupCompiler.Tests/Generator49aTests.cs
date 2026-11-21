@@ -37,7 +37,8 @@ public class Generator49aTests : GeneratorV2TestBase
 	public void A_dynamic_resource_on_a_DP_is_a_deferred_reference_not_an_eager_lookup()
 	{
 		string code = Gen(Window("<Button FocusVisualStyle=\"{DynamicResource MyFocusVisual}\"/>"));
-		Assert.Contains("SetLocalResourceReference(__e0, System.Windows.Controls.Button.FocusVisualStyleProperty", code);
+		Assert.Contains("SetLocalResourceReference(__e0, System.Windows.Controls.Button.FocusVisualStyleProperty",
+			code);
 		Assert.DoesNotContain("FindResource(\"MyFocusVisual\")", code);
 		AssertCompiles(code, WindowStub);
 	}
@@ -54,7 +55,8 @@ public class Generator49aTests : GeneratorV2TestBase
 	[Fact]
 	public void A_nested_x_Static_dynamic_resource_key_is_the_static_member_not_its_text()
 	{
-		string code = Gen(Window("<Button Foreground=\"{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}\"/>"));
+		string code = Gen(Window("<Button Foreground=\"{DynamicResource "
+			+ "{x:Static SystemColors.ControlTextBrushKey}}\"/>"));
 		Assert.Contains(".SystemColors.ControlTextBrushKey)", code);
 		Assert.DoesNotContain("x:Static", code);
 		AssertCompiles(code, WindowStub);
@@ -116,7 +118,8 @@ public class Generator49aTests : GeneratorV2TestBase
 	{
 		const string stub = "namespace A { public class Btn : System.Windows.Controls.Button "
 			+ "{ public event System.Windows.RoutedEventHandler Tap; } "
-			+ "public partial class W : System.Windows.Window { void OnTap(object s, System.Windows.RoutedEventArgs e) { } } }";
+			+ "public partial class W : System.Windows.Window { void OnTap(object s, "
+			+ "System.Windows.RoutedEventArgs e) { } } }";
 		string code = Gen(Window("<local:Btn Tap=\"OnTap\"/>"), sources: new[] { stub });
 		Assert.Matches(new Regex(@"\.Tap \+= this\.OnTap;"), code);
 		Assert.DoesNotContain("SetClrProperty", code);
@@ -140,8 +143,25 @@ public class Generator49aTests : GeneratorV2TestBase
 			+ "System.Windows.DependencyProperty.Register(\"Accent\", typeof(object), typeof(Pane)); } "
 			+ "public partial class W : System.Windows.Window { } }";
 		string code = Gen(Window("<local:Pane Accent=\"{DynamicResource k}\"/>"), sources: new[] { stub });
-		Assert.Contains("SetLocalResourceReference(__e0_fe, global::A.Pane.AccentProperty, \"k\")", code);
+		Assert.Contains("(global::System.Windows.FrameworkElement)(object)__e0, global::A.Pane.AccentProperty, \"k\")",
+			code);
 		Assert.DoesNotContain("FindResource(\"k\")", code);
+		AssertCompiles(code, stub);
+	}
+
+	[Fact]
+	public void Two_dynamic_resources_on_one_local_FrameworkElement_compile()
+	{
+		const string stub = "namespace A { public class Pane : System.Windows.Controls.Border { "
+			+ "public static readonly System.Windows.DependencyProperty AccentProperty = "
+			+ "System.Windows.DependencyProperty.Register(\"Accent\", typeof(object), typeof(Pane)); "
+			+ "public static readonly System.Windows.DependencyProperty TintProperty = "
+			+ "System.Windows.DependencyProperty.Register(\"Tint\", typeof(object), typeof(Pane)); } "
+			+ "public partial class W : System.Windows.Window { } }";
+		string code = Gen(Window("<local:Pane Accent=\"{DynamicResource k}\" Tint=\"{DynamicResource t}\"/>"),
+			sources: new[] { stub });
+		Assert.Contains("AccentProperty, \"k\")", code);
+		Assert.Contains("TintProperty, \"t\")", code);
 		AssertCompiles(code, stub);
 	}
 

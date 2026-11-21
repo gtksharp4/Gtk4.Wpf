@@ -43,7 +43,7 @@ public class XamlReaderSamplesTests : WpfGtkTestBase, IDisposable
 	public void The_samples_checkout_is_present() =>
 		Assert.SkipUnless(SamplesFile() != null, "WPF-Samples not checked out");
 
-	[Theory]
+	[Theory(SkipTestWithoutData = true)]
 	[MemberData(nameof(Snippets))]
 	public void Snippet_loads(string title, string xaml) => Run(() =>
 	{

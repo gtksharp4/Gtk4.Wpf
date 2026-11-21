@@ -749,8 +749,10 @@ namespace Gtk4.Forms.MarkupCompiler
 					w.Line($"{Converter}.SetLocalResourceReference({varName}, {fqType}.{propName}Property, " +
 						$"{ResourceKeyExpression(EscapeString(dynKey))});");
 				else if (varName == _hookVar && IsDynamicResourceValue(val, out string hookDynKey))
-					w.Line($"if ((object){varName} is global::System.Windows.FrameworkElement {varName}_fe) " +
-						$"{Converter}.SetLocalResourceReference({varName}_fe, {fqType}.{propName}Property, " +
+					w.Line($"if ((object){varName} is global::System.Windows.FrameworkElement) " +
+						$"{Converter}.SetLocalResourceReference((global::System.Windows.FrameworkElement)(object)" +
+						$"{varName}, " +
+						$"{fqType}.{propName}Property, " +
 						$"{ResourceKeyExpression(EscapeString(hookDynKey))});");
 				else if (IsStaticOrDynamicResource(val, out string resourceKey))
 				{
