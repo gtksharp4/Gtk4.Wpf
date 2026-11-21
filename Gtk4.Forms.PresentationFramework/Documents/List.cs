@@ -67,11 +67,14 @@ public class List : Block
 		int number = 1;
 		foreach (var item in ListItems)
 		{
-			if (effective is FlowDirection d) sb.Append(BidiMarks.Mark(d)).Append(BidiMarks.Isolate(d));
-			sb.Append(PangoMarkup.Escape(GetMarker(MarkerStyle, number)));
-			sb.Append(' ');
-			item.AppendMarkup(sb);
-			if (effective != null) sb.Append(BidiMarks.Pdi);
+			string marker = PangoMarkup.Escape(GetMarker(MarkerStyle, number)) + " ";
+			if ((item.ExplicitFlowDirection ?? effective) is FlowDirection d)
+				BidiMarks.AppendIsolated(sb, d, true, s => { s.Append(marker); item.AppendMarkup(s); });
+			else
+			{
+				sb.Append(marker);
+				item.AppendMarkup(sb);
+			}
 			sb.Append('\n');
 			number++;
 		}

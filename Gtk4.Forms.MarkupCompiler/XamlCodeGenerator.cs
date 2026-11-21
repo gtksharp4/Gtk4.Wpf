@@ -136,7 +136,7 @@ namespace Gtk4.Forms.MarkupCompiler
 
 			w.Line("bool _contentLoaded;");
 			w.Line();
-			if (implicitBase != null || (rootBase != null && !isAppDef && !HasCodeBehindFor(className)))
+			if (implicitBase != null || (rootBase != null && !isAppDef && NeedsGeneratedConstructor(root, className)))
 			{
 				w.Line($"public {typeName}() {{ InitializeComponent(); }}");
 				w.Line();

@@ -11,6 +11,22 @@ public class ListItem
 	/// <summary>Block content of this list item.</summary>
 	public BlockCollection Blocks { get; } = new BlockCollection();
 
+	FlowDirection? _flowDirection;
+
+	/// <summary>Gets or sets the flow direction of this item (default LeftToRight).</summary>
+	public FlowDirection FlowDirection
+	{
+		get => _flowDirection ?? FlowDirection.LeftToRight;
+		set
+		{
+			if (!FrameworkElement.IsValidFlowDirection(value))
+				throw new ArgumentException($"'{value}' is not a valid value for property 'FlowDirection'.");
+			_flowDirection = value;
+		}
+	}
+
+	internal FlowDirection? ExplicitFlowDirection => _flowDirection;
+
 	/// <summary>Builds the plain-text for this item (without the marker prefix).</summary>
 	internal void AppendPlainText(System.Text.StringBuilder sb)
 	{

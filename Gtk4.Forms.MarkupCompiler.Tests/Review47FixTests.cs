@@ -38,6 +38,34 @@ public class Review47FixTests : GeneratorV2TestBase
 	}
 
 	[Fact]
+	public void A_dictionary_whose_code_behind_declares_no_constructor_gets_the_generated_one()
+	{
+		string src = "namespace P1 { public partial class Dict { void OnClick(object o) { } } }";
+		string code = Gen(Dict, out _, sources: new[] { src }, xamlPath: "Dict.xaml", rootNamespace: "P1");
+
+		Assert.Contains("public Dict() { InitializeComponent(); }", code);
+		Assert.Contains("GtkFormsXamlRegistration(\"Dict.xaml\"", code);
+	}
+
+	[Fact]
+	public void A_dictionary_with_its_own_public_constructor_does_not_get_a_second_one()
+	{
+		string src = "namespace P1 { public partial class Dict { public Dict() { InitializeComponent(); } } }";
+		string code = Gen(Dict, out _, sources: new[] { src }, xamlPath: "Dict.xaml", rootNamespace: "P1");
+
+		Assert.DoesNotContain("public Dict() { InitializeComponent(); }", code);
+	}
+
+	[Fact]
+	public void A_dictionary_with_an_implicitly_private_constructor_is_not_registered()
+	{
+		string src = "namespace P1 { public partial class Dict { Dict() { InitializeComponent(); } } }";
+		string code = Gen(Dict, out _, sources: new[] { src }, xamlPath: "Dict.xaml", rootNamespace: "P1");
+
+		Assert.DoesNotContain("GtkFormsXamlRegistration", code);
+	}
+
+	[Fact]
 	public void Merged_dictionaries_load_through_the_non_throwing_path()
 	{
 		string code = Gen($@"<Window x:Class=""A.W"" {Head}><Window.Resources><ResourceDictionary>

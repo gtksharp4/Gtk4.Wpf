@@ -66,6 +66,31 @@ public class Review47TaskTests : IDisposable
 	}
 
 	[Fact]
+	public void Two_different_files_with_the_same_output_path_are_an_error()
+	{
+		string inside = Write("Dict.xaml", $"<ResourceDictionary {Head}/>");
+		string outsideDir = Path.Combine(Path.GetTempPath(), "gf47-out-" + Guid.NewGuid().ToString("N"));
+		Directory.CreateDirectory(outsideDir);
+		try
+		{
+			string outside = Path.Combine(outsideDir, "Dict.xaml");
+			File.WriteAllText(outside, $"<ResourceDictionary {Head}/>");
+			var task = new MarkupCompileTask
+			{
+				BuildEngine = _engine, XamlFiles = new ITaskItem[] { Item(inside, "Page"), Item(outside, "Page") },
+				RootNamespace = "A", ProjectDirectory = _dir, OutputDirectory = Path.Combine(_dir, "obj", "gen"),
+			};
+
+			Assert.False(task.Execute());
+			Assert.Contains(_engine.Errors, e => e.Contains("collides"));
+		}
+		finally
+		{
+			Directory.Delete(outsideDir, true);
+		}
+	}
+
+	[Fact]
 	public void Dropped_markup_notes_are_logged_at_high_importance()
 	{
 		string path = Write("Main.xaml",

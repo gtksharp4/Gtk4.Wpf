@@ -37,21 +37,19 @@ public abstract partial class TextElement
 
 	internal void AppendWrappedMarkup(StringBuilder sb, System.Action<StringBuilder> body)
 	{
-		if (_flowDirection is FlowDirection d) sb.Append(BidiMarks.Isolate(d));
-		AppendLanguage(sb, body);
-		if (_flowDirection != null) sb.Append(BidiMarks.Pdi);
+		if (_flowDirection is FlowDirection d) BidiMarks.AppendIsolated(sb, d, false, s => AppendLanguage(s, body));
+		else AppendLanguage(sb, body);
 	}
 
 	/// <summary>
 	/// Appends one paragraph: a bidi isolate of <paramref name="effective"/> that opens and closes inside the
 	/// paragraph, preceded by a directional mark so the paragraph's base direction is right too (the isolate's
-	/// content is skipped when Pango picks it). Isolates cannot span a paragraph separator.
+	/// content is skipped when Pango picks it). Isolates cannot span a paragraph separator, so each line inside closes and reopens it.
 	/// </summary>
 	internal void AppendParagraph(StringBuilder sb, FlowDirection? effective, System.Action<StringBuilder> body)
 	{
-		if (effective is FlowDirection d) sb.Append(BidiMarks.Mark(d)).Append(BidiMarks.Isolate(d));
-		AppendLanguage(sb, body);
-		if (effective != null) sb.Append(BidiMarks.Pdi);
+		if (effective is FlowDirection d) BidiMarks.AppendIsolated(sb, d, true, s => AppendLanguage(s, body));
+		else AppendLanguage(sb, body);
 	}
 
 	internal void AppendLanguage(StringBuilder sb, System.Action<StringBuilder> body)

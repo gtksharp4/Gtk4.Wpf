@@ -51,4 +51,18 @@ namespace CustomApplicationClass { public partial class App : CustomApplicationC
 		Assert.Contains("static void Main()", app);
 		AssertCompiles(app, stub);
 	}
+
+	[Fact]
+	public void AlternatingAppearanceOfItems_MainWindow_compiles()
+	{
+		const string stub = @"using System.Collections.Generic; using System.Collections.ObjectModel;
+namespace AlternatingAppearanceOfItems {
+public partial class MainWindow { }
+public class Place { public string CityName { get; set; } public string State { get; set; } }
+public class Places : ObservableCollection<Place> { }
+public class ListLeagueList : List<object> { } }";
+		string code = Gen(Read("AlternatingAppearanceOfItems.MainWindow.xaml"), sources: new[] { stub });
+
+		AssertCompiles(code, stub);
+	}
 }

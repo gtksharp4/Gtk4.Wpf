@@ -57,21 +57,33 @@ namespace Gtk4.Forms.MarkupCompiler
 			return false;
 		}
 
-		bool HasPublicDefaultConstructor(string className)
+		bool HasPublicDefaultConstructor(string className) => DeclaredConstructors(className) != Constructors.Other;
+
+		enum Constructors { None, PublicDefault, Other }
+
+		// Scans the code-behind for instance constructors; a declaration without a modifier is private, so Other.
+		Constructors DeclaredConstructors(string className)
 		{
-			if (CodeBehindSources == null || !HasCodeBehindFor(className)) return true;
+			if (CodeBehindSources == null || !HasCodeBehindFor(className)) return Constructors.None;
 			string name = Regex.Escape(className.Substring(className.LastIndexOf('.') + 1));
-			var declared = new Regex(@"\b(?:public|internal|protected|private)\s+" + name + @"\s*\(");
+			var declared = new Regex(@"(?<!\bnew\s+)(?<!\bstatic\s+)(?<![\w.])" + name
+				+ @"\s*\([^)]*\)\s*(?::\s*(?:base|this)\s*\([^)]*\)\s*)?\{");
 			var open = new Regex(@"\bpublic\s+" + name + @"\s*\(\s*\)");
 			bool any = false;
 			foreach (string s in CodeBehindSources)
 			{
 				string code = StripCommentsAndStrings(s);
-				if (open.IsMatch(code)) return true;
+				if (open.IsMatch(code)) return Constructors.PublicDefault;
 				any |= declared.IsMatch(code);
 			}
-			return !any;
+			return any ? Constructors.Other : Constructors.None;
 		}
+
+		// Without a hand-written constructor a dictionary would never run InitializeComponent and load empty.
+		bool NeedsGeneratedConstructor(XElement root, string className) =>
+			!HasCodeBehindFor(className)
+			|| (IsDictionaryRoot(root) && CodeBehindSources != null
+				&& DeclaredConstructors(className) == Constructors.None);
 
 		/// <summary>Registers the class under its XAML path for <c>StartupUri</c> and navigation lookup.</summary>
 		static void EmitRegistration(IndentedWriter w, string xamlPath, string className)

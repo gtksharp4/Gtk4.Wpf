@@ -30,6 +30,9 @@ public class XamlBackedGridTests : WpfGtkTestBase
 			}
 			Assert.True(ys[0] < ys[1] && ys[1] < ys[2], $"row Y positions were {ys[0]}, {ys[1]}, {ys[2]}");
 			Assert.Equal(40, win.Root.RowDefinitions[0].ActualHeight, 1);
+			// Known gap: the Gtk.Grid backing treats a pixel row as Auto, so row 1 starts at the first button's natural
+			// height (34), not at the 40px track. Flip this to >= 40 when pixel rows are honoured.
+			Assert.True(ys[1] < 40, $"row 1 now starts at {ys[1]}: pixel rows are honoured, update this test");
 		}
 		finally { win.Close(); }
 	});

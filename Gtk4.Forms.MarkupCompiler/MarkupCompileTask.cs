@@ -87,7 +87,7 @@ namespace Gtk4.Forms.MarkupCompiler
 
 			bool success = true;
 			var generated = new List<ITaskItem>();
-			var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+			var seen = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 			var generator = new XamlCodeGenerator();
 			if (CompileFiles != null)
 				generator.CodeBehindSources = CodeBehindScan.ReadSources(
@@ -113,7 +113,19 @@ namespace Gtk4.Forms.MarkupCompiler
 					xamlPath = xamlPath.Replace('/', '\\');
 
 				string outputPath = OutputPathFor(xamlPath);
-				if (!seen.Add(outputPath)) continue;
+				if (seen.TryGetValue(outputPath, out string first))
+				{
+					// The same item listed twice is harmless; two different files sharing an output is not.
+					if (!string.Equals(first, xamlPath, StringComparison.OrdinalIgnoreCase))
+					{
+						Log.LogError(null, null, null, xamlPath, 0, 0, 0, 0,
+							"Generated output {0} collides with {1}; give the files distinct names or folders.",
+							outputPath, first);
+						success = false;
+					}
+					continue;
+				}
+				seen[outputPath] = xamlPath;
 				string itemType = item.GetMetadata("GFItemType");
 				generator.ItemType = string.IsNullOrEmpty(itemType) ? null : itemType;
 

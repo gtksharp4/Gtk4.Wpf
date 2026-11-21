@@ -1709,7 +1709,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   unsealed, `NumberSubstitution` gains the constructors and instance properties (default `CultureSource` is `Text`, as
   reflected from the real `PresentationCore`, not `User` as the brief said) and `Equals`; `XmlLanguage.GetLanguage`
   validates RFC 3066. **C-F4** a `TextBlock` label is prefixed with a directional mark. **C-F5** `XmlLanguage` is
-  converter-backed. **C-F6** `IsWidgetMaterialized` removed, bidi characters named in `BidiMarks`. **CI-1**
+  converter-backed. **C-F6** `IsWidgetMaterialized` removed, bidi characters named in `BidiMarks` (the invisible literals became escapes in the follow-up). **CI-1**
   `{DynamicResource}` on a media property probes the enclosing parse scopes through the new `StaticResourceScope.TryFind`.
   **CI-2** the outermost `GeometryGroup` `FillRule` wins. Not reproduced as specified: CI-1's `Rectangle.Fill` scenario
   does not go through the media path; a DP-level `{DynamicResource}` still emits a one-shot `FindResource` (pinned by
@@ -1720,7 +1720,27 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   element still throws at `InitializeComponent` when the key lives on an ancestor in the same XAML; a
   `CollectionViewSource.Source` change is not re-resolved by existing bindings; the dictionary class name mangling can
   still collide for `A_B/C` and `A/B_C`; `docs/samples-coverage.json` is the `1b50a528` measurement (stale); the XAML-backed
-  grid test shows the second row's widget at Y 34 while `RowDefinition.ActualHeight` is 40 (not investigated).
+  grid test pins the second row's widget at Y 34 while `RowDefinition.ActualHeight` is 40: the `Gtk.Grid` backing
+  treats pixel rows as Auto (see the follow-up).
+- **Round 47 follow-up.** **B-F1** an `x:Class` dictionary whose code-behind declares no constructor now gets the
+  generated `public X() { InitializeComponent(); }` (it was registered but created empty); a constructor without a
+  modifier (private) now counts as a declared non-public one, so the dictionary is not registered and
+  `Activator.CreateInstance` cannot throw out of `TryLoadDictionary`. **B-F2** `MarkupCompileTask` skips only the
+  identical item spec; two different files that map to one output path are now an error naming both. The `A_B/C` vs
+  `A/B_C` class-name collision stays open. **B-F6** `AlternatingAppearanceOfItems` is a Roslyn compile test; the grid
+  test now pins the real gap: the `Gtk.Grid` backing treats pixel rows as Auto, so row 1 starts at the first button's
+  natural height (34), not at the 40px track (the assert flips when pixel rows are honoured). **B-F10**
+  `samples-coverage.md` history row for generator-v4 is 90 / 87. **C-F1/C-F4** `BidiMarks.AppendIsolated` closes and
+  reopens the isolate (with the directional mark) at every `'\n'`, so text after a `LineBreak`, in a nested
+  `Section`/`List` inside a `ListItem`, or in a `Span` with its own direction keeps its direction; `TextBlock` marks
+  every line of multi-line text. `ListItem.FlowDirection` was added and a list item's own direction wins over the
+  list's. **C-F6** `BidiMarks` constants are `\u` escapes.
+  **Follow-up totals: 4889 tests** (201 WindowsBase + 4080 PresentationFramework + 574 MarkupCompiler + 34
+  ProjectConverter), all pass; `dotnet build Gtk4.Forms.sln` 0 warnings. `Integration.Tests` not run.
+  **Samples gate (Gtk4.Forms.Wpf packed from the fixed tree, pinned feed, hashes equal the local `Packages/`):** all 90
+  `build=pass` projects build through the two-build recipe (12 needed a third build after a parallel restore race) and
+  all 83 `run=runs` apps stay alive with a window for 10 s (three showed as hangs in the first pass and run when re-run
+  alone, one was skipped by the script and run alone); no regression.
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a

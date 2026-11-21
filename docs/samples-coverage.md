@@ -375,5 +375,5 @@ that the flow-direction round moved) was not re-run, so these are lower bounds. 
 | 2026-11-20 | `ea4c17ae` | 1.0.0.26324 | no | 83 / 206 | 74 | Round 45; 8 crash, 1 hang; no regressions |
 | 2026-11-20 | `a37d3b17` + `gf46/startup-runtime` | 1.0.0.26324 | no | 83 / 206 | 76 | Gate run: Linq and OpacityMasking run |
 | 2026-11-20 | `1b50a528` | 1.0.0.26324 | **yes** | 89 / 204 | 83 | Round 46; 5 crash, 1 hang; no regressions; the earlier runs are confirmed local-feed |
-| 2026-11-21 | `2c67b72c` + generator-v4 | 1.0.0.26325 | **yes** | 89 / 204 | 86 | Generator v4; 90 projects incl. 1 library; no regressions |
+| 2026-11-21 | `2c67b72c` + generator-v4 | 1.0.0.26325 | **yes** | 90 / 204 | 87 | Generator v4; the recorded 89 plus CustomApplicationClass (fail -> builds, runs in this gate); no regressions |
 | 2026-11-21 | `5f92acd0` + Round 47 review fixes | 1.0.0.26325 | **yes** | 91 / 204 | 88 | Lower bounds: the recorded 90 projects, CustomApplicationClass and LangAttribute re-run; no regressions |

@@ -138,11 +138,11 @@ public partial class TextBlock : FrameworkElement
 		    typographyFeatures.Length == 0)
 		{
 			_label.UseMarkup = false;
-			_label.Text = DirectionMark() + r.Text;
+			_label.Text = WithDirection(r.Text);
 			return;
 		}
 		_label.UseMarkup = true;
-		_label.Markup = DirectionMark() + BuildMarkup();
+		_label.Markup = WithDirection(BuildMarkup());
 	}
 
 	/// <summary>Re-renders the label so its base direction follows the new FlowDirection.</summary>
@@ -150,6 +150,12 @@ public partial class TextBlock : FrameworkElement
 
 	// GtkLabel keeps Pango's auto direction (the first strong character decides), so a directional mark in front
 	// of the pushed text gives the paragraph the FlowDirection. Only the label text changes, never Text itself.
+	string WithDirection(string text)
+	{
+		string mark = DirectionMark();
+		return mark.Length == 0 ? text : mark + Documents.BidiMarks.MarkLines(text, mark[0]);
+	}
+
 	string DirectionMark()
 	{
 		if (FlowDirection == FlowDirection.RightToLeft) return Documents.BidiMarks.Rlm.ToString();
