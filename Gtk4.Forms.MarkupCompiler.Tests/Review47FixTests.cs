@@ -149,7 +149,7 @@ public class Review47LanguageTests : GeneratorV2TestBase
 		string code = Gen(xaml);
 
 		Assert.DoesNotContain("Language = \"ar-SA\"", code);
-		Assert.Contains("ConvertByType(typeof(global::System.Windows.Markup.XmlLanguage), \"ar-SA\")", code);
+		Assert.Contains("Span.LanguageProperty, System.Windows.Markup.XamlValueConverter.Convert(", code);
 		AssertCompiles(code, "namespace A { public partial class W : System.Windows.Window { } }");
 	}
 }

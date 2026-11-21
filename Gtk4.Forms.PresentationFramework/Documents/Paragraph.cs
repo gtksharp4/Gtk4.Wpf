@@ -4,10 +4,20 @@ namespace System.Windows.Documents;
 /// A block element that contains a sequence of <see cref="Inline"/> elements.
 /// Renders as a paragraph separated from adjacent blocks by blank lines.
 /// </summary>
-public class Paragraph : Block
+public partial class Paragraph : Block
 {
 	/// <summary>The inline content of this paragraph.</summary>
-	public InlineCollection Inlines { get; } = new InlineCollection();
+	public InlineCollection Inlines { get; }
+
+	/// <summary>Creates an empty paragraph.</summary>
+	public Paragraph() => Inlines = new InlineCollection(this);
+
+	/// <summary>Creates a paragraph holding <paramref name="inline"/>.</summary>
+	public Paragraph(Inline inline) : this()
+	{
+		if (inline == null) throw new ArgumentNullException(nameof(inline));
+		Inlines.Add(inline);
+	}
 
 	/// <inheritdoc/>
 	internal override void AppendPlainText(System.Text.StringBuilder sb)

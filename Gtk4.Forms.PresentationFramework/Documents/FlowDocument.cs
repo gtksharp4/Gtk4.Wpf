@@ -9,19 +9,10 @@ namespace System.Windows.Documents;
 /// and <see cref="BuildPlainText"/>; both are pure and testable without GTK.
 /// </summary>
 [ContentProperty("Blocks")]
-public class FlowDocument
+public partial class FlowDocument
 {
 	/// <summary>The blocks in this document.</summary>
-	public BlockCollection Blocks { get; } = new BlockCollection();
-
-	/// <summary>Default font family for the document, or <c>null</c> to inherit.</summary>
-	public string? FontFamily { get; set; }
-
-	/// <summary>Default font size in device-independent pixels, or <c>double.NaN</c> to inherit.</summary>
-	public double FontSize { get; set; } = double.NaN;
-
-	/// <summary>Default foreground brush, or <c>null</c> to inherit.</summary>
-	public Brush? Foreground { get; set; }
+	public BlockCollection Blocks { get; }
 
 	/// <summary>Default text alignment, or <c>null</c> to inherit.</summary>
 	public TextAlignment? TextAlignment { get; set; }

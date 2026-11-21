@@ -1,4 +1,5 @@
 using System.Windows.Documents;
+using System.Windows.Markup;
 
 namespace System.Windows.Controls;
 
@@ -7,7 +8,8 @@ namespace System.Windows.Controls;
 /// Backed by a <see cref="Gtk.ScrolledWindow"/> containing a <see cref="Gtk.Label"/>
 /// (Pango markup rendering).  Editing is not supported.
 /// </summary>
-public class FlowDocumentScrollViewer : Control
+[ContentProperty("Document")]
+public partial class FlowDocumentScrollViewer : Control
 {
 	// ── Document DP ──────────────────────────────────────────────────────────
 
@@ -20,7 +22,22 @@ public class FlowDocumentScrollViewer : Control
 			new PropertyMetadata(null, OnDocumentChanged));
 
 	static void OnDocumentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		=> ((FlowDocumentScrollViewer)d).SyncLabel();
+	{
+		var viewer = (FlowDocumentScrollViewer)d;
+		if (e.OldValue is FlowDocument old)
+		{
+			old.ViewChanged -= viewer.SyncLabel;
+			old.SetLogicalParent(null);
+		}
+		if (e.NewValue is FlowDocument doc)
+		{
+			if (doc.Parent != null && !ReferenceEquals(doc.Parent, viewer))
+				throw new InvalidOperationException("Specified document is already the child of another element.");
+			doc.SetLogicalParent(viewer);
+			doc.ViewChanged += viewer.SyncLabel;
+		}
+		viewer.SyncLabel();
+	}
 
 	/// <summary>Gets or sets the flow document to display.</summary>
 	public FlowDocument? Document
@@ -31,35 +48,17 @@ public class FlowDocumentScrollViewer : Control
 
 	// ── GTK backing ──────────────────────────────────────────────────────────
 
-	Gtk.Label _label = null!;
-	Gtk.ScrolledWindow _scrolledWindow = null!;
+	FlowDocumentPresenter? _presenter;
 
 	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
-		_label = new Gtk.Label(string.Empty)
-		{
-			Xalign = 0f,
-			Yalign = 0f,
-			Wrap = true
-		};
-		_scrolledWindow = new Gtk.ScrolledWindow();
-		_scrolledWindow.Child = _label;
+		_presenter = new FlowDocumentPresenter();
+		_presenter.Label.Selectable = IsSelectionEnabled;
+		_presenter.SetScrollBars(HorizontalScrollBarVisibility, VerticalScrollBarVisibility);
 		SyncLabel();
-		return _scrolledWindow;
+		return _presenter.Window;
 	}
 
-	void SyncLabel()
-	{
-		if (_label == null) return;
-		if (Document == null)
-		{
-			_label.UseMarkup = false;
-			_label.Text = string.Empty;
-			return;
-		}
-		var markup = Document.BuildMarkup();
-		_label.UseMarkup = true;
-		_label.Markup = markup;
-	}
+	void SyncLabel() => _presenter?.Show(Document);
 }
