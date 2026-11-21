@@ -45,6 +45,10 @@ internal sealed partial class XamlObjectBuilder
 		}
 	}
 
+	// True when the CLR namespace is mapped into the WPF presentation xmlns.
+	internal static bool IsPresentationNamespace(string clrNamespace) =>
+		EntriesFor(PresentationNs).Exists(e => e.Clr == clrNamespace);
+
 	Type ResolveType(string xmlns, string local, XObject node) =>
 		TryResolveType(xmlns, local) ?? throw Fail(node, "Cannot find type '" + local + "' in namespace '" + xmlns + "'.");
 

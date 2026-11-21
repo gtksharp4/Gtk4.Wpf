@@ -47,7 +47,8 @@ internal sealed partial class XamlObjectBuilder
 			try
 			{
 				ApplyAttributes(el, instance);
-				ApplyChildren(el, instance);
+				bool fromText = (instance is string || instance.GetType().IsValueType) && TextOf(el) != null;
+				if (!fromText) ApplyChildren(el, instance);
 			}
 			finally
 			{
