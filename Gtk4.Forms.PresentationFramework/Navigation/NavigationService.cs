@@ -9,8 +9,8 @@ namespace System.Windows.Navigation;
 /// </summary>
 /// <remarks>
 /// URI navigation is resolved via <see cref="Resolver"/> (default: <see cref="DictionaryContentResolver"/>).
-/// Register page instances with <see cref="RegisterContent"/> — a runtime XAML loader
-/// is not available; the markup compiler compiles pages to <c>InitializeComponent</c>.
+/// Register page instances with <see cref="RegisterContent"/>; compiled pages are produced by the markup
+/// compiler's <c>InitializeComponent</c>.
 /// </remarks>
 public sealed class NavigationService
 {
@@ -52,8 +52,11 @@ public sealed class NavigationService
 	/// <summary>Raised before navigation occurs. Set <c>Cancel</c> to abort.</summary>
 	public event EventHandler<NavigatingCancelEventArgs>? Navigating;
 
-	/// <summary>Raised after navigation completes.</summary>
-	public event EventHandler<NavigatedEventArgs>? Navigated;
+	/// <summary>Raised after the content changed, before <see cref="LoadCompleted"/>.</summary>
+	public event NavigatedEventHandler? Navigated;
+
+	/// <summary>Raised once the navigated content is loaded; follows <see cref="Navigated"/>.</summary>
+	public event LoadCompletedEventHandler? LoadCompleted;
 
 	/// <summary>Raised when navigation is cancelled via <see cref="NavigatingCancelEventArgs.Cancel"/>.</summary>
 	public event EventHandler<NavigatingCancelEventArgs>? NavigationStopped;
@@ -62,15 +65,22 @@ public sealed class NavigationService
 
 	/// <summary>Navigate to an object (a <see cref="Page"/>, any <see cref="UIElement"/>, or other).</summary>
 	/// <returns><c>true</c> if navigation proceeded; <c>false</c> if cancelled.</returns>
-	public bool Navigate(object content) => NavigateCore(content, null);
+	public bool Navigate(object content) => NavigateCore(content, null, null);
+
+	/// <summary>Navigate to an object, passing <paramref name="extraData"/> to the event arguments.</summary>
+	public bool Navigate(object content, object? extraData) => NavigateCore(content, null, extraData);
 
 	/// <summary>Navigate to <paramref name="uri"/>, resolved via <see cref="Resolver"/>.</summary>
 	/// <returns><c>true</c> if navigation proceeded; <c>false</c> if cancelled.</returns>
-	public bool Navigate(Uri uri)
+	public bool Navigate(Uri uri) => Navigate(uri, null);
+
+	/// <summary>Navigate to <paramref name="uri"/>, passing <paramref name="extraData"/> to the event arguments.</summary>
+	public bool Navigate(Uri uri, object? extraData)
 	{
 		if (uri == null) throw new ArgumentNullException(nameof(uri));
-		var resolved = Resolver.Resolve(uri);
-		return NavigateCore(resolved, uri);
+		var resolved = Resolver.Resolve(uri) ?? Markup.GtkFormsXamlRegistry.TryCreate(
+			uri, Application.Current?.GetType().Assembly);
+		return NavigateCore(resolved, uri, extraData);
 	}
 
 	/// <summary>
@@ -99,7 +109,10 @@ public sealed class NavigationService
 
 	// ── Internal helpers ──────────────────────────────────────────────────────
 
-	bool NavigateCore(object? content, Uri? uri)
+	// The frame or window that owns this service; reported as the event sender and Navigator.
+	internal object? Host { get; set; }
+
+	bool NavigateCore(object? content, Uri? uri, object? extraData)
 	{
 		var cancelling = new NavigatingCancelEventArgs(content, uri, NavigationMode.New);
 		Navigating?.Invoke(this, cancelling);
@@ -109,8 +122,15 @@ public sealed class NavigationService
 			return false;
 		}
 
+		if (content is PageFunctionBase pageFunction && Content != null && !ReferenceEquals(Content, pageFunction))
+			pageFunction.Caller = Content;
 		_journal.Push(content);
-		CommitContent(content, uri);
+		CommitContent(content, uri, extraData);
+		if (content is PageFunctionBase { Started: false } starting)
+		{
+			starting.Started = true;
+			starting.Start();
+		}
 		return true;
 	}
 
@@ -132,17 +152,40 @@ public sealed class NavigationService
 		}
 
 		var content = advance();
-		CommitContent(content, null);
+		CommitContent(content, null, null);
 	}
 
-	void CommitContent(object? content, Uri? uri)
+	// Returns from a PageFunction to its caller: Back-style when the entry is dropped, a new entry otherwise.
+	internal void ReturnTo(PageFunctionBase pageFunction, object caller, bool removeFromJournal)
+	{
+		if (!removeFromJournal || !ReferenceEquals(_journal.Current, pageFunction))
+		{
+			NavigateCore(caller, null, null);
+			return;
+		}
+		var cancelling = new NavigatingCancelEventArgs(caller, null, NavigationMode.Back);
+		Navigating?.Invoke(this, cancelling);
+		if (cancelling.Cancel)
+		{
+			NavigationStopped?.Invoke(this, cancelling);
+			return;
+		}
+		_journal.RemoveCurrent();
+		if (!ReferenceEquals(_journal.Current, caller)) _journal.Push(caller);
+		CommitContent(caller, null, null);
+	}
+
+	void CommitContent(object? content, Uri? uri, object? extraData)
 	{
 		Content = content;
 		// Wire NavigationService on Page.
 		if (content is Page page)
 			page.NavigationService = this;
 		ContentChanged?.Invoke(this, content);
-		Navigated?.Invoke(this, new NavigatedEventArgs(content, uri));
+		object navigator = Host ?? this;
+		var args = new NavigationEventArgs(uri, content, extraData, navigator, true);
+		Navigated?.Invoke(navigator, args);
+		LoadCompleted?.Invoke(navigator, args);
 	}
 
 	/// <summary>

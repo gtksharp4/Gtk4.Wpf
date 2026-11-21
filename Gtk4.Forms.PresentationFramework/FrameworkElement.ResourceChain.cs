@@ -43,6 +43,7 @@ public abstract partial class FrameworkElement
 
 		// null key == Clear() — invalidate all references.
 		bool clearAll = key == null;
+		if (clearAll) SubscribeToResourceChain();
 
 		foreach (var r in _resRefs)
 		{

@@ -16,6 +16,20 @@ public class Frame : ContentControl
 	/// <summary>The navigation service owned by this frame.</summary>
 	public NavigationService NavigationService { get; } = new NavigationService();
 
+	/// <summary>Raised after navigation, before <see cref="LoadCompleted"/>; the sender is this frame.</summary>
+	public event NavigatedEventHandler Navigated
+	{
+		add => NavigationService.Navigated += value;
+		remove => NavigationService.Navigated -= value;
+	}
+
+	/// <summary>Raised once the navigated content is loaded.</summary>
+	public event LoadCompletedEventHandler LoadCompleted
+	{
+		add => NavigationService.LoadCompleted += value;
+		remove => NavigationService.LoadCompleted -= value;
+	}
+
 	// ── CanGoBack / CanGoForward ──────────────────────────────────────────────
 
 	/// <summary>True when <see cref="GoBack"/> is possible.</summary>
@@ -70,6 +84,7 @@ public class Frame : ContentControl
 	/// <summary>Initialises the frame and wires content-change to widget swaps.</summary>
 	public Frame()
 	{
+		NavigationService.Host = this;
 		NavigationService.ContentChanged += OnNavigationContentChanged;
 	}
 

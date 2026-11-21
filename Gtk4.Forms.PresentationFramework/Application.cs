@@ -34,8 +34,14 @@ public partial class Application : DispatcherObject
 	/// </summary>
 	public Window? MainWindow { get; set; }
 
+	ResourceDictionary _resources = new ResourceDictionary();
+
 	/// <summary>Application-level resources shared by all windows.</summary>
-	public ResourceDictionary Resources { get; } = new ResourceDictionary();
+	public ResourceDictionary Resources
+	{
+		get => _resources;
+		set => ReplaceResources(value);
+	}
 
 	/// <summary>
 	/// URI of the XAML window to instantiate once startup completes (set by the generated
