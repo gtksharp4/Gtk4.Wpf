@@ -68,7 +68,8 @@ public static partial class SystemColors
 	public static SolidColorBrush InactiveSelectionHighlightBrush => SystemPalette.InactiveSelectionHighlight.Brush;
 
 	/// <summary>The cached brush for the text of selected items in an unfocused control colour.</summary>
-	public static SolidColorBrush InactiveSelectionHighlightTextBrush => SystemPalette.InactiveSelectionHighlightText.Brush;
+	public static SolidColorBrush InactiveSelectionHighlightTextBrush
+		=> SystemPalette.InactiveSelectionHighlightText.Brush;
 
 	/// <summary>The cached brush for the tooltip background colour.</summary>
 	public static SolidColorBrush InfoBrush => SystemPalette.Info.Brush;

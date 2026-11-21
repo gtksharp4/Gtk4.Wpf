@@ -129,10 +129,12 @@ public static partial class SystemColors
 	public static ResourceKey InactiveSelectionHighlightBrushKey => SystemPalette.InactiveSelectionHighlight.BrushKey;
 
 	/// <summary>The resource key for the text of selected items in an unfocused control colour.</summary>
-	public static ResourceKey InactiveSelectionHighlightTextColorKey => SystemPalette.InactiveSelectionHighlightText.ColorKey;
+	public static ResourceKey InactiveSelectionHighlightTextColorKey
+		=> SystemPalette.InactiveSelectionHighlightText.ColorKey;
 
 	/// <summary>The resource key for the text of selected items in an unfocused control brush.</summary>
-	public static ResourceKey InactiveSelectionHighlightTextBrushKey => SystemPalette.InactiveSelectionHighlightText.BrushKey;
+	public static ResourceKey InactiveSelectionHighlightTextBrushKey
+		=> SystemPalette.InactiveSelectionHighlightText.BrushKey;
 
 	/// <summary>The resource key for the tooltip background colour.</summary>
 	public static ResourceKey InfoColorKey => SystemPalette.Info.ColorKey;

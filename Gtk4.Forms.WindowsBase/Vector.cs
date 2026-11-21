@@ -55,7 +55,8 @@ public struct Vector : IFormattable, IEquatable<Vector>
 	public static double Determinant(Vector vector1, Vector vector2) => CrossProduct(vector1, vector2);
 
 	/// <summary>Adds two vectors.</summary>
-	public static Vector Add(Vector vector1, Vector vector2) => new Vector(vector1.X + vector2.X, vector1.Y + vector2.Y);
+	public static Vector Add(Vector vector1, Vector vector2)
+		=> new Vector(vector1.X + vector2.X, vector1.Y + vector2.Y);
 
 	/// <summary>Translates a point by a vector.</summary>
 	public static Point Add(Vector vector, Point point) => new Point(point.X + vector.X, point.Y + vector.Y);

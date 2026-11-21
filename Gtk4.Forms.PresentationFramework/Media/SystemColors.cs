@@ -2,8 +2,9 @@ using System.Windows.Media;
 
 namespace System.Windows;
 
-/// <summary>The system colours as WPF's <c>SystemColors</c> exposes them: colour, frozen-style shared brush, and resource keys.
-/// GTK 4 has no portable system-colour API, so every value is the Windows default (Aero) palette.</summary>
+/// <summary>The system colours as WPF's <c>SystemColors</c> exposes them: colour, shared brush and resource keys.
+/// GTK 4 has no portable system-colour API, so every value is the Windows default (Aero) palette.
+/// The brushes are cached shared instances; this layer's Brush has no Freeze, so they are not frozen.</summary>
 public static partial class SystemColors
 {
 	/// <summary>The active window border colour.</summary>
