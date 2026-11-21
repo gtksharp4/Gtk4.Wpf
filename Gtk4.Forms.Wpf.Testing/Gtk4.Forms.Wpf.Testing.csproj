@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Gtk4.Forms.Wpf.Testing</AssemblyName>
+    <RootNamespace>Gtk4.Forms.Wpf.Testing</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
+    <Version>$(VersionPrefix).$(VersionSuffix)</Version>
+    <PackageOutputPath>$(XFPackageOutputPath)</PackageOutputPath>
+    <PackageId>Gtk4.Forms.Wpf.Testing</PackageId>
+    <Description>UI test driver for WPF apps running on Gtk4.Forms: in-process app host, locators, waits, semantic and routed input, screenshots and failure evidence, with xUnit integration.</Description>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3.extensibility.core" Version="3.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gtk4.Forms.WindowsBase\Gtk4.Forms.WindowsBase.csproj" />
+    <ProjectReference Include="..\Gtk4.Forms.PresentationFramework\Gtk4.Forms.PresentationFramework.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Gtk4.Forms.Wpf.Testing.Tests" />
+  </ItemGroup>
+
+</Project>

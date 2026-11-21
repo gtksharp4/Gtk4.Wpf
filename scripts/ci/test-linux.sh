@@ -56,3 +56,12 @@ run_gtk_tests() {
       dotnet test Gtk4.Forms.PresentationFramework.Tests -c Debug --no-build --logger trx
 }
 run_annotated "Linux PresentationFramework.Tests" run_gtk_tests
+
+# The UI test driver and the sample UI tests share the GTK setup above; they also run under Xvfb.
+echo "== Wpf.Testing tests (UI driver over real GTK 4 widgets and official samples, headless under Xvfb) =="
+run_ui_tests() {
+  GDK_BACKEND=x11 XF_GTK_REQUIRE_NATIVE=1 GSETTINGS_BACKEND=memory \
+    xvfb-run -a --server-args="-screen 0 1280x1024x24" \
+      dotnet test Gtk4.Forms.Wpf.Testing.Tests -c Debug --no-build --logger trx
+}
+run_annotated "Linux Wpf.Testing.Tests" run_ui_tests

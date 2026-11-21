@@ -140,16 +140,16 @@ GtkSharp4 rules found in Phase 1: use the `Update*` array overloads (the single-
 
 - **`WpfAppHost`**: starts the app under test **in the test process** on the GTK thread (the
   `WpfGtkFixture` pattern, reused and made public), either from its `Application` type or from a
-  `Window` factory. It exposes `MainWindow` as an `AutomationElement`, plus `Shutdown`.
+  `Window` factory. It exposes `MainWindow` as an `AutomationElement`; `Dispose` closes the windows.
 - **Locators**: `app.Find(By.AutomationId("Ok"))`, `By.Name`, `By.ControlType`, combined conditions and
-  scoping (`within(...)`). All of them are sugar over `FindFirst`/`FindAll`, with clear "not found" messages
+  scoping (`element.Find(...)` searches below that element). All of them are sugar over `FindFirst`/`FindAll`, with clear "not found" messages
   that dump the nearby tree.
 - **Waits**: `WaitUntil(condition, timeout)`, implemented by pumping the GTK loop on its own thread, never
   `Thread.Sleep`. `WaitForIdle()` drains the dispatcher and GTK idle.
 - **Actions**: semantic by default (`Click()` uses `InvokePattern`, `Type(text)` uses `ValuePattern`,
   `Check()` uses `TogglePattern`). `Input.Keyboard`/`Input.Mouse` provide routed input, and
   `NativeInput` (opt-in, `[Trait("UI","Native")]`) provides OS injection.
-- **Evidence**: `Screenshot(element)` through `RenderTargetBitmap`/GTK snapshot. On failure the test gets
+- **Evidence**: `Screenshot(element)` through the GTK snapshot (`RenderTargetBitmap` renders only a `DrawingVisual`). On failure the test gets
   the automation tree dump and a PNG.
 - **xUnit integration**: `[WpfUiFact]`/collection fixture, so a suite shares one GTK thread, with parallel
   execution disabled as the harness requires.
@@ -168,7 +168,7 @@ public class LoginTests : WpfUiTest<App>        // starts App in-process on the 
 
 		App.WaitUntil(() => login.Current.IsEnabled);
 		login.AsInvoke().Invoke();
-		App.WaitUntil(() => App.MainWindow.Find(By.Name("Welcome, ada")) != null);
+		App.WaitUntil(() => App.MainWindow.TryFind(By.Name("Welcome, ada")) != null);
 	}
 }
 ```
@@ -423,7 +423,64 @@ events arrive on the GTK thread). Observed on Windows: `WindowsBase.Tests` 201, 
 `Wpf.ProjectConverter.Tests` 34, `PresentationFramework.Tests` 4207, all passing; `dotnet build Gtk4.Forms.sln`
 warning-clean. Linux and macOS were not run here. The samples gate was not re-run for this phase (no sample code changed).
 
-## Open questions
+### Phase 3 — done
+
+Landed as two new projects, both in `Gtk4.Forms.sln`, `Gtk4.Forms.CrossPlatform.slnf` and the three CI scripts
+(`scripts/ci/test-{windows.ps1,linux.sh,macos.sh}`, after the `PresentationFramework` step):
+
+- `Gtk4.Forms.Wpf.Testing` (net10.0, package `Gtk4.Forms.Wpf.Testing`, references PresentationFramework and
+  `xunit.v3.extensibility.core`):
+  - `GtkThread` owns the GTK thread (STA on Windows). Work reaches it through the GLib main context (`PostToMainLoop`
+    at `Send` priority), so `Dispatcher` calls from the test thread and `Invoke` share one path. On macOS
+    `RunOnCurrentThread` adopts thread 0 and moves the test runner to a worker.
+  - `WpfAppHost`: `Start<TApp>()`/`Start(Type)` (creates the app, calls the generated `InitializeComponent`, runs
+    startup so `StartupUri` shows the window) and `Start(Func<Window>)`. `MainWindow` is an `AutomationElement`;
+    `Invoke` runs code on the GTK thread; `Dispose` closes windows and drops the automation subscriptions.
+  - Locators: `By.AutomationId/Name/ControlType/ClassName/AllOf/AnyOf/And`; `Find` (throws `ElementNotFoundException`
+    with the locator, the scope and the tree under it), `TryFind`, `FindAll` on any element (scoping) and on the host.
+  - Waits: `WaitUntil` (condition runs on the GTK thread, pumps the loop, throws `WaitTimeoutException` with the tree),
+    `WaitFor(By)`, `WaitForIdle()` (an idle-priority marker). No sleeps.
+  - Semantic actions: `Click` (Invoke, or Select for a list item), `Type` (Value), `Check`/`Uncheck` (Toggle, up to
+    three steps for a tri-state), `Select`, `Expand`, `Collapse`, `GetText`, `AsInvoke`/`AsValue`/...
+  - Routed input (`App.Input`): `Keyboard.Press/Down/Up` and `Mouse.MoveTo/Leave/Click/DoubleClick`, through
+    `RaiseKeyDown`, `RaiseMouseButton` and the pointer seams the GTK controllers call (PresentationFramework exposes
+    them with `InternalsVisibleTo`). Native OS injection is out of scope for this phase.
+  - Evidence: `Screenshot`/`SaveScreenshot` render a widget with GTK's own snapshot path (widget paintable, render node,
+    renderer texture, `gdk_texture_save_to_png`, called through P/Invoke because GtkSharp4 binds none of it).
+    `SaveEvidence` writes `<test>.tree.txt` and `<test>.png` to `WPF_UI_EVIDENCE_DIR` (default
+    `<bin>/ui-evidence`). `RenderTargetBitmap` is not used: the layer renders only a `DrawingVisual`.
+  - xUnit: `[WpfUiFact]` (skips without GTK, fails instead when `XF_GTK_REQUIRE_NATIVE` is set), `WpfUiTest`,
+    `WpfUiTest<TApp>`, `WpfUiWindowTest<TWindow>` (start the app per test; on failure save the evidence) and the
+    `WpfUiCollection` collection definition. Parallelism is disabled by an assembly attribute in the test project.
+- `Gtk4.Forms.Wpf.Testing.Tests` (net10.0): `ByTests`, the driver tests over a code-built form (`HostTests`,
+  `InputTests`, `EvidenceTests`), and UI tests of `Gtk4.Forms.WpfSample` (started from its `App` type) and of five
+  official samples compiled in process from `WPF-Samples` (`MainWindow.xaml` as a `Page`, the code-behind and data
+  classes as `Compile` items; `App.xaml` is left out): `SimpleBinding`, `MasterDetail`, `DirectionalBinding`,
+  `HandlingEventOnCommandUsingCode` (commands, KeyBinding and a `MessageBox` through a recording presenter) and
+  `MousePointer` (cursor enter/leave).
+
+Tests: 49 in `Gtk4.Forms.Wpf.Testing.Tests` (8 locator, 13 host, 6 input, 3 evidence, 19 sample). Observed on Windows:
+`WindowsBase.Tests` 201, `MarkupCompiler.Tests` 574, `Wpf.ProjectConverter.Tests` 34, `PresentationFramework.Tests`
+4220, `Wpf.Testing.Tests` 49, all passing; `dotnet build Gtk4.Forms.sln` warning-clean. A deliberately failing test
+showed the evidence files (tree and PNG) written from `Dispose`. Linux and macOS were not run here, and the samples
+gate was not re-run (no sample or layer behaviour changed).
+
+Deviations from the plan and WPF, all documented in code or here:
+
+- The plan example used `Find(...) != null` inside `WaitUntil`; `Find` throws, so the example now uses `TryFind`.
+- `InitGtk` in `Application` became `internal` so the host installs the same dispatcher bridges as `Application.Run`.
+- Mouse enter/leave are raised on the target only (the layer's pointer seam), so a `Border` handler needs the
+  `UIElement` overloads, because a `Border` has no peer.
+- `HandlingEventOnCommand` (the `Window.CommandBindings`/`InputBindings` XAML variant) was replaced by
+  `HandlingEventOnCommandUsingCode`: the markup compiler drops those two property elements, so the sample builds and
+  runs with its command wiring missing.
+- Not fixed here (layer gaps the tests work around or avoid): `x:Name`/`Name` on a non-root element only sets the
+  generated field, never `FrameworkElement.Name`, so `By.AutomationId` cannot find XAML-named controls (tests use
+  names, control types and class names); nothing calls `CommandManager.InvalidateRequerySuggested` after input or
+  focus changes, so a command button created before its binding stays disabled until the test requeries; the gap
+  is commented in `CommandSampleTests`.
+- Unverified: the GTK snapshot path and the `Wpf.Testing.Tests` suite on Linux (Xvfb) and macOS; only Windows ran.
+
 
 1. Should the driver package also host the app **out-of-process** (launch the converted app and attach)
    before Phase 5, using an in-app automation server over a named pipe? That gives process isolation on
