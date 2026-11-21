@@ -30,7 +30,7 @@ public sealed class GtkFormsXamlRegistrationAttribute : Attribute
 /// Maps a XAML URI to a factory for the element it loads (used by <c>StartupUri</c>; available to
 /// navigation). Factories registered here win over the assembly attributes.
 /// </summary>
-public static class GtkFormsXamlRegistry
+public static partial class GtkFormsXamlRegistry
 {
 	static readonly Dictionary<string, Func<object>> _factories =
 		new Dictionary<string, Func<object>>(StringComparer.OrdinalIgnoreCase);
