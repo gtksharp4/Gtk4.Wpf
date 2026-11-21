@@ -45,10 +45,17 @@ public abstract partial class Selector
 	internal void RaiseSelectionChanged(IList added, IList removed)
 	{
 		if (added.Count == 0 && removed.Count == 0) return; // WPF never raises an empty change
+		OnAutomationSelectionChanged();
 		var args = new SelectionChangedEventArgs(SelectionChangedEvent, removed, added) { Source = this };
 		FrameworkElement? holder = InitHolder();
-		if (holder == null) OnSelectionChanged(args);
-		else InitScope.Defer(holder, () => OnSelectionChanged(args));
+		if (holder == null) Deliver(args, added, removed);
+		else InitScope.Defer(holder, () => Deliver(args, added, removed));
+	}
+
+	void Deliver(SelectionChangedEventArgs args, IList added, IList removed)
+	{
+		OnSelectionChanged(args);
+		OnAutomationSelectionEvents(added, removed);
 	}
 
 	// The open init scope holding this selector back: its own, the root that created it, else (a selector built

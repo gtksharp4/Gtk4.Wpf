@@ -147,7 +147,11 @@ namespace Gtk4.Forms.MarkupCompiler
 			w.Indent++;
 			w.Line("if (_contentLoaded) return;");
 			w.Line("_contentLoaded = true;");
-			if (rootName != null) w.Line($"this.{rootName} = this;");
+			if (rootName != null)
+			{
+				w.Line($"this.{rootName} = this;");
+				EmitNameProperty(w, "this", ResolveType(root), rootName);
+			}
 
 			// WPF's XAML loader brackets the root with ISupportInitialize.BeginInit/EndInit, so
 			// the root's Initialized fires (after its children's) before its constructor returns.
@@ -661,7 +665,10 @@ namespace Gtk4.Forms.MarkupCompiler
 			string xName = (string)(el.Attribute(xNs + "Name") ?? el.Attribute("Name"));
 			bool hasField = ResolveType(el) != null; // user-type resource objects get no field
 			if (xName != null && _fieldElements.Contains(el))
+			{
 				w.Line($"this.{xName} = {varName};");
+				EmitNameProperty(w, varName, fqType, xName);
+			}
 
 			// Emit <X.Resources> children first (before attr assignments that may reference them).
 			EmitResources(w, el, xNs, varName, ref counter);

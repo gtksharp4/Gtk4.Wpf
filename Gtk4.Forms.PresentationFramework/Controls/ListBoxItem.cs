@@ -36,6 +36,10 @@ public class ListBoxItem : ContentControl
 	internal Gtk.ListBoxRow? Row => _row;
 
 	/// <inheritdoc/>
+	protected override System.Windows.Automation.Peers.AutomationPeer? OnCreateAutomationPeer() =>
+		new System.Windows.Automation.Peers.ListBoxItemWrapperAutomationPeer(this);
+
+	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
 		_row = new Gtk.ListBoxRow();

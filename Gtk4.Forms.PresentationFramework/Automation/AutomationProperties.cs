@@ -138,7 +138,7 @@ public static partial class AutomationProperties
 
 	static void OnNameOrHelpTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
-		if (d is UIElement el && el.IsWidgetCreated)
+		if (d is UIElement el && el.HasBackingWidget)
 			AutomationAccessiblePush.Push(el.Widget, el);
 	}
 }

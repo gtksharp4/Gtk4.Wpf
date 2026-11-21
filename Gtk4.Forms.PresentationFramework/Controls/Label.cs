@@ -17,6 +17,13 @@ public class Label : ContentControl
 	}
 
 	/// <inheritdoc/>
+	protected override System.Windows.Automation.Peers.AutomationPeer? OnCreateAutomationPeer() =>
+		new System.Windows.Automation.Peers.LabelAutomationPeer(this);
+
+	/// <summary>The inner label that carries the accessible node; the box around it is only a wrapper.</summary>
+	internal Gtk.Widget AccessibleTarget => _label ?? Widget;
+
+	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
 		_box = new Gtk.Box(Gtk.Orientation.Horizontal, 0);

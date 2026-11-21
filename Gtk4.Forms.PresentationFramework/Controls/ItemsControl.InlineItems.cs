@@ -41,7 +41,9 @@ public partial class ItemsControl
 
 		void Changed()
 		{
-			if (!Filling && _owner.RebuildsOnInlineItemsChange) _owner.RebuildItems();
+			if (Filling) return;
+			if (_owner.RebuildsOnInlineItemsChange) _owner.RebuildItems();
+			else _owner.ExistingAutomationPeer?.NotifyChildrenChanged();
 		}
 
 		protected override void InsertItem(int index, object? item)

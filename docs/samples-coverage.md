@@ -195,6 +195,8 @@ These are the remaining generator-side causes in portable apps. Per-project mess
 
 These are ranked by portable samples unblocked. "Only" means samples whose sole remaining blocker is the track.
 
+**Not eligible: `System.Windows.Automation.Peers` (4 samples).** It belongs to `docs/plans/ui-automation.md`; the parity scout must not pick it.
+
 1. **Startup-crash sweep (MarkupCompiler and runtime conversion): up to 6 runs, no new API surface.**
    - Fixes:
      - string → `DoubleCollection` and `Cursor` (and an audit of every DP type with no converter) in
@@ -251,6 +253,7 @@ Held branches:
 - **`gf39/xaml-content-model` (held, blocked 3 times): 0 samples on its own.** Generator v3/v4 on `main` have since
   delivered its property-element and converter scope. Its remaining value is the compile-checked generator test. Re-scope
   it as a test-only change on top of track 1 rather than rebasing the old generator changes.
+**Not eligible: `System.Windows.Automation.Peers` (4 samples).** It belongs to `docs/plans/ui-automation.md` (branch `ua/automation`, Phase 1 landed the peers); the parity scout must not pick it.
 
 Deliberately not next:
 
@@ -321,3 +324,11 @@ Deliberately not next:
 | 2026-11-21 | `28d1eef2` + Round 48 review fixes | 1.0.0.26325 | **yes** | 92 / 204 | 89 | Gate, lower bounds (94 / 91 counting Round 47 extras) |
 | 2026-11-21 | `40db59fe` + Round 48 follow-up fixes | 1.0.0.26325 | **yes** | 92 / 204 | 89 | Gate, lower bounds |
 | 2026-11-21 | `142b53f6` | 1.0.0.26325 | **yes** | **129 / 204** | **119** | Round 48; full re-measure; 8 crash, 2 hang; no regressions |
+
+## Known layer defects found by the UI tests
+
+- **No command requery after `Loaded`.** `HandlingEventOnCommandUsingCode` adds its button and `CommandBinding` in
+  `Loaded`. WPF re-queries commands afterwards, so the button is enabled. The layer calls nothing like
+  `CommandManager.InvalidateRequerySuggested` there, so the button stays disabled until another requery happens.
+  `CommandSampleTests` keeps a workaround test (it requeries itself) and a skipped test,
+  `The_button_is_enabled_without_a_manual_requery`, that asserts the correct behaviour. Un-skip it when fixed.

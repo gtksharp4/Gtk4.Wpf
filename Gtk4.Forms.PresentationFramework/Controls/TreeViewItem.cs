@@ -11,7 +11,7 @@ namespace System.Windows.Controls;
 /// tree is simpler, faithful for this phase, and directly hosts UIElement children.
 /// </para>
 /// </summary>
-public class TreeViewItem : HeaderedItemsControl
+public partial class TreeViewItem : HeaderedItemsControl
 {
 	/// <summary>Raised when <see cref="IsSelected"/> changes.</summary>
 	public event EventHandler? Selected;

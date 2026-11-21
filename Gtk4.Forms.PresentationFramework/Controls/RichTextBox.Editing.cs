@@ -23,6 +23,7 @@ public partial class RichTextBox
 	// Wired to Gtk.TextBuffer.MarkSet in CreateWidget; fires only for the caret/selection marks.
 	void OnBufferMarkSet(object? sender, Gtk.MarkSetArgs args)
 	{
+		if (_suppressMarkSet) return;
 		var name = args.Mark?.Name;
 		if (name == "insert" || name == "selection_bound")
 			RaiseSelectionChanged();

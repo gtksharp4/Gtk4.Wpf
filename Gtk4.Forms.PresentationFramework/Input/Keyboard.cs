@@ -41,7 +41,9 @@ public static partial class Keyboard
 	/// <summary>Records <paramref name="element"/> as the focused element.</summary>
 	internal static void SetFocused(System.Windows.UIElement element)
 	{
+		bool changed = !ReferenceEquals(_focusedElement, element);
 		_focusedElement = element;
+		if (changed) RaiseAutomationFocusChanged(element);
 	}
 
 	/// <summary>Clears the focused element if it matches <paramref name="element"/>.</summary>

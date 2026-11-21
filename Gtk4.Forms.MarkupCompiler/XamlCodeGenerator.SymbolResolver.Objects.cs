@@ -60,5 +60,17 @@ namespace Gtk4.Forms.MarkupCompiler
 			}
 			catch { return false; }
 		}
+
+		/// <summary>True when <paramref name="typeFullName"/> has <paramref name="baseFullName"/> in its base chain.</summary>
+		internal bool DerivesFromByName(string typeFullName, string baseFullName)
+		{
+			try
+			{
+				for (Type t = FindType(typeFullName); t != null; t = t.BaseType)
+					if (t.FullName == baseFullName) return true;
+			}
+			catch { }
+			return false;
+		}
 	}
 }

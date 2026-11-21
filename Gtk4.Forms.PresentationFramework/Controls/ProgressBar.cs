@@ -5,7 +5,7 @@ namespace System.Windows.Controls;
 /// When <see cref="IsIndeterminate"/> is <c>true</c> the bar pulses; otherwise
 /// the fill fraction is derived from <see cref="Value"/> relative to the range.
 /// </summary>
-public class ProgressBar : Control
+public partial class ProgressBar : Control
 {
 	// ── Minimum DP ───────────────────────────────────────────────────────────
 

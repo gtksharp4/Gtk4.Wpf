@@ -14,7 +14,7 @@ Lineage: this started as a fork of `xamarin/Xamarin.Forms` (the GTK leg) and onc
 full Xamarin.Forms→GTK 4 port. That port has been **removed** — the repository is now only the
 WPF-on-GTK layer. Branch/history notes for the earlier prune live under `docs/plans/`.
 
-**Solution:** `Gtk4.Wpf.sln` is the only solution in the tree, with 11 projects (6 product + 5
+**Solution:** `Gtk4.Wpf.sln` is the only solution in the tree, with 13 projects (7 product + 6
 test). Project/package names use the `Gtk4.Forms.*` prefix; the reimplemented WPF types keep their
 `System.Windows.*` namespaces (that identity is the whole point — it is what lets WPF code compile
 unchanged).
@@ -29,6 +29,7 @@ unchanged).
 | `Gtk4.Forms.Wpf.ProjectConverter` | `Gtk4.Forms.Wpf.ProjectConverter` | net10.0 (Exe) | Pure, idempotent, minimal-diff csproj rewrite: strip `UseWPF`/`UseWindowsForms`, collapse `net*-windows`→`net10.0` (OutputType left as-is). |
 | `Gtk4.Forms.Wpf` | package `Gtk4.Forms.Wpf` | net10.0 | The one-package drop-in. References the four above; its `build/`+`buildTransitive/` props+targets run the converter; it packs the converter DLL into `tools/`. |
 | `Gtk4.Forms.WpfSample` | app (Exe) | net10.0 | An **unmodified WPF** app (`App : System.Windows.Application`, WPF XAML) compiled through the layer as the end-to-end proof. Its `[STAThread] Main` is generated from `App.xaml` by the MarkupCompiler. |
+| `Gtk4.Forms.Wpf.Testing` | package `Gtk4.Forms.Wpf.Testing` | net10.0 | UI test driver (xUnit v3): `WpfAppHost` runs an app in the test process on the GTK thread, `By` locators, waits that pump the loop, semantic actions over UI Automation, routed `Input`, GTK-snapshot screenshots and failure evidence. References PresentationFramework only; tests live in `Gtk4.Forms.Wpf.Testing.Tests`. |
 
 `Gtk4.Forms.PresentationFramework` references `Gtk4.Forms.WindowsBase`; everything else references
 only within this set. There is no dependency on any external WPF or `Microsoft.WindowsDesktop` SDK.
@@ -55,7 +56,7 @@ Build-wide settings live in `Directory.Build.props` / `Environment.Build.props`:
 
 ## Tests
 
-Five suites, all **xUnit v3 on `net10.0`**, run with `dotnet test`:
+Six suites, all **xUnit v3 on `net10.0`**, run with `dotnet test`:
 
 | Project | Tests | GTK? | Covers |
 |---|---|---|---|
@@ -63,6 +64,7 @@ Five suites, all **xUnit v3 on `net10.0`**, run with `dotnet test`:
 | `Gtk4.Forms.MarkupCompiler.Tests` | ~173 | no | XAML → `InitializeComponent` code generation |
 | `Gtk4.Forms.Wpf.ProjectConverter.Tests` | ~15 | no | csproj rewrite |
 | `Gtk4.Forms.PresentationFramework.Tests` | ~1399 | **yes** | controls, binding, themes — on **real GTK 4 widgets** |
+| `Gtk4.Forms.Wpf.Testing.Tests` | ~50 | **yes** | the driver itself, plus UI tests of `Gtk4.Forms.WpfSample` and five official WPF-Samples compiled in process (SimpleBinding, MasterDetail, DirectionalBinding, HandlingEventOnCommandUsingCode, MousePointer) |
 | `Gtk4.Forms.Integration.Tests` | few | yes | end-to-end: add `Gtk4.Forms.Wpf` to the embedded WPF sample, build (converts), run, detect the window |
 
 ```powershell

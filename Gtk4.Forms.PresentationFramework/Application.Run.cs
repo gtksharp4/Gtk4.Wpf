@@ -45,7 +45,7 @@ public partial class Application
 		return code;
 	}
 
-	static void InitGtk()
+	internal static void InitGtk()
 	{
 		Gtk.Application.Init();
 		// Notify the animation scheduler that the GLib event loop is now live.

@@ -54,4 +54,9 @@ if ($LASTEXITCODE) { exit $LASTEXITCODE }
 # GTK thread (see header).
 Write-Host '== PresentationFramework tests (real GTK 4 widgets, STA GTK thread) =='
 dotnet test Gtk4.Forms.PresentationFramework.Tests -c Debug --no-build --logger trx
+if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+# The UI test driver and the sample UI tests: the same GTK thread setup, driven through UI Automation.
+Write-Host '== Wpf.Testing tests (UI driver over real GTK 4 widgets and official samples) =='
+dotnet test Gtk4.Forms.Wpf.Testing.Tests -c Debug --no-build --logger trx
 exit $LASTEXITCODE

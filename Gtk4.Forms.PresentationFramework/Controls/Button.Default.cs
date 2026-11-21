@@ -59,6 +59,7 @@ public partial class Button
 	/// </summary>
 	protected override void OnClick()
 	{
+		RaiseAutomationInvoked();
 		try
 		{
 			base.OnClick();

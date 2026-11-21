@@ -39,8 +39,8 @@ public partial class DataGrid
 			foreach (var item in ItemsSource)
 				_rows.Add(item);
 
-		if (_grid == null) return;
-		RebuildGrid();
+		if (_grid != null) RebuildGrid();
+		ExistingAutomationPeer?.NotifyChildrenChanged();
 	}
 
 	/// <summary>

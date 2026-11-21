@@ -100,7 +100,11 @@ public partial class ItemsControl : Control
 		IsRebuildingItems = true;
 		try { RebuildCore(); }
 		finally { IsRebuildingItems = wasRebuilding; }
-		if (!wasRebuilding) OnItemsRebuildCompleted();
+		if (!wasRebuilding)
+		{
+			OnItemsRebuildCompleted();
+			ExistingAutomationPeer?.NotifyChildrenChanged();
+		}
 	}
 
 	/// <summary>Called once a rebuild has repopulated the rows and the selection reconciled itself.</summary>

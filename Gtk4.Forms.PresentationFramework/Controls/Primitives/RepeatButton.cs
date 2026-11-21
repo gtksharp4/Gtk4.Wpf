@@ -1,4 +1,5 @@
 using System;
+using System.Windows.Automation.Peers;
 using System.Windows.Input;
 
 namespace System.Windows.Controls.Primitives;
@@ -95,6 +96,16 @@ public class RepeatButton : ButtonBase
 		_pressed = false;
 		_timer?.Dispose();
 		_timer = null;
+	}
+
+	/// <inheritdoc/>
+	protected override AutomationPeer? OnCreateAutomationPeer() => new RepeatButtonAutomationPeer(this);
+
+	/// <inheritdoc/>
+	protected override void OnClick()
+	{
+		RaiseAutomationInvoked();
+		base.OnClick();
 	}
 
 	void FireClick() => OnClick();

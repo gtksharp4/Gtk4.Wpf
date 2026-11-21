@@ -6,7 +6,7 @@ namespace System.Windows.Controls.Primitives;
 /// Extends <see cref="ItemsControl"/>: add items via <see cref="ItemsControl.ItemsSource"/>
 /// or the <c>Items</c> collection.
 /// </summary>
-public class StatusBar : ItemsControl
+public partial class StatusBar : ItemsControl
 {
 	Gtk.Box? _statusBox;
 

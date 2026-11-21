@@ -148,6 +148,10 @@ public class PasswordBox : Control
 	Gtk.PasswordEntry? _entry;
 
 	/// <inheritdoc/>
+	protected override System.Windows.Automation.Peers.AutomationPeer? OnCreateAutomationPeer() =>
+		new System.Windows.Automation.Peers.PasswordBoxAutomationPeer(this);
+
+	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
 		_entry = new Gtk.PasswordEntry();

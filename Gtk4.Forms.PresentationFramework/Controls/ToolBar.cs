@@ -11,7 +11,7 @@ namespace System.Windows.Controls;
 /// integration is deferred.
 /// </para>
 /// </summary>
-public class ToolBar : HeaderedItemsControl
+public partial class ToolBar : HeaderedItemsControl
 {
 	Gtk.Box? _box;
 

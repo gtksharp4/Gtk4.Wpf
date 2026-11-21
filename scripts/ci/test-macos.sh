@@ -58,3 +58,13 @@ run_gtk_tests() {
 		dotnet exec "$GTK_DLL" -verbose
 }
 run_annotated "macOS PresentationFramework.Tests" run_gtk_tests
+
+# Same thread-0 runner for the UI driver tests: Program.cs hands thread 0 to GtkThread.RunOnCurrentThread.
+echo "== Wpf.Testing tests (UI driver, thread-0 runner over Quartz) =="
+UI_DLL="Gtk4.Forms.Wpf.Testing.Tests/bin/Debug/net10.0/Gtk4.Forms.Wpf.Testing.Tests.dll"
+run_ui_tests() {
+	DYLD_FALLBACK_LIBRARY_PATH="$GTK_PREFIX/lib:/usr/local/lib:/usr/lib:/lib" \
+		XF_GTK_MAC_RUNNER=1 XF_GTK_REQUIRE_NATIVE=1 \
+		dotnet exec "$UI_DLL" -verbose
+}
+run_annotated "macOS Wpf.Testing.Tests" run_ui_tests

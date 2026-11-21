@@ -7,7 +7,7 @@ namespace System.Windows.Controls;
 /// Two-way: GTK expand/collapse writes back into <see cref="IsExpanded"/>.
 /// </summary>
 [ContentProperty("Content")]
-public class Expander : HeaderedContentControl
+public partial class Expander : HeaderedContentControl
 {
 	/// <summary>Raised when <see cref="IsExpanded"/> becomes <c>true</c>.</summary>
 	public event EventHandler? Expanded;

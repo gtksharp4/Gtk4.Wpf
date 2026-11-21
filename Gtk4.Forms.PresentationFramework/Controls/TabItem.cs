@@ -7,7 +7,7 @@ namespace System.Windows.Controls;
 /// The <see cref="HeaderedContentControl.Header"/> appears in the tab strip.
 /// </summary>
 [ContentProperty("Content")]
-public class TabItem : HeaderedContentControl
+public partial class TabItem : HeaderedContentControl
 {
 	/// <summary>Returns the header as a string (used to label the tab).</summary>
 	internal string HeaderText => Header as string ?? Header?.ToString() ?? string.Empty;

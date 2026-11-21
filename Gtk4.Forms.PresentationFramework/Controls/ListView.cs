@@ -5,6 +5,6 @@ namespace System.Windows.Controls;
 /// Phase-2 delivers the same backing as <see cref="ListBox"/>; column/view
 /// support (GridView, etc.) is a later phase.
 /// </summary>
-public class ListView : ListBox
+public partial class ListView : ListBox
 {
 }
