@@ -4,7 +4,7 @@ namespace System.Windows.Input;
 /// Provides keyboard state and focus services. The managed focus state is updated by
 /// <see cref="UIElement"/> when <c>Focus()</c> is called or the GTK focus controller fires.
 /// </summary>
-public static class Keyboard
+public static partial class Keyboard
 {
 	// ── Managed focus state ──────────────────────────────────────────────────
 
@@ -44,7 +44,9 @@ public static class Keyboard
 	/// <summary>Records <paramref name="element"/> as the focused element.</summary>
 	internal static void SetFocused(System.Windows.UIElement element)
 	{
+		bool changed = !ReferenceEquals(_focusedElement, element);
 		_focusedElement = element;
+		if (changed) RaiseAutomationFocusChanged(element);
 	}
 
 	/// <summary>Clears the focused element if it matches <paramref name="element"/>.</summary>

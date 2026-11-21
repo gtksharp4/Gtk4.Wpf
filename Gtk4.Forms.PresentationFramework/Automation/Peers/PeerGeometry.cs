@@ -13,4 +13,8 @@ static class PeerGeometry
 			return Rect.Empty;
 		return new Rect(x, y, widget.Width, widget.Height);
 	}
+
+	internal static bool Contains(Rect rect, Point point) =>
+		!rect.IsEmpty && point.X >= rect.X && point.X <= rect.X + rect.Width
+		&& point.Y >= rect.Y && point.Y <= rect.Y + rect.Height;
 }

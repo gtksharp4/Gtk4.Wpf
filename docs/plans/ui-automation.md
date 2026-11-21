@@ -368,6 +368,56 @@ generator output, `FilterEventArgs`, `UserControl`, `System.Windows.Shell`).
 
 Review-fix gate (same recipe, package 1.0.0.26325 repacked from the fixed tree): 90 of 90 samples with `build=pass` still build, and 83 of 83 with `run=runs` ran in the smoke run (80 in the first 10 s pass; AddingEventHandler, ProcessingCommandLineArguments and IntroToStylingAndTemplating ran when re-run alone with a 30 s limit).
 
+### Phase 2 — done
+
+Landed in `Gtk4.Forms.PresentationFramework/Automation/Client` (no new project; the client API lives next to the
+peers it wraps, so there is nothing to add to the solution or the CI scripts):
+
+- `AutomationElement` (`RootElement`, `FocusedElement`, `FromPoint`, `FromLocalProvider`, `Current`/`Cached` views,
+  `FindFirst`/`FindAll`, `GetCurrentPattern`/`TryGetCurrentPattern`, `GetCurrentPropertyValue`, `SetFocus`,
+  `GetClickablePoint`, `GetSupportedPatterns`/`Properties`, `GetRuntimeId`, equality; `FromHandle` throws
+  `PlatformNotSupportedException`), `Condition` and its `Property`/`And`/`Or`/`Not`/`True`/`False` forms (with
+  `IgnoreCase` and WPF's argument validation), `TreeWalker` with the three view walkers, `CacheRequest`
+  (properties, patterns, `Children`/`Parent` scope), and `Automation` (view conditions, `Compare`, the
+  `Add*/Remove*EventHandler` methods).
+- Patterns: `InvokePattern`, `ValuePattern`, `TogglePattern`, `SelectionPattern`, `SelectionItemPattern`,
+  `ExpandCollapsePattern`, `RangeValuePattern`, `ScrollPattern`, `WindowPattern`, each wrapping its Phase 1 provider,
+  with WPF's exceptions: `ElementNotEnabledException`, `ElementNotAvailableException` (the element's window closed),
+  `InvalidOperationException` for an unsupported pattern, `NoClickablePointException`.
+- Every client call goes through `AutomationThread`: it runs on the GTK thread through the `Dispatcher` (exceptions
+  are carried back to the caller) and returns after the dispatcher is idle (a bounded GLib pump on the GTK thread,
+  an `ApplicationIdle` barrier from another thread). Nested calls and event handlers run inline.
+- Events: `Automation.Add*EventHandler` subscribe to the peers' static events with `TreeScope` filtering. Handlers
+  run synchronously on the GTK thread. `ButtonBase.OnClick` now raises `InvokePatternOnInvoked` (a Phase 1 gap) and
+  `Keyboard.SetFocused` raises `AutomationFocusChanged`.
+
+Deviations from the plan and WPF, all documented in code:
+
+- The root element is an in-process pane (`DesktopAutomationPeer`, "Desktop") whose children are the visible windows of
+  `Application.Current`. A window with no `Application` is reachable only from its own element.
+- `FromPoint` and `BoundingRectangle` use window coordinates (GTK 4 has no screen position), so with several windows
+  the topmost one containing the point wins.
+- Tree walkers with a condition prune non-matching elements and promote their children. A match whose ancestors all
+  fail the condition is a child of the root for sibling purposes.
+- `CacheRequest.TreeScope` accepts `Element`, `Children` and `Parent`; `Descendants` and `Ancestors` throw
+  `ArgumentException` (caching a whole subtree is not implemented). `AutomationElementMode` is stored but always acts as
+  `Full`. Cached children and parent carry the request's properties and patterns.
+- Property conditions and `GetCurrentPropertyValue` cover the element properties and the properties of the nine
+  patterns above. Other properties throw `ArgumentException`.
+- `WindowOpenedEvent`/`WindowClosedEvent` and the other events with no peer source can be subscribed to but are never
+  raised. `ScrollItem`, `Grid`, `Table` and the rest still have no client pattern class.
+- Structure-changed events are only raised by `InvalidatePeer`, always as `ChildrenInvalidated` (Phase 4 adds the
+  fine-grained change types).
+- `FindFirst`, the `TreeWalker` methods, `FocusedElement` and `CachedParent` return `null` through a non-nullable
+  signature, like the oblivious real API, so WPF test code compiles warning-free.
+
+Tests: 57 in `PresentationFramework.Tests/AutomationClient`, written in the shape of WPF UIA tests over shown GTK
+windows (find by `AutomationId`, `GetCurrentPattern`, invoke, set value, toggle, select, range, window, events, cache,
+tree walking), plus off-thread tests with the main-loop bridge installed (calls marshal, exceptions cross the thread,
+events arrive on the GTK thread). Observed on Windows: `WindowsBase.Tests` 201, `MarkupCompiler.Tests` 574,
+`Wpf.ProjectConverter.Tests` 34, `PresentationFramework.Tests` 4207, all passing; `dotnet build Gtk4.Forms.sln`
+warning-clean. Linux and macOS were not run here. The samples gate was not re-run for this phase (no sample code changed).
+
 ## Open questions
 
 1. Should the driver package also host the app **out-of-process** (launch the converted app and attach)

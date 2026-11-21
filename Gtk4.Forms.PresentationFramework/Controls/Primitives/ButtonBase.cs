@@ -41,6 +41,7 @@ public abstract partial class ButtonBase : ContentControl, ICommandSource, IDisp
 	/// <summary>Raises <see cref="Click"/>, then executes <see cref="Command"/>.</summary>
 	protected virtual void OnClick()
 	{
+		RaiseAutomationInvoked();
 		RaiseEvent(new RoutedEventArgs(ClickEvent) { Source = this });
 		ExecuteCommandIfAble();
 	}
