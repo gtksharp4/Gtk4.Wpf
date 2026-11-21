@@ -23,10 +23,13 @@ public class RichTextBoxTests
 	}
 
 	[Fact]
-	public void Document_null_by_default()
+	public void Document_is_an_empty_paragraph_by_default()
 	{
 		var rtb = new RichTextBox();
-		Assert.Null(rtb.Document);
+		Assert.NotNull(rtb.Document);
+		Assert.Equal(1, rtb.Document!.Blocks.Count);
+		Assert.IsType<Paragraph>(rtb.Document.Blocks[0]);
+		Assert.True(rtb.Selection.IsEmpty);
 	}
 
 	// ── AppendText ────────────────────────────────────────────────────────────

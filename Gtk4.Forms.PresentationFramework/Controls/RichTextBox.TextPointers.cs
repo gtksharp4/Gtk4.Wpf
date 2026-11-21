@@ -23,6 +23,14 @@ public partial class RichTextBox
 		}
 	}
 
+	// A new RichTextBox holds an empty document with one empty paragraph, as in WPF.
+	static FlowDocument NewEmptyDocument()
+	{
+		var doc = new FlowDocument();
+		doc.Blocks.Add(new Paragraph());
+		return doc;
+	}
+
 	// A TextRange edit changes the Document tree behind the GTK buffer's back; re-sync the buffer.
 	void AttachDocumentEdits(FlowDocument? oldDocument, FlowDocument? newDocument)
 	{
