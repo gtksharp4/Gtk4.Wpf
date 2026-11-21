@@ -47,6 +47,19 @@ public class XamlValueConverterUriTests : WpfGtkTestBase
 		Assert.False(uri.IsAbsoluteUri);
 		Assert.Equal(text, uri.OriginalString);
 	}
+	// Unix only: a real absolute path (existing parent below the root) stays absolute; WPF's app-root form stays relative.
+	[Theory]
+	[InlineData("/home/u/app/z.png", true, true)]
+	[InlineData("/home/u/app/missing-dir/z.png", true, false)]
+	[InlineData("/a.xaml", true, false)]
+	[InlineData("/Pages/P.xaml", true, false)]
+	[InlineData("/home/u/app/z.png", false, false)]
+	public void Leading_slash_is_a_file_path_only_for_an_existing_Unix_directory(string text, bool unix, bool expected)
+	{
+		static bool Exists(string dir) => dir == "/home/u/app" || dir == "/home/u" || dir == "/home";
+		Assert.Equal(expected, UnitConverters.IsUnixFilePath(text, unix, Exists));
+	}
+
 	[Fact]
 	public void Uri_keeps_the_original_string_with_backslashes()
 		=> Assert.Equal(@"sub\a.xaml", UnitConverters.ParseUri(@"sub\a.xaml").OriginalString);

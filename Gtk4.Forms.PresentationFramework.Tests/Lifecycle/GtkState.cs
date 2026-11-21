@@ -20,7 +20,8 @@ static class GtkState
 	/// <summary>As above; <paramref name="what"/> is evaluated at failure time (e.g. to show an event log).</summary>
 	public static void Require(Func<bool> condition, Func<string> what, params FrameworkElement[] elements)
 	{
-		const int timeoutMs = 4000;
+		// Generous: the wait returns as soon as the condition holds; slow CI runners (macOS) need the headroom.
+		const int timeoutMs = 10000;
 		if (!GtkPump.Until(condition, timeoutMs))
 			Assert.Fail($"Timed out after {timeoutMs} ms waiting for {what()}. {Describe(elements)}");
 	}
