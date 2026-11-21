@@ -11,10 +11,10 @@ public partial class WebBrowser
 	public event EventHandler<NavigatingCancelEventArgs>? Navigating;
 
 	/// <summary>Raised after the host accepts the navigation request.</summary>
-	public event EventHandler<NavigatedEventArgs>? Navigated;
+	public event NavigatedEventHandler? Navigated;
 
 	/// <summary>Raised when the page finishes loading.</summary>
-	public event EventHandler<NavigatedEventArgs>? LoadCompleted;
+	public event LoadCompletedEventHandler? LoadCompleted;
 
 	// ── B1: single-fire LoadCompleted guard ───────────────────────────────────
 
@@ -56,7 +56,7 @@ public partial class WebBrowser
 		if (html == null) throw new ArgumentNullException(nameof(html));
 		Host.NavigateToString(html);
 		// Best-effort: fire LoadCompleted immediately (no URI for string navigations).
-		LoadCompleted?.Invoke(this, new NavigatedEventArgs(null, null));
+		LoadCompleted?.Invoke(this, new NavigationEventArgs(null, null, null, this, true));
 	}
 
 	/// <summary>Navigates back; does nothing when <see cref="CanGoBack"/> is false.</summary>
@@ -118,7 +118,7 @@ public partial class WebBrowser
 		finally { _suppressSourceCallback = false; }
 
 		UpdatePlaceholder();
-		Navigated?.Invoke(this, new NavigatedEventArgs(null, uri));
+		Navigated?.Invoke(this, new NavigationEventArgs(uri, null, null, this, true));
 
 		// Fire LoadCompleted only when the host won't confirm via its event.
 		// _loadPending stays true until OnHostLoadCompleted fires.
@@ -127,7 +127,7 @@ public partial class WebBrowser
 		if (_loadPending)
 		{
 			_loadPending = false;
-			LoadCompleted?.Invoke(this, new NavigatedEventArgs(null, uri));
+			LoadCompleted?.Invoke(this, new NavigationEventArgs(uri, null, null, this, true));
 		}
 	}
 
@@ -143,13 +143,13 @@ public partial class WebBrowser
 			return;
 
 		_loadPending = true;
-		Navigated?.Invoke(this, new NavigatedEventArgs(null, uri));
+		Navigated?.Invoke(this, new NavigationEventArgs(uri, null, null, this, true));
 
 		// Same single-fire logic as NavigateCore.
 		if (_loadPending)
 		{
 			_loadPending = false;
-			LoadCompleted?.Invoke(this, new NavigatedEventArgs(null, uri));
+			LoadCompleted?.Invoke(this, new NavigationEventArgs(uri, null, null, this, true));
 		}
 	}
 
@@ -160,6 +160,6 @@ public partial class WebBrowser
 		if (!_loadPending) return;
 		_loadPending = false;
 		var effective = uri ?? HistoryCurrent();
-		LoadCompleted?.Invoke(this, new NavigatedEventArgs(null, effective));
+		LoadCompleted?.Invoke(this, new NavigationEventArgs(effective, null, null, this, true));
 	}
 }

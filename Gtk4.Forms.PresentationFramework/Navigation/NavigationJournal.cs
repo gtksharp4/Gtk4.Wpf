@@ -55,6 +55,14 @@ internal sealed class NavigationJournal
 		return Current;
 	}
 
+	/// <summary>Drops the current entry and moves the cursor to the previous one.</summary>
+	public void RemoveCurrent()
+	{
+		if (_cursor < 0) return;
+		_entries.RemoveAt(_cursor);
+		_cursor--;
+	}
+
 	/// <summary>Clears all entries.</summary>
 	public void Clear()
 	{
