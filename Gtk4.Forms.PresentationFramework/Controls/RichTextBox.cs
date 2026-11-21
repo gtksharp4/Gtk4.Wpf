@@ -31,6 +31,7 @@ public partial class RichTextBox : Control
 	{
 		var rtb = (RichTextBox)d;
 		rtb._selection = new TextSelection(rtb);
+		rtb.AttachDocumentEdits((FlowDocument?)e.OldValue, (FlowDocument?)e.NewValue);
 		rtb.SyncBufferFromDocument();
 	}
 
@@ -85,9 +86,16 @@ public partial class RichTextBox : Control
 		if (Document == null)
 			Document = new FlowDocument();
 
-		var para = new Paragraph();
+		// The initial empty paragraph takes the first text instead of leaving a blank line before it.
+		Paragraph para;
+		if (Document.Blocks.Count == 1 && Document.Blocks[0] is Paragraph empty && empty.Inlines.Count == 0)
+			para = empty;
+		else
+		{
+			para = new Paragraph();
+			Document.Blocks.Add(para);
+		}
 		para.Inlines.Add(new Run { Text = text });
-		Document.Blocks.Add(para);
 
 		if (_textView != null)
 		{
@@ -127,5 +135,6 @@ public partial class RichTextBox : Control
 	public RichTextBox()
 	{
 		_selection = new TextSelection(this);
+		Document = NewEmptyDocument();
 	}
 }

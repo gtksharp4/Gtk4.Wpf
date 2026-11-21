@@ -7,7 +7,7 @@ namespace System.Windows.Media;
 /// Mirrors <c>System.Windows.Media.FontFamily</c>; the GTK side only needs the
 /// <see cref="Source"/> string (rendered as CSS <c>font-family</c>), so there is no typeface model.
 /// </summary>
-public class FontFamily : IEquatable<FontFamily>
+public partial class FontFamily : IEquatable<FontFamily>
 {
 	/// <summary>Creates a family with an empty <see cref="Source"/>.</summary>
 	public FontFamily() { Source = string.Empty; }

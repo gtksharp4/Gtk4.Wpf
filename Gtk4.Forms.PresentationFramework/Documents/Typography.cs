@@ -11,7 +11,7 @@ namespace System.Windows.Documents;
 /// <c>font_features='…'</c> Pango span attribute.
 /// </para>
 /// </summary>
-public static class Typography
+public static partial class Typography
 {
 	// ── Capitals ─────────────────────────────────────────────────────────────────
 
