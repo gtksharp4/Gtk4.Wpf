@@ -11,7 +11,7 @@ namespace System.Windows.Data;
 /// <see cref="CommitEdit"/> (runs <see cref="ValidationRules"/> and writes sources)
 /// or <see cref="CancelEdit"/> to discard staged values.
 /// </summary>
-public class BindingGroup
+public partial class BindingGroup
 {
 	// ── Configuration ────────────────────────────────────────────────────────
 
@@ -97,29 +97,24 @@ public class BindingGroup
 	}
 
 	/// <summary>
-	/// Runs all <see cref="ValidationRules"/> against each expression's current
-	/// resolved source.  Returns <c>true</c> when all pass.
+	/// Runs all <see cref="ValidationRules"/> with the group as the value
+	/// (rules read proposed values via GetValue/TryGetValue).  Returns <c>true</c> when all pass.
 	/// </summary>
 	public bool ValidateWithoutUpdate()
 	{
-		if (ValidationRules.Count == 0) return true;
-
+		// WPF hands a group rule the group itself; the rule reads proposed values with GetValue/TryGetValue.
 		foreach (var rule in ValidationRules)
 		{
-			foreach (var expr in BindingExpressions)
+			ValidationResult result;
+			try
 			{
-				var src = expr.ResolvedSource;
-				ValidationResult result;
-				try
-				{
-					result = rule.Validate(src, BindingEngine.ResolveCulture(null), this);
-				}
-				catch
-				{
-					return false;
-				}
-				if (!result.IsValid) return false;
+				result = rule.Validate(this, BindingEngine.ResolveCulture(null));
 			}
+			catch
+			{
+				return false;
+			}
+			if (!result.IsValid) return false;
 		}
 		return true;
 	}
