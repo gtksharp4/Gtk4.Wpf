@@ -18,4 +18,29 @@ public abstract partial class Brush : Animatable
 		base.CloneOverride(destination, currentValueOnly);
 		((Brush)destination).Opacity = Opacity;
 	}
+
+	/// <summary>Identifies <see cref="Transform"/>. Default <see cref="Media.Transform.Identity"/>.</summary>
+	public static readonly DependencyProperty TransformProperty = DependencyProperty.Register(
+		nameof(Transform), typeof(Transform), typeof(Brush), new PropertyMetadata(Media.Transform.Identity));
+
+	/// <summary>Identifies <see cref="RelativeTransform"/>. Default <see cref="Media.Transform.Identity"/>.</summary>
+	public static readonly DependencyProperty RelativeTransformProperty = DependencyProperty.Register(
+		nameof(RelativeTransform), typeof(Transform), typeof(Brush), new PropertyMetadata(Media.Transform.Identity));
+
+	/// <summary>
+	/// Transform applied to the brush output. Stored and animatable; the Cairo paint path does not
+	/// apply it yet.
+	/// </summary>
+	public Transform Transform
+	{
+		get => (Transform)GetValue(TransformProperty)!;
+		set => SetValue(TransformProperty, value);
+	}
+
+	/// <summary>Transform applied relative to the painted bounds. Stored and animatable; not applied when painting.</summary>
+	public Transform RelativeTransform
+	{
+		get => (Transform)GetValue(RelativeTransformProperty)!;
+		set => SetValue(RelativeTransformProperty, value);
+	}
 }

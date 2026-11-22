@@ -6,55 +6,6 @@ using System.Collections.Specialized;
 namespace System.Windows.Media;
 
 /// <summary>
-/// Skews content by <see cref="AngleX"/> and <see cref="AngleY"/> degrees around a centre
-/// point. Mirrors <c>System.Windows.Media.SkewTransform</c>.
-/// </summary>
-public class SkewTransform : Transform
-{
-	/// <inheritdoc/>
-	protected override Freezable CreateInstanceCore() => new SkewTransform();
-
-	/// <inheritdoc/>
-	protected override void CloneOverride(Freezable destination, bool currentValueOnly)
-	{
-		var t = (SkewTransform)destination;
-		t.AngleX = AngleX; t.AngleY = AngleY; t.CenterX = CenterX; t.CenterY = CenterY;
-	}
-
-	/// <summary>Creates a skew transform.</summary>
-	public SkewTransform(double angleX = 0, double angleY = 0,
-		double centerX = 0, double centerY = 0)
-	{
-		AngleX = angleX; AngleY = angleY;
-		CenterX = centerX; CenterY = centerY;
-	}
-
-	/// <summary>Horizontal skew angle in degrees.</summary>
-	public double AngleX { get; set; }
-	/// <summary>Vertical skew angle in degrees.</summary>
-	public double AngleY { get; set; }
-	/// <summary>Centre X of the skew.</summary>
-	public double CenterX { get; set; }
-	/// <summary>Centre Y of the skew.</summary>
-	public double CenterY { get; set; }
-
-	/// <inheritdoc/>
-	public override Matrix Value
-	{
-		get
-		{
-			double tx = Math.Tan(AngleX * Math.PI / 180.0);
-			double ty = Math.Tan(AngleY * Math.PI / 180.0);
-			// translate to centre, skew, translate back
-			return new Matrix(
-				1, ty, tx, 1,
-				-CenterY * tx,
-				-CenterX * ty);
-		}
-	}
-}
-
-/// <summary>
 /// An ordered list of <see cref="Transform"/> objects for <see cref="TransformGroup"/>.
 /// Mirrors <c>System.Windows.Media.TransformCollection</c>.
 /// </summary>

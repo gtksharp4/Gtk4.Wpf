@@ -96,8 +96,59 @@ public class StoryboardPathResolverTests
 		var ex = Assert.Throws<InvalidOperationException>(() => sb.Begin(el));
 		Assert.Contains(path, ex.Message);
 	}
+	[Fact]
+	public void Animates_geometry_and_drawing_sub_objects()
+	{
+		var el = new AnimTarget();
+		var ellipse = new EllipseGeometry(new Point(100, 75), 100, 75);
+		el.Clip = ellipse;
+		Run(el, "(UIElement.Clip).(EllipseGeometry.RadiusX)", Linear(0, 150));
+		Run(el, "(UIElement.Clip).(EllipseGeometry.Center)",
+			new PointAnimation(new Point(0, 0), new Point(200, 150), TimeSpan.FromSeconds(1)));
+		AnimationScheduler.TickAllForTest(TimeSpan.FromSeconds(0.5));
+		Assert.Equal(75.0, ellipse.RadiusX, 6);
+		Assert.Equal(new Point(100, 75), ellipse.Center);
+		Assert.Same(ellipse, el.Clip);
 
-	[Fact(Skip = "Round 50 carry-over: Geometry and Drawing sub-objects are not Animatable yet "
-		+ "(ClipRegion EllipseGeometry.RadiusX, DrawingBrush DrawingGroup.Children[0])")]
-	public void Animates_geometry_and_drawing_sub_objects() { }
+		var inner = new EllipseGeometry(new Point(0.5, 0.5), 0.45, 0.2);
+		var group = new DrawingGroup();
+		group.Children.Add(new GeometryDrawing(Brushes.Red, null, new RectangleGeometry(new Rect(0, 0, 1, 1))));
+		group.Children.Add(new GeometryDrawing(null, null, inner));
+		var brush = new DrawingBrush(group);
+		el.SetValue(AnimTarget.FillProperty, brush);
+		Run(el, "(AnimTarget.FillX).(DrawingBrush.Drawing).(DrawingGroup.Children)[1]"
+			+ ".(GeometryDrawing.Geometry).(EllipseGeometry.RadiusX)", Linear(0.01, 0.5));
+		AnimationScheduler.TickAllForTest(TimeSpan.FromSeconds(1));
+		Assert.Equal(0.5, inner.RadiusX, 6);
+	}
+
+	[Fact]
+	public void Cloning_a_frozen_drawing_chain_leaves_the_frozen_original_untouched()
+	{
+		var el = new AnimTarget();
+		var inner = new EllipseGeometry(new Point(0.5, 0.5), 0.45, 0.2);
+		var brush = new DrawingBrush(new GeometryDrawing(null, null, inner));
+		brush.Freeze();
+		el.SetValue(AnimTarget.FillProperty, brush);
+		Run(el, "(AnimTarget.FillX).(DrawingBrush.Drawing).(GeometryDrawing.Geometry).(EllipseGeometry.RadiusX)",
+			Linear(0.2, 0.4));
+		AnimationScheduler.TickAllForTest(TimeSpan.FromSeconds(1));
+		var live = (DrawingBrush)el.GetValue(AnimTarget.FillProperty)!;
+		Assert.NotSame(brush, live);
+		Assert.Equal(0.4, ((EllipseGeometry)((GeometryDrawing)live.Drawing!).Geometry!).RadiusX, 6);
+		Assert.Equal(0.45, inner.RadiusX);
+	}
+
+	[Fact]
+	public void Animating_a_nested_object_repaints_the_owner()
+	{
+		var el = new AnimTarget();
+		var brush = new DrawingBrush(new GeometryDrawing(null, null, new EllipseGeometry(new Point(), 1, 1)));
+		el.SetValue(AnimTarget.FillProperty, brush);
+		var before = el.FillCallbacks;
+		Run(el, "(AnimTarget.FillX).(DrawingBrush.Drawing).(GeometryDrawing.Geometry).(EllipseGeometry.RadiusY)",
+			Linear(1, 3));
+		AnimationScheduler.TickAllForTest(TimeSpan.FromSeconds(0.5));
+		Assert.True(el.FillCallbacks > before);
+	}
 }

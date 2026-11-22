@@ -38,6 +38,8 @@ public class NameScope : INameScope
 		if (name == null) throw new ArgumentNullException(nameof(name));
 		if (scopedElement == null) throw new ArgumentNullException(nameof(scopedElement));
 		if (name.Length == 0) throw new ArgumentException("Name must not be empty.", nameof(name));
+		if (_names.ContainsKey(name))
+			throw new ArgumentException($"Cannot register duplicate name '{name}' in this name scope.", nameof(name));
 		_names[name] = scopedElement;
 	}
 

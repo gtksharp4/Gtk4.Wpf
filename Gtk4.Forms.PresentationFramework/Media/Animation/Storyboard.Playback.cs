@@ -48,7 +48,10 @@ public partial class Storyboard
 	ClockController? Controller(FrameworkElement element)
 	{
 		if (element == null) throw new ArgumentNullException(nameof(element));
-		return _runs.TryGetValue(element, out var run) && run.Controllable ? run.Root.Controller : null;
+		if (!_runs.TryGetValue(element, out var run)) return null;
+		if (run.Controllable) return run.Root.Controller;
+		TraceNotControllable("control");
+		return null;
 	}
 
 	Clock? ClockOf(FrameworkElement element) => Controller(element)?.Clock;

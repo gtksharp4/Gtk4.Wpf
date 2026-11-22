@@ -29,6 +29,22 @@ public class GeometryGroup : Geometry
 	public FillRule FillRule { get; set; } = FillRule.EvenOdd;
 
 	/// <inheritdoc/>
+	protected override void CloneOverride(Freezable destination, bool currentValueOnly)
+	{
+		base.CloneOverride(destination, currentValueOnly);
+		var g = (GeometryGroup)destination;
+		g.FillRule = FillRule;
+		foreach (var child in Children)
+			g.Children.Add((Geometry)(currentValueOnly ? child.CloneCurrentValue() : child.Clone()));
+	}
+
+	/// <inheritdoc/>
+	protected override void OnFreeze()
+	{
+		foreach (var child in Children) child.Freeze();
+	}
+
+	/// <inheritdoc/>
 	public override System.Windows.Rect Bounds
 	{
 		get

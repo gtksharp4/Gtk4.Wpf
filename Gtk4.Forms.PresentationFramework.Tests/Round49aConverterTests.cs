@@ -76,6 +76,10 @@ public class Round49aConverterTests
 		"System.Windows.TextDecorationCollection",
 		// FlowDocument.TextEffects (documents lane): TextEffectCollection has no type converter in WPF.
 		"System.Windows.Media.TextEffectCollection",
+		// Animation/drawing object model: set through property elements, never from plain text (BeginTime is
+		// parsed by the generator).
+		"System.TimeSpan", "System.Windows.DependencyObject", "System.Windows.INameScope",
+		"System.Windows.Media.Animation.IEasingFunction", "System.Windows.Media.Drawing", "System.Windows.Media.Pen",
 	};
 
 	[Fact]

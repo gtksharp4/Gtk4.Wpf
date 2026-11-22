@@ -30,6 +30,8 @@ public class PropertyPathNameScopeTests
 		Assert.Null(scope.FindName("a"));
 		Assert.Throws<ArgumentException>(() => scope.UnregisterName("a"));
 		Assert.Throws<ArgumentNullException>(() => scope.RegisterName("x", null!));
+		scope.RegisterName("dup", el);
+		Assert.Throws<ArgumentException>(() => scope.RegisterName("dup", el));
 	}
 
 	[Fact]
