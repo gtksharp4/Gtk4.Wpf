@@ -72,7 +72,7 @@ public sealed partial class ItemCollection : CollectionView, IList
 		if (index < 0 || index > Count) throw new ArgumentOutOfRangeException(nameof(index));
 		int at = Filter == null && SortDescriptions.Count == 0 ? index
 			: index == Count ? _inline.Count
-			: _inline.IndexOf(GetItemAt(index));
+			: SourceIndexAt(index);
 		Mutate(() => _inline.Insert(at, item));
 	}
 
@@ -90,7 +90,7 @@ public sealed partial class ItemCollection : CollectionView, IList
 	{
 		Guard();
 		if (index < 0 || index >= Count) throw new ArgumentOutOfRangeException(nameof(index));
-		return Filter == null && SortDescriptions.Count == 0 ? index : _inline.IndexOf(GetItemAt(index));
+		return Filter == null && SortDescriptions.Count == 0 ? index : SourceIndexAt(index);
 	}
 
 	/// <summary>Removes every inline item.</summary>

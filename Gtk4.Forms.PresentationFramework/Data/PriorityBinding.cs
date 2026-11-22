@@ -103,7 +103,7 @@ internal static class PriorityBindingEngine
 			foreach (var b in _pb.Bindings)
 			{
 				var src = ResolveSource(target, b);
-				var value = BindingEngine.ResolvePath(src, b.Path);
+				var value = BindingEngine.ResolvePath(src, b.PathString);
 				if (value != null && !ReferenceEquals(value, DependencyProperty.UnsetValue))
 				{
 					BindingEngine.SetTargetConverted(target, _dp, value, _pb.FallbackValue);
@@ -125,9 +125,9 @@ internal static class PriorityBindingEngine
 				{
 					// Filter by first path segment so only the relevant property
 					// triggers a re-push (mirrors BindingRecord / DataTriggerState).
-					string? watchedProp = string.IsNullOrEmpty(b.Path)
+					string? watchedProp = string.IsNullOrEmpty(b.PathString)
 						? null
-						: b.Path!.Split('.')[0];
+						: b.PathString!.Split('.')[0];
 
 					PropertyChangedEventHandler handler = (s, e) =>
 					{

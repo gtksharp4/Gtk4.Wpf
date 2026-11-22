@@ -18,6 +18,7 @@ public partial class CollectionView : ICollectionView, INotifyPropertyChanged
 
 	readonly IEnumerable _source;
 	readonly List<object?> _view = new List<object?>();
+	readonly List<int> _viewSource = new List<int>();
 	readonly ObservableCollection<object> _groupObjects = new ObservableCollection<object>();
 	Predicate<object>? _filter;
 	CultureInfo _culture = CultureInfo.CurrentCulture;

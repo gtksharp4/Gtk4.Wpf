@@ -101,7 +101,7 @@ internal static partial class BindingEngine
 			prop = owner.GetType().GetProperty(name, Members);
 		}
 		if (prop == null) return false;
-		value = prop.GetValue(owner);
+		if (!TryRead(prop, owner, out value)) return false;
 		return true;
 	}
 

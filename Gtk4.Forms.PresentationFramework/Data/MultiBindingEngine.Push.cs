@@ -31,7 +31,7 @@ internal static partial class MultiBindingEngine
 					// DataContext not set yet — treat as unresolved.
 					anyUnresolved = true;
 				}
-				values[i] = BindingEngine.ResolvePath(src, b.Path);
+				values[i] = BindingEngine.ResolvePath(src, b.PathString);
 			}
 
 			object? result;

@@ -42,7 +42,7 @@ internal static partial class BindingEngine
 				// R5: FallbackValue applies when the path is unresolvable:
 				// either source is null (no DataContext, no explicit source), OR
 				// source is non-null but the path itself doesn't resolve.
-				var rawValue = ResolvePath(source, _binding.Path);
+				var rawValue = ResolvePath(source, _binding.PathString);
 				_lastRaw = rawValue;
 
 				bool pathUnresolvable = rawValue == null
@@ -109,7 +109,7 @@ internal static partial class BindingEngine
 		/// </summary>
 		bool PathIsUnresolvable(object source)
 		{
-			return !TryWalk(source, _binding.Path, null, out _);
+			return !TryWalk(source, _binding.PathString, null, out _);
 		}
 
 		void DetachInpc()

@@ -35,7 +35,7 @@ internal static partial class BindingEngine
 			if (!WriteSource(target, source, sourceValue)) return;
 			RaiseDataTransfer(target, Binding.SourceUpdatedEvent, _binding.NotifyOnSourceUpdated);
 
-			AttachNotifyErrors(target, source, ResolvePath(source, _binding.Path));
+			AttachNotifyErrors(target, source, ResolvePath(source, _binding.PathString));
 			RefreshNotifyErrors();
 			bool ok = RunRules(ValidationStep.UpdatedValue, _expr, false, errors);
 			if (ok) ok = CollectDataErrors(source, errors);
@@ -64,7 +64,7 @@ internal static partial class BindingEngine
 				       && !ReferenceEquals(sourceValue, DependencyProperty.UnsetValue);
 			}
 
-			if (TryResolveWriteTarget(source, _binding.Path, out _, out var prop)
+			if (TryResolveWriteTarget(source, _binding.PathString, out _, out var prop)
 			    && !TryConvertToSourceType(raw, prop.PropertyType, out sourceValue, out var cex, culture))
 			{
 				// WPF always reports a failed conversion as a validation error.
@@ -78,10 +78,10 @@ internal static partial class BindingEngine
 		{
 			if (!ExceptionValidationApplies)
 			{
-				WriteBackPath(source, _binding.Path, sourceValue);
+				WriteBackPath(source, _binding.PathString, sourceValue);
 				return true;
 			}
-			try { WriteBackPath(source, _binding.Path, sourceValue); }
+			try { WriteBackPath(source, _binding.PathString, sourceValue); }
 			catch (Exception ex) when (!IsCritical(ex))
 			{
 				ReportError(target, ex is TargetInvocationException tie && tie.InnerException != null

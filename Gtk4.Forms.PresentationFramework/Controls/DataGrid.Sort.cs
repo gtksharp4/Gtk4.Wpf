@@ -84,7 +84,7 @@ public partial class DataGrid
 		if (!string.IsNullOrEmpty(column.SortMemberPath))
 			return column.SortMemberPath;
 		if (column is DataGridTextColumn tc)
-			return tc.Binding?.Path;
+			return tc.Binding?.PathString;
 		return null;
 	}
 

@@ -32,7 +32,7 @@ public sealed partial class TemplateBindingExtension
 	public Binding ToBinding()
 	{
 		var b = new Binding { Mode = BindingMode.OneWay, RelativeSource = RelativeSource.TemplatedParent };
-		if (Property != null) b.Path = Property;
+		if (Property != null) b.Path = new PropertyPath(Property, (object[])null!);
 		return b;
 	}
 }

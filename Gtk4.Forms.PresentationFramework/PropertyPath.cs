@@ -7,7 +7,8 @@ namespace System.Windows;
 /// <c>PropertyPath</c>: steps such as <c>(Owner.Prop)</c>, dotted chains and <c>[0]</c> indexers,
 /// with <c>(0)</c> / <c>{0}</c> placeholders standing for <see cref="PathParameters"/>.
 /// </summary>
-public sealed class PropertyPath
+[System.ComponentModel.TypeConverter(typeof(PropertyPathConverter))]
+public sealed partial class PropertyPath
 {
 	/// <summary>Creates a path from a string and the objects its placeholders refer to.</summary>
 	public PropertyPath(string path, params object[] pathParameters)

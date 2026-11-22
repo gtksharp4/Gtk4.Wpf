@@ -51,7 +51,7 @@ public class RunBindingTests : WpfGtkTestBase
 		tb.Inlines.Add(run);
 		var expr = run.SetBinding(DRun.TextProperty, "Name");
 		Assert.NotNull(expr);
-		Assert.Equal("Name", expr!.ParentBinding.Path);
+		Assert.Equal("Name", expr!.ParentBinding.Path!.Path);
 		Assert.Equal("start", run.Text);
 	});
 

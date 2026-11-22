@@ -58,7 +58,7 @@ internal static partial class MultiBindingEngine
 			for (int i = 0; i < sourceTypes.Length; i++)
 			{
 				var src = ResolveChildSource(target, _mb.Bindings[i]);
-				sourceTypes[i] = BindingEngine.TryResolveWriteTarget(src, _mb.Bindings[i].Path, out _, out var p)
+				sourceTypes[i] = BindingEngine.TryResolveWriteTarget(src, _mb.Bindings[i].PathString, out _, out var p)
 					? p.PropertyType
 					: typeof(object);
 			}
@@ -89,11 +89,11 @@ internal static partial class MultiBindingEngine
 					if (src == null) continue;
 					try
 					{
-						if (BindingEngine.TryResolveWriteTarget(src, b.Path, out _, out var p)
+						if (BindingEngine.TryResolveWriteTarget(src, b.PathString, out _, out var p)
 						    && !BindingEngine.TryConvertToSourceType(bv, p.PropertyType, out bv, out _,
 							    BindingEngine.ResolveCulture(_mb.ConverterCulture)))
 							continue;
-						BindingEngine.WriteBackPath(src, b.Path, bv);
+						BindingEngine.WriteBackPath(src, b.PathString, bv);
 					}
 					catch (Exception ex) when (!BindingEngine.IsCritical(ex))
 					{

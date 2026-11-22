@@ -21,10 +21,10 @@ internal sealed partial class XamlObjectWriter
 			|| b.ConverterCulture != null || HasUnwrittenMembers(b))
 			return null;
 		var parts = new List<string>();
-		if (!string.IsNullOrEmpty(b.Path))
+		if (!string.IsNullOrEmpty(b.PathString))
 		{
-			if (!IsPlain(b.Path)) return null;
-			parts.Add("Path=" + b.Path);
+			if (!IsPlain(b.PathString)) return null;
+			parts.Add("Path=" + b.PathString);
 		}
 		if (b.ElementName != null)
 		{
