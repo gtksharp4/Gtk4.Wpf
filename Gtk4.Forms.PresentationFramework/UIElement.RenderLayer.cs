@@ -9,8 +9,10 @@ namespace System.Windows;
 /// Paints <see cref="OnRender"/> output and non-UIElement visual children (DrawingVisual and friends) through
 /// Cairo on a <see cref="Gtk.DrawingArea"/> layered under the element's widget children.
 /// <para>
-/// Gaps: the layer exists only when the element's widget is a <see cref="Gtk.Box"/> (the default container);
-/// other widgets keep the exact object model but paint nothing. All non-UIElement visuals share one layer
+/// Gaps: the layer exists only on the plain default container UIElement.CreateWidget makes (BinLayout stacks the
+/// layer and the children at the same origin). A host with its own widget or layout, such as a Panel, keeps its
+/// arrangement and paints no layer; the object model stays exact. All
+/// non-UIElement visuals share one layer
 /// below the UIElement children, so an "overlay" visual does not paint above them. Clip is stored, not applied.
 /// </para>
 /// </summary>
@@ -19,6 +21,7 @@ public abstract partial class UIElement
 	static readonly ConcurrentDictionary<Type, bool> _overridesOnRender = new ConcurrentDictionary<Type, bool>();
 	static readonly ConcurrentDictionary<Type, bool> _overridesChildCount = new ConcurrentDictionary<Type, bool>();
 
+	Gtk.Box? _defaultBox;
 	Gtk.DrawingArea? _renderArea;
 	DrawingContext? _renderRecording;
 	bool _renderDirty = true;
@@ -57,8 +60,8 @@ public abstract partial class UIElement
 	{
 		if (_renderArea != null || _widget == null) return;
 		if (!OverridesOnRender && !HasNonElementVisualChildren()) return;
-		if (_widget is not Gtk.Box box) return;
-		var area = new Gtk.DrawingArea { CanTarget = false, Hexpand = true, Vexpand = true };
+		if (!(_widget is Gtk.Box box) || !ReferenceEquals(box, _defaultBox)) return;
+		var area = new Gtk.DrawingArea { CanTarget = false };
 		area.DrawFunc = OnRenderLayerDraw;
 		box.LayoutManager = new Gtk.BinLayout();
 		box.Prepend(area);

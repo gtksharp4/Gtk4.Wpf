@@ -21,7 +21,7 @@ public abstract partial class UIElement : Media.Visual
 	/// Creates the backing GTK widget. Called once; result is cached in <see cref="Widget"/>.
 	/// The default is a plain container, so a user subclass need not override it.
 	/// </summary>
-	protected virtual Gtk.Widget CreateWidget() => new Gtk.Box(Gtk.Orientation.Vertical, 0);
+	protected virtual Gtk.Widget CreateWidget() => _defaultBox = new Gtk.Box(Gtk.Orientation.Vertical, 0);
 
 	/// <summary>
 	/// The backing GTK widget for this element. Created lazily on first access.
