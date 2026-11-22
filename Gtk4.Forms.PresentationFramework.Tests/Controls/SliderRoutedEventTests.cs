@@ -24,7 +24,7 @@ public class SliderRoutedEventTests : WpfGtkTestBase
 	[Fact]
 	public void ValueChanged_is_a_routed_event_with_old_and_new_value() => Run(() =>
 	{
-		var s = new WpfSlider();
+		var s = new WpfSlider { Maximum = 100 };
 		Assert.Equal(RoutingStrategy.Bubble, RangeBase.ValueChangedEvent.RoutingStrategy);
 		Assert.Equal(typeof(RoutedPropertyChangedEventHandler<double>), RangeBase.ValueChangedEvent.HandlerType);
 		Assert.IsAssignableFrom<RangeBase>(s);
@@ -40,7 +40,7 @@ public class SliderRoutedEventTests : WpfGtkTestBase
 	[Fact]
 	public void ValueChanged_bubbles_to_a_parent() => Run(() =>
 	{
-		var s = new WpfSlider();
+		var s = new WpfSlider { Maximum = 100 };
 		var panel = new StackPanel();
 		panel.Children.Add(s);
 		double got = -1;
@@ -64,7 +64,7 @@ public class SliderRoutedEventTests : WpfGtkTestBase
 	[Fact]
 	public void A_clamped_value_reports_the_coerced_value() => Run(() =>
 	{
-		var s = new Probe();
+		var s = new Probe { Maximum = 100 };
 		s.Value = 500;
 		Assert.Equal((0.0, 100.0), s.Calls[0]);
 	});
@@ -72,7 +72,7 @@ public class SliderRoutedEventTests : WpfGtkTestBase
 	[Fact]
 	public void GTK_origin_changes_raise_the_routed_event() => Run(() =>
 	{
-		var s = new WpfSlider();
+		var s = new WpfSlider { Maximum = 100 };
 		double got = -1;
 		s.ValueChanged += (_, e) => got = e.NewValue;
 		var scale = (Gtk.Scale)s.Widget;
@@ -83,7 +83,7 @@ public class SliderRoutedEventTests : WpfGtkTestBase
 	[Fact]
 	public void AutoToolTip_properties_have_WPF_defaults_and_store_values() => Run(() =>
 	{
-		var s = new WpfSlider();
+		var s = new WpfSlider { Maximum = 100 };
 		Assert.Equal(AutoToolTipPlacement.None, s.AutoToolTipPlacement);
 		Assert.Equal(0, s.AutoToolTipPrecision);
 		s.AutoToolTipPlacement = AutoToolTipPlacement.BottomRight;

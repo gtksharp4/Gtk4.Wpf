@@ -17,7 +17,7 @@ public class SliderEventTests : WpfGtkTestBase
 		// Runs on GTK thread to materialise the widget.
 		Run(() =>
 		{
-			var s = new WpfSlider();
+			var s = new WpfSlider { Maximum = 100 };
 			_ = s.Widget;
 			int count = 0;
 			s.ValueChanged += (_, _) => count++;
@@ -39,7 +39,7 @@ public class SliderEventTests : WpfGtkTestBase
 	{
 		Run(() =>
 		{
-			var s = new WpfSlider();
+			var s = new WpfSlider { Maximum = 100 };
 			var scale = (Gtk.Scale)s.Widget;
 
 			int count = 0;
@@ -63,7 +63,7 @@ public class SliderEventTests : WpfGtkTestBase
 	{
 		Run(() =>
 		{
-			var s = new WpfSlider { Value = 30.0 };
+			var s = new WpfSlider { Maximum = 100, Value = 30.0 };
 			_ = s.Widget;
 			int count = 0;
 			s.ValueChanged += (_, _) => count++;

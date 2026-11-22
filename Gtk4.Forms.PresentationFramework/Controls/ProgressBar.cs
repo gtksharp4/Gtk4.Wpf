@@ -1,62 +1,17 @@
+using System.Windows.Controls.Primitives;
+
 namespace System.Windows.Controls;
 
 /// <summary>
-/// A progress indicator backed by <see cref="Gtk.ProgressBar"/>.
-/// When <see cref="IsIndeterminate"/> is <c>true</c> the bar pulses; otherwise
-/// the fill fraction is derived from <see cref="Value"/> relative to the range.
+/// A progress indicator backed by <see cref="Gtk.ProgressBar"/>. The range DPs come from
+/// <see cref="RangeBase"/> (Maximum defaults to 100). When <see cref="IsIndeterminate"/> is <c>true</c>
+/// the bar pulses; otherwise the fill fraction is derived from <see cref="RangeBase.Value"/>.
 /// </summary>
-public partial class ProgressBar : Control
+public partial class ProgressBar : RangeBase
 {
-	// ── Minimum DP ───────────────────────────────────────────────────────────
-
-	/// <summary>Minimum value of the range.</summary>
-	public static readonly DependencyProperty MinimumProperty =
-		DependencyProperty.Register(
-			nameof(Minimum),
-			typeof(double),
-			typeof(ProgressBar),
-			new PropertyMetadata(0.0, OnRangeOrValueChanged));
-
-	/// <summary>Gets or sets the minimum value.</summary>
-	public double Minimum
+	static ProgressBar()
 	{
-		get => (double?)GetValue(MinimumProperty) ?? 0.0;
-		set => SetValue(MinimumProperty, value);
-	}
-
-	// ── Maximum DP ───────────────────────────────────────────────────────────
-
-	/// <summary>Maximum value of the range.</summary>
-	public static readonly DependencyProperty MaximumProperty =
-		DependencyProperty.Register(
-			nameof(Maximum),
-			typeof(double),
-			typeof(ProgressBar),
-			new PropertyMetadata(100.0, OnRangeOrValueChanged));
-
-	/// <summary>Gets or sets the maximum value.</summary>
-	public double Maximum
-	{
-		get => (double?)GetValue(MaximumProperty) ?? 100.0;
-		set => SetValue(MaximumProperty, value);
-	}
-
-	// ── Value DP ─────────────────────────────────────────────────────────────
-
-	/// <summary>Current progress value.</summary>
-	public static readonly DependencyProperty ValueProperty =
-		DependencyProperty.Register(
-			nameof(Value),
-			typeof(double),
-			typeof(ProgressBar),
-			new FrameworkPropertyMetadata(0.0,
-				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal, OnRangeOrValueChanged));
-
-	/// <summary>Gets or sets the current value.</summary>
-	public double Value
-	{
-		get => (double?)GetValue(ValueProperty) ?? 0.0;
-		set => SetValue(ValueProperty, value);
+		MaximumProperty.OverrideMetadata(typeof(ProgressBar), new FrameworkPropertyMetadata(100.0));
 	}
 
 	// ── IsIndeterminate DP ───────────────────────────────────────────────────
@@ -86,6 +41,19 @@ public partial class ProgressBar : Control
 		_bar = new Gtk.ProgressBar();
 		ApplyState();
 		return _bar;
+	}
+
+	/// <inheritdoc/>
+	protected override void OnMinimumChanged(double oldMinimum, double newMinimum) => ApplyState();
+
+	/// <inheritdoc/>
+	protected override void OnMaximumChanged(double oldMaximum, double newMaximum) => ApplyState();
+
+	/// <inheritdoc/>
+	protected override void OnValueChanged(double oldValue, double newValue)
+	{
+		ApplyState();
+		base.OnValueChanged(oldValue, newValue);
 	}
 
 	static void OnRangeOrValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

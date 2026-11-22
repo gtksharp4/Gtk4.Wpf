@@ -57,7 +57,7 @@ public class Round49aConverterTests
 	// fall-through. Anything else registered as a DP must have a converter, so a gap fails here, not at startup.
 	static readonly HashSet<string> Unconverted = new HashSet<string>
 	{
-		"System.Object", "System.Type", "System.Windows.DependencyProperty", "System.Windows.PropertyPath",
+		"System.Object", "System.Type", "System.Windows.Shell.WindowChrome", "System.Windows.DependencyProperty", "System.Windows.PropertyPath",
 		"System.Collections.IEnumerable", "System.Windows.Style", "System.Windows.Controls.ControlTemplate",
 		"System.Windows.Controls.DataTemplate", "System.Windows.Controls.ItemsPanelTemplate",
 		"System.Windows.Data.Binding", "System.Windows.Data.IValueConverter", "System.Delegate",

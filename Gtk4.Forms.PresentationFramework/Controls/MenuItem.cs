@@ -17,7 +17,7 @@ namespace System.Windows.Controls;
 /// <c>Gtk.MenuButton</c> that opens a <c>Gtk.Popover</c> containing child buttons.
 /// A full <c>Gtk.PopoverMenu</c> menu-model integration is deferred.
 /// </remarks>
-public partial class MenuItem : FrameworkElement, ICommandSource, IDisposable
+public partial class MenuItem : Control, ICommandSource, IDisposable
 {
 	// ── Header DP ─────────────────────────────────────────────────────────────
 

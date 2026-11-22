@@ -30,6 +30,7 @@ public partial class Slider
 
 	static Slider()
 	{
+		OverrideRangeMetadata();
 		Register(IncreaseLarge, s => s.Value + s.LargeChange, Key.PageUp);
 		Register(DecreaseLarge, s => s.Value - s.LargeChange, Key.PageDown);
 		Register(IncreaseSmall, s => s.Value + s.SmallChange, Key.Up, Key.Right);

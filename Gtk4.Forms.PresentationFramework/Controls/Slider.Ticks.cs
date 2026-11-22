@@ -4,48 +4,6 @@ namespace System.Windows.Controls;
 
 public partial class Slider
 {
-	// ── SmallChange DP ───────────────────────────────────────────────────────
-
-	/// <summary>
-	/// Amount the value changes per arrow-key press.
-	/// Maps to the step increment of the underlying <see cref="Gtk.Scale"/>.
-	/// WPF default: 1.
-	/// </summary>
-	public static readonly DependencyProperty SmallChangeProperty =
-		DependencyProperty.Register(
-			nameof(SmallChange),
-			typeof(double),
-			typeof(Slider),
-			new PropertyMetadata(1.0, OnStepChanged));
-
-	/// <summary>Gets or sets the small-step increment.</summary>
-	public double SmallChange
-	{
-		get => (double?)GetValue(SmallChangeProperty) ?? 1.0;
-		set => SetValue(SmallChangeProperty, value);
-	}
-
-	// ── LargeChange DP ───────────────────────────────────────────────────────
-
-	/// <summary>
-	/// Amount the value changes per page-up/page-down.
-	/// Maps to the page increment of the underlying <see cref="Gtk.Scale"/>.
-	/// WPF default: 10.
-	/// </summary>
-	public static readonly DependencyProperty LargeChangeProperty =
-		DependencyProperty.Register(
-			nameof(LargeChange),
-			typeof(double),
-			typeof(Slider),
-			new PropertyMetadata(10.0, OnStepChanged));
-
-	/// <summary>Gets or sets the large-step increment.</summary>
-	public double LargeChange
-	{
-		get => (double?)GetValue(LargeChangeProperty) ?? 10.0;
-		set => SetValue(LargeChangeProperty, value);
-	}
-
 	// ── TickFrequency DP ─────────────────────────────────────────────────────
 
 	/// <summary>
