@@ -31,7 +31,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			{
 				string cfq = ResolveType(c);
 				if (cfq == null || IsDeferredPropertyChild(c.Name.LocalName) || !_resolver.IsInstantiable(cfq)
-					|| !IsElementObject(cfq)
+					|| !IsElementObject(cfq) || (IsMediaObjectType(cfq) && !MediaGraphEmittable(c, cfq))
 					|| !_resolver.IsAssignable(cfq, add ? item : pt)) return false;
 			}
 			foreach (XElement c in children)

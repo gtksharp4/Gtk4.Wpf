@@ -30,6 +30,11 @@ public class GeneratorCompileCorpusTests : GeneratorV2TestBase
 			+ "Storyboard.TargetProperty=\"Height\" To=\"{Binding ElementName=b, Path=ActualWidth}\"/></Storyboard>") };
 		yield return new object[] { "non-framework-element-binding", Page("<Button/>",
 			"<CollectionViewSource x:Key=\"cvs\" Source=\"{Binding Path=Items}\"/>") };
+		yield return new object[] { "explicit-collection-element", Page("<Path><Path.Data><GeometryGroup><PathGeometry>"
+			+ "<PathGeometry.Figures><PathFigureCollection><PathFigure StartPoint=\"1,1\"><PathFigure.Segments>"
+			+ "<PathSegmentCollection><BezierSegment Point1=\"1,1\" Point2=\"2,2\" Point3=\"3,3\"/>"
+			+ "</PathSegmentCollection></PathFigure.Segments></PathFigure></PathFigureCollection></PathGeometry.Figures>"
+			+ "</PathGeometry></GeometryGroup></Path.Data></Path>") };
 		yield return new object[] { "deferred-static-resource", Page("<Button Style=\"{StaticResource S}\"/>",
 			"<Style x:Key=\"S\" TargetType=\"Button\"><Setter Property=\"FocusVisualStyle\" "
 			+ "Value=\"{StaticResource Later}\"/></Style><Style x:Key=\"Later\"/>") };
