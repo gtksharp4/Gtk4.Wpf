@@ -251,17 +251,24 @@ still hold an app back, so treat "only" as an upper bound for build and an estim
      `XamlValueConverter.Media.cs`), `Markup/GtkFormsXamlRegistry*.cs`, `Navigation/NavigationWindow.cs`,
      `NameScope.cs`, and the
      target-resolution part of `Media/Animation/Storyboard*.cs`.
-4. **Documents and text tail: 4 only (5 with XPS), 7 involved.**
-   - First, land the held `gf52b/content-bindings-sweep` (`Run.TextProperty`, bindings on flow content,
-     `BitmapImage.Metadata`). It unblocks CommonDialogs.
-   - Only: CommonDialogs, AnnotatedDocumentViewer (`Section`/`Paragraph` `ContentStart`/`ContentEnd`/`BringIntoView`),
-     FontProperties and FlowDocumentProperties (`FontFamily`-typed `FontFamily`), and DocumentMerge if the Fixed/XPS
-     model (`FixedDocument`, `FixedPage`, `PageContent`, `XpsDocument`) is in scope.
-   - Involved: AnnotationsStyling (also needs `MenuItem.Padding`, `SystemParameters`) and FontDialogDemo (also needs
-     items).
-   - Owns: `Documents/**`, `FrameworkContentElement*.cs`, `SystemFonts.cs`, new `System.Windows.Xps/**`. The branch
-     also edits `Data/BindingEngine*.cs`, `BindingExpression.cs`, `BindingOperations.cs` and `TargetChangeTracker.cs`,
-     so **merge it to `main` before the lanes fork**, and drop its stale `docs/samples-coverage.md` hunk.
+4. **Documents and text tail: Round 54b (lane B) done, see the gate below; Fixed/XPS next.**
+   - Landed in `gf54b/documents-text-tail`: WPF-typed `TextElement`/`FlowDocument` typography (FontFamily,
+     FontWeight, FontStyle, FontStretch, Foreground, FontSize: effective values, never null or NaN);
+     `TextElement.ContentStart`/`ContentEnd`/`ElementStart`/`ElementEnd` with a private container for
+     detached elements; `RequestBringIntoView`/`BringIntoView`; `FrameworkContentElement.ContextMenu`
+     (stored); coalesced, nested-edit-aware repagination; `Run(string, TextPointer)` between blocks.
+   - Now build and run: FontProperties, FlowDocumentProperties. CommonDialogs came with the content bindings.
+   - AnnotatedDocumentViewer: only CS0200 is left. `SortDescription.PropertyName`/`Direction` are get-only in
+     `Data/SortDescription.cs` (lane A's area; WPF's are settable). With that one initializer replaced in a scratch
+     copy it builds and runs.
+   - **Next lane-B round: DocumentMerge and the Fixed/XPS model.** It needs `FixedDocument`, `FixedPage`,
+     `PageContent`, `DocumentReference`, `FixedDocumentSequence`, `IUriContext`, then `XpsDocument` and
+     `XpsDocumentWriter` on a ZIP package with FixedPage markup parsing (Glyphs, obfuscated fonts). Owns new
+     `System.Windows.Xps/**` and the Fixed types under `Documents/**`.
+   - **Request for lane C:** add `DocumentViewer` to `CommandConverters._controlOwners` (next to `Slider`) so
+     command names owned by `DocumentViewer` resolve in XAML; `Markup/**` was out of lane B's scope.
+   - Still open: AnnotationsStyling (also needs `MenuItem.Padding`, `SystemParameters`) and FontDialogDemo (also
+     needs items). ScrollViewer does not handle RequestBringIntoView yet (not lane B).
 5. **Controls and media tail: 4 only, 14 involved.**
    - Only: SlidePuzzleDemo, MediaGallery and WindowActivationAndDeactivation (`MediaElement` on
      `Gtk.MediaFile`/`Gtk.Video`, plus `RangeBase.ValueProperty`), and WPFGallery (`UserControl`,
@@ -383,6 +390,16 @@ Deliberately not next:
 | 2026-11-21 | `40db59fe` + Round 48 follow-up fixes | 1.0.0.26325 | **yes** | 92 / 204 | 89 | Gate, lower bounds |
 | 2026-11-21 | `142b53f6` | 1.0.0.26325 | **yes** | 129 / 204 | 119 | Round 48; full re-measure; 8 crash, 2 hang; no regressions |
 | 2026-11-22 | `30f46d4a` | 1.0.0.26326 | **yes** | **159 / 204** | **152** | Rounds 49–52 (first two-lane batch) + Round 52 paginated-viewer fixes; full re-measure; 6 crash, 1 hang; no regressions |
+| 2026-11-22 | `b25bc71e` + `gf54b/documents-text-tail` | 1.0.0.26326 | **yes** | 161 / 204 | 154 | Lane B gate, lower bounds; no regressions; FontProperties and FlowDocumentProperties build and run |
+
+### Round 54b gate (lane B, `gf54b/documents-text-tail`)
+
+Strict recipe, package `Gtk4.Forms.Wpf 1.0.0.26326` packed from the worktree into a lane-private feed, isolated package
+cache. All 162 previously building projects still build, and FontProperties and FlowDocumentProperties now build too
+(AppCompat-Quirks was built by hand: the batch script skips a project that sits at its category root). Every one of the
+152 apps that ran still runs (7 read as hangs under load and ran alone for 20 s). FontProperties and
+FlowDocumentProperties run. AnnotatedDocumentViewer still fails on CS0200 (see Next rounds, item 4). The per-project
+JSON rows are updated; the headline totals above stay until the lanes merge.
 
 ## Known layer defects found by the UI tests
 
