@@ -48,7 +48,6 @@ public partial class ResourceDictionary
 		_source = value;
 		Clear();
 		MergedDictionaries.Clear();
-		foreach (var pair in dictionary) this[pair.Key] = pair.Value;
-		foreach (var merged in dictionary.MergedDictionaries) MergedDictionaries.Add(merged);
+		CopyEntriesFrom(dictionary);
 	}
 }

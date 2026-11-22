@@ -56,6 +56,7 @@ namespace Gtk4.Forms.MarkupCompiler
 
 			// Storyboard-level Timeline properties (Duration, RepeatBehavior, AutoReverse, BeginTime).
 			EmitTimelineProperties(w, sbEl, sbVar, "System.Windows.Media.Animation.Storyboard");
+			EmitTimelineName(w, sbEl, xNs, sbVar);
 
 			// Child animation timelines.
 			foreach (XElement child in sbEl.Elements())
@@ -68,6 +69,7 @@ namespace Gtk4.Forms.MarkupCompiler
 
 				string animVar = $"__anim{counter++}";
 				w.Line($"var {animVar} = new {animFqType}();");
+				EmitTimelineName(w, child, xNs, animVar);
 
 				// Attributes on the animation element.
 				foreach (XAttribute attr in child.Attributes())
@@ -104,6 +106,8 @@ namespace Gtk4.Forms.MarkupCompiler
 						continue;
 					}
 
+					if (TryEmitAnimationMarkupAttribute(w, child, animVar, animFqType, attr)) continue;
+
 					// CLR properties (From, To, By, EasingFunction) on animation types.
 					if (_animClrProperties.Contains(attrName))
 					{
@@ -115,6 +119,7 @@ namespace Gtk4.Forms.MarkupCompiler
 					EmitTimelineProperty(w, animVar, animFqType, attrName, val);
 				}
 
+				EmitAnimationChildren(w, child, xNs, animVar, ref counter);
 				w.Line($"{sbVar}.Children.Add({animVar});");
 			}
 

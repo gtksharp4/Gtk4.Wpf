@@ -1,6 +1,7 @@
 namespace System.Windows;
 
 /// <summary>Represents the weight of a typeface.</summary>
+[System.ComponentModel.TypeConverter(typeof(FontWeightConverter))]
 public struct FontWeight : IEquatable<FontWeight>
 {
 	/// <summary>Numeric weight value (100–900, matching CSS font-weight).</summary>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace System.Windows;
 
@@ -43,10 +44,7 @@ public partial class ResourceDictionary : IDictionary<object, object?>
 	{
 		get
 		{
-			if (_inner.TryGetValue(key, out var v)) return v;
-			for (int i = MergedDictionaries.Count - 1; i >= 0; i--)
-				if (MergedDictionaries[i].TryGetValue(key, out v)) return v;
-			return null;
+			return TryGetValue(key, out var v) ? v : null;
 		}
 		set
 		{
@@ -67,7 +65,11 @@ public partial class ResourceDictionary : IDictionary<object, object?>
 	/// <inheritdoc/>
 	public bool TryGetValue(object key, out object? value)
 	{
-		if (_inner.TryGetValue(key, out value)) return true;
+		if (_inner.TryGetValue(key, out value))
+		{
+			value = Realize(key, value);
+			return true;
+		}
 		for (int i = MergedDictionaries.Count - 1; i >= 0; i--)
 			if (MergedDictionaries[i].TryGetValue(key, out value)) return true;
 		return false;
@@ -106,7 +108,13 @@ public partial class ResourceDictionary : IDictionary<object, object?>
 	public ICollection<object> Keys => _inner.Keys;
 
 	/// <inheritdoc/>
-	public ICollection<object?> Values => _inner.Values;
+	public ICollection<object?> Values
+	{
+		get
+		{
+			return Snapshot().Select(p => p.Value).ToList();
+		}
+	}
 
 	/// <inheritdoc/>
 	public void Add(KeyValuePair<object, object?> item)
@@ -116,24 +124,31 @@ public partial class ResourceDictionary : IDictionary<object, object?>
 	}
 
 	/// <inheritdoc/>
-	public bool Contains(KeyValuePair<object, object?> item) =>
-		((ICollection<KeyValuePair<object, object?>>)_inner).Contains(item);
+	public bool Contains(KeyValuePair<object, object?> item)
+	{
+		return Snapshot().Contains(item);
+	}
 
 	/// <inheritdoc/>
-	public void CopyTo(KeyValuePair<object, object?>[] array, int arrayIndex) =>
-		((ICollection<KeyValuePair<object, object?>>)_inner).CopyTo(array, arrayIndex);
+	public void CopyTo(KeyValuePair<object, object?>[] array, int arrayIndex)
+	{
+		Snapshot().CopyTo(array, arrayIndex);
+	}
 
 	/// <inheritdoc/>
 	public bool Remove(KeyValuePair<object, object?> item)
 	{
-		bool removed = ((ICollection<KeyValuePair<object, object?>>)_inner).Remove(item);
-		if (removed)
-			_resourceChangedHandlers.Raise(item.Key, DependencyProperty.UnsetValue);
-		return removed;
+		if (!_inner.TryGetValue(item.Key, out var raw) || !Equals(Realize(item.Key, raw), item.Value)) return false;
+		_inner.Remove(item.Key);
+		_resourceChangedHandlers.Raise(item.Key, DependencyProperty.UnsetValue);
+		return true;
 	}
 
 	/// <inheritdoc/>
-	public IEnumerator<KeyValuePair<object, object?>> GetEnumerator() => _inner.GetEnumerator();
+	public IEnumerator<KeyValuePair<object, object?>> GetEnumerator()
+	{
+		return Snapshot().GetEnumerator();
+	}
 
-	IEnumerator IEnumerable.GetEnumerator() => _inner.GetEnumerator();
-}
+	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+}

@@ -44,7 +44,29 @@ public partial class Window
 	{
 		for (var widget = _window!.Pick(x, y, Gtk.PickFlags.Default); widget != null; widget = widget.Parent)
 			if (UIElement.OwnerOf(widget) is { } owner)
-				return (bool)owner.GetValue(WindowChrome.IsHitTestVisibleInChromeProperty)!;
+				return EffectiveHitTestVisibleInChrome(owner);
+		return false;
+	}
+
+	// Template parts do not inherit from their templated control, so a part without a local value
+	// takes the nearest in-template ancestor's, else the templated parent's (nested templates repeat).
+	static bool EffectiveHitTestVisibleInChrome(UIElement element)
+	{
+		var dp = WindowChrome.IsHitTestVisibleInChromeProperty;
+		for (var guard = 0; guard < 64; guard++)
+		{
+			if (!(element is FrameworkElement fe) || fe.TemplatedParent == null
+				|| fe.HasNonInheritedValue(dp))
+				return (bool)element.GetValue(dp)!;
+			UIElement next = fe.TemplatedParent;
+			for (var w = fe.Widget.Parent; w != null; w = w.Parent)
+			{
+				if (UIElement.OwnerOf(w) is not { } up) continue;
+				if (up is FrameworkElement upFe && upFe.TemplatedParent == fe.TemplatedParent) next = up;
+				break;
+			}
+			element = next;
+		}
 		return false;
 	}
 }

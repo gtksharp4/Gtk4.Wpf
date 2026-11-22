@@ -13,8 +13,7 @@ namespace Gtk4.Forms.MarkupCompiler
 		// Brushes, drawings, geometries: plain object-model types built from attributes and property elements.
 		static bool IsMediaObjectType(string fq)
 			=> fq != null && fq.StartsWith(MediaNs, StringComparison.Ordinal)
-				&& !fq.StartsWith(MediaNs + "Animation.", StringComparison.Ordinal)
-				&& !fq.StartsWith(MediaNs + "Media3D.", StringComparison.Ordinal);
+				&& !fq.StartsWith(MediaNs + "Animation.", StringComparison.Ordinal);
 
 		/// <summary>The type of a keyed media resource element that is built, else <c>null</c>.</summary>
 		string MediaResourceType(XElement item)
@@ -37,6 +36,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			foreach (XAttribute a in el.Attributes().Where(IsPlainAttribute))
 			{
 				string n = a.Name.LocalName;
+				if (SkippableMediaAttribute(el, fq, a)) continue;
 				if (n.IndexOf('.') >= 0) return false;
 				if (_resolver.GetPropertyType(fq, n) == null) continue;
 				if (!_resolver.IsWritable(fq, n) || !ClrAttributeConvertible(fq, n, a.Value)) return false;
@@ -99,6 +99,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			foreach (XElement child in pe.Elements())
 			{
 				string cfq = ResolveType(child);
+				var valueType = _resolver.CollectionItemType(fq, prop) ?? _resolver.GetPropertyType(fq, prop);
+				if (cfq == null && TryEmitResourceElementValue(w, child, parentVar, prop, valueType, coll)) continue;
 				if (cfq == null)
 				{
 					NoteSkippedMedia(pe, "element " + child.Name.LocalName);
@@ -133,6 +135,7 @@ namespace Gtk4.Forms.MarkupCompiler
 		bool ClrAttributeConvertible(string fq, string name, string val)
 		{
 			if (IsStaticOrDynamicResource(val, out _)) return MediaResourceTarget(fq, name, val) != null;
+			if (IsBindingExpression(val, out _)) return IsKnownDp(fq, name);
 			if (val.TrimStart().StartsWith("{", StringComparison.Ordinal)) return false;
 			Type t = _resolver.GetPropertyType(fq, name);
 			if (t == null) return false;

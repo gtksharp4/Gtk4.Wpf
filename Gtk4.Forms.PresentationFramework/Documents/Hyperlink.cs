@@ -7,7 +7,7 @@ namespace System.Windows.Documents;
 /// <c>&lt;a href="..."&gt;</c> when <see cref="NavigateUri"/> is set,
 /// or as a plain underlined span otherwise.
 /// </summary>
-public class Hyperlink : Span
+public partial class Hyperlink : Span
 {
 	/// <summary>The URI the hyperlink navigates to.</summary>
 	public Uri? NavigateUri { get; set; }
@@ -40,7 +40,7 @@ public class Hyperlink : Span
 	{
 		Click?.Invoke(this, new RoutedEventArgs());
 		if (NavigateUri != null)
-			RequestNavigate?.Invoke(this, new RequestNavigateEventArgs(NavigateUri));
+			RequestNavigate?.Invoke(this, new RequestNavigateEventArgs(NavigateUri, TargetName));
 	}
 }
 
@@ -50,9 +50,20 @@ public class RequestNavigateEventArgs : EventArgs
 	/// <summary>The URI the user wants to navigate to.</summary>
 	public Uri Uri { get; }
 
-	/// <summary>Creates an instance with the given URI.</summary>
-	public RequestNavigateEventArgs(Uri uri) =>
+	/// <summary>The name of the frame or window that should handle the navigation (null when none given).</summary>
+	public string? Target { get; }
+
+	/// <summary>Creates an instance with the given URI and target.</summary>
+	public RequestNavigateEventArgs(Uri uri, string? target)
+	{
 		Uri = uri ?? throw new ArgumentNullException(nameof(uri));
+		Target = target;
+	}
+
+	/// <summary>Creates an instance with the given URI.</summary>
+	public RequestNavigateEventArgs(Uri uri) : this(uri, null)
+	{
+	}
 }
 
 /// <summary>Handler for <see cref="Hyperlink.RequestNavigate"/>.</summary>

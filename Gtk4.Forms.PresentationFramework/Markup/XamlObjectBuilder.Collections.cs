@@ -45,8 +45,7 @@ internal sealed partial class XamlObjectBuilder
 		{
 			if (item is ResourceDictionary merged && (node.Element == null || ReadKey(node.Element) == null))
 			{
-				foreach (var pair in merged) rd[pair.Key] = pair.Value;
-				foreach (ResourceDictionary m in merged.MergedDictionaries) rd.MergedDictionaries.Add(m);
+				rd.CopyEntriesFrom(merged);
 				return;
 			}
 			rd[KeyFor(node, item, at)] = item;

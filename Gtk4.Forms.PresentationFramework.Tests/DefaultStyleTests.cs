@@ -15,7 +15,7 @@ public class DefaultStyleTests : IDisposable
 {
 	class TestControl : WpfControl
 	{
-		public static readonly DependencyProperty TagProperty =
+		public new static readonly DependencyProperty TagProperty =
 			DependencyProperty.Register("TagDsk", typeof(string), typeof(TestControl),
 				new PropertyMetadata(null));
 

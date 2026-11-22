@@ -17,7 +17,9 @@ public partial class TextBlock
 			nameof(TextAlignment),
 			typeof(TextAlignment),
 			typeof(TextBlock),
-			new PropertyMetadata(TextAlignment.Left, OnTextAlignmentChanged));
+			new FrameworkPropertyMetadata(TextAlignment.Left,
+				FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.Inherits,
+				OnTextAlignmentChanged));
 
 	static void OnTextAlignmentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		=> (d as TextBlock)?.ApplyTextAlignment();

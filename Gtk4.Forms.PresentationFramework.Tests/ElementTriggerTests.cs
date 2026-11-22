@@ -20,7 +20,7 @@ public class ElementTriggerTests
 
 	sealed class TEl : FrameworkElement
 	{
-		public static readonly DependencyProperty TagProperty =
+		public new static readonly DependencyProperty TagProperty =
 			DependencyProperty.Register("ElemTrigTag", typeof(string), typeof(TEl),
 				new PropertyMetadata(null));
 		public static readonly DependencyProperty FlagProperty =

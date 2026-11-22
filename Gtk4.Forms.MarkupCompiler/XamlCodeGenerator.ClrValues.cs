@@ -27,7 +27,8 @@ namespace Gtk4.Forms.MarkupCompiler
 		internal static readonly HashSet<string> ConverterBackedClasses = new HashSet<string>
 		{
 			"System.Windows.Media.ImageSource", "System.Windows.Shapes.PointCollection", "System.Windows.Media.Brush",
-			"System.Windows.Markup.XmlLanguage",
+			"System.Windows.Markup.XmlLanguage", "System.Windows.Media.Media3D.Point3DCollection",
+			"System.Windows.Media.Media3D.Vector3DCollection", "System.Windows.Media.Int32Collection",
 		};
 
 		/// <summary>

@@ -21,7 +21,8 @@ public class Generator47ResourceTests : GeneratorV2TestBase
 		Assert.Contains(".ItemsSource = ", code);
 		Assert.Contains(".ItemTemplate = (System.Windows.Controls.DataTemplate)", code);
 		Assert.Contains(".ItemFactory = ", code);
-		Assert.Contains("Resources[\"L2\"] = __dt", code);
+		Assert.Contains("Resources.SetDeferred(\"L2\", () =>", code);
+		Assert.Contains("return __dt", code);
 		AssertCompiles(code, Stub);
 	}
 

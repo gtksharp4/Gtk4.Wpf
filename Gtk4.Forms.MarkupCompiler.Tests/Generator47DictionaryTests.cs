@@ -33,7 +33,7 @@ public class Generator47DictionaryTests : GeneratorV2TestBase
 		Assert.Contains("GtkFormsXamlRegistration(\"Strings.xaml\", typeof(global::A.Strings))", code);
 		Assert.Contains("partial class Strings : global::System.Windows.ResourceDictionary", code);
 		Assert.Contains("__owner.Resources[\"Msg\"] = \"Hello\"", code);
-		Assert.Contains("this[__p.Key] = __p.Value", code);
+		Assert.Contains("this.CopyEntriesFrom(__owner.Resources)", code);
 		AssertCompiles(code);
 	}
 

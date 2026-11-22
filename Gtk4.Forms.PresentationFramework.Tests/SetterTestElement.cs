@@ -6,7 +6,7 @@ namespace Gtk4.Forms.PresentationFramework.Tests;
 /// <summary>Widget-free element shared by the Setter value and EventSetter tests.</summary>
 sealed class SetterTestElement : FrameworkElement
 {
-	public static readonly DependencyProperty TagProperty =
+	public new static readonly DependencyProperty TagProperty =
 		DependencyProperty.Register("SetterTestTag", typeof(string), typeof(SetterTestElement),
 			new PropertyMetadata(null));
 

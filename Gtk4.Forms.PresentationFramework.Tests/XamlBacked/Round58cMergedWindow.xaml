@@ -1,0 +1,13 @@
+<Window x:Class="Gtk4.Forms.PresentationFramework.Tests.XamlBacked.Round58cMergedWindow"
+		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		Title="Round58cMergedWindow">
+	<Window.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="XamlBacked/DeferredDictionary.xaml"/>
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+	</Window.Resources>
+	<Border x:Name="Root"/>
+</Window>

@@ -15,7 +15,7 @@ public class ResourceStyleTests
 
 	sealed class TestElement : FrameworkElement
 	{
-		public static readonly DependencyProperty TagProperty =
+		public new static readonly DependencyProperty TagProperty =
 			DependencyProperty.Register("Tag2", typeof(string), typeof(TestElement),
 				new PropertyMetadata(null));
 
