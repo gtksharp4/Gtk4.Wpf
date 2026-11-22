@@ -3,6 +3,7 @@ using System;
 namespace System.Windows;
 
 /// <summary>Represents the thickness of a frame around a rectangle.</summary>
+[System.ComponentModel.TypeConverter(typeof(ThicknessConverter))]
 public struct Thickness : IEquatable<Thickness>
 {
 	/// <summary>Width of the left side.</summary>
@@ -74,7 +75,8 @@ public struct Size : IEquatable<Size>
 }
 
 /// <summary>Represents a rectangle defined by a position and a size.</summary>
-public struct Rect : IEquatable<Rect>
+[System.ComponentModel.TypeConverter(typeof(RectConverter))]
+public partial struct Rect : IEquatable<Rect>
 {
 	/// <summary>X coordinate of the top-left corner.</summary>
 	public double X { get; set; }

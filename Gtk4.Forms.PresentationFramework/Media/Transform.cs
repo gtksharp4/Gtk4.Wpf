@@ -13,7 +13,7 @@ static class MatrixCairo
 }
 
 /// <summary>Abstract base for WPF 2D transforms.</summary>
-public abstract class Transform : System.Windows.Media.Animation.Animatable
+public abstract partial class Transform : GeneralTransform
 {
 	/// <summary>Returns the affine matrix represented by this transform.</summary>
 	public abstract Matrix Value { get; }

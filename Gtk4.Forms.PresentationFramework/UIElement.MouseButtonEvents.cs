@@ -15,6 +15,7 @@ public abstract partial class UIElement
 	{
 		InstallAppearanceHook();
 		RegisterKeyboardFocusClassHandlers();
+		RegisterMouseVirtualHandlers();
 		EventManager.RegisterClassHandler(typeof(UIElement), PreviewMouseDownEvent,
 			new MouseButtonEventHandler(OnPreviewMouseDownThunk), true);
 		EventManager.RegisterClassHandler(typeof(UIElement), MouseDownEvent,

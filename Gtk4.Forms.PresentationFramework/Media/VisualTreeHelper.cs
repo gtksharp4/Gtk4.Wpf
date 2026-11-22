@@ -13,7 +13,7 @@ namespace System.Windows.Media;
 /// <see cref="UIElement"/> wires to the existing <c>VisualChildren</c> / <c>LogicalParent</c>
 /// infrastructure.
 /// </remarks>
-public static class VisualTreeHelper
+public static partial class VisualTreeHelper
 {
 	// ── Child access ─────────────────────────────────────────────────────────────
 
@@ -62,24 +62,14 @@ public static class VisualTreeHelper
 		return null;
 	}
 
-	// ── Hit testing ──────────────────────────────────────────────────────────────
-
-	/// <summary>
-	/// Hit-testing is not implemented in this GTK port; always returns <c>null</c>.
-	/// Full Cairo/GDK hit-testing is a Phase-2 item.
-	/// </summary>
-	public static HitTestResult? HitTest(Visual reference, System.Windows.Point point) => null;
 }
 
-/// <summary>
-/// Placeholder result type for <see cref="VisualTreeHelper.HitTest"/>.
-/// Mirrors <c>System.Windows.Media.HitTestResult</c>.
-/// </summary>
+/// <summary>Result of a hit test. Mirrors <c>HitTestResult</c>.</summary>
 public abstract class HitTestResult
 {
 	/// <summary>The visual that was hit.</summary>
 	public Visual VisualHit { get; }
 
 	/// <summary>Creates a hit-test result for the given visual.</summary>
-	protected HitTestResult(Visual visualHit) => VisualHit = visualHit;
+	protected internal HitTestResult(Visual visualHit) => VisualHit = visualHit;
 }

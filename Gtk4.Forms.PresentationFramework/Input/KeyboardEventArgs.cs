@@ -14,10 +14,19 @@ public class InputEventArgs : RoutedEventArgs
 		Timestamp = timestamp;
 	}
 
+	internal InputEventArgs(RoutedEvent routedEvent, InputDevice inputDevice, int timestamp)
+		: base(routedEvent)
+	{
+		Device = inputDevice ?? throw new ArgumentNullException(nameof(inputDevice));
+		Timestamp = timestamp;
+	}
+
 	/// <summary>The device that raised the event.</summary>
 	public InputDevice Device { get; }
 
-	/// <summary>The time of the event, in milliseconds.</summary>
+	/// <summary>
+	/// The time of the event, in milliseconds: the GDK event time on the GTK path, the tick count for programmatic raises.
+	/// </summary>
 	public int Timestamp { get; }
 }
 
@@ -26,15 +35,18 @@ public class KeyboardEventArgs : InputEventArgs
 {
 	/// <param name="keyboard">The keyboard.</param>
 	/// <param name="timestamp">The time of the event, in milliseconds.</param>
-	/// <exception cref="ArgumentNullException"><paramref name="keyboard"/> is null.</exception>
 	public KeyboardEventArgs(KeyboardDevice keyboard, int timestamp)
-		: base(keyboard ?? throw new ArgumentNullException(nameof(keyboard)), timestamp)
+		: base(keyboard, timestamp)
 	{
-		KeyboardDevice = keyboard;
+	}
+
+	internal KeyboardEventArgs(RoutedEvent routedEvent, KeyboardDevice keyboard, int timestamp)
+		: base(routedEvent, keyboard ?? throw new ArgumentNullException(nameof(keyboard)), timestamp)
+	{
 	}
 
 	/// <summary>The keyboard that raised the event.</summary>
-	public KeyboardDevice KeyboardDevice { get; }
+	public KeyboardDevice KeyboardDevice => (KeyboardDevice)Device;
 }
 
 /// <summary>Data for the (Preview)Got/LostKeyboardFocus events.</summary>

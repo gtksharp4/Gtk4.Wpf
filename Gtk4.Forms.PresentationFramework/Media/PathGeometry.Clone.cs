@@ -7,6 +7,7 @@ public partial class PathGeometry
 	{
 		base.CloneOverride(destination, currentValueOnly);
 		var g = (PathGeometry)destination;
+		g.FillRule = FillRule;
 		foreach (var figure in Figures) g.Figures.Add(figure);
 	}
 }
