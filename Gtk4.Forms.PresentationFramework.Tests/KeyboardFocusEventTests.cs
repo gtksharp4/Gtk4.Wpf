@@ -173,9 +173,9 @@ public class KeyboardFocusEventTests : WpfGtkTestBase
 	});
 
 	[Fact]
-	public void EventArgs_constructor_requires_a_device() => Run(() =>
+	public void EventArgs_constructor_accepts_a_null_device_like_WPF() => Run(() =>
 	{
-		Assert.Throws<ArgumentNullException>(() => new KeyboardFocusChangedEventArgs(null!, 0, null, null));
+		Assert.Null(new KeyboardFocusChangedEventArgs(null!, 0, null, null).KeyboardDevice);
 		var e = new KeyboardFocusChangedEventArgs(Keyboard.PrimaryDevice, 7, null, null);
 		Assert.Equal(7, e.Timestamp);
 	});

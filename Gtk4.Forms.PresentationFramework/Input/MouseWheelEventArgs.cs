@@ -34,7 +34,19 @@ public class MouseWheelEventArgs : MouseEventArgs
 		MouseButtonState leftButton  = MouseButtonState.Released,
 		MouseButtonState rightButton = MouseButtonState.Released,
 		ModifierKeys modifiers       = ModifierKeys.None)
-		: base(routedEvent, position, leftButton, rightButton, modifiers)
+		: this(routedEvent, position, delta, leftButton, rightButton, modifiers, Environment.TickCount)
+	{
+	}
+
+	internal MouseWheelEventArgs(
+		RoutedEvent routedEvent,
+		Point position,
+		int delta,
+		MouseButtonState leftButton,
+		MouseButtonState rightButton,
+		ModifierKeys modifiers,
+		int timestamp)
+		: base(routedEvent, position, leftButton, rightButton, modifiers, timestamp)
 	{
 		Delta = delta;
 	}

@@ -36,7 +36,20 @@ public class LogicalChildrenTests : WpfGtkTestBase
 		a.AddL(child);
 		Assert.Throws<InvalidOperationException>(() => b.AddL(child));
 		a.AddL(child);
-		Assert.Throws<ArgumentNullException>(() => a.AddL(null!));
+	});
+
+	[Fact]
+	public void AddLogicalChild_null_is_ignored_like_WPF() => Run(() =>
+	{
+		var a = new VisualHost();
+		var child = new VisualHost();
+		a.AddL(child);
+		var before = LogicalTreeHelper.GetChildren(a).Cast<object>().ToArray();
+		a.AddL(null!);
+		var after = LogicalTreeHelper.GetChildren(a).Cast<object>().ToArray();
+		Assert.Equal(before, after);
+		Assert.Same(a, child.LogicalParent);
+		Assert.Throws<InvalidOperationException>(() => new VisualHost().AddL(child));
 	});
 
 	[Fact]

@@ -15,8 +15,10 @@ public abstract partial class UIElement
 	/// <see cref="Mouse.Captured"/> while the mouse is captured. The button-specific events and
 	/// <c>MouseDoubleClick</c> are produced by class handlers from these.
 	/// </summary>
-	internal void RaiseMouseButton(MouseButton button, Point position, int clickCount, bool pressed)
+	internal void RaiseMouseButton(
+		MouseButton button, Point position, int clickCount, bool pressed, int? timestamp = null)
 	{
+		int ts = timestamp ?? Environment.TickCount;
 		Mouse.SetButtonState(button, pressed ? MouseButtonState.Pressed : MouseButtonState.Released);
 		Mouse.TrackPosition(this, position);
 
@@ -25,12 +27,12 @@ public abstract partial class UIElement
 		var rb = Mouse.RightButton;
 		var mods = Keyboard.Modifiers;
 		var preview = new MouseButtonEventArgs(pressed ? PreviewMouseDownEvent : PreviewMouseUpEvent,
-			position, button, clickCount, lb, rb, mods) { PositionSource = this };
+			position, button, clickCount, lb, rb, mods, ts) { PositionSource = this };
 		target.RaiseEvent(preview);
 		if (preview.Handled) return;
 
 		var e = new MouseButtonEventArgs(pressed ? MouseDownEvent : MouseUpEvent,
-			position, button, clickCount, lb, rb, mods) { PositionSource = this };
+			position, button, clickCount, lb, rb, mods, ts) { PositionSource = this };
 		target.RaiseEvent(e);
 	}
 
@@ -40,17 +42,18 @@ public abstract partial class UIElement
 	/// the mouse is captured. As in WPF the pair shares one Handled flow: when the preview is
 	/// handled, MouseMove is still raised but already handled, so only handledEventsToo handlers run.
 	/// </summary>
-	internal void RaiseMouseMove(Point position)
+	internal void RaiseMouseMove(Point position, int? timestamp = null)
 	{
+		int ts = timestamp ?? Environment.TickCount;
 		Mouse.TrackPosition(this, position);
 		var target = Mouse.GetInputTarget(this);
 		var mods = Keyboard.Modifiers;
 		var preview = new MouseEventArgs(PreviewMouseMoveEvent, position, Mouse.LeftButton, Mouse.RightButton,
-			mods) { PositionSource = this };
+			mods, ts) { PositionSource = this };
 		target.RaiseEvent(preview);
 
 		var e = new MouseEventArgs(MouseMoveEvent, position, Mouse.LeftButton, Mouse.RightButton,
-			mods) { PositionSource = this, Handled = preview.Handled };
+			mods, ts) { PositionSource = this, Handled = preview.Handled };
 		target.RaiseEvent(e);
 	}
 
@@ -73,6 +76,10 @@ public abstract partial class UIElement
 	/// <see langword="true"/> when the GDK event behind <paramref name="controller"/> was
 	/// already dispatched by another (inner) element's controller — see <see cref="MouseDispatchDedupe"/>.
 	/// </summary>
+	/// <summary>The GDK time of the event a controller is handling; the tick count when there is none.</summary>
+	static int GdkEventTime(object controller) =>
+		controller is Gtk.EventController c && c.CurrentEvent is { } ev ? unchecked((int)ev.Time) : Environment.TickCount;
+
 	static bool IsDuplicateDispatch(object controller) =>
 		GetEventKey(controller) is MouseEventKey key && MouseDispatchDedupe.IsDuplicate(key);
 
@@ -85,7 +92,7 @@ public abstract partial class UIElement
 	{
 		if (key.HasValue && MouseDispatchDedupe.IsDuplicate(key.Value)) return false;
 		if (!MouseButtonMap.TryFromGdk(gdkButton, out var button)) return false;
-		RaiseMouseButton(button, position, clickCount, pressed);
+		RaiseMouseButton(button, position, clickCount, pressed, key.HasValue ? unchecked((int)key.Value.Time) : null);
 		if (!pressed && button == MouseButton.Right) OnContextMenuRequested(position);
 		return true;
 	}
@@ -97,7 +104,7 @@ public abstract partial class UIElement
 	internal bool DispatchGtkMotion(MouseEventKey? key, Point position)
 	{
 		if (key.HasValue && MouseDispatchDedupe.IsDuplicate(key.Value)) return false;
-		RaiseMouseMove(position);
+		RaiseMouseMove(position, key.HasValue ? unchecked((int)key.Value.Time) : null);
 		return true;
 	}
 }

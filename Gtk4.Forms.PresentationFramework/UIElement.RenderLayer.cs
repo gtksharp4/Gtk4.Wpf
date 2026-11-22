@@ -79,7 +79,9 @@ public abstract partial class UIElement
 
 	void OnRenderLayerDraw(Gtk.DrawingArea area, Cairo.Context cr, int width, int height) => PaintRenderLayer(cr);
 
-	/// <summary>Runs <see cref="OnRender"/> if invalidated and paints the layer content onto <paramref name="cr"/>.</summary>
+	/// <summary>
+	/// Runs <see cref="OnRender"/> if invalidated and paints the layer content onto <paramref name="cr"/>.
+	/// </summary>
 	internal void PaintRenderLayer(Cairo.Context cr)
 	{
 		try
@@ -105,7 +107,7 @@ public abstract partial class UIElement
 		}
 	}
 
-	// ── Child widget hosting for AddVisualChild / VisualCollection ───────────────────────
+	// ── Child widget hosting for AddVisualChild / VisualCollection ──────────────
 
 	internal override void OnVisualChildAdopted(Visual child)
 	{

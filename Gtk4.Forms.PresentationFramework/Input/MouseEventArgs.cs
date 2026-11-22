@@ -80,7 +80,18 @@ public class MouseEventArgs : InputEventArgs
 		MouseButtonState leftButton   = MouseButtonState.Released,
 		MouseButtonState rightButton  = MouseButtonState.Released,
 		ModifierKeys modifiers        = ModifierKeys.None)
-		: base(routedEvent, Mouse.PrimaryDevice, Environment.TickCount)
+		: this(routedEvent, position, leftButton, rightButton, modifiers, Environment.TickCount)
+	{
+	}
+
+	internal MouseEventArgs(
+		RoutedEvent routedEvent,
+		System.Windows.Point position,
+		MouseButtonState leftButton,
+		MouseButtonState rightButton,
+		ModifierKeys modifiers,
+		int timestamp)
+		: base(routedEvent, Mouse.PrimaryDevice, timestamp)
 	{
 		_snapshot = true;
 		_position = position;

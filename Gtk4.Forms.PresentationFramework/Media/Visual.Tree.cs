@@ -21,7 +21,8 @@ public abstract partial class Visual
 	protected internal virtual void OnVisualParentChanged(DependencyObject? oldParent) { }
 
 	/// <summary>Called after a visual child was added or removed.</summary>
-	protected internal virtual void OnVisualChildrenChanged(DependencyObject? visualAdded, DependencyObject? visualRemoved) { }
+	protected internal virtual void OnVisualChildrenChanged(
+		DependencyObject? visualAdded, DependencyObject? visualRemoved) { }
 
 	internal void AdoptVisualChild(Visual child)
 	{

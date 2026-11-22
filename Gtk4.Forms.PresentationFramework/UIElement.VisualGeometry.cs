@@ -25,7 +25,9 @@ public abstract partial class UIElement
 
 	internal override bool ParticipatesInHitTest => Visibility == Visibility.Visible && IsHitTestVisible;
 
-	/// <summary>Hits when the point lies inside the element's render size (a simplification of WPF's content test).</summary>
+	/// <summary>
+	/// Hits when the point lies inside the element's render size (a simplification of WPF's content test).
+	/// </summary>
 	protected override HitTestResult? HitTestCore(PointHitTestParameters hitTestParameters)
 	{
 		Point p = hitTestParameters.HitPoint;
@@ -33,7 +35,9 @@ public abstract partial class UIElement
 		return p.X >= 0 && p.Y >= 0 && p.X < s.Width && p.Y < s.Height ? new PointHitTestResult(this, p) : null;
 	}
 
-	/// <summary>Translates <paramref name="point"/> from this element's space to <paramref name="relativeTo"/>'s.</summary>
+	/// <summary>
+	/// Translates <paramref name="point"/> from this element's space to <paramref name="relativeTo"/>'s.
+	/// </summary>
 	/// <exception cref="ArgumentNullException"/>
 	/// <exception cref="InvalidOperationException">The elements share no common ancestor.</exception>
 	public Point TranslatePoint(Point point, UIElement relativeTo)

@@ -59,15 +59,19 @@ public abstract partial class UIElement
 		widget.AddController(key);
 	}
 
-	void OnGtkKeyPressed(object o, Gtk.KeyPressedArgs args)
+	void OnGtkKeyPressed(object o, Gtk.KeyPressedArgs args) =>
+		args.RetVal = DispatchGtkKeyPressed(args.Keyval, args.State, GdkEventTime(o));
+
+	/// <summary>The GTK key controller's press dispatch; returns whether the key was handled.</summary>
+	internal bool DispatchGtkKeyPressed(uint keyval, Gdk.ModifierType state, int timestamp)
 	{
-		var key  = GdkKeyMap.FromKeyval(args.Keyval);
-		var mods = GdkKeyMap.FromGdkModifier(args.State);
+		var key  = GdkKeyMap.FromKeyval(keyval);
+		var mods = GdkKeyMap.FromGdkModifier(state);
 		Keyboard.SetKeyDown(key);
 		Keyboard.Modifiers = mods;
 
 		// Generate text if the keyval is a printable character.
-		string text = KeyvalToString(args.Keyval);
+		string text = KeyvalToString(keyval);
 		if (!string.IsNullOrEmpty(text))
 		{
 			var previewTI = new TextCompositionEventArgs(PreviewTextInputEvent, text);
@@ -80,21 +84,24 @@ public abstract partial class UIElement
 		}
 
 		// Handled keys must not reach the widget class bindings (a Gtk.Scale would step a second time).
-		args.RetVal = RaiseKeyDown(key, mods);
+		return RaiseKeyDown(key, mods, timestamp);
 	}
 
-	void OnGtkKeyReleased(object o, Gtk.KeyReleasedArgs args)
+	void OnGtkKeyReleased(object o, Gtk.KeyReleasedArgs args) =>
+		DispatchGtkKeyReleased(args.Keyval, args.State, GdkEventTime(o));
+
+	internal void DispatchGtkKeyReleased(uint keyval, Gdk.ModifierType state, int timestamp)
 	{
-		var key  = GdkKeyMap.FromKeyval(args.Keyval);
-		var mods = GdkKeyMap.FromGdkModifier(args.State);
+		var key  = GdkKeyMap.FromKeyval(keyval);
+		var mods = GdkKeyMap.FromGdkModifier(state);
 		Keyboard.SetKeyUp(key);
 		Keyboard.Modifiers = mods;
 
-		var preview = new KeyEventArgs(PreviewKeyUpEvent, key, KeyStates.None, mods);
+		var preview = new KeyEventArgs(PreviewKeyUpEvent, key, KeyStates.None, mods, Key.None, timestamp);
 		RaiseEvent(preview);
 		if (!preview.Handled)
 		{
-			var e = new KeyEventArgs(KeyUpEvent, key, KeyStates.None, mods);
+			var e = new KeyEventArgs(KeyUpEvent, key, KeyStates.None, mods, Key.None, timestamp);
 			RaiseEvent(e);
 		}
 	}

@@ -53,7 +53,8 @@ public class ThicknessConverter : TypeConverter
 	{
 		string[] p = ConverterParsing.Tokenize(text, culture);
 		if (p.Length != 1 && p.Length != 2 && p.Length != 4)
-			throw new FormatException($"'{text}' value is not valid. It must contain one, two, or four delimited Lengths.");
+			throw new FormatException(
+				$"'{text}' value is not valid. It must contain one, two, or four delimited Lengths.");
 		double[] v = new double[p.Length];
 		for (int i = 0; i < p.Length; i++) v[i] = ConverterParsing.ParseLength(p[i], culture);
 		if (v.Length == 1) return new Thickness(v[0]);

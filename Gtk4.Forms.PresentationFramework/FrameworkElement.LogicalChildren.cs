@@ -11,11 +11,10 @@ public abstract partial class FrameworkElement
 	protected internal virtual IEnumerator? LogicalChildren => null;
 
 	/// <summary>Makes <paramref name="child"/> a logical child of this element.</summary>
-	/// <exception cref="ArgumentNullException"/>
 	/// <exception cref="InvalidOperationException">The child already has another logical parent.</exception>
 	protected internal void AddLogicalChild(object child)
 	{
-		if (child == null) throw new ArgumentNullException(nameof(child));
+		if (child == null) return;
 		if (child is not UIElement element) return;
 		if (element.LogicalParent != null && !ReferenceEquals(element.LogicalParent, this))
 			throw new InvalidOperationException("Specified element is already the logical child of another element.");

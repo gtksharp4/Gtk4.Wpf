@@ -23,9 +23,12 @@ public class MouseButtonEventArgs : MouseEventArgs
 	/// <param name="mouse">The mouse device.</param>
 	/// <param name="timestamp">The time of the event, in milliseconds.</param>
 	/// <param name="button">The button that changed.</param>
+	/// <exception cref="System.ComponentModel.InvalidEnumArgumentException"><paramref name="button"/> is not a defined button.</exception>
 	public MouseButtonEventArgs(MouseDevice mouse, int timestamp, MouseButton button)
 		: base(mouse, timestamp)
 	{
+		if (button < MouseButton.Left || button > MouseButton.XButton2)
+			throw new System.ComponentModel.InvalidEnumArgumentException(nameof(button), (int)button, typeof(MouseButton));
 		ChangedButton = button;
 		ClickCount = 1;
 	}
@@ -45,7 +48,21 @@ public class MouseButtonEventArgs : MouseEventArgs
 		MouseButtonState leftButton   = MouseButtonState.Released,
 		MouseButtonState rightButton  = MouseButtonState.Released,
 		ModifierKeys modifiers        = ModifierKeys.None)
-		: base(routedEvent, position, leftButton, rightButton, modifiers)
+		: this(routedEvent, position, changedButton, clickCount, leftButton, rightButton, modifiers,
+			Environment.TickCount)
+	{
+	}
+
+	internal MouseButtonEventArgs(
+		RoutedEvent routedEvent,
+		System.Windows.Point position,
+		MouseButton changedButton,
+		int clickCount,
+		MouseButtonState leftButton,
+		MouseButtonState rightButton,
+		ModifierKeys modifiers,
+		int timestamp)
+		: base(routedEvent, position, leftButton, rightButton, modifiers, timestamp)
 	{
 		ChangedButton = changedButton;
 		ClickCount    = clickCount;

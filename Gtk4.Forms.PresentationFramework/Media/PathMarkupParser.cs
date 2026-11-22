@@ -9,8 +9,8 @@ namespace System.Windows.Media;
 /// Supported commands (absolute + relative): <c>M L H V C Q A Z</c> with implicit
 /// repeated coordinate sets. <c>S</c>/<c>T</c> (smooth) are parsed but skipped
 /// (best-effort — their parameters are consumed so the rest of the string still
-/// parses). A leading <c>F0</c>/<c>F1</c> sets <see cref="PathGeometry.FillRule"/>. Lexer helpers live in <c>PathMarkupParser.Lexer.cs</c>; the mutable
-/// build state lives in <see cref="PathParseContext"/>.
+/// parses). A leading <c>F0</c>/<c>F1</c> sets <see cref="PathGeometry.FillRule"/>. Lexer helpers live in
+/// <c>PathMarkupParser.Lexer.cs</c>; the mutable build state lives in <see cref="PathParseContext"/>.
 /// </para>
 /// </summary>
 internal static partial class PathMarkupParser

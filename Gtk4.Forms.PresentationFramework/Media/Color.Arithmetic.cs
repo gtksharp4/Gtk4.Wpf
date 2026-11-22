@@ -4,7 +4,9 @@ public partial struct Color
 {
 	static byte Clamp(double v) => (byte)Math.Round(Math.Max(0, Math.Min(255, v)));
 
-	/// <summary>Adds two colours channel-wise, clamping to a byte. Uses the layer's Sc* (non-linear) channel model.</summary>
+	/// <summary>
+	/// Adds two colours channel-wise, clamping to a byte. Uses the layer's Sc* (non-linear) channel model.
+	/// </summary>
 	public static Color Add(Color color1, Color color2) => FromArgb(Clamp(color1.A + color2.A),
 		Clamp(color1.R + color2.R), Clamp(color1.G + color2.G), Clamp(color1.B + color2.B));
 

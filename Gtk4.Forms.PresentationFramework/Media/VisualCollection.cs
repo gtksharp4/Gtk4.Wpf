@@ -33,7 +33,13 @@ public sealed class VisualCollection : IList<Visual>
 			var old = _items[index];
 			_owner.ReleaseVisualChild(old);
 			_items[index] = value;
-			_owner.AdoptVisualChild(value);
+			try { _owner.AdoptVisualChild(value); }
+			catch
+			{
+				_items[index] = old;
+				_owner.AdoptVisualChild(old);
+				throw;
+			}
 		}
 	}
 
@@ -47,16 +53,26 @@ public sealed class VisualCollection : IList<Visual>
 	public void Add(Visual item)
 	{
 		if (item == null) throw new ArgumentNullException(nameof(item));
-		_owner.AdoptVisualChild(item);
 		_items.Add(item);
+		try { _owner.AdoptVisualChild(item); }
+		catch
+		{
+			_items.RemoveAt(_items.Count - 1);
+			throw;
+		}
 	}
 
 	/// <inheritdoc/>
 	public void Insert(int index, Visual item)
 	{
 		if (item == null) throw new ArgumentNullException(nameof(item));
-		_owner.AdoptVisualChild(item);
 		_items.Insert(index, item);
+		try { _owner.AdoptVisualChild(item); }
+		catch
+		{
+			_items.RemoveAt(index);
+			throw;
+		}
 	}
 
 	/// <inheritdoc/>

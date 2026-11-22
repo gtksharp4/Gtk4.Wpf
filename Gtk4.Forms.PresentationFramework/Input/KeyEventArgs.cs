@@ -46,7 +46,18 @@ public class KeyEventArgs : KeyboardEventArgs
 		KeyStates keyStates,
 		ModifierKeys modifiers = ModifierKeys.None,
 		Key systemKey = Key.None)
-		: base(routedEvent, Keyboard.PrimaryDevice, Environment.TickCount)
+		: this(routedEvent, key, keyStates, modifiers, systemKey, Environment.TickCount)
+	{
+	}
+
+	internal KeyEventArgs(
+		RoutedEvent routedEvent,
+		Key key,
+		KeyStates keyStates,
+		ModifierKeys modifiers,
+		Key systemKey,
+		int timestamp)
+		: base(routedEvent, Keyboard.PrimaryDevice, timestamp)
 	{
 		Key = key;
 		KeyStates = keyStates;

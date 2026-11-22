@@ -58,7 +58,7 @@ public class RoutedEventArgs : EventArgs
 	/// <summary>Creates an instance with a pre-set event and source (also the original source).</summary>
 	public RoutedEventArgs(RoutedEvent routedEvent, object source) : this(routedEvent)
 	{
-		Source = source;
+		_source = _originalSource = source;
 	}
 
 	/// <summary>Called when <see cref="Source"/> changes; override to react to a new source.</summary>

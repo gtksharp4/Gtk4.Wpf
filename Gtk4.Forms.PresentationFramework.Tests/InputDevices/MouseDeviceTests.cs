@@ -101,7 +101,19 @@ public class MouseDeviceTests : MouseStateTestBase
 			Assert.Throws<ArgumentNullException>(() => new MouseEventArgs((MouseDevice)null!, 1)).ParamName);
 		Assert.Throws<ArgumentNullException>(() => new MouseButtonEventArgs(null!, 1, MouseButton.Left));
 		Assert.Throws<ArgumentNullException>(() => new MouseWheelEventArgs(null!, 1, 120));
-		Assert.Throws<ArgumentNullException>(() => new InputEventArgs(null!, 1));
+		Assert.Null(new InputEventArgs(null!, 1).Device);
+		Assert.Null(new KeyboardEventArgs(null!, 1).KeyboardDevice);
+	}
+
+	[Fact]
+	public void MouseButtonEventArgs_validates_the_button()
+	{
+		var ex = Assert.Throws<System.ComponentModel.InvalidEnumArgumentException>(
+			() => new MouseButtonEventArgs(Mouse.PrimaryDevice, 1, (MouseButton)99));
+		Assert.Equal("button", ex.ParamName);
+		Assert.Throws<System.ComponentModel.InvalidEnumArgumentException>(
+			() => new MouseButtonEventArgs(Mouse.PrimaryDevice, 1, (MouseButton)(-1)));
+		Assert.Equal(MouseButton.XButton2, new MouseButtonEventArgs(Mouse.PrimaryDevice, 1, MouseButton.XButton2).ChangedButton);
 	}
 
 	[Fact]

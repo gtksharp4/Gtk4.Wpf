@@ -62,7 +62,7 @@ public abstract partial class UIElement
 			args.RetVal = false;
 			return;
 		}
-		args.RetVal = RaiseMouseWheel(delta);
+		args.RetVal = RaiseMouseWheel(delta, GdkEventTime(o));
 	}
 
 	/// <summary>
@@ -70,17 +70,18 @@ public abstract partial class UIElement
 	/// target (this element, or the captured element). Returns whether either was handled — the
 	/// value the GTK scroll controller returns.
 	/// </summary>
-	internal bool RaiseMouseWheel(int delta)
+	internal bool RaiseMouseWheel(int delta, int? timestamp = null)
 	{
+		int ts = timestamp ?? Environment.TickCount;
 		var target = Mouse.GetInputTarget(this);
 		var pos = Mouse._lastPosition;
 		var preview = new MouseWheelEventArgs(PreviewMouseWheelEvent, pos, delta,
-			Mouse.LeftButton, Mouse.RightButton, Keyboard.Modifiers) { PositionSource = Mouse._lastPositionSource };
+			Mouse.LeftButton, Mouse.RightButton, Keyboard.Modifiers, ts) { PositionSource = Mouse._lastPositionSource };
 		target.RaiseEvent(preview);
 		if (preview.Handled) return true;
 
 		var e = new MouseWheelEventArgs(MouseWheelEvent, pos, delta,
-			Mouse.LeftButton, Mouse.RightButton, Keyboard.Modifiers) { PositionSource = Mouse._lastPositionSource };
+			Mouse.LeftButton, Mouse.RightButton, Keyboard.Modifiers, ts) { PositionSource = Mouse._lastPositionSource };
 		target.RaiseEvent(e);
 		return e.Handled;
 	}

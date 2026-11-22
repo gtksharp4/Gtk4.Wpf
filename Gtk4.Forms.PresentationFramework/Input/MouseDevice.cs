@@ -35,7 +35,10 @@ public abstract class MouseDevice : InputDevice
 	/// <summary>Captures the mouse to <paramref name="element"/> using <paramref name="captureMode"/>.</summary>
 	public bool Capture(IInputElement? element, CaptureMode captureMode) => Mouse.Capture(element, captureMode);
 
-	/// <summary>The pointer position relative to <paramref name="relativeTo"/>; null means the window root.</summary>
+	/// <summary>
+	/// The pointer position relative to <paramref name="relativeTo"/>; null returns it relative to the element that
+	/// last reported pointer motion (WPF: the window root).
+	/// </summary>
 	public Point GetPosition(IInputElement? relativeTo) => Mouse.GetPosition(relativeTo);
 }
 

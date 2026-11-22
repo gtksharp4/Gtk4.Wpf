@@ -24,7 +24,9 @@ public abstract partial class Visual
 		return new MatrixTransform(ToAncestorMatrix(ancestor));
 	}
 
-	/// <summary>Transform from this visual's space to that of <paramref name="descendant"/>; null if not invertible.</summary>
+	/// <summary>
+	/// Transform from this visual's space to that of <paramref name="descendant"/>; null if not invertible.
+	/// </summary>
 	/// <exception cref="ArgumentNullException"/>
 	/// <exception cref="InvalidOperationException">The argument is not a descendant.</exception>
 	public GeneralTransform? TransformToDescendant(Visual descendant)
