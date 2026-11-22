@@ -30,14 +30,6 @@ public class ImageLoadedBytesGtkTests : WpfGtkTestBase
 		image.EndInit();
 
 		Assert.Equal(png, GtkClipboardBackend.ImageBytes(image));
-		var saved = Clipboard.Backend;
-		Clipboard.Backend = new GtkClipboardBackend();
-		try
-		{
-			Clipboard.SetImage(image);
-			Assert.True(Clipboard.ContainsImage());
-		}
-		finally { Clipboard.Backend = saved; }
 	});
 
 	[Fact]

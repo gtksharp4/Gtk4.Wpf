@@ -1917,8 +1917,9 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `BitmapMetadata`; `Frame.Metadata` is typed `ImageMetadata`. **A-F4** `BitmapSource.Create` throws
   `InvalidOperationException` for an indexed format without a palette and names `pixels`/`buffer` for a short buffer.
   **A-F6** `Width`/`Height` fall back to 96 dpi. **A-F7** fixed palettes are built once; the BW and gray "Transparent"
-  palettes stay opaque (WIC ignores the transparent flag for them; only the halftone ones gain an entry). **A-F8** exact-value tests for Bgr565, Bgr555, Rgb24, Gray16 and Cmyk32 and
-  odd-width, padded-stride Indexed2/4 and Gray2/4 (the converter was right); a GTK test pins the file-path route
+  palettes stay opaque (WIC ignores the transparent flag for them; only the halftone ones gain an entry). **A-F8**
+  exact-value tests for Bgr565, Bgr555, Rgb24, Gray16 and Cmyk32 and odd-width, padded-stride Indexed2/4 and Gray2/4
+  (the converter was right); a GTK test pins the file-path route
   (`Picture.File` set; a `Gdk.MemoryTexture` check was dropped because GTK itself loads a file into a memory texture).
   **A-F9** long lines wrapped, `CodecRoundTripTests` split, the stale imaging scratch folder removed. **B-F1**
   `FlowDocumentScrollViewer` shares `ScrollViewer`'s scroll-bar properties through `AddOwner` (vertical default
@@ -1941,7 +1942,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   path. Rejected in triage: **B-F5** (the three MarkupCompiler test edits follow from `TextElement` becoming a
   `DependencyObject`; a note for the lane A hand-off) and **CI-1** (`Image` already sets `CanShrink = false` for
   `Stretch.None`). Not applied: **A-F5** (see Carry-over), **B-F6**'s `TableColumn.Width` validator (`GridLength`
-  already rejects negative and NaN values, so it could never fire) (see the follow-up). **Round 50 (lane B) totals: 5691 tests** (255
+  already rejects negative and NaN values, so it could never fire). **Round 50 (lane B) totals: 5691 tests** (255
   WindowsBase + 4747 PresentationFramework + 584 MarkupCompiler (1 skipped, Windows) + 34 ProjectConverter + 71
   Wpf.Testing (5 skipped)), all pass; `dotnet build Gtk4.Wpf.sln` 0 warnings. `Integration.Tests` not run. **Samples
   gate:** Gtk4.Forms.Wpf and its three Gtk4.Forms dependencies packed from the fixed tree into a lane-private feed
@@ -1953,9 +1954,10 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   FindingElementInPanel, WidthProperties, CustomRoutedEvents, RoutedEventHandling, CustomRoutedCommand,
   HandlingEventOnCommandUsingCode, VideoViewerDemo); no regression.
 - **Carry-over (Round 50 lane B)**: `FileFormatException` stays in `Gtk4.Forms.PresentationFramework`: moving it to
-  `WindowsBase` makes every `-windows` target ambiguous with the framework's `System.IO.Packaging` type (CS0433), so
-  it needs a `#if` per target rather than a move; JPEG XR (WDP) has no codec; TIFF decoding reads no resolution tags
-  and encodes only 8-bit RGB(A); the `Name` generator hand-off to lane A (B-F3) is open.
+  `WindowsBase` is expected to make every `-windows` target ambiguous with the framework's `System.IO.Packaging`
+  type (CS0433, not tried), so it likely needs a `#if` per target rather than a move; JPEG XR (WDP) has
+  no codec; TIFF decoding reads no resolution tags and encodes only 8-bit RGB(A); the `Name` generator hand-off to
+  lane A (B-F3) is open.
 - **Round 50 (lane B) follow-up.** `BitmapPalettes` BW/gray "Transparent" palettes reverted to opaque (WIC ignores
   the flag; only the caching stays). `BitmapImage.LoadedBytes` feeds the clipboard image and makes an OnLoad `UriSource`
   image an in-memory `Image` texture. `Typeface.Equals(Typeface)` is no longer public (Learn lists only
@@ -2014,6 +2016,58 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   the runtime `Initialize` on registry roots is now done, so the generator registration is the remaining piece;
   `Binding` has no `Delay`/`XPath`, so they are not guarded in `XamlWriter`; `samples-coverage.json` still holds the
   Round 48 measurement.
+- **Round 52 (lane B) track A - annotations (DONE, merged).** `gf52b/annotations` (merge `3bc141fc`):
+  `System.Windows.Annotations` object model (`Annotation`, `AnnotationResource`, `ContentLocator*`, `TextAnchor`), the
+  `XmlStreamStore` in the WPF XML layout, `AnnotationService` on `FlowDocumentScrollViewer`/`FlowDocumentReader`,
+  `AnnotationHelper`, `StickyNoteControl` (text notes as a GTK popover; ink notes are store-only). Samples: the
+  `Documents/Annotations` apps (AnnotatedDocumentViewer, AnnotationsStyling) are the targets; neither is re-measured
+  here (both stay `fail` in `samples-coverage.json`).
+- **Round 52 (lane B) track B - paginated-viewers-printing (DONE, merged).** `gf52b/paginated-viewers-printing`
+  (merge `e45d5695`): `DocumentPaginator` and `DynamicDocumentPaginator`, the `FlowDocument` paginator,
+  `DocumentViewerBase`, `FlowDocumentPageViewer`, `DocumentViewer`, `PrintDialog` on `Gtk.PrintOperation` and
+  `TextEffectResolver`. Its `ContentPosition` add/add conflict with track A's file resolved to the track A version.
+  Samples: the Fixed Documents and FlowDocumentNewsClient apps are the targets (not re-measured; still `fail`).
+- **Round 52 (lane B) review (Opus) + fixes - DONE.** **b-F1/b-F3** a highlight is store-only: `AnnotationService`
+  no longer paints or splits runs (`TextRange.Background.cs` deleted), so a highlight cannot move a note's character
+  range anchor and `Disable` cannot wipe author backgrounds; behaviour now matches WPF (the old `AnnotationHelperTests`
+  asserted the painting). **b-F2** `XmlStreamStore` keeps elements that are direct content of an `anc:Resource`
+  (cargo and anchor contents) even in an unknown namespace, records the namespace, and writes them back on `Flush`;
+  stray structural elements are still skipped. **b-F4** `StickyNoteControl.PenWidth` defaults to 2.0031496062992127.
+  **b-F6** command texts carry WPF's en-US access keys. `AttachedAnnotationChanged` is not added (it needs
+  `IAttachedAnnotation`, whose members were not verified); it is listed as a gap in the `AnnotationService` doc.
+  **b-F7** the Meta Data cargo writes a namespaced `anb:ZOrder="0"` instead of an unqualified `IsExpanded`; long
+  lines wrapped. **b-F5** one `ContentPosition` (protected constructor, nested `MissingPosition`, `Missing`). **CI-1**
+  `AnnotationService(DocumentViewerBase)` and `GetService(DocumentViewerBase)` over the host seam. **CI-2** Name
+  validation follows `NameValidationHelper`: first char `_`, Lu, Ll, Lt, Lo or Nl; later chars add Mn, Mc, Lm, Nd; no
+  Pc or Cf. **CI-3** `ParentedList.TrimToSize` sets `Capacity = Count`. **CI-4** doc rewraps and the unverified
+  `FileFormatException` note. **CI-5** `Typeface.GetHashCode` wrapped. **CI-6** the clipboard-image test no longer
+  asserts on the in-memory mirror. Rejected in triage: **CI-7** (`TextPointer.Offset` rebuilds the symbol list,
+  O(N*doc) with correct results; caching needs a document change version bumped by every direct tree edit) and the
+  `FileFormatException` move (per-target `#if` for the CS0433 clash). `gf52b/content-bindings-sweep` is not merged:
+  it rewrites the binding engine (`Data/BindingEngine*`, `BindingTarget`), outside lane B's scope, and was not part of
+  this round's reviewed tracks. **Round 52 (lane B) totals: 5850 tests** (255 WindowsBase + 4906 PresentationFramework
+  + 584 MarkupCompiler (1 skipped, Windows) + 34 ProjectConverter + 71 Wpf.Testing (5 skipped)), all pass;
+  `dotnet build Gtk4.Wpf.sln` 0 warnings. `Integration.Tests` not run. **Samples gate:** `Gtk4.Forms.Wpf` and its three
+  Gtk4.Forms dependencies packed from the fixed tree into a lane-private feed (isolated cache, `Gtk4.*` mapped to that
+  feed only). All 130 `build=pass` projects still build through the two-build recipe (CustomApplicationClass as a pair
+  with CustomApplicationClient) and all 119 `run=runs` apps start with a window for 10 s, one at a time; 13 showed no
+  window under load in the first pass and ran when re-run alone (BindConversion, BindingDPToDP, EditingCollections,
+  UpdateSource, ValidateItemSample, SpellChecking, DragDropTextOps, Image, CaptureUnCaptureMouse,
+  EventOnGainAndLooseFocus, MouseState, DefiningResources, WindowHiding); no regression.
+- **Round 52 paginated-viewers review fixes - DONE** (`fix/r52b-paginated`). `DynamicDocumentPaginator`
+  `IsBackgroundPaginationEnabled` is virtual (false, no-op set) and `DocumentPage.Dispose` is virtual;
+  `PrintDialog.MinPage`/`MaxPage` are `uint` and 0 throws `ArgumentException`; async calls are tracked per call so a
+  repeated state no longer completes as cancelled; `FitToMaxPagesAcross()` keeps `MaxPagesAcross` and both are 1..32;
+  the flow paginator repaginates on block and property changes and `FlowDocumentPageViewer` refreshes its status on
+  a page-count change; the DocumentViewer commands are get-only static properties, `TextEffectTarget`'s constructor is
+  internal, and the `PageRangeSelection`/`TextEffect` remarks are corrected.
+  Paginator follow-ups from the fix check: repaginate on nested content edits (`Run.Text`, `Paragraph.Inlines`, nested
+  `Section`/`List`/`Table`) and only on layout-affecting properties; coalesce invalidation once per dispatcher turn
+  (building N blocks on a shown document is O(N^2) today); add `DocumentViewer` to `CommandConverters` owners so
+  `Command="DocumentViewer.FitToWidthCommand"` resolves.
+- **Carry-over (Round 52 lane B)**: `AttachedAnnotationChanged`/`IAttachedAnnotation`; highlights are not painted (no
+  adorner layer); `TextPointer.Offset` caching; the `FileFormatException` move; `gf52b/content-bindings-sweep` still
+  to be reviewed and merged.
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a

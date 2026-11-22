@@ -18,7 +18,17 @@ public partial class FlowDocument
 	public TextAlignment? TextAlignment { get; set; }
 
 	/// <summary>Padding around the page content.</summary>
-	public Thickness PagePadding { get; set; }
+	public Thickness PagePadding
+	{
+		get => _pagePadding;
+		set
+		{
+			_pagePadding = value;
+			ContentChanged?.Invoke();
+		}
+	}
+
+	Thickness _pagePadding;
 
 	/// <summary>
 	/// Builds a Pango markup string for the entire document.

@@ -80,6 +80,8 @@ public class Round49aConverterTests
 		// parsed by the generator).
 		"System.TimeSpan", "System.Windows.DependencyObject", "System.Windows.INameScope",
 		"System.Windows.Media.Animation.IEasingFunction", "System.Windows.Media.Drawing", "System.Windows.Media.Pen",
+		// DocumentViewerBase.Document: an interface, set as content; no type converter in WPF.
+		"System.Windows.Documents.IDocumentPaginatorSource",
 	};
 
 	[Fact]

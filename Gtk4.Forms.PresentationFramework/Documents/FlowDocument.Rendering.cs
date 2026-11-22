@@ -8,10 +8,14 @@ public partial class FlowDocument
 	/// <summary>Raised when the blocks, Background, FontStyle or FontWeight change.</summary>
 	internal event Action? ViewChanged;
 
+	/// <summary>Raised when the blocks or any property change; the paginator repaginates on it.</summary>
+	internal event Action? ContentChanged;
+
 	/// <inheritdoc/>
 	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
 	{
 		base.OnPropertyChanged(e);
+		ContentChanged?.Invoke();
 		if (e.Property == BackgroundProperty || e.Property == FontStyleProperty || e.Property == FontWeightProperty)
 			ViewChanged?.Invoke();
 	}

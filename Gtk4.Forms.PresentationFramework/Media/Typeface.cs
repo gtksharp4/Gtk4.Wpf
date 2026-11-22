@@ -70,6 +70,7 @@ public partial class Typeface
 
 	/// <inheritdoc/>
 	public override int GetHashCode() =>
-		FontFamily.GetHashCode() ^ (Style.GetHashCode() << 3) ^ (Weight.GetHashCode() << 7) ^ (Stretch.GetHashCode() << 13)
+		FontFamily.GetHashCode() ^ (Style.GetHashCode() << 3) ^ (Weight.GetHashCode() << 7)
+		^ (Stretch.GetHashCode() << 13)
 		^ (FallbackFontFamily?.GetHashCode() ?? 0);
 }

@@ -11,6 +11,9 @@ public class FrameworkContentElementNameTests
 	[InlineData("1abc")]
 	[InlineData("a b")]
 	[InlineData("a-b")]
+	[InlineData("ʰx")]
+	[InlineData("a‿")]
+	[InlineData("a‍")]
 	public void Invalid_xaml_names_throw_like_wpf(string name)
 	{
 		var run = new Run();
@@ -21,6 +24,7 @@ public class FrameworkContentElementNameTests
 	[Theory]
 	[InlineData("abc")]
 	[InlineData("_a1")]
+	[InlineData("aʰ")]
 	[InlineData("")]
 	public void Valid_names_are_accepted(string name)
 	{
