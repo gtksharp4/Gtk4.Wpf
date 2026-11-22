@@ -104,6 +104,8 @@ public partial class Frame : ContentControl
 
 		if (_container == null) return;
 		SwapWidget(newContent);
+		Dispatcher.BeginInvoke(
+			new Action(() => OnContentRendered(EventArgs.Empty)), System.Windows.Threading.DispatcherPriority.Loaded);
 	}
 
 	void SwapWidget(object? content)

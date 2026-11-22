@@ -44,7 +44,7 @@ public partial class Application
 
 	static Window? Host(object? element)
 	{
-		if (element != null) Initialize(element);
+		if (element != null) GtkFormsXamlRegistry.Initialize(element);
 		if (element is Window window) return window;
 		if (element is not FrameworkElement root) return null;
 		var host = new Navigation.NavigationWindow();

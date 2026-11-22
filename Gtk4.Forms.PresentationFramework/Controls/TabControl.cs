@@ -100,6 +100,7 @@ public partial class TabControl : Selector
 	{
 		_notebook = new Gtk.Notebook();
 		_notebook.SwitchPage += OnGtkSwitchPage;
+		_notebook.TabPos = ToPosition(TabStripPlacement);
 		return _notebook;
 	}
 

@@ -30,8 +30,14 @@ internal static class StoryboardPathResolver
 				continue;
 			}
 			if (!(current is DependencyObject obj))
+			{
+				var message = PropertyPathParser.Bad(
+					path, $"'{step.Name}' cannot be read from a {current?.GetType().Name ?? "null"}").Message;
+				if (current != null && IsKnownLayerGap(current.GetType()))
+					throw new UnanimatableTargetException(message);
 				throw PropertyPathParser.Bad(
 					path, $"'{step.Name}' cannot be read from a {current?.GetType().Name ?? "null"}");
+			}
 			var dp = step.Parameter ?? FindProperty(step, obj.GetType());
 			if (dp == null && !last && IsOwnerQualifier(step, obj.GetType()))
 			{
@@ -51,6 +57,18 @@ internal static class StoryboardPathResolver
 			current = dp != null ? Unfreeze(value, v => obj.SetValue(dp, v), path) : value;
 		}
 		throw PropertyPathParser.Bad(path, "the path does not end in a property");
+	}
+
+	// WPF DependencyObjects that are plain CLR classes in this layer: animating through them is skipped,
+	// not an error. Anything else that is not a DependencyObject is a path WPF itself rejects.
+	static readonly Type[] _knownLayerGaps =
+		{ typeof(GradientStop), typeof(PathFigure), typeof(PathSegment), typeof(Pen) };
+
+	static bool IsKnownLayerGap(Type type)
+	{
+		foreach (var gap in _knownLayerGaps)
+			if (gap.IsAssignableFrom(type)) return true;
+		return false;
 	}
 
 	static object Unfreeze(object? value, Action<object> setBack, PropertyPath path)

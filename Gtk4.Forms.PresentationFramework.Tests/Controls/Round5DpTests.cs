@@ -198,10 +198,10 @@ public class Round5DpTests
 	}
 
 	[Fact]
-	public void Slider_Maximum_default_is_100()
+	public void Slider_Maximum_default_is_10()
 	{
 		var s = new WpfSlider();
-		Assert.Equal(100.0, s.Maximum);
+		Assert.Equal(10.0, s.Maximum);
 	}
 
 	[Fact]
@@ -214,7 +214,7 @@ public class Round5DpTests
 	[Fact]
 	public void Slider_Value_roundtrip()
 	{
-		var s = new WpfSlider();
+		var s = new WpfSlider { Maximum = 100 };
 		s.Value = 42.0;
 		Assert.Equal(42.0, s.Value);
 	}

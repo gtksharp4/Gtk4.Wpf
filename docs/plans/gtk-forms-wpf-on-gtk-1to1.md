@@ -2012,8 +2012,8 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   radial members, the `TileBrush` members, `ImageBrush.ImageSource`, `VisualBrush.Visual`) is still plain CLR
   properties, copied by `Clone()` but not DPs and not enforced by `IsFrozen`; `{DynamicResource}` on a Freezable is
   resolved once and not live; a plain explicit local value beats a later `SetResourceReference` (see Round 49);
-  DragDropThumbOps (Round 52 item) needs the MarkupCompiler to register its x:Class root in `GtkFormsXamlRegistry`;
-  the runtime `Initialize` on registry roots is now done, so the generator registration is the remaining piece;
+  DragDropThumbOps (Round 52 item) is DONE: the MarkupCompiler registers every x:Class root in `GtkFormsXamlRegistry`
+  (Round 55c track a) and the registry initialises the roots it creates;
   `Binding` has no `Delay`/`XPath`, so they are not guarded in `XamlWriter`; `samples-coverage.json` still holds the
   Round 48 measurement.
 - **Round 52 (lane B) track A - annotations (DONE, merged).** `gf52b/annotations` (merge `3bc141fc`):
@@ -2391,6 +2391,63 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `RequestBringIntoView`; failing-first was shown against the old
   code for A-F1, A-F2, A-F3, A-F4, the normal matrix of A-F7, B-F1, B-F2 and B-F3 only (the other new tests pass
   against the new code and were not run against the old).
+- **Round 55 (lane C) track a - startup and generator sweep (DONE, merged).** `gf55c/startup-generator-sweep`: the
+  MarkupCompiler registers every x:Class root (not only Page/Window) in `GtkFormsXamlRegistry`, resolves root
+  attached properties through their owner type, emits `VisualBrush.Visual` property elements so named Freezables are
+  built and registered, resolves `{StaticResource}` in a `ResourceDictionary` root against its own keys and gives an
+  `ApplicationDefinition` without x:Class a class and `Main` (`CS5001`); `sc#` colours parse in `XamlValueConverter`;
+  `NavigationWindow.SourceProperty` is `Frame.SourceProperty.AddOwner`; a `GradientStop` path step is skipped in
+  `Storyboard` target resolution. Samples evidence (162 building projects, two-build recipe, lane-private feed): no
+  pass-to-fail and no runs-to-crash; ControlsAndLayout, CustomComboBox, GeometryDesignerDemo and DragDropThumbOps run
+  (the Round 51 DragDropThumbOps carry-over is closed), Wizard and GlobalizationHomepage build and run; 157 of 161
+  apps show a window.
+- **Round 55 (lane C) track b - controls and media tail (DONE, merged).** `gf55c/controls-media-tail`: `RangeBase`
+  with `Slider`/`ProgressBar` on it, `MediaElement`/`MediaTimeline`/`MediaClock` over `Gtk.MediaFile`, `UserControl`,
+  `System.Windows.Shell` (`WindowChrome`: a caption area undecorates the window and drags it), `SystemParameters`, and
+  the member tail of `MenuItem`, `Frame`, `TabItem`/`TabControl`, `Expander`, `TreeView`, `WrapPanel`, `GridSplitter`,
+  `ScrollViewer`, `Popup`, `DataGrid`, `ListViewItem`. Samples evidence: all 163 build=pass projects (plus
+  WindowActivationAndDeactivation) build through the packed `Gtk4.Forms.Wpf`; 153 apps smoke-run with a window, no
+  regressions; WindowActivationAndDeactivation now builds and runs.
+- **Round 55 (lane C) review and fixes - DONE.** Verified findings applied failing-first. Track a: the path resolver
+  raises `UnanimatableTargetException` only for known layer gaps (`GradientStop`) and `InvalidOperationException`
+  otherwise, and `BindClocks` traces each skipped animation; the `sc#` parser is ordinal-case, splits on commas and
+  whitespace and maps NaN to 0; `GtkFormsXamlRegistry.TryCreate` runs the generated `InitializeComponent` of the
+  roots it creates, so `Application.LoadComponent(Uri)` and navigation by URI return populated roots (the helper moved
+  from `Application`); `NavigationWindow`'s source metadata derives from `FrameworkPropertyMetadata`; the long
+  MarkupCompiler test lines are wrapped. Track b: `Slider` keeps the RangeBase `SmallChange` 0.1 and `LargeChange` 1;
+  `MediaElement` control methods throw `NotSupportedException` only when neither behavior is Manual and are ignored
+  while a Clock is set; `TabControl` selects a pre-marked `IsSelected` tab when it gets its items or widget;
+  `WindowChrome` has the Windows defaults on a new instance (metadata default 0) with `SystemParameters`
+  `WindowCaptionHeight`/`WindowNonClientFrameThickness`/`WindowCornerRadius` and an inheriting
+  `IsHitTestVisibleInChrome`; a `WindowStyle` change no longer re-decorates a chrome window; `Slider` range changes
+  no longer echo a clamped value back to the DP; `MediaClock` is unsealed with a `protected internal` constructor,
+  `BaseUri` is an explicit `IUriContext` member, and a source-less `MediaTimeline` cannot allocate a clock;
+  `MenuItem.IsSubmenuOpen` binds two-way by default and `TabItem.IsSelected` journals; `MediaElement.Gtk.cs` is split
+  (`MediaElement.Stream.cs`). Also: `Storyboard` binds a `MediaTimeline` child to its `TargetName` `MediaElement`
+  (`MediaClock` case in `BindClocks`), and the MarkupCompiler emits an attached property element on the root
+  (`<WindowChrome.WindowChrome>`) as `WindowChrome.SetWindowChrome(this, ...)`.
+- **Round 55 (lane C) totals.** `dotnet build Gtk4.Wpf.sln` 0 warnings; `PresentationFramework.Tests` 5308 passed,
+  2 skipped (no media backend), 0 failed; `MarkupCompiler.Tests` 621 passed, 1 skipped, 0 failed; 21 test methods
+  added, 2 replaced.
+- **Round 55 (lane C) follow-up.** Verified review findings applied failing-first. MarkupCompiler: an attached property
+  element with a `Binding`/`MultiBinding`/`PriorityBinding`, template or markup-extension child goes to
+  `SetBinding`/template emission again (not `Owner.SetProp`), and its owner resolves through the element's own xmlns
+  (user `clr-namespace` owners included). `Storyboard`: `PathFigure`, `PathSegment` and `Pen` path steps are skipped
+  like `GradientStop`; a `MediaTimeline` with no target binds to the containing `MediaElement`. `WindowChrome`: the
+  caption drag reads only the effective (inherited) `IsHitTestVisibleInChrome` of the hit element. `sc#` parsing rejects
+  an empty comma token as WPF's `TokenizerHelper` does. `RegisteredCanvas` has an `Initialize` idempotency test back;
+  the stale GeometryDesignerDemo `runCause` in `samples-coverage.json` is corrected; over-long lines wrapped. Not
+  verified here: `MediaClock.NaturalDuration` after `MediaOpened` and the WAV stream path (no media backend on this
+  machine; the test skips).
+- **Round 55 (lane C) carry-over.** Not fixed, out of lane C: `Color.FromScRgb`/`ScR*` skip the sRGB transfer
+  (`Color.FromScRgb(1,0.5f,0,0).R` is 128, XAML `sc#1,0.5,0,0` gives 188, WPF gives 188 for both; fix `Color.cs` and
+  have `ScRgbColor.Parse` call it); SlidePuzzleDemo (`DocumentViewerBase.IsMasterPage`, lane B; `ControlTemplate.FindName`,
+  lane A); MediaGallery (`Binding.Path` typed string, lane A); WPFGallery (needs a `Microsoft.Win32.SystemEvents` package
+  reference); SystemParameters `*Key` objects do not resolve through `DynamicResource`; `ScrollBar` is still on `Control`;
+  the store-only members (`Balance`, `ScrubbingEnabled`, `SpeedRatio`, `StretchDirection`, `ExpandDirection`, DataGrid header
+  resize, Popup animation) are deliberate GTK limits; `FontStyleConverter`/`FontWeightConverter`, `Hyperlink.TargetName`,
+  `TextBox.TextAlignment` belong to other lanes; remote `http` media is unverified. If `Wpf.Testing.Tests` fails once
+  (EvidenceTests, InputTests), re-run that suite alone before treating it as real.
 
 ## Phased roadmap (after Phase 0 proves the spine)
 

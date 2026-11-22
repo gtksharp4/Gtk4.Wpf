@@ -161,14 +161,14 @@ public class Round5GtkSmokeTests : WpfGtkTestBase
 	[Fact]
 	public void Slider_Widget_is_GtkScale() => Run(() =>
 	{
-		var s = new WpfSlider();
+		var s = new WpfSlider { Maximum = 100 };
 		Assert.IsType<Gtk.Scale>(s.Widget);
 	});
 
 	[Fact]
 	public void Slider_Value_set_reflects_on_GtkScale() => Run(() =>
 	{
-		var s = new WpfSlider { Value = 30.0 };
+		var s = new WpfSlider { Maximum = 100, Value = 30.0 };
 		var scale = (Gtk.Scale)s.Widget;
 		Assert.Equal(30.0, scale.Value);
 	});
@@ -176,7 +176,7 @@ public class Round5GtkSmokeTests : WpfGtkTestBase
 	[Fact]
 	public void Slider_GtkScale_change_updates_Value() => Run(() =>
 	{
-		var s = new WpfSlider();
+		var s = new WpfSlider { Maximum = 100 };
 		var scale = (Gtk.Scale)s.Widget;
 		scale.Value = 60.0;
 		Assert.Equal(60.0, s.Value);

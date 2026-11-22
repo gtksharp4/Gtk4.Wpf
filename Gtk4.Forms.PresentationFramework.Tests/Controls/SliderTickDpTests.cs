@@ -14,15 +14,13 @@ public class SliderTickDpTests
 	// ── DP defaults ──────────────────────────────────────────────────────────
 
 	[Fact]
-	public void Slider_SmallChange_default_is_1()
+	public void Slider_SmallChange_and_LargeChange_keep_the_RangeBase_defaults()
 	{
-		Assert.Equal(1.0, new WpfSlider().SmallChange);
-	}
-
-	[Fact]
-	public void Slider_LargeChange_default_is_10()
-	{
-		Assert.Equal(10.0, new WpfSlider().LargeChange);
+		var s = new WpfSlider();
+		Assert.Equal(0.1, s.SmallChange);
+		Assert.Equal(1.0, s.LargeChange);
+		Assert.Equal(0.1, (double)WpfSlider.SmallChangeProperty.GetMetadata(typeof(WpfSlider)).DefaultValue!);
+		Assert.Equal(10.0, s.Maximum);
 	}
 
 	[Fact]

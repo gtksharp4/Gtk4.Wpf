@@ -5,92 +5,16 @@ namespace System.Windows.Controls;
 /// <summary>
 /// A range control for selecting a value within a range, backed by
 /// <see cref="Gtk.Scale"/> (a GTK4-native horizontal/vertical slider).
-/// Two-way: GTK value change writes back into <see cref="Value"/>.
+/// Two-way: GTK value change writes back into <see cref="RangeBase.Value"/>.
 /// <para>
-/// Setting <see cref="Value"/> clamps it to [<see cref="Minimum"/>, <see cref="Maximum"/>].
-/// When <see cref="IsSnapToTickEnabled"/> is <c>true</c>, the value is additionally
-/// rounded to the nearest tick defined by <see cref="TickFrequency"/>.
+/// The range DPs come from <see cref="RangeBase"/>; <see cref="Slider"/> overrides the default
+/// (Maximum 10; SmallChange 0.1 and LargeChange 1 stay at the RangeBase defaults). When
+/// <see cref="IsSnapToTickEnabled"/> is <c>true</c>
+/// the value is additionally rounded to the nearest tick defined by <see cref="TickFrequency"/>.
 /// </para>
 /// </summary>
 public partial class Slider : RangeBase
 {
-
-	// ── Minimum DP ───────────────────────────────────────────────────────────
-
-	/// <summary>Minimum value of the range.</summary>
-	public static readonly DependencyProperty MinimumProperty =
-		DependencyProperty.Register(
-			nameof(Minimum),
-			typeof(double),
-			typeof(Slider),
-			new PropertyMetadata(0.0, OnRangeChanged));
-
-	/// <summary>Gets or sets the minimum value.</summary>
-	public double Minimum
-	{
-		get => (double?)GetValue(MinimumProperty) ?? 0.0;
-		set => SetValue(MinimumProperty, value);
-	}
-
-	// ── Maximum DP ───────────────────────────────────────────────────────────
-
-	/// <summary>Maximum value of the range.</summary>
-	public static readonly DependencyProperty MaximumProperty =
-		DependencyProperty.Register(
-			nameof(Maximum),
-			typeof(double),
-			typeof(Slider),
-			new PropertyMetadata(100.0, OnRangeChanged));
-
-	/// <summary>Gets or sets the maximum value.</summary>
-	public double Maximum
-	{
-		get => (double?)GetValue(MaximumProperty) ?? 100.0;
-		set => SetValue(MaximumProperty, value);
-	}
-
-	// ── Value DP ─────────────────────────────────────────────────────────────
-
-	/// <summary>Current value. Clamped to [<see cref="Minimum"/>, <see cref="Maximum"/>];
-	/// snapped to the nearest tick when <see cref="IsSnapToTickEnabled"/> is <c>true</c>.</summary>
-	public static readonly DependencyProperty ValueProperty =
-		DependencyProperty.Register(
-			nameof(Value),
-			typeof(double),
-			typeof(Slider),
-			new FrameworkPropertyMetadata(0.0,
-				FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal, OnValuePropertyChanged,
-				(d, v) =>
-				{
-					var s = (Slider)d;
-					var dv = (double?)v ?? 0.0;
-					var clamped = Math.Max(s.Minimum, Math.Min(s.Maximum, dv));
-					if (s.IsSnapToTickEnabled && s.TickFrequency > 0.0)
-						clamped = SliderSnap.SnapToTick(clamped, s.Minimum, s.Maximum, s.TickFrequency);
-					return (object?)clamped;
-				}));
-
-	static void OnValuePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-	{
-		var s = (Slider)d;
-		if (s._scale != null)
-		{
-			var v = (double?)e.NewValue ?? 0.0;
-			if (s._scale.Value != v)
-				s._scale.Value = v;
-		}
-		// Raise for every real value change — including GTK-origin changes.
-		// _updating only guards the GTK↔DP write loop (see OnGtkValueChanged).
-		s.OnValueChanged((double?)e.OldValue ?? 0.0, (double?)e.NewValue ?? 0.0);
-	}
-
-	/// <summary>Gets or sets the current value.</summary>
-	public double Value
-	{
-		get => (double?)GetValue(ValueProperty) ?? 0.0;
-		set => SetValue(ValueProperty, value);
-	}
-
 	// ── Orientation DP ───────────────────────────────────────────────────────
 
 	/// <summary>Orientation of the slider. WPF default: <see cref="Controls.Orientation.Horizontal"/>.</summary>
@@ -108,6 +32,24 @@ public partial class Slider : RangeBase
 		set => SetValue(OrientationProperty, value);
 	}
 
+	static void OverrideRangeMetadata()
+	{
+		MaximumProperty.OverrideMetadata(typeof(Slider), new FrameworkPropertyMetadata(10.0));
+		SmallChangeProperty.OverrideMetadata(typeof(Slider), new FrameworkPropertyMetadata(OnStepChanged));
+		LargeChangeProperty.OverrideMetadata(typeof(Slider), new FrameworkPropertyMetadata(OnStepChanged));
+		ValueProperty.OverrideMetadata(typeof(Slider), new FrameworkPropertyMetadata(null, CoerceSnappedValue));
+	}
+
+	// Clamp into the range, then snap to the nearest tick when snapping is on.
+	static object? CoerceSnappedValue(DependencyObject d, object? baseValue)
+	{
+		var s = (Slider)d;
+		var clamped = (double)CoerceToRange(d, baseValue)!;
+		if (s.IsSnapToTickEnabled && s.TickFrequency > 0.0)
+			clamped = SliderSnap.SnapToTick(clamped, s.Minimum, s.Maximum, s.TickFrequency);
+		return clamped;
+	}
+
 	// ── GTK backing ─────────────────────────────────────────────────────────
 
 	Gtk.Scale _scale = null!;
@@ -121,30 +63,54 @@ public partial class Slider : RangeBase
 			: Gtk.Orientation.Horizontal;
 
 		_scale = new Gtk.Scale(gtkOrientation, Minimum, Maximum, SmallChange > 0.0 ? SmallChange : 1.0);
-		_scale.Value = Value;
+		_updating = true;
+		try { _scale.Value = Value; }
+		finally { _updating = false; }
 		_scale.Inverted = IsDirectionReversed;
 		_scale.ValueChanged += OnGtkValueChanged;
 		ApplyTickProps();
 		return _scale;
 	}
 
-	static void OnRangeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	/// <inheritdoc/>
+	protected override void OnMinimumChanged(double oldMinimum, double newMinimum) => ApplyRange();
+
+	/// <inheritdoc/>
+	protected override void OnMaximumChanged(double oldMaximum, double newMaximum) => ApplyRange();
+
+	void ApplyRange()
 	{
-		var s = (Slider)d;
-		if (s._scale != null)
+		if (_scale == null) return;
+		// SetRange clamps the adjustment and echoes back; push the effective Value afterwards so a range that
+		// grows back restores it.
+		var wasUpdating = _updating;
+		_updating = true;
+		try
 		{
-			s._scale.SetRange(s.Minimum, s.Maximum);
-			s.ApplyTickProps();
+			_scale.SetRange(Minimum, Maximum);
+			if (_scale.Value != Value) _scale.Value = Value;
 		}
-		// Clamp value into new range.
-		var clamped = Math.Max(s.Minimum, Math.Min(s.Maximum, s.Value));
-		if (clamped != s.Value)
-			s.Value = clamped;
+		finally { _updating = wasUpdating; }
+		ApplyTickProps();
+	}
+
+	/// <inheritdoc/>
+	protected override void OnValueChanged(double oldValue, double newValue)
+	{
+		if (_scale != null && _scale.Value != newValue)
+		{
+			var wasUpdating = _updating;
+			_updating = true;
+			try { _scale.Value = newValue; }
+			finally { _updating = wasUpdating; }
+		}
+		// Raised for every effective change, including GTK-origin ones; _updating only guards the write loop.
+		base.OnValueChanged(oldValue, newValue);
 	}
 
 	void OnGtkValueChanged(object? sender, EventArgs e)
 	{
-		if (_updating) return;
+		if (_updating || _scale.Value == Value) return;
 		_updating = true;
 		try { SetValue(ValueProperty, _scale.Value); }
 		finally { _updating = false; }

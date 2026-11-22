@@ -16,7 +16,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			baseType = null;
 			if (string.IsNullOrEmpty(xamlPath)) return null;
 			string fq = ResolveType(root);
-			if (fq != "System.Windows.Controls.Page" && fq != "System.Windows.Window" && fq != DictionaryType)
+			bool app = fq == ApplicationType && ItemType == "ApplicationDefinition";
+			if (fq != "System.Windows.Controls.Page" && fq != "System.Windows.Window" && fq != DictionaryType && !app)
 				return null;
 
 			// Backslash is not a separator on Unix, so normalise first: the class name must not depend on the OS.
