@@ -18,8 +18,8 @@ public partial class FrameworkContentElement
 		new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.Inherits));
 
 	/// <summary>Identifies the Tag property.</summary>
-	public static readonly DependencyProperty TagProperty = DependencyProperty.Register(
-		nameof(Tag), typeof(object), typeof(FrameworkContentElement), new PropertyMetadata(null));
+	public static readonly DependencyProperty TagProperty = FrameworkElement.TagProperty.AddOwner(
+		typeof(FrameworkContentElement), new FrameworkPropertyMetadata((object?)null));
 
 	/// <summary>Identifies the Language property (default en-US; inherits).</summary>
 	public static readonly DependencyProperty LanguageProperty = FrameworkElement.LanguageProperty.AddOwner(

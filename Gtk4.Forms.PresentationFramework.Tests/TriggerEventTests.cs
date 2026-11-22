@@ -11,7 +11,7 @@ public class TriggerEventTests
 {
 	sealed class TEl : FrameworkElement
 	{
-		public static readonly DependencyProperty TagProperty =
+		public new static readonly DependencyProperty TagProperty =
 			DependencyProperty.Register("EvtTag", typeof(string), typeof(TEl),
 				new PropertyMetadata(null));
 		public string? Tag2 { get => (string?)GetValue(TagProperty); set => SetValue(TagProperty, value); }

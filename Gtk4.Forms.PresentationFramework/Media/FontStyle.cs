@@ -1,6 +1,7 @@
 namespace System.Windows;
 
 /// <summary>Represents the style of a typeface (normal, italic, or oblique).</summary>
+[System.ComponentModel.TypeConverter(typeof(FontStyleConverter))]
 public struct FontStyle : IEquatable<FontStyle>
 {
 	readonly string _name;

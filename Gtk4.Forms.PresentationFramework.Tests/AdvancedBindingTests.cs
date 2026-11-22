@@ -41,14 +41,6 @@ public class AdvancedBindingTests
 
 	class AncestorElement : FrameworkElement
 	{
-		public static readonly DependencyProperty TagProperty =
-			DependencyProperty.Register(nameof(Tag), typeof(string), typeof(AncestorElement),
-				new PropertyMetadata("ancestor-tag"));
-		public string? Tag
-		{
-			get => (string?)GetValue(TagProperty);
-			set => SetValue(TagProperty, value);
-		}
 		protected override Gtk.Widget CreateWidget() => new Gtk.Label();
 	}
 

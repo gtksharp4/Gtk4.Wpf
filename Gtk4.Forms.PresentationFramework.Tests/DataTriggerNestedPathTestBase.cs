@@ -47,10 +47,10 @@ public abstract class DataTriggerNestedPathTestBase
 
 	protected sealed class TEl : FrameworkElement
 	{
-		public static readonly DependencyProperty TagProperty =
+		public new static readonly DependencyProperty TagProperty =
 			DependencyProperty.Register("DtNPTag", typeof(string), typeof(TEl),
 				new PropertyMetadata(null));
-		public string? Tag { get => (string?)GetValue(TagProperty); set => SetValue(TagProperty, value); }
+		public new string? Tag { get => (string?)GetValue(TagProperty); set => SetValue(TagProperty, value); }
 		protected override Gtk.Widget CreateWidget() =>
 			throw new NotSupportedException("pure test");
 	}

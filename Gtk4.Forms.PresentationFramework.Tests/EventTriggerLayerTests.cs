@@ -15,7 +15,7 @@ public class EventTriggerLayerTests
 {
 	sealed class TEl : FrameworkElement
 	{
-		public static readonly DependencyProperty TagProperty =
+		public new static readonly DependencyProperty TagProperty =
 			DependencyProperty.Register("EvtLayerTag", typeof(string), typeof(TEl),
 				new PropertyMetadata("default"));
 
