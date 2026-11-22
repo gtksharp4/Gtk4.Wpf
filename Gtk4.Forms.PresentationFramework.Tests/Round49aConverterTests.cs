@@ -82,6 +82,12 @@ public class Round49aConverterTests
 		"System.Windows.Media.Animation.IEasingFunction", "System.Windows.Media.Drawing", "System.Windows.Media.Pen",
 		// DocumentViewerBase.Document: an interface, set as content; no type converter in WPF.
 		"System.Windows.Documents.IDocumentPaginatorSource",
+		// Media3D object model: set through property elements, no string form in WPF either.
+		"System.Windows.Media.Media3D.Camera", "System.Windows.Media.Media3D.Geometry3D",
+		"System.Windows.Media.Media3D.Material", "System.Windows.Media.Media3D.MaterialCollection",
+		"System.Windows.Media.Media3D.Model3D", "System.Windows.Media.Media3D.Model3DCollection",
+		"System.Windows.Media.Media3D.Rotation3D", "System.Windows.Media.Media3D.Transform3D",
+		"System.Windows.Media.Media3D.Transform3DCollection",
 	};
 
 	[Fact]

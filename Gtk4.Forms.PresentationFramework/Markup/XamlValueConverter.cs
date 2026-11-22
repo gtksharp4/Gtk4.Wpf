@@ -186,6 +186,7 @@ public static partial class XamlValueConverter
 		Register<System.Windows.Input.ICommand?>(CommandConverters.ParseCommand);
 
 		RegisterInputBuiltIns();
+		RegisterMedia3DBuiltIns();
 
 		// Animation primitives
 		Register<Duration>(AnimationConverters.ParseDuration);
