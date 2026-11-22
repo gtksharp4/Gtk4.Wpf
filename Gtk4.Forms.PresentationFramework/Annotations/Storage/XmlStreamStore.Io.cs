@@ -105,16 +105,19 @@ public sealed partial class XmlStreamStore
 		return all;
 	}
 
-	/// <summary>Removes elements and attributes in unsupported namespaces and records those namespaces.</summary>
+	/// <summary>Removes structural elements in unsupported namespaces and records those namespaces.</summary>
 	void Strip(XmlElement element, HashSet<string> supported)
 	{
+		bool isResource = element.NamespaceURI == AnnotationXmlConstants.CoreNamespace
+			&& element.LocalName == AnnotationXmlConstants.Resource;
 		foreach (var child in new List<XmlNode>(element.ChildNodes.Cast<XmlNode>()))
 		{
 			if (!(child is XmlElement childElement)) continue;
 			if (childElement.NamespaceURI.Length > 0 && !supported.Contains(childElement.NamespaceURI))
 			{
 				Ignore(childElement.NamespaceURI);
-				element.RemoveChild(childElement);
+				// Content of a resource is cargo or anchor data: keep it, as WPF keeps non-ignorable content.
+				if (!isResource) element.RemoveChild(childElement);
 			}
 			else Strip(childElement, supported);
 		}

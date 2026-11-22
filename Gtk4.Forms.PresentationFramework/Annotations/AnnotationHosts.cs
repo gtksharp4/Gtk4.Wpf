@@ -1,4 +1,5 @@
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 
 namespace System.Windows.Annotations;
@@ -25,6 +26,19 @@ sealed class FlowDocumentReaderHost : IAnnotationHost
 	public UIElement Element => _viewer;
 
 	public FlowDocument? Document => _viewer.Document;
+
+	public TextRange? Selection => _viewer.AnnotationSelection;
+}
+
+sealed class DocumentViewerBaseHost : IAnnotationHost
+{
+	readonly DocumentViewerBase _viewer;
+
+	internal DocumentViewerBaseHost(DocumentViewerBase viewer) => _viewer = viewer;
+
+	public UIElement Element => _viewer;
+
+	public FlowDocument? Document => _viewer.Document as FlowDocument;
 
 	public TextRange? Selection => _viewer.AnnotationSelection;
 }

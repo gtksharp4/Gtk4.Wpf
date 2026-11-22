@@ -81,7 +81,7 @@ sealed class ParentedList<T> : IList<T>, IList
 		set => _items.Capacity = value;
 	}
 
-	public void TrimToSize() => _items.TrimExcess();
+	public void TrimToSize() => _items.Capacity = _items.Count;
 
 	public void Clear()
 	{

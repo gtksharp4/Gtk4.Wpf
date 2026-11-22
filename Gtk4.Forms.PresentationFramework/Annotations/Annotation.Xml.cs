@@ -56,7 +56,8 @@ public sealed partial class Annotation : IXmlSerializable
 	}
 
 	internal static bool IsNamespaceDeclaration(XmlAttribute attribute) =>
-		attribute.Prefix == "xmlns" || attribute.Prefix == "xml" || (attribute.Prefix.Length == 0 && attribute.LocalName == "xmlns");
+		attribute.Prefix == "xmlns" || attribute.Prefix == "xml"
+		|| (attribute.Prefix.Length == 0 && attribute.LocalName == "xmlns");
 
 	internal void ReadFrom(XmlElement element)
 	{

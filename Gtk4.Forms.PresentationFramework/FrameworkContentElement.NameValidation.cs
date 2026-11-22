@@ -14,12 +14,12 @@ public partial class FrameworkContentElement
 		for (int i = 0; i < name.Length; i++)
 		{
 			var category = char.GetUnicodeCategory(name[i]);
-			bool start = name[i] == '_' || category == UnicodeCategory.LetterNumber
-				|| (category >= UnicodeCategory.UppercaseLetter && category <= UnicodeCategory.OtherLetter);
+			bool start = name[i] == '_' || category == UnicodeCategory.UppercaseLetter
+				|| category == UnicodeCategory.LowercaseLetter || category == UnicodeCategory.TitlecaseLetter
+				|| category == UnicodeCategory.OtherLetter || category == UnicodeCategory.LetterNumber;
 			bool part = start || category == UnicodeCategory.NonSpacingMark
-				|| category == UnicodeCategory.SpacingCombiningMark
-				|| category == UnicodeCategory.DecimalDigitNumber
-				|| category == UnicodeCategory.ConnectorPunctuation || category == UnicodeCategory.Format;
+				|| category == UnicodeCategory.SpacingCombiningMark || category == UnicodeCategory.ModifierLetter
+				|| category == UnicodeCategory.DecimalDigitNumber;
 			if (!(i == 0 ? start : part))
 				return false;
 		}

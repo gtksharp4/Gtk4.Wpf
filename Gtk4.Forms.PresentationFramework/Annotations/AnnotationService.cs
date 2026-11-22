@@ -7,36 +7,37 @@ using System.Windows.Threading;
 namespace System.Windows.Annotations;
 
 /// <summary>
-/// Shows and edits the annotations of a store on a flow-document viewer. Highlights are stored on the
-/// document's runs (TextElement.Background, which the Pango text path does not paint); text sticky notes show as
-/// a GTK popover near the viewer. Gaps: ink notes are store-only, and anchors are stored offsets that do not
+/// Shows and edits the annotations of a store on a flow-document viewer. Highlights are stored annotations with
+/// their Colors cargo and are not painted (gap: no adorner layer); text sticky notes show as
+/// a GTK popover near the viewer. Other gaps: ink notes are store-only, there is no AttachedAnnotationChanged event
+/// (no IAttachedAnnotation), and anchors are stored offsets that do not
 /// follow later edits of the document.
 /// </summary>
 public sealed partial class AnnotationService : DispatcherObject
 {
 	/// <summary>Creates a highlight from the selection; the command parameter is the brush.</summary>
 	public static readonly RoutedUICommand CreateHighlightCommand =
-		new RoutedUICommand("Highlight", "CreateHighlight", typeof(AnnotationService));
+		new RoutedUICommand("_Highlight", "CreateHighlight", typeof(AnnotationService));
 
 	/// <summary>Creates a text sticky note on the selection.</summary>
 	public static readonly RoutedUICommand CreateTextStickyNoteCommand =
-		new RoutedUICommand("Add Text Note", "CreateTextStickyNote", typeof(AnnotationService));
+		new RoutedUICommand("Add Text _Note", "CreateTextStickyNote", typeof(AnnotationService));
 
 	/// <summary>Creates an ink sticky note on the selection.</summary>
 	public static readonly RoutedUICommand CreateInkStickyNoteCommand =
-		new RoutedUICommand("Add Ink Note", "CreateInkStickyNote", typeof(AnnotationService));
+		new RoutedUICommand("Add In_k Note", "CreateInkStickyNote", typeof(AnnotationService));
 
 	/// <summary>Clears the highlights in the selection.</summary>
 	public static readonly RoutedUICommand ClearHighlightsCommand =
-		new RoutedUICommand("Clear Highlights", "ClearHighlights", typeof(AnnotationService));
+		new RoutedUICommand("_Clear Highlight", "ClearHighlights", typeof(AnnotationService));
 
 	/// <summary>Deletes the sticky notes in the selection.</summary>
 	public static readonly RoutedUICommand DeleteStickyNotesCommand =
-		new RoutedUICommand("Delete Notes", "DeleteStickyNotes", typeof(AnnotationService));
+		new RoutedUICommand("D_elete Notes", "DeleteStickyNotes", typeof(AnnotationService));
 
 	/// <summary>Deletes every annotation in the selection.</summary>
 	public static readonly RoutedUICommand DeleteAnnotationsCommand =
-		new RoutedUICommand("Delete Annotations", "DeleteAnnotations", typeof(AnnotationService));
+		new RoutedUICommand("_Delete Notes and Highlights", "DeleteAnnotations", typeof(AnnotationService));
 
 	// Services are keyed by the viewer element; a service is registered from Enable to Disable, as in WPF.
 	static readonly ConditionalWeakTable<UIElement, AnnotationService> _services =

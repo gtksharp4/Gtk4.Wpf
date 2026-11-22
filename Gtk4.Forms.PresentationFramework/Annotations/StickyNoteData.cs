@@ -26,8 +26,9 @@ static class StickyNoteData
 	{
 		var doc = new XmlDocument();
 		var meta = new AnnotationResource(MetaName);
-		var element = doc.CreateElement(AnnotationXmlConstants.BasePrefix, "MetaData", AnnotationXmlConstants.BaseNamespace);
-		element.SetAttribute("IsExpanded", "true");
+		var element = doc.CreateElement(AnnotationXmlConstants.BasePrefix, "MetaData",
+			AnnotationXmlConstants.BaseNamespace);
+		element.SetAttribute("ZOrder", AnnotationXmlConstants.BaseNamespace, "0");
 		meta.Contents.Add(element);
 		annotation.Cargos.Add(meta);
 		bool text = annotation.AnnotationType.Equals(TextType);
@@ -40,7 +41,8 @@ static class StickyNoteData
 	}
 
 	internal static string Encode(string text) =>
-		Convert.ToBase64String(Encoding.UTF8.GetBytes(string.Format(Section, new XmlDocument().CreateTextNode(text).OuterXml)));
+		Convert.ToBase64String(Encoding.UTF8.GetBytes(
+			string.Format(Section, new XmlDocument().CreateTextNode(text).OuterXml)));
 
 	/// <summary>The plain text of a text note, or empty when the cargo is missing or unreadable.</summary>
 	internal static string ReadText(Annotation annotation)

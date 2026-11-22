@@ -1,9 +1,7 @@
 using System.Collections.Generic;
-using System.Globalization;
 using System.Windows.Annotations.Storage;
 using System.Windows.Controls;
 using System.Windows.Documents;
-using System.Windows.Media;
 
 namespace System.Windows.Annotations;
 
@@ -11,10 +9,8 @@ public sealed partial class AnnotationService
 {
 	internal const string HighlightCargo = "Highlight";
 
-	// The look of a highlight without a stored color: WPF's default, a translucent yellow.
-	static readonly Color DefaultHighlight = Color.FromArgb(0x54, 0xFF, 0xFF, 0x00);
-
-	readonly Dictionary<Guid, List<(int Start, int End)>> _painted = new Dictionary<Guid, List<(int, int)>>();
+	// Highlights are stored annotations only; nothing is painted or edited in the document.
+	readonly HashSet<Guid> _highlights = new HashSet<Guid>();
 	readonly Dictionary<Guid, StickyNoteControl> _notes = new Dictionary<Guid, StickyNoteControl>();
 
 	internal TextRange? Selection => _host.Selection;
@@ -53,13 +49,12 @@ public sealed partial class AnnotationService
 		if (doc == null || segments == null) return;
 		if (annotation.AnnotationType.Equals(AnnotationXmlConstants.Highlight))
 		{
-			var brush = new SolidColorBrush(HighlightColor(annotation));
-			foreach (var (start, end) in segments) AnnotationAnchors.ToRange(doc, start, end).ApplyBackground(brush);
-			_painted[annotation.Id] = segments;
+			_highlights.Add(annotation.Id);
 		}
 		else if (annotation.AnnotationType.Equals(StickyNoteData.TextType) && !_notes.ContainsKey(annotation.Id))
 		{
-			var note = new StickyNoteControl(annotation, new AnchorInfo(annotation, annotation.Anchors[0], Resolve(doc, segments)));
+			var anchor = new AnchorInfo(annotation, annotation.Anchors[0], Resolve(doc, segments));
+			var note = new StickyNoteControl(annotation, anchor);
 			_notes[annotation.Id] = note;
 			note.Present(_host.Element);
 		}
@@ -67,12 +62,7 @@ public sealed partial class AnnotationService
 
 	void Detach(Annotation annotation)
 	{
-		if (_painted.TryGetValue(annotation.Id, out var segments))
-		{
-			_painted.Remove(annotation.Id);
-			if (Document is { } doc)
-				foreach (var (start, end) in segments) AnnotationAnchors.ToRange(doc, start, end).ApplyBackground(null);
-		}
+		_highlights.Remove(annotation.Id);
 		if (_notes.TryGetValue(annotation.Id, out var note))
 		{
 			_notes.Remove(annotation.Id);
@@ -90,25 +80,5 @@ public sealed partial class AnnotationService
 		}
 		return new TextAnchor(new TextPointer(doc, start, LogicalDirection.Backward),
 			new TextPointer(doc, end, LogicalDirection.Forward));
-	}
-
-	static Color HighlightColor(Annotation annotation)
-	{
-		var content = StickyNoteData.Cargo(annotation, HighlightCargo)?.Contents;
-		if (content != null)
-			foreach (var element in content)
-				if (element.LocalName == "Colors" && TryParseColor(element.GetAttribute("Background"), out var color))
-					return color;
-		return DefaultHighlight;
-	}
-
-	internal static bool TryParseColor(string text, out Color color)
-	{
-		color = default;
-		if (text == null || text.Length != 9 || text[0] != '#'
-			|| !uint.TryParse(text.Substring(1), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out uint argb))
-			return false;
-		color = Color.FromArgb((byte)(argb >> 24), (byte)(argb >> 16), (byte)(argb >> 8), (byte)argb);
-		return true;
 	}
 }

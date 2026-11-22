@@ -71,10 +71,13 @@ public sealed partial class StickyNoteControl : Control
 		nameof(CaptionFontWeight), typeof(FontWeight), typeof(StickyNoteControl),
 		new FrameworkPropertyMetadata(SystemFonts.MessageFontWeight, FrameworkPropertyMetadataOptions.AffectsMeasure));
 
-	/// <summary>Identifies the PenWidth property (default 2, the ink pen's default width).</summary>
+	// DrawingAttributes.DefaultWidth, 0.53 mm at 96 dpi.
+	const double DefaultPenWidth = 2.0031496062992127;
+
+	/// <summary>Identifies the PenWidth property (default 2.0031496062992127, the ink pen width).</summary>
 	public static readonly DependencyProperty PenWidthProperty = DependencyProperty.Register(
 		nameof(PenWidth), typeof(double), typeof(StickyNoteControl),
-		new FrameworkPropertyMetadata(2.0, FrameworkPropertyMetadataOptions.AffectsMeasure
+		new FrameworkPropertyMetadata(DefaultPenWidth, FrameworkPropertyMetadataOptions.AffectsMeasure
 			| FrameworkPropertyMetadataOptions.AffectsRender));
 
 	static readonly DependencyPropertyKey _typeKey = DependencyProperty.RegisterReadOnly(

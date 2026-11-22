@@ -48,4 +48,14 @@ public class TableCollectionRangeTests
 		Assert.Single(table.Columns);
 		Assert.Single(table.RowGroups);
 	}
+
+	[Fact]
+	public void TrimToSize_shrinks_even_when_nearly_full()
+	{
+		var row = new TableRow();
+		row.Cells.Capacity = 10;
+		for (int i = 0; i < 9; i++) row.Cells.Add(new TableCell());
+		row.Cells.TrimToSize();
+		Assert.Equal(9, row.Cells.Capacity);
+	}
 }

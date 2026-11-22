@@ -11,9 +11,12 @@ public sealed partial class AnnotationService
 	// Create and clear need a non-empty selection; the delete commands only need one to exist (a caret).
 	void AddCommandBindings()
 	{
-		Bind(CreateHighlightCommand, true, e => AnnotationHelper.CreateHighlightForSelection(this, null, e.Parameter as Brush));
-		Bind(CreateTextStickyNoteCommand, true, e => AnnotationHelper.CreateTextStickyNoteForSelection(this, e.Parameter as string));
-		Bind(CreateInkStickyNoteCommand, true, e => AnnotationHelper.CreateInkStickyNoteForSelection(this, e.Parameter as string));
+		Bind(CreateHighlightCommand, true,
+			e => AnnotationHelper.CreateHighlightForSelection(this, null, e.Parameter as Brush));
+		Bind(CreateTextStickyNoteCommand, true,
+			e => AnnotationHelper.CreateTextStickyNoteForSelection(this, e.Parameter as string));
+		Bind(CreateInkStickyNoteCommand, true,
+			e => AnnotationHelper.CreateInkStickyNoteForSelection(this, e.Parameter as string));
 		Bind(ClearHighlightsCommand, true, e => AnnotationHelper.ClearHighlightsForSelection(this));
 		Bind(DeleteStickyNotesCommand, false, e =>
 		{

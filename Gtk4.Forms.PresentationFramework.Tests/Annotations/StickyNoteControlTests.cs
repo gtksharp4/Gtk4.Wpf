@@ -42,7 +42,9 @@ public class StickyNoteControlTests : WpfGtkTestBase
 		Assert.Equal(SystemFonts.MessageFontWeight, note.CaptionFontWeight);
 		Assert.Equal(SystemFonts.MessageFontStyle, note.CaptionFontStyle);
 		Assert.Equal(FontStretches.Normal, note.CaptionFontStretch);
-		Assert.Equal(2.0, note.PenWidth);
+		Assert.Equal(2.0031496062992127, note.PenWidth);
+		Assert.Equal(2.0031496062992127,
+			(double)StickyNoteControl.PenWidthProperty.GetMetadata(typeof(StickyNoteControl)).DefaultValue!);
 		Assert.NotNull(note.AnchorInfo);
 	});
 

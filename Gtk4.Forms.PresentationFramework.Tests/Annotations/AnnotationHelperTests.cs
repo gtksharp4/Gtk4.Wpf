@@ -30,8 +30,10 @@ public class AnnotationHelperTests : WpfGtkTestBase
 		Assert.Equal("1", part.NameValuePairs["Count"]);
 		Assert.Equal("2,8", part.NameValuePairs["Segment0"]);
 		Assert.Equal("#FFFF0000", h.Cargos[0].Contents[0].GetAttribute("Background"));
-		var run = Runs(viewer.Document!).First();
-		Assert.NotNull(run.Background);
+		var run = Assert.Single(Runs(viewer.Document!));
+		Assert.Equal("hello wonderful world", run.Text);
+		Assert.Null(run.Background);
+		Assert.Contains(h, service.Store.GetAnnotations());
 	});
 
 	[Fact]
@@ -62,7 +64,7 @@ public class AnnotationHelperTests : WpfGtkTestBase
 		Assert.Equal("2", part.NameValuePairs["Count"]);
 		Assert.Equal("2,6", part.NameValuePairs["Segment0"]);
 		Assert.Equal("8,14", part.NameValuePairs["Segment1"]);
-		Select(viewer, 0, 30);
+		Select(viewer, 0, 21);
 		AnnotationHelper.ClearHighlightsForSelection(service);
 		Assert.Empty(service.Store!.GetAnnotations());
 	});
@@ -119,18 +121,19 @@ public class AnnotationHelperTests : WpfGtkTestBase
 	});
 
 	[Fact]
-	public void Enable_attaches_existing_highlights_and_Disable_clears_them() => Run(() =>
+	public void Enable_and_Disable_leave_the_document_alone_and_keep_the_stored_highlight() => Run(() =>
 	{
 		var (viewer, service) = Setup();
 		var store = NewStore();
 		var h = new Annotation(AnnotationModelTests.Type);
 		AnnotationAnchors.Set(h, new List<(int, int)> { (2, 8) });
 		store.AddAnnotation(h);
-		var run = Runs(viewer.Document!).First();
+		var run = Assert.Single(Runs(viewer.Document!));
 		service.Enable(store);
-		Assert.Contains(Runs(viewer.Document!), r => r.Background != null);
+		Assert.Same(run, Assert.Single(Runs(viewer.Document!)));
+		Assert.Null(run.Background);
 		service.Disable();
-		Assert.All(Runs(viewer.Document!), r => Assert.Null(r.Background));
-		Assert.NotNull(run);
+		Assert.Same(run, Assert.Single(Runs(viewer.Document!)));
+		Assert.Contains(h, store.GetAnnotations());
 	});
 }
