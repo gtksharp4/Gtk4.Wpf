@@ -1,26 +1,26 @@
 {
 	"schema": "gtk4forms-wpf-samples-coverage/3",
-	"mainSha": "142b53f66090d7167376e06ab6d0a9fd580c0f63",
-	"packageVersion": "1.0.0.26325",
-	"date": "2026-11-21",
-	"source": "microsoft/WPF-Samples (local copy under WPF-Samples/), each project copied and built in isolation under .claude/samples-r48/batchN",
+	"mainSha": "30f46d4a117f7192cdf184bf5d9f82403b4abdaf",
+	"packageVersion": "1.0.0.26326",
+	"date": "2026-11-22",
+	"source": "microsoft/WPF-Samples (local copy under WPF-Samples/), each project copied and built in isolation under .claude/samples-remeasure-r52/batchN",
 	"feed": {
 		"pinned": true,
-		"nugetConfig": "globalPackagesFolder = .claude/samples-r48/.nuget-packages; packageSources cleared, then the worktree Packages feed (C:\\Temp\\Gtk.Forms\\.claude\\wt\\main\\Packages) and nuget.org; fallbackPackageFolders cleared; packageSourceMapping: Gtk4.* -> local feed only, * -> nuget.org",
+		"nugetConfig": "globalPackagesFolder = .claude/samples-remeasure-r52/.nuget-packages (started empty); fallbackPackageFolders cleared; packageSources cleared, then the pinned local feed (C:\\Temp\\Gtk.Forms\\.claude\\samples-remeasure-r52\\feed) and nuget.org; packageSourceMapping: Gtk4.* -> local feed only, * -> nuget.org",
 		"why": "nuget.org publishes Gtk4.Forms.* 1.0.0.26321 and later, the same date-based versions that local packs produce, so an unpinned restore may resolve a published package instead of the local build",
 		"sha256": {
-			"gtk4.forms.wpf.1.0.0.26325.nupkg": "be36a23e175049514c22ca9a949814256cb27502796984d2564bba41b4181e02",
-			"gtk4.forms.presentationframework.1.0.0.26325.nupkg": "780ac22a…33af",
-			"gtk4.forms.windowsbase.1.0.0.26325.nupkg": "a2933775…2b38",
-			"gtk4.forms.markupcompiler.1.0.0.26325.nupkg": "afc02796…809d"
+			"gtk4.forms.wpf.1.0.0.26326.nupkg": "1a7a9dacf4e01b69896fc59c6212e9a6a1f974e12a6e9b697631b3597829e0dd",
+			"gtk4.forms.presentationframework.1.0.0.26326.nupkg": "41331669…b38e12",
+			"gtk4.forms.windowsbase.1.0.0.26326.nupkg": "4a9b2bf3…6c25",
+			"gtk4.forms.markupcompiler.1.0.0.26326.nupkg": "66aef909…c236"
 		},
-		"verified": "probe (Getting Started/HelloWorld, full recipe, empty cache): build 1 exit 10 (converter), build 2 succeeded with 0 warnings; all four cached Gtk4.Forms nupkg SHA-256 equal the local feed's; every .nupkg.metadata source is the worktree Packages feed; project.assets.json packageFolders list only the isolated cache; gtksharp4 4.22.4.26325 from nuget.org. Every batch re-checked the cached Gtk4.Forms.Wpf hash (be36a23e…1e02)"
+		"verified": "probe (Getting Started/HelloWorld, full recipe, empty cache): build 1 exit 1 (converter MSB3073 exit 10, then \"re-run the build\"), build 2 exit 0 with 0 warnings and 0 errors; all four cached Gtk4.Forms nupkg SHA-256 equal the feed's; every Gtk4.Forms.* .nupkg.metadata source is the samples-remeasure-r52 feed; project.assets.json packageFolders list only the isolated cache; gtksharp4 4.22.4.26325 from nuget.org. Every batch re-checked the cached Gtk4.Forms.Wpf hash (1a7a9dac…29e0dd)"
 	},
 	"previousRun": {
-		"commit": "2c67b72c",
-		"mainSha": "1b50a52853e61ac5abaebc5f106a19c192ff85bd",
-		"packageVersion": "1.0.0.26324",
-		"date": "2026-11-20",
+		"commit": "ccd8dbb1",
+		"mainSha": "142b53f66090d7167376e06ab6d0a9fd580c0f63",
+		"packageVersion": "1.0.0.26325",
+		"date": "2026-11-21",
 		"pinned": true
 	},
 	"history": [
@@ -77,7 +77,7 @@
 		},
 		{
 			"date": "2026-11-21",
-			"report": "this",
+			"report": "ccd8dbb1",
 			"mainSha": "142b53f66090d7167376e06ab6d0a9fd580c0f63",
 			"packageVersion": "1.0.0.26325",
 			"portableApps": 204,
@@ -85,20 +85,31 @@
 			"portableRun": 119,
 			"pinned": true,
 			"note": "Round 48 (after Rounds 47 and 48 merged); full re-measure of all 252 csproj"
+		},
+		{
+			"date": "2026-11-22",
+			"report": "this",
+			"mainSha": "30f46d4a117f7192cdf184bf5d9f82403b4abdaf",
+			"packageVersion": "1.0.0.26326",
+			"portableApps": 204,
+			"portableBuild": 159,
+			"portableRun": 152,
+			"pinned": true,
+			"note": "Rounds 49-52 (first two-lane batch) plus the Round 52 paginated-viewer review fixes; full re-measure of all 252 csproj"
 		}
 	],
 	"fields": {
 		"build": "strict recipe: add Gtk4.Forms.Wpf PackageReference, build (converts, exit 10), build again; pass = \"Build succeeded\" and \"0 Error(s)\" in the final log; not-built = legacy non-SDK csproj (built by this run as .NET Framework, see legacyBuild) or native project",
 		"run": "runs = alive with a visible top-level window (about 10 s smoke run, Windows); crash = unhandled exception or exit before a window; hang = alive, no window; skipped = library; not-run = did not build",
-		"windowsOnly": "verified classification carried over from the earlier runs (WinForms, Win32/HWND interop, UIA client, COM/ActiveX, WinRT, System.Speech, OLE DB, per-monitor DPI by design, native C++); unchanged in this run",
-		"errorCodes": "distinct error codes of the final build log (build2.log, <name>.build2.log or build.final.log), re-parsed uniformly for all six batches (a markup-compiler XAML parse error has no code and is listed under xamlErrors only)",
-		"missingTypes": "CS0246/CS0234 type or namespace names",
-		"missingMembers": "CS1061/CS0117 Type.Member and CS0103 names, re-parsed from the final log",
+		"windowsOnly": "verified classification carried over from the earlier runs (WinForms, Win32/HWND interop, UIA client, COM/ActiveX, WinRT, System.Speech, OLE DB, per-monitor DPI by design, native C++); unchanged in this run (the batches' own regex flags were not used)",
+		"errorCodes": "distinct error codes of the final build log (build2.log, <key>.build2.log or <key>.b2.log), re-parsed uniformly for all six batches (a markup-compiler XAML parse error has no code and is listed under xamlErrors only)",
+		"missingTypes": "CS0246/CS0234/CS0400 type or namespace names (CS0234 as Namespace.Name)",
+		"missingMembers": "CS1061/CS0117 Type.Member, CS0103 names, CS0115 overrides and CS0534 abstract members, re-parsed from the final log",
 		"xamlErrors": "errors located in generated *.g.cs files or in XAML (deduplicated by code and message, at most 12); includes real layer gaps surfaced through generated code, see the report for the classification",
 		"blockerThemes": "coarse regex classification of the final-build errors, used for the Next rounds ranking; a ranking aid, not an exact partition",
-		"previous": "the same project in report 2c67b72c (main 1b50a528, pinned)",
-		"change": "fail->pass / pass->fail / <run>-><run> / unchanged, relative to 2c67b72c",
-		"unblockedBy": "the Round 47/48 change that removed the 2c67b72c blocker (attributed by elimination from the previous errors, not bisected)",
+		"previous": "the same project in report ccd8dbb1 (main 142b53f6, Round 48, pinned)",
+		"change": "fail->pass / pass->fail / <run>-><run> / unchanged, relative to ccd8dbb1",
+		"unblockedBy": "the Round 49-52 change that removed the ccd8dbb1 blocker (attributed by elimination from the previous errors, not bisected)",
 		"regression": "investigated cause of a pass->fail or runs->crash/hang (none in this run)",
 		"measured": "false only for the 4 native C++ projects, which are not in this run's csproj inventory and are carried over",
 		"note": "measurement caveats for this row (windows-only disagreement, manual rebuild)",
@@ -114,28 +125,28 @@
 		"windowsOnlyApps": 39,
 		"windowsOnlyProjects": 46,
 		"portableApps": 204,
-		"portableBuild": 129,
-		"portableRun": 119,
-		"portableCrash": 8,
-		"portableHang": 2,
-		"portableFail": 75,
+		"portableBuild": 159,
+		"portableRun": 152,
+		"portableCrash": 6,
+		"portableHang": 1,
+		"portableFail": 45,
 		"portableNotBuilt": 0,
-		"allBuild": 130,
-		"movedFailToPass": 40,
-		"movedCrashHangToRuns": 3,
+		"allBuild": 162,
+		"movedFailToPass": 30,
+		"movedCrashHangToRuns": 7,
 		"regressedPassToFail": 0,
 		"regressedRunsToCrashHang": 0,
-		"portableCS2002Builds": 21,
-		"allCS2002Builds": 21,
+		"portableCS2002Builds": 23,
+		"allCS2002Builds": 23,
 		"legacyNotBuilt": 21,
 		"previous": {
-			"report": "2c67b72c",
-			"mainSha": "1b50a52853e61ac5abaebc5f106a19c192ff85bd",
+			"report": "ccd8dbb1",
+			"mainSha": "142b53f66090d7167376e06ab6d0a9fd580c0f63",
 			"portableApps": 204,
-			"portableBuild": 89,
-			"portableRun": 83,
-			"portableCrash": 5,
-			"portableHang": 1,
+			"portableBuild": 129,
+			"portableRun": 119,
+			"portableCrash": 8,
+			"portableHang": 2,
 			"pinned": true
 		},
 		"first": {
@@ -153,7 +164,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": false,
-			"batch": 6,
+			"batch": 5,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
@@ -161,18 +172,14 @@
 				"CS0246"
 			],
 			"missingTypes": [
-				"AutomationElement",
-				"AutomationElementMode",
 				"Form",
-				"System.Windows.Forms",
-				"TreeScope"
+				"System.Windows.Forms"
 			],
 			"missingMembers": [],
 			"xamlErrors": [],
 			"firstError": "FetchTimerForm.cs: CS0234 The type or namespace name 'Forms' does not exist in the namespace 'System.Windows' (are you missing an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
-				"automation",
 				"windows"
 			],
 			"measured": true,
@@ -192,28 +199,16 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 6,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0103",
-				"CS0246"
-			],
-			"missingTypes": [
-				"XamlParseException"
-			],
-			"missingMembers": [
-				"FlowDocRdr",
-				"XamlReader",
-				"XamlWriter"
-			],
+			"batch": 5,
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
+			"missingTypes": [],
+			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "MainWindow.cs: CS0103 The name 'XamlReader' does not exist in the current context",
+			"firstError": "",
 			"warnings": [],
-			"blockerThemes": [
-				"documents-text",
-				"xaml-runtime"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -223,7 +218,8 @@
 					"CS0246"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 49 runtime-xaml-navigation (8c44b817): XamlReader/XamlWriter/XamlParseException; Round 50 flow-document-tables (adbdfb87): FlowDocumentReader (FlowDocRdr field)"
 		},
 		{
 			"project": "Accessibility/FindText/FindTextClient/FindTextClient.csproj",
@@ -231,7 +227,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": true,
-			"batch": 6,
+			"batch": 5,
 			"build": "not-built",
 			"run": "not-run",
 			"errorCodes": [],
@@ -241,6 +237,7 @@
 			"firstError": "",
 			"warnings": [],
 			"blockerThemes": [],
+			"measured": true,
 			"legacyBuild": {
 				"result": "fail",
 				"errorCodes": [
@@ -254,7 +251,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"note": "legacy non-SDK csproj: the converter leaves it as .NET Framework 4.x, so it builds (or not) against the real WPF reference assemblies with the generated *.g.cs added; not a measurement of the layer, recorded as not-built as before"
+			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild"
 		},
 		{
 			"project": "Accessibility/FocusTracker/FocusTracker.csproj",
@@ -262,24 +259,16 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": false,
-			"batch": 6,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0246"
-			],
-			"missingTypes": [
-				"AutomationElement",
-				"AutomationFocusChangedEventArgs"
-			],
+			"batch": 5,
+			"build": "pass",
+			"run": "crash",
+			"errorCodes": [],
+			"missingTypes": [],
 			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "Tracker.cs: CS0246 The type or namespace name 'AutomationElement' could not be found (are you missing a using directive or an assembly reference?)",
+			"firstError": "",
 			"warnings": [],
-			"blockerThemes": [
-				"automation",
-				"input"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -288,7 +277,9 @@
 					"CS0246"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Windows-only (UI Automation client, ua/automation f977d105); console app with no window",
+			"note": "Windows-only console app (UI Automation client): it prints its prompt and has no window, recorded crash as the batch reported; not in the portable denominator"
 		},
 		{
 			"project": "Accessibility/Highlighter/Highlighter.csproj",
@@ -296,7 +287,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": true,
-			"batch": 6,
+			"batch": 5,
 			"build": "not-built",
 			"run": "not-run",
 			"errorCodes": [],
@@ -306,11 +297,12 @@
 			"firstError": "",
 			"warnings": [],
 			"blockerThemes": [],
+			"measured": true,
 			"legacyBuild": {
 				"result": "pass",
 				"errorCodes": [],
 				"firstError": "",
-				"run": "runs (as real .NET Framework WPF; no Gtk4.Forms assembly in the output)"
+				"run": "runs (native WinForms window; real .NET Framework, no Gtk4.Forms assembly)"
 			},
 			"previous": {
 				"build": "not-built",
@@ -318,7 +310,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"note": "legacy non-SDK csproj: the converter leaves it as .NET Framework 4.x, so it builds (or not) against the real WPF reference assemblies with the generated *.g.cs added; not a measurement of the layer, recorded as not-built as before"
+			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild"
 		},
 		{
 			"project": "Accessibility/InsertText/InsertTextClient/InsertTextClient.csproj",
@@ -326,7 +318,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": true,
-			"batch": 6,
+			"batch": 5,
 			"build": "not-built",
 			"run": "not-run",
 			"errorCodes": [],
@@ -336,6 +328,7 @@
 			"firstError": "",
 			"warnings": [],
 			"blockerThemes": [],
+			"measured": true,
 			"legacyBuild": {
 				"result": "fail",
 				"errorCodes": [
@@ -349,7 +342,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"note": "legacy non-SDK csproj: the converter leaves it as .NET Framework 4.x, so it builds (or not) against the real WPF reference assemblies with the generated *.g.cs added; not a measurement of the layer, recorded as not-built as before"
+			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild"
 		},
 		{
 			"project": "Accessibility/InsertText/InsertTextTarget/InsertTextTarget.csproj",
@@ -357,7 +350,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": false,
-			"batch": 6,
+			"batch": 5,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
@@ -392,7 +385,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": true,
-			"batch": 6,
+			"batch": 5,
 			"build": "not-built",
 			"run": "not-run",
 			"errorCodes": [],
@@ -402,6 +395,7 @@
 			"firstError": "",
 			"warnings": [],
 			"blockerThemes": [],
+			"measured": true,
 			"legacyBuild": {
 				"result": "fail",
 				"errorCodes": [
@@ -415,7 +409,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"note": "legacy non-SDK csproj: the converter leaves it as .NET Framework 4.x, so it builds (or not) against the real WPF reference assemblies with the generated *.g.cs added; not a measurement of the layer, recorded as not-built as before"
+			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild"
 		},
 		{
 			"project": "Accessibility/InvokePattern/Target/Target.csproj",
@@ -423,7 +417,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 6,
+			"batch": 5,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -447,7 +441,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": true,
-			"batch": 6,
+			"batch": 5,
 			"build": "not-built",
 			"run": "not-run",
 			"errorCodes": [],
@@ -457,6 +451,7 @@
 			"firstError": "",
 			"warnings": [],
 			"blockerThemes": [],
+			"measured": true,
 			"legacyBuild": {
 				"result": "fail",
 				"errorCodes": [
@@ -470,7 +465,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"note": "legacy non-SDK csproj: the converter leaves it as .NET Framework 4.x, so it builds (or not) against the real WPF reference assemblies with the generated *.g.cs added; not a measurement of the layer, recorded as not-built as before"
+			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild"
 		},
 		{
 			"project": "Accessibility/SelectionPattern/SelectionTarget/SelectionTarget.csproj",
@@ -478,7 +473,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": false,
-			"batch": 6,
+			"batch": 5,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
@@ -513,27 +508,23 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": false,
-			"batch": 6,
+			"batch": 5,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
 				"CS0246"
 			],
 			"missingTypes": [
-				"AutomationElement",
-				"AutomationPattern",
-				"AutomationPropertyChangedEventArgs",
-				"TransformPattern",
-				"TreeScope",
-				"WindowPattern"
+				"TransformPattern"
 			],
 			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "WindowMove.cs: CS0246 The type or namespace name 'AutomationPropertyChangedEventArgs' could not be found (are you missing a using directive or an assembly reference?)",
-			"warnings": [],
+			"firstError": "WindowMove.cs: CS0246 The type or namespace name 'TransformPattern' could not be found (are you missing a using directive or an assembly reference?)",
+			"warnings": [
+				"SYSLIB0003"
+			],
 			"blockerThemes": [
-				"automation",
-				"graphics"
+				"automation"
 			],
 			"measured": true,
 			"previous": {
@@ -555,19 +546,45 @@
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
-				"CS0246"
+				"CS0029",
+				"CS0103",
+				"CS0246",
+				"CS1061",
+				"CS1503"
 			],
 			"missingTypes": [
-				"DoubleAnimationBase"
+				"Viewport3D"
 			],
-			"missingMembers": [],
-			"xamlErrors": [],
-			"firstError": "BounceDoubleAnimation.cs: CS0246 The type or namespace name 'DoubleAnimationBase' could not be found (are you missing a using directive or an assembly reference?)",
+			"missingMembers": [
+				"Frame.ContentRendered",
+				"Frame.CurrentSource",
+				"Frame.NavigationUIVisibility",
+				"MyAnimatedObject",
+				"mySplineKeyFrame",
+				"myVector3DSplineKeyFrame"
+			],
+			"xamlErrors": [
+				"SampleViewer.g.cs(85,12): CS1061: 'Frame' does not contain a definition for 'NavigationUIVisibility' and no accessible extension method 'NavigationUIVisibility' accepting a first argument of type 'Frame' could be found (are you missing a using directive or an assembly reference?)",
+				"SampleViewer.g.cs(97,12): CS1061: 'Frame' does not contain a definition for 'NavigationUIVisibility' and no accessible extension method 'NavigationUIVisibility' accepting a first argument of type 'Frame' could be found (are you missing a using directive or an assembly reference?)",
+				"SampleViewer.g.cs(109,12): CS1061: 'Frame' does not contain a definition for 'NavigationUIVisibility' and no accessible extension method 'NavigationUIVisibility' accepting a first argument of type 'Frame' could be found (are you missing a using directive or an assembly reference?)",
+				"SampleViewer.g.cs(123,12): CS1061: 'Frame' does not contain a definition for 'NavigationUIVisibility' and no accessible extension method 'NavigationUIVisibility' accepting a first argument of type 'Frame' could be found (are you missing a using directive or an assembly reference?)",
+				"SampleViewer.g.cs(137,12): CS1061: 'Frame' does not contain a definition for 'NavigationUIVisibility' and no accessible extension method 'NavigationUIVisibility' accepting a first argument of type 'Frame' could be found (are you missing a using directive or an assembly reference?)",
+				"SampleViewer.g.cs(150,12): CS1061: 'Frame' does not contain a definition for 'NavigationUIVisibility' and no accessible extension method 'NavigationUIVisibility' accepting a first argument of type 'Frame' could be found (are you missing a using directive or an assembly reference?)",
+				"SampleViewer.g.cs(163,12): CS1061: 'Frame' does not contain a definition for 'NavigationUIVisibility' and no accessible extension method 'NavigationUIVisibility' accepting a first argument of type 'Frame' could be found (are you missing a using directive or an assembly reference?)",
+				"SampleViewer.g.cs(176,12): CS1061: 'Frame' does not contain a definition for 'NavigationUIVisibility' and no accessible extension method 'NavigationUIVisibility' accepting a first argument of type 'Frame' could be found (are you missing a using directive or an assembly reference?)",
+				"SampleViewer.g.cs(189,12): CS1061: 'Frame' does not contain a definition for 'NavigationUIVisibility' and no accessible extension method 'NavigationUIVisibility' accepting a first argument of type 'Frame' could be found (are you missing a using directive or an assembly reference?)",
+				"SampleViewer.g.cs(237,20): CS0029: Cannot implicitly convert type 'string' to 'double?'",
+				"SampleViewer.g.cs(249,12): CS1061: 'Frame' does not contain a definition for 'ContentRendered' and no accessible extension method 'ContentRendered' accepting a first argument of type 'Frame' could be found (are you missing a using directive or an assembly reference?)",
+				"SampleViewer.g.cs(250,12): CS1061: 'Frame' does not contain a definition for 'NavigationUIVisibility' and no accessible extension method 'NavigationUIVisibility' accepting a first argument of type 'Frame' could be found (are you missing a using directive or an assembly reference?)"
+			],
+			"firstError": "InteractiveAnimationsExample.cs: CS0103 The name 'MyAnimatedObject' does not exist in the current context",
 			"warnings": [
+				"CS0649",
 				"CS2002"
 			],
 			"blockerThemes": [
-				"animation"
+				"controls",
+				"media3d"
 			],
 			"measured": true,
 			"previous": {
@@ -586,23 +603,17 @@
 			"windowsOnly": false,
 			"legacyCsproj": false,
 			"batch": 2,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0246",
-				"CS0534"
-			],
-			"missingTypes": [
-				"Clock"
-			],
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
+			"missingTypes": [],
 			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "ElapsedTimeControl.cs: CS0246 The type or namespace name 'Clock' could not be found (are you missing a using directive or an assembly reference?)",
-			"warnings": [],
-			"blockerThemes": [
-				"animation",
-				"extensibility"
+			"firstError": "",
+			"warnings": [
+				"CS0649"
 			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -612,7 +623,8 @@
 					"CS0534"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 51 animation-clocks (4a1a9325): Clock; Round 49 startup-build-sweep (9a38e05e): CreateWidget no longer abstract (CS0534)"
 		},
 		{
 			"project": "Animation/CustomAnimation/CustomAnimation.csproj",
@@ -621,23 +633,17 @@
 			"windowsOnly": false,
 			"legacyCsproj": false,
 			"batch": 2,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0246"
-			],
-			"missingTypes": [
-				"DoubleAnimationBase"
-			],
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
+			"missingTypes": [],
 			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "BackDoubleAnimation.cs: CS0246 The type or namespace name 'DoubleAnimationBase' could not be found (are you missing a using directive or an assembly reference?)",
+			"firstError": "",
 			"warnings": [
 				"CS2002"
 			],
-			"blockerThemes": [
-				"animation"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -646,7 +652,8 @@
 					"CS0246"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 51 animation-clocks (4a1a9325): DoubleAnimationBase and the typed animation bases"
 		},
 		{
 			"project": "Animation/KeyFrameAnimation/KeyFrameAnimation.csproj",
@@ -655,24 +662,17 @@
 			"windowsOnly": false,
 			"legacyCsproj": false,
 			"batch": 2,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS1061"
-			],
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
 			"missingTypes": [],
-			"missingMembers": [
-				"Canvas.LayoutUpdated"
+			"missingMembers": [],
+			"xamlErrors": [],
+			"firstError": "",
+			"warnings": [
+				"CS0649"
 			],
-			"xamlErrors": [
-				"KeyFramesIntroduction.g.cs(41,11): CS1061: 'Canvas' does not contain a definition for 'LayoutUpdated' and no accessible extension method 'LayoutUpdated' accepting a first argument of type 'Canvas' could be found (are you missing a using directive or an assembly reference?)"
-			],
-			"firstError": "KeyFramesIntroduction.g.cs: CS1061 'Canvas' does not contain a definition for 'LayoutUpdated' and no accessible extension method 'LayoutUpdated' accepting a first argument of type 'Canvas' could be found (are you missing a using directive or an assembly reference?)",
-			"warnings": [],
-			"blockerThemes": [
-				"animation",
-				"graphics"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -681,7 +681,8 @@
 					"CS1061"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 49 startup-build-sweep (9a38e05e): Canvas.LayoutUpdated (weak LayoutUpdated)"
 		},
 		{
 			"project": "Animation/KeySplineAnimations/KeySplineAnimations.csproj",
@@ -694,17 +695,12 @@
 			"run": "not-run",
 			"errorCodes": [
 				"CS0103",
-				"CS0246",
-				"CS1061",
-				"CS1501"
+				"CS0246"
 			],
 			"missingTypes": [
 				"Viewport3D"
 			],
 			"missingMembers": [
-				"Storyboard.GetCurrentTime",
-				"Storyboard.Seek",
-				"TimeSeekOrigin",
 				"mySplineKeyFrame",
 				"myVector3DSplineKeyFrame"
 			],
@@ -712,11 +708,11 @@
 				"App.g.cs(126,52): CS0246: The type or namespace name 'Viewport3D' could not be found (are you missing a using directive or an assembly reference?)"
 			],
 			"firstError": "App.g.cs: CS0246 The type or namespace name 'Viewport3D' could not be found (are you missing a using directive or an assembly reference?)",
-			"warnings": [],
+			"warnings": [
+				"CS0649"
+			],
 			"blockerThemes": [
-				"3d",
-				"animation",
-				"graphics"
+				"media3d"
 			],
 			"measured": true,
 			"previous": {
@@ -724,7 +720,6 @@
 				"run": "not-run",
 				"errorCodes": [
 					"CS0103",
-					"CS0123",
 					"CS0246",
 					"CS1061",
 					"CS1501"
@@ -739,33 +734,17 @@
 			"windowsOnly": false,
 			"legacyCsproj": false,
 			"batch": 2,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0103",
-				"CS0117",
-				"CS1061",
-				"CS1729"
-			],
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
 			"missingTypes": [],
-			"missingMembers": [
-				"Button.BeginAnimation",
-				"HandoffBehavior",
-				"SolidColorBrush.BeginAnimation",
-				"SolidColorBrush.ColorProperty",
-				"TranslateTransform.BeginAnimation",
-				"TranslateTransform.XProperty",
-				"TranslateTransform.YProperty"
-			],
+			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "LocalAnimationExample.cs: CS1061 'Button' does not contain a definition for 'BeginAnimation' and no accessible extension method 'BeginAnimation' accepting a first argument of type 'Button' could be found (are you missing a using directive or an assembly reference?)",
+			"firstError": "",
 			"warnings": [
 				"CS2002"
 			],
-			"blockerThemes": [
-				"animation",
-				"graphics"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -777,7 +756,8 @@
 					"CS1729"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 51 animation-clocks (4a1a9325): BeginAnimation, HandoffBehavior, DP-backed SolidColorBrush.Color and TranslateTransform.X/Y"
 		},
 		{
 			"project": "Animation/OpacityAnimation/OpacityAnimation.csproj",
@@ -793,7 +773,9 @@
 			"missingMembers": [],
 			"xamlErrors": [],
 			"firstError": "",
-			"warnings": [],
+			"warnings": [
+				"CS0649"
+			],
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
@@ -817,18 +799,17 @@
 			"missingMembers": [],
 			"xamlErrors": [],
 			"firstError": "",
-			"warnings": [],
+			"warnings": [
+				"CS0649"
+			],
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0117"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 graphics-window-tail (5ebf5285): Page.Background"
+			"change": "unchanged"
 		},
 		{
 			"project": "Animation/Per-FrameAnimation/Per-FrameAnimation.csproj",
@@ -841,23 +822,22 @@
 			"run": "not-run",
 			"errorCodes": [
 				"CS0115",
-				"CS0246",
-				"CS0534"
+				"CS0246"
 			],
 			"missingTypes": [
-				"Clock",
 				"GeometryHitTestParameters",
 				"GeometryHitTestResult",
 				"PointHitTestParameters"
 			],
-			"missingMembers": [],
+			"missingMembers": [
+				"override OverlayRenderDecorator.LogicalChildren"
+			],
 			"xamlErrors": [],
-			"firstError": "ReusableFollowTracker.cs: CS0246 The type or namespace name 'Clock' could not be found (are you missing a using directive or an assembly reference?)",
+			"firstError": "OverlayRenderDecoratorOverlayVisual.cs: CS0246 The type or namespace name 'GeometryHitTestParameters' could not be found (are you missing a using directive or an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
-				"animation",
 				"extensibility",
-				"graphics"
+				"graphics-input"
 			],
 			"measured": true,
 			"previous": {
@@ -878,27 +858,15 @@
 			"windowsOnly": false,
 			"legacyCsproj": false,
 			"batch": 2,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0117",
-				"CS0120",
-				"CS0122",
-				"CS0246"
-			],
-			"missingTypes": [
-				"PropertyPath"
-			],
-			"missingMembers": [
-				"SolidColorBrush.ColorProperty"
-			],
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
+			"missingTypes": [],
+			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "StoryboardExample.cs: CS0122 'NameScope' is inaccessible due to its protection level",
+			"firstError": "",
 			"warnings": [],
-			"blockerThemes": [
-				"animation",
-				"graphics"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -910,7 +878,8 @@
 					"CS0246"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 51 animation-clocks (4a1a9325): PropertyPath, SolidColorBrush.ColorProperty"
 		},
 		{
 			"project": "Animation/TargetValues/TargetValues.csproj",
@@ -1002,14 +971,12 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS5001"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 47 generator-v4 (d78faffa): Main generated for a custom Application subclass root (CS5001)"
+			"change": "unchanged",
+			"note": "the 10 s smoke run under parallel load saw no window; re-run alone twice (20 s and 10 s) it showed a window within 1 s, so it is classified runs"
 		},
 		{
 			"project": "Application Management/CustomApplication/CustomApplicationClient/CustomApplicationClient.csproj",
@@ -1049,20 +1016,17 @@
 			"missingMembers": [],
 			"xamlErrors": [],
 			"firstError": "",
-			"warnings": [],
+			"warnings": [
+				"CA1416"
+			],
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0103",
-					"CS0117",
-					"CS0246"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 threading-dialogs-items (f585c6c8): DispatcherOperationCallback, static Dispatcher.Run"
+			"change": "unchanged"
 		},
 		{
 			"project": "Application Management/ExceptionHandlingSecondaryWorkerThread/ExceptionHandlingSecondaryWorkerThread.csproj",
@@ -1078,18 +1042,17 @@
 			"missingMembers": [],
 			"xamlErrors": [],
 			"firstError": "",
-			"warnings": [],
+			"warnings": [
+				"CA1416"
+			],
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0246"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 threading-dialogs-items (f585c6c8): DispatcherOperationCallback, static Dispatcher.Run"
+			"change": "unchanged"
 		},
 		{
 			"project": "Application Management/ProcessingCommandLineArguments/ProcessingCommandLineArguments.csproj",
@@ -1131,6 +1094,7 @@
 			"firstError": "",
 			"warnings": [],
 			"blockerThemes": [],
+			"measured": true,
 			"legacyBuild": {
 				"result": "fail",
 				"errorCodes": [
@@ -1145,7 +1109,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"note": "legacy non-SDK csproj: the converter leaves it as .NET Framework 4.x, so it builds (or not) against the real WPF reference assemblies with the generated *.g.cs added; not a measurement of the layer, recorded as not-built as before"
+			"note": "legacy csproj with no TargetFramework; the converter leaves it, build 1 and build 2 fail with the same 3 errors"
 		},
 		{
 			"project": "Application Management/SkinnedApplication/SkinnedApplication.csproj",
@@ -1154,22 +1118,15 @@
 			"windowsOnly": false,
 			"legacyCsproj": false,
 			"batch": 6,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0103",
-				"CS0200"
-			],
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
 			"missingTypes": [],
-			"missingMembers": [
-				"LoadComponent"
-			],
+			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "MainWindow.cs: CS0200 Property or indexer 'Application.Resources' cannot be assigned to -- it is read only",
+			"firstError": "",
 			"warnings": [],
-			"blockerThemes": [
-				"xaml-runtime"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -1179,7 +1136,8 @@
 					"CS0200"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 49 runtime-xaml-navigation (8c44b817): Application.LoadComponent"
 		},
 		{
 			"project": "Application Management/UnhandledExceptionHandling/UnhandledExceptionHandling.csproj",
@@ -1188,6 +1146,32 @@
 			"windowsOnly": false,
 			"legacyCsproj": false,
 			"batch": 6,
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
+			"missingTypes": [],
+			"missingMembers": [],
+			"xamlErrors": [],
+			"firstError": "",
+			"warnings": [
+				"CA1416"
+			],
+			"blockerThemes": [],
+			"measured": true,
+			"previous": {
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
+			},
+			"change": "unchanged"
+		},
+		{
+			"project": "Clipboard/ClipboardSpy/ClipboardSpy.csproj",
+			"category": "Clipboard",
+			"kind": "app",
+			"windowsOnly": false,
+			"legacyCsproj": false,
+			"batch": 2,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -1206,12 +1190,12 @@
 			"change": "unchanged"
 		},
 		{
-			"project": "Clipboard/ClipboardSpy/ClipboardSpy.csproj",
+			"project": "Clipboard/ClipboardViewer/ClipboardViewer.csproj",
 			"category": "Clipboard",
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 1,
+			"batch": 2,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -1219,57 +1203,21 @@
 			"missingMembers": [],
 			"xamlErrors": [],
 			"firstError": "",
-			"warnings": [],
+			"warnings": [
+				"CA2022"
+			],
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
 				"run": "not-run",
 				"errorCodes": [
-					"CS0117"
-				]
-			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 threading-dialogs-items (f585c6c8): Clipboard.ContainsAudio/ContainsImage/ContainsFileDropList"
-		},
-		{
-			"project": "Clipboard/ClipboardViewer/ClipboardViewer.csproj",
-			"category": "Clipboard",
-			"kind": "app",
-			"windowsOnly": false,
-			"legacyCsproj": false,
-			"batch": 1,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS1061",
-				"CS1729"
-			],
-			"missingTypes": [],
-			"missingMembers": [
-				"FlowDocument.ContentEnd",
-				"FlowDocument.ContentStart",
-				"TextRange.CanLoad",
-				"TextRange.Load",
-				"TextRange.Save"
-			],
-			"xamlErrors": [],
-			"firstError": "MainWindow.cs: CS1061 'FlowDocument' does not contain a definition for 'ContentStart' and no accessible extension method 'ContentStart' accepting a first argument of type 'FlowDocument' could be found (are you missing a using directive or an assembly reference?)",
-			"warnings": [],
-			"blockerThemes": [
-				"documents-text"
-			],
-			"measured": true,
-			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0246",
 					"CS1061",
 					"CS1729"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 50 text-ranges-typefaces (d969770b): TextRange.Load/Save/CanLoad, FlowDocument.ContentStart/End"
 		},
 		{
 			"project": "Compatibility/AppCompat-Quirks.csproj",
@@ -1277,7 +1225,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 1,
+			"batch": 4,
 			"build": "pass",
 			"run": "crash",
 			"errorCodes": [],
@@ -1294,7 +1242,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"runCause": "NullReferenceException in the sample's PopulateAppContextInformation: it reflects over WPF-internal AppContext switch types, so GetAppContextSwitchType returns null (unchanged)"
+			"runCause": "Unchanged: NullReferenceException in the sample's PopulateAppContextInformation (MainWindow.xaml.cs:197); it reflects over WPF-internal AppContext switch types, so GetAppContextSwitchType returns null"
 		},
 		{
 			"project": "Data Binding/ADODataSet/ADODataSet.csproj",
@@ -1312,6 +1260,7 @@
 			"firstError": "",
 			"warnings": [],
 			"blockerThemes": [],
+			"measured": true,
 			"legacyBuild": {
 				"result": "fail",
 				"errorCodes": [
@@ -1326,7 +1275,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"note": "legacy non-SDK csproj: the converter leaves it as .NET Framework 4.x, so it builds (or not) against the real WPF reference assemblies with the generated *.g.cs added; not a measurement of the layer, recorded as not-built as before"
+			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild"
 		},
 		{
 			"project": "Data Binding/BindConversion/BindConversion.csproj",
@@ -1414,22 +1363,17 @@
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
-				"CS0117",
 				"CS1061"
 			],
 			"missingTypes": [],
 			"missingMembers": [
-				"Binding.UpdateSourceExceptionFilter",
-				"Label.TargetProperty"
+				"Binding.UpdateSourceExceptionFilter"
 			],
-			"xamlErrors": [
-				"MainWindow.g.cs(67,52): CS0117: 'Label' does not contain a definition for 'TargetProperty'"
-			],
+			"xamlErrors": [],
 			"firstError": "MainWindow.cs: CS1061 'Binding' does not contain a definition for 'UpdateSourceExceptionFilter' and no accessible extension method 'UpdateSourceExceptionFilter' accepting a first argument of type 'Binding' could be found (are you missing a using directive or an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
-				"controls",
-				"items-data"
+				"tree-items-data"
 			],
 			"measured": true,
 			"previous": {
@@ -1714,14 +1658,11 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0246"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 threading-dialogs-items (f585c6c8): IEditableCollectionView"
+			"change": "unchanged"
 		},
 		{
 			"project": "Data Binding/Grouping/Grouping.csproj",
@@ -2019,14 +1960,11 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS1061"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 threading-dialogs-items (f585c6c8) + Round 48 review: BindingGroup.GetValue/TryGetValue, <X.BindingGroup> property element"
+			"change": "unchanged"
 		},
 		{
 			"project": "Data Binding/ValidateItemsInItemsControl/ValidateItemsInItemsControl.csproj",
@@ -2048,14 +1986,11 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS1061"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 threading-dialogs-items (f585c6c8) + Round 48 review: ItemsControl.ItemBindingGroup, ContainerFromElement"
+			"change": "unchanged"
 		},
 		{
 			"project": "Data Binding/XmlDataSource/XmlDataSource.csproj",
@@ -2111,24 +2046,21 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 5,
+			"batch": 4,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
-				"CS0234",
-				"CS0246"
+				"CS0200",
+				"CS1061"
 			],
-			"missingTypes": [
-				"Annotation",
-				"AnnotationService",
-				"AnnotationStore",
-				"IAnchorInfo",
-				"StoreContentChangedEventArgs",
-				"System.Windows.Annotations"
+			"missingTypes": [],
+			"missingMembers": [
+				"Paragraph.BringIntoView",
+				"Section.ContentEnd",
+				"Section.ContentStart"
 			],
-			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "MainWindow.cs: CS0234 The type or namespace name 'Annotations' does not exist in the namespace 'System.Windows' (are you missing an assembly reference?)",
+			"firstError": "AnnotationDataConverter.cs: CS1061 'Section' does not contain a definition for 'ContentStart' and no accessible extension method 'ContentStart' accepting a first argument of type 'Section' could be found (are you missing a using directive or an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
 				"documents-text"
@@ -2150,22 +2082,47 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 5,
+			"batch": 4,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
-				"CS0234"
+				"CS0117",
+				"CS0400",
+				"CS1061"
 			],
 			"missingTypes": [
-				"System.Windows.Annotations"
+				"InkCanvasEditingMode",
+				"SystemParameters"
 			],
-			"missingMembers": [],
-			"xamlErrors": [],
-			"firstError": "MainWindow.cs: CS0234 The type or namespace name 'Annotations' does not exist in the namespace 'System.Windows' (are you missing an assembly reference?)",
+			"missingMembers": [
+				"FlowDocument.FlowDirectionProperty",
+				"FlowDocument.SetBinding",
+				"MenuItem.Padding",
+				"SystemFonts.MessageFontSizeKey",
+				"SystemFonts.MessageFontStyleKey",
+				"SystemFonts.MessageFontWeightKey"
+			],
+			"xamlErrors": [
+				"defaultstickynotestyle.g.cs(28,175): CS0117: 'SystemFonts' does not contain a definition for 'MessageFontSizeKey'",
+				"defaultstickynotestyle.g.cs(29,176): CS0117: 'SystemFonts' does not contain a definition for 'MessageFontStyleKey'",
+				"defaultstickynotestyle.g.cs(30,177): CS0117: 'SystemFonts' does not contain a definition for 'MessageFontWeightKey'",
+				"defaultstickynotestyle.g.cs(33,183): CS0117: 'SystemFonts' does not contain a definition for 'MessageFontStyleKey'",
+				"defaultstickynotestyle.g.cs(34,184): CS0117: 'SystemFonts' does not contain a definition for 'MessageFontWeightKey'",
+				"defaultstickynotestyle.g.cs(136,12): CS1061: 'MenuItem' does not contain a definition for 'Padding' and no accessible extension method 'Padding' accepting a first argument of type 'MenuItem' could be found (are you missing a using directive or an assembly reference?)",
+				"defaultstickynotestyle.g.cs(164,61): CS0117: 'FlowDocument' does not contain a definition for 'FlowDirectionProperty'",
+				"defaultstickynotestyle.g.cs(164,12): CS1061: 'FlowDocument' does not contain a definition for 'SetBinding' and no accessible extension method 'SetBinding' accepting a first argument of type 'FlowDocument' could be found (are you missing a using directive or an assembly reference?)",
+				"defaultstickynotestyle.g.cs(266,12): CS1061: 'MenuItem' does not contain a definition for 'Padding' and no accessible extension method 'Padding' accepting a first argument of type 'MenuItem' could be found (are you missing a using directive or an assembly reference?)",
+				"defaultstickynotestyle.g.cs(291,39): CS0400: The type or namespace name 'InkCanvasEditingMode' could not be found in the global namespace (are you missing an assembly reference?)",
+				"defaultstickynotestyle.g.cs(297,39): CS0400: The type or namespace name 'InkCanvasEditingMode' could not be found in the global namespace (are you missing an assembly reference?)",
+				"defaultstickynotestyle.g.cs(303,39): CS0400: The type or namespace name 'InkCanvasEditingMode' could not be found in the global namespace (are you missing an assembly reference?)"
+			],
+			"firstError": "defaultstickynotestyle.g.cs: CS0117 'SystemFonts' does not contain a definition for 'MessageFontSizeKey'",
 			"warnings": [
+				"CS0649",
 				"CS2002"
 			],
 			"blockerThemes": [
+				"controls",
 				"documents-text"
 			],
 			"measured": true,
@@ -2184,7 +2141,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 5,
+			"batch": 4,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
@@ -2226,7 +2183,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": false,
-			"batch": 5,
+			"batch": 4,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
@@ -2234,28 +2191,17 @@
 				"CS0246"
 			],
 			"missingTypes": [
-				"Annotation",
-				"AnnotationService",
-				"AnnotationStore",
-				"ContentElement",
-				"DocumentPaginator",
 				"FixedDocument",
 				"FixedDocumentSequence",
 				"FixedPage",
-				"FrameworkContentElement",
 				"GlyphRun",
-				"IDocumentPaginatorSource",
 				"ISerializerFactory",
-				"LogicalDirection",
 				"PrintTicket",
 				"SerializerWriter",
 				"SerializerWriterCollator",
-				"StoreContentChangedEventArgs",
 				"System.Printing",
-				"System.Windows.Annotations",
 				"System.Windows.Documents.Serialization",
 				"System.Windows.Xps",
-				"TextPointer",
 				"WritingCancelledEventHandler",
 				"WritingCompletedEventHandler",
 				"WritingPrintTicketRequiredEventHandler",
@@ -2263,15 +2209,19 @@
 				"XamlWriterMode"
 			],
 			"missingMembers": [],
-			"xamlErrors": [],
+			"xamlErrors": [
+				"ThumbViewer.xaml.cs(9,32): CS0234: The type or namespace name 'Serialization' does not exist in the namespace 'System.Windows.Documents' (are you missing an assembly reference?)",
+				"ThumbViewer.xaml.cs(20,22): CS0234: The type or namespace name 'Xps' does not exist in the namespace 'System.Windows' (are you missing an assembly reference?)",
+				"ThumbViewer.xaml.cs(21,22): CS0234: The type or namespace name 'Xps' does not exist in the namespace 'System.Windows' (are you missing an assembly reference?)",
+				"ThumbViewerApp.xaml.cs(8,32): CS0234: The type or namespace name 'Serialization' does not exist in the namespace 'System.Windows.Documents' (are you missing an assembly reference?)"
+			],
 			"firstError": "ThumbViewer.xaml.cs: CS0234 The type or namespace name 'Serialization' does not exist in the namespace 'System.Windows.Documents' (are you missing an assembly reference?)",
 			"warnings": [
 				"CS2002"
 			],
 			"blockerThemes": [
 				"documents-text",
-				"graphics",
-				"xaml-runtime"
+				"windows"
 			],
 			"measured": true,
 			"previous": {
@@ -2290,7 +2240,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": false,
-			"batch": 5,
+			"batch": 4,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [],
@@ -2301,9 +2251,7 @@
 			],
 			"firstError": "fixedpage1_structure.xaml: XAML parse error: '<', hexadecimal value 0x3C, is an invalid attribute character. Line 6, position 3.",
 			"warnings": [],
-			"blockerThemes": [
-				"xaml-generator"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -2318,54 +2266,16 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 5,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS1061",
-				"CS1503"
-			],
+			"batch": 4,
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
 			"missingTypes": [],
-			"missingMembers": [
-				"FlowDocument.Background",
-				"FlowDocument.ColumnGap",
-				"FlowDocument.ColumnRuleBrush",
-				"FlowDocument.ColumnRuleWidth",
-				"FlowDocument.ColumnWidth",
-				"FlowDocument.FontStyle",
-				"FlowDocument.FontWeight",
-				"FlowDocument.IsColumnWidthFlexible",
-				"FlowDocument.LineHeight",
-				"FlowDocument.MaxPageHeight",
-				"FlowDocument.MaxPageWidth",
-				"FlowDocument.MinPageHeight",
-				"FlowDocument.MinPageWidth",
-				"FlowDocument.PageHeight",
-				"FlowDocument.PageWidth",
-				"Paragraph.FontSize",
-				"Paragraph.TextIndent",
-				"Section.BreakPageBefore"
-			],
-			"xamlErrors": [
-				"MainWindow.g.cs(20,10): CS1061: 'FlowDocument' does not contain a definition for 'FontStyle' and no accessible extension method 'FontStyle' accepting a first argument of type 'FlowDocument' could be found (are you missing a using directive or an assembly reference?)",
-				"MainWindow.g.cs(21,10): CS1061: 'FlowDocument' does not contain a definition for 'FontWeight' and no accessible extension method 'FontWeight' accepting a first argument of type 'FlowDocument' could be found (are you missing a using directive or an assembly reference?)",
-				"MainWindow.g.cs(22,10): CS1061: 'FlowDocument' does not contain a definition for 'Background' and no accessible extension method 'Background' accepting a first argument of type 'FlowDocument' could be found (are you missing a using directive or an assembly reference?)",
-				"MainWindow.g.cs(24,10): CS1061: 'FlowDocument' does not contain a definition for 'ColumnGap' and no accessible extension method 'ColumnGap' accepting a first argument of type 'FlowDocument' could be found (are you missing a using directive or an assembly reference?)",
-				"MainWindow.g.cs(25,10): CS1061: 'FlowDocument' does not contain a definition for 'ColumnWidth' and no accessible extension method 'ColumnWidth' accepting a first argument of type 'FlowDocument' could be found (are you missing a using directive or an assembly reference?)",
-				"MainWindow.g.cs(26,10): CS1061: 'FlowDocument' does not contain a definition for 'ColumnRuleWidth' and no accessible extension method 'ColumnRuleWidth' accepting a first argument of type 'FlowDocument' could be found (are you missing a using directive or an assembly reference?)",
-				"MainWindow.g.cs(27,10): CS1061: 'FlowDocument' does not contain a definition for 'ColumnRuleBrush' and no accessible extension method 'ColumnRuleBrush' accepting a first argument of type 'FlowDocument' could be found (are you missing a using directive or an assembly reference?)",
-				"MainWindow.g.cs(28,10): CS1061: 'FlowDocument' does not contain a definition for 'IsColumnWidthFlexible' and no accessible extension method 'IsColumnWidthFlexible' accepting a first argument of type 'FlowDocument' could be found (are you missing a using directive or an assembly reference?)",
-				"MainWindow.g.cs(30,10): CS1061: 'FlowDocument' does not contain a definition for 'LineHeight' and no accessible extension method 'LineHeight' accepting a first argument of type 'FlowDocument' could be found (are you missing a using directive or an assembly reference?)",
-				"MainWindow.g.cs(31,10): CS1061: 'FlowDocument' does not contain a definition for 'MaxPageHeight' and no accessible extension method 'MaxPageHeight' accepting a first argument of type 'FlowDocument' could be found (are you missing a using directive or an assembly reference?)",
-				"MainWindow.g.cs(32,10): CS1061: 'FlowDocument' does not contain a definition for 'MaxPageWidth' and no accessible extension method 'MaxPageWidth' accepting a first argument of type 'FlowDocument' could be found (are you missing a using directive or an assembly reference?)",
-				"MainWindow.g.cs(33,10): CS1061: 'FlowDocument' does not contain a definition for 'MinPageHeight' and no accessible extension method 'MinPageHeight' accepting a first argument of type 'FlowDocument' could be found (are you missing a using directive or an assembly reference?)"
-			],
-			"firstError": "MainWindow.g.cs: CS1061 'FlowDocument' does not contain a definition for 'FontStyle' and no accessible extension method 'FontStyle' accepting a first argument of type 'FlowDocument' could be found (are you missing a using directive or an assembly reference?)",
+			"missingMembers": [],
+			"xamlErrors": [],
+			"firstError": "",
 			"warnings": [],
-			"blockerThemes": [
-				"documents-text",
-				"graphics"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -2375,7 +2285,8 @@
 					"CS1503"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 50 flow-document-tables (adbdfb87): FlowDocument column/page/typography properties, Paragraph.FontSize/TextIndent, Section.BreakPageBefore"
 		},
 		{
 			"project": "Documents/Flow Content/FlowContentProperty/FlowContentProperty.csproj",
@@ -2383,7 +2294,119 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 5,
+			"batch": 4,
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
+			"missingTypes": [],
+			"missingMembers": [],
+			"xamlErrors": [],
+			"firstError": "",
+			"warnings": [],
+			"blockerThemes": [],
+			"measured": true,
+			"previous": {
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
+			},
+			"change": "unchanged"
+		},
+		{
+			"project": "Documents/Flow Content/FlowDocumentNewsClient/FlowDocumentNewsClient.csproj",
+			"category": "Documents",
+			"kind": "app",
+			"windowsOnly": false,
+			"legacyCsproj": false,
+			"batch": 4,
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
+			"missingTypes": [],
+			"missingMembers": [],
+			"xamlErrors": [],
+			"firstError": "",
+			"warnings": [],
+			"blockerThemes": [],
+			"measured": true,
+			"previous": {
+				"build": "fail",
+				"run": "not-run",
+				"errorCodes": [
+					"CS0246",
+					"CS1061"
+				]
+			},
+			"change": "fail->pass",
+			"unblockedBy": "Round 50 flow-document-tables (adbdfb87): FlowDocument.ColumnWidth, Paragraph.Style; Round 52 paginated-viewers-printing (e45d5695): PrintDialog"
+		},
+		{
+			"project": "Documents/Flow Content/FlowDocumentProperties/FlowDocumentProperties.csproj",
+			"category": "Documents",
+			"kind": "app",
+			"windowsOnly": false,
+			"legacyCsproj": false,
+			"batch": 4,
+			"build": "fail",
+			"run": "not-run",
+			"errorCodes": [
+				"CS0029"
+			],
+			"missingTypes": [],
+			"missingMembers": [],
+			"xamlErrors": [],
+			"firstError": "MainWindow.cs: CS0029 Cannot implicitly convert type 'System.Windows.Media.FontFamily' to 'string'",
+			"warnings": [],
+			"blockerThemes": [
+				"documents-text"
+			],
+			"measured": true,
+			"previous": {
+				"build": "fail",
+				"run": "not-run",
+				"errorCodes": [
+					"CS0246"
+				]
+			},
+			"change": "unchanged"
+		},
+		{
+			"project": "Documents/Flow Content/FontProperties/FontProperties.csproj",
+			"category": "Documents",
+			"kind": "app",
+			"windowsOnly": false,
+			"legacyCsproj": false,
+			"batch": 4,
+			"build": "fail",
+			"run": "not-run",
+			"errorCodes": [
+				"CS0029"
+			],
+			"missingTypes": [],
+			"missingMembers": [],
+			"xamlErrors": [],
+			"firstError": "MainWindow.cs: CS0029 Cannot implicitly convert type 'System.Windows.Media.FontFamily' to 'string'",
+			"warnings": [],
+			"blockerThemes": [
+				"documents-text"
+			],
+			"measured": true,
+			"previous": {
+				"build": "fail",
+				"run": "not-run",
+				"errorCodes": [
+					"CS0029"
+				]
+			},
+			"change": "unchanged"
+		},
+		{
+			"project": "Documents/Flow Content/ParagraphAndHyphenation/ParagraphAndHyphenation.csproj",
+			"category": "Documents",
+			"kind": "app",
+			"windowsOnly": false,
+			"legacyCsproj": false,
+			"batch": 4,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -2403,153 +2426,7 @@
 				]
 			},
 			"change": "fail->pass",
-			"unblockedBy": "Round 47 flow-direction (5f92acd0): FlowDirection on FlowDocument/Inline"
-		},
-		{
-			"project": "Documents/Flow Content/FlowDocumentNewsClient/FlowDocumentNewsClient.csproj",
-			"category": "Documents",
-			"kind": "app",
-			"windowsOnly": false,
-			"legacyCsproj": false,
-			"batch": 5,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0246",
-				"CS1061"
-			],
-			"missingTypes": [
-				"PrintDialog"
-			],
-			"missingMembers": [
-				"FlowDocument.ColumnWidth",
-				"FlowDocumentScrollViewer.VerticalScrollBarVisibility",
-				"Paragraph.Style"
-			],
-			"xamlErrors": [
-				"MainWindow.g.cs(54,11): CS1061: 'FlowDocumentScrollViewer' does not contain a definition for 'VerticalScrollBarVisibility' and no accessible extension method 'VerticalScrollBarVisibility' accepting a first argument of type 'FlowDocumentScrollViewer' could be found (are you missing a using directive ",
-				"MainWindow.g.cs(57,11): CS1061: 'Paragraph' does not contain a definition for 'Style' and no accessible extension method 'Style' accepting a first argument of type 'Paragraph' could be found (are you missing a using directive or an assembly reference?)"
-			],
-			"firstError": "DockPanel2.cs: CS1061 'FlowDocument' does not contain a definition for 'ColumnWidth' and no accessible extension method 'ColumnWidth' accepting a first argument of type 'FlowDocument' could be found (are you missing a using directive or an assembly reference?)",
-			"warnings": [],
-			"blockerThemes": [
-				"dialogs-clipboard",
-				"documents-text"
-			],
-			"measured": true,
-			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0246",
-					"CS1061"
-				]
-			},
-			"change": "unchanged"
-		},
-		{
-			"project": "Documents/Flow Content/FlowDocumentProperties/FlowDocumentProperties.csproj",
-			"category": "Documents",
-			"kind": "app",
-			"windowsOnly": false,
-			"legacyCsproj": false,
-			"batch": 5,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0246"
-			],
-			"missingTypes": [
-				"DynamicDocumentPaginator",
-				"TextEffect",
-				"TextEffectTarget"
-			],
-			"missingMembers": [],
-			"xamlErrors": [],
-			"firstError": "MainWindow.cs: CS0246 The type or namespace name 'TextEffect' could not be found (are you missing a using directive or an assembly reference?)",
-			"warnings": [],
-			"blockerThemes": [
-				"other"
-			],
-			"measured": true,
-			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0246"
-				]
-			},
-			"change": "unchanged"
-		},
-		{
-			"project": "Documents/Flow Content/FontProperties/FontProperties.csproj",
-			"category": "Documents",
-			"kind": "app",
-			"windowsOnly": false,
-			"legacyCsproj": false,
-			"batch": 5,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0029"
-			],
-			"missingTypes": [],
-			"missingMembers": [],
-			"xamlErrors": [],
-			"firstError": "MainWindow.cs: CS0029 Cannot implicitly convert type 'System.Windows.Media.FontFamily' to 'string'",
-			"warnings": [],
-			"blockerThemes": [
-				"other"
-			],
-			"measured": true,
-			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0029"
-				]
-			},
-			"change": "unchanged"
-		},
-		{
-			"project": "Documents/Flow Content/ParagraphAndHyphenation/ParagraphAndHyphenation.csproj",
-			"category": "Documents",
-			"kind": "app",
-			"windowsOnly": false,
-			"legacyCsproj": false,
-			"batch": 5,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0103",
-				"CS1061"
-			],
-			"missingTypes": [],
-			"missingMembers": [
-				"FlowDocument.ColumnGap",
-				"FlowDocument.ColumnWidth",
-				"FlowDocument.IsColumnWidthFlexible",
-				"FlowDocument.IsHyphenationEnabled",
-				"FlowDocument.IsOptimalParagraphEnabled",
-				"flowReader"
-			],
-			"xamlErrors": [],
-			"firstError": "MainWindow.cs: CS1061 'FlowDocument' does not contain a definition for 'IsHyphenationEnabled' and no accessible extension method 'IsHyphenationEnabled' accepting a first argument of type 'FlowDocument' could be found (are you missing a using directive or an assembly reference?)",
-			"warnings": [],
-			"blockerThemes": [
-				"documents-text"
-			],
-			"measured": true,
-			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0103",
-					"CS0123",
-					"CS1061"
-				]
-			},
-			"change": "unchanged"
+			"unblockedBy": "Round 50 flow-document-tables (adbdfb87): FlowDocument column/hyphenation properties, FlowDocumentReader (flowReader field)"
 		},
 		{
 			"project": "Documents/Flow Content/TableBuilder/TableBuilder.csproj",
@@ -2557,22 +2434,16 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 5,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0246"
-			],
-			"missingTypes": [
-				"Table"
-			],
+			"batch": 4,
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
+			"missingTypes": [],
 			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "App.cs: CS0246 The type or namespace name 'Table' could not be found (are you missing a using directive or an assembly reference?)",
+			"firstError": "",
 			"warnings": [],
-			"blockerThemes": [
-				"documents-text"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -2581,7 +2452,8 @@
 					"CS0246"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 50 flow-document-tables (adbdfb87): Table family"
 		},
 		{
 			"project": "Documents/Flow Content/TableRows/TableRows.csproj",
@@ -2589,27 +2461,16 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 5,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0103",
-				"CS0246",
-				"CS1503"
-			],
-			"missingTypes": [
-				"TableCell",
-				"TableRow"
-			],
-			"missingMembers": [
-				"trg1"
-			],
+			"batch": 4,
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
+			"missingTypes": [],
+			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "MainWindow.cs: CS0246 The type or namespace name 'TableRow' could not be found (are you missing a using directive or an assembly reference?)",
+			"firstError": "",
 			"warnings": [],
-			"blockerThemes": [
-				"other"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -2620,7 +2481,8 @@
 					"CS1503"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 50 flow-document-tables (adbdfb87): TableRow/TableCell and the trg1 field"
 		},
 		{
 			"project": "Documents/Flow Content/TabularData/TabularData.csproj",
@@ -2628,7 +2490,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 5,
+			"batch": 4,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -2652,7 +2514,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 5,
+			"batch": 4,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -2676,7 +2538,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 5,
+			"batch": 4,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -2700,7 +2562,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 5,
+			"batch": 4,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -2724,7 +2586,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 6,
+			"batch": 4,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -2748,7 +2610,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 6,
+			"batch": 4,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -2761,11 +2623,10 @@
 			"measured": true,
 			"previous": {
 				"build": "pass",
-				"run": "crash",
+				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "crash->runs",
-			"unblockedBy": "Round 47 generator-v4 (d78faffa): Grid.RowDefinitions/ColumnDefinitions emitted (was ArgumentOutOfRangeException in SizeChanged)"
+			"change": "unchanged"
 		},
 		{
 			"project": "Drag and Drop/DragDropObjects/DragDropObjects.csproj",
@@ -2773,24 +2634,25 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 6,
+			"batch": 4,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
 				"CS0115",
-				"CS0246",
-				"CS0534"
+				"CS0246"
 			],
 			"missingTypes": [
 				"GeneralTransform"
 			],
-			"missingMembers": [],
+			"missingMembers": [
+				"override SimpleCircleAdorner.OnRender(DrawingContext)"
+			],
 			"xamlErrors": [],
 			"firstError": "SimpleCircleAdorner.cs: CS0246 The type or namespace name 'GeneralTransform' could not be found (are you missing a using directive or an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
 				"extensibility",
-				"graphics"
+				"graphics-input"
 			],
 			"measured": true,
 			"previous": {
@@ -2810,7 +2672,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 6,
+			"batch": 4,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -2834,7 +2696,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 6,
+			"batch": 4,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -2858,7 +2720,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 6,
+			"batch": 4,
 			"build": "pass",
 			"run": "hang",
 			"errorCodes": [],
@@ -2875,7 +2737,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"runCause": "alive with no top-level window, empty output, also when re-run alone (unchanged, not diagnosed)"
+			"runCause": "Unchanged: alive with no top-level window and empty output, at 10 s, 20 s alone (batch 4) and 20 s alone again (this report). Diagnosed in Round 51: the MarkupCompiler must register its x:Class root in GtkFormsXamlRegistry (carried to Round 52, not done)"
 		},
 		{
 			"project": "Element Tree/OverridingLogicalTree/OverridingLogicalTree.csproj",
@@ -2883,17 +2745,21 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 1,
+			"batch": 5,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
 				"CS0115"
 			],
 			"missingTypes": [],
-			"missingMembers": [],
+			"missingMembers": [
+				"override SingletonPanel.LogicalChildren"
+			],
 			"xamlErrors": [],
 			"firstError": "SingletonPanel.cs: CS0115 'SingletonPanel.LogicalChildren': no suitable method found to override",
-			"warnings": [],
+			"warnings": [
+				"CS0109"
+			],
 			"blockerThemes": [
 				"extensibility"
 			],
@@ -2913,7 +2779,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 1,
+			"batch": 5,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -2939,7 +2805,7 @@
 			"legacyCsproj": false,
 			"batch": 6,
 			"build": "pass",
-			"run": "hang",
+			"run": "runs",
 			"errorCodes": [],
 			"missingTypes": [],
 			"missingMembers": [],
@@ -2949,15 +2815,13 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0246"
-				]
+				"build": "pass",
+				"run": "hang",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 input-api (ecf1d70d): ContextMenuEventArgs/ContextMenuOpening",
-			"runCause": "alive with no top-level window, empty output, first pass and re-run alone (not diagnosed)"
+			"change": "hang->runs",
+			"unblockedBy": "Round 51 startup-run-sweep (b7f4842b): empty-output hang diagnosed and fixed (window after 10-20 s)",
+			"note": "no window at 10 s under parallel load; a window within 20 s when run alone"
 		},
 		{
 			"project": "Elements/FindingElementInPanel/FindingElementInPanel.csproj",
@@ -2991,7 +2855,7 @@
 			"legacyCsproj": false,
 			"batch": 6,
 			"build": "pass",
-			"run": "crash",
+			"run": "runs",
 			"errorCodes": [],
 			"missingTypes": [],
 			"missingMembers": [],
@@ -3001,15 +2865,12 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0117"
-				]
+				"build": "pass",
+				"run": "crash",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 input-api (ecf1d70d): FrameworkElement.FocusVisualStyle",
-			"runCause": "InvalidOperationException: Resource with key 'MyFocusVisual' not found: {DynamicResource} on a Style-typed DP is emitted as an eager FindResource in InitializeComponent"
+			"change": "crash->runs",
+			"unblockedBy": "Round 49 startup-build-sweep (9a38e05e): {DynamicResource} on a Style-typed DP deferred"
 		},
 		{
 			"project": "Elements/HeightProperties/HeightProperties.csproj",
@@ -3105,7 +2966,7 @@
 			"firstError": "MainWindow.cs: CS0234 The type or namespace name 'ThicknessConverter' does not exist in the namespace 'System.Windows' (are you missing an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
-				"graphics"
+				"graphics-input"
 			],
 			"measured": true,
 			"previous": {
@@ -3196,7 +3057,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 3,
+			"batch": 1,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -3220,7 +3081,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 3,
+			"batch": 1,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -3244,7 +3105,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 3,
+			"batch": 1,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -3268,7 +3129,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 3,
+			"batch": 1,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -3292,7 +3153,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 3,
+			"batch": 1,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -3316,43 +3177,46 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 3,
+			"batch": 1,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
-				"CS0103",
 				"CS0117",
-				"CS0246",
 				"CS1061",
 				"CS5001"
 			],
-			"missingTypes": [
-				"XamlParseException"
-			],
+			"missingTypes": [],
 			"missingMembers": [
 				"Binding.SetXmlNamespaceManager",
 				"Binding.XmlNamespaceManagerProperty",
-				"Frame.Refresh",
 				"Hyperlink.TargetName",
 				"ScrollViewer.CanContentScroll",
-				"SystemFonts",
+				"SystemFonts.CaptionFontSize",
 				"TabControl.TabStripPlacement",
-				"TabItem.IsSelected",
-				"XamlReader"
+				"TabItem.IsSelected"
 			],
 			"xamlErrors": [
+				"Default.g.cs(71,10): CS1061: 'TabItem' does not contain a definition for 'IsSelected' and no accessible extension method 'IsSelected' accepting a first argument of type 'TabItem' could be found (are you missing a using directive or an assembly reference?)",
+				"compositecollections_samp.g.cs(32,12): CS1061: 'TabItem' does not contain a definition for 'IsSelected' and no accessible extension method 'IsSelected' accepting a first argument of type 'TabItem' could be found (are you missing a using directive or an assembly reference?)",
+				"compositecollections_samp.g.cs(58,12): CS1061: 'TabControl' does not contain a definition for 'TabStripPlacement' and no accessible extension method 'TabStripPlacement' accepting a first argument of type 'TabControl' could be found (are you missing a using directive or an assembly reference?)",
+				"compositecollections_samp.g.cs(93,12): CS1061: 'TabControl' does not contain a definition for 'TabStripPlacement' and no accessible extension method 'TabStripPlacement' accepting a first argument of type 'TabControl' could be found (are you missing a using directive or an assembly reference?)",
 				"button_samp.g.cs(32,12): CS1061: 'TabItem' does not contain a definition for 'IsSelected' and no accessible extension method 'IsSelected' accepting a first argument of type 'TabItem' could be found (are you missing a using directive or an assembly reference?)",
-				"button_samp.g.cs(61,12): CS1061: 'TabControl' does not contain a definition for 'TabStripPlacement' and no accessible extension method 'TabStripPlacement' accepting a first argument of type 'TabControl' could be found (are you missing a using directive or an assembly reference?)",
-				"xmlnsbind_samp.g.cs(139,211): CS0117: 'Binding' does not contain a definition for 'XmlNamespaceManagerProperty'",
-				"xmlnsbind_samp.g.cs(139,41): CS0117: 'Binding' does not contain a definition for 'SetXmlNamespaceManager'",
-				"TOC.g.cs(32,13): CS1061: 'ScrollViewer' does not contain a definition for 'CanContentScroll' and no accessible extension method 'CanContentScroll' accepting a first argument of type 'ScrollViewer' could be found (are you missing a using directive or an assembly reference?)",
-				"TOC.g.cs(46,13): CS1061: 'Hyperlink' does not contain a definition for 'TargetName' and no accessible extension method 'TargetName' accepting a first argument of type 'Hyperlink' could be found (are you missing a using directive or an assembly reference?)"
+				"button_samp.g.cs(67,12): CS1061: 'TabControl' does not contain a definition for 'TabStripPlacement' and no accessible extension method 'TabStripPlacement' accepting a first argument of type 'TabControl' could be found (are you missing a using directive or an assembly reference?)",
+				"button_samp.g.cs(88,12): CS1061: 'TabControl' does not contain a definition for 'TabStripPlacement' and no accessible extension method 'TabStripPlacement' accepting a first argument of type 'TabControl' could be found (are you missing a using directive or an assembly reference?)",
+				"canvas_samp.g.cs(32,12): CS1061: 'TabItem' does not contain a definition for 'IsSelected' and no accessible extension method 'IsSelected' accepting a first argument of type 'TabItem' could be found (are you missing a using directive or an assembly reference?)",
+				"canvas_samp.g.cs(70,12): CS1061: 'TabControl' does not contain a definition for 'TabStripPlacement' and no accessible extension method 'TabStripPlacement' accepting a first argument of type 'TabControl' could be found (are you missing a using directive or an assembly reference?)",
+				"canvas_samp.g.cs(91,12): CS1061: 'TabControl' does not contain a definition for 'TabStripPlacement' and no accessible extension method 'TabStripPlacement' accepting a first argument of type 'TabControl' could be found (are you missing a using directive or an assembly reference?)",
+				"animateheight_samp.g.cs(35,11): CS1061: 'TabItem' does not contain a definition for 'IsSelected' and no accessible extension method 'IsSelected' accepting a first argument of type 'TabItem' could be found (are you missing a using directive or an assembly reference?)",
+				"animateheight_samp.g.cs(73,12): CS1061: 'TabControl' does not contain a definition for 'TabStripPlacement' and no accessible extension method 'TabStripPlacement' accepting a first argument of type 'TabControl' could be found (are you missing a using directive or an assembly reference?)"
 			],
 			"firstError": "CSC: CS5001 Program does not contain a static 'Main' method suitable for an entry point",
-			"warnings": [],
+			"warnings": [
+				"CS0649"
+			],
 			"blockerThemes": [
-				"items-data",
-				"xaml-runtime"
+				"controls",
+				"tree-items-data",
+				"xaml-generator"
 			],
 			"measured": true,
 			"previous": {
@@ -3374,36 +3238,28 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 3,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0103",
-				"CS0246"
-			],
-			"missingTypes": [
-				"XamlParseException"
-			],
-			"missingMembers": [
-				"XamlReader"
-			],
+			"batch": 1,
+			"build": "pass",
+			"run": "crash",
+			"errorCodes": [],
+			"missingTypes": [],
+			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "Scene.xaml.cs: CS0103 The name 'XamlReader' does not exist in the current context",
+			"firstError": "",
 			"warnings": [],
-			"blockerThemes": [
-				"xaml-runtime"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
 				"run": "not-run",
 				"errorCodes": [
 					"CS0103",
-					"CS0246",
-					"CS1061"
+					"CS0246"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 49 runtime-xaml-navigation (8c44b817): XamlReader/XamlParseException",
+			"runCause": "FormatException: Cannot parse Color from \"sc#1.000000, 0.769689, 0.831936, 1.000000\" (Grid.Background in a Scene.xaml Setter): MediaConverters.ParseColor has no scRGB (sc#) form; unhandled in Application startup"
 		},
 		{
 			"project": "Getting Started/DynamicLayout/DynamicLayout.csproj",
@@ -3411,7 +3267,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 3,
+			"batch": 1,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -3435,7 +3291,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 3,
+			"batch": 1,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -3459,7 +3315,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 3,
+			"batch": 1,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -3483,7 +3339,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 3,
+			"batch": 1,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -3507,21 +3363,51 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 3,
+			"batch": 1,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
-				"CS0234"
+				"CS0117",
+				"CS0246",
+				"CS0400",
+				"CS1061"
 			],
 			"missingTypes": [
-				"System.Windows.Automation.Peers"
+				"DataGridColumnHeader",
+				"DataGridRow",
+				"SystemParameters"
 			],
-			"missingMembers": [],
-			"xamlErrors": [],
-			"firstError": "ExpenseItHome.xaml.cs: CS0234 The type or namespace name 'Peers' does not exist in the namespace 'System.Windows.Automation' (are you missing an assembly reference?)",
+			"missingMembers": [
+				"DataGrid.CanUserResizeColumns",
+				"DataGrid.CanUserResizeRows",
+				"DataGrid.ColumnHeaderStyleProperty",
+				"DataGrid.HeadersVisibility",
+				"MainWindow.Source",
+				"MenuItem.IsSubmenuOpenProperty",
+				"MenuItem.ItemContainerStyleProperty",
+				"MenuItem.Padding",
+				"Popup.AllowsTransparency",
+				"Popup.PopupAnimationProperty"
+			],
+			"xamlErrors": [
+				"MainWindow.g.cs(17,10): CS1061: 'MainWindow' does not contain a definition for 'Source' and no accessible extension method 'Source' accepting a first argument of type 'MainWindow' could be found (are you missing a using directive or an assembly reference?)",
+				"Styles.g.cs(48,53): CS0246: The type or namespace name 'DataGridColumnHeader' could not be found (are you missing a using directive or an assembly reference?)",
+				"ExpenseReportPage.g.cs(119,53): CS0246: The type or namespace name 'DataGridRow' could not be found (are you missing a using directive or an assembly reference?)",
+				"ExpenseReportPage.g.cs(120,101): CS0246: The type or namespace name 'DataGridRow' could not be found (are you missing a using directive or an assembly reference?)",
+				"ExpenseReportPage.g.cs(122,28): CS0246: The type or namespace name 'DataGridRow' could not be found (are you missing a using directive or an assembly reference?)",
+				"ExpenseReportPage.g.cs(127,53): CS0117: 'DataGrid' does not contain a definition for 'ColumnHeaderStyleProperty'",
+				"ExpenseReportPage.g.cs(129,11): CS1061: 'DataGrid' does not contain a definition for 'HeadersVisibility' and no accessible extension method 'HeadersVisibility' accepting a first argument of type 'DataGrid' could be found (are you missing a using directive or an assembly reference?)",
+				"ExpenseReportPage.g.cs(130,11): CS1061: 'DataGrid' does not contain a definition for 'CanUserResizeColumns' and no accessible extension method 'CanUserResizeColumns' accepting a first argument of type 'DataGrid' could be found (are you missing a using directive or an assembly reference?)",
+				"ExpenseReportPage.g.cs(131,11): CS1061: 'DataGrid' does not contain a definition for 'CanUserResizeRows' and no accessible extension method 'CanUserResizeRows' accepting a first argument of type 'DataGrid' could be found (are you missing a using directive or an assembly reference?)",
+				"NavigationWindowKeyboardAccessibleStyle.g.cs(84,15): CS1061: 'Popup' does not contain a definition for 'AllowsTransparency' and no accessible extension method 'AllowsTransparency' accepting a first argument of type 'Popup' could be found (are you missing a using directive or an assembly reference?)",
+				"NavigationWindowKeyboardAccessibleStyle.g.cs(89,65): CS0117: 'Popup' does not contain a definition for 'PopupAnimationProperty'",
+				"NavigationWindowKeyboardAccessibleStyle.g.cs(89,119): CS0400: The type or namespace name 'SystemParameters' could not be found in the global namespace (are you missing an assembly reference?)"
+			],
+			"firstError": "MainWindow.g.cs: CS1061 'MainWindow' does not contain a definition for 'Source' and no accessible extension method 'Source' accepting a first argument of type 'MainWindow' could be found (are you missing a using directive or an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
-				"automation"
+				"controls",
+				"xaml-generator"
 			],
 			"measured": true,
 			"previous": {
@@ -3575,14 +3461,11 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS1061"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 47 flow-direction (5f92acd0): FlowDirection enum and inherited FrameworkElement.FlowDirection"
+			"change": "unchanged"
 		},
 		{
 			"project": "Globalization and Localization/GlobalizationHomepage/GlobalizationHomepage.csproj",
@@ -3598,17 +3481,15 @@
 			],
 			"missingTypes": [],
 			"missingMembers": [
-				"Border.SnapsToDevicePixels",
 				"MainWindow.Source"
 			],
 			"xamlErrors": [
-				"MainWindow.g.cs(16,10): CS1061: 'MainWindow' does not contain a definition for 'Source' and no accessible extension method 'Source' accepting a first argument of type 'MainWindow' could be found (are you missing a using directive or an assembly reference?)",
-				"HomePage.g.cs(152,11): CS1061: 'Border' does not contain a definition for 'SnapsToDevicePixels' and no accessible extension method 'SnapsToDevicePixels' accepting a first argument of type 'Border' could be found (are you missing a using directive or an assembly reference?)"
+				"MainWindow.g.cs(16,10): CS1061: 'MainWindow' does not contain a definition for 'Source' and no accessible extension method 'Source' accepting a first argument of type 'MainWindow' could be found (are you missing a using directive or an assembly reference?)"
 			],
 			"firstError": "MainWindow.g.cs: CS1061 'MainWindow' does not contain a definition for 'Source' and no accessible extension method 'Source' accepting a first argument of type 'MainWindow' could be found (are you missing a using directive or an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
-				"other"
+				"xaml-generator"
 			],
 			"measured": true,
 			"previous": {
@@ -3662,14 +3543,11 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS1061"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 47 flow-direction (5f92acd0): FrameworkElement.FlowDirection"
+			"change": "unchanged"
 		},
 		{
 			"project": "Globalization and Localization/Image/Image.csproj",
@@ -3689,14 +3567,11 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS1061"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 47 flow-direction (5f92acd0): FrameworkElement.FlowDirection"
+			"change": "unchanged"
 		},
 		{
 			"project": "Globalization and Localization/LangAttribute/LangAttribute.csproj",
@@ -3716,14 +3591,11 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS1061"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 47 flow-direction (5f92acd0): Span.Language (XmlLanguage, converter-backed)"
+			"change": "unchanged"
 		},
 		{
 			"project": "Globalization and Localization/LocalizationResources/LocalizationResources.csproj",
@@ -3748,8 +3620,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"runCause": "MissingManifestResourceException for LocalizationResources.data.stringtable.resources (only an en-US satellite, no neutral resource), unchanged; the process stays alive with no window, so the smoke run reads it as a hang",
-			"note": "process alive with no window but stderr holds an unhandled startup exception; classified crash (the method's definition), the smoke run itself read hang"
+			"runCause": "Unchanged: MissingManifestResourceException for LocalizationResources.data.stringtable.resources (only an en-US satellite, no neutral resource)"
 		},
 		{
 			"project": "Globalization and Localization/LTRRTL/LTRRTL.csproj",
@@ -3769,14 +3640,11 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS1061"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 47 flow-direction (5f92acd0): FrameworkElement.FlowDirection"
+			"change": "unchanged"
 		},
 		{
 			"project": "Globalization and Localization/NumbersMultipleLangauges/NumbersMultipleLangauges.csproj",
@@ -3796,16 +3664,11 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0103",
-					"CS0246",
-					"CS1061"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 47 flow-direction (5f92acd0): NumberSubstitution"
+			"change": "unchanged"
 		},
 		{
 			"project": "Globalization and Localization/Paths/Paths.csproj",
@@ -3825,14 +3688,11 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS1061"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 47 flow-direction (5f92acd0): FrameworkElement.FlowDirection"
+			"change": "unchanged"
 		},
 		{
 			"project": "Globalization and Localization/RunSpan/RunSpan.csproj",
@@ -3852,14 +3712,11 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS1061"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 47 flow-direction (5f92acd0): Inline.FlowDirection on Run/Span"
+			"change": "unchanged"
 		},
 		{
 			"project": "Globalization and Localization/Span/Span.csproj",
@@ -3879,14 +3736,11 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS1061"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 47 flow-direction (5f92acd0): Inline.FlowDirection on Span"
+			"change": "unchanged"
 		},
 		{
 			"project": "Globalization and Localization/StringLocalizationSample/StringLocalizationSample.csproj",
@@ -3907,11 +3761,10 @@
 			"measured": true,
 			"previous": {
 				"build": "pass",
-				"run": "crash",
+				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "crash->runs",
-			"unblockedBy": "Round 47 generator-v4 (d78faffa): merged ResourceDictionary files compiled and loaded at parse time"
+			"change": "unchanged"
 		},
 		{
 			"project": "Graphics/2DTransforms/2DTransforms.csproj",
@@ -3920,31 +3773,27 @@
 			"windowsOnly": false,
 			"legacyCsproj": false,
 			"batch": 2,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0029"
-			],
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
 			"missingTypes": [],
 			"missingMembers": [],
-			"xamlErrors": [
-				"RotateTransformExample.g.cs(324,19): CS0029: Cannot implicitly convert type 'int' to 'string'"
+			"xamlErrors": [],
+			"firstError": "",
+			"warnings": [
+				"CS0649"
 			],
-			"firstError": "RotateTransformExample.g.cs: CS0029 Cannot implicitly convert type 'int' to 'string'",
-			"warnings": [],
-			"blockerThemes": [
-				"graphics"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
 				"run": "not-run",
 				"errorCodes": [
-					"CS0029",
-					"CS1061"
+					"CS0029"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 49 startup-build-sweep (9a38e05e): MarkupCompiler value conversion (int -> string setter)"
 		},
 		{
 			"project": "Graphics/AITCodec/cpp/aitcodec.vcxproj",
@@ -3992,15 +3841,14 @@
 			"firstError": "BlurInteractiveExample.cs: CS0103 The name 'InteractiveEffect' does not exist in the current context",
 			"warnings": [],
 			"blockerThemes": [
-				"other"
+				"imaging"
 			],
 			"measured": true,
 			"previous": {
 				"build": "fail",
 				"run": "not-run",
 				"errorCodes": [
-					"CS0103",
-					"CS0117"
+					"CS0103"
 				]
 			},
 			"change": "unchanged"
@@ -4012,25 +3860,15 @@
 			"windowsOnly": false,
 			"legacyCsproj": false,
 			"batch": 2,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0103",
-				"CS0246"
-			],
-			"missingTypes": [
-				"PngBitmapDecoder"
-			],
-			"missingMembers": [
-				"BitmapCacheOption",
-				"BitmapCreateOptions"
-			],
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
+			"missingTypes": [],
+			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "App.cs: CS0246 The type or namespace name 'PngBitmapDecoder' could not be found (are you missing a using directive or an assembly reference?)",
+			"firstError": "",
 			"warnings": [],
-			"blockerThemes": [
-				"imaging"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -4040,7 +3878,8 @@
 					"CS0246"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 50 imaging-codecs (2063d423): PngBitmapDecoder, BitmapCacheOption/BitmapCreateOptions"
 		},
 		{
 			"project": "Graphics/BMPEncoderAndDecoder/BMPEncoderAndDecoder.csproj",
@@ -4049,30 +3888,15 @@
 			"windowsOnly": false,
 			"legacyCsproj": false,
 			"batch": 2,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0103",
-				"CS0117",
-				"CS0246"
-			],
-			"missingTypes": [
-				"BitmapPalette",
-				"BmpBitmapDecoder",
-				"BmpBitmapEncoder"
-			],
-			"missingMembers": [
-				"BitmapCacheOption",
-				"BitmapCreateOptions",
-				"BitmapFrame",
-				"PixelFormats.Indexed1"
-			],
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
+			"missingTypes": [],
+			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "App.cs: CS0246 The type or namespace name 'BitmapPalette' could not be found (are you missing a using directive or an assembly reference?)",
+			"firstError": "",
 			"warnings": [],
-			"blockerThemes": [
-				"imaging"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -4083,7 +3907,8 @@
 					"CS0246"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 50 imaging-codecs (2063d423): BitmapFrame, BMP codec, BitmapPalette, indexed PixelFormats"
 		},
 		{
 			"project": "Graphics/Brushes/Brushes.csproj",
@@ -4095,17 +3920,30 @@
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
-				"CS0246"
+				"CS0117",
+				"CS1061"
 			],
-			"missingTypes": [
-				"NavigationEventArgs"
+			"missingTypes": [],
+			"missingMembers": [
+				"Expander.ExpandDirection",
+				"Frame.NavigationUIVisibility",
+				"LinearGradientBrush.ColorInterpolationMode",
+				"Mouse.Synchronize",
+				"MouseButtonEventArgs.OriginalSource",
+				"TreeView.SelectedValuePath"
 			],
-			"missingMembers": [],
-			"xamlErrors": [],
-			"firstError": "SampleViewer.cs: CS0246 The type or namespace name 'NavigationEventArgs' could not be found (are you missing a using directive or an assembly reference?)",
-			"warnings": [],
+			"xamlErrors": [
+				"SampleViewer.g.cs(59,13): CS1061: 'Expander' does not contain a definition for 'ExpandDirection' and no accessible extension method 'ExpandDirection' accepting a first argument of type 'Expander' could be found (are you missing a using directive or an assembly reference?)",
+				"SampleViewer.g.cs(78,13): CS1061: 'TreeView' does not contain a definition for 'SelectedValuePath' and no accessible extension method 'SelectedValuePath' accepting a first argument of type 'TreeView' could be found (are you missing a using directive or an assembly reference?)",
+				"SampleViewer.g.cs(108,13): CS1061: 'Frame' does not contain a definition for 'NavigationUIVisibility' and no accessible extension method 'NavigationUIVisibility' accepting a first argument of type 'Frame' could be found (are you missing a using directive or an assembly reference?)"
+			],
+			"firstError": "InteractiveLinearGradientBrushExample.cs: CS1061 'MouseButtonEventArgs' does not contain a definition for 'OriginalSource' and no accessible extension method 'OriginalSource' accepting a first argument of type 'MouseButtonEventArgs' could be found (are you missing a using directive or an assembly re",
+			"warnings": [
+				"CS0649"
+			],
 			"blockerThemes": [
-				"navigation-pages"
+				"controls",
+				"graphics-input"
 			],
 			"measured": true,
 			"previous": {
@@ -4125,7 +3963,7 @@
 			"legacyCsproj": false,
 			"batch": 2,
 			"build": "pass",
-			"run": "crash",
+			"run": "runs",
 			"errorCodes": [],
 			"missingTypes": [],
 			"missingMembers": [],
@@ -4135,15 +3973,12 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS1061"
-				]
+				"build": "pass",
+				"run": "crash",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 graphics-window-tail (5ebf5285): UIElement.Clip",
-			"runCause": "Storyboard.Begin: TargetProperty '(EllipseGeometry.RadiusX)' cannot be resolved on the Image: the animation targets a property of the Clip geometry, and property paths into a sub-object (Freezable) value are not resolved"
+			"change": "crash->runs",
+			"unblockedBy": "Round 51 animation-clocks (4a1a9325): storyboard paths into sub-object values"
 		},
 		{
 			"project": "Graphics/Converter/Converter.csproj",
@@ -4165,7 +4000,7 @@
 			"firstError": "MainWindow.cs: CS0234 The type or namespace name 'Media3D' does not exist in the namespace 'System.Windows.Media' (are you missing an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
-				"3d"
+				"media3d"
 			],
 			"measured": true,
 			"previous": {
@@ -4199,8 +4034,7 @@
 				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "unchanged",
-			"note": "the batch flagged BitmapEffect as Windows-only, but the app builds and runs on the layer; kept portable"
+			"change": "unchanged"
 		},
 		{
 			"project": "Graphics/DrawingBrush/DrawingBrush.csproj",
@@ -4210,25 +4044,24 @@
 			"legacyCsproj": false,
 			"batch": 2,
 			"build": "pass",
-			"run": "crash",
+			"run": "runs",
 			"errorCodes": [],
 			"missingTypes": [],
 			"missingMembers": [],
 			"xamlErrors": [],
 			"firstError": "",
-			"warnings": [],
+			"warnings": [
+				"CS0649"
+			],
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0117"
-				]
+				"build": "pass",
+				"run": "crash",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 graphics-window-tail (5ebf5285): TextBlock attached Foreground accessors",
-			"runCause": "Storyboard.Begin: TargetProperty '(DockPanel.Background).(DrawingBrush.Drawing).(DrawingGroup.Children)[0]...(SolidColorBrush.Color)' cannot be resolved: multi-step/indexed property paths into a brush are not resolved"
+			"change": "crash->runs",
+			"unblockedBy": "Round 51 animation-clocks (4a1a9325): multi-step indexed storyboard paths into a brush"
 		},
 		{
 			"project": "Graphics/Geometry/Geometry.csproj",
@@ -4250,7 +4083,7 @@
 			"firstError": "SampleViewer.cs: CS0234 The type or namespace name 'Media3D' does not exist in the namespace 'System.Windows.Media' (are you missing an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
-				"3d"
+				"media3d"
 			],
 			"measured": true,
 			"previous": {
@@ -4269,30 +4102,15 @@
 			"windowsOnly": false,
 			"legacyCsproj": false,
 			"batch": 2,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0103",
-				"CS0117",
-				"CS0246"
-			],
-			"missingTypes": [
-				"GifBitmapDecoder",
-				"GifBitmapEncoder"
-			],
-			"missingMembers": [
-				"BitmapCacheOption",
-				"BitmapCreateOptions",
-				"BitmapFrame",
-				"BitmapPalettes",
-				"PixelFormats.Indexed1"
-			],
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
+			"missingTypes": [],
+			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "App.cs: CS0103 The name 'BitmapPalettes' does not exist in the current context",
+			"firstError": "",
 			"warnings": [],
-			"blockerThemes": [
-				"imaging"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -4303,7 +4121,8 @@
 					"CS0246"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 50 imaging-codecs (2063d423): BitmapFrame, GIF codec, BitmapPalettes"
 		},
 		{
 			"project": "Graphics/ImageBrush/ImageBrush.csproj",
@@ -4325,40 +4144,6 @@
 			"firstError": "InteractiveExample.cs: CS0246 The type or namespace name 'RectConverter' could not be found (are you missing a using directive or an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
-				"graphics"
-			],
-			"measured": true,
-			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0117",
-					"CS0246",
-					"CS1061"
-				]
-			},
-			"change": "unchanged"
-		},
-		{
-			"project": "Graphics/ImageView/ImageView.csproj",
-			"category": "Graphics",
-			"kind": "app",
-			"windowsOnly": false,
-			"legacyCsproj": false,
-			"batch": 2,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS1061"
-			],
-			"missingTypes": [],
-			"missingMembers": [
-				"BitmapImage.Format"
-			],
-			"xamlErrors": [],
-			"firstError": "MainWindow.cs: CS1061 'BitmapImage' does not contain a definition for 'Format' and no accessible extension method 'Format' accepting a first argument of type 'BitmapImage' could be found (are you missing a using directive or an assembly reference?)",
-			"warnings": [],
-			"blockerThemes": [
 				"imaging"
 			],
 			"measured": true,
@@ -4366,57 +4151,13 @@
 				"build": "fail",
 				"run": "not-run",
 				"errorCodes": [
-					"CS1061"
-				]
-			},
-			"change": "unchanged"
-		},
-		{
-			"project": "Graphics/JPEGEncoderAndDecoder/JPEGEncoderAndDecoder.csproj",
-			"category": "Graphics",
-			"kind": "app",
-			"windowsOnly": false,
-			"legacyCsproj": false,
-			"batch": 2,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0103",
-				"CS0117",
-				"CS0246"
-			],
-			"missingTypes": [
-				"JpegBitmapDecoder",
-				"JpegBitmapEncoder"
-			],
-			"missingMembers": [
-				"BitmapCacheOption",
-				"BitmapCreateOptions",
-				"BitmapFrame",
-				"BitmapPalettes",
-				"PixelFormats.Indexed1",
-				"Rotation"
-			],
-			"xamlErrors": [],
-			"firstError": "App.cs: CS0103 The name 'BitmapPalettes' does not exist in the current context",
-			"warnings": [],
-			"blockerThemes": [
-				"imaging"
-			],
-			"measured": true,
-			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0103",
-					"CS0117",
 					"CS0246"
 				]
 			},
 			"change": "unchanged"
 		},
 		{
-			"project": "Graphics/Matrix/Matrix.csproj",
+			"project": "Graphics/ImageView/ImageView.csproj",
 			"category": "Graphics",
 			"kind": "app",
 			"windowsOnly": false,
@@ -4436,16 +4177,64 @@
 				"build": "fail",
 				"run": "not-run",
 				"errorCodes": [
-					"CS0019",
-					"CS0117",
-					"CS0246",
-					"CS1061",
-					"CS1501",
-					"CS1503"
+					"CS1061"
 				]
 			},
 			"change": "fail->pass",
-			"unblockedBy": "Round 48 graphics-window-tail (5ebf5285): Vector and Matrix operations/Parse"
+			"unblockedBy": "Round 50 imaging-codecs (2063d423): BitmapImage.Format"
+		},
+		{
+			"project": "Graphics/JPEGEncoderAndDecoder/JPEGEncoderAndDecoder.csproj",
+			"category": "Graphics",
+			"kind": "app",
+			"windowsOnly": false,
+			"legacyCsproj": false,
+			"batch": 2,
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
+			"missingTypes": [],
+			"missingMembers": [],
+			"xamlErrors": [],
+			"firstError": "",
+			"warnings": [],
+			"blockerThemes": [],
+			"measured": true,
+			"previous": {
+				"build": "fail",
+				"run": "not-run",
+				"errorCodes": [
+					"CS0103",
+					"CS0117",
+					"CS0246"
+				]
+			},
+			"change": "fail->pass",
+			"unblockedBy": "Round 50 imaging-codecs (2063d423): BitmapFrame, JPEG codec, Rotation"
+		},
+		{
+			"project": "Graphics/Matrix/Matrix.csproj",
+			"category": "Graphics",
+			"kind": "app",
+			"windowsOnly": false,
+			"legacyCsproj": false,
+			"batch": 2,
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
+			"missingTypes": [],
+			"missingMembers": [],
+			"xamlErrors": [],
+			"firstError": "",
+			"warnings": [],
+			"blockerThemes": [],
+			"measured": true,
+			"previous": {
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
+			},
+			"change": "unchanged"
 		},
 		{
 			"project": "Graphics/OpacityMasking/OpacityMasking.csproj",
@@ -4478,31 +4267,15 @@
 			"windowsOnly": false,
 			"legacyCsproj": false,
 			"batch": 2,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0103",
-				"CS0117",
-				"CS0246"
-			],
-			"missingTypes": [
-				"PngBitmapDecoder",
-				"PngBitmapEncoder"
-			],
-			"missingMembers": [
-				"BitmapCacheOption",
-				"BitmapCreateOptions",
-				"BitmapFrame",
-				"BitmapPalettes",
-				"PixelFormats.Indexed8",
-				"PngInterlaceOption"
-			],
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
+			"missingTypes": [],
+			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "App.cs: CS0103 The name 'BitmapPalettes' does not exist in the current context",
+			"firstError": "",
 			"warnings": [],
-			"blockerThemes": [
-				"imaging"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -4513,7 +4286,8 @@
 					"CS0246"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 50 imaging-codecs (2063d423): BitmapFrame, PNG codec, PngInterlaceOption"
 		},
 		{
 			"project": "Graphics/Point/Point.csproj",
@@ -4533,18 +4307,11 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0019",
-					"CS0030",
-					"CS0117",
-					"CS0246",
-					"CS1061"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 graphics-window-tail (5ebf5285): Point.Parse/Add/Offset and Vector operators"
+			"change": "unchanged"
 		},
 		{
 			"project": "Graphics/ShapeElements/ShapeElements.csproj",
@@ -4554,7 +4321,7 @@
 			"legacyCsproj": false,
 			"batch": 2,
 			"build": "pass",
-			"run": "crash",
+			"run": "runs",
 			"errorCodes": [],
 			"missingTypes": [],
 			"missingMembers": [],
@@ -4564,16 +4331,12 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS1061"
-				]
+				"build": "pass",
+				"run": "crash",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 graphics-window-tail (5ebf5285): Page.Background",
-			"runCause": "ArgumentException: '2,1' is not a valid value for property 'StrokeDashArray': XamlValueConverter has no string -> DoubleCollection conversion; the process stays alive with no window",
-			"note": "process alive with no window but stderr holds an unhandled startup exception; classified crash (the method's definition), the smoke run itself read hang"
+			"change": "crash->runs",
+			"unblockedBy": "Round 49 startup-build-sweep (9a38e05e): string -> DoubleCollection conversion"
 		},
 		{
 			"project": "Graphics/ShapesGallery/ShapesGallery.csproj",
@@ -4617,61 +4380,14 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0117"
-				]
-			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 graphics-window-tail (5ebf5285): SystemColors brushes and colours"
-		},
-		{
-			"project": "Graphics/TIFFEncoderAndDecoder/TIFFEncoderAndDecoder.csproj",
-			"category": "Graphics",
-			"kind": "app",
-			"windowsOnly": false,
-			"legacyCsproj": false,
-			"batch": 2,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0103",
-				"CS0117",
-				"CS0246"
-			],
-			"missingTypes": [
-				"TiffBitmapDecoder",
-				"TiffBitmapEncoder"
-			],
-			"missingMembers": [
-				"BitmapCacheOption",
-				"BitmapCreateOptions",
-				"BitmapFrame",
-				"BitmapPalettes",
-				"PixelFormats.Indexed1",
-				"TiffCompressOption"
-			],
-			"xamlErrors": [],
-			"firstError": "App.cs: CS0103 The name 'BitmapPalettes' does not exist in the current context",
-			"warnings": [],
-			"blockerThemes": [
-				"imaging"
-			],
-			"measured": true,
-			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0103",
-					"CS0117",
-					"CS0246"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
 			"change": "unchanged"
 		},
 		{
-			"project": "Graphics/Vector/Vector.csproj",
+			"project": "Graphics/TIFFEncoderAndDecoder/TIFFEncoderAndDecoder.csproj",
 			"category": "Graphics",
 			"kind": "app",
 			"windowsOnly": false,
@@ -4691,11 +4407,37 @@
 				"build": "fail",
 				"run": "not-run",
 				"errorCodes": [
-					"CS0234"
+					"CS0103",
+					"CS0117",
+					"CS0246"
 				]
 			},
 			"change": "fail->pass",
-			"unblockedBy": "Round 48 graphics-window-tail (5ebf5285): System.Windows.Vector"
+			"unblockedBy": "Round 50 imaging-codecs (2063d423): BitmapFrame, TIFF codec, TiffCompressOption"
+		},
+		{
+			"project": "Graphics/Vector/Vector.csproj",
+			"category": "Graphics",
+			"kind": "app",
+			"windowsOnly": false,
+			"legacyCsproj": false,
+			"batch": 2,
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
+			"missingTypes": [],
+			"missingMembers": [],
+			"xamlErrors": [],
+			"firstError": "",
+			"warnings": [],
+			"blockerThemes": [],
+			"measured": true,
+			"previous": {
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
+			},
+			"change": "unchanged"
 		},
 		{
 			"project": "Graphics/VisualBrush/VisualBrush.csproj",
@@ -4715,17 +4457,18 @@
 			],
 			"xamlErrors": [],
 			"firstError": "MagnifyingGlassExample.cs: CS0117 'Mouse' does not contain a definition for 'SetCursor'",
-			"warnings": [],
+			"warnings": [
+				"CS0649"
+			],
 			"blockerThemes": [
-				"input"
+				"graphics-input"
 			],
 			"measured": true,
 			"previous": {
 				"build": "fail",
 				"run": "not-run",
 				"errorCodes": [
-					"CS0117",
-					"CS1061"
+					"CS0117"
 				]
 			},
 			"change": "unchanged"
@@ -4737,31 +4480,15 @@
 			"windowsOnly": false,
 			"legacyCsproj": false,
 			"batch": 2,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0103",
-				"CS0117",
-				"CS0246"
-			],
-			"missingTypes": [
-				"JpegBitmapDecoder",
-				"WmpBitmapDecoder",
-				"WmpBitmapEncoder"
-			],
-			"missingMembers": [
-				"BitmapCacheOption",
-				"BitmapCreateOptions",
-				"BitmapFrame",
-				"BitmapPalettes",
-				"PixelFormats.Indexed1"
-			],
+			"build": "pass",
+			"run": "crash",
+			"errorCodes": [],
+			"missingTypes": [],
+			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "App.cs: CS0103 The name 'BitmapPalettes' does not exist in the current context",
+			"firstError": "",
 			"warnings": [],
-			"blockerThemes": [
-				"imaging"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -4772,7 +4499,9 @@
 					"CS0246"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 50 imaging-codecs (2063d423): WmpBitmapDecoder/WmpBitmapEncoder types (the encoder throws at run time)",
+			"runCause": "NotSupportedException: JPEG XR (WDP) has no encoder in the GTK runtime (WmpBitmapEncoder.Save); the sample encodes on startup"
 		},
 		{
 			"project": "Input and Commands/CaptureUnCaptureMouse/CaptureUnCaptureMouse.csproj",
@@ -4816,17 +4545,11 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0117",
-					"CS1061",
-					"CS1501",
-					"CS1729"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 input-api (ecf1d70d) (Slider commands, AutoToolTip*) + Round 48 threading-dialogs-items (f585c6c8) (Dispatcher.Invoke(DispatcherPriority, Delegate))"
+			"change": "unchanged"
 		},
 		{
 			"project": "Input and Commands/CommandSourceControlWithDispatcherTimer/CommandSourceControlWithDispatcherTimer.csproj",
@@ -4846,16 +4569,11 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0117",
-					"CS1061",
-					"CS1729"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 input-api (ecf1d70d): Slider commands and AutoToolTip*, ICommandSource"
+			"change": "unchanged"
 		},
 		{
 			"project": "Input and Commands/CursorType/CursorType.csproj",
@@ -4875,15 +4593,11 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0117",
-					"CS1061"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 input-api (ecf1d70d): full Cursors set, Cursor.Dispose"
+			"change": "unchanged"
 		},
 		{
 			"project": "Input and Commands/CustomRoutedCommand/CustomRoutedCommand.csproj",
@@ -4903,14 +4617,11 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS1729"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 input-api (ecf1d70d): RoutedCommand() constructor"
+			"change": "unchanged"
 		},
 		{
 			"project": "Input and Commands/EditingCommands/EditingCommands.csproj",
@@ -4930,14 +4641,11 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0234"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 input-api (ecf1d70d): EditingCommands"
+			"change": "unchanged"
 		},
 		{
 			"project": "Input and Commands/EventOnGainAndLooseFocus/EventOnGainAndLooseFocus.csproj",
@@ -5019,27 +4727,25 @@
 			"legacyCsproj": false,
 			"batch": 4,
 			"build": "pass",
-			"run": "crash",
+			"run": "runs",
 			"errorCodes": [],
 			"missingTypes": [],
 			"missingMembers": [],
 			"xamlErrors": [],
 			"firstError": "",
-			"warnings": [],
+			"warnings": [
+				"CS0168",
+				"CS0649"
+			],
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0115",
-					"CS0738"
-				]
+				"build": "pass",
+				"run": "crash",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 input-api (ecf1d70d): ICommandSource members (CS0738/CS0115 gone)",
-			"runCause": "InvalidOperationException: resource key '{   StaticResource StringConverterResource}' not found: the MarkupCompiler does not trim whitespace inside a { StaticResource ...} markup extension and uses the whole text as the key; the process stays alive with no window",
-			"note": "process alive with no window but stderr holds an unhandled startup exception; classified crash (the method's definition), the smoke run itself read hang"
+			"change": "crash->runs",
+			"unblockedBy": "Round 49 startup-build-sweep (9a38e05e): whitespace trimmed in markup-extension arguments"
 		},
 		{
 			"project": "Input and Commands/KeyboardKey/KeyboardKey.csproj",
@@ -5083,14 +4789,11 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0246"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 input-api (ecf1d70d): keyboard events/KeyConverter"
+			"change": "unchanged"
 		},
 		{
 			"project": "Input and Commands/MousePointer/MousePointer.csproj",
@@ -5182,14 +4885,11 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0246"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 input-api (ecf1d70d): MoveFocus/PredictFocus/FocusNavigationDirection, keyboard-focus events"
+			"change": "unchanged"
 		},
 		{
 			"project": "Input and Commands/TouchKeyboard/TouchKBRegister/TouchKBRegister.csproj",
@@ -5207,6 +4907,7 @@
 			"firstError": "",
 			"warnings": [],
 			"blockerThemes": [],
+			"measured": true,
 			"legacyBuild": {
 				"result": "fail",
 				"errorCodes": [
@@ -5220,7 +4921,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"note": "legacy non-SDK csproj: the converter leaves it as .NET Framework 4.x, so it builds (or not) against the real WPF reference assemblies with the generated *.g.cs added; not a measurement of the layer, recorded as not-built as before"
+			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild"
 		},
 		{
 			"project": "Input and Commands/TouchKeyboard/TouchKeyboardNotifier/TouchKeyboardNotifier.csproj",
@@ -5238,6 +4939,7 @@
 			"firstError": "",
 			"warnings": [],
 			"blockerThemes": [],
+			"measured": true,
 			"legacyBuild": {
 				"result": "fail",
 				"errorCodes": [
@@ -5251,7 +4953,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"note": "legacy non-SDK csproj: the converter leaves it as .NET Framework 4.x, so it builds (or not) against the real WPF reference assemblies with the generated *.g.cs added; not a measurement of the layer, recorded as not-built as before"
+			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild"
 		},
 		{
 			"project": "Migration and Interoperability/AxControl/WPMAxLib.csproj",
@@ -5259,7 +4961,7 @@
 			"kind": "library",
 			"windowsOnly": true,
 			"legacyCsproj": true,
-			"batch": 4,
+			"batch": 3,
 			"build": "not-built",
 			"run": "not-run",
 			"errorCodes": [],
@@ -5269,6 +4971,7 @@
 			"firstError": "",
 			"warnings": [],
 			"blockerThemes": [],
+			"measured": true,
 			"legacyBuild": {
 				"result": "fail",
 				"errorCodes": [
@@ -5282,7 +4985,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"note": "legacy non-SDK csproj: the converter leaves it as .NET Framework 4.x, so it builds (or not) against the real WPF reference assemblies with the generated *.g.cs added; not a measurement of the layer, recorded as not-built as before"
+			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild"
 		},
 		{
 			"project": "Migration and Interoperability/HostingAxInXaml/HostingAXinWPFWithXaml.csproj",
@@ -5290,7 +4993,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": true,
-			"batch": 4,
+			"batch": 3,
 			"build": "not-built",
 			"run": "not-run",
 			"errorCodes": [],
@@ -5300,6 +5003,7 @@
 			"firstError": "",
 			"warnings": [],
 			"blockerThemes": [],
+			"measured": true,
 			"legacyBuild": {
 				"result": "fail",
 				"errorCodes": [
@@ -5313,7 +5017,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"note": "legacy non-SDK csproj: the converter leaves it as .NET Framework 4.x, so it builds (or not) against the real WPF reference assemblies with the generated *.g.cs added; not a measurement of the layer, recorded as not-built as before"
+			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild"
 		},
 		{
 			"project": "Migration and Interoperability/HostingWfInWPF/HostingWfInWPF.csproj",
@@ -5321,7 +5025,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": false,
-			"batch": 4,
+			"batch": 3,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
@@ -5353,7 +5057,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": true,
-			"batch": 4,
+			"batch": 3,
 			"build": "not-built",
 			"run": "not-run",
 			"errorCodes": [],
@@ -5363,6 +5067,7 @@
 			"firstError": "",
 			"warnings": [],
 			"blockerThemes": [],
+			"measured": true,
 			"legacyBuild": {
 				"result": "fail",
 				"errorCodes": [
@@ -5377,7 +5082,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"note": "legacy non-SDK csproj: the converter leaves it as .NET Framework 4.x, so it builds (or not) against the real WPF reference assemblies with the generated *.g.cs added; not a measurement of the layer, recorded as not-built as before"
+			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild"
 		},
 		{
 			"project": "Migration and Interoperability/HostingWfWithVisualStyles/HostingWfWithVisualStyles.csproj",
@@ -5385,7 +5090,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": false,
-			"batch": 4,
+			"batch": 3,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
@@ -5417,7 +5122,7 @@
 			"kind": "library",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 4,
+			"batch": 3,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
@@ -5440,7 +5145,6 @@
 				"build": "fail",
 				"run": "not-run",
 				"errorCodes": [
-					"CS0117",
 					"CS1061"
 				]
 			},
@@ -5452,7 +5156,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": true,
-			"batch": 4,
+			"batch": 3,
 			"build": "not-built",
 			"run": "not-run",
 			"errorCodes": [],
@@ -5462,6 +5166,7 @@
 			"firstError": "",
 			"warnings": [],
 			"blockerThemes": [],
+			"measured": true,
 			"legacyBuild": {
 				"result": "fail",
 				"errorCodes": [
@@ -5475,7 +5180,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"note": "legacy non-SDK csproj: the converter leaves it as .NET Framework 4.x, so it builds (or not) against the real WPF reference assemblies with the generated *.g.cs added; not a measurement of the layer, recorded as not-built as before"
+			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild"
 		},
 		{
 			"project": "Migration and Interoperability/HWNDInWPF/hwndinwpf/hwndInWPF.vcxproj",
@@ -5508,7 +5213,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": false,
-			"batch": 4,
+			"batch": 3,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
@@ -5520,7 +5225,7 @@
 			"firstError": "hwndInWPF.vcxproj: MSB4278 The imported file \"$(VCTargetsPath)\\Microsoft.Cpp.Default.props\" does not exist and appears to be part of a Visual Studio component. This file may require MSBuild.exe in order to be imported successfully, and so may fail to build in the dotnet CLI.",
 			"warnings": [],
 			"blockerThemes": [
-				"packaging"
+				"windows"
 			],
 			"measured": true,
 			"previous": {
@@ -5538,7 +5243,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": true,
-			"batch": 4,
+			"batch": 3,
 			"build": "not-built",
 			"run": "not-run",
 			"errorCodes": [],
@@ -5548,6 +5253,7 @@
 			"firstError": "",
 			"warnings": [],
 			"blockerThemes": [],
+			"measured": true,
 			"legacyBuild": {
 				"result": "fail",
 				"errorCodes": [
@@ -5562,7 +5268,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"note": "legacy non-SDK csproj: the converter leaves it as .NET Framework 4.x, so it builds (or not) against the real WPF reference assemblies with the generated *.g.cs added; not a measurement of the layer, recorded as not-built as before"
+			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild"
 		},
 		{
 			"project": "Migration and Interoperability/PropertyMappingWithElementHost/PropertyMappingWithElementHost.csproj",
@@ -5570,7 +5276,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": false,
-			"batch": 4,
+			"batch": 3,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
@@ -5606,7 +5312,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": true,
-			"batch": 4,
+			"batch": 3,
 			"build": "not-built",
 			"run": "not-run",
 			"errorCodes": [],
@@ -5616,6 +5322,7 @@
 			"firstError": "",
 			"warnings": [],
 			"blockerThemes": [],
+			"measured": true,
 			"legacyBuild": {
 				"result": "fail",
 				"errorCodes": [
@@ -5631,7 +5338,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"note": "legacy non-SDK csproj: the converter leaves it as .NET Framework 4.x, so it builds (or not) against the real WPF reference assemblies with the generated *.g.cs added; not a measurement of the layer, recorded as not-built as before"
+			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild"
 		},
 		{
 			"project": "Migration and Interoperability/Win32Clock/win32clock/win32clock.vcxproj",
@@ -5664,25 +5371,16 @@
 			"kind": "library",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 4,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0103",
-				"CS1061"
-			],
+			"batch": 3,
+			"build": "pass",
+			"run": "skipped",
+			"errorCodes": [],
 			"missingTypes": [],
-			"missingMembers": [
-				"HandoffBehavior",
-				"Storyboard.Seek",
-				"TimeSeekOrigin"
-			],
+			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "Clock.cs: CS0103 The name 'HandoffBehavior' does not exist in the current context",
+			"firstError": "",
 			"warnings": [],
-			"blockerThemes": [
-				"animation"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -5692,7 +5390,8 @@
 					"CS1061"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 51 animation-clocks (4a1a9325): HandoffBehavior, Storyboard.Seek, TimeSeekOrigin"
 		},
 		{
 			"project": "Migration and Interoperability/Win32HostingWPFPage/cpp/win32hostingwpfpage.vcxproj",
@@ -5725,7 +5424,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": true,
-			"batch": 4,
+			"batch": 3,
 			"build": "not-built",
 			"run": "not-run",
 			"errorCodes": [],
@@ -5735,6 +5434,7 @@
 			"firstError": "",
 			"warnings": [],
 			"blockerThemes": [],
+			"measured": true,
 			"legacyBuild": {
 				"result": "fail",
 				"errorCodes": [
@@ -5748,7 +5448,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"note": "legacy non-SDK csproj: the converter leaves it as .NET Framework 4.x, so it builds (or not) against the real WPF reference assemblies with the generated *.g.cs added; not a measurement of the layer, recorded as not-built as before"
+			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild"
 		},
 		{
 			"project": "Migration and Interoperability/WindowsFormsHostingWpfControl/WPFControls/WPFControls.csproj",
@@ -5756,7 +5456,7 @@
 			"kind": "library",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 4,
+			"batch": 3,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
@@ -5788,7 +5488,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": false,
-			"batch": 4,
+			"batch": 3,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
@@ -5802,7 +5502,9 @@
 			"missingMembers": [],
 			"xamlErrors": [],
 			"firstError": "ControlHost.cs: CS0234 The type or namespace name 'Interop' does not exist in the namespace 'System.Windows' (are you missing an assembly reference?)",
-			"warnings": [],
+			"warnings": [
+				"CS0618"
+			],
 			"blockerThemes": [
 				"windows"
 			],
@@ -5823,7 +5525,7 @@
 			"kind": "library",
 			"windowsOnly": true,
 			"legacyCsproj": false,
-			"batch": 4,
+			"batch": 3,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
@@ -5862,7 +5564,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": true,
-			"batch": 4,
+			"batch": 3,
 			"build": "not-built",
 			"run": "not-run",
 			"errorCodes": [],
@@ -5872,6 +5574,7 @@
 			"firstError": "",
 			"warnings": [],
 			"blockerThemes": [],
+			"measured": true,
 			"legacyBuild": {
 				"result": "fail",
 				"errorCodes": [
@@ -5885,7 +5588,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"note": "legacy non-SDK csproj: the converter leaves it as .NET Framework 4.x, so it builds (or not) against the real WPF reference assemblies with the generated *.g.cs added; not a measurement of the layer, recorded as not-built as before"
+			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild"
 		},
 		{
 			"project": "Migration and Interoperability/WpfLayoutHostingWfWithXaml/WpfLayoutHostingWfWithXaml.csproj",
@@ -5893,7 +5596,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": true,
-			"batch": 4,
+			"batch": 3,
 			"build": "not-built",
 			"run": "not-run",
 			"errorCodes": [],
@@ -5903,6 +5606,7 @@
 			"firstError": "",
 			"warnings": [],
 			"blockerThemes": [],
+			"measured": true,
 			"legacyBuild": {
 				"result": "fail",
 				"errorCodes": [
@@ -5918,7 +5622,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"note": "legacy non-SDK csproj: the converter leaves it as .NET Framework 4.x, so it builds (or not) against the real WPF reference assemblies with the generated *.g.cs added; not a measurement of the layer, recorded as not-built as before"
+			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild"
 		},
 		{
 			"project": "Migration and Interoperability/WPFUserControlHost/WPFUserControlHost.csproj",
@@ -5926,7 +5630,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": true,
-			"batch": 4,
+			"batch": 3,
 			"build": "not-built",
 			"run": "not-run",
 			"errorCodes": [],
@@ -5936,6 +5640,7 @@
 			"firstError": "",
 			"warnings": [],
 			"blockerThemes": [],
+			"measured": true,
 			"legacyBuild": {
 				"result": "fail",
 				"errorCodes": [
@@ -5949,7 +5654,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"note": "legacy non-SDK csproj: the converter leaves it as .NET Framework 4.x, so it builds (or not) against the real WPF reference assemblies with the generated *.g.cs added; not a measurement of the layer, recorded as not-built as before"
+			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild"
 		},
 		{
 			"project": "Migration and Interoperability/WPFWithWFAndDatabinding/WPFWithWFAndDatabinding.csproj",
@@ -5957,7 +5662,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": false,
-			"batch": 4,
+			"batch": 3,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
@@ -5966,10 +5671,13 @@
 			"missingTypes": [],
 			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "Microsoft.PackageDependencyResolution.targets: NETSDK1005 Assets file 'C:\\Temp\\Gtk.Forms\\.claude\\samples-r48\\batch4\\Migration and Interoperability\\WPFWithWFAndDatabinding\\obj\\project.assets.json' doesn't have a target for 'net10.0-windows'. Ensure that restore has run and that you have included 'net",
-			"warnings": [],
+			"firstError": "Microsoft.PackageDependencyResolution.targets: NETSDK1005 Assets file 'C:\\Temp\\Gtk.Forms\\.claude\\samples-remeasure-r52\\batch3\\Migration and Interoperability\\WPFWithWFAndDatabinding\\obj\\project.assets.json' doesn't have a target for 'net10.0-windows'. Ensure that restore has run and that you have inc",
+			"warnings": [
+				"NU1902",
+				"NU1903"
+			],
 			"blockerThemes": [
-				"packaging"
+				"windows"
 			],
 			"measured": true,
 			"previous": {
@@ -5987,7 +5695,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": false,
-			"batch": 6,
+			"batch": 5,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
@@ -5997,11 +5705,15 @@
 				"DpiScale"
 			],
 			"missingMembers": [],
-			"xamlErrors": [],
+			"xamlErrors": [
+				"MainWindow.xaml.cs(34,46): CS0246: The type or namespace name 'DpiScale' could not be found (are you missing a using directive or an assembly reference?)",
+				"MainWindow.xaml.cs(34,72): CS0246: The type or namespace name 'DpiScale' could not be found (are you missing a using directive or an assembly reference?)",
+				"MainWindow.xaml.cs(39,40): CS0246: The type or namespace name 'DpiScale' could not be found (are you missing a using directive or an assembly reference?)"
+			],
 			"firstError": "MainWindow.xaml.cs: CS0246 The type or namespace name 'DpiScale' could not be found (are you missing a using directive or an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
-				"graphics"
+				"windows"
 			],
 			"measured": true,
 			"previous": {
@@ -6019,7 +5731,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": false,
-			"batch": 6,
+			"batch": 5,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
@@ -6033,7 +5745,7 @@
 			"firstError": "DpiAwareImage.cs: CS0246 The type or namespace name 'DpiScale' could not be found (are you missing a using directive or an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
-				"graphics"
+				"windows"
 			],
 			"measured": true,
 			"previous": {
@@ -6051,7 +5763,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": false,
-			"batch": 6,
+			"batch": 5,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
@@ -6063,26 +5775,26 @@
 				"CultureSpecificCharacterBufferRange",
 				"DpiScale",
 				"System.Windows.Media.TextFormatting",
-				"TextEffectCollection",
 				"TextMarkerProperties",
 				"TextParagraphProperties",
 				"TextRun",
 				"TextRunProperties",
 				"TextRunTypographyProperties",
 				"TextSource",
-				"TextSpan<>",
-				"Typeface"
+				"TextSpan<>"
 			],
 			"missingMembers": [],
-			"xamlErrors": [],
+			"xamlErrors": [
+				"MainWindow.xaml.cs(14,28): CS0234: The type or namespace name 'TextFormatting' does not exist in the namespace 'System.Windows.Media' (are you missing an assembly reference?)",
+				"MainWindow.xaml.cs(30,46): CS0246: The type or namespace name 'DpiScale' could not be found (are you missing a using directive or an assembly reference?)",
+				"MainWindow.xaml.cs(30,72): CS0246: The type or namespace name 'DpiScale' could not be found (are you missing a using directive or an assembly reference?)"
+			],
 			"firstError": "CustomTextSource.cs: CS0234 The type or namespace name 'TextFormatting' does not exist in the namespace 'System.Windows.Media' (are you missing an assembly reference?)",
 			"warnings": [
 				"CS2002"
 			],
 			"blockerThemes": [
-				"documents-text",
-				"graphics",
-				"items-data"
+				"windows"
 			],
 			"measured": true,
 			"previous": {
@@ -6101,7 +5813,7 @@
 			"kind": "app",
 			"windowsOnly": true,
 			"legacyCsproj": true,
-			"batch": 6,
+			"batch": 5,
 			"build": "not-built",
 			"run": "not-run",
 			"errorCodes": [],
@@ -6111,6 +5823,7 @@
 			"firstError": "",
 			"warnings": [],
 			"blockerThemes": [],
+			"measured": true,
 			"legacyBuild": {
 				"result": "fail",
 				"errorCodes": [
@@ -6126,7 +5839,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"note": "legacy non-SDK csproj: the converter leaves it as .NET Framework 4.x, so it builds (or not) against the real WPF reference assemblies with the generated *.g.cs added; not a measurement of the layer, recorded as not-built as before"
+			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild"
 		},
 		{
 			"project": "Properties/Callbacks/Callbacks.csproj",
@@ -6134,20 +5847,16 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 1,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0534"
-			],
+			"batch": 6,
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
 			"missingTypes": [],
 			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "Gauge.cs: CS0534 'Gauge' does not implement inherited abstract member 'UIElement.CreateWidget()'",
+			"firstError": "",
 			"warnings": [],
-			"blockerThemes": [
-				"extensibility"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -6156,7 +5865,8 @@
 					"CS0534"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 49 startup-build-sweep (9a38e05e): CreateWidget no longer abstract (CS0534)"
 		},
 		{
 			"project": "Properties/CustomClassesWithDP/CustomClassesWithDP.csproj",
@@ -6164,7 +5874,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 1,
+			"batch": 6,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -6190,7 +5900,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 1,
+			"batch": 6,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -6202,14 +5912,11 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS1061"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 graphics-window-tail (5ebf5285): DependencyObject.GetLocalValueEnumerator on shapes"
+			"change": "unchanged"
 		},
 		{
 			"project": "Resources/ApplicationResources/ApplicationResources.csproj",
@@ -6217,7 +5924,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 1,
+			"batch": 6,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -6241,7 +5948,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 1,
+			"batch": 6,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -6265,24 +5972,16 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 1,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0103",
-				"CS1503"
-			],
+			"batch": 6,
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
 			"missingTypes": [],
-			"missingMembers": [
-				"XamlReader",
-				"XamlWriter"
-			],
+			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "MainWindow.cs: CS0103 The name 'XamlWriter' does not exist in the current context",
+			"firstError": "",
 			"warnings": [],
-			"blockerThemes": [
-				"xaml-runtime"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -6292,7 +5991,8 @@
 					"CS1503"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 49 runtime-xaml-navigation (8c44b817): XamlReader/XamlWriter"
 		},
 		{
 			"project": "Sample Applications/CalculatorDemo/CalculatorDemo.csproj",
@@ -6301,33 +6001,26 @@
 			"windowsOnly": false,
 			"legacyCsproj": false,
 			"batch": 3,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0103",
-				"CS1061"
-			],
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
 			"missingTypes": [],
-			"missingMembers": [
-				"DisplayBox",
-				"DockPanel.Parent",
-				"MainWindow.PaperBox"
-			],
+			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "MainWindow.cs: CS1061 'DockPanel' does not contain a definition for 'Parent' and no accessible extension method 'Parent' accepting a first argument of type 'DockPanel' could be found (are you missing a using directive or an assembly reference?)",
+			"firstError": "",
 			"warnings": [],
-			"blockerThemes": [
-				"other"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
 				"run": "not-run",
 				"errorCodes": [
-					"CS0246"
+					"CS0103",
+					"CS1061"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 49 startup-build-sweep (9a38e05e): x:Name fields for local: types, FrameworkElement.Parent"
 		},
 		{
 			"project": "Sample Applications/ConcentricRingsDemo/ConcentricRingsDemo.csproj",
@@ -6336,27 +6029,15 @@
 			"windowsOnly": false,
 			"legacyCsproj": false,
 			"batch": 3,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0117",
-				"CS1061",
-				"CS1729"
-			],
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
 			"missingTypes": [],
-			"missingMembers": [
-				"Ellipse.BeginAnimation",
-				"TranslateTransform.BeginAnimation",
-				"TranslateTransform.XProperty",
-				"TranslateTransform.YProperty"
-			],
+			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "MainWindow.cs: CS1729 'DoubleAnimation' does not contain a constructor that takes 3 arguments",
+			"firstError": "",
 			"warnings": [],
-			"blockerThemes": [
-				"animation",
-				"graphics"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -6367,7 +6048,8 @@
 					"CS1729"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 51 animation-clocks (4a1a9325): BeginAnimation, DP-backed TranslateTransform.X/Y"
 		},
 		{
 			"project": "Sample Applications/CubeAnimationDemo/CubeAnimationDemo.csproj",
@@ -6393,8 +6075,7 @@
 			"firstError": "TrackBall.cs: CS0234 The type or namespace name 'Media3D' does not exist in the namespace 'System.Windows.Media' (are you missing an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
-				"3d",
-				"graphics"
+				"media3d"
 			],
 			"measured": true,
 			"previous": {
@@ -6414,56 +6095,41 @@
 			"windowsOnly": false,
 			"legacyCsproj": false,
 			"batch": 3,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0116",
-				"CS1001",
-				"CS1002",
-				"CS1003",
-				"CS1014",
-				"CS1022",
-				"CS1026",
-				"CS1031",
-				"CS1513",
-				"CS1514",
-				"CS1519",
-				"CS1597",
-				"CS8124",
-				"CS8803"
-			],
+			"build": "pass",
+			"run": "crash",
+			"errorCodes": [],
 			"missingTypes": [],
 			"missingMembers": [],
-			"xamlErrors": [
-				"Styles.g.cs(279,124): CS1026: ) expected",
-				"Styles.g.cs(279,124): CS1513: } expected",
-				"Styles.g.cs(279,124): CS1002: ; expected",
-				"Styles.g.cs(307,6): CS1597: Semicolon after method or accessor block is not valid",
-				"Styles.g.cs(308,26): CS1519: Invalid token '(' in a member declaration",
-				"Styles.g.cs(308,27): CS1031: Type expected",
-				"Styles.g.cs(308,27): CS8124: Tuple must contain at least two elements.",
-				"Styles.g.cs(308,53): CS1001: Identifier expected",
-				"Styles.g.cs(308,55): CS1014: A get or set accessor expected",
-				"Styles.g.cs(308,101): CS1519: Invalid token ')' in a member declaration",
-				"Styles.g.cs(309,40): CS1519: Invalid token '=' in a member declaration",
-				"Styles.g.cs(309,51): CS1519: Invalid token ';' in a member declaration"
+			"xamlErrors": [],
+			"firstError": "",
+			"warnings": [
+				"CS0067"
 			],
-			"firstError": "Styles.g.cs: CS1026 ) expected",
-			"warnings": [],
-			"blockerThemes": [
-				"xaml-generator"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
 				"run": "not-run",
 				"errorCodes": [
-					"CS0115",
-					"CS0234",
-					"CS0246"
+					"CS0116",
+					"CS1001",
+					"CS1002",
+					"CS1003",
+					"CS1014",
+					"CS1022",
+					"CS1026",
+					"CS1031",
+					"CS1513",
+					"CS1514",
+					"CS1519",
+					"CS1597",
+					"CS8124",
+					"CS8803"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 49 startup-build-sweep (9a38e05e): prefixed RoutedEvent owner and nested {DynamicResource {x:Static}} key (Styles.xaml compiles)",
+			"runCause": "InvalidOperationException: Resource with key 'stringConverter' not found, from Styles.InitializeComponent: for a ResourceDictionary root the generator stores the keys in a temporary __owner Border's Resources but StaticResourceScope.Find(key, this, this) searches the dictionary itself"
 		},
 		{
 			"project": "Sample Applications/DataBindingDemo/DataBindingDemo.csproj",
@@ -6475,19 +6141,17 @@
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
-				"CS0234",
 				"CS0246"
 			],
 			"missingTypes": [
-				"FilterEventArgs",
-				"System.Windows.Automation.Peers"
+				"FilterEventArgs"
 			],
 			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "AddProductWindow.cs: CS0234 The type or namespace name 'Peers' does not exist in the namespace 'System.Windows.Automation' (are you missing an assembly reference?)",
+			"firstError": "MainWindow.cs: CS0246 The type or namespace name 'FilterEventArgs' could not be found (are you missing a using directive or an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
-				"automation"
+				"tree-items-data"
 			],
 			"measured": true,
 			"previous": {
@@ -6537,18 +6201,17 @@
 				"CS0246"
 			],
 			"missingTypes": [
-				"NavigationEventArgs",
 				"PermissionSet",
-				"PermissionSetAttribute",
-				"Table"
+				"PermissionSetAttribute"
 			],
 			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "TreeViewhelper.cs: CS0246 The type or namespace name 'Table' could not be found (are you missing a using directive or an assembly reference?)",
-			"warnings": [],
+			"firstError": "ReflectionUtils.cs: CS0246 The type or namespace name 'PermissionSetAttribute' could not be found (are you missing a using directive or an assembly reference?)",
+			"warnings": [
+				"SYSLIB0003"
+			],
 			"blockerThemes": [
-				"documents-text",
-				"navigation-pages"
+				"cas"
 			],
 			"measured": true,
 			"previous": {
@@ -6571,20 +6234,22 @@
 			"run": "not-run",
 			"errorCodes": [
 				"CS0115",
-				"CS0246",
-				"CS0534"
+				"CS0246"
 			],
 			"missingTypes": [
 				"ListViewItem"
 			],
-			"missingMembers": [],
+			"missingMembers": [
+				"override EditBox.OnMouseEnter(MouseEventArgs)",
+				"override EditBox.OnMouseLeave(MouseEventArgs)",
+				"override EditBox.OnMouseUp(MouseButtonEventArgs)"
+			],
 			"xamlErrors": [],
-			"firstError": "EditBox.cs: CS0115 'EditBox.OnApplyTemplate()': no suitable method found to override",
+			"firstError": "EditBox.cs: CS0115 'EditBox.OnMouseEnter(MouseEventArgs)': no suitable method found to override",
 			"warnings": [],
 			"blockerThemes": [
 				"controls",
-				"extensibility",
-				"items-data"
+				"extensibility"
 			],
 			"measured": true,
 			"previous": {
@@ -6609,20 +6274,22 @@
 			"run": "not-run",
 			"errorCodes": [
 				"CS0115",
-				"CS0246",
-				"CS0534"
+				"CS0246"
 			],
 			"missingTypes": [
 				"ListViewItem"
 			],
-			"missingMembers": [],
+			"missingMembers": [
+				"override EditBox.OnMouseEnter(MouseEventArgs)",
+				"override EditBox.OnMouseLeave(MouseEventArgs)",
+				"override EditBox.OnMouseUp(MouseButtonEventArgs)"
+			],
 			"xamlErrors": [],
-			"firstError": "EditBox.cs: CS0115 'EditBox.OnApplyTemplate()': no suitable method found to override",
+			"firstError": "EditBox.cs: CS0115 'EditBox.OnMouseEnter(MouseEventArgs)': no suitable method found to override",
 			"warnings": [],
 			"blockerThemes": [
 				"controls",
-				"extensibility",
-				"items-data"
+				"extensibility"
 			],
 			"measured": true,
 			"previous": {
@@ -6646,24 +6313,37 @@
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
-				"CS0246"
+				"CS0029",
+				"CS0103",
+				"CS0117",
+				"CS0123",
+				"CS1061",
+				"CS1729"
 			],
-			"missingTypes": [
-				"FontEastAsianLanguage",
-				"FontEastAsianWidths",
-				"FontNumeralAlignment",
-				"LanguageSpecificStringDictionary",
-				"TableRowGroup",
-				"Typeface"
+			"missingTypes": [],
+			"missingMembers": [
+				"ContentEnd",
+				"ContentStart",
+				"IList<object?>.CurrentItem",
+				"IList<object?>.CurrentPosition",
+				"IList<object?>.IsEmpty",
+				"IList<object?>.MoveCurrentToPosition",
+				"ListBox.ScrollIntoView",
+				"Paragraph.FontStretch",
+				"TextBox.TextAlignment",
+				"TextDecorationCollection.Freeze"
 			],
-			"missingMembers": [],
-			"xamlErrors": [],
-			"firstError": "NameDictionaryHelper.cs: CS0246 The type or namespace name 'LanguageSpecificStringDictionary' could not be found (are you missing a using directive or an assembly reference?)",
+			"xamlErrors": [
+				"FontChooser.g.cs(381,11): CS1061: 'TextBox' does not contain a definition for 'TextAlignment' and no accessible extension method 'TextAlignment' accepting a first argument of type 'TextBox' could be found (are you missing a using directive or an assembly reference?)"
+			],
+			"firstError": "TypefaceListItem.cs: CS0103 The name 'ContentStart' does not exist in the current context",
 			"warnings": [
 				"CS2002"
 			],
 			"blockerThemes": [
-				"documents-text"
+				"controls",
+				"documents-text",
+				"tree-items-data"
 			],
 			"measured": true,
 			"previous": {
@@ -6682,40 +6362,29 @@
 			"windowsOnly": false,
 			"legacyCsproj": false,
 			"batch": 3,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0103",
-				"CS1061"
-			],
+			"build": "pass",
+			"run": "crash",
+			"errorCodes": [],
 			"missingTypes": [],
-			"missingMembers": [
-				"Button.Parent",
-				"Canvas.Parent",
-				"DockPanel.BeginAnimation",
-				"Geometry.Clone",
-				"XamlWriter"
-			],
+			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "MainWindow.cs: CS1061 'Canvas' does not contain a definition for 'Parent' and no accessible extension method 'Parent' accepting a first argument of type 'Canvas' could be found (are you missing a using directive or an assembly reference?)",
-			"warnings": [],
-			"blockerThemes": [
-				"animation",
-				"graphics",
-				"xaml-runtime"
+			"firstError": "",
+			"warnings": [
+				"CS0649"
 			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
 				"run": "not-run",
 				"errorCodes": [
 					"CS0103",
-					"CS0117",
-					"CS0246",
 					"CS1061"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 49 startup-build-sweep (9a38e05e): FrameworkElement.Parent; Round 49 runtime-xaml-navigation (8c44b817): XamlWriter; Round 51 animation-clocks (4a1a9325): BeginAnimation, Geometry.Clone",
+			"runCause": "InvalidOperationException: Cannot find the element named 'LogoBrush' to animate 'Opacity': Storyboard.TargetName refers to an x:Name'd VisualBrush (a Freezable), which is not registered in the name scope; unhandled in a GTK callback after the window loads"
 		},
 		{
 			"project": "Sample Applications/GraphingCalculatorDemo/GraphingCalculatorDemo.csproj",
@@ -6746,8 +6415,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [
-				"3d",
-				"graphics"
+				"media3d"
 			],
 			"measured": true,
 			"previous": {
@@ -6784,8 +6452,7 @@
 			"firstError": "TrackBall.cs: CS0234 The type or namespace name 'Media3D' does not exist in the namespace 'System.Windows.Media' (are you missing an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
-				"3d",
-				"graphics"
+				"media3d"
 			],
 			"measured": true,
 			"previous": {
@@ -6834,28 +6501,19 @@
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
-				"CS0103",
-				"CS0117",
 				"CS1061"
 			],
 			"missingTypes": [],
 			"missingMembers": [
-				"BeginAnimation",
-				"LayoutToLayoutTarget.TranslatePoint",
-				"LayoutUpdated",
-				"Parent",
-				"TranslateTransform.BeginAnimation",
-				"TranslateTransform.XProperty",
-				"TranslateTransform.YProperty"
+				"LayoutToLayoutTarget.TranslatePoint"
 			],
 			"xamlErrors": [],
-			"firstError": "LayoutToLayoutTarget.cs: CS0103 The name 'LayoutUpdated' does not exist in the current context",
+			"firstError": "LayoutToLayoutHost.cs: CS1061 'LayoutToLayoutTarget' does not contain a definition for 'TranslatePoint' and no accessible extension method 'TranslatePoint' accepting a first argument of type 'LayoutToLayoutTarget' could be found (are you missing a using directive or an assembly reference?)",
 			"warnings": [
 				"CS2002"
 			],
 			"blockerThemes": [
-				"animation",
-				"graphics"
+				"graphics-input"
 			],
 			"measured": true,
 			"previous": {
@@ -6896,8 +6554,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [
-				"3d",
-				"graphics"
+				"media3d"
 			],
 			"measured": true,
 			"previous": {
@@ -6935,8 +6592,7 @@
 			"firstError": "TrackBall.cs: CS0234 The type or namespace name 'Media3D' does not exist in the namespace 'System.Windows.Media' (are you missing an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
-				"3d",
-				"graphics"
+				"media3d"
 			],
 			"measured": true,
 			"previous": {
@@ -6959,21 +6615,39 @@
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
+				"CS0103",
+				"CS0117",
 				"CS0246",
-				"CS0534"
+				"CS1061"
 			],
 			"missingTypes": [
-				"BitmapFrame"
+				"CachedBitmap",
+				"CroppedBitmap",
+				"FormatConvertedBitmap",
+				"TransformedBitmap"
 			],
-			"missingMembers": [],
-			"xamlErrors": [],
-			"firstError": "ImageFile.cs: CS0246 The type or namespace name 'BitmapFrame' could not be found (are you missing a using directive or an assembly reference?)",
+			"missingMembers": [
+				"AddVisualChild",
+				"ListBox.ScrollIntoView",
+				"RangeBase.ValueProperty",
+				"Rect.Location",
+				"Rect.Size",
+				"WrapPanel.ItemHeight",
+				"WrapPanel.ItemWidth"
+			],
+			"xamlErrors": [
+				"MainWindow.g.cs(296,15): CS1061: 'WrapPanel' does not contain a definition for 'ItemHeight' and no accessible extension method 'ItemHeight' accepting a first argument of type 'WrapPanel' could be found (are you missing a using directive or an assembly reference?)",
+				"MainWindow.g.cs(297,15): CS1061: 'WrapPanel' does not contain a definition for 'ItemWidth' and no accessible extension method 'ItemWidth' accepting a first argument of type 'WrapPanel' could be found (are you missing a using directive or an assembly reference?)"
+			],
+			"firstError": "RubberbandAdorner.cs: CS0103 The name 'AddVisualChild' does not exist in the current context",
 			"warnings": [
 				"CS2002"
 			],
 			"blockerThemes": [
-				"extensibility",
-				"imaging"
+				"controls",
+				"graphics-input",
+				"imaging",
+				"tree-items-data"
 			],
 			"measured": true,
 			"previous": {
@@ -6996,21 +6670,32 @@
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
+				"CS0117",
 				"CS0246",
-				"CS0534"
+				"CS1061"
 			],
 			"missingTypes": [
-				"BitmapFrame",
-				"BitmapMetadata"
+				"CachedBitmap",
+				"CroppedBitmap",
+				"FormatConvertedBitmap",
+				"TransformedBitmap"
 			],
-			"missingMembers": [],
-			"xamlErrors": [],
-			"firstError": "ExifMetadata.cs: CS0246 The type or namespace name 'BitmapMetadata' could not be found (are you missing a using directive or an assembly reference?)",
+			"missingMembers": [
+				"GridSplitter.ShowsPreview",
+				"WrapPanel.ItemHeightProperty",
+				"WrapPanel.ItemWidthProperty"
+			],
+			"xamlErrors": [
+				"MainWindow.g.cs(25,60): CS0117: 'WrapPanel' does not contain a definition for 'ItemHeightProperty'",
+				"MainWindow.g.cs(26,60): CS0117: 'WrapPanel' does not contain a definition for 'ItemWidthProperty'",
+				"MainWindow.g.cs(175,11): CS1061: 'GridSplitter' does not contain a definition for 'ShowsPreview' and no accessible extension method 'ShowsPreview' accepting a first argument of type 'GridSplitter' could be found (are you missing a using directive or an assembly reference?)"
+			],
+			"firstError": "PhotoViewer.cs: CS0246 The type or namespace name 'CachedBitmap' could not be found (are you missing a using directive or an assembly reference?)",
 			"warnings": [
 				"CS2002"
 			],
 			"blockerThemes": [
-				"extensibility",
+				"controls",
 				"imaging"
 			],
 			"measured": true,
@@ -7037,18 +6722,16 @@
 				"CS0246"
 			],
 			"missingTypes": [
-				"FlowDocumentPageViewer",
 				"MediaElement"
 			],
 			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "Document.cs: CS0246 The type or namespace name 'FlowDocumentPageViewer' could not be found (are you missing a using directive or an assembly reference?)",
+			"firstError": "Puzzle.cs: CS0246 The type or namespace name 'MediaElement' could not be found (are you missing a using directive or an assembly reference?)",
 			"warnings": [
 				"CS2002"
 			],
 			"blockerThemes": [
-				"controls",
-				"documents-text"
+				"controls"
 			],
 			"measured": true,
 			"previous": {
@@ -7086,7 +6769,6 @@
 			"firstError": "Splash.cs: CS0234 The type or namespace name 'Forms' does not exist in the namespace 'System.Windows' (are you missing an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
-				"input",
 				"windows"
 			],
 			"measured": true,
@@ -7116,6 +6798,7 @@
 			"xamlErrors": [],
 			"firstError": "",
 			"warnings": [
+				"CS0649",
 				"CS2002"
 			],
 			"blockerThemes": [],
@@ -7139,32 +6822,43 @@
 			"errorCodes": [
 				"CS0234",
 				"CS0246",
-				"CS0534",
 				"CS1069"
 			],
 			"missingTypes": [
-				"NavigationEventArgs",
 				"NonClientFrameEdges",
-				"System.Windows.Automation.Peers",
 				"System.Windows.Shell",
 				"UserControl"
 			],
 			"missingMembers": [],
-			"xamlErrors": [],
-			"firstError": "ColorTile.xaml.cs: CS0234 The type or namespace name 'Peers' does not exist in the namespace 'System.Windows.Automation' (are you missing an assembly reference?)",
-			"warnings": [],
+			"xamlErrors": [
+				"MainWindow.xaml.cs(5,22): CS0234: The type or namespace name 'Shell' does not exist in the namespace 'System.Windows' (are you missing an assembly reference?)",
+				"HeaderTile.xaml.cs(9,39): CS0246: The type or namespace name 'UserControl' could not be found (are you missing a using directive or an assembly reference?)",
+				"ColorTile.xaml.cs(12,38): CS0246: The type or namespace name 'UserControl' could not be found (are you missing a using directive or an assembly reference?)",
+				"ColorPageExample.xaml.cs(11,45): CS0246: The type or namespace name 'UserControl' could not be found (are you missing a using directive or an assembly reference?)",
+				"TileGallery.xaml.cs(23,40): CS0246: The type or namespace name 'UserControl' could not be found (are you missing a using directive or an assembly reference?)",
+				"IconDataField.xaml.cs(14,42): CS0246: The type or namespace name 'UserControl' could not be found (are you missing a using directive or an assembly reference?)",
+				"MainWindow.xaml.cs(62,68): CS1069: The type name 'UserPreferenceChangedEventArgs' could not be found in the namespace 'Microsoft.Win32'. This type has been forwarded to assembly 'Microsoft.Win32.SystemEvents, Version=0.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51' Consider adding a reference to that assembly.",
+				"HeaderTile.xaml.cs(18,72): CS1069: The type name 'UserPreferenceChangedEventArgs' could not be found in the namespace 'Microsoft.Win32'. This type has been forwarded to assembly 'Microsoft.Win32.SystemEvents, Version=0.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51' Consider adding a reference to that assembly.",
+				"MainWindow.xaml.cs(296,13): CS0246: The type or namespace name 'NonClientFrameEdges' could not be found (are you missing a using directive or an assembly reference?)",
+				"ComboBoxPage.xaml.cs(31,64): CS1069: The type name 'UserPreferenceChangedEventArgs' could not be found in the namespace 'Microsoft.Win32'. This type has been forwarded to assembly 'Microsoft.Win32.SystemEvents, Version=0.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51' Consider adding a reference to that assembly.",
+				"DataGridPage.xaml.cs(27,72): CS1069: The type name 'UserPreferenceChangedEventArgs' could not be found in the namespace 'Microsoft.Win32'. This type has been forwarded to assembly 'Microsoft.Win32.SystemEvents, Version=0.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51' Consider adding a reference to that assembly.",
+				"GeometryPage.xaml.cs(26,72): CS1069: The type name 'UserPreferenceChangedEventArgs' could not be found in the namespace 'Microsoft.Win32'. This type has been forwarded to assembly 'Microsoft.Win32.SystemEvents, Version=0.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51' Consider adding a reference to that assembly."
+			],
+			"firstError": "MainWindow.xaml.cs: CS0234 The type or namespace name 'Shell' does not exist in the namespace 'System.Windows' (are you missing an assembly reference?)",
+			"warnings": [
+				"CS8612",
+				"CS8765",
+				"CS8767",
+				"NU1701"
+			],
 			"blockerThemes": [
-				"automation",
-				"controls",
-				"extensibility",
-				"navigation-pages"
+				"controls"
 			],
 			"measured": true,
 			"previous": {
 				"build": "fail",
 				"run": "not-run",
 				"errorCodes": [
-					"CS0111",
 					"CS0234",
 					"CS0246",
 					"CS0534",
@@ -7183,30 +6877,27 @@
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
+				"CS0029",
 				"CS0103",
 				"CS0117",
-				"CS0246",
-				"CS1061"
+				"CS0246"
 			],
 			"missingTypes": [
-				"MediaElement",
-				"PropertyPath"
+				"MediaElement"
 			],
 			"missingMembers": [
 				"MediaElement1",
 				"RangeBase.ValueProperty",
-				"Storyboard.GetCurrentTime",
-				"Storyboard.SeekAlignedToLastTick",
-				"TimeSeekOrigin",
 				"myMediaElement"
 			],
 			"xamlErrors": [
-				"MediaTimelinePlusAnimationExample.g.cs(64,115): CS0246: The type or namespace name 'MediaElement' could not be found (are you missing a using directive or an assembly reference?)"
+				"MediaTimelinePlusAnimationExample.g.cs(78,115): CS0246: The type or namespace name 'MediaElement' could not be found (are you missing a using directive or an assembly reference?)"
 			],
 			"firstError": "MediaElementExample.cs: CS0103 The name 'myMediaElement' does not exist in the current context",
-			"warnings": [],
+			"warnings": [
+				"CS0649"
+			],
 			"blockerThemes": [
-				"animation",
 				"controls"
 			],
 			"measured": true,
@@ -7216,7 +6907,6 @@
 				"errorCodes": [
 					"CS0103",
 					"CS0117",
-					"CS0123",
 					"CS0246",
 					"CS1061"
 				]
@@ -7239,6 +6929,7 @@
 			"firstError": "",
 			"warnings": [],
 			"blockerThemes": [],
+			"measured": true,
 			"legacyBuild": {
 				"result": "fail",
 				"errorCodes": [
@@ -7254,7 +6945,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"note": "legacy non-SDK csproj: the converter leaves it as .NET Framework 4.x, so it builds (or not) against the real WPF reference assemblies with the generated *.g.cs added; not a measurement of the layer, recorded as not-built as before"
+			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild"
 		},
 		{
 			"project": "Styles & Templates/AlternatingAppearanceOfItems/AlternatingAppearanceOfItems.csproj",
@@ -7262,7 +6953,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 3,
+			"batch": 6,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -7277,11 +6968,10 @@
 			"measured": true,
 			"previous": {
 				"build": "pass",
-				"run": "crash",
+				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "crash->runs",
-			"unblockedBy": "Round 47 generator-v4 (d78faffa): HierarchicalDataTemplate/CollectionViewSource/AlternationConverter resources built as objects"
+			"change": "unchanged"
 		},
 		{
 			"project": "Styles & Templates/ContentControlStyle/ContentControlStyle.csproj",
@@ -7289,7 +6979,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 3,
+			"batch": 6,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -7313,7 +7003,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 3,
+			"batch": 6,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -7337,7 +7027,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 3,
+			"batch": 6,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
@@ -7354,7 +7044,7 @@
 			"firstError": "MainWindow.cs: CS1061 'ControlTemplate' does not contain a definition for 'FindName' and no accessible extension method 'FindName' accepting a first argument of type 'ControlTemplate' could be found (are you missing a using directive or an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
-				"items-data"
+				"tree-items-data"
 			],
 			"measured": true,
 			"previous": {
@@ -7372,7 +7062,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 3,
+			"batch": 6,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -7396,7 +7086,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 3,
+			"batch": 6,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -7404,18 +7094,17 @@
 			"missingMembers": [],
 			"xamlErrors": [],
 			"firstError": "",
-			"warnings": [],
+			"warnings": [
+				"CA1416"
+			],
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0117"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 threading-dialogs-items (f585c6c8): static Dispatcher.Run"
+			"change": "unchanged"
 		},
 		{
 			"project": "Threading/SingleThreadedApplication/SingleThreadedApplication.csproj",
@@ -7423,7 +7112,31 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 3,
+			"batch": 6,
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
+			"missingTypes": [],
+			"missingMembers": [],
+			"xamlErrors": [],
+			"firstError": "",
+			"warnings": [],
+			"blockerThemes": [],
+			"measured": true,
+			"previous": {
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
+			},
+			"change": "unchanged"
+		},
+		{
+			"project": "Threading/UsingDispatcher/UsingDispatcher.csproj",
+			"category": "Threading",
+			"kind": "app",
+			"windowsOnly": false,
+			"legacyCsproj": false,
+			"batch": 6,
 			"build": "pass",
 			"run": "runs",
 			"errorCodes": [],
@@ -7438,42 +7151,11 @@
 				"build": "fail",
 				"run": "not-run",
 				"errorCodes": [
-					"CS1061"
-				]
-			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 threading-dialogs-items (f585c6c8): DispatcherObject.Dispatcher on elements"
-		},
-		{
-			"project": "Threading/UsingDispatcher/UsingDispatcher.csproj",
-			"category": "Threading",
-			"kind": "app",
-			"windowsOnly": false,
-			"legacyCsproj": false,
-			"batch": 3,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS1501"
-			],
-			"missingTypes": [],
-			"missingMembers": [],
-			"xamlErrors": [],
-			"firstError": "MainWindow.cs: CS1501 No overload for method 'Stop' takes 1 arguments",
-			"warnings": [],
-			"blockerThemes": [
-				"other"
-			],
-			"measured": true,
-			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS1061",
 					"CS1501"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Rounds 49-52 (CS1501 Dispatcher overload; the exact change was not isolated)"
 		},
 		{
 			"project": "Tools/BamlReflector/BamlReflector/BamlReflector.csproj",
@@ -7481,38 +7163,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 4,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"NU1201"
-			],
-			"missingTypes": [],
-			"missingMembers": [],
-			"xamlErrors": [],
-			"firstError": "BamlReflector.csproj: NU1201 Project BamlTools is not compatible with net10.0 (.NETCoreApp,Version=v10.0). Project BamlTools supports: net10.0-windows7.0 (.NETCoreApp,Version=v10.0)",
-			"warnings": [],
-			"blockerThemes": [
-				"packaging"
-			],
-			"measured": true,
-			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0234",
-					"CS0246"
-				]
-			},
-			"change": "unchanged"
-		},
-		{
-			"project": "Tools/BamlReflector/BamlTools/BamlTools.csproj",
-			"category": "Tools",
-			"kind": "library",
-			"windowsOnly": false,
-			"legacyCsproj": false,
-			"batch": 4,
+			"batch": 6,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
@@ -7539,7 +7190,52 @@
 			"firstError": "BamlNodeStreamReader.cs: CS0234 The type or namespace name 'Baml2006' does not exist in the namespace 'System.Windows' (are you missing an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
-				"xaml-runtime"
+				"xaml-tooling"
+			],
+			"measured": true,
+			"previous": {
+				"build": "fail",
+				"run": "not-run",
+				"errorCodes": [
+					"NU1201"
+				]
+			},
+			"change": "unchanged"
+		},
+		{
+			"project": "Tools/BamlReflector/BamlTools/BamlTools.csproj",
+			"category": "Tools",
+			"kind": "library",
+			"windowsOnly": false,
+			"legacyCsproj": false,
+			"batch": 6,
+			"build": "fail",
+			"run": "not-run",
+			"errorCodes": [
+				"CS0234",
+				"CS0246"
+			],
+			"missingTypes": [
+				"Baml2006Reader",
+				"IXamlLineInfoConsumer",
+				"NamespaceDeclaration",
+				"System.Windows.Baml2006",
+				"System.Xaml",
+				"XamlMember",
+				"XamlNodeQueue",
+				"XamlNodeType",
+				"XamlReader",
+				"XamlSchemaContext",
+				"XamlType",
+				"XamlWriter",
+				"XamlXmlWriter"
+			],
+			"missingMembers": [],
+			"xamlErrors": [],
+			"firstError": "BamlNodeStreamReader.cs: CS0234 The type or namespace name 'Baml2006' does not exist in the namespace 'System.Windows' (are you missing an assembly reference?)",
+			"warnings": [],
+			"blockerThemes": [
+				"xaml-tooling"
 			],
 			"measured": true,
 			"previous": {
@@ -7558,7 +7254,7 @@
 			"kind": "app",
 			"windowsOnly": false,
 			"legacyCsproj": false,
-			"batch": 4,
+			"batch": 6,
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
@@ -7578,7 +7274,7 @@
 			"firstError": "BamlLocalizabilityByReflection.cs: CS0234 The type or namespace name 'Localizer' does not exist in the namespace 'System.Windows.Markup' (are you missing an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
-				"xaml-runtime"
+				"xaml-tooling"
 			],
 			"measured": true,
 			"previous": {
@@ -7611,7 +7307,7 @@
 			"firstError": "MainWindow.cs: CS0234 The type or namespace name 'CompositionTarget' does not exist in the namespace 'System.Windows.Media' (are you missing an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
-				"graphics"
+				"graphics-input"
 			],
 			"measured": true,
 			"previous": {
@@ -7633,8 +7329,7 @@
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
-				"CS0246",
-				"CS0534"
+				"CS0246"
 			],
 			"missingTypes": [
 				"HitTestResultBehavior"
@@ -7644,8 +7339,7 @@
 			"firstError": "MyVisualHost.cs: CS0246 The type or namespace name 'HitTestResultBehavior' could not be found (are you missing a using directive or an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
-				"extensibility",
-				"graphics"
+				"graphics-input"
 			],
 			"measured": true,
 			"previous": {
@@ -7686,7 +7380,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [
-				"graphics",
+				"graphics-input",
 				"windows"
 			],
 			"measured": true,
@@ -7715,29 +7409,32 @@
 			],
 			"missingTypes": [],
 			"missingMembers": [
-				"Paragraph.FontSize",
 				"Run.SetBinding",
 				"Run.TextProperty"
 			],
 			"xamlErrors": [
-				"MainWindow.g.cs(29,10): CS1061: 'Paragraph' does not contain a definition for 'FontSize' and no accessible extension method 'FontSize' accepting a first argument of type 'Paragraph' could be found (are you missing a using directive or an assembly reference?)",
 				"MainWindow.g.cs(91,51): CS0117: 'Run' does not contain a definition for 'TextProperty'",
-				"MainWindow.g.cs(91,11): CS1061: 'Run' does not contain a definition for 'SetBinding' and no accessible extension method 'SetBinding' accepting a first argument of type 'Run' could be found (are you missing a using directive or an assembly reference?)"
+				"MainWindow.g.cs(91,11): CS1061: 'Run' does not contain a definition for 'SetBinding' and no accessible extension method 'SetBinding' accepting a first argument of type 'Run' could be found (are you missing a using directive or an assembly reference?)",
+				"MainWindow.g.cs(96,51): CS0117: 'Run' does not contain a definition for 'TextProperty'",
+				"MainWindow.g.cs(96,11): CS1061: 'Run' does not contain a definition for 'SetBinding' and no accessible extension method 'SetBinding' accepting a first argument of type 'Run' could be found (are you missing a using directive or an assembly reference?)"
 			],
-			"firstError": "MainWindow.g.cs: CS1061 'Paragraph' does not contain a definition for 'FontSize' and no accessible extension method 'FontSize' accepting a first argument of type 'Paragraph' could be found (are you missing a using directive or an assembly reference?)",
+			"firstError": "MainWindow.g.cs: CS0117 'Run' does not contain a definition for 'TextProperty'",
 			"warnings": [
-				"CS2002"
+				"CS0067",
+				"CS2002",
+				"CS8619",
+				"CS8625"
 			],
 			"blockerThemes": [
-				"documents-text",
-				"items-data"
+				"documents-text"
 			],
 			"measured": true,
 			"previous": {
 				"build": "fail",
 				"run": "not-run",
 				"errorCodes": [
-					"CS0234"
+					"CS0117",
+					"CS1061"
 				]
 			},
 			"change": "unchanged"
@@ -7750,7 +7447,7 @@
 			"legacyCsproj": false,
 			"batch": 5,
 			"build": "pass",
-			"run": "crash",
+			"run": "runs",
 			"errorCodes": [],
 			"missingTypes": [],
 			"missingMembers": [],
@@ -7760,16 +7457,12 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0103",
-					"CS1061"
-				]
+				"build": "pass",
+				"run": "crash",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 graphics-window-tail (5ebf5285): Window.DragMove/AllowsTransparency",
-			"runCause": "ArgumentException: 'SizeAll' is not a valid value for property 'Cursor': XamlValueConverter has no string -> Cursor conversion, so the raw string reaches DependencyProperty.ThrowIfInvalid"
+			"change": "crash->runs",
+			"unblockedBy": "Round 49 startup-build-sweep (9a38e05e): string -> Cursor conversion"
 		},
 		{
 			"project": "Windows/DialogBox/DialogBox.csproj",
@@ -7781,35 +7474,33 @@
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
-				"CS0103",
 				"CS0117",
 				"CS0246",
 				"CS1061"
 			],
 			"missingTypes": [
 				"FontStyleConverter",
-				"FontWeightConverter",
-				"PrintDialog"
+				"FontWeightConverter"
 			],
 			"missingMembers": [
-				"Fonts",
 				"ListBox.ScrollIntoView",
-				"PageRangeSelection",
 				"ScrollViewer.CanContentScrollProperty",
 				"ScrollViewer.SetCanContentScroll",
 				"Window.FocusManager"
 			],
 			"xamlErrors": [
 				"MarginsDialogBox.g.cs(28,43): CS0117: 'Window' does not contain a definition for 'FocusManager'",
-				"MainWindow.g.cs(72,233): CS0117: 'ScrollViewer' does not contain a definition for 'CanContentScrollProperty'",
-				"MainWindow.g.cs(72,50): CS0117: 'ScrollViewer' does not contain a definition for 'SetCanContentScroll'"
+				"FontDialogBox.g.cs(32,43): CS0117: 'Window' does not contain a definition for 'FocusManager'",
+				"FindDialogBox.g.cs(27,43): CS0117: 'Window' does not contain a definition for 'FocusManager'",
+				"MainWindow.g.cs(80,233): CS0117: 'ScrollViewer' does not contain a definition for 'CanContentScrollProperty'",
+				"MainWindow.g.cs(80,50): CS0117: 'ScrollViewer' does not contain a definition for 'SetCanContentScroll'"
 			],
-			"firstError": "FontPropertyLists.cs: CS0103 The name 'Fonts' does not exist in the current context",
+			"firstError": "FontDialogBox.cs: CS1061 'ListBox' does not contain a definition for 'ScrollIntoView' and no accessible extension method 'ScrollIntoView' accepting a first argument of type 'ListBox' could be found (are you missing a using directive or an assembly reference?)",
 			"warnings": [],
 			"blockerThemes": [
-				"dialogs-clipboard",
-				"documents-text",
-				"input"
+				"controls",
+				"tree-items-data",
+				"xaml-generator"
 			],
 			"measured": true,
 			"previous": {
@@ -7838,7 +7529,9 @@
 			"missingMembers": [],
 			"xamlErrors": [],
 			"firstError": "",
-			"warnings": [],
+			"warnings": [
+				"CS0649"
+			],
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
@@ -7866,15 +7559,11 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0103",
-					"CS1061"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 48 graphics-window-tail (5ebf5285): Window.DragMove/AllowsTransparency"
+			"change": "unchanged"
 		},
 		{
 			"project": "Windows/NotificationIcon/NotificationIcon.csproj",
@@ -7927,7 +7616,9 @@
 			"missingTypes": [
 				"System.Windows.Interop"
 			],
-			"missingMembers": [],
+			"missingMembers": [
+				"override MainWindow.OnClosing(CancelEventArgs)"
+			],
 			"xamlErrors": [],
 			"firstError": "MainWindow.cs: CS0234 The type or namespace name 'Interop' does not exist in the namespace 'System.Windows' (are you missing an assembly reference?)",
 			"warnings": [],
@@ -8060,20 +7751,25 @@
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
-				"CS0246"
+				"CS1061"
 			],
-			"missingTypes": [
-				"PageFunction<>",
-				"ReturnEventArgs<>"
+			"missingTypes": [],
+			"missingMembers": [
+				"WizardPage1.FocusManager",
+				"WizardPage2.FocusManager",
+				"WizardPage3.FocusManager"
 			],
-			"missingMembers": [],
-			"xamlErrors": [],
-			"firstError": "WizardLauncher.cs: CS0246 The type or namespace name 'PageFunction<>' could not be found (are you missing a using directive or an assembly reference?)",
+			"xamlErrors": [
+				"WizardPage3.g.cs(20,26): CS1061: 'WizardPage3' does not contain a definition for 'FocusManager' and no accessible extension method 'FocusManager' accepting a first argument of type 'WizardPage3' could be found (are you missing a using directive or an assembly reference?)",
+				"WizardPage2.g.cs(20,26): CS1061: 'WizardPage2' does not contain a definition for 'FocusManager' and no accessible extension method 'FocusManager' accepting a first argument of type 'WizardPage2' could be found (are you missing a using directive or an assembly reference?)",
+				"WizardPage1.g.cs(20,26): CS1061: 'WizardPage1' does not contain a definition for 'FocusManager' and no accessible extension method 'FocusManager' accepting a first argument of type 'WizardPage1' could be found (are you missing a using directive or an assembly reference?)"
+			],
+			"firstError": "WizardPage3.g.cs: CS1061 'WizardPage3' does not contain a definition for 'FocusManager' and no accessible extension method 'FocusManager' accepting a first argument of type 'WizardPage3' could be found (are you missing a using directive or an assembly reference?)",
 			"warnings": [
 				"CS2002"
 			],
 			"blockerThemes": [
-				"navigation-pages"
+				"xaml-generator"
 			],
 			"measured": true,
 			"previous": {
