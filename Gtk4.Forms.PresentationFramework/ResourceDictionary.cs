@@ -43,10 +43,7 @@ public partial class ResourceDictionary : IDictionary<object, object?>
 	{
 		get
 		{
-			if (_inner.TryGetValue(key, out var v)) return v;
-			for (int i = MergedDictionaries.Count - 1; i >= 0; i--)
-				if (MergedDictionaries[i].TryGetValue(key, out v)) return v;
-			return null;
+			return TryGetValue(key, out var v) ? v : null;
 		}
 		set
 		{
@@ -67,7 +64,11 @@ public partial class ResourceDictionary : IDictionary<object, object?>
 	/// <inheritdoc/>
 	public bool TryGetValue(object key, out object? value)
 	{
-		if (_inner.TryGetValue(key, out value)) return true;
+		if (_inner.TryGetValue(key, out value))
+		{
+			value = Realize(key, value);
+			return true;
+		}
 		for (int i = MergedDictionaries.Count - 1; i >= 0; i--)
 			if (MergedDictionaries[i].TryGetValue(key, out value)) return true;
 		return false;
@@ -106,7 +107,14 @@ public partial class ResourceDictionary : IDictionary<object, object?>
 	public ICollection<object> Keys => _inner.Keys;
 
 	/// <inheritdoc/>
-	public ICollection<object?> Values => _inner.Values;
+	public ICollection<object?> Values
+	{
+		get
+		{
+			RealizeAll();
+			return _inner.Values;
+		}
+	}
 
 	/// <inheritdoc/>
 	public void Add(KeyValuePair<object, object?> item)
@@ -116,12 +124,18 @@ public partial class ResourceDictionary : IDictionary<object, object?>
 	}
 
 	/// <inheritdoc/>
-	public bool Contains(KeyValuePair<object, object?> item) =>
-		((ICollection<KeyValuePair<object, object?>>)_inner).Contains(item);
+	public bool Contains(KeyValuePair<object, object?> item)
+	{
+		RealizeAll();
+		return ((ICollection<KeyValuePair<object, object?>>)_inner).Contains(item);
+	}
 
 	/// <inheritdoc/>
-	public void CopyTo(KeyValuePair<object, object?>[] array, int arrayIndex) =>
+	public void CopyTo(KeyValuePair<object, object?>[] array, int arrayIndex)
+	{
+		RealizeAll();
 		((ICollection<KeyValuePair<object, object?>>)_inner).CopyTo(array, arrayIndex);
+	}
 
 	/// <inheritdoc/>
 	public bool Remove(KeyValuePair<object, object?> item)
@@ -133,7 +147,11 @@ public partial class ResourceDictionary : IDictionary<object, object?>
 	}
 
 	/// <inheritdoc/>
-	public IEnumerator<KeyValuePair<object, object?>> GetEnumerator() => _inner.GetEnumerator();
+	public IEnumerator<KeyValuePair<object, object?>> GetEnumerator()
+	{
+		RealizeAll();
+		return _inner.GetEnumerator();
+	}
 
-	IEnumerator IEnumerable.GetEnumerator() => _inner.GetEnumerator();
+	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
