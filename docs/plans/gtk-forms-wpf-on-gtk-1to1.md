@@ -2493,6 +2493,35 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   drops the emptied `ListItem`, so no empty bullet is left.
 
 
+- **Round 56 (lane A) track 1 - visual layer and input surface (DONE, merged).** `gf56a/visual-layer-input`: d4e0ee3c
+  was re-landed with the review findings F1-F5 fixed (FlowDocument text no longer drawn twice, the render layer keeps a
+  Box's layout manager, a visual is its own ancestor/descendant, `FrameworkElement.LogicalChildren` defaults to null,
+  `CompositionTarget.Rendering` handlers run one by one). 9 of the 12 target samples build and run. Brushes is blocked
+  in lane C (`Margin="12pt"` reaches `PrimitiveConverters.ParseThickness` without unit parsing). Per-FrameAnimation is
+  blocked in lane C's generator (it emits `.Content` for children of a `Canvas` subclass). ExpenseItDemo was blocked on
+  `Mouse.PrimaryDevice`/`MouseDevice` (track 2, now merged; re-measure). Lane B can now apply CI-2.
+- **Round 56 (lane A) track 2 - input devices and storyboard entry points (DONE, merged).** `gf56a/input-devices-
+  storyboard`: `MouseDevice`/`KeyboardDevice` are exposed on the input event args as in WPF (`Device`, `MouseDevice`,
+  `KeyboardDevice`), and `FrameworkElement.BeginStoryboard` has its three overloads.
+- **Round 56 (lane A) review and fixes - DONE.** Verified findings applied failing-first. `VisualCollection` adds the
+  child to its list before adopting it (undone when adoption throws), so a child added after the host is realized
+  creates the render layer; `AddLogicalChild(null)` is ignored like WPF; `PathGeometry.FillRuleProperty` exists, is
+  cloned and keeps the `F0`/`F1` parse; the two-argument `RoutedEventArgs` constructor assigns the fields without calling
+  `OnSetSource`. Input: the public `InputEventArgs`/`KeyboardEventArgs` constructors accept a null device (WPF),
+  `MouseButtonEventArgs` rejects an undefined button, the `MouseDevice.GetPosition(null)` doc matches the behaviour, and
+  the GTK mouse and key paths stamp the GDK event time on the Preview and bubble args (one `Environment.TickCount` per
+  programmatic dispatch). Tests added for the GTK key path, the focus args, `Compose` versus `SnapshotAndReplace`
+  hand-off and device capture. Over-long lines wrapped; `PathGeometry` and `DrawingContextRenderer` split into partials.
+  Rejected in triage: none.
+- **Round 56 (lane A) totals.** `dotnet build Gtk4.Wpf.sln` 0 warnings; targeted `PresentationFramework.Tests` (visual
+  layer, input devices, media, input, animation, geometry filters) 1000 passed, 0 failed; `WindowsBase.Tests` (routed
+  events, converters) 46 passed; 21 test methods added.
+- **Round 56 (lane A) carry-over.** Not fixed: a binding cannot target a `Freezable` (`BindingOperations.SetBinding`
+  accepts `FrameworkElement` and `FrameworkContentElement` only, lane B Data), so `PathGeometry.FillRule` has no binding
+  test; right after `BeginStoryboard(..., SnapshotAndReplace)` the property reads its base value until the first clock
+  tick instead of the snapshot (one frame); `KeyboardFocusChangedEventArgs` from `Focus()` still stamps
+  `Environment.TickCount`; `TextCompositionEventArgs` has no timestamp.
+
 ## Phased roadmap (after Phase 0 proves the spine)
 
 1. **Core controls, layout, binding.** `StackPanel`/`DockPanel`/`Canvas`/`WrapPanel` with WPF

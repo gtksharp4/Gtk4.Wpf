@@ -14,7 +14,7 @@ namespace System.Windows.Media;
 /// <c>LogicalParent</c>; <see cref="Visual"/> exposes those through the WPF-standard
 /// protected API so that <see cref="VisualTreeHelper"/> can walk them generically.
 /// </remarks>
-public abstract class Visual : DependencyObject
+public abstract partial class Visual : DependencyObject
 {
 	// ── Visual parent ────────────────────────────────────────────────────────────
 

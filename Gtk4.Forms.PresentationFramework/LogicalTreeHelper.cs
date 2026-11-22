@@ -4,14 +4,14 @@ using System.Collections.Generic;
 
 namespace System.Windows;
 
-/// <summary>
-/// Internal interface that containers implement to expose their logical children
-/// to <see cref="LogicalTreeHelper"/>.
-/// </summary>
-internal interface ILogicalChildren
+/// <summary>Re-reads <see cref="FrameworkElement.LogicalChildren"/> on every enumeration.</summary>
+sealed class LogicalChildrenEnumerable : IEnumerable
 {
-	/// <summary>Enumerates the direct logical children of this element.</summary>
-	IEnumerable LogicalChildrenCore { get; }
+	readonly FrameworkElement _owner;
+
+	internal LogicalChildrenEnumerable(FrameworkElement owner) => _owner = owner;
+
+	public IEnumerator GetEnumerator() => _owner.LogicalChildren ?? Array.Empty<object>().GetEnumerator();
 }
 
 /// <summary>
@@ -43,7 +43,7 @@ public static class LogicalTreeHelper
 	public static IEnumerable GetChildren(DependencyObject current)
 	{
 		if (current == null) throw new ArgumentNullException(nameof(current));
-		if (current is ILogicalChildren lc) return lc.LogicalChildrenCore;
+		if (current is FrameworkElement fe) return new LogicalChildrenEnumerable(fe);
 		return Array.Empty<object>();
 	}
 

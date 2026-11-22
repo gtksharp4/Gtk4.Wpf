@@ -13,6 +13,7 @@ public abstract partial class GradientBrush
 		b.GradientStops = stops;
 		b.MappingMode = MappingMode;
 		b.SpreadMethod = SpreadMethod;
+		b.ColorInterpolationMode = ColorInterpolationMode;
 	}
 }
 

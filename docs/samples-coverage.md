@@ -255,9 +255,20 @@ that plan; they are not a parity track.
    - Only: Per-FrameAnimation, DragDropObjects, OverridingLogicalTree, ThicknessConverter, BitmapEffectsGallery, Brushes,
      ImageBrush, VisualBrush, ExpenseItDemo, LayoutTransitionsDemo, CompositionTarget, DrawingVisual. Also clears part of
      PhotoStoreDemo (`AddVisualChild`, `Rect.Size`/`Location`) and GraphingCalculatorDemo (`Rect` edges).
-   - The branch is one commit (`d4e0ee3c`, 92 tests, 64 files) on the `b25bc71e` base, 39 commits behind `main`. It
-     was built in Round 53 but not merged. Rebase it, re-run the review, and gate it on the 176 building projects. The
-     12 are expected from its symbol list, not yet measured.
+   - **Round 56a result (`gf56a/visual-layer-input`, cherry-pick of `d4e0ee3c` plus the review fixes F1-F5).** Gate on
+     the 176 building projects plus the 12 targets, package `1.0.0.26326` packed from the worktree, pinned feed:
+     186 of 188 build, and 174 of 175 run (all 165 earlier runners still run).
+     - **9 of the 12 build and run:** DragDropObjects (needed a new `AdornerLayer.Update`), OverridingLogicalTree,
+       ThicknessConverter, BitmapEffectsGallery, ImageBrush, VisualBrush, LayoutTransitionsDemo, CompositionTarget,
+       DrawingVisual.
+     - **Brushes builds but crashes at startup.** A `Setter` for `Margin="12pt"` reaches `PrimitiveConverters.ParseThickness`,
+       which has no unit suffixes. Fix in lane C's `Markup/XamlValueConverter.Primitives.cs`: parse each token with
+       `LengthUnits.Parse`. (Its `F1 M ...` geometry was fixed here: the path parser now reads `F0`/`F1`.)
+     - **Per-FrameAnimation still fails to build.** The generator emits `.Content = ...` for children of
+       `MagnitismCanvas : Canvas`, a user subclass of a panel. Lane C (MarkupCompiler content-property lookup).
+     - **ExpenseItDemo still fails to build.** `EditBox.cs` uses `Mouse.PrimaryDevice.LeftButton`; that needs `MouseDevice`
+       (track 2).
+   - Lane B can now apply `CI-2` (the `Context` shim is kept until then).
    - Owns: `Gtk4.Forms.WindowsBase/RoutedEventArgs.cs`, `Rect.*.cs`, `RectConverter.cs`, `ThicknessConverter.cs`,
      `ConverterParsing.cs`; `UIElement.*.cs` (`MouseVirtuals`, `OnRender`, `RenderLayer`, `VisualGeometry`,
      `BitmapEffect`); `FrameworkElement.LogicalChildren.cs`, `LogicalTreeHelper.cs` and the
@@ -275,6 +286,17 @@ that plan; they are not a parity track.
      `FrameworkElement.BeginStoryboard(Storyboard[, HandoffBehavior, bool])`.
    - Owns: `Input/MouseEventArgs.cs`, `Input/KeyboardEventArgs.cs`, `Input/InputDevice.cs`, new `Input/MouseDevice.cs`,
      new `FrameworkElement.BeginStoryboard.cs`. It must not touch `Input/Mouse.Cursor.cs` or `UIElement.*` (track 1).
+   - **Round 56a, done (branch `gf56a/input-devices-storyboard`, 16 tests).** `MouseDevice`/`Mouse.PrimaryDevice`;
+     `MouseEventArgs : InputEventArgs` and `KeyEventArgs : KeyboardEventArgs` with WPF's device constructors (args built
+     that way read the device live); `FrameworkElement.BeginStoryboard` (3 overloads). Gaps kept: no `StylusDevice`
+     overload, no `PresentationSource` constructor on `KeyEventArgs`, and no `FrameworkContentElement.BeginStoryboard`
+     (`Storyboard.Begin` has no content-element overload).
+   - Measured: CubeAnimationDemo builds and runs. HexSphereDemo and PhotoFlipperDemo now build (CS1955 and the device
+     errors are gone) but exit at start-up: HexSphere on `'' is not a valid value for property 'Background'`,
+     PhotoFlipper on a `Visual3DCollection` index in `OnLoaded`. GraphingCalculatorDemo and SlidePuzzleDemo no longer report the
+     `MouseDevice` or `BeginStoryboard` error as their first error (only the first error was read); they fail on `Rect` edges (CS1503) and `ComboBoxItem.Tag`.
+     All other apps that built and ran still do (CustomApplicationClass was not reproducible per-project: NU1201/MSB3107
+     on its sibling project reference, unrelated to these files).
 3. **Controls tail II and packaging: 4 only, 3 involved.**
    - Only: Concepts (`Hyperlink.TargetName`), DialogBox (`FontStyleConverter`/`FontWeightConverter`), AnnotationsStyling
      (`InkCanvasEditingMode`, plus an `InkCanvas` shell), WPFGallery (`Microsoft.Win32.SystemEvents` as a

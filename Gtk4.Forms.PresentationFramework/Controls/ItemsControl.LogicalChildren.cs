@@ -1,19 +1,18 @@
 using System.Collections;
+using System.Collections.Generic;
 
 namespace System.Windows.Controls;
 
-/// <summary>
-/// Implements <see cref="ILogicalChildren"/> for <see cref="ItemsControl"/>:
-/// the logical children are the item containers currently generated.
-/// </summary>
-public partial class ItemsControl : ILogicalChildren
+public partial class ItemsControl
 {
-	IEnumerable ILogicalChildren.LogicalChildrenCore
+	/// <summary>The logical children are the item containers currently generated.</summary>
+	protected internal override IEnumerator LogicalChildren
 	{
 		get
 		{
-			foreach (var row in _rows)
-				yield return row.Container;
+			var containers = new List<UIElement>();
+			foreach (var row in _rows) containers.Add(row.Container);
+			return containers.GetEnumerator();
 		}
 	}
 }

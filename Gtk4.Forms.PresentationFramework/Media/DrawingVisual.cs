@@ -1,57 +1,52 @@
-using System;
-
 namespace System.Windows.Media;
 
 /// <summary>
-/// A visual that supports direct drawing via <see cref="RenderOpen"/>.
-/// Mirrors <c>System.Windows.Media.DrawingVisual</c>.
+/// A visual that supports direct drawing via <see cref="RenderOpen"/>. Mirrors WPF's DrawingVisual.
+/// The recorded commands are replayed through Cairo by the hosting element's render layer.
 /// </summary>
-/// <remarks>
-/// The drawing commands recorded by the returned <see cref="DrawingContext"/> are
-/// accessible for inspection via <see cref="Drawing"/>. Actual Cairo rendering is a
-/// Phase-2 item. <see cref="DrawingVisual"/> participates in the visual tree through
-/// its <see cref="VisualCollection"/> children.
-/// </remarks>
-public class DrawingVisual : Visual
+public class DrawingVisual : ContainerVisual
 {
-	VisualCollection? _children;
 	DrawingContext? _drawing;
 
 	/// <summary>The last <see cref="DrawingContext"/> committed to this visual.</summary>
 	public DrawingContext? Drawing => _drawing;
 
 	/// <summary>
-	/// Opens a <see cref="DrawingContext"/> for recording drawing commands.
-	/// Dispose the returned context (or call <see cref="DrawingContext.Close"/>) to commit
-	/// the drawing to this visual and replace any previous recording.
+	/// Opens a context for recording; <see cref="DrawingContext.Close"/> or Dispose commits it, replacing
+	/// any previous recording.
 	/// </summary>
-	/// <remarks>
-	/// The commit happens inside a <see cref="DrawingContextScope"/> wrapper returned here.
-	/// Callers use the standard <c>using</c> pattern.
-	/// </remarks>
-	public DrawingContextScope RenderOpen()
+	public DrawingContext RenderOpen() => new DrawingContext(CommitDrawing);
+
+	internal void CommitDrawing(DrawingContext ctx)
 	{
-		var ctx = new DrawingContext();
-		return new DrawingContextScope(ctx, this);
+		_drawing = ctx;
+		InvalidateRender();
 	}
 
-	internal void CommitDrawing(DrawingContext ctx) => _drawing = ctx;
-
-	// ── Visual children ───────────────────────────────────────────────────────────
-
-	/// <summary>The collection of visual children of this <see cref="DrawingVisual"/>.</summary>
-	public VisualCollection Children => _children ??= new VisualCollection(this);
+	internal override Rect GetContentBounds() =>
+		_drawing == null ? Rect.Empty : DrawingContextRenderer.ComputeBounds(_drawing, includeText: true);
 
 	/// <inheritdoc/>
-	protected internal override int VisualChildrenCount =>
-		_children == null ? 0 : _children.Count;
-
-	/// <inheritdoc/>
-	protected internal override Visual GetVisualChild(int index)
+	protected override HitTestResult? HitTestCore(PointHitTestParameters hitTestParameters)
 	{
-		if (_children == null)
-			throw new ArgumentOutOfRangeException(nameof(index));
-		return _children[index];
+		Rect b = GetContentBounds();
+		Point p = hitTestParameters.HitPoint;
+		return !b.IsEmpty && p.X >= b.X && p.X < b.X + b.Width && p.Y >= b.Y && p.Y < b.Y + b.Height
+			? new PointHitTestResult(this, p)
+			: null;
 	}
 
+	/// <inheritdoc/>
+	protected override GeometryHitTestResult? HitTestCore(GeometryHitTestParameters hitTestParameters)
+	{
+		Rect b = GetContentBounds();
+		Rect g = hitTestParameters.HitGeometry.Bounds;
+		if (b.IsEmpty || g.IsEmpty) return null;
+		bool apart = g.X >= b.X + b.Width || g.X + g.Width <= b.X || g.Y >= b.Y + b.Height || g.Y + g.Height <= b.Y;
+		if (apart) return null;
+		bool inside = g.X >= b.X && g.Y >= b.Y && g.X + g.Width <= b.X + b.Width && g.Y + g.Height <= b.Y + b.Height;
+		bool contains = b.X >= g.X && b.Y >= g.Y && b.X + b.Width <= g.X + g.Width && b.Y + b.Height <= g.Y + g.Height;
+		return new GeometryHitTestResult(this, inside ? IntersectionDetail.FullyInside
+			: contains ? IntersectionDetail.FullyContains : IntersectionDetail.Intersects);
+	}
 }
