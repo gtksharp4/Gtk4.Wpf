@@ -125,9 +125,8 @@ internal static class PriorityBindingEngine
 				{
 					// Filter by first path segment so only the relevant property
 					// triggers a re-push (mirrors BindingRecord / DataTriggerState).
-					string? watchedProp = string.IsNullOrEmpty(b.PathString)
-						? null
-						: b.PathString!.Split('.')[0];
+					var watchPath = PropertyPath.ResolveOwner(src, b.PathString);
+					string? watchedProp = string.IsNullOrEmpty(watchPath) ? null : watchPath!.Split('.')[0];
 
 					PropertyChangedEventHandler handler = (s, e) =>
 					{

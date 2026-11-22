@@ -47,7 +47,8 @@ public partial class BindingGroup
 		value = null;
 		foreach (var expression in BindingExpressions)
 		{
-			if (!ReferenceEquals(expression.ResolvedSource, item) || expression.ParentBinding.PathString != propertyName)
+			if (!ReferenceEquals(expression.ResolvedSource, item)
+			    || PropertyPath.ResolveOwner(item, expression.ParentBinding.PathString) != propertyName)
 				continue;
 			return TryProposedValue(expression, item, propertyName, out value);
 		}

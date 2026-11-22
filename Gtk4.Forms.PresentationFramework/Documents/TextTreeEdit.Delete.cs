@@ -23,11 +23,11 @@ static partial class TextTreeEdit
 		else PruneDetachedInlines(doc.DetachedRoot, start, end);
 		if (p1 != null && p2 != null && !ReferenceEquals(p1, p2))
 		{
-			var emptied = doc.DetachedRoot is List dl ? ItemOf(dl, p2) : null;
+			var emptied = ItemOwning(doc, p2, out var emptiedList);
 			foreach (var i in p2.Inlines.ToList()) p1.Inlines.Add(i);
 			p2.Inlines.Clear();
 			FindOwner(doc, p2)?.Remove(p2);
-			if (emptied != null) DropEmptyItems((List)doc.DetachedRoot!, new[] { emptied });
+			if (emptied != null) DropEmptyItems(emptiedList!, new[] { emptied });
 		}
 		if (doc.DetachedRoot == null && doc.Blocks.Count == 0) doc.Blocks.Add(new Paragraph());
 		KeepListItem(doc.DetachedRoot as List);

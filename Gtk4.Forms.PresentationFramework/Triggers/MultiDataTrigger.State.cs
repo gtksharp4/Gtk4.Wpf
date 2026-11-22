@@ -142,7 +142,7 @@ public partial class MultiDataTrigger
 			if (source is INotifyPropertyChanged inpc)
 			{
 				_inpcSource = inpc;
-				var path = _cond.Binding?.PathString;
+				var path = PropertyPath.ResolveOwner(source, _cond.Binding?.PathString);
 				_watchedProp = string.IsNullOrEmpty(path) ? null : path!.Split('.')[0];
 				_inpcSource.PropertyChanged += OnSourceChanged;
 			}

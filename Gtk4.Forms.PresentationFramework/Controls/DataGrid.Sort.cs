@@ -65,6 +65,8 @@ public partial class DataGrid
 		_rows.Clear();
 		if (ItemsSource == null) return;
 
+		var first = System.Linq.Enumerable.FirstOrDefault(System.Linq.Enumerable.OfType<object>(ItemsSource));
+		path = PropertyPath.ResolveOwner(first, path);
 		var sorted = DataGridSort.SortItems(ItemsSource, path!, direction);
 		_rows.AddRange(sorted);
 

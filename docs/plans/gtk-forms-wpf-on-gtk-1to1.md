@@ -2476,13 +2476,21 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
 - **Round 57 (lane B) follow-up.** **CI-1** a cross-item delete now merges the emptied `ListItem` away
   (`ListItemCollection.Remove` added, as in WPF) and `PruneListItems` drops items it emptied, so a full-range `Text`
   set leaves one item, not an empty bullet. **a-F4** the owner of a `(Owner.Name)` path is stripped only when Owner is
-  the source's type or a base type (`PropertyPath.ResolveOwner`, applied at the walk, write-back, leaf and watch
-  points). `(Canvas.Left)` or `(Grid.Row)` stays unresolved instead of binding an unrelated CLR `Left` or `Row`;
+  the source's type or a base type (`PropertyPath.ResolveOwner`, applied at the walk, write-back, leaf and INPC watch
+  points of `BindingEngine` only; the Round 57 regression fix extended it to every `PathString` consumer).
+  `(Canvas.Left)` or `(Grid.Row)` stays unresolved instead of binding an unrelated CLR `Left` or `Row`;
   attached-property paths are still not resolved.
 - **Round 57 (lane B) totals.** `dotnet build Gtk4.Wpf.sln` 0 warnings. Targeted `PresentationFramework.Tests`
   (ItemCollection, SortDescription, PropertyPath, Binding, TextRange, RichTextBox, FlowDocument, TextTree, Paginator,
   Collection): 685 passed. Samples gate: 176 build=pass projects all build, 165 run=runs all start and stay up (4 needed
   a lone 20 s re-check). Carry-over: **CI-4**, **CI-5**, merging `gf57b/documents-imaging-tail`.
+- **Round 57 (lane B) regression fix.** The a-F4 follow-up moved owner stripping out of `PropertyPath.ResolvedString`
+  into `PropertyPath.ResolveOwner` but hooked it only into `BindingEngine`, so `Path=(TextBlock.Text)` regressed at
+  seven other `PathString` consumers: the `PriorityBinding`, `MultiDataTrigger` and `DataTrigger` watches,
+  `DataGridTextColumn.GetCellText`, `DataGrid` sort, `HierarchicalDataTemplate.ResolveChildren` and
+  `BindingGroup.TryGetValue`. Each now applies `ResolveOwner(source, PathString)` (one failing-first test each).
+  **CI-1** a delete inside an attached `FlowDocument` now finds the owning `List` at any depth (`ItemOwning`) and
+  drops the emptied `ListItem`, so no empty bullet is left.
 
 
 ## Phased roadmap (after Phase 0 proves the spine)

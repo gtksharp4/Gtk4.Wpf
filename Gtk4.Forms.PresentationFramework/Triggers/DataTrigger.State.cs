@@ -52,7 +52,7 @@ public partial class DataTrigger
 		void SubscribeSource(object? root)
 		{
 			DisposePathWatcher();
-			var path = _trigger.Binding?.PathString;
+			var path = PropertyPath.ResolveOwner(root, _trigger.Binding?.PathString);
 			_pathWatcher = new PathWatcher(root, path);
 			_pathWatcher.Changed += OnPathChanged;
 		}

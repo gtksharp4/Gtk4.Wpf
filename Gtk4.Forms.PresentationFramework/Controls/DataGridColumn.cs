@@ -71,7 +71,7 @@ public class DataGridTextColumn : DataGridColumn
 	internal override string GetCellText(object? item)
 	{
 		if (item == null) return string.Empty;
-		var path = Binding?.PathString;
+		var path = PropertyPath.ResolveOwner(item, Binding?.PathString);
 		if (string.IsNullOrEmpty(path)) return item.ToString() ?? string.Empty;
 		var prop = item.GetType().GetProperty(path!);
 		return prop?.GetValue(item)?.ToString() ?? string.Empty;

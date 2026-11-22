@@ -45,7 +45,7 @@ public class HierarchicalDataTemplate : DataTemplate
 	internal System.Collections.IEnumerable? ResolveChildren(object? dataItem)
 	{
 		if (ItemsSource == null || dataItem == null) return null;
-		var path = ItemsSource.PathString;
+		var path = PropertyPath.ResolveOwner(dataItem, ItemsSource.PathString);
 		if (string.IsNullOrEmpty(path)) return dataItem as System.Collections.IEnumerable;
 		var prop = dataItem.GetType().GetProperty(path);
 		return prop?.GetValue(dataItem) as System.Collections.IEnumerable;
