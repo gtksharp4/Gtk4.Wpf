@@ -12,7 +12,7 @@ static partial class TextTreeEdit
 	internal static void ReplaceContent(FlowDocument doc, int start, int end, List<Paragraph> blocks)
 	{
 		int total = TextTree.Total(TextTree.Build(doc));
-		if (start <= 0 && end >= total)
+		if (doc.DetachedRoot == null && start <= 0 && end >= total)
 		{
 			doc.Blocks.Clear();
 			foreach (var b in blocks) doc.Blocks.Add(b);

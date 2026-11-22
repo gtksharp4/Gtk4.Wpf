@@ -11,8 +11,8 @@ static class TextRangeExtract
 	internal static List<Paragraph> Extract(FlowDocument doc, int start, int end)
 	{
 		var result = new List<Paragraph>();
-		int off = 0;
-		Blocks(doc.Blocks, start, end, ref off, result);
+		var col = TextTree.RootBlocks(doc, out int off);
+		if (col != null) Blocks(col, start, end, ref off, result);
 		return result;
 	}
 
