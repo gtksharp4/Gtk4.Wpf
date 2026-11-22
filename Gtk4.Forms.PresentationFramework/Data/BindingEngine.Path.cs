@@ -51,7 +51,13 @@ internal static partial class BindingEngine
 		return string.Format(culture, GetEffectiveStringFormat(fmt), value);
 	}
 
-	/// <summary>A format without braces ('N2', 'C') is a composite-format item body, as in WPF.</summary>
-	internal static string GetEffectiveStringFormat(string fmt) =>
-		fmt.IndexOf('{') < 0 ? "{0:" + fmt + "}" : fmt;
+	/// <summary>
+	/// A format without braces (N2, C) is a composite-format item body, as in WPF. A leading <c>{}</c> is the XAML
+	/// escape, which the generated code passes through; "{}" is never a valid composite format, so it is dropped.
+	/// </summary>
+	internal static string GetEffectiveStringFormat(string fmt)
+	{
+		if (fmt.StartsWith("{}", StringComparison.Ordinal)) fmt = fmt.Substring(2);
+		return fmt.IndexOf('{') < 0 ? "{0:" + fmt + "}" : fmt;
+	}
 }

@@ -41,6 +41,7 @@ internal static partial class MultiBindingEngine
 				result = _mb.FallbackValue == DependencyProperty.UnsetValue
 					? null
 					: _mb.FallbackValue;
+				formatted = true; // WPF does not format the fallback value
 			}
 			else if (_mb.Converter != null)
 			{

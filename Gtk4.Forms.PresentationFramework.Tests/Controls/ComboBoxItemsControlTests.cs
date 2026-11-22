@@ -93,7 +93,7 @@ public class ComboBoxItemsControlTests
 	public void ItemsSource_populates_Items()
 	{
 		var cb = new ComboBox { ItemsSource = new[] { "a", "b" } };
-		Assert.Equal(new object?[] { "a", "b" }, cb.Items.ToArray());
+		Assert.Equal(new object?[] { "a", "b" }, cb.Items.Cast<object?>().ToArray());
 	}
 
 	[Fact]

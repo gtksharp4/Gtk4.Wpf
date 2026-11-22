@@ -10,7 +10,7 @@ namespace System.Windows.Controls;
 /// </list>
 /// Backed by a single-child <see cref="Gtk.Box"/> container.
 /// </summary>
-public class ContentPresenter : FrameworkElement
+public partial class ContentPresenter : FrameworkElement
 {
 	// ── Content DP ───────────────────────────────────────────────────────────
 
@@ -109,6 +109,7 @@ public class ContentPresenter : FrameworkElement
 			_hostedElement = null;
 		}
 
+		_appliedTemplate = null;
 		var content = Content;
 
 		// 1. Direct UIElement.
@@ -130,6 +131,8 @@ public class ContentPresenter : FrameworkElement
 			{
 				// D1: wire logical parent.
 				visual.LogicalParent = this;
+				_appliedTemplate = ContentTemplate;
+				StampTemplatedParentTree(visual, this);
 				_hostedElement = visual;
 				_hostedWidget = visual.Widget;
 				_box!.Add(_hostedWidget);

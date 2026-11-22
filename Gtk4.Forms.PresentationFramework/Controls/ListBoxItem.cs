@@ -8,7 +8,7 @@ namespace System.Windows.Controls;
 /// <see cref="UIElement"/> widget.
 /// </para>
 /// </summary>
-public class ListBoxItem : ContentControl
+public partial class ListBoxItem : ContentControl
 {
 	// ── IsSelected DP ────────────────────────────────────────────────────────
 
@@ -44,8 +44,9 @@ public class ListBoxItem : ContentControl
 	{
 		_row = new Gtk.ListBoxRow();
 
-		// Host the content inside the row.
-		if (Content is UIElement el)
+		if (UsesPresenter)
+			_row.Child = CreatePresenter().Widget;
+		else if (Content is UIElement el)
 			_row.Child = el.Widget;
 		else
 		{
