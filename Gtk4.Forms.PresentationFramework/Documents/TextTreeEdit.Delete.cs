@@ -31,7 +31,7 @@ static partial class TextTreeEdit
 		doc.RecordTextEdit(start, before - doc.SymbolTotal, 0);
 	}
 
-	/// <summary>Prunes a detached root that holds inlines: a Paragraph, a Span or a Run (its edge is symbol 0).</summary>
+	/// <summary>Prunes a detached root that is not a block collection: Paragraph, Span, List or Run.</summary>
 	static void PruneDetachedInlines(object? rootNode, int start, int end)
 	{
 		int inner = 1;
@@ -39,6 +39,7 @@ static partial class TextTreeEdit
 		{
 			case Paragraph p: PruneInlines(p.Inlines, start, end, ref inner); break;
 			case Span s: PruneInlines(s.Inlines, start, end, ref inner); break;
+			case List l: PruneListItems(l, start, end, ref inner); break;
 			case Run r:
 				int from = Math.Max(start, 1) - 1, to = Math.Min(end, 1 + r.Text.Length) - 1;
 				if (to > from) r.Text = r.Text.Remove(from, to - from);
@@ -67,16 +68,20 @@ static partial class TextTreeEdit
 			int inner = a + 1;
 			if (b is Paragraph p) PruneInlines(p.Inlines, start, end, ref inner);
 			else if (b is Section s) PruneBlocks(s.Blocks, start, end, ref inner);
-			else if (b is List l)
-				foreach (var item in l.ListItems)
-				{
-					int itemStart = inner, itemSize = Size(item);
-					int body = itemStart + 1;
-					if (itemStart + itemSize > start && itemStart < end) PruneBlocks(item.Blocks, start, end, ref body);
-					inner = itemStart + itemSize;
-				}
+			else if (b is List l) PruneListItems(l, start, end, ref inner);
 		}
 		if (changed) Replace(col, keep);
+	}
+
+	static void PruneListItems(List list, int start, int end, ref int inner)
+	{
+		foreach (var item in list.ListItems)
+		{
+			int itemStart = inner, itemSize = Size(item);
+			int body = itemStart + 1;
+			if (itemStart + itemSize > start && itemStart < end) PruneBlocks(item.Blocks, start, end, ref body);
+			inner = itemStart + itemSize;
+		}
 	}
 
 	static void PruneInlines(InlineCollection col, int start, int end, ref int off)

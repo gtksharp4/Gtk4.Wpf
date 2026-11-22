@@ -17,7 +17,7 @@ public class DocumentsReviewFixTests : WpfGtkTestBase
 	{
 		var doc = new FlowDocument();
 		for (int i = 0; i < paragraphs; i++)
-			{
+		{
 			var paragraph = new Paragraph(new Run("one " + i));
 			paragraph.Inlines.Add(new Run("two " + i));
 			doc.Blocks.Add(paragraph);
@@ -79,6 +79,44 @@ public class DocumentsReviewFixTests : WpfGtkTestBase
 		var run = new Run("hello");
 		new TextRange(run.ContentStart, run.ContentEnd).Text = "bye";
 		Assert.Equal("bye", new TextRange(run.ContentStart, run.ContentEnd).Text);
+	});
+
+	[Fact]
+	public void Clearing_the_text_of_a_detached_list_deletes_the_old_text() => Run(() =>
+	{
+		var list = new System.Windows.Documents.List();
+		var item = new ListItem();
+		item.Blocks.Add(new Paragraph(new Run("hello")));
+		list.ListItems.Add(item);
+		new TextRange(list.ContentStart, list.ContentEnd).Text = "";
+		Assert.DoesNotContain("hello", new TextRange(list.ContentStart, list.ContentEnd).Text);
+	});
+
+	[Fact]
+	public void Setting_the_child_of_an_attached_container_updates_the_symbol_list() => Run(() =>
+	{
+		var doc = new FlowDocument();
+		var block = new BlockUIContainer();
+		doc.Blocks.Add(block);
+		var inline = new InlineUIContainer();
+		doc.Blocks.Add(new Paragraph(inline));
+		int total = doc.ContentEnd.Offset;
+		block.Child = new Button();
+		Assert.Equal(total + 1, doc.ContentEnd.Offset);
+		inline.Child = new Button();
+		Assert.Equal(total + 2, doc.ContentEnd.Offset);
+		block.Child = null;
+		Assert.Equal(total + 1, doc.ContentEnd.Offset);
+	});
+
+	[Fact]
+	public void An_inherited_right_to_left_direction_reaches_the_document_markup() => Run(() =>
+	{
+		var doc = new FlowDocument(new Paragraph(new Run("abc")));
+		string ltr = doc.BuildMarkup();
+		var host = new FlowDocumentScrollViewer { FlowDirection = FlowDirection.RightToLeft, Document = doc };
+		Assert.Equal(FlowDirection.RightToLeft, doc.FlowDirection);
+		Assert.NotEqual(ltr, doc.BuildMarkup());
 	});
 
 	[Fact]

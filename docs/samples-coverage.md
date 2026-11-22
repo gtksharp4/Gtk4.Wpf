@@ -489,8 +489,9 @@ that feed only, an isolated package cache, `fallbackPackageFolders` cleared, two
   FlowDocumentProperties). 0 failures.
 - **Run: all 154 apps with `run=runs` still start with a visible window.** 144 on the first 10 s run. Ten
   (ApplicationShutdown, ExceptionHandlingSecondaryWorkerThread, MasterDetailXml, FlowContentProperty,
-  DragDropOpenTextFile, ShapeElements, CursorType, MouseState, ConcentricRingsDemo, WindowSizingOrder) showed no window at 10 s under load from the other
-  lanes and ran when re-run alone for 20 s. No run printed an unhandled exception.
+  DragDropOpenTextFile, ShapeElements, CursorType, MouseState, ConcentricRingsDemo, WindowSizingOrder)
+  showed no window at 10 s under load from the other lanes and ran when re-run alone for 20 s.
+  No run printed an unhandled exception.
 - **AnnotatedDocumentViewer** (re-measured): 2 errors, both CS0200 on `SortDescription.PropertyName`/`Direction`
   (lane A, requested in Next rounds item 4).
 - **AnnotationsStyling** (re-measured; the old record listed `FlowDocument.SetBinding`,

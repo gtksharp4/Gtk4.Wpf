@@ -24,9 +24,9 @@ public partial class FlowDocument
 
 	bool HasLocal(DependencyProperty dp) => !ReferenceEquals(ReadLocalValue(dp), DependencyProperty.UnsetValue);
 
+	/// <summary>
 	/// The markup a viewer shows: <see cref="BuildMarkup"/> wrapped in the document's own FontFamily, FontSize,
 	/// FontStyle and FontWeight when they are set locally. <see cref="BuildMarkup"/> itself is unchanged.
-	/// when they are set locally. <see cref="BuildMarkup"/> itself is unchanged.
 	/// </summary>
 	internal string BuildViewMarkup()
 	{

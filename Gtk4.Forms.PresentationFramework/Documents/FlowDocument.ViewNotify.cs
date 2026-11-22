@@ -24,7 +24,7 @@ public partial class FlowDocument
 		_viewDirty = true;
 		if (_viewPosted) return;
 		_viewPosted = true;
-		Dispatcher.CurrentDispatcher.BeginInvoke(() =>
+		Dispatcher.BeginInvoke(() =>
 		{
 			_viewPosted = false;
 			FlushViewChanged();

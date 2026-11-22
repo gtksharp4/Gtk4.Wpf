@@ -16,7 +16,18 @@ public class InlineUIContainer : Inline
 	public InlineUIContainer(UIElement childUIElement) => Child = childUIElement;
 
 	/// <summary>The hosted element.</summary>
-	public UIElement? Child { get; set; }
+	public UIElement? Child
+	{
+		get => _child;
+		set
+		{
+			if (ReferenceEquals(_child, value)) return;
+			_child = value;
+			ContentParenting.Changed(this);
+		}
+	}
+
+	UIElement? _child;
 
 	/// <inheritdoc/>
 	internal override void AppendMarkup(System.Text.StringBuilder sb)

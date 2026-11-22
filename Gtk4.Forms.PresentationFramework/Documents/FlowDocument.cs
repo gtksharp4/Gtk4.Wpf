@@ -52,7 +52,10 @@ public partial class FlowDocument
 	public static readonly DependencyProperty FlowDirectionProperty =
 		FrameworkElement.FlowDirectionProperty.AddOwner(typeof(FlowDocument));
 
-	FlowDirection? ExplicitFlowDirection => HasLocal(FlowDirectionProperty) ? FlowDirection : (FlowDirection?)null;
+	// An inherited right-to-left direction applies too; the left-to-right default stays out of the markup.
+	FlowDirection? ExplicitFlowDirection =>
+		HasLocal(FlowDirectionProperty) || FlowDirection == FlowDirection.RightToLeft
+			? FlowDirection : (FlowDirection?)null;
 
 	/// <summary>Gets or sets the flow direction of the document (default LeftToRight). Rendered as a bidi
 	/// isolate inside each paragraph of <see cref="BuildMarkup"/> when set locally.</summary>

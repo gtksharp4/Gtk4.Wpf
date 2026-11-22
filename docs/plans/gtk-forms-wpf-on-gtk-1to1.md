@@ -2338,11 +2338,21 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   reads build the text tree once. **CI-2** `SystemFonts` has the `*FontFamily/Size/Style/Weight/TextDecorations` keys
   for all six font groups, resolved by `FindResource`; `FlowDocument.FlowDirectionProperty` is a real DP.
   Rejected in triage: the B-F7 build count (162 = 159 apps + 2 libraries + 1 console app, line 21 of
-  `samples-coverage.md`) and CI-3 (`FontFamily` is already typed). Samples gate: all 164 projects with `build=pass` still build and all 154 apps with `run=runs`
-  still run (10 of them only when re-run alone under load); AnnotatedDocumentViewer is down to the two
-  `SortDescription` setters.
+  `samples-coverage.md`) and CI-3 (`FontFamily` is already typed). Samples gate: all 164 projects with
+  `build=pass` still build and all 154 apps with `run=runs` still run (10 of them only when re-run alone under
+  load); AnnotatedDocumentViewer is down to the two `SortDescription` setters.
   **Round 54 (lane B) totals: 6344 tests** (260 WindowsBase + 5363 PresentationFramework + 607 MarkupCompiler +
   43 ProjectConverter + 71 Wpf.Testing; 6 skipped), all green; `dotnet build Gtk4.Wpf.sln` warning-clean.
+- **Round 54 (lane B) follow-up.** **CI-1** the `Child` setters of `BlockUIContainer` and `InlineUIContainer` now
+  invalidate the symbol cache (`ContentEnd` was one symbol short after `Child = new Button()`). **CI-2** an inherited
+  right-to-left direction now reaches the markup, not just a local one. **B-F1** `ViewChanged` posts on the
+  document's own dispatcher; no viewer flushes synchronously (no such request path exists, left as is). **B-F2**
+  deleting over a detached `List` prunes the old text; inserting text directly inside a `List` still throws.
+  **A-F7** the earlier diffuse test passed on the old code too (its normal renormalised); it now lights a slanted
+  normal, which only the inverse transpose gets right. The `BuildViewMarkup` doc comment, doc line widths and the
+  `samples-coverage.json` trailing newline are fixed. Samples gate: all 164
+  `build=pass` projects still build and all 154 `run=runs` apps still run (6 only when re-run alone for 20 s).
+  **Round 54 (lane B) follow-up totals: 6347 tests** (260 + 5366 + 607 + 43 + 71), all green.
 - **Carry-over (Round 54 lane B)**: `FreezableListCore<T>` repeats ~100 lines of generated `IList` plumbing per
   collection (C# has no mixins; a source generator would remove it); `Visual3DCollection` has no nested `Enumerator`;
   typed 3D animations (`Rotation3DAnimation`, ...) and a per-pixel z-buffer remain deferred;

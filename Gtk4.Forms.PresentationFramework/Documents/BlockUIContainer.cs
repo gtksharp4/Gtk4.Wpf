@@ -8,7 +8,18 @@ namespace System.Windows.Documents;
 public class BlockUIContainer : Block
 {
 	/// <summary>The UI element hosted by this block.</summary>
-	public UIElement? Child { get; set; }
+	public UIElement? Child
+	{
+		get => _child;
+		set
+		{
+			if (ReferenceEquals(_child, value)) return;
+			_child = value;
+			ContentParenting.Changed(this);
+		}
+	}
+
+	UIElement? _child;
 
 	/// <inheritdoc/>
 	internal override void AppendPlainText(System.Text.StringBuilder sb)

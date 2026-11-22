@@ -97,7 +97,7 @@ public class Media3DReviewFixTests : WpfGtkTestBase
 	}
 
 	[Fact]
-	public void A_non_uniform_scale_does_not_change_the_diffuse_intensity_of_an_unrotated_face()
+	public void A_non_uniform_scale_lights_a_slanted_normal_by_the_inverse_transpose()
 	{
 		double Intensity(Transform3D? scale)
 		{
@@ -106,16 +106,17 @@ public class Media3DReviewFixTests : WpfGtkTestBase
 			mesh.Positions.Add(new Point3D(1, 0, 1));
 			mesh.Positions.Add(new Point3D(0, 0, -1));
 			foreach (int i in new[] { 0, 1, 2 }) mesh.TriangleIndices.Add(i);
-			foreach (int i in new[] { 0, 1, 2 }) mesh.Normals.Add(new Vector3D(0, 1, 0));
-			var visual = Lit(mesh, new DirectionalLight(Colors.White, new Vector3D(0, -1, 0)));
+			foreach (int i in new[] { 0, 1, 2 }) mesh.Normals.Add(new Vector3D(1, 1, 0));
+			var visual = Lit(mesh, new DirectionalLight(Colors.White, new Vector3D(-1, 0, 0)));
 			if (scale != null) visual.Transform = scale;
 			var camera = new PerspectiveCamera(
 				new Point3D(0, 5, 0), new Vector3D(0, -1, 0), new Vector3D(0, 0, -1), 90);
 			return Assert.Single(SceneRenderer.Build(camera, new[] { visual }, 100, 100)).Layers[0].LightR;
 		}
 
-		Assert.Equal(1.0, Intensity(null), 6);
-		Assert.Equal(1.0, Intensity(new ScaleTransform3D(1, 4, 1)), 6);
+		Assert.Equal(Math.Sqrt(0.5), Intensity(null), 6);
+		// Normal (1,1,0) scaled by (1,4,1) is (1,0.25,0) under the inverse transpose, (1,4,0) under the world matrix.
+		Assert.Equal(1 / Math.Sqrt(1.0625), Intensity(new ScaleTransform3D(1, 4, 1)), 6);
 	}
 
 	[Fact]
