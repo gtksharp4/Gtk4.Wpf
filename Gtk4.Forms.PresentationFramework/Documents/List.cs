@@ -38,7 +38,10 @@ public class List : Block
 	public TextMarkerStyle MarkerStyle { get; set; } = TextMarkerStyle.Disc;
 
 	/// <summary>The items in the list.</summary>
-	public ListItemCollection ListItems { get; } = new ListItemCollection();
+	public ListItemCollection ListItems { get; }
+
+	/// <summary>Creates an empty list.</summary>
+	public List() => ListItems = new ListItemCollection(this);
 
 	/// <inheritdoc/>
 	internal override void AppendPlainText(System.Text.StringBuilder sb)
@@ -119,6 +122,12 @@ public class List : Block
 public sealed class ListItemCollection : IEnumerable<ListItem>
 {
 	readonly List<ListItem> _items = new List<ListItem>();
+	readonly DependencyObject? _owner;
+
+	/// <summary>Creates a collection with no owner.</summary>
+	public ListItemCollection() { }
+
+	internal ListItemCollection(DependencyObject owner) => _owner = owner;
 
 	/// <summary>Number of items.</summary>
 	public int Count => _items.Count;
@@ -130,6 +139,7 @@ public sealed class ListItemCollection : IEnumerable<ListItem>
 	public void Add(ListItem item)
 	{
 		if (item == null) throw new ArgumentNullException(nameof(item));
+		ContentParenting.Adopt(_owner, item, strict: false);
 		_items.Add(item);
 	}
 

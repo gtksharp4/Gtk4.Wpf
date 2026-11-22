@@ -14,16 +14,8 @@ public abstract partial class Inline : TextElement
 }
 
 /// <summary>Contains a run of uniformly-formatted text.</summary>
-public class Run : Inline
+public partial class Run : Inline
 {
-	/// <summary>Creates an empty run.</summary>
-	public Run() { }
-
-	/// <summary>Creates a run holding <paramref name="text"/>.</summary>
-	public Run(string text) => Text = text ?? string.Empty;
-
-	/// <summary>The text content of this run.</summary>
-	public string Text { get; set; } = string.Empty;
 
 	/// <inheritdoc/>
 	internal override void AppendMarkup(System.Text.StringBuilder sb)

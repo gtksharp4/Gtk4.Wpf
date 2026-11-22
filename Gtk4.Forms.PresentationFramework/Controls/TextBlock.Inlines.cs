@@ -4,7 +4,20 @@ namespace System.Windows.Controls;
 
 public partial class TextBlock
 {
-	readonly InlineCollection _inlines = new InlineCollection();
+	readonly InlineCollection _inlines;
+
+	/// <summary>Creates an empty TextBlock.</summary>
+	public TextBlock() => _inlines = new InlineCollection(this);
+
+	/// <summary>Creates a TextBlock whose content is <paramref name="inline"/>.</summary>
+	public TextBlock(Inline inline) : this()
+	{
+		if (inline == null) throw new ArgumentNullException(nameof(inline));
+		Inlines.Add(inline);
+	}
+
+	/// <summary>Re-renders after an inline hosted here changed its content.</summary>
+	internal void OnInlineContentChanged() => OnInlinesChanged();
 
 	// Guard flags to prevent feedback loops between Text DP and Inlines.
 	bool _settingFromText;

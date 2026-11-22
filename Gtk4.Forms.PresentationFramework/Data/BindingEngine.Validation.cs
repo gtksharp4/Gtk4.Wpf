@@ -55,13 +55,13 @@ internal static partial class BindingEngine
 		}
 
 		/// <summary>Records step errors (empty clears) and publishes them with the INDEI errors.</summary>
-		void SetStepErrors(FrameworkElement target, List<ValidationError> errors)
+		void SetStepErrors(DependencyObject target, List<ValidationError> errors)
 		{
 			_stepErrors = errors;
 			Publish(target);
 		}
 
-		void Publish(FrameworkElement target)
+		void Publish(DependencyObject target)
 		{
 			int count = _stepErrors.Count + _notifyErrors.Count;
 			if (count == 0 && !_published && !HasValidation) return;

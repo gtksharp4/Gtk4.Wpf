@@ -8,21 +8,21 @@ namespace System.Windows.Data;
 /// </summary>
 public class BindingExpression : BindingExpressionBase
 {
-	readonly WeakReference<FrameworkElement> _targetRef;
+	readonly WeakReference<DependencyObject> _targetRef;
 	readonly DependencyProperty _dp;
 	readonly Binding _binding;
 
 	// Back-reference to the engine record so UpdateTarget/UpdateSource can call it.
 	internal BindingEngine.BindingRecord? Record { get; set; }
 
-	internal BindingExpression(FrameworkElement target, DependencyProperty dp, Binding binding)
+	internal BindingExpression(DependencyObject target, DependencyProperty dp, Binding binding)
 	{
-		_targetRef = new WeakReference<FrameworkElement>(target);
+		_targetRef = new WeakReference<DependencyObject>(target);
 		_dp = dp;
 		_binding = binding;
 	}
 
-	internal FrameworkElement? TargetElement => _targetRef.TryGetTarget(out var target) ? target : null;
+	internal DependencyObject? TargetElement => _targetRef.TryGetTarget(out var target) ? target : null;
 
 	internal DependencyProperty TargetDependencyProperty => _dp;
 

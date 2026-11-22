@@ -23,13 +23,13 @@ public static class BindingOperations
 		if (dp == null) throw new ArgumentNullException(nameof(dp));
 		if (binding == null) throw new ArgumentNullException(nameof(binding));
 
-		if (target is not FrameworkElement fe)
+		if (target is not FrameworkElement && target is not FrameworkContentElement)
 			throw new NotSupportedException(
-				"BindingOperations only supports FrameworkElement targets.");
+				"BindingOperations only supports FrameworkElement and FrameworkContentElement targets.");
 
 		// All binding kinds (Binding, MultiBinding, PriorityBinding) route through
 		// BindingEngine.SetBinding so the expression map stays in one place.
-		return BindingEngine.SetBinding(fe, dp, binding);
+		return BindingEngine.SetBinding(target, dp, binding);
 	}
 
 	// ── ClearBinding / ClearAllBindings ──────────────────────────────────────
@@ -39,19 +39,19 @@ public static class BindingOperations
 	{
 		if (target == null) throw new ArgumentNullException(nameof(target));
 		if (dp == null) throw new ArgumentNullException(nameof(dp));
-		if (target is not FrameworkElement fe) return;
+		if (target is not FrameworkElement && target is not FrameworkContentElement) return;
 
 		// BindingEngine.ClearBinding is the single authority: it clears simple,
 		// multi, and priority records plus the expression map entry.
-		BindingEngine.ClearBinding(fe, dp);
+		BindingEngine.ClearBinding(target, dp);
 	}
 
 	/// <summary>Removes all bindings on <paramref name="target"/>.</summary>
 	public static void ClearAllBindings(DependencyObject target)
 	{
 		if (target == null) throw new ArgumentNullException(nameof(target));
-		if (target is not FrameworkElement fe) return;
-		BindingEngine.ClearAllBindings(fe);
+		if (target is not FrameworkElement && target is not FrameworkContentElement) return;
+		BindingEngine.ClearAllBindings(target);
 	}
 
 	// ── GetBinding / GetBindingExpression / GetMultiBindingExpression ─────────
@@ -100,8 +100,8 @@ public static class BindingOperations
 	{
 		if (target == null) throw new ArgumentNullException(nameof(target));
 		if (dp == null) throw new ArgumentNullException(nameof(dp));
-		if (target is not FrameworkElement fe) return null;
-		return BindingEngine.GetBindingExpression(fe, dp);
+		if (target is not FrameworkElement && target is not FrameworkContentElement) return null;
+		return BindingEngine.GetBindingExpression(target, dp);
 	}
 
 	// ── IsDataBound ──────────────────────────────────────────────────────────

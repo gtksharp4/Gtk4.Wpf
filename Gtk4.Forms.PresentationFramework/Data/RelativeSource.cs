@@ -125,7 +125,8 @@ public sealed class RelativeSource
 		return null;
 	}
 
-	object? FindAncestor(FrameworkElement target)
+	/// <summary>Walks the logical/inheritance parents of any target (element or content element).</summary>
+	internal object? FindAncestor(DependencyObject target)
 	{
 		if (AncestorType == null) return null;
 

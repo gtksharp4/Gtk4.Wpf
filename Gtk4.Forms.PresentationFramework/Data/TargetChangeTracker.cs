@@ -12,11 +12,11 @@ namespace System.Windows.Data;
 internal static class TargetChangeTracker
 {
 	// Per-element list of (DP, callback) subscriptions.
-	static readonly ConditionalWeakTable<FrameworkElement, List<(DependencyProperty dp, PropertyChangedCallback cb)>>
-		_subs = new ConditionalWeakTable<FrameworkElement, List<(DependencyProperty, PropertyChangedCallback)>>();
+	static readonly ConditionalWeakTable<DependencyObject, List<(DependencyProperty dp, PropertyChangedCallback cb)>>
+		_subs = new ConditionalWeakTable<DependencyObject, List<(DependencyProperty, PropertyChangedCallback)>>();
 
 	internal static void Subscribe(
-		FrameworkElement target,
+		DependencyObject target,
 		DependencyProperty dp,
 		PropertyChangedCallback callback)
 	{
@@ -25,7 +25,7 @@ internal static class TargetChangeTracker
 	}
 
 	internal static void Unsubscribe(
-		FrameworkElement target,
+		DependencyObject target,
 		DependencyProperty dp,
 		PropertyChangedCallback callback)
 	{
@@ -38,7 +38,7 @@ internal static class TargetChangeTracker
 	/// <see cref="DependencyObject.OnPropertyChanged"/> for every DP change.
 	/// Invokes any registered callback whose DP matches.
 	/// </summary>
-	internal static void Dispatch(FrameworkElement target, DependencyPropertyChangedEventArgs e)
+	internal static void Dispatch(DependencyObject target, DependencyPropertyChangedEventArgs e)
 	{
 		if (!_subs.TryGetValue(target, out var list)) return;
 		// Snapshot to tolerate re-entrancy (a write-back may cause further changes).

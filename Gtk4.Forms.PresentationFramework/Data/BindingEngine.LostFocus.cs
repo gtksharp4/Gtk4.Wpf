@@ -10,7 +10,7 @@ internal static partial class BindingEngine
 
 		// LostFocus: target changes only mark the binding dirty; the write happens when
 		// UIElement.LostFocusEvent (raised by the GTK focus controller) reaches the target.
-		void AttachLostFocus(FrameworkElement target)
+		void AttachLostFocus(DependencyObject target)
 		{
 			if (_trigger != UpdateSourceTrigger.LostFocus || _lostFocusHandler != null) return;
 			_lostFocusHandler = OnTargetLostFocus;
