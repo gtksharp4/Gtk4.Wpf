@@ -190,7 +190,12 @@ public partial class MediaElement
 	static string ReadError(IntPtr error)
 	{
 		var message = Marshal.ReadIntPtr(error, 8);
-		return (message == IntPtr.Zero ? null : Marshal.PtrToStringUTF8(message)) ?? "The media could not be played.";
+		if (message == IntPtr.Zero) return "The media could not be played.";
+		var length = 0;
+		while (Marshal.ReadByte(message, length) != 0) length++;
+		var bytes = new byte[length];
+		Marshal.Copy(message, bytes, 0, length);
+		return System.Text.Encoding.UTF8.GetString(bytes);
 	}
 
 	void SeekStream(TimeSpan value)

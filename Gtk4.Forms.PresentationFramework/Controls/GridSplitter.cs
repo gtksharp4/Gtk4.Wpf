@@ -36,7 +36,7 @@ public enum GridResizeDirection
 /// Grid column/row resize (Phase-2 work).
 /// </para>
 /// </summary>
-public class GridSplitter : Control
+public partial class GridSplitter : Control
 {
 	// ── ResizeDirection DP ───────────────────────────────────────────────────
 

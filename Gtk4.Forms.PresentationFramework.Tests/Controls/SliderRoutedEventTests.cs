@@ -64,7 +64,7 @@ public class SliderRoutedEventTests : WpfGtkTestBase
 	[Fact]
 	public void A_clamped_value_reports_the_coerced_value() => Run(() =>
 	{
-		var s = new Probe();
+		var s = new Probe { Maximum = 100 };
 		s.Value = 500;
 		Assert.Equal((0.0, 100.0), s.Calls[0]);
 	});

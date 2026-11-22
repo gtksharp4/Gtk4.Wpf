@@ -19,7 +19,10 @@ public partial class Window
 		click.Pressed += (o, a) =>
 		{
 			if (o is Gtk.GestureClick { CurrentButton: 1 } g)
+			{
 				RecordPress(g.CurrentEventDevice, a.X, a.Y, g.CurrentEventTime);
+				OnShellPressed(a.X, a.Y);
+			}
 		};
 		click.Released += (o, _) =>
 		{

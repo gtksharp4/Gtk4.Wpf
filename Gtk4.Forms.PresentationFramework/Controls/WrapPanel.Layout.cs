@@ -19,9 +19,9 @@ public partial class WrapPanel
 
 		foreach (UIElement child in Children)
 		{
-			child.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-			double childMain = isHorizontal ? child.DesiredSize.Width : child.DesiredSize.Height;
-			double childCross = isHorizontal ? child.DesiredSize.Height : child.DesiredSize.Width;
+			child.Measure(ItemConstraint());
+			double childMain = isHorizontal ? ItemWidthOf(child) : ItemHeightOf(child);
+			double childCross = isHorizontal ? ItemHeightOf(child) : ItemWidthOf(child);
 
 			if (lineMain > 0 && lineMain + childMain > mainLimit)
 			{
@@ -57,8 +57,8 @@ public partial class WrapPanel
 
 		foreach (UIElement child in Children)
 		{
-			double childMain = isHorizontal ? child.DesiredSize.Width : child.DesiredSize.Height;
-			double childCross = isHorizontal ? child.DesiredSize.Height : child.DesiredSize.Width;
+			double childMain = isHorizontal ? ItemWidthOf(child) : ItemHeightOf(child);
+			double childCross = isHorizontal ? ItemHeightOf(child) : ItemWidthOf(child);
 
 			if (currentItems.Count > 0 && currentMain + childMain > mainLimit)
 			{
@@ -82,7 +82,7 @@ public partial class WrapPanel
 			double mainOffset = 0;
 			foreach (var child in items)
 			{
-				double childMain = isHorizontal ? child.DesiredSize.Width : child.DesiredSize.Height;
+				double childMain = isHorizontal ? ItemWidthOf(child) : ItemHeightOf(child);
 				Rect slot = isHorizontal
 					? new Rect(mainOffset, crossOffset, childMain, lineCross)
 					: new Rect(crossOffset, mainOffset, lineCross, childMain);
