@@ -34,7 +34,8 @@ public class GeneratorV3ResourceTests : GeneratorV2TestBase
 	{
 		string code = Gen(App(@"<DrawingBrush x:Key=""g""><DrawingBrush.Drawing><DrawingGroup>
 <GeometryDrawing Geometry=""M0,0 L1,1"" Brush=""#44CCCCFF""/></DrawingGroup></DrawingBrush.Drawing></DrawingBrush>"));
-		Assert.Contains("Geometry.Parse(\"M0,0 L1,1\")", code);
+		Assert.Contains("GeometryProperty, System.Windows.Markup.XamlValueConverter.Convert(typeof(System.Windows.Media" +
+			".GeometryDrawing), System.Windows.Media.GeometryDrawing.GeometryProperty, \"M0,0 L1,1\")", code);
 		Assert.Contains("DrawingGroup", code);
 		AssertCompiles(code, AppStub);
 	}

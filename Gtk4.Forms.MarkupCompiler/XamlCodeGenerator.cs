@@ -107,6 +107,7 @@ namespace Gtk4.Forms.MarkupCompiler
 
 			_rootIsDictionary = IsDictionaryRoot(root);
 			bool isAppDef = IsApplicationRoot(root);
+			_registerNames = !isAppDef && !_rootIsDictionary;
 
 			var sb = new StringBuilder();
 			var w = new IndentedWriter(sb);
@@ -679,6 +680,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			{
 				w.Line($"this.{xName} = {varName};");
 				EmitNameProperty(w, varName, fqType, xName);
+				EmitNameRegistration(w, varName, xName);
 			}
 
 			// Emit <X.Resources> children first (before attr assignments that may reference them).
@@ -718,6 +720,11 @@ namespace Gtk4.Forms.MarkupCompiler
 					// Emit: OwnerType.SetProp(element, (castType)XamlValueConverter.Convert(...))
 					string castType = ResolveAttachedPropType(ownerFqType, attachedProp);
 					string ownerEmit = Emitted(ownerFqType);
+					if (IsTemplateBindingExpression(val, out string attachedTb) || IsBindingExpression(val, out attachedTb))
+					{
+						w.Line($"{varName}.SetBinding({ownerEmit}.{attachedProp}Property, {attachedTb});");
+						continue;
+					}
 					w.Line($"{ownerEmit}.Set{attachedProp}({varName}, " +
 						$"({castType})System.Windows.Markup.XamlValueConverter.Convert(" +
 						$"typeof({ownerEmit}), {ownerEmit}.{attachedProp}Property, \"{EscapeString(val)}\"));");
@@ -745,6 +752,10 @@ namespace Gtk4.Forms.MarkupCompiler
 						StringComparison.Ordinal) ? StaticResourceLookup("this", EscapeString(mediaKey))
 						: DynamicMediaLookup(EscapeString(mediaKey)))
 						+ " as global::" + mediaType.FullName.Replace('+', '.') + ";");
+				else if (IsDynamicResourceValue(val, out string freezableKey) && IsKnownDp(fqType, propName)
+					&& IsNonElementDependencyObject(fqType))
+					w.Line($"{Converter}.SetResourceValue(this, {varName}, {fqType}.{propName}Property, " +
+						$"{ResourceKeyExpression(EscapeString(freezableKey))});");
 				else if (IsDynamicResourceValue(val, out string dynKey) && IsKnownDp(fqType, propName))
 					w.Line($"{Converter}.SetLocalResourceReference({varName}, {fqType}.{propName}Property, " +
 						$"{ResourceKeyExpression(EscapeString(dynKey))});");
@@ -766,7 +777,8 @@ namespace Gtk4.Forms.MarkupCompiler
 						w.Line($"{varName}.{propName} = ({clrType})System.Windows.Markup.XamlValueConverter" +
 							$".CoerceResource(typeof({clrType}), {find});");
 					else
-						w.Line($"{varName}.SetValue({fqType}.{propName}Property, {find});");
+						w.Line($"{varName}.SetValue({fqType}.{propName}Property, " +
+							$"{(IsNonElementDependencyObject(fqType) ? CoercedDpValue(fqType, propName, find) : find)});");
 				}
 				else if (IsXNull(val))
 				{
@@ -902,6 +914,7 @@ namespace Gtk4.Forms.MarkupCompiler
 					return;
 				}
 			}
+			if (TryEmitElementMediaProperty(w, propEl, xNs, parentVar, propName, ref counter)) return;
 			if (!_ignorableNamespaces.Contains(propEl.Name.NamespaceName)) NoteDroppedPropertyElement(propEl);
 		}
 

@@ -54,6 +54,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			{ "DoubleAnimation",    "System.Windows.Media.Animation.DoubleAnimation" },
 			{ "ColorAnimation",     "System.Windows.Media.Animation.ColorAnimation" },
 			{ "ThicknessAnimation", "System.Windows.Media.Animation.ThicknessAnimation" },
+			{ "PointAnimation",     "System.Windows.Media.Animation.PointAnimation" },
 			{ "BeginStoryboard",    "System.Windows.BeginStoryboard" },
 
 			// System.Windows.Controls
