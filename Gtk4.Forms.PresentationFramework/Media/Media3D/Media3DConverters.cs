@@ -13,7 +13,8 @@ static class Media3DConverters
 			"Cannot convert from " + (value == null ? "(null)" : value.GetType().FullName) + ".");
 	}
 
-	internal static object? To(object? value, Type destinationType, CultureInfo? culture, Func<object?, object?> fallback)
+	internal static object? To(
+		object? value, Type destinationType, CultureInfo? culture, Func<object?, object?> fallback)
 	{
 		if (destinationType == typeof(string) && value is IFormattable f)
 			return f.ToString(null, culture);

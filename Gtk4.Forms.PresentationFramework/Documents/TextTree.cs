@@ -41,8 +41,12 @@ readonly struct TextSym
 /// </summary>
 static partial class TextTree
 {
+	/// <summary>Number of full rebuilds (test hook).</summary>
+	internal static int BuildCount;
+
 	internal static List<TextSym> Build(FlowDocument doc)
 	{
+		BuildCount++;
 		var list = new List<TextSym>();
 		int off = 0;
 		switch (doc.DetachedRoot)

@@ -60,7 +60,7 @@ public abstract class Transform3D : Animatable
 	}
 
 	/// <summary>The axis-aligned box of a transformed box.</summary>
-	internal Rect3D TransformBounds(Rect3D rect)
+	public Rect3D TransformBounds(Rect3D rect)
 	{
 		if (rect.IsEmpty) return rect;
 		var m = Value;

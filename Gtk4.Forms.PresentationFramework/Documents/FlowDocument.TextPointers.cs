@@ -11,7 +11,7 @@ public partial class FlowDocument
 
 	/// <summary>A pointer at the end of the document content (logical direction Forward).</summary>
 	public TextPointer ContentEnd =>
-		new TextPointer(this, TextTree.Total(TextTree.Build(this)), LogicalDirection.Forward);
+		new TextPointer(this, SymbolTotal, LogicalDirection.Forward);
 
 	/// <summary>Number of edits made through the text-pointer API; pointers replay the ones they missed.</summary>
 	internal int TextEditCount => _textEdits.Count;
@@ -27,6 +27,7 @@ public partial class FlowDocument
 	internal void RecordTextEdit(int position, int removed, int inserted)
 	{
 		_textEdits.Add(new TextEdit(position, removed, inserted));
+		InvalidateSymbols();
 		if (_editDepth == 0) ContentEdited?.Invoke();
 	}
 

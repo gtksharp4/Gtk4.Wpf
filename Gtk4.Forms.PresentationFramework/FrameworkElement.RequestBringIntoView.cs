@@ -21,7 +21,7 @@ public abstract partial class FrameworkElement
 	}
 
 	/// <summary>Tries to bring the whole element into view.</summary>
-	public void BringIntoView() => BringIntoView(new Rect(0, 0, RenderSize.Width, RenderSize.Height));
+	public void BringIntoView() => BringIntoView(Rect.Empty);
 
 	/// <summary>Tries to bring the given region of the element into view.</summary>
 	public void BringIntoView(Rect targetRectangle) =>

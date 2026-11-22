@@ -43,23 +43,27 @@ public partial class FlowDocument
 		{
 			if (!first) sb.Append("\n\n");
 			first = false;
-			block.AppendBlockMarkup(sb, _flowDirection);
+			block.AppendBlockMarkup(sb, ExplicitFlowDirection);
 		}
 		return sb.ToString();
 	}
 
-	FlowDirection? _flowDirection;
+	/// <summary>Identifies <see cref="FlowDirection"/> (shared with <see cref="FrameworkElement"/>).</summary>
+	public static readonly DependencyProperty FlowDirectionProperty =
+		FrameworkElement.FlowDirectionProperty.AddOwner(typeof(FlowDocument));
+
+	FlowDirection? ExplicitFlowDirection => HasLocal(FlowDirectionProperty) ? FlowDirection : (FlowDirection?)null;
 
 	/// <summary>Gets or sets the flow direction of the document (default LeftToRight). Rendered as a bidi
-	/// isolate inside each paragraph of <see cref="BuildMarkup"/>; not inherited, not a dependency property here.</summary>
+	/// isolate inside each paragraph of <see cref="BuildMarkup"/> when set locally.</summary>
 	public FlowDirection FlowDirection
 	{
-		get => _flowDirection ?? FlowDirection.LeftToRight;
+		get => (FlowDirection)GetValue(FlowDirectionProperty)!;
 		set
 		{
 			if (!FrameworkElement.IsValidFlowDirection(value))
 				throw new ArgumentException($"'{value}' is not a valid value for property 'FlowDirection'.");
-			_flowDirection = value;
+			SetValue(FlowDirectionProperty, value);
 		}
 	}
 

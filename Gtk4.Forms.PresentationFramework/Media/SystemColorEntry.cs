@@ -47,6 +47,11 @@ static class SystemResources
 	/// <summary>Resolves a system colour/brush key; the last step of every resource lookup.</summary>
 	internal static bool TryFind(object? key, out object? value)
 	{
+		if (key is SystemFontKey f)
+		{
+			value = f.Value;
+			return true;
+		}
 		if (key is SystemColorKey k)
 		{
 			value = k.Value;

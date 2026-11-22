@@ -31,8 +31,8 @@ public sealed partial class TextPointer
 		{
 			for (; _applied < _doc.TextEditCount; _applied++)
 				_offset = Reanchor(_offset, _direction, _doc.GetTextEdit(_applied));
-			// Direct tree edits are not logged or versioned, so the clamp cannot be cached.
-			_offset = Math.Max(0, Math.Min(_offset, TextTree.Total(TextTree.Build(_doc))));
+			// The symbol total is cached per content version, so repeated reads do not rebuild the tree.
+			_offset = Math.Max(0, Math.Min(_offset, _doc.SymbolTotal));
 			return _offset;
 		}
 	}
@@ -88,22 +88,26 @@ public sealed partial class TextPointer
 	public TextPointer? GetPositionAtOffset(int offset, LogicalDirection direction)
 	{
 		long target = (long)Offset + offset;
-		if (target < 0 || target > TextTree.Total(TextTree.Build(_doc))) return null;
+		if (target < 0 || target > _doc.SymbolTotal) return null;
 		return new TextPointer(_doc, (int)target, direction);
 	}
 
 	/// <summary>What lies next to this pointer in <paramref name="direction"/>.</summary>
 	public TextPointerContext GetPointerContext(LogicalDirection direction) =>
-		TextTree.Context(TextTree.Build(_doc), Offset, direction);
+		TextTree.Context(_doc.Symbols, Offset, direction);
 
-	/// <summary>The element that contains this position (a TextElement, ListItem or the FlowDocument).</summary>
+	/// <summary>
+	/// The element that contains this position (a TextElement, ListItem or the FlowDocument); null at the root level
+	/// of a detached element.
+	/// </summary>
 	/// <remarks>Typed object: the flow elements are not DependencyObjects in this layer.</remarks>
-	public object Parent
+	public object? Parent
 	{
 		get
 		{
-			var open = TextTree.OpenElements(TextTree.Build(_doc), Offset);
-			return open.Count == 0 ? _doc : open[open.Count - 1];
+			var open = TextTree.OpenElements(_doc.Symbols, Offset);
+			if (open.Count == 0) return _doc.DetachedRoot != null ? null : _doc;
+			return open[open.Count - 1];
 		}
 	}
 
@@ -112,7 +116,7 @@ public sealed partial class TextPointer
 	{
 		get
 		{
-			var open = TextTree.OpenElements(TextTree.Build(_doc), Offset);
+			var open = TextTree.OpenElements(_doc.Symbols, Offset);
 			for (int i = open.Count - 1; i >= 0; i--)
 				if (open[i] is Paragraph p) return p;
 			return null;

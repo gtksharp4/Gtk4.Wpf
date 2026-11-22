@@ -14,7 +14,7 @@ static partial class TextTreeEdit
 	/// or no insertion position can be found.</exception>
 	internal static void InsertInline(FlowDocument doc, int offset, Inline inline, bool moved = false)
 	{
-		var syms = TextTree.Build(doc);
+		var syms = doc.Symbols;
 		int before = TextTree.Total(syms);
 		var open = TextTree.OpenElements(syms, offset);
 		var top = open.Count == 0 ? null : open[open.Count - 1];
@@ -36,7 +36,7 @@ static partial class TextTreeEdit
 			InsertInline(doc, next, inline, moved: true);
 			return;
 		}
-		doc.RecordTextEdit(offset, 0, TextTree.Total(TextTree.Build(doc)) - before);
+		doc.RecordTextEdit(offset, 0, doc.SymbolTotal - before);
 	}
 
 	static void InsertAmong(System.Collections.Generic.List<TextSym> syms, InlineCollection col, int offset,

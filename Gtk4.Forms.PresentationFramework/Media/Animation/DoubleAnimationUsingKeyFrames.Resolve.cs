@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace System.Windows.Media.Animation;
 
-public sealed partial class DoubleAnimationUsingKeyFrames
+public partial class DoubleAnimationUsingKeyFrames
 {
 	/// <summary>The largest TimeSpan key time, or one second when there is none.</summary>
 	internal override Duration GetAutomaticDuration()
@@ -20,7 +20,7 @@ public sealed partial class DoubleAnimationUsingKeyFrames
 	}
 
 	/// <inheritdoc/>
-	protected override double GetCurrentValueCore(
+	protected sealed override double GetCurrentValueCore(
 		double defaultOriginValue, double defaultDestinationValue, AnimationClock animationClock)
 	{
 		var frames = _keyFrames ?? DoubleKeyFrameCollection.Empty;
@@ -51,13 +51,14 @@ public sealed partial class DoubleAnimationUsingKeyFrames
 
 		int iteration = animationClock.CurrentIteration ?? 1;
 		if (IsCumulative && iteration > 1)
-			value += (order[order.Count - 1].Value - (IsAdditive ? 0 : defaultOriginValue)) * (iteration - 1);
+			value += order[order.Count - 1].Value * (iteration - 1);
 		return IsAdditive ? defaultOriginValue + value : value;
 	}
 
 	/// <summary>
 	/// Resolves key times to seconds and orders the frames by them: time spans first, then percentages of the
-	/// natural duration, then Uniform frames spread evenly between their resolved neighbours. Paced is treated
+	/// natural duration, then Uniform frames spread evenly between their resolved neighbours (a leading run starts
+	/// from a virtual time 0). A leading Paced frame is pinned to 0; other Paced frames are treated
 	/// as Uniform.
 	/// </summary>
 	static List<DoubleKeyFrame> Resolve(DoubleKeyFrameCollection frames, double span, out double[] times)
@@ -76,16 +77,16 @@ public sealed partial class DoubleAnimationUsingKeyFrames
 			foreach (var r in resolved) if (r.HasValue && r.Value > max) max = r.Value;
 			resolved[n - 1] = max;
 		}
-		if (resolved[0] == null) resolved[0] = 0;
-		for (int i = 1; i < n - 1; i++)
+		if (resolved[0] == null && frames[0].KeyTime.Type == KeyTimeType.Paced) resolved[0] = 0;
+		for (int i = 0; i < n - 1; i++)
 		{
 			if (resolved[i] != null) continue;
 			int next = i;
 			while (resolved[next] == null) next++;
-			double startTime = resolved[i - 1]!.Value, endTime = resolved[next]!.Value;
-			int slots = next - i + 1;
+			double startTime = i == 0 ? 0 : resolved[i - 1]!.Value, endTime = resolved[next]!.Value;
+			int slots = next - (i - 1);
 			for (int k = i; k < next; k++)
-				resolved[k] = startTime + (endTime - startTime) * (k - i + 1) / slots;
+				resolved[k] = startTime + (endTime - startTime) * (k - (i - 1)) / slots;
 		}
 
 		var indices = new List<int>();

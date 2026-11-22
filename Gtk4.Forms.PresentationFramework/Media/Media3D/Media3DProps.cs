@@ -1,21 +1,37 @@
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+
 namespace System.Windows.Media.Media3D;
 
 /// <summary>Helpers shared by the animatable 3D classes.</summary>
 static class Media3DProps
 {
+	static readonly ConditionalWeakTable<Freezable, Dictionary<DependencyProperty, Freezable>> _pending =
+		new ConditionalWeakTable<Freezable, Dictionary<DependencyProperty, Freezable>>();
+
 	/// <summary>
-	/// Returns the collection of <paramref name="dp"/>; a frozen shared default is replaced by a private
-	/// collection the first time an unfrozen owner is asked for it, as WPF does.
+	/// Returns the collection of <paramref name="dp"/>. While the value is the frozen shared default, an unfrozen
+	/// owner gets a private collection that is kept aside (reading never sets a value or raises Changed) and
+	/// stored as the local value on its first change.
 	/// </summary>
 	internal static T Collection<T>(Freezable owner, DependencyProperty dp, T empty) where T : Freezable, new()
 	{
 		var value = (T)owner.GetValue(dp)!;
-		if (ReferenceEquals(value, empty) && !owner.IsFrozen)
+		if (!ReferenceEquals(value, empty) || owner.IsFrozen) return value;
+		var pending = _pending.GetOrCreateValue(owner);
+		if (pending.TryGetValue(dp, out var existing)) return (T)existing;
+
+		var fresh = new T();
+		EventHandler? promote = null;
+		promote = (s, e) =>
 		{
-			value = new T();
-			owner.SetValue(dp, value);
-		}
-		return value;
+			fresh.Changed -= promote;
+			pending.Remove(dp);
+			if (!owner.IsFrozen && ReferenceEquals(owner.GetValue(dp), empty)) owner.SetValue(dp, fresh);
+		};
+		fresh.Changed += promote;
+		pending[dp] = fresh;
+		return fresh;
 	}
 
 	/// <summary>Reads a collection without ever materialising it (used by the renderer).</summary>

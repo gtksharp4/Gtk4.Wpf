@@ -6,7 +6,7 @@ namespace System.Windows.Media.Media3D;
 
 /// <summary>A freezable list of <see cref="Point3D"/>.</summary>
 [TypeConverter(typeof(Point3DCollectionConverter))]
-public sealed class Point3DCollection : FreezableList<Point3D>, IFormattable
+public sealed partial class Point3DCollection : Freezable, IFormattable
 {
 	internal static readonly Point3DCollection Empty = Frozen();
 
@@ -59,12 +59,12 @@ public sealed class Point3DCollection : FreezableList<Point3D>, IFormattable
 
 	/// <inheritdoc/>
 	public string ToString(string? format, IFormatProvider? provider) =>
-		Format(provider, p => p.ToString(format, provider));
+		List.Format(provider, p => p.ToString(format, provider));
 }
 
 /// <summary>A freezable list of <see cref="Vector3D"/>.</summary>
 [TypeConverter(typeof(Vector3DCollectionConverter))]
-public sealed class Vector3DCollection : FreezableList<Vector3D>, IFormattable
+public sealed partial class Vector3DCollection : Freezable, IFormattable
 {
 	internal static readonly Vector3DCollection Empty = Frozen();
 
@@ -116,5 +116,5 @@ public sealed class Vector3DCollection : FreezableList<Vector3D>, IFormattable
 
 	/// <inheritdoc/>
 	public string ToString(string? format, IFormatProvider? provider) =>
-		Format(provider, v => v.ToString(format, provider));
+		List.Format(provider, v => v.ToString(format, provider));
 }

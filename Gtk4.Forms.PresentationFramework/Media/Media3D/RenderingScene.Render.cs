@@ -10,10 +10,10 @@ namespace System.Windows.Media.Media3D;
 static class SceneRenderer
 {
 	/// <summary>Builds the depth-sorted paint list for a viewport of the given pixel size.</summary>
-	internal static List<PaintItem> Build(Camera camera, IEnumerable<Visual3D> children, double width, double height)
+	internal static List<PaintItem> Build(Camera? camera, IEnumerable<Visual3D> children, double width, double height)
 	{
 		var items = new List<PaintItem>();
-		if (width <= 0 || height <= 0) return items;
+		if (camera == null || width <= 0 || height <= 0) return items;
 		var view = camera.GetViewMatrix();
 		var viewProjection = view * camera.GetProjectionMatrix(width / height);
 		var eye = Matrix3D.Identity;
@@ -39,7 +39,7 @@ static class SceneRenderer
 			var center = new Point3D((tri.P0.X + tri.P1.X + tri.P2.X) / 3, (tri.P0.Y + tri.P1.Y + tri.P2.Y) / 3,
 				(tri.P0.Z + tri.P1.Z + tri.P2.Z) / 3);
 			var normal = Normal(tri);
-			if (Vector3D.DotProduct(normal, eyePoint - center) < 0) normal = -normal;
+			if (!polygon.IsFront) normal = -normal;
 			SceneLighting.Shade(material, center, normal, eyePoint, scene.Lights, item.Layers);
 			items.Add(item);
 		}
@@ -57,6 +57,6 @@ static class SceneRenderer
 
 	/// <summary>Paints a scene into <paramref name="cr"/>.</summary>
 	internal static void Render(
-		Cairo.Context cr, Camera camera, IEnumerable<Visual3D> children, int width, int height) =>
+		Cairo.Context cr, Camera? camera, IEnumerable<Visual3D> children, int width, int height) =>
 		ScenePainter.Paint(cr, Build(camera, children, width, height));
 }

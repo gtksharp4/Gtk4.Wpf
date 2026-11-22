@@ -4,7 +4,7 @@ namespace System.Windows;
 public sealed class RequestBringIntoViewEventArgs : RoutedEventArgs
 {
 	/// <summary>Creates the arguments for a request to bring <paramref name="child"/> into view.</summary>
-	public RequestBringIntoViewEventArgs(DependencyObject child, Rect rectangle)
+	internal RequestBringIntoViewEventArgs(DependencyObject child, Rect rectangle)
 		: base(FrameworkElement.RequestBringIntoViewEvent)
 	{
 		TargetObject = child;

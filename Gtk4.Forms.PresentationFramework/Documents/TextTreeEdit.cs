@@ -67,7 +67,7 @@ static partial class TextTreeEdit
 	/// <exception cref="InvalidOperationException">The position cannot hold text.</exception>
 	internal static int InsertText(FlowDocument doc, int offset, string text, bool create = false)
 	{
-		var syms = TextTree.Build(doc);
+		var syms = doc.Symbols;
 		int before = TextTree.Total(syms);
 		var open = TextTree.OpenElements(syms, offset);
 		object parent = open.Count == 0 ? doc : open[open.Count - 1];
@@ -87,7 +87,7 @@ static partial class TextTreeEdit
 			end = InsertParagraph(doc, syms, parent, offset, text);
 		else
 			throw new InvalidOperationException("The position cannot hold text.");
-		doc.RecordTextEdit(offset, 0, TextTree.Total(TextTree.Build(doc)) - before);
+		doc.RecordTextEdit(offset, 0, doc.SymbolTotal - before);
 		return end;
 	}
 
@@ -119,7 +119,7 @@ static partial class TextTreeEdit
 	/// <returns>The number of characters deleted.</returns>
 	internal static int DeleteInRun(FlowDocument doc, int offset, int count)
 	{
-		var syms = TextTree.Build(doc);
+		var syms = doc.Symbols;
 		bool forward = count >= 0;
 		int i = forward ? TextTree.Find(syms, offset) : offset > 0 ? TextTree.Find(syms, offset - 1) : -1;
 		if (i < 0 || syms[i].Kind != TextSymKind.Text || count == 0) return 0;

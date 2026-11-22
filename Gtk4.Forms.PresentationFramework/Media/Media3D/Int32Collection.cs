@@ -7,7 +7,7 @@ namespace System.Windows.Media;
 
 /// <summary>A freezable list of <see cref="int"/>.</summary>
 [TypeConverter(typeof(Int32CollectionConverter))]
-public sealed class Int32Collection : FreezableList<int>, IFormattable
+public sealed partial class Int32Collection : Freezable, IFormattable
 {
 	internal static readonly Int32Collection Empty = Frozen();
 
@@ -58,5 +58,5 @@ public sealed class Int32Collection : FreezableList<int>, IFormattable
 
 	/// <inheritdoc/>
 	public string ToString(string? format, IFormatProvider? provider) =>
-		Format(provider, i => i.ToString(format, provider));
+		List.Format(provider, i => i.ToString(format, provider));
 }

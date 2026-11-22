@@ -2,7 +2,9 @@ namespace System.Windows;
 
 public partial class FrameworkContentElement
 {
-	/// <summary>Identifies the ContextMenu property (shared with <see cref="FrameworkElement.ContextMenuProperty"/>).</summary>
+	/// <summary>
+	/// Identifies the ContextMenu property (shared with <see cref="FrameworkElement.ContextMenuProperty"/>).
+	/// </summary>
 	public static readonly DependencyProperty ContextMenuProperty = FrameworkElement.ContextMenuProperty.AddOwner(
 		typeof(FrameworkContentElement), new PropertyMetadata(null));
 

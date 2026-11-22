@@ -2301,6 +2301,58 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   and `List`/`ListItem` own their children, so a Run in a list inherits the viewer DataContext. The binding-engine
   widening to `DependencyObject` is type-only; samples gate re-run (CommonDialogs now builds and runs).
 
+- **Round 54 (lane B) track A - Media3D (DONE, merged).** `gf54b/media3d` (merge `44cd947e`):
+  `System.Windows.Media.Media3D` from nothing. The math structs (`Point3D`, `Vector3D`, `Size3D`, `Point4D`,
+  `Quaternion`, `Matrix3D`, `Rect3D`) with converters, transforms and rotations, models, materials, lights, cameras,
+  `MeshGeometry3D`, `Visual3D`/`ModelVisual3D` and `Viewport3D`, a managed software rasterizer on Cairo inside a
+  `Gtk.DrawingArea` (painter's-algorithm depth sort, flat lighting), `DoubleAnimationUsingKeyFrames` with the four
+  key-frame types, `KeyTime`, `KeySpline` and `ParallelTimeline.SlipBehavior`; `PointConverter`, `VectorConverter` and
+  `MatrixConverter` in WindowsBase. Samples: Converter builds and runs; KeySplineAnimations builds but crashes at
+  startup on a storyboard target (lane C); the other six build-fail on non-3D symbols (`MouseDevice`,
+  `BeginStoryboard`, `Frame`, `Rect.Left`, `RenderTargetBitmap.Freeze`).
+- **Round 54 (lane B) track B - documents-text-tail (DONE, merged).** `gf54b/documents-text-tail` (merge
+  `767cbdec`): WPF-typed `TextElement`/`FlowDocument` typography (`FontFamily` is the `FontFamily` type; effective
+  values, never null or NaN), `TextElement.ContentStart`/`ContentEnd`/`ElementStart`/`ElementEnd` over a private
+  container for detached elements, `RequestBringIntoView`/`BringIntoView`, `FrameworkContentElement.ContextMenu`
+  (stored), nested-edit-aware repagination and `Run(string, TextPointer)` between blocks. Samples: FontProperties and
+  FlowDocumentProperties build and run; AnnotatedDocumentViewer is left on `SortDescription` (CS0200, lane A).
+- **Round 54 (lane B) review (Opus) + fixes - DONE.** **A-F1** a leading Uniform key frame resolves from a virtual
+  time 0 (`[U,U,U]` over 3 s is 1, 2, 3 s) and only a leading Paced frame is pinned to 0. **A-F2** `IsCumulative` adds
+  the last frame value per completed iteration, not `last - origin`. **A-F3** a `Viewport3D` with a null `Camera`
+  paints nothing instead of throwing. **A-F4** `DoubleAnimationUsingKeyFrames` is no longer sealed (`GetCurrentValueCore`
+  is a sealed override, as in WPF). **A-F5** reading a default 3D collection (`Positions`, `Children`, ...) hands out a
+  per-owner collection without `SetValue` or `Changed`; it becomes the local value on its first change;
+  `SplineDoubleKeyFrame.KeySpline` defaults to a frozen `KeySpline(0,0,1,1)`. **A-F6** `FreezableList<T>` is gone: an
+  internal composed `FreezableListCore<T>` backs each collection, which now derives from `Animatable`
+  (`Model3DCollection`, `MaterialCollection`, `Transform3DCollection`) or `Freezable` (the rest, incl.
+  `DoubleKeyFrameCollection`). **A-F7** the face normal is negated only for a back face and vertex normals use the
+  inverse transpose of the world matrix. **A-F8** invalidation wiring is pinned (`Viewport3D.InvalidateCount` hook).
+  **A-F9** the point, vector and matrix converters are sealed. **A-F10** `Transform3D.TransformBounds` is public; long
+  files and lines split and wrapped. **B-F1** `FlowDocument.ViewChanged` is coalesced to one raise per dispatcher turn
+  (50 paragraphs, `FontSize = 20`: 150 raises before, 1 now). **B-F2** deleting over a detached Paragraph, Span or Run
+  prunes the old text (`Text = "bye"` gave `byehello`). **B-F3** `BringIntoView()` passes `Rect.Empty`. **B-F4** the
+  `RequestBringIntoViewEventArgs` constructor is internal. **B-F5** `TextPointer.Parent` is null at the root of a
+  detached element. **B-F6** viewer tests host a shown window and assert page and scroll changes; the document
+  `FontFamily`/`FontSize` reach the viewer markup. **B-F7** wrapped long lines; `SortDescription` setters requested from
+  lane A in `docs/samples-coverage.md`. **CI-1** a content version caches the symbol list: repeated `TextPointer.Offset`
+  reads build the text tree once. **CI-2** `SystemFonts` has the `*FontFamily/Size/Style/Weight/TextDecorations` keys
+  for all six font groups, resolved by `FindResource`; `FlowDocument.FlowDirectionProperty` is a real DP.
+  Rejected in triage: the B-F7 build count (162 = 159 apps + 2 libraries + 1 console app, line 21 of
+  `samples-coverage.md`) and CI-3 (`FontFamily` is already typed). Samples gate: all 164 projects with `build=pass` still build and all 154 apps with `run=runs`
+  still run (10 of them only when re-run alone under load); AnnotatedDocumentViewer is down to the two
+  `SortDescription` setters.
+  **Round 54 (lane B) totals: 6344 tests** (260 WindowsBase + 5363 PresentationFramework + 607 MarkupCompiler +
+  43 ProjectConverter + 71 Wpf.Testing; 6 skipped), all green; `dotnet build Gtk4.Wpf.sln` warning-clean.
+- **Carry-over (Round 54 lane B)**: `FreezableListCore<T>` repeats ~100 lines of generated `IList` plumbing per
+  collection (C# has no mixins; a source generator would remove it); `Visual3DCollection` has no nested `Enumerator`;
+  typed 3D animations (`Rotation3DAnimation`, ...) and a per-pixel z-buffer remain deferred;
+  `MeshGeometry3D.TextureCoordinates` edits do not repaint; the Fixed/XPS model and `DocumentMerge` are next;
+  AnnotatedDocumentViewer needs `SortDescription` setters (lane A) and AnnotationsStyling needs `MenuItem.Padding`,
+  `SystemParameters` and `InkCanvasEditingMode` (lanes A and C); `ScrollViewer` does not handle
+  `RequestBringIntoView`; failing-first was shown against the old
+  code for A-F1, A-F2, A-F3, A-F4, the normal matrix of A-F7, B-F1, B-F2 and B-F3 only (the other new tests pass
+  against the new code and were not run against the old).
+
 ## Phased roadmap (after Phase 0 proves the spine)
 
 1. **Core controls, layout, binding.** `StackPanel`/`DockPanel`/`Canvas`/`WrapPanel` with WPF

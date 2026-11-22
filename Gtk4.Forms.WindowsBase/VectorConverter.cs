@@ -4,7 +4,7 @@ using System.Globalization;
 namespace System.Windows;
 
 /// <summary>Converts strings to <see cref="Vector"/>.</summary>
-public class VectorConverter : TypeConverter
+public sealed class VectorConverter : TypeConverter
 {
 	/// <inheritdoc/>
 	public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) =>

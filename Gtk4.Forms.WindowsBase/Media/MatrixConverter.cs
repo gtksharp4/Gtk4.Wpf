@@ -4,7 +4,7 @@ using System.Globalization;
 namespace System.Windows.Media;
 
 /// <summary>Converts strings to <see cref="Matrix"/>.</summary>
-public class MatrixConverter : TypeConverter
+public sealed class MatrixConverter : TypeConverter
 {
 	/// <inheritdoc/>
 	public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) =>

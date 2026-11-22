@@ -55,7 +55,14 @@ public class Viewport3D : FrameworkElement, IDisposable, IVisual3DOwner
 	}
 
 	/// <summary>Queues a redraw; GTK coalesces repeated requests into one per frame.</summary>
-	internal void Invalidate3D() => _area?.QueueDraw();
+	internal void Invalidate3D()
+	{
+		InvalidateCount++;
+		_area?.QueueDraw();
+	}
+
+	/// <summary>Number of redraw requests received (test hook).</summary>
+	internal int InvalidateCount { get; private set; }
 
 	void IVisual3DOwner.Invalidate3D() => Invalidate3D();
 
@@ -74,7 +81,7 @@ public class Viewport3D : FrameworkElement, IDisposable, IVisual3DOwner
 
 	/// <summary>Paints the scene exactly as the drawing area does.</summary>
 	internal void PaintTo(Cairo.Context cr, int width, int height) =>
-		SceneRenderer.Render(cr, Camera, Children, width, height);
+		SceneRenderer.Render(cr, (Camera?)GetValue(CameraProperty), Children, width, height);
 
 	/// <inheritdoc/>
 	public void Dispose()

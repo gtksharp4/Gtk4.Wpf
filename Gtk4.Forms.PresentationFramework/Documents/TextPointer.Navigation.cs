@@ -7,7 +7,7 @@ public sealed partial class TextPointer
 	/// <summary>The number of text characters next to this pointer in <paramref name="direction"/>.</summary>
 	public int GetTextRunLength(LogicalDirection direction)
 	{
-		var syms = TextTree.Build(_doc);
+		var syms = _doc.Symbols;
 		int off = Offset;
 		return TextRun(syms, off, direction, out var seg) ? RunSpan(seg, off, direction) : 0;
 	}
@@ -15,7 +15,7 @@ public sealed partial class TextPointer
 	/// <summary>The text next to this pointer in <paramref name="direction"/>, up to the next non-text symbol.</summary>
 	public string GetTextInRun(LogicalDirection direction)
 	{
-		var syms = TextTree.Build(_doc);
+		var syms = _doc.Symbols;
 		int off = Offset;
 		if (!TextRun(syms, off, direction, out var seg)) return string.Empty;
 		var text = ((Run)seg.Node).Text;
@@ -52,7 +52,7 @@ public sealed partial class TextPointer
 	/// <summary>The pointer past the next symbol (a whole text run counts as one), or null at the edge.</summary>
 	public TextPointer? GetNextContextPosition(LogicalDirection direction)
 	{
-		var syms = TextTree.Build(_doc);
+		var syms = _doc.Symbols;
 		int off = Offset;
 		var ctx = TextTree.Context(syms, off, direction);
 		if (ctx == TextPointerContext.None) return null;
@@ -66,7 +66,7 @@ public sealed partial class TextPointer
 	/// <remarks>Typed object: the flow elements are not DependencyObjects in this layer.</remarks>
 	public object? GetAdjacentElement(LogicalDirection direction)
 	{
-		var syms = TextTree.Build(_doc);
+		var syms = _doc.Symbols;
 		int off = Offset;
 		int i = direction == LogicalDirection.Forward ? TextTree.Find(syms, off) : off > 0 ? TextTree.Find(syms, off - 1) : -1;
 		return i < 0 || syms[i].Kind == TextSymKind.Text ? null : syms[i].Node;
@@ -78,7 +78,7 @@ public sealed partial class TextPointer
 		get
 		{
 			int off = Offset;
-			foreach (var b in InsertionBoundaries(TextTree.Build(_doc)))
+			foreach (var b in InsertionBoundaries(_doc.Symbols))
 				if (b.Offset == off) return b.Valid;
 			return true; // inside a text run
 		}
@@ -104,7 +104,7 @@ public sealed partial class TextPointer
 
 	int? FindInsertion(bool forward, int? from = null)
 	{
-		var syms = TextTree.Build(_doc);
+		var syms = _doc.Symbols;
 		int off = from ?? Offset;
 		int total = TextTree.Total(syms);
 		if (off < 0 || off > total) return null;

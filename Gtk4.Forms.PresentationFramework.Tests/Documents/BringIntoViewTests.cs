@@ -62,23 +62,34 @@ public class BringIntoViewTests : WpfGtkTestBase
 	{
 		var doc = Doc(400, out var last);
 		var viewer = new FlowDocumentPageViewer { Document = doc };
+		var window = new Window { Content = viewer };
+		window.Show();
+		GtkPump.For(100);
 		Assert.True(viewer.PageCount > 1);
 		Assert.Equal(1, viewer.MasterPageNumber);
 		last.BringIntoView();
+		GtkPump.For(50);
 		Assert.Equal(viewer.PageCount, viewer.MasterPageNumber);
 		((Run)((Paragraph)doc.Blocks[0]).Inlines[0]).BringIntoView();
+		GtkPump.For(50);
 		Assert.Equal(1, viewer.MasterPageNumber);
+		window.Close();
 	});
 
 	[Fact]
-	public void FlowDocumentReader_handles_a_request_for_its_document() => Run(() =>
+	public void FlowDocumentReader_scrolls_to_the_requested_element_and_handles_the_request() => Run(() =>
 	{
-		var doc = Doc(5, out var last);
+		var doc = Doc(300, out var last);
 		var reader = new FlowDocumentReader { Document = doc };
+		var adjustment = ((Gtk.ScrolledWindow)reader.Widget).Vadjustment;
+		adjustment.Upper = 10000;
+		adjustment.PageSize = 500;
 		var args = new RequestBringIntoViewEventArgs(last, Rect.Empty);
 		last.RaiseEvent(args);
 		Assert.True(args.Handled);
-		Assert.Equal(1, reader.PageNumber);
+		Assert.True(adjustment.Value > 0);
+		doc.Blocks[0].BringIntoView();
+		Assert.Equal(0, adjustment.Value, 0);
 	});
 
 	[Fact]
@@ -116,6 +127,8 @@ public class BringIntoViewTests : WpfGtkTestBase
 		window.RequestBringIntoView += (s, e) => seen = e;
 		button.BringIntoView();
 		Assert.Same(button, seen!.TargetObject);
+		Assert.Equal(Rect.Empty, seen.TargetRect);
+		Assert.True(seen.TargetRect.IsEmpty);
 		Assert.False(seen.Handled);
 	});
 }

@@ -3,9 +3,16 @@ namespace System.Windows.Media.Animation;
 /// <summary>Interpolates along a <see cref="Animation.KeySpline"/>.</summary>
 public class SplineDoubleKeyFrame : DoubleKeyFrame
 {
+	static KeySpline FrozenSpline()
+	{
+		var spline = new KeySpline(0, 0, 1, 1);
+		spline.Freeze();
+		return spline;
+	}
+
 	/// <summary>Identifies <see cref="KeySpline"/>.</summary>
 	public static readonly DependencyProperty KeySplineProperty = DependencyProperty.Register(
-		nameof(KeySpline), typeof(KeySpline), typeof(SplineDoubleKeyFrame), new PropertyMetadata(null));
+		nameof(KeySpline), typeof(KeySpline), typeof(SplineDoubleKeyFrame), new PropertyMetadata(FrozenSpline()));
 
 	/// <summary>Creates a frame.</summary>
 	public SplineDoubleKeyFrame() { }
@@ -20,19 +27,10 @@ public class SplineDoubleKeyFrame : DoubleKeyFrame
 	public SplineDoubleKeyFrame(double value, KeyTime keyTime, KeySpline keySpline) : base(value, keyTime) =>
 		KeySpline = keySpline;
 
-	/// <summary>The easing spline; a new linear spline until set.</summary>
+	/// <summary>The easing spline; a frozen linear spline until set.</summary>
 	public KeySpline KeySpline
 	{
-		get
-		{
-			var spline = (KeySpline?)GetValue(KeySplineProperty);
-			if (spline == null && !IsFrozen)
-			{
-				spline = new KeySpline();
-				SetValue(KeySplineProperty, spline);
-			}
-			return spline ?? new KeySpline();
-		}
+		get => (KeySpline)GetValue(KeySplineProperty)!;
 		set
 		{
 			if (value == null) throw new ArgumentNullException(nameof(value));

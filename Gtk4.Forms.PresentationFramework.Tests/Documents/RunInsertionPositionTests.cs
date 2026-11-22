@@ -105,5 +105,12 @@ public class RunInsertionPositionTests
 		var run = new Run("pre", list.ContentStart);
 		Assert.NotNull(run.Parent);
 		Assert.Equal("pre", run.Text);
+		Assert.Same(item, ((Paragraph)run.Parent!).Parent);
+		Assert.Equal(1, item.Blocks.Count);
+		Assert.Same(run.Parent, item.Blocks[0]);
+		var paragraph = (Paragraph)item.Blocks[0];
+		Assert.Same(run, paragraph.Inlines[0]);
+		Assert.Equal(2, paragraph.Inlines.Count);
+		Assert.Equal("preone", new TextRange(paragraph.ContentStart, paragraph.ContentEnd).Text);
 	}
 }

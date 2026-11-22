@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace System.Windows.Media.Animation;
 
 /// <summary>An ordered, freezable list of <see cref="DoubleKeyFrame"/>.</summary>
-public class DoubleKeyFrameCollection : FreezableList<DoubleKeyFrame>
+public partial class DoubleKeyFrameCollection : Freezable
 {
 	/// <summary>The shared frozen empty collection.</summary>
 	public static DoubleKeyFrameCollection Empty { get; } = MakeEmpty();

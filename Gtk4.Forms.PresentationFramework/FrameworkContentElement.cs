@@ -10,11 +10,9 @@ namespace System.Windows;
 /// <para>
 /// Gaps: only <see cref="Binding"/> is supported on content elements (no MultiBinding or PriorityBinding);
 /// validation errors are recorded in Validation.Errors but the Error event is not raised and no BindingGroup
-/// is joined; a relative source of TemplatedParent resolves through the hosting element, and
-/// triggers and templates are not
-/// available, a
-/// <see cref="ToolTip"/> and <see cref="Cursor"/> are stored but not shown (the flow document is one GTK
-/// label), and <see cref="Tag"/> is registered here because <see cref="FrameworkElement"/> has no Tag DP yet.
+/// is joined; a relative source of TemplatedParent resolves through the hosting element; triggers and templates
+/// are not available; <see cref="ToolTip"/> and <see cref="Cursor"/> are stored but not shown (the flow document
+/// is one GTK label); <see cref="Tag"/> is registered here because <see cref="FrameworkElement"/> has no Tag DP yet.
 /// </para>
 /// </summary>
 [RuntimeNameProperty("Name")]

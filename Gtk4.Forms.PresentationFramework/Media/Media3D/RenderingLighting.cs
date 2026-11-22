@@ -2,7 +2,9 @@ using System.Collections.Generic;
 
 namespace System.Windows.Media.Media3D;
 
-/// <summary>One shaded material layer of a triangle: a base colour (or textured brush) and a light multiplier.</summary>
+/// <summary>
+/// One shaded material layer of a triangle: a base colour (or textured brush) and a light multiplier.
+/// </summary>
 struct ShadedLayer
 {
 	internal Brush? TextureBrush;
@@ -120,7 +122,9 @@ static class SceneLighting
 		}
 	}
 
-	/// <summary>Direction to a non-ambient light and its attenuation (and cone) factor at <paramref name="p"/>.</summary>
+	/// <summary>
+	/// Direction to a non-ambient light and its attenuation (and cone) factor at <paramref name="p"/>.
+	/// </summary>
 	static bool Incoming(SceneLight l, Point3D p, out Vector3D toLight, out double strength)
 	{
 		toLight = default;

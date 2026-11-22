@@ -5,7 +5,7 @@ namespace System.Windows.Media.Animation;
 
 /// <summary>Animates a double through a series of key frames.</summary>
 [ContentProperty("KeyFrames")]
-public sealed partial class DoubleAnimationUsingKeyFrames : DoubleAnimationBase, IKeyFrameAnimation, IAddChild
+public partial class DoubleAnimationUsingKeyFrames : DoubleAnimationBase, IKeyFrameAnimation, IAddChild
 {
 	/// <summary>Identifies <see cref="IsAdditive"/>.</summary>
 	public static readonly DependencyProperty IsAdditiveProperty = DependencyProperty.Register(

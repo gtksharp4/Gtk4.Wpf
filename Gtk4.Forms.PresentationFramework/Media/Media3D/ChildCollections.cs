@@ -1,9 +1,10 @@
+using System.Windows.Media.Animation;
 using System.Collections.Generic;
 
 namespace System.Windows.Media.Media3D;
 
 /// <summary>A freezable list of <see cref="Model3D"/>.</summary>
-public sealed class Model3DCollection : FreezableList<Model3D>
+public sealed partial class Model3DCollection : Animatable
 {
 	internal static readonly Model3DCollection Empty = Frozen();
 
@@ -32,7 +33,7 @@ public sealed class Model3DCollection : FreezableList<Model3D>
 }
 
 /// <summary>A freezable list of <see cref="Material"/>.</summary>
-public sealed class MaterialCollection : FreezableList<Material>
+public sealed partial class MaterialCollection : Animatable
 {
 	internal static readonly MaterialCollection Empty = Frozen();
 
@@ -61,7 +62,7 @@ public sealed class MaterialCollection : FreezableList<Material>
 }
 
 /// <summary>A freezable list of <see cref="Transform3D"/>.</summary>
-public sealed class Transform3DCollection : FreezableList<Transform3D>
+public sealed partial class Transform3DCollection : Animatable
 {
 	internal static readonly Transform3DCollection Empty = Frozen();
 

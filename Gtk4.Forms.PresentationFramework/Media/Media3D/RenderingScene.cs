@@ -87,6 +87,8 @@ sealed class SceneCollector
 		var normals = Media3DProps.Peek<Vector3DCollection>(mesh, MeshGeometry3D.NormalsProperty);
 		var texture = (PointCollection?)mesh.GetValue(MeshGeometry3D.TextureCoordinatesProperty);
 		bool useNormals = normals.Count == positions.Count;
+		var inverse = world;
+		if (inverse.HasInverse) inverse.Invert();
 		bool useTexture = texture != null && texture.Count == positions.Count;
 		int count = indices.Count > 0 ? indices.Count : positions.Count;
 		for (int i = 0; i + 2 < count; i += 3)
@@ -108,9 +110,9 @@ sealed class SceneCollector
 			};
 			if (useNormals)
 			{
-				tri.N0 = world.Transform(normals[a]);
-				tri.N1 = world.Transform(normals[b]);
-				tri.N2 = world.Transform(normals[c]);
+				tri.N0 = NormalOf(inverse, normals[a]);
+				tri.N1 = NormalOf(inverse, normals[b]);
+				tri.N2 = NormalOf(inverse, normals[c]);
 			}
 			if (useTexture)
 			{
@@ -120,5 +122,16 @@ sealed class SceneCollector
 			}
 			Triangles.Add(tri);
 		}
+	}
+
+	/// <summary>Transforms a normal by the inverse transpose of the world matrix and normalises it.</summary>
+	static Vector3D NormalOf(Matrix3D inverse, Vector3D n)
+	{
+		var result = new Vector3D(
+			n.X * inverse.M11 + n.Y * inverse.M12 + n.Z * inverse.M13,
+			n.X * inverse.M21 + n.Y * inverse.M22 + n.Z * inverse.M23,
+			n.X * inverse.M31 + n.Y * inverse.M32 + n.Z * inverse.M33);
+		if (result.LengthSquared > 0) result.Normalize();
+		return result;
 	}
 }

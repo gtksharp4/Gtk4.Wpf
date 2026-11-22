@@ -18,7 +18,10 @@ static class FlowContentSamples
 
 	internal static FlowDocument Styled()
 	{
-		var doc = new FlowDocument { FontFamily = new FontFamily("Serif"), FontSize = 14, TextAlignment = TextAlignment.Center };
+		var doc = new FlowDocument
+		{
+			FontFamily = new FontFamily("Serif"), FontSize = 14, TextAlignment = TextAlignment.Center,
+		};
 		var p = Para(
 			new Run { Text = "plain & <esc> ", Foreground = Brushes.Red },
 			new Run { Text = "semi", FontWeight = FontWeights.SemiBold },

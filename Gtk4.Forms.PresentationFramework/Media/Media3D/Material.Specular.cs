@@ -83,5 +83,6 @@ public sealed class MaterialGroup : Material
 	protected override Freezable CreateInstanceCore() => new MaterialGroup();
 
 	/// <inheritdoc/>
-	protected override void OnFreeze() => Media3DProps.FreezeAll(Media3DProps.Peek<MaterialCollection>(this, ChildrenProperty));
+	protected override void OnFreeze() =>
+		Media3DProps.FreezeAll(Media3DProps.Peek<MaterialCollection>(this, ChildrenProperty));
 }

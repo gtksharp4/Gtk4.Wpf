@@ -231,7 +231,8 @@ Method). All 8 target samples were built and the ones that built were smoke-run.
   Intersecting triangles can overlap wrongly.
 - Lighting is flat per triangle (the mean of the vertex normals), with Blinn-Phong specular.
 - Brush textures are mapped with a per-triangle affine matrix, not perspective-correct.
-- `Paced` key times are treated as `Uniform`. `ParallelTimeline.SlipBehavior` is stored only.
+- `Paced` key times are treated as `Uniform`, except a leading `Paced` frame, which is pinned to time 0.
+  `ParallelTimeline.SlipBehavior` is stored only.
 - Typed 3D animations (`Rotation3DAnimation`, `Point3DAnimation`, `Vector3DAnimation`, `QuaternionAnimation`) are
   deferred: every target sample animates through `DoubleAnimation` on `AxisAngleRotation3D.Angle` or
   `TranslateTransform3D.OffsetX`.
@@ -240,7 +241,6 @@ Method). All 8 target samples were built and the ones that built were smoke-run.
   `ConverterBackedClasses` entry, which this lane may not edit.
 - `Point`/`Vector`/`Matrix` carry no `[TypeConverter]` attribute (their files are not owned by this lane); the new
   converters work when instantiated.
-- `FreezableList<T>` is a public base of the 3D collections; WPF has no such type.
 
 **Generator limits found (lane C, recorded, not worked around)**
 
@@ -338,10 +338,15 @@ still hold an app back, so treat "only" as an upper bound for build and an estim
      `PageContent`, `DocumentReference`, `FixedDocumentSequence`, `IUriContext`, then `XpsDocument` and
      `XpsDocumentWriter` on a ZIP package with FixedPage markup parsing (Glyphs, obfuscated fonts). Owns new
      `System.Windows.Xps/**` and the Fixed types under `Documents/**`.
+   - **Request for lane A:** make `SortDescription.PropertyName` and `SortDescription.Direction` settable in
+     `Data/SortDescription.cs` (WPF's are). It is AnnotatedDocumentViewer's only remaining blocker (CS0200).
+   - Known gaps: a view change from an edit or an inherited property is coalesced to one `ViewChanged` per dispatcher
+     turn, so a viewer repaints at the next turn, not synchronously. A detached `TextPointer` has `Parent == null` at
+     the root level. The document's font family and size reach the viewer markup as one outer span.
    - **Request for lane C:** add `DocumentViewer` to `CommandConverters._controlOwners` (next to `Slider`) so
      command names owned by `DocumentViewer` resolve in XAML; `Markup/**` was out of lane B's scope.
-   - Still open: AnnotationsStyling (also needs `MenuItem.Padding`, `SystemParameters`) and FontDialogDemo (also
-     needs items). ScrollViewer does not handle RequestBringIntoView yet (not lane B).
+   - Still open: AnnotationsStyling (also needs `MenuItem.Padding`, `SystemParameters`, `InkCanvasEditingMode`) and
+     FontDialogDemo (also needs items). ScrollViewer does not handle RequestBringIntoView yet (not lane B).
 5. **Controls and media tail: 4 only, 14 involved.**
    - Only: SlidePuzzleDemo, MediaGallery and WindowActivationAndDeactivation (`MediaElement` on
      `Gtk.MediaFile`/`Gtk.Video`, plus `RangeBase.ValueProperty`), and WPFGallery (`UserControl`,
@@ -473,6 +478,28 @@ cache. All 162 previously building projects still build, and FontProperties and 
 152 apps that ran still runs (7 read as hangs under load and ran alone for 20 s). FontProperties and
 FlowDocumentProperties run. AnnotatedDocumentViewer still fails on CS0200 (see Next rounds, item 4). The per-project
 JSON rows are updated; the headline totals above stay until the lanes merge.
+
+### Round 54 (lane B) review gate
+
+Run after the review fixes, on `lane/b`. Strict recipe: `Gtk4.Forms.Wpf 1.0.0.26326` and its three `Gtk4.Forms.*`
+dependencies packed from the worktree (`dotnet pack -c Debug --no-build`) into a lane-private feed, `Gtk4.*` mapped to
+that feed only, an isolated package cache, `fallbackPackageFolders` cleared, two builds per project.
+
+- **Build: all 164 projects with `build=pass` still build** (162 from the last full measure plus FontProperties and
+  FlowDocumentProperties). 0 failures.
+- **Run: all 154 apps with `run=runs` still start with a visible window.** 144 on the first 10 s run. Ten
+  (ApplicationShutdown, ExceptionHandlingSecondaryWorkerThread, MasterDetailXml, FlowContentProperty,
+  DragDropOpenTextFile, ShapeElements, CursorType, MouseState, ConcentricRingsDemo, WindowSizingOrder) showed no window at 10 s under load from the other
+  lanes and ran when re-run alone for 20 s. No run printed an unhandled exception.
+- **AnnotatedDocumentViewer** (re-measured): 2 errors, both CS0200 on `SortDescription.PropertyName`/`Direction`
+  (lane A, requested in Next rounds item 4).
+- **AnnotationsStyling** (re-measured; the old record listed `FlowDocument.SetBinding`,
+  `FlowDocument.FlowDirectionProperty` and `SystemFonts.Message*Key`, all of which exist now): 7 errors, all
+  outside lane B. `MenuItem.Padding` (2, lane C:
+  `MenuItem` derives from `FrameworkElement`), `InkCanvasEditingMode` (3) and `SystemParameters` (2, lane C).
+- Rejected in triage, not fixed: the review's B-F7 build-count claim (162 = 159 portable apps + CustomApplicationClient
+  and wpfclock + the console app FocusTracker, as line 21 defines) and CI-3 (`FlowDocument`/`TextElement.FontFamily` is
+  already typed `FontFamily`; the string-typed carry-over was cleared in Round 54b).
 
 ## Known layer defects found by the UI tests
 

@@ -18,7 +18,7 @@ static partial class TextTreeEdit
 		if (lines.Length == 1) return;
 
 		var para = new TextPointer(doc, after, LogicalDirection.Forward).Paragraph!;
-		int before = TextTree.Total(TextTree.Build(doc));
+		int before = doc.SymbolTotal;
 		var tail = SplitParagraph(doc, para, after);
 		var created = new List<Block>();
 		for (int i = 1; i < lines.Length - 1; i++)
@@ -34,7 +34,7 @@ static partial class TextTreeEdit
 		var items = owner.ToList();
 		items.InsertRange(items.IndexOf(para) + 1, created);
 		Replace(owner, items);
-		doc.RecordTextEdit(after, 0, TextTree.Total(TextTree.Build(doc)) - before);
+		doc.RecordTextEdit(after, 0, doc.SymbolTotal - before);
 	}
 
 	static Paragraph NewParagraph(string text)
@@ -47,7 +47,7 @@ static partial class TextTreeEdit
 	/// <summary>Moves everything after <paramref name="at"/> into a new paragraph (not yet attached).</summary>
 	static Paragraph SplitParagraph(FlowDocument doc, Paragraph para, int at)
 	{
-		int off = StartOffset(TextTree.Build(doc), para) + 1;
+		int off = StartOffset(doc.Symbols, para) + 1;
 		var tail = new Paragraph();
 		CopyFormat(para, tail);
 		foreach (var i in SplitInlines(para.Inlines, ref off, at)) tail.Inlines.Add(i);

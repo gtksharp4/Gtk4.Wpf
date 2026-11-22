@@ -5,7 +5,7 @@ namespace System.Windows.Documents;
 
 public partial class FlowDocument
 {
-	/// <summary>Raised when the blocks, Background, FontStyle or FontWeight change.</summary>
+	/// <summary>Raised when the blocks, Background, font settings or FlowDirection change.</summary>
 	internal event Action? ViewChanged;
 
 	/// <summary>Raised when the blocks or a layout-affecting property change; repaginates.</summary>
@@ -16,14 +16,16 @@ public partial class FlowDocument
 	{
 		base.OnPropertyChanged(e);
 		if (PaginationProperties.Affects(this, e.Property)) ContentChanged?.Invoke();
-		if (e.Property == BackgroundProperty || e.Property == FontStyleProperty || e.Property == FontWeightProperty)
-			ViewChanged?.Invoke();
+		if (e.Property == BackgroundProperty || e.Property == FontStyleProperty || e.Property == FontWeightProperty
+			|| e.Property == FontFamilyProperty || e.Property == FontSizeProperty
+			|| e.Property == FlowDirectionProperty)
+			RaiseViewChanged();
 	}
 
 	bool HasLocal(DependencyProperty dp) => !ReferenceEquals(ReadLocalValue(dp), DependencyProperty.UnsetValue);
 
-	/// <summary>
-	/// The markup a viewer shows: <see cref="BuildMarkup"/> wrapped in the document's own FontStyle and FontWeight
+	/// The markup a viewer shows: <see cref="BuildMarkup"/> wrapped in the document's own FontFamily, FontSize,
+	/// FontStyle and FontWeight when they are set locally. <see cref="BuildMarkup"/> itself is unchanged.
 	/// when they are set locally. <see cref="BuildMarkup"/> itself is unchanged.
 	/// </summary>
 	internal string BuildViewMarkup()
@@ -35,6 +37,10 @@ public partial class FlowDocument
 				: FontStyle == FontStyles.Oblique ? "oblique" : "normal").Append('"');
 		if (HasLocal(FontWeightProperty))
 			attrs.Append(" weight=\"").Append(FontWeight.Weight).Append('"');
+		if (HasLocal(FontFamilyProperty))
+			attrs.Append(" font_family=\"").Append(PangoMarkup.Escape(FontFamily.Source)).Append('"');
+		if (HasLocal(FontSizeProperty))
+			attrs.Append(" size=\"").Append((int)Math.Round(FontSize * 768)).Append('"');
 		return attrs.Length == 0 ? markup : "<span" + attrs + ">" + markup + "</span>";
 	}
 }

@@ -4,7 +4,7 @@ using System.Globalization;
 namespace System.Windows;
 
 /// <summary>Converts strings to <see cref="Point"/>.</summary>
-public class PointConverter : TypeConverter
+public sealed class PointConverter : TypeConverter
 {
 	/// <inheritdoc/>
 	public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) =>

@@ -2070,7 +2070,7 @@
 				]
 			},
 			"change": "unchanged",
-			"note": "Round 54b: Section/Paragraph ContentStart/ContentEnd/BringIntoView and FlowDocument.ContextMenu now exist. The last error is SortDescription.PropertyName/Direction (read-only struct members in Data/SortDescription.cs, lane A). With that one initializer replaced by the constructor in a scratch copy it builds and runs."
+			"note": "Round 54b: Section/Paragraph ContentStart/ContentEnd/BringIntoView and FlowDocument.ContextMenu now exist. The last error is SortDescription.PropertyName/Direction (read-only struct members in Data/SortDescription.cs, lane A). With that one initializer replaced by the constructor in a scratch copy it builds and runs. Re-measured in the Round 54 lane B review: still exactly 2 errors (CS0200 on SortDescription.PropertyName and Direction)."
 		},
 		{
 			"project": "Documents/Annotations/AnnotationsStyling/AnnotationsStyling.csproj",
@@ -2082,7 +2082,6 @@
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
-				"CS0117",
 				"CS0400",
 				"CS1061"
 			],
@@ -2091,35 +2090,21 @@
 				"SystemParameters"
 			],
 			"missingMembers": [
-				"FlowDocument.FlowDirectionProperty",
-				"FlowDocument.SetBinding",
-				"MenuItem.Padding",
-				"SystemFonts.MessageFontSizeKey",
-				"SystemFonts.MessageFontStyleKey",
-				"SystemFonts.MessageFontWeightKey"
+				"MenuItem.Padding"
 			],
 			"xamlErrors": [
-				"defaultstickynotestyle.g.cs(28,175): CS0117: 'SystemFonts' does not contain a definition for 'MessageFontSizeKey'",
-				"defaultstickynotestyle.g.cs(29,176): CS0117: 'SystemFonts' does not contain a definition for 'MessageFontStyleKey'",
-				"defaultstickynotestyle.g.cs(30,177): CS0117: 'SystemFonts' does not contain a definition for 'MessageFontWeightKey'",
-				"defaultstickynotestyle.g.cs(33,183): CS0117: 'SystemFonts' does not contain a definition for 'MessageFontStyleKey'",
-				"defaultstickynotestyle.g.cs(34,184): CS0117: 'SystemFonts' does not contain a definition for 'MessageFontWeightKey'",
-				"defaultstickynotestyle.g.cs(136,12): CS1061: 'MenuItem' does not contain a definition for 'Padding' and no accessible extension method 'Padding' accepting a first argument of type 'MenuItem' could be found (are you missing a using directive or an assembly reference?)",
-				"defaultstickynotestyle.g.cs(164,61): CS0117: 'FlowDocument' does not contain a definition for 'FlowDirectionProperty'",
-				"defaultstickynotestyle.g.cs(164,12): CS1061: 'FlowDocument' does not contain a definition for 'SetBinding' and no accessible extension method 'SetBinding' accepting a first argument of type 'FlowDocument' could be found (are you missing a using directive or an assembly reference?)",
-				"defaultstickynotestyle.g.cs(266,12): CS1061: 'MenuItem' does not contain a definition for 'Padding' and no accessible extension method 'Padding' accepting a first argument of type 'MenuItem' could be found (are you missing a using directive or an assembly reference?)",
-				"defaultstickynotestyle.g.cs(291,39): CS0400: The type or namespace name 'InkCanvasEditingMode' could not be found in the global namespace (are you missing an assembly reference?)",
-				"defaultstickynotestyle.g.cs(297,39): CS0400: The type or namespace name 'InkCanvasEditingMode' could not be found in the global namespace (are you missing an assembly reference?)",
-				"defaultstickynotestyle.g.cs(303,39): CS0400: The type or namespace name 'InkCanvasEditingMode' could not be found in the global namespace (are you missing an assembly reference?)"
+				"defaultstickynotestyle.g.cs(136,12): CS1061: MenuItem has no Padding (MenuItem derives from FrameworkElement)",
+				"defaultstickynotestyle.g.cs(266,12): CS1061: MenuItem has no Padding",
+				"defaultstickynotestyle.g.cs(291,39), (297,39), (303,39): CS0400: InkCanvasEditingMode not found",
+				"defaultstickynotestyle.g.cs(410,146), (411,147): CS0400: SystemParameters not found"
 			],
-			"firstError": "defaultstickynotestyle.g.cs: CS0117 'SystemFonts' does not contain a definition for 'MessageFontSizeKey'",
+			"firstError": "defaultstickynotestyle.g.cs: CS1061 MenuItem has no Padding",
 			"warnings": [
 				"CS0649",
 				"CS2002"
 			],
 			"blockerThemes": [
-				"controls",
-				"documents-text"
+				"controls"
 			],
 			"measured": true,
 			"previous": {
@@ -2129,7 +2114,8 @@
 					"CS0234"
 				]
 			},
-			"change": "unchanged"
+			"change": "unchanged",
+			"note": "Round 54 lane B review: SystemFonts.Message*Key, FlowDocument.FlowDirectionProperty and FlowDocument.SetBinding exist now. 7 errors remain, all outside lane B: MenuItem.Padding (2), InkCanvasEditingMode (3), SystemParameters (2)."
 		},
 		{
 			"project": "Documents/Fixed Documents/DocumentMerge/DocumentMerge.csproj",

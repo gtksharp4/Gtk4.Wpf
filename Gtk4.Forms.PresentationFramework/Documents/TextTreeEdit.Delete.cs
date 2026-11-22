@@ -14,12 +14,13 @@ static partial class TextTreeEdit
 	internal static void DeleteRange(FlowDocument doc, int start, int end)
 	{
 		if (end <= start) return;
-		var syms = TextTree.Build(doc);
+		var syms = doc.Symbols;
 		int before = TextTree.Total(syms);
 		var p1 = InnerParagraph(TextTree.OpenElements(syms, start));
 		var p2 = InnerParagraph(TextTree.OpenElements(syms, end));
 		var root = TextTree.RootBlocks(doc, out int off);
 		if (root != null) PruneBlocks(root, start, end, ref off);
+		else PruneDetachedInlines(doc.DetachedRoot, start, end);
 		if (p1 != null && p2 != null && !ReferenceEquals(p1, p2))
 		{
 			foreach (var i in p2.Inlines.ToList()) p1.Inlines.Add(i);
@@ -27,7 +28,22 @@ static partial class TextTreeEdit
 			FindOwner(doc, p2)?.Remove(p2);
 		}
 		if (doc.DetachedRoot == null && doc.Blocks.Count == 0) doc.Blocks.Add(new Paragraph());
-		doc.RecordTextEdit(start, before - TextTree.Total(TextTree.Build(doc)), 0);
+		doc.RecordTextEdit(start, before - doc.SymbolTotal, 0);
+	}
+
+	/// <summary>Prunes a detached root that holds inlines: a Paragraph, a Span or a Run (its edge is symbol 0).</summary>
+	static void PruneDetachedInlines(object? rootNode, int start, int end)
+	{
+		int inner = 1;
+		switch (rootNode)
+		{
+			case Paragraph p: PruneInlines(p.Inlines, start, end, ref inner); break;
+			case Span s: PruneInlines(s.Inlines, start, end, ref inner); break;
+			case Run r:
+				int from = Math.Max(start, 1) - 1, to = Math.Min(end, 1 + r.Text.Length) - 1;
+				if (to > from) r.Text = r.Text.Remove(from, to - from);
+				break;
+		}
 	}
 
 	static Paragraph? InnerParagraph(List<object> open)
