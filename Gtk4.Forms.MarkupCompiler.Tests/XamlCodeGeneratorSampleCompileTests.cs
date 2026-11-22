@@ -42,7 +42,7 @@ public class XamlCodeGeneratorSampleCompileTests
 	static readonly HashSet<string> StubHandlers = new()
 	{
 		"RoutedEventHandling.MainWindow.xaml", "CaptureUnCaptureMouse.MainWindow.xaml",
-		"IntroToStylingAndTemplating.MainWindow.xaml",
+		"IntroToStylingAndTemplating.MainWindow.xaml", "InvokeTarget.MainWindow.xaml",
 	};
 
 	// Samples that miss only their code-behind handlers (the stub declares none): the exact diagnostics.

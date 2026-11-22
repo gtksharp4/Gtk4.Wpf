@@ -703,6 +703,11 @@ namespace Gtk4.Forms.MarkupCompiler
 
 				string propName = attr.Name.LocalName;
 				string val = attr.Value;
+				if (SkippableMediaAttribute(el, fqType, attr))
+				{
+					NoteSkippedMedia(el, "attribute " + propName);
+					continue;
+				}
 				if (SkipsUnknownMediaProperty(fqType, propName))
 				{
 					NoteSkippedMedia(el, "property " + propName);
@@ -728,7 +733,7 @@ namespace Gtk4.Forms.MarkupCompiler
 					string ownerEmit = Emitted(ownerFqType);
 					if (IsTemplateBindingExpression(val, out string attachedTb) || IsBindingExpression(val, out attachedTb))
 					{
-						w.Line($"{varName}.SetBinding({ownerEmit}.{attachedProp}Property, {attachedTb});");
+						w.Line(SetBindingLine(varName, fqType, $"{ownerEmit}.{attachedProp}Property", attachedTb));
 						continue;
 					}
 					w.Line($"{ownerEmit}.Set{attachedProp}({varName}, " +
@@ -749,9 +754,9 @@ namespace Gtk4.Forms.MarkupCompiler
 				if (TryEmitHookProperty(w, varName, propName, val, hookFind)) continue;
 
 				if (IsTemplateBindingExpression(val, out string tbBindingInit))
-					w.Line($"{varName}.SetBinding({fqType}.{propName}Property, {tbBindingInit});");
+					w.Line(SetBindingLine(varName, fqType, $"{fqType}.{propName}Property", tbBindingInit));
 				else if (IsBindingExpression(val, out string bindingInit))
-					w.Line($"{varName}.SetBinding({fqType}.{propName}Property, {bindingInit});");
+					w.Line(SetBindingLine(varName, fqType, $"{fqType}.{propName}Property", bindingInit));
 				else if (MediaResourceTarget(fqType, propName, val) is Type mediaType
 					&& IsStaticOrDynamicResource(val, out string mediaKey))
 					w.Line(varName + "." + propName + " = " + (val.TrimStart().StartsWith("{StaticResource",
@@ -885,7 +890,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				{
 					string bVar = $"__b{counter++}";
 					EmitBindingElementInline(w, child, bVar, ref counter);
-					w.Line($"{parentVar}.SetBinding({ownerFqType}.{propName}Property, {bVar});");
+					w.Line(SetBindingLine(parentVar, ParentFqType(propEl), $"{ownerFqType}.{propName}Property", bVar));
 					return;
 				}
 				if (childLocal == "BindingGroup" && (propName == "BindingGroup" || propName == "ItemBindingGroup"))
@@ -919,11 +924,12 @@ namespace Gtk4.Forms.MarkupCompiler
 					string mbVar = $"__mb{counter++}";
 					EmitMultiBindingInline(w, child, xNs, mbVar, ref counter);
 					// SetBinding(DP, BindingBase): resolve DP from owner type name.
-					w.Line($"{parentVar}.SetBinding({ownerFqType}.{propName}Property, {mbVar});");
+					w.Line(SetBindingLine(parentVar, ParentFqType(propEl), $"{ownerFqType}.{propName}Property", mbVar));
 					return;
 				}
 			}
 			if (TryEmitElementMediaProperty(w, propEl, xNs, parentVar, propName, ref counter)) return;
+			if (TryEmitObjectPropertyElement(w, propEl, xNs, parentVar, propName, ref counter)) return;
 			if (!_ignorableNamespaces.Contains(propEl.Name.NamespaceName)) NoteDroppedPropertyElement(propEl);
 		}
 
