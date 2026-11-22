@@ -15,7 +15,8 @@ public class NavigationWindowSourceTests : WpfGtkTestBase
 	public void SourceProperty_SharesFrameOwnerChain()
 	{
 		Assert.Same(Frame.SourceProperty, NavigationWindow.SourceProperty);
-		Assert.IsAssignableFrom<FrameworkPropertyMetadata>(NavigationWindow.SourceProperty.GetMetadata(typeof(NavigationWindow)));
+		Assert.IsAssignableFrom<FrameworkPropertyMetadata>(
+			NavigationWindow.SourceProperty.GetMetadata(typeof(NavigationWindow)));
 		Assert.Equal(typeof(Uri), NavigationWindow.SourceProperty.PropertyType);
 		Assert.Null(NavigationWindow.SourceProperty.GetMetadata(typeof(NavigationWindow)).DefaultValue);
 	}

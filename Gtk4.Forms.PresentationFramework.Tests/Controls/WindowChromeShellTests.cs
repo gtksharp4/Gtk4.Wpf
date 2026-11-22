@@ -2,6 +2,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shell;
+using Gtk4.Forms.PresentationFramework.Tests.Lifecycle;
 using Gtk4.Forms.PresentationFramework.Tests.XamlBacked;
 using Xunit;
 
@@ -25,7 +26,8 @@ public class WindowChromeShellTests : WpfGtkTestBase
 		Assert.True(c.UseAeroCaptionButtons);
 		Assert.Equal(NonClientFrameEdges.None, c.NonClientFrameEdges);
 		Assert.Equal(new Thickness(-1), WindowChrome.GlassFrameCompleteThickness);
-		Assert.True(((FrameworkPropertyMetadata)WindowChrome.IsHitTestVisibleInChromeProperty.DefaultMetadata).Inherits);
+		var meta = (FrameworkPropertyMetadata)WindowChrome.IsHitTestVisibleInChromeProperty.DefaultMetadata;
+		Assert.True(meta.Inherits);
 	}
 
 	[Fact]
@@ -93,6 +95,26 @@ public class WindowChromeShellTests : WpfGtkTestBase
 			Assert.True(native.Decorated);
 			WindowChrome.SetWindowChrome(w, null);
 			Assert.True(native.Decorated);
+		});
+	}
+
+	[Fact]
+	public void A_child_that_sets_false_under_a_true_panel_is_not_hit_test_visible_in_chrome()
+	{
+		Run(() =>
+		{
+			var button = new Button { Width = 80, Height = 40 };
+			WindowChrome.SetIsHitTestVisibleInChrome(button, false);
+			var panel = new StackPanel();
+			WindowChrome.SetIsHitTestVisibleInChrome(panel, true);
+			panel.Children.Add(button);
+			var w = new Window { Content = panel, Width = 300, Height = 200 };
+			WindowChrome.SetWindowChrome(w, new WindowChrome { CaptionHeight = 100 });
+			w.Show();
+			Assert.True(GtkPump.Until(() => button.Widget.IsMapped && button.Widget.Width > 0));
+			Assert.True(button.Widget.ComputePoint(w.Widget, new Graphene.Point { X = 5, Y = 5 }, out var at));
+
+			Assert.False(w.IsHitTestVisibleInChromeAt(at.X, at.Y));
 		});
 	}
 }

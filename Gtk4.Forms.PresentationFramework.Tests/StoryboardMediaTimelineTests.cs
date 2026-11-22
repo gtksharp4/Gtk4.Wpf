@@ -40,4 +40,17 @@ public class StoryboardMediaTimelineTests : WpfGtkTestBase
 
 		Assert.Throws<InvalidOperationException>(() => sb.Begin(host));
 	});
+
+	[Fact]
+	public void MediaTimeline_WithoutATarget_BindsToTheContainerMediaElement() => Run(() =>
+	{
+		var media = new MediaElement();
+		var timeline = new MediaTimeline(new Uri("file:///tmp/x.wav"));
+		var sb = new Storyboard();
+		sb.Children.Add(timeline);
+
+		sb.Begin(media);
+
+		Assert.IsType<MediaClock>(media.Clock);
+	});
 }

@@ -12,7 +12,8 @@ public partial class WindowChrome
 	/// <summary>Identifies the attached <c>IsHitTestVisibleInChrome</c> property. Default false.</summary>
 	public static readonly DependencyProperty IsHitTestVisibleInChromeProperty =
 		DependencyProperty.RegisterAttached(
-			"IsHitTestVisibleInChrome", typeof(bool), typeof(WindowChrome), new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.Inherits));
+			"IsHitTestVisibleInChrome", typeof(bool), typeof(WindowChrome),
+			new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.Inherits));
 
 	/// <summary>Identifies the attached <c>ResizeGripDirection</c> property. Default None.</summary>
 	public static readonly DependencyProperty ResizeGripDirectionProperty =

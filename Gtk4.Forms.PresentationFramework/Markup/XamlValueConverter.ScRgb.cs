@@ -14,15 +14,23 @@ static class ScRgbColor
 
 	internal static Color Parse(string trimmed, string raw)
 	{
-		var parts = trimmed.Substring(Prefix.Length)
-			.Split(new[] { ',', ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-		if (parts.Length != 3 && parts.Length != 4)
+		var parts = new System.Collections.Generic.List<string>();
+		var ws = new[] { ' ', '\t', '\r', '\n' };
+		foreach (var segment in trimmed.Substring(Prefix.Length).Split(','))
+		{
+			var tokens = segment.Split(ws, StringSplitOptions.RemoveEmptyEntries);
+			// Like WPF's TokenizerHelper, a comma with nothing around it is an empty token, not a separator.
+			if (tokens.Length == 0)
+				throw new FormatException($"Cannot parse Color from \"{raw}\": empty scRGB value.");
+			parts.AddRange(tokens);
+		}
+		if (parts.Count != 3 && parts.Count != 4)
 			throw new FormatException($"Cannot parse Color from \"{raw}\": scRGB needs 3 or 4 values.");
 
 		var v = new float[4];
 		v[0] = 1f;
-		int offset = parts.Length == 4 ? 0 : 1;
-		for (int i = 0; i < parts.Length; i++)
+		int offset = parts.Count == 4 ? 0 : 1;
+		for (int i = 0; i < parts.Count; i++)
 		{
 			if (!float.TryParse(parts[i].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var f))
 				throw new FormatException($"Cannot parse Color from \"{raw}\": bad scRGB number.");

@@ -14,7 +14,9 @@ public partial class WindowChrome : Freezable
 	public static readonly DependencyProperty CaptionHeightProperty = DependencyProperty.Register(
 		nameof(CaptionHeight), typeof(double), typeof(WindowChrome), new PropertyMetadata(0.0), IsValidLength);
 
-	/// <summary>Identifies <see cref="ResizeBorderThickness"/>. Metadata default 0; a new instance starts at 4.</summary>
+	/// <summary>
+	/// Identifies <see cref="ResizeBorderThickness"/>. Metadata default 0; a new instance starts at 4.
+	/// </summary>
 	public static readonly DependencyProperty ResizeBorderThicknessProperty = DependencyProperty.Register(
 		nameof(ResizeBorderThickness), typeof(Thickness), typeof(WindowChrome),
 		new PropertyMetadata(default(Thickness)), IsValidThickness);

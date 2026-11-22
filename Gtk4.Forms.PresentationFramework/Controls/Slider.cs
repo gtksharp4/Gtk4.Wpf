@@ -8,7 +8,8 @@ namespace System.Windows.Controls;
 /// Two-way: GTK value change writes back into <see cref="RangeBase.Value"/>.
 /// <para>
 /// The range DPs come from <see cref="RangeBase"/>; <see cref="Slider"/> overrides the default
-/// (Maximum 10; SmallChange 0.1 and LargeChange 1 stay at the RangeBase defaults). When <see cref="IsSnapToTickEnabled"/> is <c>true</c>
+/// (Maximum 10; SmallChange 0.1 and LargeChange 1 stay at the RangeBase defaults). When
+/// <see cref="IsSnapToTickEnabled"/> is <c>true</c>
 /// the value is additionally rounded to the nearest tick defined by <see cref="TickFrequency"/>.
 /// </para>
 /// </summary>

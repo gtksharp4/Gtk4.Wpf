@@ -67,6 +67,9 @@ public class XamlValueConverterScRgbTests
 	[InlineData("sc#1, 2, 3, 4, 5")]
 	[InlineData("sc#")]
 	[InlineData("sc#a, b, c")]
+	[InlineData("sc#1,,1,1")]
+	[InlineData("sc#1,1,1,")]
+	[InlineData("sc#,1,1,1")]
 	public void BadTokenCount_ThrowsFormatException(string raw)
 	{
 		Assert.Throws<FormatException>(() => Parse(raw));

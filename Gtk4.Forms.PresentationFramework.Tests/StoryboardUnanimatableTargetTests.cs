@@ -56,4 +56,30 @@ public class StoryboardUnanimatableTargetTests : WpfGtkTestBase
 
 		Assert.Throws<InvalidOperationException>(() => sb.Begin(host));
 	});
+
+	[Fact]
+	public void PathFigureStartPointPath_IsSkipped_AndSiblingsStillAnimate() => Run(() =>
+	{
+		var figure = new PathFigure { StartPoint = new System.Windows.Point(1, 1) };
+		var geometry = new PathGeometry();
+		geometry.Figures.Add(figure);
+		var path = new Path { Name = "p", Opacity = 1, Data = geometry };
+		var move = new PointAnimation { To = new System.Windows.Point(5, 5), Duration = TimeSpan.FromSeconds(1) };
+		Storyboard.SetTargetName(move, "p");
+		Storyboard.SetTargetProperty(move,
+			new PropertyPath("(Path.Data).(PathGeometry.Figures)[0].(PathFigure.StartPoint)"));
+		var fade = new DoubleAnimation { To = 0, Duration = TimeSpan.FromSeconds(1) };
+		Storyboard.SetTargetName(fade, "p");
+		Storyboard.SetTargetProperty(fade, new PropertyPath("(UIElement.Opacity)"));
+		var sb = new Storyboard();
+		sb.Children.Add(move);
+		sb.Children.Add(fade);
+		var host = new System.Windows.Controls.Canvas();
+		host.Children.Add(path);
+		host.RegisterName("p", path);
+
+		sb.Begin(host);
+
+		Assert.Equal(1, sb.ActiveClocks.Count);
+	});
 }

@@ -27,4 +27,16 @@ public class RegisteredCanvasTests : WpfGtkTestBase
 
 		Assert.Single(canvas.Children);
 	});
+
+	[Fact]
+	public void Initialize_on_an_already_created_root_keeps_a_single_child() => Run(() =>
+	{
+		var canvas = Assert.IsType<RegisteredCanvas>(
+			GtkFormsXamlRegistry.TryCreate(_uri, typeof(RegisteredCanvas).Assembly));
+
+		GtkFormsXamlRegistry.Initialize(canvas);
+		GtkFormsXamlRegistry.Initialize(canvas);
+
+		Assert.Single(canvas.Children);
+	});
 }

@@ -61,7 +61,8 @@ internal static class StoryboardPathResolver
 
 	// WPF DependencyObjects that are plain CLR classes in this layer: animating through them is skipped,
 	// not an error. Anything else that is not a DependencyObject is a path WPF itself rejects.
-	static readonly Type[] _knownLayerGaps = { typeof(GradientStop) };
+	static readonly Type[] _knownLayerGaps =
+		{ typeof(GradientStop), typeof(PathFigure), typeof(PathSegment), typeof(Pen) };
 
 	static bool IsKnownLayerGap(Type type)
 	{

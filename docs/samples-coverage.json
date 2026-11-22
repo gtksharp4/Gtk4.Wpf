@@ -6384,7 +6384,7 @@
 			},
 			"change": "fail->pass",
 			"unblockedBy": "Round 49 startup-build-sweep (9a38e05e): FrameworkElement.Parent; Round 49 runtime-xaml-navigation (8c44b817): XamlWriter; Round 51 animation-clocks (4a1a9325): BeginAnimation, Geometry.Clone",
-			"runCause": "InvalidOperationException: Cannot find the element named 'LogoBrush' to animate 'Opacity': Storyboard.TargetName refers to an x:Name'd VisualBrush (a Freezable), which is not registered in the name scope; unhandled in a GTK callback after the window loads"
+			"runCause": "Round 48 measurement, stale since Round 55c: the VisualBrush.Visual property element was dropped by the generator, so the named VisualBrush was never built or registered in the name scope (Storyboard.TargetName 'LogoBrush' not found)"
 		},
 		{
 			"project": "Sample Applications/GraphingCalculatorDemo/GraphingCalculatorDemo.csproj",

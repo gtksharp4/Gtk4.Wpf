@@ -39,13 +39,12 @@ public partial class Window
 		}
 	}
 
-	// A child that opts in with WindowChrome.IsHitTestVisibleInChrome keeps its own clicks.
-	bool IsHitTestVisibleInChromeAt(double x, double y)
+	// The effective (inherited) WindowChrome.IsHitTestVisibleInChrome of the element under the press.
+	internal bool IsHitTestVisibleInChromeAt(double x, double y)
 	{
 		for (var widget = _window!.Pick(x, y, Gtk.PickFlags.Default); widget != null; widget = widget.Parent)
-			if (UIElement.OwnerOf(widget) is { } owner
-				&& (bool)owner.GetValue(WindowChrome.IsHitTestVisibleInChromeProperty)!)
-				return true;
+			if (UIElement.OwnerOf(widget) is { } owner)
+				return (bool)owner.GetValue(WindowChrome.IsHitTestVisibleInChromeProperty)!;
 		return false;
 	}
 }

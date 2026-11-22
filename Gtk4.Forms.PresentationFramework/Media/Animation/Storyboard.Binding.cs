@@ -46,6 +46,7 @@ public partial class Storyboard
 		if (obj == null && !string.IsNullOrEmpty(name))
 			obj = container.FindName(name!) as DependencyObject
 				?? throw new InvalidOperationException($"Cannot find the element named '{name}' to play media.");
+		obj ??= container;
 		if (!(obj is Controls.MediaElement element))
 			throw new InvalidOperationException("A MediaTimeline must target a MediaElement.");
 		element.Clock = clock;

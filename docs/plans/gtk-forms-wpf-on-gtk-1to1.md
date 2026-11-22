@@ -2339,6 +2339,16 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
 - **Round 55 (lane C) totals.** `dotnet build Gtk4.Wpf.sln` 0 warnings; `PresentationFramework.Tests` 5308 passed,
   2 skipped (no media backend), 0 failed; `MarkupCompiler.Tests` 621 passed, 1 skipped, 0 failed; 21 test methods
   added, 2 replaced.
+- **Round 55 (lane C) follow-up.** Verified review findings applied failing-first. MarkupCompiler: an attached property
+  element with a `Binding`/`MultiBinding`/`PriorityBinding`, template or markup-extension child goes to
+  `SetBinding`/template emission again (not `Owner.SetProp`), and its owner resolves through the element's own xmlns
+  (user `clr-namespace` owners included). `Storyboard`: `PathFigure`, `PathSegment` and `Pen` path steps are skipped
+  like `GradientStop`; a `MediaTimeline` with no target binds to the containing `MediaElement`. `WindowChrome`: the
+  caption drag reads only the effective (inherited) `IsHitTestVisibleInChrome` of the hit element. `sc#` parsing rejects
+  an empty comma token as WPF's `TokenizerHelper` does. `RegisteredCanvas` has an `Initialize` idempotency test back;
+  the stale GeometryDesignerDemo `runCause` in `samples-coverage.json` is corrected; over-long lines wrapped. Not
+  verified here: `MediaClock.NaturalDuration` after `MediaOpened` and the WAV stream path (no media backend on this
+  machine; the test skips).
 - **Round 55 (lane C) carry-over.** Not fixed, out of lane C: `Color.FromScRgb`/`ScR*` skip the sRGB transfer
   (`Color.FromScRgb(1,0.5f,0,0).R` is 128, XAML `sc#1,0.5,0,0` gives 188, WPF gives 188 for both; fix `Color.cs` and
   have `ScRgbColor.Parse` call it); SlidePuzzleDemo (`DocumentViewerBase.IsMasterPage`, lane B; `ControlTemplate.FindName`,
