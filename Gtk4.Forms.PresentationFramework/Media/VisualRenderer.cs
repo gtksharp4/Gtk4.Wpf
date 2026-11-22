@@ -20,7 +20,7 @@ static class VisualRenderer
 		double opacity = (v as ContainerVisual)?.Opacity ?? 1.0;
 		bool group = opacity < 1.0;
 		if (group) cr.PushGroup();
-		if (v is DrawingVisual dv && dv.Drawing != null) DrawingContextRenderer.Render(dv.Drawing, cr);
+		if (v is DrawingVisual dv && dv.Drawing != null) DrawingContextRenderer.Render(dv.Drawing, cr, paintText: true);
 		PaintChildren(v, cr);
 		if (group)
 		{

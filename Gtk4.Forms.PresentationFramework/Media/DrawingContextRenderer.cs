@@ -7,7 +7,8 @@ namespace System.Windows.Media;
 /// </summary>
 /// <remarks>
 /// Only the primitive kinds defined by <see cref="DrawingContext.DrawCommandKind"/>
-/// are rendered; <c>DrawText</c> uses Cairo toy text.
+/// are rendered. <c>DrawText</c> is opt-in (<c>paintText</c>), painted with Cairo toy text, because page renderers
+/// paint text themselves with Pango and a default pass would draw every line twice.
 /// Each command saves/restores Cairo state around its draw.
 /// </remarks>
 internal static class DrawingContextRenderer
@@ -17,7 +18,7 @@ internal static class DrawingContextRenderer
 	/// Returns the tight bounding rectangle of the rendered content, or
 	/// <see cref="Rect.Empty"/> when there are no commands with geometry.
 	/// </summary>
-	internal static Rect Render(DrawingContext ctx, Cairo.Context cr)
+	internal static Rect Render(DrawingContext ctx, Cairo.Context cr, bool paintText = false)
 	{
 		Rect bounds = Rect.Empty;
 
@@ -63,7 +64,7 @@ internal static class DrawingContextRenderer
 					break;
 
 				case DrawingContext.DrawCommandKind.DrawText:
-					if (cmd.Arg is ValueTuple<FormattedText, System.Windows.Point> text)
+					if (paintText && cmd.Arg is ValueTuple<FormattedText, System.Windows.Point> text)
 						FormattedTextMetrics.Paint(cr, text.Item1, text.Item2);
 					break;
 

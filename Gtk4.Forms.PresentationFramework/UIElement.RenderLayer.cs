@@ -93,7 +93,7 @@ public abstract partial class UIElement
 					_renderRecording = ctx;
 				}
 			}
-			if (_renderRecording != null) DrawingContextRenderer.Render(_renderRecording, cr);
+			if (_renderRecording != null) DrawingContextRenderer.Render(_renderRecording, cr, paintText: true);
 			VisualRenderer.PaintChildren(this, cr);
 		}
 		catch (Exception ex)

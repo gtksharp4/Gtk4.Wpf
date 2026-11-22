@@ -61,7 +61,7 @@ public partial class VisualBrush : TileBrush
 		using (var drawCr = new Cairo.Context(surface))
 		{
 			drawCr.Translate(-bounds.X, -bounds.Y);
-			DrawingContextRenderer.Render(ctx, drawCr);
+			DrawingContextRenderer.Render(ctx, drawCr, paintText: true);
 		}
 
 		var (dx, dy, dw, dh) = StretchMath.ComputeDestRect(sw, sh, width, height, Stretch);
