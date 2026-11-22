@@ -5,7 +5,7 @@ namespace System.Windows.Media;
 /// <summary>
 /// An ARGB colour with byte components. Matches WPF's <c>System.Windows.Media.Color</c>.
 /// </summary>
-public struct Color : IEquatable<Color>
+public partial struct Color : IEquatable<Color>
 {
 	/// <summary>Alpha channel (0 = transparent, 255 = opaque).</summary>
 	public byte A { get; set; }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Windows.Shapes;
 
 namespace System.Windows.Media;
 // ── Path segments ─────────────────────────────────────────────────────────
@@ -209,6 +210,7 @@ public partial class PathGeometry : Geometry
 	/// <inheritdoc/>
 	internal override void BuildPath(Cairo.Context cr)
 	{
+		cr.FillRule = FillRule == FillRule.Nonzero ? Cairo.FillRule.Winding : Cairo.FillRule.EvenOdd;
 		foreach (var fig in Figures)
 			fig.BuildPath(cr);
 	}
