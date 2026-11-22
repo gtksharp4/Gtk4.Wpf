@@ -90,7 +90,7 @@ public sealed partial class ItemCollection : CollectionView, IList
 	{
 		Guard();
 		if (index < 0 || index >= Count) throw new ArgumentOutOfRangeException(nameof(index));
-		return _inline.IndexOf(GetItemAt(index));
+		return Filter == null && SortDescriptions.Count == 0 ? index : _inline.IndexOf(GetItemAt(index));
 	}
 
 	/// <summary>Removes every inline item.</summary>

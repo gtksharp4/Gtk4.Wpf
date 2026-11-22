@@ -2325,6 +2325,10 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   **Round 53 (lane A) totals: 6253 tests** (255 WindowsBase + 5283 PresentationFramework + 606 MarkupCompiler + 43
   ProjectConverter + 66 Wpf.Testing; 6 skipped), warning-clean.
   Carry-over: merge `gf53a/visual-layer-input` and apply the two lane B hand-offs.
+- **Round 53 (lane A) follow-up.** `ItemCollection.InlineIndexOfViewItem` (RemoveAt, indexer setter) returns the view
+  position directly when there is no Filter or SortDescriptions, like `Insert`: `IndexOf` is Equals-based, so unsorted
+  duplicates hit the first match (`{a,b,a}.RemoveAt(2)` removed index 0). One test covers both paths. Under an active
+  sort or filter, equal duplicates still resolve to the first inline match (residual, untested).
 
 ## Phased roadmap (after Phase 0 proves the spine)
 

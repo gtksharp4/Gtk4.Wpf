@@ -207,4 +207,19 @@ public class ItemCollectionTests : WpfGtkTestBase
 		Assert.Throws<ArgumentOutOfRangeException>(() => list.Items.Insert(5, "q"));
 		Assert.Equal(4, list.Items.Count);
 	});
+
+	[Fact]
+	public void Unsorted_duplicates_are_addressed_by_position_in_RemoveAt_and_the_setter() => Run(() =>
+	{
+		var list = new ListBox();
+		list.Items.Add("a");
+		list.Items.Add("b");
+		list.Items.Add("a");
+		list.Items.RemoveAt(2);
+		Assert.Equal(new object[] { "a", "b" }, list.Items.Cast<object>().ToArray());
+
+		list.Items.Add("a");
+		list.Items[2] = "z";
+		Assert.Equal(new object[] { "a", "b", "z" }, list.Items.Cast<object>().ToArray());
+	});
 }
