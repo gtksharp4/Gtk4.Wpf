@@ -118,5 +118,6 @@ public partial class Window
 		// SourceInitialized / Loaded / ContentRendered / live size sync (Window.Lifecycle.cs).
 		WireLifecycleSignals(win);
 		WireDragMove(win);
+		ApplyShellChrome();
 	}
 }
