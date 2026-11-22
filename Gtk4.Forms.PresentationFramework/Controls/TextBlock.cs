@@ -132,7 +132,7 @@ public partial class TextBlock : FrameworkElement
 		string typographyFeatures = Documents.TypographyPango.BuildFontFeatures(this);
 		if (_inlines.Count == 1 && _inlines[0] is Run r &&
 		    !r.HasFlowOrLanguage &&
-		    r.Foreground == null && !r.FontWeight.HasValue && !r.FontStyle.HasValue &&
+		    !r.HasLocalFormat &&
 		    (r.TextDecorations == null || r.TextDecorations.Count == 0) &&
 		    (blockDec == null || blockDec.Count == 0) &&
 		    typographyFeatures.Length == 0)

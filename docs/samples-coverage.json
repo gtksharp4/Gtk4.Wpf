@@ -2050,20 +2050,15 @@
 			"build": "fail",
 			"run": "not-run",
 			"errorCodes": [
-				"CS0200",
-				"CS1061"
+				"CS0200"
 			],
 			"missingTypes": [],
-			"missingMembers": [
-				"Paragraph.BringIntoView",
-				"Section.ContentEnd",
-				"Section.ContentStart"
-			],
+			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "AnnotationDataConverter.cs: CS1061 'Section' does not contain a definition for 'ContentStart' and no accessible extension method 'ContentStart' accepting a first argument of type 'Section' could be found (are you missing a using directive or an assembly reference?)",
+			"firstError": "MainWindow.cs: CS0200 Property or indexer 'SortDescription.PropertyName' cannot be assigned to -- it is read only",
 			"warnings": [],
 			"blockerThemes": [
-				"documents-text"
+				"data"
 			],
 			"measured": true,
 			"previous": {
@@ -2074,7 +2069,8 @@
 					"CS0246"
 				]
 			},
-			"change": "unchanged"
+			"change": "unchanged",
+			"note": "Round 54b: Section/Paragraph ContentStart/ContentEnd/BringIntoView and FlowDocument.ContextMenu now exist. The last error is SortDescription.PropertyName/Direction (read-only struct members in Data/SortDescription.cs, lane A). With that one initializer replaced by the constructor in a scratch copy it builds and runs."
 		},
 		{
 			"project": "Documents/Annotations/AnnotationsStyling/AnnotationsStyling.csproj",
@@ -2347,19 +2343,15 @@
 			"windowsOnly": false,
 			"legacyCsproj": false,
 			"batch": 4,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0029"
-			],
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
 			"missingTypes": [],
 			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "MainWindow.cs: CS0029 Cannot implicitly convert type 'System.Windows.Media.FontFamily' to 'string'",
+			"firstError": "",
 			"warnings": [],
-			"blockerThemes": [
-				"documents-text"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -2368,7 +2360,8 @@
 					"CS0246"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 54b (gf54b/documents-text-tail): TextElement and FlowDocument FontFamily, FontWeight, FontStyle, FontStretch, Foreground and FontSize have their WPF types and return the effective value"
 		},
 		{
 			"project": "Documents/Flow Content/FontProperties/FontProperties.csproj",
@@ -2377,19 +2370,15 @@
 			"windowsOnly": false,
 			"legacyCsproj": false,
 			"batch": 4,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0029"
-			],
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
 			"missingTypes": [],
 			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "MainWindow.cs: CS0029 Cannot implicitly convert type 'System.Windows.Media.FontFamily' to 'string'",
+			"firstError": "",
 			"warnings": [],
-			"blockerThemes": [
-				"documents-text"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -2398,7 +2387,8 @@
 					"CS0029"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"unblockedBy": "Round 54b (gf54b/documents-text-tail): TextElement and FlowDocument FontFamily, FontWeight, FontStyle, FontStretch, Foreground and FontSize have their WPF types and return the effective value"
 		},
 		{
 			"project": "Documents/Flow Content/ParagraphAndHyphenation/ParagraphAndHyphenation.csproj",

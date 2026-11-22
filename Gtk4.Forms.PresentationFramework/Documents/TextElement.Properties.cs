@@ -6,18 +6,16 @@ namespace System.Windows.Documents;
 /// The attached, inheriting text DPs (FontFamily, FontSize, FontStyle, FontWeight, FontStretch, Foreground).
 /// <see cref="TextElement"/> is a <see cref="DependencyObject"/>, so its instance members read and write the same
 /// DPs; <c>Control</c> and <c>TextBlock</c> are owners (<c>AddOwner</c>), so values inherit through them.
-/// Carry-over: the instance <c>FontFamily</c> is a string, where WPF's is a <see cref="Media.FontFamily"/>.
 /// </summary>
 public abstract partial class TextElement
 {
-	/// <summary>Identifies the attached FontFamily property (default "Segoe UI"; inherits).</summary>
+	/// <summary>Identifies the attached FontFamily property (default "Segoe UI"; inherits; null is rejected).</summary>
 	public static readonly DependencyProperty FontFamilyProperty = DependencyProperty.RegisterAttached(
 		"FontFamily", typeof(FontFamily), typeof(TextElement),
-		new FrameworkPropertyMetadata(new FontFamily("Segoe UI"), true));
+		new FrameworkPropertyMetadata(new FontFamily("Segoe UI"), true), v => v != null);
 
 	/// <summary>Identifies the attached FontSize property (default 12 DIPs; inherits).
-	/// Validated as in WPF: ArgumentException unless finite and in (0, 35791.394]. The FontFamily
-	/// null check is not applied (the DP is not nullable-validated).</summary>
+	/// Validated as in WPF: ArgumentException unless finite and in (0, 35791.394].</summary>
 	public static readonly DependencyProperty FontSizeProperty = DependencyProperty.RegisterAttached(
 		"FontSize", typeof(double), typeof(TextElement), new FrameworkPropertyMetadata(12.0, true),
 		v => v is double d && d > 0 && d <= 35791.394);

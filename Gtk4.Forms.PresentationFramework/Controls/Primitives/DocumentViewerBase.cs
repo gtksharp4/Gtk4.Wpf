@@ -57,7 +57,11 @@ public abstract partial class DocumentViewerBase : Control
 
 	void OnPaginatorPagesChanged(object sender, PagesChangedEventArgs e) => RefreshPages();
 
-	void OnPaginationCompleted(object? sender, EventArgs e) => RefreshPages();
+	// PagesChanged already refreshed the batch; only a count that moved since then needs another pass.
+	void OnPaginationCompleted(object? sender, EventArgs e)
+	{
+		if ((_paginator?.PageCount ?? 0) != PageCount) RefreshPages();
+	}
 
 	/// <summary>Called after <see cref="Document"/> changed and the page state was refreshed.</summary>
 	protected virtual void OnDocumentChanged()

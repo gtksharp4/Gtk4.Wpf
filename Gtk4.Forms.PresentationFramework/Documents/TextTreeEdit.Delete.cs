@@ -18,15 +18,15 @@ static partial class TextTreeEdit
 		int before = TextTree.Total(syms);
 		var p1 = InnerParagraph(TextTree.OpenElements(syms, start));
 		var p2 = InnerParagraph(TextTree.OpenElements(syms, end));
-		int off = 0;
-		PruneBlocks(doc.Blocks, start, end, ref off);
+		var root = TextTree.RootBlocks(doc, out int off);
+		if (root != null) PruneBlocks(root, start, end, ref off);
 		if (p1 != null && p2 != null && !ReferenceEquals(p1, p2))
 		{
 			foreach (var i in p2.Inlines.ToList()) p1.Inlines.Add(i);
 			p2.Inlines.Clear();
 			FindOwner(doc, p2)?.Remove(p2);
 		}
-		if (doc.Blocks.Count == 0) doc.Blocks.Add(new Paragraph());
+		if (doc.DetachedRoot == null && doc.Blocks.Count == 0) doc.Blocks.Add(new Paragraph());
 		doc.RecordTextEdit(start, before - TextTree.Total(TextTree.Build(doc)), 0);
 	}
 

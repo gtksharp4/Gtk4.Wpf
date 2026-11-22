@@ -46,7 +46,7 @@ static class TextRangeRtfReader
 			if (st.Bold) run.FontWeight = FontWeights.Bold;
 			if (st.Italic) run.FontStyle = FontStyles.Italic;
 			if (st.Underline) run.TextDecorations = TextDecorations.Underline;
-			if (st.Size != null) TextRangeFontSize.Set(run, st.Size.Value);
+			if (st.Size != null) run.FontSize = st.Size.Value;
 			para.Inlines.Add(run);
 			text.Clear();
 		}

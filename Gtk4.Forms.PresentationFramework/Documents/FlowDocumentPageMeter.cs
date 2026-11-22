@@ -44,6 +44,18 @@ sealed class FlowDocumentPageMeter
 
 	internal int LinesPerPage => Columns * LinesPerColumn;
 
+	/// <summary>The zero-based page holding the line that contains character <paramref name="chars"/>.</summary>
+	internal int PageOfChar(int chars)
+	{
+		int seen = 0, line = 0;
+		for (; line < Lines.Count - 1; line++)
+		{
+			seen += Lines[line].Length + 1;
+			if (seen > chars) break;
+		}
+		return Math.Min(PageCount - 1, line / LinesPerPage);
+	}
+
 	internal int PageCount => Math.Max(1, (Lines.Count + LinesPerPage - 1) / LinesPerPage);
 
 	internal static FlowDocumentPageMeter Measure(FlowDocument doc, Size page)

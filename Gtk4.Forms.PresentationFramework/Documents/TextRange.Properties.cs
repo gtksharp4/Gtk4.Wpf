@@ -44,8 +44,8 @@ public partial class TextRange
 		if (p == TextElement.FontWeightProperty) run.FontWeight = (FontWeight)value;
 		else if (p == TextElement.FontStyleProperty) run.FontStyle = (FontStyle)value;
 		else if (p == TextElement.ForegroundProperty) run.Foreground = (Brush)value;
-		else if (p == TextElement.FontFamilyProperty) run.FontFamily = ((FontFamily)value).Source;
-		else TextRangeFontSize.Set(run, (double)value);
+		else if (p == TextElement.FontFamilyProperty) run.FontFamily = (FontFamily)value;
+		else run.FontSize = (double)value;
 	}
 
 	/// <summary>
@@ -77,20 +77,19 @@ public partial class TextRange
 			var v = Explicit(open[i] as TextElement, p);
 			if (v != null) return v;
 		}
-		if (p == TextElement.FontFamilyProperty && doc.FontFamily != null) return new FontFamily(doc.FontFamily);
-		if (p == TextElement.FontSizeProperty && !double.IsNaN(doc.FontSize)) return doc.FontSize;
-		if (p == TextElement.ForegroundProperty && doc.Foreground != null) return doc.Foreground;
-		return p.DefaultMetadata.DefaultValue!;
+		return doc.HasNonInheritedValue(p) ? doc.GetValue(p)! : p.DefaultMetadata.DefaultValue!;
 	}
 
 	static object? Explicit(TextElement? el, DependencyProperty p)
 	{
 		if (el == null) return null;
-		if (p == TextElement.FontWeightProperty) return el.FontWeight ?? (el is Bold ? FontWeights.Bold : (FontWeight?)null);
-		if (p == TextElement.FontStyleProperty) return el.FontStyle ?? (el is Italic ? FontStyles.Italic : (FontStyle?)null);
-		if (p == TextElement.ForegroundProperty) return el.Foreground;
-		if (p == TextElement.FontFamilyProperty) return el.FontFamily == null ? null : new FontFamily(el.FontFamily);
-		return TextRangeFontSize.Get(el);
+		if (p == TextElement.FontWeightProperty)
+			return TextLocalValues.Weight(el) ?? (el is Bold ? FontWeights.Bold : (FontWeight?)null);
+		if (p == TextElement.FontStyleProperty)
+			return TextLocalValues.Style(el) ?? (el is Italic ? FontStyles.Italic : (FontStyle?)null);
+		if (p == TextElement.ForegroundProperty) return TextLocalValues.Brush(el);
+		if (p == TextElement.FontFamilyProperty) return TextLocalValues.Family(el);
+		return TextLocalValues.Size(el);
 	}
 
 	// Splits the Run holding the offset into two Runs when the offset is strictly inside its text.

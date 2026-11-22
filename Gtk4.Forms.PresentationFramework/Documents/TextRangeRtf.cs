@@ -27,8 +27,8 @@ static class TextRangeRtf
 	{
 		foreach (var i in col)
 		{
-			bool b = bold || i is Bold || (i.FontWeight?.ToOpenTypeWeight() ?? 400) >= 700;
-			bool it = italic || i is Italic || (i.FontStyle != null && i.FontStyle.Value != FontStyles.Normal);
+			bool b = bold || i is Bold || (TextLocalValues.Weight(i)?.ToOpenTypeWeight() ?? 400) >= 700;
+			bool it = italic || i is Italic || (TextLocalValues.Style(i) is FontStyle fs && fs != FontStyles.Normal);
 			bool ul = underline || i is Underline || IsUnderlined(i);
 			if (i is LineBreak) sb.Append("\\line ");
 			else if (i is Span s) Inlines(sb, s.Inlines, b, it, ul);
@@ -38,7 +38,7 @@ static class TextRangeRtf
 				if (b) sb.Append("\\b");
 				if (it) sb.Append("\\i");
 				if (ul) sb.Append("\\ul");
-				var size = TextRangeFontSize.Get(r);
+				var size = TextLocalValues.Size(r);
 				if (size != null) sb.Append("\\fs").Append((int)Math.Round(size.Value * 1.5));
 				if (sb[sb.Length - 1] != '{') sb.Append(' ');
 				Escape(sb, r.Text);

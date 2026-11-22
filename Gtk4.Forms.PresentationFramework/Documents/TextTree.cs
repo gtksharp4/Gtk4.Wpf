@@ -39,14 +39,34 @@ readonly struct TextSym
 /// symbol, each text character one, an embedded element one. Built on demand from the live tree, so a
 /// direct edit of a Run or a collection is always seen. Table elements are not walked yet.
 /// </summary>
-static class TextTree
+static partial class TextTree
 {
 	internal static List<TextSym> Build(FlowDocument doc)
 	{
 		var list = new List<TextSym>();
 		int off = 0;
-		AddBlocks(list, doc.Blocks, ref off);
+		switch (doc.DetachedRoot)
+		{
+			case Block b: AddBlock(list, b, ref off); break;
+			case Inline i: AddInline(list, i, ref off); break;
+			case ListItem item: AddListItem(list, item, ref off); break;
+			case null: AddBlocks(list, doc.Blocks, ref off); break;
+		}
 		return list;
+	}
+
+	/// <summary>The block collection the text tree starts in and the offset where its blocks begin, or null for
+	/// a detached root that holds inlines.</summary>
+	internal static BlockCollection? RootBlocks(FlowDocument doc, out int offset)
+	{
+		offset = 1;
+		switch (doc.DetachedRoot)
+		{
+			case null: offset = 0; return doc.Blocks;
+			case Section s: return s.Blocks;
+			case ListItem item: return item.Blocks;
+			default: return null;
+		}
 	}
 
 	internal static int Total(List<TextSym> syms) => syms.Count == 0 ? 0 : syms[syms.Count - 1].End;
@@ -76,11 +96,7 @@ static class TextTree
 				break;
 			case List list:
 				foreach (var item in list.ListItems)
-				{
-					Edge(l, TextSymKind.Start, item, ref off);
-					AddBlocks(l, item.Blocks, ref off);
-					Edge(l, TextSymKind.End, item, ref off);
-				}
+					AddListItem(l, item, ref off);
 				break;
 			case BlockUIContainer c when c.Child != null:
 				Edge(l, TextSymKind.Embedded, c.Child, ref off);
@@ -89,29 +105,39 @@ static class TextTree
 		Edge(l, TextSymKind.End, b, ref off);
 	}
 
+	static void AddListItem(List<TextSym> l, ListItem item, ref int off)
+	{
+		Edge(l, TextSymKind.Start, item, ref off);
+		AddBlocks(l, item.Blocks, ref off);
+		Edge(l, TextSymKind.End, item, ref off);
+	}
+
 	static void AddInlines(List<TextSym> l, InlineCollection inlines, ref int off)
 	{
 		foreach (var i in inlines)
+			AddInline(l, i, ref off);
+	}
+
+	static void AddInline(List<TextSym> l, Inline i, ref int off)
+	{
+		Edge(l, TextSymKind.Start, i, ref off);
+		switch (i)
 		{
-			Edge(l, TextSymKind.Start, i, ref off);
-			switch (i)
-			{
-				case Run r:
-					if (r.Text.Length > 0)
-					{
-						l.Add(new TextSym(TextSymKind.Text, r, off, r.Text.Length));
-						off += r.Text.Length;
-					}
-					break;
-				case Span s:
-					AddInlines(l, s.Inlines, ref off);
-					break;
-				case InlineUIContainer c when c.Child != null:
-					Edge(l, TextSymKind.Embedded, c.Child, ref off);
-					break;
-			}
-			Edge(l, TextSymKind.End, i, ref off);
+			case Run r:
+				if (r.Text.Length > 0)
+				{
+					l.Add(new TextSym(TextSymKind.Text, r, off, r.Text.Length));
+					off += r.Text.Length;
+				}
+				break;
+			case Span s:
+				AddInlines(l, s.Inlines, ref off);
+				break;
+			case InlineUIContainer c when c.Child != null:
+				Edge(l, TextSymKind.Embedded, c.Child, ref off);
+				break;
 		}
+		Edge(l, TextSymKind.End, i, ref off);
 	}
 
 	/// <summary>Index of the symbol run containing <paramref name="offset"/>, or -1 at or past the end.</summary>

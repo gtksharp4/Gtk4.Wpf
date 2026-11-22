@@ -17,10 +17,11 @@ public partial class Run
 	public Run(string text) => Text = text;
 
 	/// <summary>Creates a run holding <paramref name="text"/> at <paramref name="insertionPosition"/>.</summary>
-	/// <exception cref="InvalidOperationException">
-	/// Gap: the position is between blocks or in an empty document (WPF moves it to a valid position and creates a
-	/// Paragraph there); only positions inside a Paragraph, Span or Run are supported.
-	/// </exception>
+	/// <remarks>
+	/// Inside a Run the run is split; inside a Paragraph or Span the run is inserted there; between blocks, or in an
+	/// empty document, Section or ListItem, a Paragraph is created to hold it.
+	/// </remarks>
+	/// <exception cref="InvalidOperationException">The position is in a BlockUIContainer or InlineUIContainer.</exception>
 	public Run(string text, TextPointer insertionPosition)
 	{
 		Text = text;
@@ -53,7 +54,7 @@ public partial class Run
 			}
 			if (current is FlowDocument doc)
 			{
-				doc.NotifyViewChanged();
+				doc.NotifyContentEdited();
 				return;
 			}
 			current = (current as FrameworkContentElement)?.Parent;

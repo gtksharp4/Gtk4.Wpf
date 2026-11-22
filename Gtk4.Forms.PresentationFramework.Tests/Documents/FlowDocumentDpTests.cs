@@ -144,9 +144,9 @@ public class FlowDocumentDpTests
 	[Fact]
 	public void Existing_ClR_members_keep_their_semantics()
 	{
-		var d = new FlowDocument { FontFamily = "Serif", FontSize = 14 };
-		Assert.Equal("Serif", d.FontFamily);
+		var d = new FlowDocument { FontFamily = new FontFamily("Serif"), FontSize = 14 };
+		Assert.Equal("Serif", d.FontFamily.Source);
 		Assert.Equal(14.0, d.FontSize);
-		Assert.True(double.IsNaN(new FlowDocument().FontSize));
+		Assert.Equal(12.0, new FlowDocument().FontSize);
 	}
 }

@@ -35,6 +35,7 @@ public sealed class BlockCollection : IEnumerable<Block>
 		ContentParenting.Adopt(_owner, block, strict: false);
 		_items.Add(block);
 		Changed?.Invoke();
+		ContentParenting.Changed(_owner);
 	}
 
 	/// <summary>Removes a block from the collection.</summary>
@@ -43,6 +44,7 @@ public sealed class BlockCollection : IEnumerable<Block>
 		if (block == null) throw new ArgumentNullException(nameof(block));
 		if (_items.Remove(block)) ContentParenting.Release(_owner, block);
 		Changed?.Invoke();
+		ContentParenting.Changed(_owner);
 	}
 
 	/// <summary>Removes all blocks.</summary>
@@ -51,6 +53,7 @@ public sealed class BlockCollection : IEnumerable<Block>
 		foreach (var block in _items) ContentParenting.Release(_owner, block);
 		_items.Clear();
 		Changed?.Invoke();
+		ContentParenting.Changed(_owner);
 	}
 
 	/// <inheritdoc/>

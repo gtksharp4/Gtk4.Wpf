@@ -93,10 +93,15 @@ public class RunTextPropertyTests : WpfGtkTestBase
 	}
 
 	[Fact]
-	public void Run_ctor_pins_documented_gap_position_between_blocks_throws()
+	public void Run_ctor_at_the_document_start_creates_a_paragraph_before_the_first_block()
 	{
 		var doc = new FlowDocument(new Paragraph(new Run("a")));
-		Assert.Throws<InvalidOperationException>(() => new Run("b", doc.ContentStart));
+		var inserted = new Run("b", doc.ContentStart);
+		Assert.Equal(2, doc.Blocks.Count);
+		var first = Assert.IsType<Paragraph>(doc.Blocks[0]);
+		Assert.Same(inserted, Assert.Single(first.Inlines));
+		Assert.Same(first, inserted.Parent);
+		Assert.Equal("a", ((Run)((Paragraph)doc.Blocks[1]).Inlines[0]).Text);
 	}
 }
 

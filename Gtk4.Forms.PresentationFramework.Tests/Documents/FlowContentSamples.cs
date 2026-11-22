@@ -18,14 +18,14 @@ static class FlowContentSamples
 
 	internal static FlowDocument Styled()
 	{
-		var doc = new FlowDocument { FontFamily = "Serif", FontSize = 14, TextAlignment = TextAlignment.Center };
+		var doc = new FlowDocument { FontFamily = new FontFamily("Serif"), FontSize = 14, TextAlignment = TextAlignment.Center };
 		var p = Para(
 			new Run { Text = "plain & <esc> ", Foreground = Brushes.Red },
 			new Run { Text = "semi", FontWeight = FontWeights.SemiBold },
 			new Run { Text = "bold", FontWeight = FontWeights.Bold, FontStyle = FontStyles.Italic },
 			new Run { Text = "deco", TextDecorations = TextDecorations.Underline },
 			new LineBreak(),
-			new Run { Text = "fam", FontFamily = "Mono" });
+			new Run { Text = "fam", FontFamily = new FontFamily("Mono") });
 		p.Margin = new Thickness(1, 2, 3, 4);
 		p.LineHeight = 20;
 		doc.Blocks.Add(p);
