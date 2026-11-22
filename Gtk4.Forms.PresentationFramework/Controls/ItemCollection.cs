@@ -65,14 +65,33 @@ public sealed partial class ItemCollection : CollectionView, IList
 		return _inline.Count - 1;
 	}
 
-	/// <summary>Inserts an inline item.</summary>
-	public void Insert(int index, object? item) => Mutate(() => _inline.Insert(index, item));
+	/// <summary>Inserts an inline item at view position <paramref name="index"/>.</summary>
+	public void Insert(int index, object? item)
+	{
+		Guard();
+		if (index < 0 || index > Count) throw new ArgumentOutOfRangeException(nameof(index));
+		int at = Filter == null && SortDescriptions.Count == 0 ? index
+			: index == Count ? _inline.Count
+			: _inline.IndexOf(GetItemAt(index));
+		Mutate(() => _inline.Insert(at, item));
+	}
 
 	/// <summary>Removes the first inline occurrence of <paramref name="item"/>.</summary>
 	public void Remove(object? item) => Mutate(() => _inline.Remove(item));
 
 	/// <summary>Removes the inline item at <paramref name="index"/>.</summary>
-	public void RemoveAt(int index) => Mutate(() => _inline.RemoveAt(index));
+	public void RemoveAt(int index)
+	{
+		int at = InlineIndexOfViewItem(index);
+		Mutate(() => _inline.RemoveAt(at));
+	}
+
+	int InlineIndexOfViewItem(int index)
+	{
+		Guard();
+		if (index < 0 || index >= Count) throw new ArgumentOutOfRangeException(nameof(index));
+		return _inline.IndexOf(GetItemAt(index));
+	}
 
 	/// <summary>Removes every inline item.</summary>
 	public void Clear() => Mutate(() => _inline.Clear());
@@ -81,14 +100,18 @@ public sealed partial class ItemCollection : CollectionView, IList
 	public object? this[int index]
 	{
 		get => GetItemAt(index);
-		set => Mutate(() => _inline[index] = value);
+		set
+		{
+			int at = InlineIndexOfViewItem(index);
+			Mutate(() => _inline[at] = value);
+		}
 	}
 
 	bool IList.Contains(object? value) => IndexOf(value) >= 0;
 
-	bool IList.IsReadOnly => false;
+	bool IList.IsReadOnly => IsUsingItemsSource;
 
-	bool IList.IsFixedSize => false;
+	bool IList.IsFixedSize => IsUsingItemsSource;
 
 	int IList.Add(object? value) => Add(value);
 

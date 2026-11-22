@@ -17,4 +17,7 @@ public partial class ListBox
 		container.PresenterContent = text;
 		container.UsesPresenter = true;
 	}
+
+	/// <inheritdoc/>
+	protected override bool IsItemItsOwnContainerOverride(object? item) => item is ListBoxItem;
 }

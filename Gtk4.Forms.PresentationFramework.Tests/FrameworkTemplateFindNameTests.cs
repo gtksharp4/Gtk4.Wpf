@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using Xunit;
@@ -86,4 +87,50 @@ public class FrameworkTemplateFindNameTests : WpfGtkTestBase
 	{
 		public DependencyObject? Probe(string name) => GetTemplateChild(name);
 	}
+
+	[Fact]
+	public void GetTemplateChild_has_the_WPF_signature()
+	{
+		var method = typeof(FrameworkElement).GetMethod(
+			"GetTemplateChild", BindingFlags.Instance | BindingFlags.NonPublic)!;
+		Assert.NotNull(method);
+		Assert.True(method.IsFamilyOrAssembly);
+		Assert.False(method.IsVirtual);
+	}
+
+	[Fact]
+	public void The_walk_does_not_enter_a_DataTemplate_nested_in_a_ContentPresenter() => Run(() =>
+	{
+		var dataTemplate = new DataTemplate { ItemFactory = _ => new TextBlock { Name = "inner" } };
+		ContentPresenter? presenter = null;
+		var outer = new ControlTemplate
+		{
+			Factory = () =>
+			{
+				var grid = new Grid { Name = "root" };
+				presenter = new ContentPresenter { Name = "presenter", Content = "x", ContentTemplate = dataTemplate };
+				grid.Children.Add(presenter);
+				return grid;
+			},
+		};
+		var host = new ContentControl { Template = outer };
+		_ = host.Widget;
+		_ = presenter!.Widget;
+		Assert.NotNull(outer.FindName("presenter", host));
+		Assert.Null(outer.FindName("inner", host));
+		Assert.IsType<TextBlock>(dataTemplate.FindName("inner", presenter!));
+	});
+
+	[Fact]
+	public void FindInTemplate_skips_elements_of_another_templatedParent() => Run(() =>
+	{
+		var host = new Button();
+		var grid = new Grid { Name = "root" };
+		var deep = new TextBlock { Name = "deep" };
+		grid.Children.Add(deep);
+		FrameworkElement.StampTemplatedParentTree(grid, host);
+		deep.TemplatedParent = new Button();
+		Assert.Null(FrameworkElement.FindInTemplate(grid, "deep", host));
+		Assert.Same(grid, FrameworkElement.FindInTemplate(grid, "root", host));
+	});
 }

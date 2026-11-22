@@ -38,7 +38,7 @@ public sealed class ItemContainerGenerator
 	/// <summary>Returns the index of <paramref name="container"/>, or -1 when it is not a container.</summary>
 	public int IndexFromContainer(DependencyObject container)
 	{
-		if (container == null) return -1;
+		if (container == null) throw new ArgumentNullException(nameof(container));
 		int row = _owner.IndexOfContainer(container);
 		if (row >= 0) return row;
 		return _owner.IsOwnContainer(container) ? _owner.Items.IndexOf(container) : -1;
@@ -50,6 +50,7 @@ public sealed class ItemContainerGenerator
 	/// </summary>
 	public object ItemFromContainer(DependencyObject container)
 	{
+		if (container == null) throw new ArgumentNullException(nameof(container));
 		int index = IndexFromContainer(container);
 		return index < 0 ? DependencyProperty.UnsetValue : _owner.Items[index]!;
 	}

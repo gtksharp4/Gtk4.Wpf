@@ -9,7 +9,7 @@ public abstract partial class FrameworkElement
 	internal virtual UIElement? TemplateRootInternal => null;
 
 	/// <summary>Returns the element named <paramref name="childName"/> in this element's template, or null.</summary>
-	protected virtual DependencyObject? GetTemplateChild(string childName) =>
+	protected internal DependencyObject? GetTemplateChild(string childName) =>
 		TemplateInternal?.FindName(childName, this) as DependencyObject;
 
 	/// <summary>Marks the subtree as produced by <paramref name="templatedParent"/>'s template.</summary>

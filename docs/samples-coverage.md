@@ -293,6 +293,17 @@ still hold an app back, so treat "only" as an upper bound for build and an estim
 | B | 2 (Media3D) + 4 (documents and text, after `gf52b` lands) | 12–13 | Track 2 adds only new files under `Media/Animation/` |
 | C | 3 (startup and generator sweep) + 5 (controls and media tail) | 10 | Track 3 owns `Markup/**` and `NavigationWindow`; track 5 owns `Frame` and the other `Controls/` files |
 
+Lane hand-offs after integration (Round 53 lane A review):
+
+- **To lane B (`CI-2`).** When track 1 (`gf53a/visual-layer-input`) lands the `internal DrawingContext Context => this`
+  shim, `Documents/FlowDocumentPaginator.cs:123` (`DrawColumns(scope.Context, ...)`) should use the `DrawingContext`
+  that `RenderOpen` returns directly, and the shim should then be deleted. Today it compiles against
+  `DrawingContextScope.Context` (`Media/DrawingContext.cs:89`) because track 1 is not merged.
+- **To lane B, conditional (`CI-3`).** DragDropObjects needs `Adorner.GetDesiredTransform`. Track 1 makes
+  `Documents/Adorner.cs` `partial` and adds `Documents/Adorner.DesiredTransform.cs`, both under lane B's `Documents/**`.
+  If integration refuses that change, lane B adds `public virtual GeneralTransform GetDesiredTransform(GeneralTransform
+  transform)` on `Adorner`. The sample stays blocked until then; do not drop it.
+
 Held branches:
 
 - **`gf52b/content-bindings-sweep` (held): 1 sample only (CommonDialogs), 1 commit on `main`'s Round 50 base.** Merge it

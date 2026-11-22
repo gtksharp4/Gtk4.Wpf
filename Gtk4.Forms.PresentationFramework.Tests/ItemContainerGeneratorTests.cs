@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
@@ -130,5 +131,21 @@ public class ItemContainerGeneratorTests : WpfGtkTestBase
 		var presenter = Assert.IsType<ContentPresenter>(VisualTreeHelper.GetChild(container, 0));
 		Assert.Equal("3", presenter.Content);
 		Assert.Equal("abc", container.Content);
+	});
+
+	[Fact]
+	public void Null_containers_throw_and_foreign_ones_are_unknown() => Run(() =>
+	{
+		var list = new ListBox();
+		list.Items.Add("a");
+		_ = list.Widget;
+		var gen = list.ItemContainerGenerator;
+		var ex1 = Assert.Throws<ArgumentNullException>(() => gen.IndexFromContainer(null!));
+		var ex2 = Assert.Throws<ArgumentNullException>(() => gen.ItemFromContainer(null!));
+		Assert.Equal("container", ex1.ParamName);
+		Assert.Equal("container", ex2.ParamName);
+		var foreign = new ListBoxItem();
+		Assert.Equal(-1, gen.IndexFromContainer(foreign));
+		Assert.Same(DependencyProperty.UnsetValue, gen.ItemFromContainer(foreign));
 	});
 }

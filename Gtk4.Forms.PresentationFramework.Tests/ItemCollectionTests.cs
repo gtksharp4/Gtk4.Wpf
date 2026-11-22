@@ -139,4 +139,72 @@ public class ItemCollectionTests : WpfGtkTestBase
 		Assert.IsType<ItemCollection>(combo.Items);
 		Assert.Equal(1, combo.Items.Count);
 	});
+
+	static ListBox SortedList(params string[] items)
+	{
+		var list = new ListBox();
+		foreach (var item in items) list.Items.Add(item);
+		list.Items.SortDescriptions.Add(new SortDescription(string.Empty, ListSortDirection.Ascending));
+		return list;
+	}
+
+	[Fact]
+	public void IList_flags_follow_ItemsSource() => Run(() =>
+	{
+		var list = new ListBox();
+		list.Items.Add("a");
+		var items = (IList)list.Items;
+		Assert.False(items.IsReadOnly);
+		Assert.False(items.IsFixedSize);
+		list.Items.Clear();
+		list.ItemsSource = new System.Collections.Generic.List<string> { "a" };
+		Assert.True(items.IsReadOnly);
+		Assert.True(items.IsFixedSize);
+		list.ItemsSource = null;
+		Assert.False(items.IsReadOnly);
+		Assert.False(items.IsFixedSize);
+	});
+
+	[Fact]
+	public void Indexer_set_addresses_the_view_position() => Run(() =>
+	{
+		var list = SortedList("c", "a", "b");
+		list.Items[0] = "z";
+		Assert.DoesNotContain("a", list.Items.Cast<object>());
+		Assert.Contains("c", list.Items.Cast<object>());
+		Assert.Contains("b", list.Items.Cast<object>());
+		Assert.Equal(3, list.Items.Count);
+		Assert.Throws<ArgumentOutOfRangeException>(() => list.Items[3] = "q");
+	});
+
+	[Fact]
+	public void RemoveAt_addresses_the_view_position() => Run(() =>
+	{
+		var list = SortedList("c", "a", "b");
+		list.Items.RemoveAt(0);
+		Assert.Equal(new object[] { "b", "c" }, list.Items.Cast<object>().ToArray());
+	});
+
+	[Fact]
+	public void Edits_under_a_filter_leave_hidden_items_alone() => Run(() =>
+	{
+		var list = new ListBox();
+		list.Items.Add("c");
+		list.Items.Add("a");
+		list.Items.Filter = o => (string)o != "c";
+		Assert.Equal("a", list.Items[0]);
+		list.Items[0] = "q";
+		list.Items.Filter = null;
+		Assert.Equal(new object[] { "c", "q" }, list.Items.Cast<object>().ToArray());
+	});
+
+	[Fact]
+	public void Insert_under_a_sort_goes_before_the_item_at_that_view_position() => Run(() =>
+	{
+		var list = SortedList("c", "a");
+		list.Items.Insert(2, "x");
+		list.Items.Insert(0, "y");
+		Assert.Throws<ArgumentOutOfRangeException>(() => list.Items.Insert(5, "q"));
+		Assert.Equal(4, list.Items.Count);
+	});
 }

@@ -54,7 +54,4 @@ public partial class ListBox
 		if (top < adjustment.Value) adjustment.Value = top;
 		else if (bottom > adjustment.Value + adjustment.PageSize) adjustment.Value = bottom - adjustment.PageSize;
 	}
-
-	/// <inheritdoc/>
-	protected override bool IsItemItsOwnContainerOverride(object? item) => item is ListBoxItem;
 }
