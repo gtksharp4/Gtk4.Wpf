@@ -35,6 +35,7 @@ public sealed class InlineCollection : IEnumerable<Inline>
 		ContentParenting.Adopt(_owner, inline, strict: false);
 		_items.Add(inline);
 		Changed?.Invoke();
+		ContentParenting.Changed(_owner);
 	}
 
 	/// <summary>Adds a <see cref="Run"/> holding <paramref name="text"/>.</summary>
@@ -57,6 +58,7 @@ public sealed class InlineCollection : IEnumerable<Inline>
 		if (inline == null) throw new ArgumentNullException(nameof(inline));
 		if (_items.Remove(inline)) ContentParenting.Release(_owner, inline);
 		Changed?.Invoke();
+		ContentParenting.Changed(_owner);
 	}
 
 	/// <summary>Removes all inlines.</summary>
@@ -65,6 +67,7 @@ public sealed class InlineCollection : IEnumerable<Inline>
 		foreach (var inline in _items) ContentParenting.Release(_owner, inline);
 		_items.Clear();
 		Changed?.Invoke();
+		ContentParenting.Changed(_owner);
 	}
 
 	/// <inheritdoc/>

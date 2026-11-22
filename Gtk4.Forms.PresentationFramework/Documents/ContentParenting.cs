@@ -14,6 +14,20 @@ static class ContentParenting
 		child.SetLogicalParent(owner);
 	}
 
+	/// <summary>
+	/// Tells the FlowDocument above <paramref name="owner"/>, if any, that its content changed (after a collection
+	/// edit or a layout-affecting property change). Viewers re-render and the paginator repaginates.
+	/// </summary>
+	internal static void Changed(DependencyObject? owner)
+	{
+		for (var e = owner; e != null; e = (e as FrameworkContentElement)?.Parent)
+		{
+			if (!(e is FlowDocument doc)) continue;
+			doc.NotifyContentEdited();
+			return;
+		}
+	}
+
 	internal static void Release(DependencyObject? owner, FrameworkContentElement child)
 	{
 		if (owner != null && ReferenceEquals(child.Parent, owner)) child.SetLogicalParent(null);

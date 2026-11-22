@@ -141,6 +141,7 @@ public sealed class ListItemCollection : IEnumerable<ListItem>
 		if (item == null) throw new ArgumentNullException(nameof(item));
 		ContentParenting.Adopt(_owner, item, strict: false);
 		_items.Add(item);
+		ContentParenting.Changed(_owner);
 	}
 
 	/// <inheritdoc/>

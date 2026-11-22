@@ -34,6 +34,8 @@ sealed class FlowDocumentPaginator : DynamicDocumentPaginator
 	readonly FlowDocument _document;
 	Size? _pageSize;
 	bool _valid;
+	bool _dirty;
+	bool _scheduled;
 	bool _background = true;
 	int _count = 1;
 	FlowDocumentPageMeter? _meter;
@@ -52,7 +54,14 @@ sealed class FlowDocumentPaginator : DynamicDocumentPaginator
 		set => _background = value;
 	}
 
-	public override bool IsPageCountValid => _valid;
+	public override bool IsPageCountValid
+	{
+		get
+		{
+			FlushPending();
+			return _valid;
+		}
+	}
 
 	public override Size PageSize
 	{
@@ -73,23 +82,37 @@ sealed class FlowDocumentPaginator : DynamicDocumentPaginator
 	{
 		get
 		{
+			FlushPending();
 			if (!_valid) Recompute();
 			return _count;
 		}
 	}
 
+	// Edits only mark the pagination dirty; one Background callback per dispatcher turn then raises PagesChanged
+	// and finishes, so building N blocks costs one batch. A synchronous reader flushes the pending change itself.
 	void Invalidate()
 	{
+		_dirty = true;
+		if (_scheduled) return;
+		_scheduled = true;
+		Dispatcher.CurrentDispatcher.BeginInvoke(Finish, DispatcherPriority.Background);
+	}
+
+	void FlushPending()
+	{
+		if (!_dirty) return;
+		_dirty = false;
 		_valid = false;
 		_meter = null;
 		OnPagesChanged(new PagesChangedEventArgs(0, _count));
-		if (_background) Dispatcher.CurrentDispatcher.BeginInvoke(Finish, DispatcherPriority.Background);
 	}
 
 	void Finish()
 	{
-		if (_valid) return;
-		Recompute();
+		_scheduled = false;
+		FlushPending();
+		if (!_background) return;
+		if (!_valid) Recompute();
 		OnPaginationProgress(new PaginationProgressEventArgs(0, _count));
 		OnPaginationCompleted(EventArgs.Empty);
 	}
@@ -105,6 +128,7 @@ sealed class FlowDocumentPaginator : DynamicDocumentPaginator
 	{
 		get
 		{
+			FlushPending();
 			if (_meter == null) Recompute();
 			return _meter!;
 		}

@@ -53,7 +53,7 @@ public partial class Run
 			}
 			if (current is FlowDocument doc)
 			{
-				doc.NotifyViewChanged();
+				doc.NotifyContentEdited();
 				return;
 			}
 			current = (current as FrameworkContentElement)?.Parent;

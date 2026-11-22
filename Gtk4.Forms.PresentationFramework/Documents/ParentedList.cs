@@ -30,6 +30,7 @@ sealed class ParentedList<T> : IList<T>, IList
 			ContentParenting.Adopt(_owner, value);
 			ContentParenting.Release(_owner, old);
 			_items[index] = value;
+			ContentParenting.Changed(_owner);
 		}
 	}
 
@@ -41,6 +42,7 @@ sealed class ParentedList<T> : IList<T>, IList
 		if (index < 0 || index > _items.Count) throw new ArgumentOutOfRangeException(nameof(index));
 		ContentParenting.Adopt(_owner, item);
 		_items.Insert(index, item);
+		ContentParenting.Changed(_owner);
 	}
 
 	public void RemoveAt(int index)
@@ -48,6 +50,7 @@ sealed class ParentedList<T> : IList<T>, IList
 		var item = _items[index];
 		_items.RemoveAt(index);
 		ContentParenting.Release(_owner, item);
+		ContentParenting.Changed(_owner);
 	}
 
 	public bool Remove(T item)
@@ -73,6 +76,7 @@ sealed class ParentedList<T> : IList<T>, IList
 		var old = _items.GetRange(index, count);
 		_items.RemoveRange(index, count);
 		foreach (var item in old) ContentParenting.Release(_owner, item);
+		ContentParenting.Changed(_owner);
 	}
 
 	public int Capacity
@@ -88,6 +92,7 @@ sealed class ParentedList<T> : IList<T>, IList
 		var old = _items.ToArray();
 		_items.Clear();
 		foreach (var item in old) ContentParenting.Release(_owner, item);
+		ContentParenting.Changed(_owner);
 	}
 
 	public bool Contains(T item) => _items.Contains(item);
