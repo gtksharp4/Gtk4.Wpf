@@ -56,13 +56,16 @@ static class TextRangeXaml
 
 	static void WriteAttributes(XmlWriter w, TextElement el)
 	{
-		if (el.FontFamily != null) w.WriteAttributeString("FontFamily", el.FontFamily);
-		var size = TextRangeFontSize.Get(el);
+		var family = TextLocalValues.Family(el);
+		if (family != null) w.WriteAttributeString("FontFamily", family.Source);
+		var size = TextLocalValues.Size(el);
 		if (size != null)
 			w.WriteAttributeString("FontSize", size.Value.ToString("R", Globalization.CultureInfo.InvariantCulture));
-		if (el.FontWeight != null) w.WriteAttributeString("FontWeight", WeightName(el.FontWeight.Value));
-		if (el.FontStyle != null) w.WriteAttributeString("FontStyle", el.FontStyle.Value.ToString());
-		if (el.Foreground is SolidColorBrush b)
+		var weight = TextLocalValues.Weight(el);
+		if (weight != null) w.WriteAttributeString("FontWeight", WeightName(weight.Value));
+		var style = TextLocalValues.Style(el);
+		if (style != null) w.WriteAttributeString("FontStyle", style.Value.ToString());
+		if (TextLocalValues.Brush(el) is SolidColorBrush b)
 			w.WriteAttributeString("Foreground", $"#{b.Color.A:X2}{b.Color.R:X2}{b.Color.G:X2}{b.Color.B:X2}");
 		if (TextRangeRtf.IsUnderlined(el)) w.WriteAttributeString("TextDecorations", "Underline");
 		if (el is Hyperlink h && h.NavigateUri != null) w.WriteAttributeString("NavigateUri", h.NavigateUri.OriginalString);

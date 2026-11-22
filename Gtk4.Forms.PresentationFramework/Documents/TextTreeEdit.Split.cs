@@ -97,11 +97,17 @@ static partial class TextTreeEdit
 
 	internal static void CopyFormat(TextElement from, TextElement to)
 	{
-		to.FontFamily = from.FontFamily;
-		to.FontWeight = from.FontWeight;
-		to.FontStyle = from.FontStyle;
-		to.Foreground = from.Foreground;
+		CopyLocal(from, to, TextElement.FontFamilyProperty);
+		CopyLocal(from, to, TextElement.FontWeightProperty);
+		CopyLocal(from, to, TextElement.FontStyleProperty);
+		CopyLocal(from, to, TextElement.FontStretchProperty);
+		CopyLocal(from, to, TextElement.ForegroundProperty);
+		CopyLocal(from, to, TextElement.FontSizeProperty);
 		to.TextDecorations = from.TextDecorations;
-		TextRangeFontSize.Copy(from, to);
+	}
+
+	static void CopyLocal(TextElement from, TextElement to, DependencyProperty dp)
+	{
+		if (from.HasNonInheritedValue(dp)) to.SetValue(dp, from.GetValue(dp));
 	}
 }

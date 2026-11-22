@@ -1,3 +1,5 @@
+using System.Windows;
+using System.Windows.Media;
 using System.Windows.Documents;
 using Xunit;
 
@@ -43,9 +45,9 @@ public class FlowContentCharacterizationTests
 	public void Clr_defaults_are_unchanged()
 	{
 		var p = new Paragraph();
-		Assert.Null(p.FontFamily);
-		Assert.Null(p.FontWeight);
-		Assert.Null(p.Foreground);
+		Assert.Equal("Segoe UI", p.FontFamily.Source);
+		Assert.Equal(FontWeights.Normal, p.FontWeight);
+		Assert.Same(SystemColors.ControlTextBrush, p.Foreground);
 		Assert.Null(p.TextAlignment);
 		Assert.True(double.IsNaN(p.LineHeight));
 		Assert.Equal(default, p.Margin);
@@ -53,8 +55,8 @@ public class FlowContentCharacterizationTests
 		Assert.Equal("en-us", p.Language.IetfLanguageTag);
 		Assert.Throws<System.ArgumentNullException>(() => p.Language = null!);
 		var d = new FlowDocument();
-		Assert.True(double.IsNaN(d.FontSize));
-		Assert.Null(d.FontFamily);
+		Assert.Equal(12.0, d.FontSize);
+		Assert.Equal("Segoe UI", d.FontFamily.Source);
 		Assert.Null(d.TextAlignment);
 	}
 }

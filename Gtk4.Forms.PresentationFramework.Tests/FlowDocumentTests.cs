@@ -218,8 +218,8 @@ public class FlowDocumentTests
 	[Fact]
 	public void FlowDocument_stores_FontFamily()
 	{
-		var doc = new FlowDocument { FontFamily = "Segoe UI" };
-		Assert.Equal("Segoe UI", doc.FontFamily);
+		var doc = new FlowDocument { FontFamily = new FontFamily("Segoe UI") };
+		Assert.Equal("Segoe UI", doc.FontFamily.Source);
 	}
 
 	[Fact]

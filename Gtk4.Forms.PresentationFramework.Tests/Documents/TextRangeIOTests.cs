@@ -26,7 +26,7 @@ public partial class TextRangeIOTests
 		it.Inlines.Add(new Run { Text = "ital\u00e9 {x}\\" });
 		p.Inlines.Add(it);
 		var u = new Underline();
-		u.Inlines.Add(new Run { Text = "und", FontFamily = "Arial", FontWeight = FontWeights.Light });
+		u.Inlines.Add(new Run { Text = "und", FontFamily = new FontFamily("Arial"), FontWeight = FontWeights.Light });
 		p.Inlines.Add(u);
 		d.Blocks.Add(p);
 		var p2 = new Paragraph();

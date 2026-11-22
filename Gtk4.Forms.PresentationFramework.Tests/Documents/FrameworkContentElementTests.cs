@@ -146,9 +146,9 @@ public class FrameworkContentElementTests
 	public void Dependency_property_route_and_clr_properties_agree_on_text_elements()
 	{
 		var run = new Run("x");
-		Assert.Null(run.FontWeight);
-		Assert.Null(run.Foreground);
-		Assert.Null(run.FontFamily);
+		Assert.Equal(FontWeights.Normal, run.FontWeight);
+		Assert.Same(SystemColors.ControlTextBrush, run.Foreground);
+		Assert.Equal("Segoe UI", run.FontFamily.Source);
 		run.SetValue(TextElement.FontWeightProperty, FontWeights.Bold);
 		run.SetValue(TextElement.FontStyleProperty, FontStyles.Italic);
 		run.SetValue(TextElement.FontFamilyProperty, new FontFamily("Serif"));
@@ -156,30 +156,29 @@ public class FrameworkContentElementTests
 		run.SetValue(TextElement.ForegroundProperty, red);
 		Assert.Equal(FontWeights.Bold, run.FontWeight);
 		Assert.Equal(FontStyles.Italic, run.FontStyle);
-		Assert.Equal("Serif", run.FontFamily);
+		Assert.Equal("Serif", run.FontFamily.Source);
 		Assert.Same(red, run.Foreground);
 		Assert.Equal("<span foreground=\"#FF0000\"><b><i>x</i></b></span>", Render(new Paragraph(run)));
-		run.FontWeight = null;
-		run.Foreground = null;
+		run.ClearValue(TextElement.FontWeightProperty);
+		run.ClearValue(TextElement.ForegroundProperty);
 		Assert.Same(DependencyProperty.UnsetValue, run.ReadLocalValue(TextElement.FontWeightProperty));
-		Assert.Null(run.Foreground);
+		Assert.Same(SystemColors.ControlTextBrush, run.Foreground);
 	}
 
 	[Fact]
-	public void FlowDocument_font_members_keep_their_inherit_semantics_over_the_dps()
+	public void FlowDocument_font_members_read_the_effective_value_over_the_dps()
 	{
 		var doc = new FlowDocument();
-		Assert.True(double.IsNaN(doc.FontSize));
-		Assert.Null(doc.FontFamily);
-		Assert.Null(doc.Foreground);
+		Assert.Equal(12.0, doc.FontSize);
+		Assert.Equal("Segoe UI", doc.FontFamily.Source);
+		Assert.Same(SystemColors.ControlTextBrush, doc.Foreground);
 		doc.SetValue(FlowDocument.FontSizeProperty, 10.0);
 		Assert.Equal(10.0, doc.FontSize);
-		doc.FontSize = double.NaN;
-		Assert.True(double.IsNaN(doc.FontSize));
-		doc.FontFamily = "Palatino Linotype";
+		doc.ClearValue(FlowDocument.FontSizeProperty);
+		Assert.Equal(12.0, doc.FontSize);
+		doc.FontFamily = new FontFamily("Palatino Linotype");
 		Assert.Equal("Palatino Linotype", ((FontFamily)doc.GetValue(FlowDocument.FontFamilyProperty)!).Source);
-		doc.FontFamily = null;
-		Assert.Null(doc.FontFamily);
+		Assert.Throws<ArgumentException>(() => doc.FontFamily = null!);
 		var p = new Paragraph();
 		doc.Blocks.Add(p);
 		doc.SetValue(FlowDocument.FontSizeProperty, 22.0);

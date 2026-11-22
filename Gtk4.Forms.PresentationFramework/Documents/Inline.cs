@@ -20,16 +20,18 @@ public partial class Run : Inline
 	/// <inheritdoc/>
 	internal override void AppendMarkup(System.Text.StringBuilder sb)
 	{
-		bool hasFg = Foreground is SolidColorBrush;
-		bool hasBold = FontWeight.HasValue && FontWeight.Value == FontWeights.Bold;
-		bool hasItalic = FontStyle.HasValue && FontStyle.Value == FontStyles.Italic;
-		string? weightSpan = GetPangoWeightSpan(FontWeight);
+		var weight = TextLocalValues.Weight(this);
+		var fg = TextLocalValues.Brush(this) as SolidColorBrush;
+		bool hasFg = fg != null;
+		bool hasBold = weight.HasValue && weight.Value == FontWeights.Bold;
+		bool hasItalic = TextLocalValues.Style(this) == FontStyles.Italic;
+		string? weightSpan = GetPangoWeightSpan(weight);
 		string decAttrs = TextDecorationMarkup.ToPangoAttributes(TextDecorations);
 		bool hasDec = decAttrs.Length > 0;
 
 		if (hasFg)
 		{
-			var color = ((SolidColorBrush)Foreground!).Color;
+			var color = fg!.Color;
 			sb.Append($"<span foreground=\"#{color.R:X2}{color.G:X2}{color.B:X2}\">");
 		}
 		if (hasDec) sb.Append($"<span {decAttrs}>");

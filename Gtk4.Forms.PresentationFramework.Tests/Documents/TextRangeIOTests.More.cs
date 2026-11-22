@@ -24,7 +24,7 @@ public partial class TextRangeIOTests
 		Assert.IsType<LineBreak>(inl[2]);
 		Assert.IsType<Italic>(inl[3]);
 		var run = (Run)((Underline)inl[4]).Inlines[0];
-		Assert.Equal("Arial", run.FontFamily);
+		Assert.Equal("Arial", run.FontFamily.Source);
 		Assert.Equal(FontWeights.Light, run.FontWeight);
 		Assert.Equal(All(Formatted()).Text, All(d).Text);
 	}

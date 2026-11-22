@@ -94,8 +94,8 @@ static class TextRangeXamlReader
 			{
 				switch (a.Name.LocalName)
 				{
-					case "FontFamily": target.FontFamily = a.Value; break;
-					case "FontSize": TextRangeFontSize.Set(target, FontConverters.ParseFontSize(a.Value)); break;
+					case "FontFamily": target.FontFamily = new FontFamily(a.Value); break;
+					case "FontSize": target.FontSize = FontConverters.ParseFontSize(a.Value); break;
 					case "FontWeight": target.FontWeight = FontConverters.ParseFontWeight(a.Value); break;
 					case "FontStyle": target.FontStyle = FontConverters.ParseFontStyle(a.Value); break;
 					case "TextDecorations":

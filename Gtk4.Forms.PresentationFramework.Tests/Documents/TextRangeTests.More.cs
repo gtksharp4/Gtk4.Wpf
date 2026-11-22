@@ -28,7 +28,7 @@ public partial class TextRangeTests
 		var runs = ((Paragraph)d.Blocks[0]).Inlines.Cast<Run>().ToList();
 		Assert.Equal(new[] { "ab", "cd", "ef" }, runs.Select(x => x.Text).ToArray());
 		Assert.Equal(FontWeights.Bold, runs[1].FontWeight);
-		Assert.Null(runs[0].FontWeight);
+		Assert.Same(DependencyProperty.UnsetValue, runs[0].ReadLocalValue(TextElement.FontWeightProperty));
 		Assert.Equal("cd", r.Text);
 		Assert.Equal(FontWeights.Bold, r.GetPropertyValue(TextElement.FontWeightProperty));
 	}

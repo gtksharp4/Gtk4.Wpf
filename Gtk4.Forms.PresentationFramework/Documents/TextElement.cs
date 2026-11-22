@@ -4,51 +4,50 @@ using System.Windows.Media;
 namespace System.Windows.Documents;
 
 /// <summary>
-/// Base class for all flow-document elements. Carries optional typography properties
-/// that affect Pango markup rendering when set on an inline.
-/// <para>
-/// The instance properties below keep their original CLR shape (a string family, nullable weight, style and
-/// brush, <c>null</c> meaning inherit) and are backed by the attached text DPs: they read as <c>null</c> until
-/// the DP is set locally, by a style or by a trigger, and assigning <c>null</c> clears it. XAML attributes
-/// reach them through the DPs (<c>Run.FontWeightProperty</c>), so both routes agree.
-/// </para>
+/// Base class for all flow-document elements. The typography members have their WPF shape: each returns the
+/// effective value (local, style, trigger or inherited, never null or NaN) and each setter calls
+/// <c>SetValue</c>; <c>ClearValue</c> restores inheritance. Rendering and serialisation read only the values an
+/// element sets itself (see <c>TextLocalValues</c>) so inherited values are not emitted.
 /// </summary>
 public abstract partial class TextElement : FrameworkContentElement
 {
-	/// <summary>Font family name, or <c>null</c> to inherit.</summary>
-	public string? FontFamily
+	/// <summary>Gets or sets the font family. Null is rejected by the property's validation, as in WPF.</summary>
+	public FontFamily FontFamily
 	{
-		get => HasNonInheritedValue(FontFamilyProperty) ? ((FontFamily)GetValue(FontFamilyProperty)!).Source : null;
-		set => SetOrClear(FontFamilyProperty, value == null ? null : new FontFamily(value));
+		get => (FontFamily)GetValue(FontFamilyProperty)!;
+		set => SetValue(FontFamilyProperty, value);
 	}
 
-	/// <summary>Font weight (e.g. <c>FontWeights.Bold</c>), or <c>null</c> to inherit.</summary>
-	public FontWeight? FontWeight
+	/// <summary>Gets or sets the font weight (e.g. <c>FontWeights.Bold</c>).</summary>
+	public FontWeight FontWeight
 	{
-		get => HasNonInheritedValue(FontWeightProperty) ? (FontWeight)GetValue(FontWeightProperty)! : (FontWeight?)null;
-		set => SetOrClear(FontWeightProperty, value);
+		get => (FontWeight)GetValue(FontWeightProperty)!;
+		set => SetValue(FontWeightProperty, value);
 	}
 
-	/// <summary>Font style (e.g. <c>FontStyles.Italic</c>), or <c>null</c> to inherit.</summary>
-	public FontStyle? FontStyle
+	/// <summary>Gets or sets the font style (e.g. <c>FontStyles.Italic</c>).</summary>
+	public FontStyle FontStyle
 	{
-		get => HasNonInheritedValue(FontStyleProperty) ? (FontStyle)GetValue(FontStyleProperty)! : (FontStyle?)null;
-		set => SetOrClear(FontStyleProperty, value);
+		get => (FontStyle)GetValue(FontStyleProperty)!;
+		set => SetValue(FontStyleProperty, value);
 	}
 
-	/// <summary>Foreground brush, or <c>null</c> to inherit.</summary>
-	public Brush? Foreground
+	/// <summary>Gets or sets the font stretch.</summary>
+	public FontStretch FontStretch
 	{
-		get => HasNonInheritedValue(ForegroundProperty) ? (Brush?)GetValue(ForegroundProperty) : null;
-		set => SetOrClear(ForegroundProperty, value);
+		get => (FontStretch)GetValue(FontStretchProperty)!;
+		set => SetValue(FontStretchProperty, value);
 	}
+
+	/// <summary>Gets or sets the foreground brush.</summary>
+	public Brush Foreground
+	{
+		get => (Brush)GetValue(ForegroundProperty)!;
+		set => SetValue(ForegroundProperty, value);
+	}
+
+	internal bool HasLocalFormat => TextLocalValues.HasMarkupFormat(this);
 
 	/// <summary>Text decorations (underline, strikethrough, etc.), or <c>null</c> for none.</summary>
 	public TextDecorationCollection? TextDecorations { get; set; }
-
-	void SetOrClear(DependencyProperty dp, object? value)
-	{
-		if (value == null) ClearValue(dp);
-		else SetValue(dp, value);
-	}
 }
