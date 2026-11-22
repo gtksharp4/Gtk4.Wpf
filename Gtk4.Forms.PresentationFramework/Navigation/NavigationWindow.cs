@@ -8,7 +8,7 @@ namespace System.Windows.Navigation;
 /// <see cref="NavigationService"/> whose <see cref="NavigationService.Content"/> is
 /// displayed in the window's content area. Reuses <see cref="Window"/>'s GTK hosting.
 /// </summary>
-public class NavigationWindow : Window
+public partial class NavigationWindow : Window
 {
 	// ── NavigationService ─────────────────────────────────────────────────────
 
@@ -63,6 +63,7 @@ public class NavigationWindow : Window
 	void OnContentChanged(object? sender, object? newContent)
 	{
 		Content = newContent;
+		SyncSource();
 		// If navigated to a Page, push its WindowTitle into the window title bar.
 		if (newContent is Page p && PageTitle(p) is { Length: > 0 } title)
 			Title = title;
