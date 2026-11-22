@@ -24,6 +24,9 @@ static class MediaConverters
 		if (trimmed.StartsWith("#", StringComparison.Ordinal))
 			return ParseHexColor(trimmed);
 
+		if (ScRgbColor.IsScRgb(trimmed))
+			return ScRgbColor.Parse(trimmed, raw);
+
 		// Named colour via Colors static properties.
 		var prop = typeof(Colors).GetProperty(trimmed,
 			BindingFlags.Public | BindingFlags.Static | BindingFlags.IgnoreCase);
