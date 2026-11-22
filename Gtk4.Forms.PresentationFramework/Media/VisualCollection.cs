@@ -31,9 +31,9 @@ public sealed class VisualCollection : IList<Visual>
 		{
 			if (value == null) throw new ArgumentNullException(nameof(value));
 			var old = _items[index];
-			old.VisualParent = null;
+			_owner.ReleaseVisualChild(old);
 			_items[index] = value;
-			value.VisualParent = _owner;
+			_owner.AdoptVisualChild(value);
 		}
 	}
 
@@ -47,16 +47,16 @@ public sealed class VisualCollection : IList<Visual>
 	public void Add(Visual item)
 	{
 		if (item == null) throw new ArgumentNullException(nameof(item));
+		_owner.AdoptVisualChild(item);
 		_items.Add(item);
-		item.VisualParent = _owner;
 	}
 
 	/// <inheritdoc/>
 	public void Insert(int index, Visual item)
 	{
 		if (item == null) throw new ArgumentNullException(nameof(item));
+		_owner.AdoptVisualChild(item);
 		_items.Insert(index, item);
-		item.VisualParent = _owner;
 	}
 
 	/// <inheritdoc/>
@@ -64,7 +64,7 @@ public sealed class VisualCollection : IList<Visual>
 	{
 		if (item == null) return false;
 		bool removed = _items.Remove(item);
-		if (removed) item.VisualParent = null;
+		if (removed) _owner.ReleaseVisualChild(item);
 		return removed;
 	}
 
@@ -73,14 +73,15 @@ public sealed class VisualCollection : IList<Visual>
 	{
 		var item = _items[index];
 		_items.RemoveAt(index);
-		item.VisualParent = null;
+		_owner.ReleaseVisualChild(item);
 	}
 
 	/// <inheritdoc/>
 	public void Clear()
 	{
-		foreach (var item in _items) item.VisualParent = null;
+		var old = _items.ToArray();
 		_items.Clear();
+		foreach (var item in old) _owner.ReleaseVisualChild(item);
 	}
 
 	/// <inheritdoc/>

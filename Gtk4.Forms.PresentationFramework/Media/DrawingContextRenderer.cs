@@ -7,7 +7,7 @@ namespace System.Windows.Media;
 /// </summary>
 /// <remarks>
 /// Only the primitive kinds defined by <see cref="DrawingContext.DrawCommandKind"/>
-/// are rendered; <c>DrawText</c> is a no-op (placeholder, no font layout here).
+/// are rendered; <c>DrawText</c> uses Cairo toy text.
 /// Each command saves/restores Cairo state around its draw.
 /// </remarks>
 internal static class DrawingContextRenderer
@@ -62,7 +62,11 @@ internal static class DrawingContextRenderer
 					}
 					break;
 
-				// DrawText: no-op — no font layout in this layer
+				case DrawingContext.DrawCommandKind.DrawText:
+					if (cmd.Arg is ValueTuple<FormattedText, System.Windows.Point> text)
+						FormattedTextMetrics.Paint(cr, text.Item1, text.Item2);
+					break;
+
 				default:
 					break;
 			}
@@ -75,7 +79,7 @@ internal static class DrawingContextRenderer
 	/// Computes the tight bounds of all commands without painting.
 	/// Used to size the off-screen surface before rendering.
 	/// </summary>
-	internal static Rect ComputeBounds(DrawingContext ctx)
+	internal static Rect ComputeBounds(DrawingContext ctx, bool includeText = false)
 	{
 		Rect bounds = Rect.Empty;
 		foreach (var cmd in ctx.Commands)
@@ -102,6 +106,13 @@ internal static class DrawingContextRenderer
 				case DrawingContext.DrawCommandKind.DrawGeometry:
 					if (cmd.Arg is Geometry g && !g.Bounds.IsEmpty)
 						bounds = Expand(bounds, g.Bounds);
+					break;
+				case DrawingContext.DrawCommandKind.DrawText:
+					if (includeText && cmd.Arg is ValueTuple<FormattedText, System.Windows.Point> tx)
+					{
+						var sz = FormattedTextMetrics.Measure(tx.Item1);
+						bounds = Expand(bounds, new Rect(tx.Item2, sz));
+					}
 					break;
 			}
 		}

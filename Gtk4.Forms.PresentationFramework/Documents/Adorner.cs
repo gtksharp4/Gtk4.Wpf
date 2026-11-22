@@ -17,7 +17,7 @@ namespace System.Windows.Documents;
 /// Custom adorner visuals require overriding <see cref="UIElement.CreateWidget"/>
 /// (not wired in this release — the overlay slot is reserved but left empty).
 /// </remarks>
-public abstract class Adorner : FrameworkElement
+public abstract partial class Adorner : FrameworkElement
 {
 	/// <summary>The element this adorner decorates.</summary>
 	public UIElement AdornedElement { get; }

@@ -89,6 +89,9 @@ public class Round49aConverterTests
 		"System.Windows.Media.Media3D.Model3D", "System.Windows.Media.Media3D.Model3DCollection",
 		"System.Windows.Media.Media3D.Rotation3D", "System.Windows.Media.Media3D.Transform3D",
 		"System.Windows.Media.Media3D.Transform3DCollection",
+		// Legacy BitmapEffect store-only DPs (UIElement.BitmapEffect/Input): no string form in WPF.
+		"System.Windows.Media.Effects.BitmapEffect", "System.Windows.Media.Effects.BitmapEffectInput",
+		"System.Windows.Media.Imaging.BitmapSource",
 	};
 
 	[Fact]

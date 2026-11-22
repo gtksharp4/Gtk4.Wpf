@@ -2,11 +2,8 @@ using System.Collections;
 
 namespace System.Windows.Controls;
 
-/// <summary>
-/// Implements <see cref="ILogicalChildren"/> for <see cref="Panel"/>:
-/// the logical children are the panel's <see cref="UIElementCollection"/>.
-/// </summary>
-public abstract partial class Panel : ILogicalChildren
+public abstract partial class Panel
 {
-	IEnumerable ILogicalChildren.LogicalChildrenCore => Children;
+	/// <summary>The logical children are the panel's <see cref="UIElementCollection"/>.</summary>
+	protected internal override IEnumerator LogicalChildren => ((IEnumerable)Children).GetEnumerator();
 }

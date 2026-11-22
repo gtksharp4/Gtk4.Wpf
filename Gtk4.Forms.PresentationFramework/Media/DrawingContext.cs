@@ -72,49 +72,26 @@ public sealed class DrawingContext : IDisposable
 
 	// ── Lifecycle ─────────────────────────────────────────────────────────────────
 
-	/// <summary>Closes and seals this context. Called by <see cref="DrawingContextScope"/>.</summary>
-	public void Close() { }
+	Action<DrawingContext>? _onClose;
+	bool _closed;
+
+	/// <summary>Creates a free-standing recording context.</summary>
+	public DrawingContext() { }
+
+	internal DrawingContext(Action<DrawingContext> onClose) => _onClose = onClose;
+
+	/// <summary>Lets code written against the old scope type (<c>scope.Context</c>) compile unchanged.</summary>
+	internal DrawingContext Context => this;
+
+	/// <summary>Seals the context and commits it to the owning visual. A second call does nothing.</summary>
+	public void Close()
+	{
+		if (_closed) return;
+		_closed = true;
+		_onClose?.Invoke(this);
+	}
 
 	/// <inheritdoc/>
 	public void Dispose() => Close();
 }
 
-/// <summary>
-/// A scope returned by <see cref="DrawingVisual.RenderOpen"/> that exposes the
-/// underlying <see cref="DrawingContext"/> and commits it to the visual on dispose.
-/// </summary>
-public sealed class DrawingContextScope : IDisposable
-{
-	/// <summary>The underlying recording context.</summary>
-	public DrawingContext Context { get; }
-
-	readonly DrawingVisual _owner;
-	bool _committed;
-
-	internal DrawingContextScope(DrawingContext ctx, DrawingVisual owner)
-	{
-		Context = ctx;
-		_owner = owner;
-	}
-
-	/// <summary>Commits the drawing context to the owning <see cref="DrawingVisual"/>.</summary>
-	public void Dispose()
-	{
-		if (_committed) return;
-		_committed = true;
-		Context.Close();
-		_owner.CommitDrawing(Context);
-	}
-}
-
-/// <summary>
-/// Minimal placeholder for <c>System.Windows.Media.FormattedText</c>.
-/// </summary>
-public sealed class FormattedText
-{
-	/// <summary>The text content.</summary>
-	public string Text { get; }
-
-	/// <summary>Creates a FormattedText instance.</summary>
-	public FormattedText(string text) => Text = text ?? string.Empty;
-}

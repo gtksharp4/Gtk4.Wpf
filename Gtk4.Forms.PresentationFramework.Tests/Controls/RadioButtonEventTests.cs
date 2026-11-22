@@ -7,9 +7,9 @@ using Xunit;
 namespace Gtk4.Forms.PresentationFramework.Tests.Controls;
 
 /// <summary>A panel whose visual children are not reported as logical children (as in generated trees).</summary>
-public class VisualOnlyPanel : StackPanel, System.Windows.ILogicalChildren
+public class VisualOnlyPanel : StackPanel
 {
-	IEnumerable System.Windows.ILogicalChildren.LogicalChildrenCore => new object[0];
+	protected internal override IEnumerator LogicalChildren => new object[0].GetEnumerator();
 }
 
 /// <summary>RadioButton grouping, Checked/Unchecked and Click through the real GTK signal path.</summary>

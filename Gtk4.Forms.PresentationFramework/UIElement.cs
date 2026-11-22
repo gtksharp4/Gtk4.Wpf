@@ -78,6 +78,9 @@ public abstract partial class UIElement : Media.Visual
 		// Push AutomationProperties.Name / HelpText → GTK accessible properties.
 		// Implemented in UIElement.Automation.cs.
 		ApplyAutomationOnCreated(widget);
+
+		// Render layer for OnRender and non-UIElement visuals (UIElement.RenderLayer.cs).
+		AttachRenderLayerOnCreated(widget);
 	}
 
 	/// <summary>
