@@ -3,6 +3,9 @@
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		Title="Round58cWindow">
 	<Canvas x:Name="Pane">
+		<Canvas.Resources>
+			<Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}"/>
+		</Canvas.Resources>
 		<Border x:Name="Src" Width="40" Height="5"/>
 		<Path>
 			<Path.Data>

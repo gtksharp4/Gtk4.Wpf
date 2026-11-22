@@ -1089,7 +1089,7 @@ namespace Gtk4.Forms.MarkupCompiler
 
 			w.Line($"var {styleVar} = new System.Windows.Style({targetTypeExpr});");
 			if (basedOnKey != null)
-				w.Line($"{styleVar}.BasedOn = (System.Windows.Style){StaticResourceLookup(ownerVar, EscapeString(basedOnKey))};");
+				w.Line($"{styleVar}.BasedOn = (System.Windows.Style){BasedOnLookup(ownerVar, basedOnKey)};");
 
 			// Setter children.
 			foreach (XElement ch in styleEl.Elements())

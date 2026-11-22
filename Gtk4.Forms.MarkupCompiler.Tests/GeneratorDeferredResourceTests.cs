@@ -31,4 +31,18 @@ public class GeneratorDeferredResourceTests : GeneratorV2TestBase
 
 		Assert.Contains("Resources[\"Plain\"] =", code);
 	}
+
+	[Fact]
+	public void BasedOn_a_type_key_tolerates_a_missing_default_style()
+	{
+		const string stub = "namespace App { public partial class C { } }";
+		string code = Gen("<Page " + Head + @" x:Class=""App.C""><Page.Resources>
+			<Style TargetType=""{x:Type Button}"" BasedOn=""{StaticResource {x:Type Button}}""/>
+			<Style x:Key=""K"" TargetType=""Button"" BasedOn=""{StaticResource Other}""/></Page.Resources>
+			<Button/></Page>", sources: new[] { stub });
+
+		Assert.Contains("TryFindResource(typeof(", code);
+		Assert.Matches(@"Find(Resource)?[(]""Other""", code);
+		AssertCompiles(code, stub);
+	}
 }
