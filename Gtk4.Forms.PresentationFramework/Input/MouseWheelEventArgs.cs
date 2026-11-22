@@ -12,6 +12,15 @@ public class MouseWheelEventArgs : MouseEventArgs
 	/// </summary>
 	public int Delta { get; }
 
+	/// <param name="mouse">The mouse device.</param>
+	/// <param name="timestamp">The time of the event, in milliseconds.</param>
+	/// <param name="delta">Wheel delta.</param>
+	public MouseWheelEventArgs(MouseDevice mouse, int timestamp, int delta)
+		: base(mouse, timestamp)
+	{
+		Delta = delta;
+	}
+
 	/// <param name="routedEvent">The routed event being raised.</param>
 	/// <param name="position">Pointer position relative to the source element.</param>
 	/// <param name="delta">Wheel delta (120 per notch, positive away from the user).</param>

@@ -8,9 +8,17 @@ public class InputEventArgs : RoutedEventArgs
 {
 	/// <param name="inputDevice">The device that raised the event.</param>
 	/// <param name="timestamp">The time of the event, in milliseconds.</param>
+	/// <exception cref="ArgumentNullException"><paramref name="inputDevice"/> is null.</exception>
 	public InputEventArgs(InputDevice inputDevice, int timestamp)
 	{
-		Device = inputDevice;
+		Device = inputDevice ?? throw new ArgumentNullException(nameof(inputDevice));
+		Timestamp = timestamp;
+	}
+
+	internal InputEventArgs(RoutedEvent routedEvent, InputDevice inputDevice, int timestamp)
+		: base(routedEvent)
+	{
+		Device = inputDevice ?? throw new ArgumentNullException(nameof(inputDevice));
 		Timestamp = timestamp;
 	}
 
@@ -29,6 +37,12 @@ public class KeyboardEventArgs : InputEventArgs
 	/// <exception cref="ArgumentNullException"><paramref name="keyboard"/> is null.</exception>
 	public KeyboardEventArgs(KeyboardDevice keyboard, int timestamp)
 		: base(keyboard ?? throw new ArgumentNullException(nameof(keyboard)), timestamp)
+	{
+		KeyboardDevice = keyboard;
+	}
+
+	internal KeyboardEventArgs(RoutedEvent routedEvent, KeyboardDevice keyboard, int timestamp)
+		: base(routedEvent, keyboard ?? throw new ArgumentNullException(nameof(keyboard)), timestamp)
 	{
 		KeyboardDevice = keyboard;
 	}
