@@ -168,6 +168,27 @@ whose every recorded blocker is in the theme.
 | System.Xaml/BAML tooling | `System.Xaml` (`XamlSchemaContext`, `XamlType`, `Baml2006Reader`, …), `System.Windows.Markup.Localizer` | 2 | 2 |
 | Code access security | `PermissionSet`/`PermissionSetAttribute` (EditingExaminerDemo; on .NET these come from the `System.Security.Permissions` package, not WPF) | 1 | 1 |
 
+## Round 55c, track a (startup and generator sweep)
+
+Measured on 162 building projects plus Wizard and GlobalizationHomepage, with the two-build recipe against a
+lane-private feed: no pass-to-fail, no runs-to-crash. 157 of 161 apps showed a window; the other four are the known
+non-runners (FocusTracker, a console app; AppCompat-Quirks; LocalizationResources; WDPEncoder).
+
+| Sample | Before | Now | Cause fixed |
+|---|---|---|---|
+| ControlsAndLayout | crash | runs | scRGB `sc#` colours in `MediaConverters.ParseColor` |
+| CustomComboBox | crash | runs | `{StaticResource}` in a `ResourceDictionary` root looks up the scratch owner that holds the keys |
+| GeometryDesignerDemo | crash | runs | `VisualBrush.Visual` property element was dropped, so the named brush was never built or registered |
+| DragDropThumbOps | hang | runs | every `x:Class` root (not just Page/Window) is registered in `GtkFormsXamlRegistry` |
+| Wizard | build fail | runs | root attached property resolved through its owner type |
+| GlobalizationHomepage | build fail | runs | `NavigationWindow.SourceProperty` owned from `Frame.SourceProperty` |
+| DialogBox | build fail | still fails | root-binding error gone; `ListBox.ScrollIntoView`, `FontStyleConverter`, `ScrollViewer.CanContentScroll` remain |
+| ExpenseItIntro | build fail | still fails | `MainWindow.Source` error gone; `DataGrid` tail, `MenuItem.Padding`/`IsSubmenuOpen`, `Popup.AllowsTransparency`, `SystemParameters` remain |
+| Concepts | build fail (`CS5001`) | still fails | `CS5001` fixed: an `ApplicationDefinition` without `x:Class` now gets a class and `Main`. Remaining: `TabControl.TabStripPlacement`, `TabItem.IsSelected`, `Hyperlink.TargetName`, `SystemFonts`, `Binding.XmlNamespaceManager` |
+
+Also fixed: OpacityAnimation (a `GradientStop` target path no longer aborts the whole storyboard; the sibling
+animations run and the colour animation on a non-`DependencyObject` stop is skipped).
+
 ## Crashes and hangs (built, did not run)
 
 | Sample | Result | Cause |

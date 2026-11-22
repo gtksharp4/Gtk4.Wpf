@@ -63,11 +63,11 @@ public class XamlCodeGeneratorImplicitClassTests
 	}
 
 	[Fact]
-	public void Explicit_x_Class_still_wins()
+	public void Explicit_x_Class_still_wins_and_is_registered()
 	{
 		string code = Gen($"<Page x:Class=\"A.B\" xmlns=\"{Pres}\" xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"/>",
 			"Page1.xaml", "MyApp", out string className);
 		Assert.Equal("A.B", className);
-		Assert.DoesNotContain("GtkFormsXamlRegistration", code);
+		Assert.Contains("GtkFormsXamlRegistration(\"Page1.xaml\", typeof(global::A.B))", code);
 	}
 }

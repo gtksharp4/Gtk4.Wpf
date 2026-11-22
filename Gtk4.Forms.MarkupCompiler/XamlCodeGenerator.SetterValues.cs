@@ -53,6 +53,9 @@ namespace Gtk4.Forms.MarkupCompiler
 		/// </summary>
 		bool _rootIsDictionary;
 
+		// A dictionary root is not an element; lookups run against the scratch owner holding its keys.
+		string LookupRoot => _rootIsDictionary ? "__owner" : "this";
+
 		/// <summary>
 		/// The enclosing scope variables, innermost first, minus <paramref name="excluded"/>. A dictionary root
 		/// has no FindResource of its own, so its keys are probed as the outermost scope (<c>this</c>).
@@ -79,8 +82,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			if (receiver != "this" && !scopes.Contains(receiver))
 				scopes.Insert(0, receiver);
 			if (scopes.Count == 0)
-				return $"this.FindResource({ResourceKeyExpression(escapedKey)})";
-			return $"System.Windows.Markup.StaticResourceScope.Find({ResourceKeyExpression(escapedKey)}, this, " +
+				return $"{LookupRoot}.FindResource({ResourceKeyExpression(escapedKey)})";
+			return $"System.Windows.Markup.StaticResourceScope.Find({ResourceKeyExpression(escapedKey)}, {LookupRoot}, " +
 				string.Join(", ", scopes) + ")";
 		}
 
@@ -92,9 +95,9 @@ namespace Gtk4.Forms.MarkupCompiler
 			var scopes = new System.Collections.Generic.List<string>();
 			for (int i = _scopeVars.Count - 1; i >= 0; i--)
 				if (_scopeVars[i] != "this") scopes.Add(_scopeVars[i]);
-			if (scopes.Count == 0) return $"this.TryFindResource({key})";
-			return $"(System.Windows.Markup.StaticResourceScope.TryFind({key}, this, {string.Join(", ", scopes)}) "
-				+ $"?? this.TryFindResource({key}))";
+			if (scopes.Count == 0) return $"{LookupRoot}.TryFindResource({key})";
+			return $"(System.Windows.Markup.StaticResourceScope.TryFind({key}, {LookupRoot}, {string.Join(", ", scopes)}) "
+				+ $"?? {LookupRoot}.TryFindResource({key}))";
 		}
 
 		string EmitSetterValueElement(IndentedWriter w, XElement valueEl, string receiver)
