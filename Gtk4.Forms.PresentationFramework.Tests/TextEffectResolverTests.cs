@@ -116,6 +116,10 @@ public class TextEffectResolverTests
 		Assert.Equal(3, effect.PositionCount);
 		Assert.Null(effect.Clip);
 		Assert.NotNull(new TextEffect().Transform);
-		Assert.Same(move, ((TextEffect)effect.Clone()).Transform);
+		// Transform is a Freezable, so Clone deep-copies it (WPF).
+		var cloned = Assert.IsType<TranslateTransform>(((TextEffect)effect.Clone()).Transform);
+		Assert.NotSame(move, cloned);
+		Assert.Equal(5, cloned.X);
+		Assert.Equal(6, cloned.Y);
 	}
 }
