@@ -156,6 +156,9 @@ sealed class FlowDocumentPaginator : DynamicDocumentPaginator
 	public override ContentPosition GetObjectPosition(object element)
 	{
 		if (element == null) throw new ArgumentNullException(nameof(element));
-		return ContentPosition.Missing;
+		if (!(element is TextElement te) || !ReferenceEquals(te.OwningDocument, _document))
+			return ContentPosition.Missing;
+		TextTree.PlainChars(_document, te, out int before, out _);
+		return new FlowContentPosition(Meter.PageOfChar(before));
 	}
 }

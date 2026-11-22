@@ -4,6 +4,17 @@ public abstract partial class TextElement
 {
 	FlowDocument? _container;
 
+	/// <summary>The FlowDocument that holds this element, or null when it is detached.</summary>
+	internal FlowDocument? OwningDocument
+	{
+		get
+		{
+			DependencyObject? e = this;
+			while (e is TextElement t) e = t.Parent;
+			return e as FlowDocument;
+		}
+	}
+
 	/// <summary>A pointer just before the start tag of this element (gravity Forward).</summary>
 	public TextPointer ElementStart => Pointer(false, false, LogicalDirection.Forward);
 

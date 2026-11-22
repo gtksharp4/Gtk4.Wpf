@@ -39,7 +39,7 @@ readonly struct TextSym
 /// symbol, each text character one, an embedded element one. Built on demand from the live tree, so a
 /// direct edit of a Run or a collection is always seen. Table elements are not walked yet.
 /// </summary>
-static class TextTree
+static partial class TextTree
 {
 	internal static List<TextSym> Build(FlowDocument doc)
 	{

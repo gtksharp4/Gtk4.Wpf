@@ -6,6 +6,7 @@ public abstract partial class DocumentViewerBase
 {
 	static DocumentViewerBase()
 	{
+		RegisterBringIntoView();
 		Bind(NavigationCommands.FirstPage, v => v.OnFirstPageCommand(), v => v.CanGoToPreviousPage);
 		Bind(NavigationCommands.PreviousPage, v => v.OnPreviousPageCommand(), v => v.CanGoToPreviousPage);
 		Bind(NavigationCommands.NextPage, v => v.OnNextPageCommand(), v => v.CanGoToNextPage);
