@@ -69,6 +69,7 @@ public class Round49aConverterTests
 		// Object-valued, no string form in WPF either.
 		"System.Windows.Controls.ContextMenu", "System.Windows.Controls.DataTemplateSelector",
 		"System.Windows.Controls.StyleSelector", "System.Windows.Data.BindingGroup", "System.Windows.IInputElement",
+		"System.Xml.XmlNamespaceManager",
 		// Deferred to the documents/effects work (other lane): no sample sets them from plain text yet.
 		// TextDecorationCollection belongs to the documents lane (PerMonitorDPI/TextFormatting sets
 		// TextDecorations="Underline").

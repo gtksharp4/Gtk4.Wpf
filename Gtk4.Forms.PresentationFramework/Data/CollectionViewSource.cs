@@ -9,7 +9,7 @@ namespace System.Windows.Data;
 /// Provides a view of a collection for data binding, with support for sorting,
 /// filtering and grouping. Mirrors <c>System.Windows.Data.CollectionViewSource</c>.
 /// </summary>
-public class CollectionViewSource
+public partial class CollectionViewSource : DependencyObject
 {
 	// Cache: source object → its default view.
 	static readonly ConditionalWeakTable<object, CollectionView> _cache =
@@ -17,19 +17,20 @@ public class CollectionViewSource
 
 	// ── Source ───────────────────────────────────────────────────────────────
 
-	object? _source;
+	/// <summary>Identifies the <see cref="Source"/> dependency property.</summary>
+	public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
+		nameof(Source), typeof(object), typeof(CollectionViewSource), new PropertyMetadata(null, OnSourceChanged));
+
+	static void OnSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) =>
+		((CollectionViewSource)d)._view = null; // invalidate
 
 	/// <summary>
 	/// Gets or sets the collection to view, or a <see cref="DataSourceProvider"/> whose <c>Data</c> is used.
 	/// </summary>
 	public object? Source
 	{
-		get => _source;
-		set
-		{
-			_source = value;
-			_view = null; // invalidate
-		}
+		get => GetValue(SourceProperty);
+		set => SetValue(SourceProperty, value);
 	}
 
 	// ── View ─────────────────────────────────────────────────────────────────
@@ -41,7 +42,8 @@ public class CollectionViewSource
 	{
 		get
 		{
-			var items = _source is DataSourceProvider provider ? provider.Data as IEnumerable : _source as IEnumerable;
+			var source = Source;
+			var items = source is DataSourceProvider provider ? provider.Data as IEnumerable : source as IEnumerable;
 			if (items == null) return null;
 			if (_view == null)
 			{
@@ -53,6 +55,7 @@ public class CollectionViewSource
 					_view.GroupDescriptions.Add(gd);
 				if (SortDescriptions.Count > 0 || GroupDescriptions.Count > 0)
 					_view.Refresh();
+				InstallFilter(_view);
 			}
 			return _view;
 		}

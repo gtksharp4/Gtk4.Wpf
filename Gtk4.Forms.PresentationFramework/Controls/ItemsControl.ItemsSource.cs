@@ -34,7 +34,7 @@ public partial class ItemsControl
 
 	void OnItemsSourceChanged(IEnumerable? oldSource, IEnumerable? newSource)
 	{
-		if (newSource != null && !_itemsFromSource && Items.Count > 0)
+		if (newSource != null && !Items.IsUsingItemsSource && Items.InlineCount > 0)
 			throw new InvalidOperationException("Items collection must be empty before using ItemsSource.");
 		if (_incc != null)
 		{
@@ -51,6 +51,7 @@ public partial class ItemsControl
 			if (_incc != null) _incc.CollectionChanged += OnCollectionChanged;
 		}
 
+		Items.SetSourceView(_collectionView);
 		AttachCollectionView(_collectionView);
 		RebuildItems();
 		OnCollectionViewChanged(_collectionView);
@@ -66,10 +67,4 @@ public partial class ItemsControl
 	{
 		RebuildItems();
 	}
-
-	/// <summary>
-	/// Returns the effective item sequence: the <see cref="ICollectionView"/> when available,
-	/// otherwise the raw <see cref="ItemsSource"/>.
-	/// </summary>
-	IEnumerable EffectiveItems => (IEnumerable?)_collectionView ?? ItemsSource ?? Array.Empty<object>();
 }

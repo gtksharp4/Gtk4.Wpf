@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Markup;
 
@@ -48,10 +49,10 @@ public partial class ItemsControl : Control
 	// ── Items list ───────────────────────────────────────────────────────────
 
 	/// <summary>
-	/// The items: a snapshot of <see cref="ItemsSource"/> when set, otherwise the inline items
+	/// The items: the view of <see cref="ItemsSource"/> when set, otherwise the inline items
 	/// (observable; mutating it while <see cref="ItemsSource"/> is in use throws).
 	/// </summary>
-	public IList<object?> Items => _itemList ??= new ItemList(this);
+	public ItemCollection Items => _items ??= new ItemCollection(this);
 
 	// ── Item generation hooks (overridden by ListBox) ────────────────────────
 
@@ -112,9 +113,6 @@ public partial class ItemsControl : Control
 
 	void RebuildCore()
 	{
-		if (ItemsSource != null || _itemsFromSource)
-			FillItemsFromSource();
-
 		OnItemsRebuilt();
 
 		if (!_widgetCreated) return;
@@ -139,6 +137,7 @@ public partial class ItemsControl : Control
 
 	void PopulateRows()
 	{
+		SetGeneratorStatus(GeneratorStatus.GeneratingContainers);
 		foreach (var item in Items)
 		{
 			var container = GetContainerForItem(item);
@@ -152,6 +151,7 @@ public partial class ItemsControl : Control
 			OnContainerAdded(container, idx);
 			AddItemWidget(gw);
 		}
+		SetGeneratorStatus(GeneratorStatus.ContainersGenerated);
 	}
 
 	/// <summary>Returns the container <see cref="UIElement"/> at index <paramref name="i"/>.</summary>
