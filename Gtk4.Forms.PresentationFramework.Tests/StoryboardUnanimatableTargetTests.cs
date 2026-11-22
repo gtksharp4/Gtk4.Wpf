@@ -35,4 +35,25 @@ public class StoryboardUnanimatableTargetTests : WpfGtkTestBase
 		sb.ActiveClocks[0].Tick(TimeSpan.FromSeconds(0.5));
 		Assert.Equal(0.5, rect.Opacity, precision: 6);
 	});
+
+	class Poco
+	{
+		public Poco? Inner { get; set; }
+	}
+
+	[Fact]
+	public void PathThroughNonDependencyObject_IsRejected() => Run(() =>
+	{
+		var border = new System.Windows.Controls.Border { Name = "b", DataContext = new Poco { Inner = new Poco() } };
+		var fade = new DoubleAnimation { To = 0, Duration = TimeSpan.FromSeconds(1) };
+		Storyboard.SetTargetName(fade, "b");
+		Storyboard.SetTargetProperty(fade, new PropertyPath("(FrameworkElement.DataContext).(UIElement.Opacity)"));
+		var sb = new Storyboard();
+		sb.Children.Add(fade);
+		var host = new System.Windows.Controls.Canvas();
+		host.Children.Add(border);
+		host.RegisterName("b", border);
+
+		Assert.Throws<InvalidOperationException>(() => sb.Begin(host));
+	});
 }

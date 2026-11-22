@@ -10,11 +10,11 @@ public partial class NavigationWindow
 
 	// Frame's callback casts its target to Frame, so the window's metadata keeps only its own callback
 	// instead of chaining the base one as Merge does.
-	sealed class SourceMetadata : PropertyMetadata
+	sealed class SourceMetadata : FrameworkPropertyMetadata
 	{
 		readonly PropertyChangedCallback _own;
 
-		public SourceMetadata(PropertyChangedCallback callback) : base(null, callback) => _own = callback;
+		public SourceMetadata(PropertyChangedCallback callback) : base((Uri?)null, callback) => _own = callback;
 
 		protected override void Merge(PropertyMetadata baseMetadata, DependencyProperty dp)
 		{
@@ -45,6 +45,8 @@ public partial class NavigationWindow
 		Uri? current = NavigationService.CurrentSource;
 		if (Equals(Source, current)) return;
 		_syncingSource = true;
+		// SetValue stands in for WPF SetCurrentValueInternal until the layer has SetCurrentValue (a binding on
+		// Source is replaced after navigation).
 		try { SetValue(SourceProperty, current); }
 		finally { _syncingSource = false; }
 	}

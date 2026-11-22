@@ -34,6 +34,8 @@ public class ControlMemberTests : WpfGtkTestBase
 		Run(() =>
 		{
 			var parent = new MenuItem { Header = "File" };
+			Assert.True(((FrameworkPropertyMetadata)MenuItem.IsSubmenuOpenProperty.GetMetadata(typeof(MenuItem)))
+				.BindsTwoWayByDefault);
 			parent.Items.Add(new MenuItem { Header = "Open" });
 			var button = (Gtk.MenuButton)parent.Widget;
 			parent.IsSubmenuOpen = true;
@@ -67,6 +69,7 @@ public class ControlMemberTests : WpfGtkTestBase
 			_ = tabs.Widget;
 			var meta = (FrameworkPropertyMetadata)TabItem.IsSelectedProperty.GetMetadata(typeof(TabItem));
 			Assert.True(meta.BindsTwoWayByDefault);
+			Assert.True(meta.Journal);
 			Assert.True(a.IsSelected);
 			b.IsSelected = true;
 			Assert.Same(b, tabs.SelectedItem);

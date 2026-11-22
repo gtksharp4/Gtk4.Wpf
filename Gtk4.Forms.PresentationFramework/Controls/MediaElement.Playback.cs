@@ -23,7 +23,10 @@ public partial class MediaElement
 		set => _speedRatio = value;
 	}
 
-	/// <summary>Gets or sets the clock that drives the media; its timeline must be a <see cref="MediaTimeline"/>.</summary>
+	/// <summary>
+	/// Gets or sets the clock that drives the media; its timeline must be a
+	/// <see cref="MediaTimeline"/>.
+	/// </summary>
 	public MediaClock? Clock
 	{
 		get => _clock;
@@ -57,48 +60,49 @@ public partial class MediaElement
 	/// <summary>Whether the opened media can be paused.</summary>
 	public bool CanPause => IsOpened;
 
-	/// <summary>Starts playback. Only valid when <see cref="LoadedBehavior"/> is Manual.</summary>
+	/// <summary>Starts playback. Needs a Manual LoadedBehavior or UnloadedBehavior.</summary>
 	public void Play()
 	{
 		RequireManual();
-		ApplyBehavior(MediaState.Play);
+		if (_clock == null) ApplyBehavior(MediaState.Play);
 	}
 
-	/// <summary>Pauses playback. Only valid when <see cref="LoadedBehavior"/> is Manual.</summary>
+	/// <summary>Pauses playback. Needs a Manual LoadedBehavior or UnloadedBehavior.</summary>
 	public void Pause()
 	{
 		RequireManual();
-		ApplyBehavior(MediaState.Pause);
+		if (_clock == null) ApplyBehavior(MediaState.Pause);
 	}
 
-	/// <summary>Stops playback and returns to the start. Only valid when <see cref="LoadedBehavior"/> is Manual.</summary>
+	/// <summary>
+	/// Stops playback and returns to the start. Needs a Manual LoadedBehavior
+	/// or UnloadedBehavior.
+	/// </summary>
 	public void Stop()
 	{
 		RequireManual();
-		ApplyBehavior(MediaState.Stop);
+		if (_clock == null) ApplyBehavior(MediaState.Stop);
 	}
 
-	/// <summary>Releases the media. Only valid when <see cref="LoadedBehavior"/> is Manual.</summary>
+	/// <summary>Releases the media. Needs a Manual LoadedBehavior or UnloadedBehavior.</summary>
 	public void Close()
 	{
 		RequireManual();
-		ApplyBehavior(MediaState.Close);
+		if (_clock == null) ApplyBehavior(MediaState.Close);
 	}
 
+	// While a Clock is set the clock drives the stream; the calls are accepted and ignored.
 	void RequireManual()
 	{
-		if (LoadedBehavior != MediaState.Manual)
-			throw new InvalidOperationException("The media can only be controlled when LoadedBehavior is Manual.");
-		if (_clock != null)
-			throw new InvalidOperationException("The media cannot be controlled while a Clock is set.");
+		if (LoadedBehavior != MediaState.Manual && UnloadedBehavior != MediaState.Manual)
+			throw new NotSupportedException(
+				"Cannot control media unless LoadedBehavior or UnloadedBehavior is set to Manual.");
 	}
 
 	void SetPosition(TimeSpan value)
 	{
-		if (_clock != null)
-			throw new InvalidOperationException("The position cannot be set while a Clock is set.");
 		_position = value;
-		SeekStream(value);
+		if (_clock == null) SeekStream(value);
 	}
 
 	void SetClock(MediaClock? value)

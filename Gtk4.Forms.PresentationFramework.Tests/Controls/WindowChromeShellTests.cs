@@ -14,12 +14,18 @@ public class WindowChromeShellTests : WpfGtkTestBase
 	{
 		var c = new WindowChrome();
 		Assert.IsAssignableFrom<Freezable>(c);
-		Assert.Equal(0.0, c.CaptionHeight);
-		Assert.Equal(new Thickness(0), c.GlassFrameThickness);
-		Assert.Equal(new CornerRadius(0), c.CornerRadius);
+		Assert.Equal(0.0, (double)WindowChrome.CaptionHeightProperty.DefaultMetadata.DefaultValue!);
+		Assert.Equal(default(Thickness), WindowChrome.ResizeBorderThicknessProperty.DefaultMetadata.DefaultValue);
+		Assert.Equal(default(Thickness), WindowChrome.GlassFrameThicknessProperty.DefaultMetadata.DefaultValue);
+		Assert.Equal(new CornerRadius(0), WindowChrome.CornerRadiusProperty.DefaultMetadata.DefaultValue);
+		Assert.Equal(23.0, c.CaptionHeight);
+		Assert.Equal(new Thickness(4), c.ResizeBorderThickness);
+		Assert.Equal(new Thickness(4, 27, 4, 4), c.GlassFrameThickness);
+		Assert.Equal(new CornerRadius(8), c.CornerRadius);
 		Assert.True(c.UseAeroCaptionButtons);
 		Assert.Equal(NonClientFrameEdges.None, c.NonClientFrameEdges);
 		Assert.Equal(new Thickness(-1), WindowChrome.GlassFrameCompleteThickness);
+		Assert.True(((FrameworkPropertyMetadata)WindowChrome.IsHitTestVisibleInChromeProperty.DefaultMetadata).Inherits);
 	}
 
 	[Fact]
@@ -66,7 +72,7 @@ public class WindowChromeShellTests : WpfGtkTestBase
 	public void Markup_resolves_the_Shell_namespace_and_attached_properties()
 	{
 		var w = new ChromeWindow();
-		// The generator drops a WindowChrome.WindowChrome property element on the root (reported to track a).
+		Assert.Equal(30.0, WindowChrome.GetWindowChrome(w)!.CaptionHeight);
 		Assert.True(WindowChrome.GetIsHitTestVisibleInChrome(w.CloseButton));
 	}
 
@@ -78,7 +84,7 @@ public class WindowChromeShellTests : WpfGtkTestBase
 			var w = new Window();
 			var native = (Gtk.Window)w.Widget;
 			Assert.True(native.Decorated);
-			var chrome = new WindowChrome();
+			var chrome = new WindowChrome { CaptionHeight = 0 };
 			WindowChrome.SetWindowChrome(w, chrome);
 			Assert.True(native.Decorated);
 			chrome.CaptionHeight = 30;

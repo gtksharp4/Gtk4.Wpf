@@ -37,9 +37,28 @@ public class XamlValueConverterScRgbTests
 	}
 
 	[Fact]
-	public void SurroundingWhitespaceAndCase_AreAccepted()
+	public void SurroundingWhitespace_IsAccepted()
 	{
 		Assert.Equal(Color.FromArgb(255, 255, 255, 255), Parse("  sc#1,1,1  "));
+	}
+
+	[Fact]
+	public void UpperCasePrefix_IsNotScRgb()
+	{
+		Assert.Throws<FormatException>(() => Parse("SC#1,1,1"));
+	}
+
+	[Fact]
+	public void WhitespaceSeparators_AreAccepted()
+	{
+		Assert.Equal(Color.FromArgb(255, 255, 0, 0), Parse("sc#1 0 0"));
+		Assert.Equal(Color.FromArgb(255, 255, 188, 0), Parse("sc# 1, 0.5 , 0"));
+	}
+
+	[Fact]
+	public void NaN_ChannelMapsToZero()
+	{
+		Assert.Equal(0, Parse("sc#1,NaN,0,0").R);
 	}
 
 	[Theory]

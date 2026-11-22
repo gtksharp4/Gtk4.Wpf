@@ -6,7 +6,10 @@ public partial class Window
 {
 	internal void OnShellChromeChanged(object? sender, EventArgs e) => ApplyShellChrome();
 
-	/// <summary>True when an attached <see cref="WindowChrome"/> has a caption area, so the window draws its own.</summary>
+	/// <summary>
+	/// True when an attached <see cref="WindowChrome"/> has a caption area, so the window
+	/// draws its own.
+	/// </summary>
 	internal bool HasShellCaption => WindowChrome.GetWindowChrome(this) is { CaptionHeight: > 0 };
 
 	/// <summary>
@@ -21,7 +24,7 @@ public partial class Window
 	}
 
 	// Called with the press the drag-move controller just recorded.
-	void OnShellPressed(double x, double y)
+	internal void OnShellPressed(double x, double y)
 	{
 		var chrome = WindowChrome.GetWindowChrome(this);
 		if (chrome == null || chrome.CaptionHeight <= 0 || y > chrome.CaptionHeight || _window == null) return;

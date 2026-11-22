@@ -7,7 +7,8 @@ public class GeneratorFreezableNameTests : GeneratorV2TestBase
 {
 	const string Xaml = @"<Window x:Class=""A.W"" " + Head + @">
 <Canvas>
-	<Canvas.Background><VisualBrush x:Name=""LogoBrush"" TileMode=""Tile""><VisualBrush.Visual><Border><TextBlock x:Name=""geo"" Text=""g""/></Border></VisualBrush.Visual></VisualBrush></Canvas.Background>
+	<Canvas.Background><VisualBrush x:Name=""LogoBrush"" TileMode=""Tile""><VisualBrush.Visual><Border>
+		<TextBlock x:Name=""geo"" Text=""g""/></Border></VisualBrush.Visual></VisualBrush></Canvas.Background>
 	<Rectangle><Rectangle.Fill><SolidColorBrush x:Name=""Fill"" Color=""Red""/></Rectangle.Fill>
 		<Rectangle.RenderTransform><RotateTransform x:Name=""Rot""/></Rectangle.RenderTransform></Rectangle>
 	<Canvas.Triggers><EventTrigger RoutedEvent=""Canvas.Loaded""><BeginStoryboard><Storyboard>
@@ -26,6 +27,7 @@ public class GeneratorFreezableNameTests : GeneratorV2TestBase
 		Assert.Contains("this.LogoBrush = ", code);
 		Assert.Contains("RegisterName(\"geo\"", code);
 		Assert.Contains(".Visual = ", code);
-		AssertCompiles(code, "namespace A { public partial class W : System.Windows.Window { public W() { InitializeComponent(); } } }");
+		AssertCompiles(code,
+			"namespace A { public partial class W : System.Windows.Window { public W() { InitializeComponent(); } } }");
 	}
 }

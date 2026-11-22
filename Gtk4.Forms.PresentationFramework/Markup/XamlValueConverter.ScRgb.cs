@@ -10,11 +10,12 @@ static class ScRgbColor
 	internal const string Prefix = "sc#";
 
 	internal static bool IsScRgb(string trimmed) =>
-		trimmed.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase);
+		trimmed.StartsWith(Prefix, StringComparison.Ordinal);
 
 	internal static Color Parse(string trimmed, string raw)
 	{
-		var parts = trimmed.Substring(Prefix.Length).Split(',');
+		var parts = trimmed.Substring(Prefix.Length)
+			.Split(new[] { ',', ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
 		if (parts.Length != 3 && parts.Length != 4)
 			throw new FormatException($"Cannot parse Color from \"{raw}\": scRGB needs 3 or 4 values.");
 
@@ -35,7 +36,7 @@ static class ScRgbColor
 
 	static byte Channel(float v)
 	{
-		if (v <= 0f) return 0;
+		if (!(v > 0f)) return 0;
 		if (v <= 0.0031308f) return ToByte(v * 12.92f);
 		if (v < 1f) return ToByte(1.055f * (float)Math.Pow(v, 1.0 / 2.4) - 0.055f);
 		return 255;

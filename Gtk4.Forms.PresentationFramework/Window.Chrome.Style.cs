@@ -72,8 +72,7 @@ public partial class Window
 	static void OnWindowStyleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
 		var w = (Window)d;
-		if (w._window != null)
-			ApplyWindowStyle(w._window, (WindowStyle)e.NewValue!);
+		w.ApplyShellChrome();
 	}
 
 	/// <summary>
@@ -90,11 +89,6 @@ public partial class Window
 	{
 		get => (WindowStyle)(GetValue(WindowStyleProperty) ?? WindowStyle.SingleBorderWindow);
 		set => SetValue(WindowStyleProperty, value);
-	}
-
-	static void ApplyWindowStyle(Gtk.Window win, WindowStyle style)
-	{
-		win.Decorated = style != WindowStyle.None;
 	}
 
 	// ── SizeToContent ─────────────────────────────────────────────────────────

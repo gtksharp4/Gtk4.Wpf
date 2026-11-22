@@ -14,10 +14,10 @@ public partial class WindowChrome : Freezable
 	public static readonly DependencyProperty CaptionHeightProperty = DependencyProperty.Register(
 		nameof(CaptionHeight), typeof(double), typeof(WindowChrome), new PropertyMetadata(0.0), IsValidLength);
 
-	/// <summary>Identifies <see cref="ResizeBorderThickness"/>. Default 4 on every side.</summary>
+	/// <summary>Identifies <see cref="ResizeBorderThickness"/>. Metadata default 0; a new instance starts at 4.</summary>
 	public static readonly DependencyProperty ResizeBorderThicknessProperty = DependencyProperty.Register(
 		nameof(ResizeBorderThickness), typeof(Thickness), typeof(WindowChrome),
-		new PropertyMetadata(new Thickness(4)), IsValidThickness);
+		new PropertyMetadata(default(Thickness)), IsValidThickness);
 
 	/// <summary>Identifies <see cref="GlassFrameThickness"/>. Default 0.</summary>
 	public static readonly DependencyProperty GlassFrameThicknessProperty = DependencyProperty.Register(
@@ -37,6 +37,18 @@ public partial class WindowChrome : Freezable
 	public static readonly DependencyProperty NonClientFrameEdgesProperty = DependencyProperty.Register(
 		nameof(NonClientFrameEdges), typeof(NonClientFrameEdges), typeof(WindowChrome),
 		new PropertyMetadata(NonClientFrameEdges.None), IsValidEdges);
+
+	/// <summary>
+	/// Creates a chrome with the Windows defaults. WPF binds these to <see cref="SystemParameters"/>; here they are
+	/// local values until the layer has those bindings.
+	/// </summary>
+	public WindowChrome()
+	{
+		CaptionHeight = SystemParameters.WindowCaptionHeight;
+		ResizeBorderThickness = SystemParameters.WindowResizeBorderThickness;
+		GlassFrameThickness = SystemParameters.WindowNonClientFrameThickness;
+		CornerRadius = SystemParameters.WindowCornerRadius;
+	}
 
 	/// <summary>Gets or sets the height of the caption (drag) area.</summary>
 	public double CaptionHeight

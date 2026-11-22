@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace System.Windows.Media.Animation;
 
@@ -20,15 +21,34 @@ public partial class Storyboard
 				case ClockGroup nested:
 					BindClocks(nested, container, childName, childTarget, childPath, handoff, leaves);
 					break;
+				case MediaClock media:
+					BindMedia(media, container, childName, childTarget);
+					break;
 				case AnimationClock clock:
 					(DependencyObject, DependencyProperty) resolved;
 					try { resolved = ResolveTarget(container, childName, childTarget, childPath); }
-					catch (UnanimatableTargetException) { continue; }
+					catch (UnanimatableTargetException ex)
+					{
+						Trace.WriteLine($"Storyboard: animation of '{childPath?.Path}' skipped: {ex.Message}");
+						continue;
+					}
 					AnimationStore.Apply(resolved.Item1, resolved.Item2, clock, handoff);
 					leaves.Add(clock);
 					break;
 			}
 		}
+	}
+
+	// WPF applies a MediaClock by handing it to the MediaElement named by TargetName/Target.
+	static void BindMedia(MediaClock clock, FrameworkElement container, string? name, DependencyObject? target)
+	{
+		var obj = target;
+		if (obj == null && !string.IsNullOrEmpty(name))
+			obj = container.FindName(name!) as DependencyObject
+				?? throw new InvalidOperationException($"Cannot find the element named '{name}' to play media.");
+		if (!(obj is Controls.MediaElement element))
+			throw new InvalidOperationException("A MediaTimeline must target a MediaElement.");
+		element.Clock = clock;
 	}
 
 	static (DependencyObject, DependencyProperty) ResolveTarget(

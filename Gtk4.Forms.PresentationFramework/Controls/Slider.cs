@@ -7,8 +7,8 @@ namespace System.Windows.Controls;
 /// <see cref="Gtk.Scale"/> (a GTK4-native horizontal/vertical slider).
 /// Two-way: GTK value change writes back into <see cref="RangeBase.Value"/>.
 /// <para>
-/// The range DPs come from <see cref="RangeBase"/>; <see cref="Slider"/> overrides the defaults
-/// (Maximum 10, SmallChange 1, LargeChange 10). When <see cref="IsSnapToTickEnabled"/> is <c>true</c>
+/// The range DPs come from <see cref="RangeBase"/>; <see cref="Slider"/> overrides the default
+/// (Maximum 10; SmallChange 0.1 and LargeChange 1 stay at the RangeBase defaults). When <see cref="IsSnapToTickEnabled"/> is <c>true</c>
 /// the value is additionally rounded to the nearest tick defined by <see cref="TickFrequency"/>.
 /// </para>
 /// </summary>
@@ -34,8 +34,8 @@ public partial class Slider : RangeBase
 	static void OverrideRangeMetadata()
 	{
 		MaximumProperty.OverrideMetadata(typeof(Slider), new FrameworkPropertyMetadata(10.0));
-		SmallChangeProperty.OverrideMetadata(typeof(Slider), new FrameworkPropertyMetadata(1.0, OnStepChanged));
-		LargeChangeProperty.OverrideMetadata(typeof(Slider), new FrameworkPropertyMetadata(10.0, OnStepChanged));
+		SmallChangeProperty.OverrideMetadata(typeof(Slider), new FrameworkPropertyMetadata(OnStepChanged));
+		LargeChangeProperty.OverrideMetadata(typeof(Slider), new FrameworkPropertyMetadata(OnStepChanged));
 		ValueProperty.OverrideMetadata(typeof(Slider), new FrameworkPropertyMetadata(null, CoerceSnappedValue));
 	}
 
@@ -62,7 +62,9 @@ public partial class Slider : RangeBase
 			: Gtk.Orientation.Horizontal;
 
 		_scale = new Gtk.Scale(gtkOrientation, Minimum, Maximum, SmallChange > 0.0 ? SmallChange : 1.0);
-		_scale.Value = Value;
+		_updating = true;
+		try { _scale.Value = Value; }
+		finally { _updating = false; }
 		_scale.Inverted = IsDirectionReversed;
 		_scale.ValueChanged += OnGtkValueChanged;
 		ApplyTickProps();
@@ -78,7 +80,16 @@ public partial class Slider : RangeBase
 	void ApplyRange()
 	{
 		if (_scale == null) return;
-		_scale.SetRange(Minimum, Maximum);
+		// SetRange clamps the adjustment and echoes back; push the effective Value afterwards so a range that
+		// grows back restores it.
+		var wasUpdating = _updating;
+		_updating = true;
+		try
+		{
+			_scale.SetRange(Minimum, Maximum);
+			if (_scale.Value != Value) _scale.Value = Value;
+		}
+		finally { _updating = wasUpdating; }
 		ApplyTickProps();
 	}
 
@@ -86,14 +97,19 @@ public partial class Slider : RangeBase
 	protected override void OnValueChanged(double oldValue, double newValue)
 	{
 		if (_scale != null && _scale.Value != newValue)
-			_scale.Value = newValue;
+		{
+			var wasUpdating = _updating;
+			_updating = true;
+			try { _scale.Value = newValue; }
+			finally { _updating = wasUpdating; }
+		}
 		// Raised for every effective change, including GTK-origin ones; _updating only guards the write loop.
 		base.OnValueChanged(oldValue, newValue);
 	}
 
 	void OnGtkValueChanged(object? sender, EventArgs e)
 	{
-		if (_updating) return;
+		if (_updating || _scale.Value == Value) return;
 		_updating = true;
 		try { SetValue(ValueProperty, _scale.Value); }
 		finally { _updating = false; }

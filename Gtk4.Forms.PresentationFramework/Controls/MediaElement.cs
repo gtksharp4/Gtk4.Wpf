@@ -17,7 +17,8 @@ public partial class MediaElement : FrameworkElement, IUriContext
 
 	/// <summary>Identifies <see cref="Volume"/>. Default 0.5.</summary>
 	public static readonly DependencyProperty VolumeProperty = DependencyProperty.Register(
-		nameof(Volume), typeof(double), typeof(MediaElement), new FrameworkPropertyMetadata(0.5, OnAudioChanged));
+		nameof(Volume), typeof(double), typeof(MediaElement),
+		new FrameworkPropertyMetadata(0.5, OnAudioChanged));
 
 	/// <summary>Identifies <see cref="Balance"/>. Default 0; stored only.</summary>
 	public static readonly DependencyProperty BalanceProperty = DependencyProperty.Register(
@@ -44,9 +45,13 @@ public partial class MediaElement : FrameworkElement, IUriContext
 	/// <summary>Identifies <see cref="Stretch"/>. Default <see cref="Media.Stretch.Uniform"/>.</summary>
 	public static readonly DependencyProperty StretchProperty = DependencyProperty.Register(
 		nameof(Stretch), typeof(Stretch), typeof(MediaElement),
-		new FrameworkPropertyMetadata(Stretch.Uniform, FrameworkPropertyMetadataOptions.AffectsMeasure, OnStretchChanged));
+		new FrameworkPropertyMetadata(
+			Stretch.Uniform, FrameworkPropertyMetadataOptions.AffectsMeasure, OnStretchChanged));
 
-	/// <summary>Identifies <see cref="StretchDirection"/>. Default <see cref="Controls.StretchDirection.Both"/>.</summary>
+	/// <summary>
+	/// Identifies <see cref="StretchDirection"/>. Default
+	/// <see cref="Controls.StretchDirection.Both"/>.
+	/// </summary>
 	public static readonly DependencyProperty StretchDirectionProperty = DependencyProperty.Register(
 		nameof(StretchDirection), typeof(StretchDirection), typeof(MediaElement),
 		new FrameworkPropertyMetadata(StretchDirection.Both, FrameworkPropertyMetadataOptions.AffectsMeasure));
@@ -114,8 +119,14 @@ public partial class MediaElement : FrameworkElement, IUriContext
 		set => SetValue(StretchDirectionProperty, value);
 	}
 
-	/// <summary>Gets or sets the base URI that a relative <see cref="Source"/> is resolved against.</summary>
-	public Uri? BaseUri { get; set; }
+	Uri? _baseUri;
+
+	/// <summary>The base URI that a relative <see cref="Source"/> is resolved against.</summary>
+	Uri? IUriContext.BaseUri
+	{
+		get => _baseUri;
+		set => _baseUri = value;
+	}
 
 	static bool IsValidState(object? value) => value is MediaState s && s >= MediaState.Manual && s <= MediaState.Stop;
 

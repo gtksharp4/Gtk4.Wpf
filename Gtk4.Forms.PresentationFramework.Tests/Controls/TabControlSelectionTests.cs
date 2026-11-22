@@ -109,4 +109,23 @@ public class TabControlSelectionTests : WpfGtkTestBase
 			Assert.Equal(1, count);
 		});
 	}
+
+	[Fact]
+	public void A_tab_marked_IsSelected_before_it_has_an_owner_becomes_the_selection()
+	{
+		Run(() =>
+		{
+			var a = new WpfTabItem();
+			var b = new WpfTabItem { IsSelected = true };
+			var tc = new WpfTabControl();
+			tc.Items.Add(a);
+			tc.Items.Add(b);
+			_ = tc.Widget;
+
+			Assert.Same(b, tc.SelectedItem);
+			Assert.False(a.IsSelected);
+			Assert.True(b.IsSelected);
+			Assert.Equal(1, tc.SelectedIndex);
+		});
+	}
 }

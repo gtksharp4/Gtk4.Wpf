@@ -55,27 +55,28 @@ public class MediaElementTests : WpfGtkTestBase
 		Assert.Equal(RoutingStrategy.Bubble, MediaElement.BufferingStartedEvent.RoutingStrategy);
 	}
 
-	[Theory]
-	[InlineData(MediaState.Play)]
-	[InlineData(MediaState.Close)]
-	[InlineData(MediaState.Pause)]
-	[InlineData(MediaState.Stop)]
-	public void Control_methods_throw_unless_LoadedBehavior_is_Manual(MediaState behavior)
+	[Fact]
+	public void Control_methods_throw_NotSupported_unless_Loaded_or_Unloaded_is_Manual()
 	{
-		var m = new MediaElement { LoadedBehavior = behavior };
-		Assert.Throws<InvalidOperationException>(() => m.Play());
-		Assert.Throws<InvalidOperationException>(() => m.Pause());
-		Assert.Throws<InvalidOperationException>(() => m.Stop());
-		Assert.Throws<InvalidOperationException>(() => m.Close());
+		var m = new MediaElement();
+		Assert.Throws<NotSupportedException>(() => m.Play());
+		Assert.Throws<NotSupportedException>(() => m.Pause());
+		Assert.Throws<NotSupportedException>(() => m.Stop());
+		Assert.Throws<NotSupportedException>(() => m.Close());
+		var unloadedManual = new MediaElement
+		{
+			UnloadedBehavior = MediaState.Manual, LoadedBehavior = MediaState.Play
+		};
+		Run(() => unloadedManual.Play());
 	}
 
 	[Fact]
-	public void Control_methods_throw_while_a_Clock_is_set()
+	public void Control_methods_do_not_throw_while_a_Clock_is_set()
 	{
 		var m = new MediaElement { LoadedBehavior = MediaState.Manual };
-		m.Clock = (MediaClock)new MediaTimeline().CreateClock();
-		Assert.Throws<InvalidOperationException>(() => m.Play());
-		Assert.Throws<InvalidOperationException>(() => m.Position = TimeSpan.FromSeconds(1));
+		m.Clock = (MediaClock)new MediaTimeline(new Uri("a.wav", UriKind.Relative)).CreateClock();
+		m.Play();
+		m.Position = TimeSpan.FromSeconds(1);
 	}
 
 	[Fact]
@@ -97,8 +98,13 @@ public class MediaElementTests : WpfGtkTestBase
 		Run(() =>
 		{
 			var sb = new Storyboard();
-			sb.Children.Add(new MediaTimeline(new Uri("a.wav", UriKind.Relative)));
-			var host = new StackPanel();
+			var timeline = new MediaTimeline(new Uri("a.wav", UriKind.Relative));
+			Storyboard.SetTargetName(timeline, "m");
+			sb.Children.Add(timeline);
+			var host = new Canvas();
+			var element = new MediaElement { Name = "m" };
+			host.Children.Add(element);
+			host.RegisterName("m", element);
 			sb.Begin(host);
 			sb.Stop(host);
 		});
@@ -178,7 +184,7 @@ public class MediaElementTests : WpfGtkTestBase
 		});
 	}
 
-	static string WriteWav()
+	internal static string WriteWav()
 	{
 		var path = Path.Combine(Path.GetTempPath(), "mediaelement-" + Guid.NewGuid() + ".wav");
 		const int rate = 8000;

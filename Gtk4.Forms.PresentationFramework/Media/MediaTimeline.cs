@@ -34,7 +34,7 @@ public class MediaTimeline : Timeline, IUriContext
 	/// <summary>Creates a timeline for <paramref name="source"/>, resolved against <paramref name="baseUri"/>.</summary>
 	public MediaTimeline(Uri baseUri, Uri source)
 	{
-		BaseUri = baseUri;
+		_baseUri = baseUri;
 		Source = source;
 	}
 
@@ -45,11 +45,23 @@ public class MediaTimeline : Timeline, IUriContext
 		set => SetValue(SourceProperty, value);
 	}
 
-	/// <summary>Gets or sets the base URI that a relative <see cref="Source"/> is resolved against.</summary>
-	public Uri? BaseUri { get; set; }
+	Uri? _baseUri;
+
+	/// <summary>The base URI that a relative <see cref="Source"/> is resolved against.</summary>
+	Uri? IUriContext.BaseUri
+	{
+		get => _baseUri;
+		set => _baseUri = value;
+	}
+
+	internal Uri? BaseUriCore => _baseUri;
 
 	/// <summary>Creates the <see cref="MediaClock"/> for this timeline.</summary>
-	protected internal override Clock AllocateClock() => new MediaClock(this);
+	protected internal override Clock AllocateClock()
+	{
+		if (Source == null) throw new InvalidOperationException("Must specify URI.");
+		return new MediaClock(this);
+	}
 
 	// The span of the media is unknown until it opens, so an automatic duration lasts until the clock stops.
 	internal override Duration GetAutomaticDuration() => Duration.Forever;
@@ -61,6 +73,6 @@ public class MediaTimeline : Timeline, IUriContext
 	protected override void CloneOverride(Freezable destination, bool currentValueOnly)
 	{
 		base.CloneOverride(destination, currentValueOnly);
-		((MediaTimeline)destination).BaseUri = BaseUri;
+		((MediaTimeline)destination)._baseUri = _baseUri;
 	}
 }

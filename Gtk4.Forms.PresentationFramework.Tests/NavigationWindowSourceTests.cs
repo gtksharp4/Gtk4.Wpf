@@ -1,4 +1,5 @@
 using System;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
 using System.Windows.Navigation;
@@ -14,6 +15,7 @@ public class NavigationWindowSourceTests : WpfGtkTestBase
 	public void SourceProperty_SharesFrameOwnerChain()
 	{
 		Assert.Same(Frame.SourceProperty, NavigationWindow.SourceProperty);
+		Assert.IsAssignableFrom<FrameworkPropertyMetadata>(NavigationWindow.SourceProperty.GetMetadata(typeof(NavigationWindow)));
 		Assert.Equal(typeof(Uri), NavigationWindow.SourceProperty.PropertyType);
 		Assert.Null(NavigationWindow.SourceProperty.GetMetadata(typeof(NavigationWindow)).DefaultValue);
 	}

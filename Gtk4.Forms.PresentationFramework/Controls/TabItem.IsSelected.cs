@@ -2,10 +2,14 @@ namespace System.Windows.Controls;
 
 public partial class TabItem
 {
-	/// <summary>Identifies <see cref="IsSelected"/>. Default false; binds two-way.</summary>
+	// Selector.IsSelectedProperty does not exist in this layer, so TabItem registers its own; WPF's carries
+	// BindsTwoWayByDefault | Journal.
+	/// <summary>Identifies <see cref="IsSelected"/>. Default false; binds two-way and journals.</summary>
 	public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register(
 		nameof(IsSelected), typeof(bool), typeof(TabItem),
-		new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnIsSelectedChanged));
+		new FrameworkPropertyMetadata(
+			false, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal,
+			OnIsSelectedChanged));
 
 	/// <summary>Gets or sets whether this tab is the selected one of its <see cref="TabControl"/>.</summary>
 	public bool IsSelected

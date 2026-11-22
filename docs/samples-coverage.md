@@ -186,40 +186,63 @@ non-runners (FocusTracker, a console app; AppCompat-Quirks; LocalizationResource
 | ExpenseItIntro | build fail | still fails | `MainWindow.Source` error gone; `DataGrid` tail, `MenuItem.Padding`/`IsSubmenuOpen`, `Popup.AllowsTransparency`, `SystemParameters` remain |
 | Concepts | build fail (`CS5001`) | still fails | `CS5001` fixed: an `ApplicationDefinition` without `x:Class` now gets a class and `Main`. Remaining: `TabControl.TabStripPlacement`, `TabItem.IsSelected`, `Hyperlink.TargetName`, `SystemFonts`, `Binding.XmlNamespaceManager` |
 
-Also fixed: OpacityAnimation (a `GradientStop` target path no longer aborts the whole storyboard; the sibling
-animations run and the colour animation on a non-`DependencyObject` stop is skipped).
+OpacityAnimation ran at base, regressed to a crash on this branch when the path resolver started rejecting a
+non-`DependencyObject` `GradientStop` step (`(Rectangle.Fill).(LinearGradientBrush.GradientStops)[1].(GradientStop.Color)`),
+and is restored by skipping that animation. `GradientStop` is a CLR class in this layer, so it is a known-gap skip
+(`StoryboardPathResolver`, Round 55c review a-F1); any other non-`DependencyObject` step now throws, as in WPF.
+
+## Round 55c, lane C review (carry-overs)
+
+Review fixes applied in lane C: path resolver known-gap set and diagnostics, `sc#` parser (ordinal prefix, whitespace
+separators, NaN), registry roots initialised for `LoadComponent`/navigation, `NavigationWindow.Source` metadata,
+Slider/MediaElement/WindowChrome/TabControl/MenuItem WPF parity, `MediaTimeline` binding in `Storyboard`, attached
+property elements on the root.
+
+Carry-over:
+
+- **`Color.FromScRgb`/`ScR`/`ScG`/`ScB` skip the sRGB transfer** (`Media/Color.cs`, outside lane C). `Color.FromScRgb(1, 0.5f, 0, 0).R`
+  is 128 while XAML `sc#1,0.5,0,0` gives 188 (WPF gives 188 for both). Follow-up: fix `Color.cs` (and relax
+  `ColorTests.FromScRgb_is_byte_normalization_not_linear_light`) and have `ScRgbColor.Parse` call it.
+- **SlidePuzzleDemo**: `DocumentViewerBase.IsMasterPage` (lane B, Documents) and `ControlTemplate.FindName` (lane A, templates).
+- **MediaGallery**: `Binding.Path` is typed `string` instead of `PropertyPath` (`Data/Binding.cs`, lane A).
+- **WPFGallery**: needs a `Microsoft.Win32.SystemEvents` package reference (packaging).
+- **SystemParameters `*Key` objects** do not resolve through `DynamicResource` (needs a system-key fallback in the
+  resource lookup chain).
+- **ScrollBar** is still on `Control`, not `RangeBase`.
+- Deliberate store-only members (GTK has no equivalent): `Balance`, `ScrubbingEnabled`, `SpeedRatio`,
+  `StretchDirection`, `Expander.ExpandDirection`, DataGrid header resize, Popup animation.
+- Remote (`http`) `MediaElement` sources are unverified.
 
 ## Crashes and hangs (built, did not run)
 
+ControlsAndLayout, CustomComboBox, GeometryDesignerDemo and DragDropThumbOps now run (see the Round 55c table).
+
 | Sample | Result | Cause |
 |---|---|---|
-| ControlsAndLayout | crash | `Cannot parse Color from "sc#1.000000, 0.769689, 0.831936, 1.000000"` (a `Grid.Background` setter in `Scene.xaml`). `MediaConverters.ParseColor` has no scRGB (`sc#`) form. Small fix |
-| CustomComboBox | crash | `Resource with key 'stringConverter' not found` in `Styles.InitializeComponent`. For a `ResourceDictionary` root the generator stores the keys in a temporary `__owner` `Border`'s `Resources`, but emits `StaticResourceScope.Find("stringConverter", this, this)`, which searches the dictionary itself. Generator fix |
-| GeometryDesignerDemo | crash | `Cannot find the element named 'LogoBrush' to animate 'Opacity'`. `Storyboard.TargetName` names an `x:Name`'d `VisualBrush` (a Freezable), and Freezables are not registered in the name scope. Unhandled in a GTK callback after the window loads |
 | WDPEncoderAndDecoder | crash | `NotSupportedException: JPEG XR (WDP) has no encoder in the GTK runtime`. The decoder side exists. This is a deliberate limit: gdk-pixbuf/GdkTexture have no JPEG XR codec |
 | AppCompat-Quirks | crash | Unchanged: `NullReferenceException` in the sample's `PopulateAppContextInformation`. It reflects over WPF-internal AppContext switch types. A compatibility gap, not worth chasing |
 | LocalizationResources | crash | Unchanged: `MissingManifestResourceException` for `LocalizationResources.data.stringtable.resources`. There is only an en-US satellite and no neutral resource |
-| DragDropThumbOps | hang | Unchanged: alive with no window and empty output, also alone at 20 s (twice). Diagnosed in Round 51: the `x:Class` root must be registered in `GtkFormsXamlRegistry` by the MarkupCompiler |
 
 ## XAML generator errors
 
 These are the remaining generator-side causes in portable apps. Per-project messages are in the JSON (`xamlErrors`).
 
-1. **Attached property with a binding on the root element** (Wizard: 3 pages; DialogBox: 3 dialogs).
+1. **Attached property with a binding on the root element** (Wizard: 3 pages; DialogBox: 3 dialogs). **Fixed in Round 55c for Wizard**; DialogBox's remaining blockers are kept
+   (`ListBox.ScrollIntoView`, `FontStyleConverter`, `ScrollViewer.CanContentScroll`).
    `FocusManager.FocusedElement="{Binding ElementName=…}"` on the root is emitted as
    `this.SetBinding(this.FocusManager.FocusedElementProperty, …)`. The owner type is resolved as a member of `this`
    instead of `System.Windows.Input.FocusManager`. Wizard's Round 49 blockers (`PageFunction<T>`) are gone, so this is
    now its only blocker.
-2. **`NavigationWindow Source="Homepage.xaml"`** (GlobalizationHomepage, ExpenseItIntro) is emitted as
+2. **Fixed in Round 55c.** **`NavigationWindow Source="Homepage.xaml"`** (GlobalizationHomepage, ExpenseItIntro) is emitted as
    `this.Source = "Homepage.xaml"`. `NavigationWindow` has no `Source` in the layer, and the string needs a `Uri`
    conversion. GlobalizationHomepage fails on nothing else.
-3. **`ResourceDictionary` root scope** (CustomComboBox, a crash). See Crashes.
-4. **`x:Class` root registration in `GtkFormsXamlRegistry`** (DragDropThumbOps, a hang). See Crashes.
+3. **Fixed in Round 55c.** **`ResourceDictionary` root scope** (CustomComboBox).
+4. **Fixed in Round 55c.** **`x:Class` root registration in `GtkFormsXamlRegistry`** (DragDropThumbOps).
 5. **Missing `x:Name` fields for elements of missing types:** `mediaElement` (WindowActivationAndDeactivation, which
    needs only `MediaElement`), `myMediaElement`/`MediaElement1` (MediaGallery), the 3D keyframe names (KeySplineAnimations,
    AnimationExamples), `InteractiveEffect` (BitmapEffectsGallery, a `BevelBitmapEffect`). These follow from the layer
    gaps, not from the generator.
-6. **No `Main` (`CS5001`, Concepts).** `App.xaml` is an explicit `ApplicationDefinition` item. Not diagnosed. Concepts
+6. **Fixed in Round 55c.** **No `Main` (`CS5001`, Concepts).** `App.xaml` is an explicit `ApplicationDefinition` item. Not diagnosed. Concepts
    also needs 7 control and binding members.
 7. **Not generator bugs, though surfaced in `.g.cs`:** `TabItem.IsSelected`, `TabControl.TabStripPlacement`,
    `WrapPanel.ItemWidth`/`ItemHeight(Property)`, `GridSplitter.ShowsPreview`, `TextBox.TextAlignment`,
@@ -262,7 +285,8 @@ still hold an app back, so treat "only" as an upper bound for build and an estim
      (no edits to existing `Storyboard*.cs`), and the `XmlnsDefinition` line for `System.Windows.Media.Media3D`.
 3. **Startup and generator sweep: 4 crash→runs, 2 only builds, 2 partial.**
    - Runs: ControlsAndLayout (scRGB `sc#` colours), CustomComboBox (`ResourceDictionary` root scope),
-     GeometryDesignerDemo (Freezables in the name scope), DragDropThumbOps (`x:Class` root registration, the Round 51
+     GeometryDesignerDemo (the `VisualBrush.Visual` property element was dropped by the generator, so the named brush was
+     never built or registered), DragDropThumbOps (`x:Class` root registration, the Round 51
      carry-over).
    - Builds: Wizard (root attached-property binding), GlobalizationHomepage (`NavigationWindow.Source` with a string →
      `Uri` conversion). Partial: DialogBox, ExpenseItIntro.

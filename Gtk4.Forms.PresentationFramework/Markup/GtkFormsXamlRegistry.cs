@@ -91,7 +91,7 @@ public static partial class GtkFormsXamlRegistry
 				}
 			if (type == null && own != null && !exactOnly) type = Find(path, own, false);
 		}
-		return type == null ? null : Activator.CreateInstance(type);
+		return type == null ? null : Initialize(Activator.CreateInstance(type)!);
 	}
 
 	static Dictionary<string, Type> Registrations(Assembly assembly)

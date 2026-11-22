@@ -870,6 +870,9 @@ namespace Gtk4.Forms.MarkupCompiler
 				return;
 			}
 
+			if (TryEmitAttachedPropertyElement(w, propEl, xNs, parentVar, ownerLocalName, propName, ref counter))
+				return;
+
 			// Template and ContentTemplate property elements contain a ControlTemplate child.
 			// ItemTemplate property elements contain a DataTemplate child.
 			// MultiBinding property elements contain a MultiBinding child.

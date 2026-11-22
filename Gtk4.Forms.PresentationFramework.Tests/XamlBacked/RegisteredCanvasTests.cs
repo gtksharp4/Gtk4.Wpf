@@ -1,5 +1,6 @@
 using System;
-using System.Reflection;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Markup;
 using Xunit;
 
@@ -7,16 +8,23 @@ namespace Gtk4.Forms.PresentationFramework.Tests.XamlBacked;
 
 public class RegisteredCanvasTests : WpfGtkTestBase
 {
+	static readonly Uri _uri = new Uri("XamlBacked/RegisteredCanvas.xaml", UriKind.Relative);
+
 	[Fact]
-	public void Compiled_root_is_resolved_by_its_xaml_path_and_initializes_once() => Run(() =>
+	public void Compiled_root_is_resolved_by_its_xaml_path_and_populated() => Run(() =>
 	{
-		var uri = new Uri("XamlBacked/RegisteredCanvas.xaml", UriKind.Relative);
+		var canvas = Assert.IsType<RegisteredCanvas>(
+			GtkFormsXamlRegistry.TryCreate(_uri, typeof(RegisteredCanvas).Assembly));
 
-		var canvas = Assert.IsType<RegisteredCanvas>(GtkFormsXamlRegistry.TryCreate(uri, typeof(RegisteredCanvas).Assembly));
+		Assert.Single(canvas.Children);
+		Assert.IsType<Button>(canvas.Children[0]);
+	});
 
-		var init = typeof(RegisteredCanvas).GetMethod("InitializeComponent", BindingFlags.Public | BindingFlags.Instance)!;
-		init.Invoke(canvas, null);
-		init.Invoke(canvas, null);
+	[Fact]
+	public void LoadComponent_by_uri_returns_a_populated_root() => Run(() =>
+	{
+		var canvas = Assert.IsType<RegisteredCanvas>(Application.LoadComponent(_uri));
+
 		Assert.Single(canvas.Children);
 	});
 }

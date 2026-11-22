@@ -43,6 +43,15 @@ public static class SystemParameters
 	/// <summary>The width of a window resize border.</summary>
 	public static Thickness WindowResizeBorderThickness => new Thickness(4);
 
+	/// <summary>The height of a window caption (Windows default).</summary>
+	public static double WindowCaptionHeight => 23.0;
+
+	/// <summary>The thickness of the non-client frame around a window (Windows default).</summary>
+	public static Thickness WindowNonClientFrameThickness => new Thickness(4, 27, 4, 4);
+
+	/// <summary>The corner radius of a window (Windows default).</summary>
+	public static CornerRadius WindowCornerRadius => new CornerRadius(8);
+
 	/// <summary>Whether menu popups animate.</summary>
 	public static bool MenuAnimation => true;
 

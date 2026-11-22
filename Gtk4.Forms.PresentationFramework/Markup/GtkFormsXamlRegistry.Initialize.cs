@@ -1,15 +1,15 @@
 using System.Reflection;
 
-namespace System.Windows;
+namespace System.Windows.Markup;
 
-public partial class Application
+public static partial class GtkFormsXamlRegistry
 {
 	/// <summary>
-	/// Runs the generated <c>InitializeComponent</c> of a root created from a StartupUri. WPF's BAML loader
-	/// populates the instance itself, so a root class without a constructor calling it must still load.
-	/// The generated method is idempotent, so a constructor that already called it is not repeated.
+	/// Runs the generated <c>InitializeComponent</c> of a registered root. WPF's BAML loader populates the
+	/// instance itself, so a root class without a constructor calling it must still load. The generated
+	/// method is idempotent, so a constructor that already called it is not repeated.
 	/// </summary>
-	static object Initialize(object instance)
+	internal static object Initialize(object instance)
 	{
 		MethodInfo? init = instance.GetType().GetMethod("InitializeComponent", BindingFlags.Public
 			| BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null);

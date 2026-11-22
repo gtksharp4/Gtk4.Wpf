@@ -5,9 +5,13 @@ public partial class MenuItem
 	/// <summary>Identifies <see cref="IsSubmenuOpen"/>. Default false.</summary>
 	public static readonly DependencyProperty IsSubmenuOpenProperty = DependencyProperty.Register(
 		nameof(IsSubmenuOpen), typeof(bool), typeof(MenuItem),
-		new FrameworkPropertyMetadata(false, OnIsSubmenuOpenChanged));
+		new FrameworkPropertyMetadata(
+			false, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnIsSubmenuOpenChanged));
 
-	/// <summary>Identifies <see cref="ItemContainerStyle"/>. MenuItem is not an ItemsControl here, so it has its own.</summary>
+	/// <summary>
+	/// Identifies <see cref="ItemContainerStyle"/>. MenuItem is not an ItemsControl here, so
+	/// it has its own.
+	/// </summary>
 	public static readonly DependencyProperty ItemContainerStyleProperty = DependencyProperty.Register(
 		nameof(ItemContainerStyle), typeof(Style), typeof(MenuItem), new FrameworkPropertyMetadata(null));
 

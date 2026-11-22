@@ -11,7 +11,10 @@ public partial class Frame
 		v => v is NavigationUIVisibility n && n >= NavigationUIVisibility.Automatic
 			&& n <= NavigationUIVisibility.Hidden);
 
-	/// <summary>Gets or sets whether the frame shows navigation chrome. GTK frames have none, so it is stored only.</summary>
+	/// <summary>
+	/// Gets or sets whether the frame shows navigation chrome. GTK frames have none, so it is
+	/// stored only.
+	/// </summary>
 	public NavigationUIVisibility NavigationUIVisibility
 	{
 		get => (NavigationUIVisibility)GetValue(NavigationUIVisibilityProperty)!;

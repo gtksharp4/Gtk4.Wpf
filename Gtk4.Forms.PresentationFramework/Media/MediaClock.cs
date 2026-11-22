@@ -6,11 +6,11 @@ namespace System.Windows.Media;
 /// The <see cref="Clock"/> of a <see cref="MediaTimeline"/>. A <see cref="Controls.MediaElement"/> that has this
 /// clock plays while the clock is active and reports the length of the opened media in <see cref="NaturalDuration"/>.
 /// </summary>
-public sealed class MediaClock : Clock
+public class MediaClock : Clock
 {
 	Duration _naturalDuration = Duration.Automatic;
 
-	internal MediaClock(MediaTimeline timeline) : base(timeline)
+	protected internal MediaClock(MediaTimeline media) : base(media)
 	{
 	}
 

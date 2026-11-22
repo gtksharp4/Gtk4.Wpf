@@ -109,7 +109,7 @@ public partial class Window
 	internal void ApplyChromeToWindow(Gtk.Window win)
 	{
 		ApplyWindowState(win, WindowState);
-		ApplyWindowStyle(win, WindowStyle);
+		ApplyShellChrome();
 		ApplyResizeMode(win, _headerBar, ResizeMode);
 		// SizeToContent is applied via ApplyExplicitSize; no separate call needed here.
 		// WindowStartupLocation is applied via ApplyStartupLocation in Show().
