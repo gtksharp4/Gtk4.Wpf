@@ -9,7 +9,7 @@ namespace System.Windows.Controls;
 /// current page. The displayed widget is swapped inside a <see cref="Gtk.Box"/>
 /// container on each navigation.
 /// </summary>
-public class Frame : ContentControl
+public partial class Frame : ContentControl
 {
 	// ── NavigationService ─────────────────────────────────────────────────────
 

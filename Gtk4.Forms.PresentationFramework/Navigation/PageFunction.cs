@@ -12,12 +12,13 @@ public class PageFunction<T> : PageFunctionBase
 	public event ReturnEventHandler<T>? Return;
 
 	/// <summary>
-	/// Raises <see cref="Return"/>, then navigates back to the caller (dropping this page from the
-	/// journal when <see cref="PageFunctionBase.RemoveFromJournal"/> is set).
+	/// Navigates back to the caller (dropping this page from the journal when
+	/// <see cref="PageFunctionBase.RemoveFromJournal"/> is set), then raises <see cref="Return"/>, so a handler
+	/// sees the caller as the current content and a chain of page functions unwinds one level at a time.
 	/// </summary>
 	protected virtual void OnReturn(ReturnEventArgs<T> e)
 	{
-		Return?.Invoke(this, e);
 		ReturnToCaller();
+		Return?.Invoke(this, e);
 	}
 }

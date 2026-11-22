@@ -71,7 +71,7 @@ internal sealed partial class XamlObjectBuilder
 	{
 		if (target is FrameworkElement fe && member?.Dp != null)
 		{
-			fe.SetResourceReference(member.Dp, key);
+			XamlValueConverter.SetLocalResourceReference(fe, member.Dp, key);
 			return Applied;
 		}
 		return TryLookup(key, out object? value) ? value : null;

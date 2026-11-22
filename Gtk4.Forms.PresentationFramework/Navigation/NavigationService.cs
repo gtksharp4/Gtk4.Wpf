@@ -12,7 +12,7 @@ namespace System.Windows.Navigation;
 /// Register page instances with <see cref="RegisterContent"/>; compiled pages are produced by the markup
 /// compiler's <c>InitializeComponent</c>.
 /// </remarks>
-public sealed class NavigationService
+public sealed partial class NavigationService
 {
 	readonly NavigationJournal _journal = new NavigationJournal();
 
@@ -50,7 +50,7 @@ public sealed class NavigationService
 	// ── Events ────────────────────────────────────────────────────────────────
 
 	/// <summary>Raised before navigation occurs. Set <c>Cancel</c> to abort.</summary>
-	public event EventHandler<NavigatingCancelEventArgs>? Navigating;
+	public event NavigatingCancelEventHandler? Navigating;
 
 	/// <summary>Raised after the content changed, before <see cref="LoadCompleted"/>.</summary>
 	public event NavigatedEventHandler? Navigated;
@@ -58,8 +58,8 @@ public sealed class NavigationService
 	/// <summary>Raised once the navigated content is loaded; follows <see cref="Navigated"/>.</summary>
 	public event LoadCompletedEventHandler? LoadCompleted;
 
-	/// <summary>Raised when navigation is cancelled via <see cref="NavigatingCancelEventArgs.Cancel"/>.</summary>
-	public event EventHandler<NavigatingCancelEventArgs>? NavigationStopped;
+	/// <summary>Raised when a navigation is cancelled or <see cref="StopLoading"/> is called.</summary>
+	public event NavigationStoppedEventHandler? NavigationStopped;
 
 	// ── Navigate ──────────────────────────────────────────────────────────────
 
@@ -78,9 +78,7 @@ public sealed class NavigationService
 	public bool Navigate(Uri uri, object? extraData)
 	{
 		if (uri == null) throw new ArgumentNullException(nameof(uri));
-		var resolved = Resolver.Resolve(uri) ?? Markup.GtkFormsXamlRegistry.TryCreate(
-			uri, Application.Current?.GetType().Assembly);
-		return NavigateCore(resolved, uri, extraData);
+		return NavigateCore(Resolve(uri), uri, extraData);
 	}
 
 	/// <summary>
@@ -114,13 +112,7 @@ public sealed class NavigationService
 
 	bool NavigateCore(object? content, Uri? uri, object? extraData)
 	{
-		var cancelling = new NavigatingCancelEventArgs(content, uri, NavigationMode.New);
-		Navigating?.Invoke(this, cancelling);
-		if (cancelling.Cancel)
-		{
-			NavigationStopped?.Invoke(this, cancelling);
-			return false;
-		}
+		if (!RaiseNavigating(new NavigatingCancelEventArgs(content, uri, NavigationMode.New))) return false;
 
 		if (content is PageFunctionBase pageFunction && Content != null && !ReferenceEquals(Content, pageFunction))
 			pageFunction.Caller = Content;
@@ -143,16 +135,10 @@ public sealed class NavigationService
 	{
 		// Peek at the target content (the entry we'd move to) for the event args.
 		// We pass null content for the peek — WPF does the same for back/forward.
-		var cancelling = new NavigatingCancelEventArgs(null, null, mode);
-		Navigating?.Invoke(this, cancelling);
-		if (cancelling.Cancel)
-		{
-			NavigationStopped?.Invoke(this, cancelling);
-			return;
-		}
+		if (!RaiseNavigating(new NavigatingCancelEventArgs(null, null, mode))) return;
 
 		var content = advance();
-		CommitContent(content, null, null);
+		CommitContent(content, content == null ? null : SourceOf(content), null);
 	}
 
 	// Returns from a PageFunction to its caller: Back-style when the entry is dropped, a new entry otherwise.
@@ -163,21 +149,17 @@ public sealed class NavigationService
 			NavigateCore(caller, null, null);
 			return;
 		}
-		var cancelling = new NavigatingCancelEventArgs(caller, null, NavigationMode.Back);
-		Navigating?.Invoke(this, cancelling);
-		if (cancelling.Cancel)
-		{
-			NavigationStopped?.Invoke(this, cancelling);
-			return;
-		}
+		if (!RaiseNavigating(new NavigatingCancelEventArgs(caller, SourceOf(caller), NavigationMode.Back))) return;
 		_journal.RemoveCurrent();
 		if (!ReferenceEquals(_journal.Current, caller)) _journal.Push(caller);
-		CommitContent(caller, null, null);
+		CommitContent(caller, SourceOf(caller), null);
 	}
 
 	void CommitContent(object? content, Uri? uri, object? extraData)
 	{
 		Content = content;
+		CurrentSource = uri;
+		RememberSource(content, uri);
 		// Wire NavigationService on Page.
 		if (content is Page page)
 			page.NavigationService = this;

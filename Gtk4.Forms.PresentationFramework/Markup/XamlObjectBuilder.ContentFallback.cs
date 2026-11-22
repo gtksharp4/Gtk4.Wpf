@@ -39,6 +39,8 @@ internal sealed partial class XamlObjectBuilder
 		Add(media, "PathFigure", "Segments");
 		Add(media, "LinearGradientBrush RadialGradientBrush", "GradientStops");
 		Add("System.Windows", "Style Trigger DataTrigger MultiTrigger MultiDataTrigger", "Setters");
+		Add("System.Windows", "EventTrigger", "Actions");
+		Add("System.Windows", "BeginStoryboard", "Storyboard");
 		Add(media + ".Animation", "Storyboard ParallelTimeline", "Children");
 		return d;
 	}

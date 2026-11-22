@@ -79,9 +79,14 @@ internal sealed partial class XamlObjectWriter
 		{
 			DependencyProperty dp = e.Property;
 			if (dp.ReadOnly || e.Value == null || ReferenceEquals(e.Value, DependencyProperty.UnsetValue)) continue;
-			if (BindingOperations.IsDataBound(d, dp)) continue;
 			bool attached = FindDp(type, dp.Name) != dp;
 			string name = attached ? NameOf(dp.OwnerType) + "." + dp.Name : dp.Name;
+			if (ExtensionText(d, dp) is { } extension)
+			{
+				el.SetAttributeValue(name, extension);
+				continue;
+			}
+			if (BindingOperations.IsDataBound(d, dp) || IsDefault(dp, type, e.Value)) continue;
 			if (!attached && dp.Name == contentName) { AddContent(e.Value, content); continue; }
 			if (Format(e.Value, dp.PropertyType) is { } text)
 			{
@@ -95,6 +100,9 @@ internal sealed partial class XamlObjectWriter
 			}
 		}
 	}
+
+	static bool IsDefault(DependencyProperty dp, Type type, object value) =>
+		Equals(dp.GetMetadata(type).DefaultValue, value);
 
 	object[] ChildrenOf(object value) =>
 		value is IEnumerable items && value is not string && value is not ResourceDictionary

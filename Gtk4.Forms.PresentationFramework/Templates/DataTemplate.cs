@@ -10,7 +10,7 @@ namespace System.Windows.Controls;
 /// XAML <c>&lt;DataTemplate&gt;</c> parsing is a later compiler round.
 /// </para>
 /// </summary>
-public class DataTemplate : FrameworkTemplate
+public partial class DataTemplate : FrameworkTemplate
 {
 	/// <summary>The data type this template applies to (store-only; no implicit selection).</summary>
 	public object? DataType { get; set; }
