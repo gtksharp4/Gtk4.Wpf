@@ -58,6 +58,9 @@ namespace Gtk4.Forms.MarkupCompiler
 			return true;
 		}
 
+		// A Visual-typed property element (VisualBrush.Visual) holds a regular element tree.
+		bool IsVisualChild(string fq) => !IsMediaObjectType(fq) && _resolver.DerivesFromByName(fq, MediaNs + "Visual");
+
 		bool MediaPropertyElementEmittable(XElement parent, string fq, XElement pe)
 		{
 			string local = pe.Name.LocalName;
@@ -73,7 +76,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			{
 				string cfq = ResolveType(child);
 				if (cfq == null) continue;
-				if (!_resolver.IsAssignable(cfq, item ?? pt) || !MediaGraphEmittable(child, cfq)) return false;
+				if (!_resolver.IsAssignable(cfq, item ?? pt) || !(IsVisualChild(cfq) || MediaGraphEmittable(child, cfq)))
+					return false;
 				count++;
 			}
 			return item != null || (count <= 1 && _resolver.IsWritable(fq, prop));
