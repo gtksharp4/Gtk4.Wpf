@@ -35,6 +35,7 @@ public partial class TextBox
 		_entry = new Gtk.Entry { Text = Text };
 		ApplyMaxLength(MaxLength);
 		ApplyIsReadOnly(IsReadOnly);
+		ApplyTextAlignment();
 		_entry.Changed += OnEntryChanged;
 		return _entry;
 	}
@@ -45,6 +46,7 @@ public partial class TextBox
 		ApplyWrapMode();
 		ApplyIsReadOnly(IsReadOnly);
 		ApplyAcceptsTab(AcceptsTab);
+		ApplyTextAlignment();
 		_textView.Buffer.Text = Text;
 		_textView.Buffer.Changed += OnBufferChanged;
 

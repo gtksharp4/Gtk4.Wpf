@@ -14,11 +14,11 @@ public class DynamicResourceTests
 
 	sealed class El : FrameworkElement
 	{
-		public static readonly DependencyProperty TagProperty =
+		public new static readonly DependencyProperty TagProperty =
 			DependencyProperty.Register(
 				"DynResTag", typeof(string), typeof(El), new PropertyMetadata(null));
 
-		public string? Tag
+		public new string? Tag
 		{
 			get => (string?)GetValue(TagProperty);
 			set => SetValue(TagProperty, value);

@@ -13,7 +13,7 @@ public class StylePrecedenceDefectTests
 {
 	sealed class TestEl : FrameworkElement
 	{
-		public static readonly DependencyProperty TagProperty =
+		public new static readonly DependencyProperty TagProperty =
 			DependencyProperty.Register("TagD67", typeof(string), typeof(TestEl),
 				new PropertyMetadata(null));
 		public string? Tag2
