@@ -21,8 +21,10 @@ public partial class Storyboard
 					BindClocks(nested, container, childName, childTarget, childPath, handoff, leaves);
 					break;
 				case AnimationClock clock:
-					var (obj, dp) = ResolveTarget(container, childName, childTarget, childPath);
-					AnimationStore.Apply(obj, dp, clock, handoff);
+					(DependencyObject, DependencyProperty) resolved;
+					try { resolved = ResolveTarget(container, childName, childTarget, childPath); }
+					catch (UnanimatableTargetException) { continue; }
+					AnimationStore.Apply(resolved.Item1, resolved.Item2, clock, handoff);
 					leaves.Add(clock);
 					break;
 			}

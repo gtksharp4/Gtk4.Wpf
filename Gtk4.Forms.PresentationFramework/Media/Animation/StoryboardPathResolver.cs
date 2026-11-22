@@ -30,8 +30,8 @@ internal static class StoryboardPathResolver
 				continue;
 			}
 			if (!(current is DependencyObject obj))
-				throw PropertyPathParser.Bad(
-					path, $"'{step.Name}' cannot be read from a {current?.GetType().Name ?? "null"}");
+				throw new UnanimatableTargetException(PropertyPathParser.Bad(
+					path, $"'{step.Name}' cannot be read from a {current?.GetType().Name ?? "null"}").Message);
 			var dp = step.Parameter ?? FindProperty(step, obj.GetType());
 			if (dp == null && !last && IsOwnerQualifier(step, obj.GetType()))
 			{
