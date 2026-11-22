@@ -1,11 +1,13 @@
+using System.Windows.Media.Animation;
+
 namespace System.Windows.Media;
 
 /// <summary>
-/// Phase-1 stand-in for WPF's abstract <c>System.Windows.Media.ImageSource</c>.
-/// Wraps a file path; the Phase-4 media stack will replace this with the real
-/// abstract base class + codec pipeline.
+/// WPF <c>ImageSource</c>: <c>ImageSource : Animatable : Freezable</c>. The base class itself is
+/// the layer's file-path stand-in (<see cref="FromFile"/>); the bitmap family derives from
+/// <see cref="Imaging.BitmapSource"/>.
 /// </summary>
-public class ImageSource
+public class ImageSource : Animatable
 {
 	/// <summary>Absolute or relative path to the image file (empty for derived sources).</summary>
 	public string FilePath { get; }
@@ -24,6 +26,9 @@ public class ImageSource
 
 	/// <summary>Creates an <see cref="ImageSource"/> from a file path.</summary>
 	public static ImageSource FromFile(string path) => new ImageSource(path);
+
+	/// <summary>Creates a new instance of the same concrete type; derived sources override it.</summary>
+	protected override Freezable CreateInstanceCore() => new ImageSource(FilePath);
 
 	/// <inheritdoc/>
 	public override string ToString() => FilePath;
