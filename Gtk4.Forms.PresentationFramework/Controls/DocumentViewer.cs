@@ -49,6 +49,9 @@ public partial class DocumentViewer : DocumentViewerBase
 
 	Gtk.Widget PageWidget(DocumentPaginator paginator, int index)
 	{
+		var fixedPage = FixedPageOf(paginator, index);
+		if (fixedPage != null)
+			return HostFixedPage(fixedPage);
 		var view = new DocumentPageView { DocumentPaginator = paginator, PageNumber = index };
 		if (!ShowPageBorders) return view.Widget;
 		var frame = new Gtk.Frame(null!);
