@@ -1,5 +1,3 @@
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Windows.Media.Animation;
 
 namespace System.Windows.Media.Effects;
@@ -14,18 +12,13 @@ public abstract class BitmapEffect : Animatable
 	protected BitmapEffect() { }
 }
 
-/// <summary>An ordered list of <see cref="BitmapEffect"/> objects.</summary>
-public sealed class BitmapEffectCollection : ObservableCollection<BitmapEffect>
-{
-}
-
 /// <summary>Applies a list of effects in order.</summary>
 public sealed class BitmapEffectGroup : BitmapEffect
 {
 	BitmapEffectCollection _children = new BitmapEffectCollection();
 
 	/// <summary>Creates an empty group.</summary>
-	public BitmapEffectGroup() => _children.CollectionChanged += OnChildrenChanged;
+	public BitmapEffectGroup() => _children.Changed += OnChildrenChanged;
 
 	/// <summary>The grouped effects.</summary>
 	public BitmapEffectCollection Children
@@ -34,14 +27,14 @@ public sealed class BitmapEffectGroup : BitmapEffect
 		set
 		{
 			ThrowIfFrozen();
-			_children.CollectionChanged -= OnChildrenChanged;
+			_children.Changed -= OnChildrenChanged;
 			_children = value ?? new BitmapEffectCollection();
-			_children.CollectionChanged += OnChildrenChanged;
+			_children.Changed += OnChildrenChanged;
 			OnChanged();
 		}
 	}
 
-	void OnChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e) => OnChanged();
+	void OnChildrenChanged(object? sender, EventArgs e) => OnChanged();
 
 	/// <inheritdoc/>
 	protected override Freezable CreateInstanceCore() => new BitmapEffectGroup();
