@@ -25,7 +25,7 @@ public static class NonElementBinding
 		}
 		catch (NotSupportedException)
 		{
-			var path = (binding as Binding)?.Path;
+			var path = (binding as Binding)?.Path?.Path;
 			Trace.TraceWarning("Binding on non-element " + target.GetType().Name + "." + dp.Name
 				+ " (path '" + path + "') is not evaluated.");
 			return null;
