@@ -881,7 +881,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			// Template and ContentTemplate property elements contain a ControlTemplate child.
 			// ItemTemplate property elements contain a DataTemplate child.
 			// MultiBinding property elements contain a MultiBinding child.
-			string ownerFqType = Emitted(QualifyTypeName(ownerLocalName));
+			string ownerFqType = AttachedOwnerType(propEl, ownerLocalName);
 
 			foreach (XElement child in propEl.Elements())
 			{

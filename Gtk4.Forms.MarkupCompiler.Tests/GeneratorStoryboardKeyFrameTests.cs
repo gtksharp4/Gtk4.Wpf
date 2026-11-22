@@ -43,7 +43,7 @@ public class GeneratorStoryboardKeyFrameTests : GeneratorV2TestBase
 	{
 		string code = Gen(Xaml, sources: new[] { Stub });
 
-		Assert.Contains("BindingOperations.SetBinding(__anim", code);
+		Assert.Contains("NonElementBinding.TrySetBinding(__anim", code);
 		Assert.Contains("DoubleAnimation.ToProperty", code);
 		Assert.DoesNotContain(".To = \"{Binding", code);
 	}

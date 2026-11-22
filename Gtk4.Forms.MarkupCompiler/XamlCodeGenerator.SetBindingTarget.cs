@@ -23,6 +23,6 @@ namespace Gtk4.Forms.MarkupCompiler
 		string SetBindingLine(string target, string fqType, string dp, string binding)
 			=> HasSetBinding(fqType)
 				? $"{target}.SetBinding({dp}, {binding});"
-				: $"global::System.Windows.Data.BindingOperations.SetBinding({target}, {dp}, {binding});";
+				: $"global::System.Windows.Markup.NonElementBinding.TrySetBinding({target}, {dp}, {binding});";
 	}
 }
