@@ -51,6 +51,8 @@ namespace Gtk4.Forms.MarkupCompiler
 		/// scopes. WPF resolves against the parse-time scope stack: every enclosing element's resources from the
 		/// innermost out, then the root, then the application.
 		/// </summary>
+		bool _rootIsDictionary;
+
 		string StaticResourceLookup(string receiver, string escapedKey)
 		{
 			var scopes = new System.Collections.Generic.List<string>();
@@ -59,6 +61,8 @@ namespace Gtk4.Forms.MarkupCompiler
 				scopes.Add(vars[i]);
 			if (receiver != "this" && !scopes.Contains(receiver))
 				scopes.Insert(0, receiver);
+			// A dictionary root has no FindResource of its own: its keys are probed as the outermost scope.
+			if (_rootIsDictionary && !scopes.Contains("this")) scopes.Add("this");
 			if (scopes.Count == 0)
 				return $"this.FindResource({ResourceKeyExpression(escapedKey)})";
 			return $"System.Windows.Markup.StaticResourceScope.Find({ResourceKeyExpression(escapedKey)}, this, " +

@@ -89,6 +89,7 @@ public partial class DependencyObject : System.Windows.Threading.DispatcherObjec
 	public void ClearValue(DependencyProperty dp)
 	{
 		if (dp == null) throw new ArgumentNullException(nameof(dp));
+		OnExplicitLocalChange(dp);
 		if (!_localValues.ContainsKey(dp)) return;
 
 		var oldEffective = ResolveEffectiveValue(dp);
@@ -134,6 +135,7 @@ public partial class DependencyObject : System.Windows.Threading.DispatcherObjec
 	{
 		if (!ReferenceEquals(value, DependencyProperty.UnsetValue)) dp.ThrowIfInvalid(value);
 		OnBeforeSetValue(dp);
+		OnExplicitLocalChange(dp);
 		var oldEffective = ResolveEffectiveValue(dp);
 		bool hadLocal = _localValues.TryGetValue(dp, out var oldLocal);
 		_localValues[dp] = value;

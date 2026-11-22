@@ -37,7 +37,7 @@ public sealed class DoubleCollection : Collection<double>
 		for (int i = 0; i <= text.Length; i++)
 		{
 			bool end = i == text.Length;
-			bool sep = !end && (text[i] == ',' || text[i] == ' ' || text[i] == '\t');
+			bool sep = !end && (text[i] == ',' || char.IsWhiteSpace(text[i]));
 
 			if (sep || end)
 			{

@@ -16,7 +16,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			"System.Windows.Point", "System.Windows.Size", "System.Windows.Rect",
 			"System.Windows.Media.Color", "System.Windows.FontWeight", "System.Windows.FontStyle",
 			"System.Windows.FontStretch", "System.Windows.Media.Animation.Duration",
-			"System.Windows.Media.Animation.RepeatBehavior",
+			"System.Windows.Media.Animation.RepeatBehavior", "System.DateTime",
 		};
 
 		// Reference types with a built-in converter that CLR (non-DP) properties of exactly that type use.
@@ -37,6 +37,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			if (t != null && Nullable.GetUnderlyingType(t) is Type under)
 				return ClrNullableExpression(under, propName, val);
 			if (t == null || t.IsGenericType) return ClrValueExpression(propName, val);
+			if (t.FullName == "System.String") return $"\"{EscapeString(val)}\"";
 			if (t.IsEnum) return ClrEnumExpression(t, propName, val);
 			if (t.FullName == "System.Uri")
 				return $"new System.Uri(\"{EscapeString(val)}\", System.UriKind.RelativeOrAbsolute)";

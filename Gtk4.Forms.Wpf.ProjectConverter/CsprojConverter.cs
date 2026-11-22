@@ -96,7 +96,10 @@ internal static class CsprojConverter
 	/// </summary>
 	/// <param name="csprojPath">Absolute path to the <c>.csproj</c>.</param>
 	/// <returns><see langword="true"/> when the file was rewritten.</returns>
-	internal static bool TryConvertFile(string csprojPath)
+	internal static bool TryConvertFile(string csprojPath) => ProjectReferenceConverter.ConvertTree(csprojPath);
+
+	/// <summary>Converts only the given project file (no referenced projects), preserving its BOM state.</summary>
+	internal static bool TryConvertSingle(string csprojPath)
 	{
 		var bytes = File.ReadAllBytes(csprojPath);
 		var hadBom = bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF;

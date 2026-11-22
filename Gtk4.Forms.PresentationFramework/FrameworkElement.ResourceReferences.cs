@@ -48,6 +48,9 @@ public abstract partial class FrameworkElement
 		if (dp == null) throw new ArgumentNullException(nameof(dp));
 		if (resourceKey == null) throw new ArgumentNullException(nameof(resourceKey));
 
+		// WPF writes at Local precedence: a XAML-attribute reference on this dp is replaced.
+		if (HasLocalResourceRef(dp)) ClearValue(dp);
+
 		// Replace an existing reference for this dp, or add a new one.
 		_resRefs ??= new List<ResRef>();
 		bool replaced = false;
@@ -105,6 +108,11 @@ public abstract partial class FrameworkElement
 			else ClearStyleValue(dp);
 			return;
 		}
+		if (ReferenceEquals(contributor, LocalLayerContributor))
+		{
+			ApplyLocalResourceRef(dp, key);
+			return;
+		}
 		if (contributor != null)
 		{
 			if (TryFindResourceCore(key, out var tv)) SetTriggerValue(dp, contributor, tv);
@@ -128,10 +136,12 @@ public abstract partial class FrameworkElement
 		// Unsubscribe from dicts no longer in the chain.
 		if (_subscribedDicts != null)
 		{
-			foreach (var dict in _subscribedDicts)
+			for (int i = _subscribedDicts.Count - 1; i >= 0; i--)
 			{
-				if (!chain.Contains(dict))
-					dict.ResourceChanged -= _onAnyDictChangedDelegate;
+				var dict = _subscribedDicts[i];
+				if (chain.Contains(dict)) continue;
+				dict.ResourceChanged -= _onAnyDictChangedDelegate;
+				_subscribedDicts.RemoveAt(i);
 			}
 		}
 

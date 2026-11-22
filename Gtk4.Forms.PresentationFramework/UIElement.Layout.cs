@@ -71,6 +71,7 @@ public abstract partial class UIElement
 			return;
 
 		_measureDirty = false;
+		NoteLayoutWork();
 		_lastMeasureConstraint = availableSize;
 
 		// Collapsed takes no space: WPF skips MeasureCore and reports (0,0). Hidden measures normally.
@@ -110,6 +111,7 @@ public abstract partial class UIElement
 
 		_arrangeDirty = false;
 		_lastArrangeRect = finalRect;
+		NoteLayoutWork();
 		ArrangeRect = finalRect;
 		// Collapsed: ArrangeCore is skipped and RenderSize is left as it was (WPF records only the rect).
 		if (Visibility == Visibility.Collapsed)
@@ -135,7 +137,10 @@ public abstract partial class UIElement
 		}
 		// WPF fires the SizeChanged chain after the whole (outermost) arrange pass.
 		if (_arrangeDepth == 0)
+		{
 			FlushSizeChangedChain();
+			FireLayoutUpdated();
+		}
 	}
 
 	/// <summary>Override to position children. Base is no-op.</summary>
@@ -169,5 +174,6 @@ public abstract partial class UIElement
 			Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
 		if (_arrangeDirty)
 			Arrange(new Rect(0, 0, DesiredSize.Width, DesiredSize.Height));
+		FireLayoutUpdated();
 	}
 }

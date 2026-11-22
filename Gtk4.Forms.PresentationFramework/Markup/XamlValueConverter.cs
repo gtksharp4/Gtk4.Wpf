@@ -185,6 +185,8 @@ public static partial class XamlValueConverter
 		Register<System.Windows.Shapes.PointCollection>(UnitConverters.ParsePointCollection);
 		Register<System.Windows.Input.ICommand?>(CommandConverters.ParseCommand);
 
+		RegisterInputBuiltIns();
+
 		// Animation primitives
 		Register<Duration>(AnimationConverters.ParseDuration);
 		Register<RepeatBehavior>(AnimationConverters.ParseRepeatBehavior);

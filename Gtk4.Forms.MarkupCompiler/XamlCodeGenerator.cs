@@ -86,6 +86,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				return null;
 			}
 
+			NormalizeMarkupAttributes(root);
 			XNamespace xNs = GetXNamespace(root);
 			_xNs = xNs;
 			_prefixMap = CollectXmlnsPrefixMap(root);
@@ -104,6 +105,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			string ns = lastDot >= 0 ? className.Substring(0, lastDot) : string.Empty;
 			string typeName = lastDot >= 0 ? className.Substring(lastDot + 1) : className;
 
+			_rootIsDictionary = IsDictionaryRoot(root);
 			bool isAppDef = IsApplicationRoot(root);
 
 			var sb = new StringBuilder();
@@ -362,6 +364,10 @@ namespace Gtk4.Forms.MarkupCompiler
 					string fqType = string.IsNullOrEmpty(rootFqType) ? "this" : rootFqType;
 					w.Line($"this.SetBinding({fqType}.{propName}Property, {bindingInit});");
 				}
+				else if (IsDynamicResourceValue(val, out string dynKey) && !string.IsNullOrEmpty(rootFqType)
+					&& IsKnownDp(rootFqType, propName))
+					w.Line($"{Converter}.SetLocalResourceReference(this, {rootFqType}.{propName}Property, " +
+						$"{ResourceKeyExpression(EscapeString(dynKey))});");
 				else if (IsStaticOrDynamicResource(val, out string resourceKey))
 				{
 					// Style="{StaticResource k}" special-case; generic for other props.
@@ -558,6 +564,8 @@ namespace Gtk4.Forms.MarkupCompiler
 		bool IsKnownEvent(string fqType, string propName)
 		{
 			if (string.IsNullOrEmpty(fqType)) return false;
+			if (IsHookedUserType(fqType))
+				return UserEventDeclared(propName) || UserBaseHasEvent(fqType, propName);
 			return _resolver.IsEvent(fqType, propName);
 		}
 
@@ -632,7 +640,7 @@ namespace Gtk4.Forms.MarkupCompiler
 					continue;
 				}
 
-				string fqType = ResolveType(child);
+				string fqType = ResolveType(child) ?? UserElementFqType(child);
 				if (fqType == null)
 				{
 					if (IsMediaObjectType(ResolveType(parent)))
@@ -641,7 +649,10 @@ namespace Gtk4.Forms.MarkupCompiler
 				}
 
 				string varName = $"__e{counter++}";
+				string savedHook = _hookVar;
+				_hookVar = IsHookedUserType(fqType) ? varName : _hookVar;
 				EmitElement(w, child, xNs, varName, fqType, ref counter);
+				_hookVar = savedHook;
 				EmitAttach(w, parentVar, parentLocalName, ci, varName, fqType);
 			}
 		}
@@ -734,6 +745,15 @@ namespace Gtk4.Forms.MarkupCompiler
 						StringComparison.Ordinal) ? StaticResourceLookup("this", EscapeString(mediaKey))
 						: DynamicMediaLookup(EscapeString(mediaKey)))
 						+ " as global::" + mediaType.FullName.Replace('+', '.') + ";");
+				else if (IsDynamicResourceValue(val, out string dynKey) && IsKnownDp(fqType, propName))
+					w.Line($"{Converter}.SetLocalResourceReference({varName}, {fqType}.{propName}Property, " +
+						$"{ResourceKeyExpression(EscapeString(dynKey))});");
+				else if (varName == _hookVar && IsDynamicResourceValue(val, out string hookDynKey))
+					w.Line($"if ((object){varName} is global::System.Windows.FrameworkElement) " +
+						$"{Converter}.SetLocalResourceReference((global::System.Windows.FrameworkElement)(object)" +
+						$"{varName}, " +
+						$"{fqType}.{propName}Property, " +
+						$"{ResourceKeyExpression(EscapeString(hookDynKey))});");
 				else if (IsStaticOrDynamicResource(val, out string resourceKey))
 				{
 					string find = val.TrimStart().StartsWith("{StaticResource", StringComparison.Ordinal)

@@ -34,6 +34,7 @@ namespace Gtk4.Forms.MarkupCompiler
 		string RootBaseFor(XElement root, bool hasClassAttr, string className)
 		{
 			if (!hasClassAttr) return null;
+			if (GenericRootBase(root) is string genericBase) return genericBase;
 			if (ResolveType(root) is string rootFq) return "global::" + rootFq;
 			// A custom Application subclass must be the base even without code-behind (Main runs it).
 			return IsApplicationRoot(root) ? UserRootType(root) : null;

@@ -26,7 +26,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			{
 				if (IsNameScopeHost(child)) continue;
 				string name = NameOf(child, xNs);
-				if (name != null && ResolveType(child) is string fqType && _fieldNames.Add(name))
+				string fqType = name != null ? ResolveType(child) ?? UserElementFqType(child) : null;
+				if (fqType != null && _fieldNames.Add(name))
 				{
 					results.Add((name, fqType));
 					_fieldElements.Add(child);
@@ -53,6 +54,11 @@ namespace Gtk4.Forms.MarkupCompiler
 		/// </summary>
 		void EmitNameProperty(IndentedWriter w, string target, string fqType, string name)
 		{
+			if (fqType != null && IsHookedUserType(fqType))
+			{
+				EmitUserNameProperty(w, target, name);
+				return;
+			}
 			if (fqType == null || !_resolver.HasReferences
 				|| !_resolver.DerivesFromByName(fqType.Replace("global::", ""), FrameworkElementType))
 				return;

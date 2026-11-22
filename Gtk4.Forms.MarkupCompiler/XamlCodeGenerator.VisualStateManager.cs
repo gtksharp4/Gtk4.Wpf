@@ -57,7 +57,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				{
 					w.Line($"{groupVar}.Name = \"{EscapeString(groupName)}\";");
 					// Also assign to the generated field if one exists for it.
-					w.Line($"this.{groupName} = {groupVar};");
+					if (_fieldElements.Contains(groupEl)) w.Line($"this.{groupName} = {groupVar};");
 				}
 
 				foreach (XElement stateEl in groupEl.Elements())
@@ -72,7 +72,7 @@ namespace Gtk4.Forms.MarkupCompiler
 					{
 						w.Line($"{stateVar}.Name = \"{EscapeString(stateName)}\";");
 						// Assign to field if declared.
-						w.Line($"this.{stateName} = {stateVar};");
+						if (_fieldElements.Contains(stateEl)) w.Line($"this.{stateName} = {stateVar};");
 					}
 
 					// Optional <Storyboard> child (direct child or inside <VisualState.Storyboard>).

@@ -62,7 +62,7 @@ public class Review47TaskTests : IDisposable
 		Assert.Equal(4, outputs.Length);
 		Assert.Equal(4, outputs.Distinct(StringComparer.OrdinalIgnoreCase).Count());
 		Assert.All(outputs, o => Assert.True(File.Exists(o)));
-		Assert.Contains("class Themes_Light_Colors", File.ReadAllText(outputs.Single(o => o.Contains("Light"))));
+		Assert.Contains("class Themes_S_Light_S_Colors", File.ReadAllText(outputs.Single(o => o.Contains("Light"))));
 	}
 
 	[Fact]

@@ -15,6 +15,20 @@ public class NavigationWindow : Window
 	/// <summary>The navigation service owned by this window.</summary>
 	public NavigationService NavigationService { get; } = new NavigationService();
 
+	/// <summary>Raised after navigation, before <see cref="LoadCompleted"/>; the sender is this window.</summary>
+	public event NavigatedEventHandler Navigated
+	{
+		add => NavigationService.Navigated += value;
+		remove => NavigationService.Navigated -= value;
+	}
+
+	/// <summary>Raised once the navigated content is loaded.</summary>
+	public event LoadCompletedEventHandler LoadCompleted
+	{
+		add => NavigationService.LoadCompleted += value;
+		remove => NavigationService.LoadCompleted -= value;
+	}
+
 	// ── Journal pass-throughs ─────────────────────────────────────────────────
 
 	/// <summary>True when <see cref="GoBack"/> is possible.</summary>
@@ -42,6 +56,7 @@ public class NavigationWindow : Window
 	/// </summary>
 	public NavigationWindow()
 	{
+		NavigationService.Host = this;
 		NavigationService.ContentChanged += OnContentChanged;
 	}
 
