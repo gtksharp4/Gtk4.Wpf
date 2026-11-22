@@ -207,6 +207,79 @@ These are the remaining generator-side causes in portable apps. Per-project mess
    HostingWpfUserControlInWf, from the missing `UserControl`). All are missing layer members.
    - DocumentStructure's `fixedpage1_structure.xaml` is malformed XML, and that app is Windows-only.
 
+## Round 54 lane B, Track 2 part A: Media3D (`gf54b/media3d`)
+
+Adds `System.Windows.Media.Media3D` from nothing, plus the key-frame animation types it needs. Measured 2026-11-22
+on the branch with `Gtk4.Forms.Wpf 1.0.0.26326` packed from the worktree into a lane-private feed (same recipe as
+Method). All 8 target samples were built and the ones that built were smoke-run.
+
+**What exists now**
+
+- Math structs: `Point3D`, `Vector3D`, `Size3D`, `Point4D`, `Quaternion`, `Matrix3D`, `Rect3D`, with converters and
+  `Parse`. `default(Quaternion)` and `default(Matrix3D)` are identity.
+- Object model: transforms, rotations, models, materials, lights, cameras, `Geometry3D`/`MeshGeometry3D`,
+  `Visual3D`/`ModelVisual3D`, `Viewport3D`. Freezable collections forward `Changed`, so any change raises one redraw.
+- Animation: `KeyTime`, `KeySpline`, `DoubleAnimationUsingKeyFrames` (+ the four key-frame types) and
+  `ParallelTimeline.SlipBehavior`. `System.Windows.PointConverter`, `VectorConverter` and
+  `System.Windows.Media.MatrixConverter` were added to WindowsBase.
+- Rendering: a managed software rasterizer on Cairo inside a `Gtk.DrawingArea` (GSK has no textured-triangle
+  primitive, and Cairo lets textures reuse `Brush.ApplyToCairo`).
+
+**Gaps against WPF (documented, not fixed)**
+
+- Hidden surfaces use a back-to-front sort of whole triangles (painter's algorithm), not a per-pixel z-buffer.
+  Intersecting triangles can overlap wrongly.
+- Lighting is flat per triangle (the mean of the vertex normals), with Blinn-Phong specular.
+- Brush textures are mapped with a per-triangle affine matrix, not perspective-correct.
+- `Paced` key times are treated as `Uniform`. `ParallelTimeline.SlipBehavior` is stored only.
+- Typed 3D animations (`Rotation3DAnimation`, `Point3DAnimation`, `Vector3DAnimation`, `QuaternionAnimation`) are
+  deferred: every target sample animates through `DoubleAnimation` on `AxisAngleRotation3D.Angle` or
+  `TranslateTransform3D.OffsetX`.
+- `MeshGeometry3D.TextureCoordinates` is the existing `System.Windows.Shapes.PointCollection`, a plain list: editing
+  it in place does not repaint. Moving `PointCollection` to `System.Windows.Media` also needs the MarkupCompiler's
+  `ConverterBackedClasses` entry, which this lane may not edit.
+- `Point`/`Vector`/`Matrix` carry no `[TypeConverter]` attribute (their files are not owned by this lane); the new
+  converters work when instantiated.
+- `FreezableList<T>` is a public base of the 3D collections; WPF has no such type.
+
+**Generator limits found (lane C, recorded, not worked around)**
+
+A probe app with a `Viewport3D` scene in XAML (camera, `ModelVisual3D.Content`, `ModelVisual3D.Transform`, keyed
+`MeshGeometry3D`/`DiffuseMaterial` resources) compiles without error, but the generated `InitializeComponent`
+silently drops it: `Viewport3D.Camera`, `ModelVisual3D.Content` and `ModelVisual3D.Transform` property elements are
+not emitted, only `__e0.Children.Add(new ModelVisual3D())`, and the keyed resources become
+`this.Resources["Tri"] = "";`. `x:Name` on a nested freezable (`AxisAngleRotation3D`) is declared as a field but never
+assigned, so using it throws `NullReferenceException`. The runtime `XamlReader` path builds the same scene
+correctly (`Media3DXamlTests`).
+
+**Target samples**
+
+| Sample | Builds | Runs 10 s with a window | 3D scene paints |
+|---|---|---|---|
+| Graphics/Converter | yes | yes | n/a (type-conversion demo, no `Viewport3D`) |
+| Animation/KeySplineAnimations | yes | no: crashes at startup, `Cannot find the element named 'TimeProgressTransform' to animate 'X'` (storyboard target resolution, lane C) | no |
+| Graphics/Geometry | no: 4 x CS1061 (`Frame.ContentRendered`, `Frame.NavigationUIVisibility`) | not run | not run |
+| CubeAnimationDemo | no: CS1955 `BeginStoryboard` called as a method; CS1061 `MouseEventArgs.MouseDevice` | not run | not run |
+| HexSphereDemo | no: same as CubeAnimationDemo | not run | not run |
+| PhotoFlipperDemo | no: same as CubeAnimationDemo | not run | not run |
+| ParticlesDemo | no: CS1061 `RenderTargetBitmap.Freeze` | not run | not run |
+| GraphingCalculatorDemo | no: 70 x CS1061 (`Rect.Left/Right/Top/Bottom`), 4 x CS1503 (`Point` to `Size` argument) | not run | not run |
+
+None of the build errors in the six failing samples mentions a 3D type. They belong to lane A (`MouseDevice`) and
+lane C (`BeginStoryboard`, `Frame`), or are WindowsBase gaps (`Rect.Left`, `Freeze` on `RenderTargetBitmap`).
+KeySplineAnimations' 3D key-frame fields compile now, but its fields are never assigned (see above) and its
+storyboard does not resolve.
+
+A scratch app that loads the probe scene through the runtime `XamlReader` and paints it through the shipped package
+reads back an opaque red pixel in the middle of the lit triangle.
+
+**Samples gate**
+
+All 162 projects with `build=pass` still build (2 builds each, lane-private feed, isolated cache). All 152 apps with
+`run=runs` still start with a window: 147 on the first 10 s run, and 5 (EditingCollections,
+ValidateItemsInItemsControl, Paths, VideoViewerDemo, WindowSizingOrder) showed no window at 10 s under load from the
+other lanes and ran at once when re-run alone for 20 s.
+
 ## Next rounds
 
 These are ranked by portable samples unblocked. "Only" means samples whose sole recorded blocker is the track. The
