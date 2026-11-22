@@ -8,7 +8,7 @@ namespace System.Windows.Markup;
 
 /// <summary>
 /// Serializes an object graph to XAML that <see cref="XamlReader"/> loads back: dependency-property local
-/// values (bound values excluded), simple CLR properties that differ from a new instance, the content
+/// values that differ from the default (bindings and {DynamicResource} in attribute form), simple CLR properties that differ from a new instance, the content
 /// property and <c>Resources</c>. Styles, triggers, templates and event handlers are not serialized.
 /// </summary>
 public static class XamlWriter

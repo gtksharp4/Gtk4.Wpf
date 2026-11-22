@@ -43,14 +43,14 @@ public class XamlWriterTests : WpfGtkTestBase, IDisposable
 	});
 
 	[Fact]
-	public void Save_skips_bound_values() => Run(() =>
+	public void Save_writes_a_bound_value_as_a_binding_not_its_resolved_value() => Run(() =>
 	{
 		var tb = new TextBlock { Width = 5 };
 		tb.SetBinding(TextBlock.TextProperty, new Binding("Label"));
 		tb.DataContext = new XamlReaderTestWidget { Label = "bound" };
 		var xaml = XamlWriter.Save(tb);
 		Assert.DoesNotContain("Text=\"bound\"", xaml);
-		Assert.DoesNotContain("Text=", xaml);
+		Assert.Contains("Text=\"{Binding Path=Label}\"", xaml);
 		Assert.Contains("Width=\"5\"", xaml);
 	});
 
