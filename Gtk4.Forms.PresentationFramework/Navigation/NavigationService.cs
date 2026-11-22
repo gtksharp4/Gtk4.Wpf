@@ -151,7 +151,7 @@ public sealed partial class NavigationService
 		}
 		if (!RaiseNavigating(new NavigatingCancelEventArgs(caller, SourceOf(caller), NavigationMode.Back))) return;
 		_journal.RemoveCurrent();
-		_sources.Remove(pageFunction);
+		ForgetSource(pageFunction);
 		if (!ReferenceEquals(_journal.Current, caller)) _journal.Push(caller);
 		CommitContent(caller, SourceOf(caller), null);
 	}

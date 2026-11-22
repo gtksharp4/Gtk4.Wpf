@@ -29,6 +29,12 @@ public sealed partial class NavigationService
 		else _sources.Remove(content);
 	}
 
+	// Drops the URI of content that no journal entry shows any more.
+	void ForgetSource(object content)
+	{
+		if (!_journal.Contains(content)) _sources.Remove(content);
+	}
+
 	// Raises Navigating on the navigator; a cancelled navigation raises NavigationStopped.
 	bool RaiseNavigating(NavigatingCancelEventArgs args)
 	{
@@ -66,8 +72,9 @@ public sealed partial class NavigationService
 		if (!RaiseNavigating(new NavigatingCancelEventArgs(target, uri, NavigationMode.Refresh))) return;
 		if (!ReferenceEquals(target, Content))
 		{
-			_sources.Remove(Content);
+			var old = Content;
 			_journal.ReplaceCurrent(target);
+			ForgetSource(old);
 		}
 		CommitContent(target, uri, null);
 	}

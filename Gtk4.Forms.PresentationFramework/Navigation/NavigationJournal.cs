@@ -69,6 +69,14 @@ internal sealed class NavigationJournal
 		if (_cursor >= 0) _entries[_cursor] = content;
 	}
 
+	/// <summary>Whether <paramref name="content"/> is any entry, by reference.</summary>
+	public bool Contains(object content)
+	{
+		foreach (var entry in _entries)
+			if (ReferenceEquals(entry, content)) return true;
+		return false;
+	}
+
 	/// <summary>Clears all entries.</summary>
 	public void Clear()
 	{

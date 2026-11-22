@@ -18,7 +18,7 @@ public abstract partial class Clock
 	double? _speedOverride;
 	double _localOffset;
 
-	internal Clock(Timeline timeline) => Timeline = timeline;
+	protected internal Clock(Timeline timeline) => Timeline = timeline;
 
 	/// <summary>The timeline this clock runs.</summary>
 	public Timeline Timeline { get; }

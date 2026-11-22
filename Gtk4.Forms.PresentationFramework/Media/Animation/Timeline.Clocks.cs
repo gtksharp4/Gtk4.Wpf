@@ -33,8 +33,9 @@ public abstract partial class Timeline
 		return clock;
 	}
 
-	/// <summary>Creates the clock for this timeline.</summary>
-	protected internal abstract Clock AllocateClock();
+	/// <summary>Creates the clock for this timeline; derived timelines override it.</summary>
+	protected internal virtual Clock AllocateClock() =>
+		throw new NotSupportedException("This timeline type does not override AllocateClock.");
 
 	/// <summary>The duration used when <see cref="Duration"/> is Automatic.</summary>
 	internal virtual Duration GetAutomaticDuration() => new Duration(TimeSpan.FromSeconds(1));

@@ -69,4 +69,29 @@ public class Round51aNavigationSourceTests
 
 		Assert.False(svc.HasSource(pf));
 	}
+
+	[Fact]
+	public void Refresh_keeps_the_uri_of_an_instance_the_journal_still_holds()
+	{
+		var uri = new Uri("Round51a/SourceTwice.xaml", UriKind.Relative);
+		var created = 0;
+		GtkFormsXamlRegistry.Register(uri.OriginalString, () =>
+		{
+			created++;
+			return created == 1 ? new StubPage() : new IntFunction();
+		});
+		var svc = new NavigationService();
+		svc.Navigate(uri);
+		var caller = svc.Content!;
+		svc.Navigate(new IntFunction { RemoveFromJournal = false });
+		((IntFunction)svc.Content!).Finish(1);
+		Assert.Same(caller, svc.Content);
+
+		svc.Refresh();
+		svc.GoBack();
+		svc.GoBack();
+
+		Assert.Same(caller, svc.Content);
+		Assert.Equal(uri, svc.CurrentSource);
+	}
 }

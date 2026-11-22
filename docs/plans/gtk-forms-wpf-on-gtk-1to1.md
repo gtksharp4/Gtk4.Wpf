@@ -1985,8 +1985,9 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `StaticResourceLookup`; the value is resolved once at construction and is not re-evaluated on a resource change
   (documented divergence). **a-F4** `Clock` raises time, speed, state, then completed (WPF
   `RaiseAccumulatedEvents`). **a-F5** `AnimationTimeline.GetCurrentValue` returns the destination value instead of
-  calling a throwing object-typed core, and `Timeline.AllocateClock` is `protected internal abstract` so a consumer
-  can derive from `Timeline`. **a-F6** long lines wrapped; the `PointAnimation` emit and `PathGeometry` clone moved
+  calling a throwing object-typed core, and `Timeline.AllocateClock` is `protected internal virtual` (default throws
+  `NotSupportedException`) and `Clock(Timeline)` is `protected internal`, so a consumer can derive from `Timeline`.
+  **a-F6** long lines wrapped; the `PointAnimation` emit and `PathGeometry` clone moved
   into partials. **b-F1/b-F2** a root from `GtkFormsXamlRegistry` runs the generated `InitializeComponent` in `Host`
   (once; `CreateInstance` no longer repeats it); the test now registers a type whose factory only calls `new T()`
   and fails without the fix. **c-F1** `XamlWriter` writes a default-equal local value on an inheriting property
@@ -2004,6 +2005,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   feed, isolated cache):** all 130 `build=pass` projects build through the two-build recipe with 0 warnings and all 119
   `run=runs` apps stay up with a window for 10 s, one at a time (10 first read as no-window while the other lane was
   running; all 10 re-checked alone run); no regression.
+- **Round 51 (lane A) follow-up - DONE.** **a-F5** `Timeline.AllocateClock` is `protected internal virtual` (default  throws `NotSupportedException`) and `Clock(Timeline)` is `protected internal`, so an external `Timeline` compiles  without an override and can build a clock for itself. **c-F3** `Refresh` and a removing `ReturnTo` drop a source URI  only when no journal entry still holds the instance (`NavigationJournal.Contains`).
 - **Carry-over (Round 51 lane A)**: brush state other than `Opacity` (`GradientStops`, `StartPoint`/`EndPoint`, the
   radial members, the `TileBrush` members, `ImageBrush.ImageSource`, `VisualBrush.Visual`) is still plain CLR
   properties, copied by `Clone()` but not DPs and not enforced by `IsFrozen`; `{DynamicResource}` on a Freezable is
