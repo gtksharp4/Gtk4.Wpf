@@ -11,7 +11,7 @@ sealed class LogicalChildrenEnumerable : IEnumerable
 
 	internal LogicalChildrenEnumerable(FrameworkElement owner) => _owner = owner;
 
-	public IEnumerator GetEnumerator() => _owner.LogicalChildren;
+	public IEnumerator GetEnumerator() => _owner.LogicalChildren ?? Array.Empty<object>().GetEnumerator();
 }
 
 /// <summary>

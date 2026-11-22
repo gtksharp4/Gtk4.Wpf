@@ -4,13 +4,11 @@ namespace System.Windows;
 
 public abstract partial class FrameworkElement
 {
-	static readonly IEnumerator _noLogicalChildren = Array.Empty<object>().GetEnumerator();
-
 	/// <summary>
 	/// Enumerates this element's logical children; override to expose a custom logical tree.
-	/// The default is empty.
+	/// The default is <c>null</c> (no children), as in WPF; consumers treat null as empty.
 	/// </summary>
-	protected internal virtual IEnumerator LogicalChildren => _noLogicalChildren;
+	protected internal virtual IEnumerator? LogicalChildren => null;
 
 	/// <summary>Makes <paramref name="child"/> a logical child of this element.</summary>
 	/// <exception cref="ArgumentNullException"/>
