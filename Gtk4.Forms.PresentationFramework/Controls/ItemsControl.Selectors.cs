@@ -116,30 +116,15 @@ public partial class ItemsControl
 
 	UIElement CreateContainerForItem(object? item)
 	{
-		// 1. Selector wins over static template.
-		DataTemplate? template = null;
-		var selector = ItemTemplateSelector;
-		if (selector != null)
-			template = selector.SelectTemplate(item, this);
-
-		// 2. Fall back to static ItemTemplate.
-		if (template == null)
-			template = ItemTemplate;
-
+		var template = ResolveItemTemplate(item);
 		if (template != null && template.HasContent)
 		{
 			var visual = template.CreateVisualTreeForItem(item);
 			if (visual != null) return visual;
 		}
 
-		// 3. DisplayMemberPath: show one property's string value.
-		var path = DisplayMemberPath;
-		if (!string.IsNullOrEmpty(path) && item != null)
-		{
-			var prop = item.GetType().GetProperty(path!);
-			var text = prop != null ? prop.GetValue(item)?.ToString() ?? string.Empty : string.Empty;
-			return new ContentPresenter { Content = text };
-		}
+		var text = ResolveDisplayText(item);
+		if (text != null) return new ContentPresenter { Content = text };
 
 		// 4. Default.
 		return new ContentPresenter { Content = item };

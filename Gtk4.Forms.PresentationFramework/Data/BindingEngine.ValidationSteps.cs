@@ -56,8 +56,8 @@ internal static partial class BindingEngine
 				}
 				catch (Exception ex) when (!IsCritical(ex))
 				{
-					// WPF skips the write; an error is recorded only when ValidatesOnExceptions is set.
-					if (_binding.ValidatesOnExceptions) ReportError(target, ex);
+					// WPF skips the write; an error is recorded only when exception validation applies.
+					if (ExceptionValidationApplies) ReportError(target, ex);
 					return false;
 				}
 				return !ReferenceEquals(sourceValue, Binding.DoNothing)
@@ -76,7 +76,7 @@ internal static partial class BindingEngine
 
 		bool WriteSource(DependencyObject target, object source, object? sourceValue)
 		{
-			if (!_binding.ValidatesOnExceptions)
+			if (!ExceptionValidationApplies)
 			{
 				WriteBackPath(source, _binding.Path, sourceValue);
 				return true;
@@ -113,12 +113,6 @@ internal static partial class BindingEngine
 			if (ok) ok = CollectDataErrors(source, errors);
 			if (ok) RunRules(ValidationStep.CommittedValue, _expr, true, errors);
 			SetStepErrors(target, errors);
-		}
-
-		void ReportError(DependencyObject target, Exception ex)
-		{
-			var err = new ValidationError(ExceptionValidationRule.Instance, ex.Message, ex);
-			SetStepErrors(target, new List<ValidationError> { err });
 		}
 	}
 }

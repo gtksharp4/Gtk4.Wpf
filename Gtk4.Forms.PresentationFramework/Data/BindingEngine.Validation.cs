@@ -13,7 +13,7 @@ internal static partial class BindingEngine
 
 		bool HasValidation => _binding.ValidationRules.Count > 0
 		                      || _binding.ValidatesOnDataErrors
-		                      || _binding.ValidatesOnExceptions
+		                      || ExceptionValidationApplies
 		                      || _notifyWatcher != null;
 
 		/// <summary>

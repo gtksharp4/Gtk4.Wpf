@@ -2300,6 +2300,35 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   binding intact). `Run(string, TextPointer)` splits the enclosing Run; `ListItem` is now a `FrameworkContentElement`
   and `List`/`ListItem` own their children, so a Run in a list inherits the viewer DataContext. The binding-engine
   widening to `DependencyObject` is type-only; samples gate re-run (CommonDialogs now builds and runs).
+- **Round 53 (lane A) track 6 - items-templates (DONE, merged).** `gf53a/items-templates` (merge `9d6ca70d`):
+  `ItemCollection` (a `CollectionView` over the inline items, or the view of `ItemsSource`), `ItemContainerGenerator`,
+  `FrameworkTemplate.FindName`/`GetTemplateChild`, `ListBox.ScrollIntoView`, `Binding.UpdateSourceExceptionFilter` and
+  `CollectionViewSource.Filter`. Samples evidence: BindValidation, DataBindingDemo and FindingElementsInTemplates
+  build; PhotoStoreDemo gains `ScrollIntoView`.
+- **Round 53 (lane A) track 1 - visual-layer-input (NOT merged).** `gf53a/visual-layer-input` (`d4e0ee3c`, 92 tests)
+  stays a separate branch: it is not part of `lane/a` at this review, so none of its samples (ThicknessConverter,
+  VisualBrush, ImageBrush, LayoutTransitionsDemo, CompositionTarget, DrawingVisual, Per-FrameAnimation,
+  DragDropObjects, OverridingLogicalTree, BitmapEffectsGallery) are counted here. Its lane B hand-offs (the
+  `DrawingContext.Context` shim, `Adorner.GetDesiredTransform`) are recorded in `docs/samples-coverage.md`.
+- **Round 53 (lane A) review (Opus) + fixes - DONE.** **A6-1** `GetTemplateChild` is `protected internal`, not
+  `protected virtual` (WPF's signature; nothing overrode it). **A6-2** `ItemContainerGenerator.IndexFromContainer`/
+  `ItemFromContainer` throw `ArgumentNullException("container")`; a foreign container still gives -1/`UnsetValue`.
+  **A6-3** `IList.IsReadOnly`/`IsFixedSize` follow `ItemsSource`. **A6-4** `ItemCollection` indexer set, `RemoveAt` and
+  `Insert` address view positions (sort/filter aware, range-checked), as WPF's `InnerItemCollectionView`. **A6-5**
+  two tests pin the `TemplatedParent` identity check in `FindInTemplate` (mutation-checked: both fail without it).
+  **A6-6** `CreateContainerForItem` reuses `ResolveItemTemplate`/`ResolveDisplayText`;
+  `IsItemItsOwnContainerOverride` moved to `ListBox.ItemPresentation.cs`. **CI-1** reflection tests pin
+  `Clock(Timeline)` and `Timeline.AllocateClock` as `protected internal` (the doubles keep `protected internal
+  override`: plain `protected override` is CS0507 under `InternalsVisibleTo`). **CI-2/CI-3** are lane B hand-offs in
+  the samples doc, documentation only. Samples gate: all 162 building projects still build and all 152 runners start
+  and stay up (7 needed a solo 20 s re-run after a loaded first pass).
+  **Round 53 (lane A) totals: 6253 tests** (255 WindowsBase + 5283 PresentationFramework + 606 MarkupCompiler + 43
+  ProjectConverter + 66 Wpf.Testing; 6 skipped), warning-clean.
+  Carry-over: merge `gf53a/visual-layer-input` and apply the two lane B hand-offs.
+- **Round 53 (lane A) follow-up.** `ItemCollection.InlineIndexOfViewItem` (RemoveAt, indexer setter) returns the view
+  position directly when there is no Filter or SortDescriptions, like `Insert`: `IndexOf` is Equals-based, so unsorted
+  duplicates hit the first match (`{a,b,a}.RemoveAt(2)` removed index 0). One test covers both paths. Under an active
+  sort or filter, equal duplicates still resolve to the first inline match (residual, untested).
 
 - **Round 54 (lane B) track A - Media3D (DONE, merged).** `gf54b/media3d` (merge `44cd947e`):
   `System.Windows.Media.Media3D` from nothing. The math structs (`Point3D`, `Vector3D`, `Size3D`, `Point4D`,

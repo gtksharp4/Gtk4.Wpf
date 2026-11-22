@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Media.Animation;
 using Xunit;
@@ -18,6 +19,7 @@ public class TimelineExtensibilityTests
 	{
 		public Clock? Allocated;
 
+		// protected internal: protected alone is CS0507 with InternalsVisibleTo access.
 		protected internal override Clock AllocateClock() => Allocated = new DoubleAnimation().CreateClock();
 
 		protected override Freezable CreateInstanceCore() => new CustomTimeline();
@@ -70,5 +72,18 @@ public class TimelineExtensibilityTests
 	{
 		var timeline = new OwnClockTimeline();
 		Assert.Same(timeline, timeline.CreateClock().Timeline);
+	}
+
+	[Fact]
+	public void Clock_constructor_and_AllocateClock_are_protected_internal()
+	{
+		var ctor = typeof(Clock).GetConstructor(
+			BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(Timeline) }, null);
+		Assert.NotNull(ctor);
+		Assert.True(ctor!.IsFamilyOrAssembly);
+		var allocate = typeof(Timeline).GetMethod("AllocateClock", BindingFlags.Instance | BindingFlags.NonPublic);
+		Assert.NotNull(allocate);
+		Assert.True(allocate!.IsFamilyOrAssembly);
+		Assert.True(allocate.IsVirtual);
 	}
 }
