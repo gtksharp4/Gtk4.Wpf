@@ -192,6 +192,35 @@ whose every recorded blocker is in the theme.
 
 The three new crashes are all MarkupCompiler work (track 4 below).
 
+## Round 58 lane C track a: startup and generator sweep II (branch `gf58c/startup-generator-sweep-2`, not merged)
+
+Measured on the branch (base `270cdb7e`), package `Gtk4.Forms.Wpf 1.0.0.26326` packed from the worktree into a
+private feed, with the pinned recipe (two builds per project, isolated package cache). All 176 projects that built at
+`270cdb7e` still build (0 pass→fail), and every app that ran still runs (165 of 165, each re-checked alone after a
+crowded first pass). This table does not replace the per-project rows above; the integrate step re-measures them.
+
+| Sample | At `270cdb7e` | On the branch |
+|---|---|---|
+| Graphics/Geometry | crash (`myGeometry` null) | **runs**. `Viewport3D.Camera`, `ModelVisual3D.Content`/`Transform`/`Children` are emitted and the nested `x:Name` fields are assigned. |
+| KeySplineAnimations | crash (`TimeProgressTransform` not found) | **runs**. Key-frame storyboards are emitted and the name registers. |
+| ExpenseItIntro | crash (`NavButtonFocusVisualStyle`) | still crashes, further in. Both generator causes are fixed (deferred dictionary values; `BasedOn="{StaticResource {x:Type T}}"` with no dictionary entry means no base style). The sample then fails on `Style="{StaticResource CustomNavWindowStyle}"` in `MainWindow.xaml`, a key defined nowhere in the sample, so WPF itself rejects it. |
+| AnimationExamples | build fail (`CS0029`) | **builds**. It exits at startup: `SampleViewer.cs:35` calls `BindingOperations.SetBinding` on an animation, and the binding engine accepts `FrameworkElement`/`FrameworkContentElement` targets only (`Data/**`). |
+| DataBindingDemo | build fail (`CollectionViewSource.SetBinding`) | still fails. The generator part is gone; only `AutomationProperties.HeadingLevel`/`ItemStatus` remain (UI automation plan). |
+
+- **Non-element bindings are not evaluated.** A `{Binding}` on a freezable, animation or `CollectionViewSource`
+  compiles to `NonElementBinding.TrySetBinding`, which calls `BindingOperations.SetBinding` and returns `null` on the
+  engine's `NotSupportedException`. The markup loads; the bound value is not applied. Fixing it needs engine support
+  for non-element targets (lane B, `Data/**`).
+- **Not emitted, by layer gap:** `RenderOptions.*` attached attributes and `VisualBrush.Visual="{Binding}"` (a CLR
+  property) are dropped with a message; the rest of the object is still built. An explicit
+  `<PathFigureCollection>` element under `PathGeometry.Figures` stays skipped.
+- **`x:Shared="False"`** is honoured: the value is built on every lookup (AnimationExamples pages share a cube
+  resource this way).
+- **"Skipped property element" backlog:** `Button.ContextMenu`, `Expander.Header` and the `Grid.RowDefinitions`/
+  `ColumnDefinitions` shapes are emitted. The gate logs (the 177 final builds: the 176 plus AnimationExamples) still hold 84 distinct messages in 30
+  projects. The largest groups: `Path.Data` (14), `TabItem.Header` (8), `Rectangle.OpacityMask` (8),
+  `MenuItem.Header` (5), `Image.OpacityMask` (5), `Window.CommandBindings` (4), `TextBlock.TextEffects` (4).
+
 ## XAML generator errors
 
 These are the remaining generator-side causes in portable apps. Per-project messages are in the JSON (`xamlErrors`).

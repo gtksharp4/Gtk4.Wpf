@@ -22,6 +22,17 @@ namespace Gtk4.Forms.MarkupCompiler
 					continue;
 				}
 				string key = (string)item.Attribute(xNs + "Key");
+				if (key != null && (ContainsStaticResource(item) || IsUnshared(item, xNs))
+					&& TryEmitDeferredResource(w, item, xNs, ownerVar, key, ref counter))
+					continue;
+				EmitResourceItem(w, item, xNs, ownerVar, key, ref counter);
+			}
+		}
+
+		void EmitResourceItem(
+			IndentedWriter w, XElement item, XNamespace xNs, string ownerVar, string key, ref int counter)
+		{
+			{
 				if (item.Name.LocalName == "Style"
 					&& item.Name.NamespaceName == WpfXmlnsMap.PresentationNs)
 				{

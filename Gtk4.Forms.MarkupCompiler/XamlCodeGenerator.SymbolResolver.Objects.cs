@@ -41,7 +41,10 @@ namespace Gtk4.Forms.MarkupCompiler
 			if (pt == null || !IsAddable(pt)) return null;
 			try
 			{
-				foreach (MethodInfo m in pt.GetMethods(BindingFlags.Public | BindingFlags.Instance))
+				var types = new System.Collections.Generic.List<Type> { pt };
+				types.AddRange(pt.GetInterfaces());
+				foreach (Type x in types)
+				foreach (MethodInfo m in x.GetMethods(BindingFlags.Public | BindingFlags.Instance))
 					if (m.Name == "Add" && m.GetParameters().Length == 1) return m.GetParameters()[0].ParameterType;
 			}
 			catch { }

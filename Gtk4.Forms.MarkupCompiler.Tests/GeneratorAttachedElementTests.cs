@@ -35,4 +35,33 @@ public class GeneratorAttachedElementTests : GeneratorV2TestBase
 
 		Assert.Contains("WindowChrome.SetWindowChrome(this, ", code);
 	}
+
+	const string UserHead = Head + " xmlns:local=\"clr-namespace:App\"";
+	const string Owner = @"namespace App { public static class MyOwner {
+public static readonly System.Windows.DependencyProperty PropProperty = System.Windows.DependencyProperty
+.RegisterAttached(""Prop"", typeof(object), typeof(MyOwner)); } }";
+
+	[Fact]
+	public void UserOwner_binding_keeps_its_clr_namespace_qualification()
+	{
+		string code = Gen($@"<Window {UserHead} x:Class=""App.W""><Button>
+			<local:MyOwner.Prop><Binding Path=""P""/></local:MyOwner.Prop></Button></Window>",
+			sources: new[] { Owner });
+
+		Assert.Contains(".SetBinding(global::App.MyOwner.PropProperty", code);
+		Assert.DoesNotContain("System.Windows.MyOwner", code);
+		AssertCompiles(code, Owner + "namespace App { public partial class W { } }");
+	}
+
+	[Fact]
+	public void UserOwner_value_element_is_not_an_attached_element_and_is_reported()
+	{
+		const string xaml = "<Window " + UserHead + @" x:Class=""App.W""><Button>
+			<local:MyOwner.Prop><Border/></local:MyOwner.Prop></Button></Window>";
+
+		string code = Gen(xaml, sources: new[] { Owner });
+
+		Assert.DoesNotContain("MyOwner.SetProp", code);
+		Assert.Contains(Messages(xaml), m => m.Contains("MyOwner.Prop"));
+	}
 }

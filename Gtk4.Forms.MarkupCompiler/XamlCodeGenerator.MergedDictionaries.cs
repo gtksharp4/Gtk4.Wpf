@@ -42,8 +42,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			w.Line("var __owner = new global::System.Windows.Controls.Border();");
 			EmitDictionarySource(w, root, "__owner");
 			EmitResourceItems(w, root.Elements(), xNs, "__owner", ref counter);
-			w.Line("foreach (var __p in __owner.Resources) this[__p.Key] = __p.Value;");
-			w.Line("foreach (var __m in __owner.Resources.MergedDictionaries) this.MergedDictionaries.Add(__m);");
+			w.Line("this.CopyEntriesFrom(__owner.Resources);");
 		}
 	}
 }

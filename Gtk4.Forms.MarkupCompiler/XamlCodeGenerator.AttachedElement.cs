@@ -36,6 +36,18 @@ namespace Gtk4.Forms.MarkupCompiler
 				|| local.EndsWith("Template", System.StringComparison.Ordinal)
 				|| local.EndsWith("Extension", System.StringComparison.Ordinal);
 
+		// The owner type for a binding on an attached property element: a clr-namespace owner keeps its own
+		// namespace (global::App.MyOwner), anything else is a layer type.
+		string AttachedOwnerType(XElement pe, string ownerLocalName)
+		{
+			const string clr = "clr-namespace:";
+			string ns = pe.Name.NamespaceName;
+			if (!ns.StartsWith(clr, System.StringComparison.Ordinal)) return Emitted(QualifyTypeName(ownerLocalName));
+			int semi = ns.IndexOf(';');
+			string clrNs = (semi >= 0 ? ns.Substring(clr.Length, semi - clr.Length) : ns.Substring(clr.Length)).Trim();
+			return "global::" + clrNs + "." + ownerLocalName;
+		}
+
 		// The owner type named by the property element's own xmlns prefix, else null.
 		string ResolveAttachedOwner(XElement pe, string ownerLocalName)
 		{
