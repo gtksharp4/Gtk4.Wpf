@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Windows.Threading;
 
 namespace System.Windows.Media;
 
@@ -34,6 +35,8 @@ public static class CompositionTarget
 		}
 	}
 
+	// Gap: WPF raises Rendering from MediaContext at its own point in the frame (after layout, before the
+	// composition commit); here it is a GLib timer, so ordering against layout and animation is not guaranteed.
 	static bool OnFrame()
 	{
 		var handlers = _rendering;
@@ -42,13 +45,11 @@ public static class CompositionTarget
 			_timer = 0;
 			return false;
 		}
-		try
+		var args = new RenderingEventArgs(_clock.Elapsed);
+		foreach (var handler in handlers.GetInvocationList())
 		{
-			handlers(null, new RenderingEventArgs(_clock.Elapsed));
-		}
-		catch (Exception ex)
-		{
-			Console.Error.WriteLine("CompositionTarget.Rendering handler failed: " + ex);
+			try { ((EventHandler)handler)(null, args); }
+			catch (Exception ex) { if (!Dispatcher.CurrentDispatcher.RaiseUnhandledException(ex)) throw; }
 		}
 		return true;
 	}

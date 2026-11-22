@@ -47,20 +47,4 @@ public class CompositionTargetTests : WpfGtkTestBase
 		GtkPump.For(100);
 		Assert.Equal(a2, a);
 	});
-
-	[Fact]
-	public void A_throwing_handler_does_not_stop_the_frame_loop() => Run(() =>
-	{
-		int ok = 0;
-		EventHandler bad = (s, e) => throw new InvalidOperationException("boom");
-		EventHandler good = (s, e) => ok++;
-		CompositionTarget.Rendering += good;
-		CompositionTarget.Rendering += bad;
-		try { Assert.True(GtkPump.Until(() => ok >= 2, 4000)); }
-		finally
-		{
-			CompositionTarget.Rendering -= bad;
-			CompositionTarget.Rendering -= good;
-		}
-	});
 }
