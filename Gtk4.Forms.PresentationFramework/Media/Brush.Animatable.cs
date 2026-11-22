@@ -12,13 +12,6 @@ public abstract partial class Brush : Animatable
 	protected override Freezable CreateInstanceCore() =>
 		(Freezable)(Activator.CreateInstance(GetType()) ?? throw new NotSupportedException(GetType().Name));
 
-	/// <summary>Copies the non-dependency-property state of the brush.</summary>
-	protected override void CloneOverride(Freezable destination, bool currentValueOnly)
-	{
-		base.CloneOverride(destination, currentValueOnly);
-		((Brush)destination).Opacity = Opacity;
-	}
-
 	/// <summary>Identifies <see cref="Transform"/>. Default <see cref="Media.Transform.Identity"/>.</summary>
 	public static readonly DependencyProperty TransformProperty = DependencyProperty.Register(
 		nameof(Transform), typeof(Transform), typeof(Brush), new PropertyMetadata(Media.Transform.Identity));

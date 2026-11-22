@@ -101,8 +101,13 @@ internal sealed partial class XamlObjectWriter
 		}
 	}
 
-	static bool IsDefault(DependencyProperty dp, Type type, object value) =>
-		Equals(dp.GetMetadata(type).DefaultValue, value);
+	// A default-equal local value on an inheriting property still overrides an inherited non-default value.
+	static bool IsDefault(DependencyProperty dp, Type type, object value)
+	{
+		var metadata = dp.GetMetadata(type);
+		if (metadata is FrameworkPropertyMetadata { Inherits: true }) return false;
+		return Equals(metadata.DefaultValue, value);
+	}
 
 	object[] ChildrenOf(object value) =>
 		value is IEnumerable items && value is not string && value is not ResourceDictionary

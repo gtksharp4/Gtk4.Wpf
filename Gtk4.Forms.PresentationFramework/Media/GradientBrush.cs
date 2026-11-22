@@ -40,7 +40,7 @@ public class GradientStopCollection : List<GradientStop>
 /// Base for gradient brushes.  Holds the <see cref="GradientStops"/> collection and
 /// common gradient settings.  Mirrors <c>System.Windows.Media.GradientBrush</c>.
 /// </summary>
-public abstract class GradientBrush : Brush
+public abstract partial class GradientBrush : Brush
 {
 	/// <summary>The gradient stops that define the colour transitions.</summary>
 	public GradientStopCollection GradientStops { get; set; } = new GradientStopCollection();
@@ -92,7 +92,7 @@ public abstract class GradientBrush : Brush
 /// Cairo coordinates are computed at paint time from the draw-area dimensions.
 /// </para>
 /// </summary>
-public class LinearGradientBrush : GradientBrush
+public partial class LinearGradientBrush : GradientBrush
 {
 	/// <summary>Start point in relative coordinates; default (0,0) = top-left.</summary>
 	public System.Windows.Point StartPoint { get; set; } = new System.Windows.Point(0, 0);
@@ -142,7 +142,7 @@ public class LinearGradientBrush : GradientBrush
 /// mapped to the bounding box at paint time.
 /// </para>
 /// </summary>
-public class RadialGradientBrush : GradientBrush
+public partial class RadialGradientBrush : GradientBrush
 {
 	/// <summary>Centre of the gradient ellipse; default (0.5,0.5).</summary>
 	public System.Windows.Point Center { get; set; } = new System.Windows.Point(0.5, 0.5);

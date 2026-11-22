@@ -61,17 +61,6 @@ public class DrawingBrush : TileBrush
 	}
 
 	/// <inheritdoc/>
-	protected override void CloneOverride(Freezable destination, bool currentValueOnly)
-	{
-		base.CloneOverride(destination, currentValueOnly);
-		var b = (DrawingBrush)destination;
-		b.Stretch = Stretch; b.TileMode = TileMode;
-		b.Viewport = Viewport; b.ViewportUnits = ViewportUnits;
-		b.Viewbox = Viewbox; b.ViewboxUnits = ViewboxUnits;
-		b.AlignmentX = AlignmentX; b.AlignmentY = AlignmentY;
-	}
-
-	/// <inheritdoc/>
 	internal override void ApplyToCairo(Cairo.Context cr, double width, double height)
 	{
 		var drawing = Drawing;

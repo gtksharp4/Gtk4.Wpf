@@ -11,7 +11,7 @@ public abstract class TimelineGroup : Timeline
 	/// <summary>Creates a controllable clock group.</summary>
 	public new ClockGroup CreateClock() => (ClockGroup)base.CreateClock();
 
-	internal override Clock AllocateClock() => new ClockGroup(this);
+	protected internal override Clock AllocateClock() => new ClockGroup(this);
 
 	internal override Duration GetAutomaticDuration()
 	{

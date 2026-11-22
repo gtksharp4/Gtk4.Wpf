@@ -44,6 +44,7 @@ public partial class Application
 
 	static Window? Host(object? element)
 	{
+		if (element != null) Initialize(element);
 		if (element is Window window) return window;
 		if (element is not FrameworkElement root) return null;
 		var host = new Navigation.NavigationWindow();
@@ -62,8 +63,8 @@ public partial class Application
 
 			// Prefer a match in App's own namespace; otherwise take the first candidate.
 			if (string.Equals(t.Namespace, GetType().Namespace, StringComparison.Ordinal))
-				return Initialize(Activator.CreateInstance(t)!);
-			fallback ??= Initialize(Activator.CreateInstance(t)!);
+				return Activator.CreateInstance(t)!;
+			fallback ??= Activator.CreateInstance(t)!;
 		}
 		return fallback;
 	}

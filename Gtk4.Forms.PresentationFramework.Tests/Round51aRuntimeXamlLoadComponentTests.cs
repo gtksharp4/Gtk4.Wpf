@@ -65,7 +65,8 @@ public class Round51aRuntimeXamlLoadComponentTests : WpfGtkTestBase, IDisposable
 		border.SetResourceReference(Border.BackgroundProperty, "Fill");
 		Assert.Equal(Colors.Blue, ColorOf(border.Background));
 
-		app.Resources = (ResourceDictionary)Application.LoadComponent(new Uri("Round51a/Yellow.xaml", UriKind.Relative));
+		app.Resources = (ResourceDictionary)Application.LoadComponent(
+			new Uri("Round51a/Yellow.xaml", UriKind.Relative));
 
 		Assert.Equal(Colors.Yellow, ColorOf(border.Background));
 	});
@@ -90,7 +91,8 @@ public class Round51aRuntimeXamlLoadComponentTests : WpfGtkTestBase, IDisposable
 	[Fact]
 	public void Source_swap_drops_keys_the_new_dictionary_does_not_define() => Run(() =>
 	{
-		GtkFormsXamlRegistry.Register("Round51a/WithOld.xaml", () => new ResourceDictionary { ["Old"] = 1, ["Fill"] = Brushes.Red });
+		GtkFormsXamlRegistry.Register("Round51a/WithOld.xaml",
+			() => new ResourceDictionary { ["Old"] = 1, ["Fill"] = Brushes.Red });
 		GtkFormsXamlRegistry.Register("Round51a/WithoutOld.xaml", () => Skin(Colors.Green));
 		var merged = new ResourceDictionary();
 		merged.Source = new Uri("Round51a/WithOld.xaml", UriKind.Relative);

@@ -48,10 +48,12 @@ internal static class AnimationStore
 			throw new InvalidOperationException($"Cannot animate the read-only property '{dp.Name}'.");
 	}
 
-	internal static void Apply(DependencyObject target, DependencyProperty dp, AnimationClock clock, HandoffBehavior handoff)
+	internal static void Apply(
+		DependencyObject target, DependencyProperty dp, AnimationClock clock, HandoffBehavior handoff)
 	{
 		var type = clock.Timeline.TargetPropertyType;
-		if (type != typeof(object) && !dp.PropertyType.IsAssignableFrom(type) && !type.IsAssignableFrom(dp.PropertyType))
+		if (type != typeof(object) && !dp.PropertyType.IsAssignableFrom(type)
+			&& !type.IsAssignableFrom(dp.PropertyType))
 			throw new InvalidOperationException(
 				$"Cannot animate '{dp.Name}' of type '{dp.PropertyType.Name}' with '{clock.Timeline.GetType().Name}' "
 				+ $"(it animates '{type.Name}').");

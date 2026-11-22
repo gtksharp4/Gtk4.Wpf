@@ -23,7 +23,7 @@ namespace System.Windows.Media;
 /// <see cref="ApplyToCairo"/> is never called until an actual draw pass occurs.
 /// </para>
 /// </summary>
-public class ImageBrush : TileBrush
+public partial class ImageBrush : TileBrush
 {
 	/// <summary>Creates an empty image brush.</summary>
 	public ImageBrush() { }

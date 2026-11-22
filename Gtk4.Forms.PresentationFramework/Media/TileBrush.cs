@@ -27,7 +27,7 @@ public enum TileMode
 /// concrete implementation.
 /// </para>
 /// </summary>
-public abstract class TileBrush : Brush
+public abstract partial class TileBrush : Brush
 {
 	/// <summary>
 	/// How the tile content is scaled to fit the viewport.

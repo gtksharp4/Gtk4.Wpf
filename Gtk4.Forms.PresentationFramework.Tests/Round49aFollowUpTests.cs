@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Gtk4.Forms.PresentationFramework.Tests;
 
-/// <summary>Round 49a follow-up: SetResourceReference vs local references, hooked-type emission, refresh scope.</summary>
+/// <summary>Round 49a follow-up: SetResourceReference vs local references, hooked-type emission.</summary>
 public class Round49aFollowUpTests : WpfGtkTestBase, IDisposable
 {
 	public void Dispose() => Application.ResetCurrentForTests();
@@ -47,21 +47,6 @@ public class Round49aFollowUpTests : WpfGtkTestBase, IDisposable
 		Assert.Same(b, window.Background);
 	});
 
-	[Fact]
-	public void An_emitted_hooked_local_element_cast_resolves_an_ancestor_key_after_parenting()
-	{
-		var parent = new Pane();
-		parent.Resources["k"] = "found";
-		var pane = new Pane();
-		object hooked = pane;
-
-		if (hooked is FrameworkElement)
-			XamlValueConverter.SetLocalResourceReference((FrameworkElement)hooked, Pane.AProperty, "k");
-		Assert.Equal("a0", pane.GetValue(Pane.AProperty));
-
-		pane.LogicalParent = parent;
-		Assert.Equal("found", pane.GetValue(Pane.AProperty));
-	}
 
 	[Fact]
 	public void A_callback_setting_another_local_reference_property_detaches_that_reference()

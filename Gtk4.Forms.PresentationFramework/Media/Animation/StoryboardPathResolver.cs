@@ -30,7 +30,8 @@ internal static class StoryboardPathResolver
 				continue;
 			}
 			if (!(current is DependencyObject obj))
-				throw PropertyPathParser.Bad(path, $"'{step.Name}' cannot be read from a {current?.GetType().Name ?? "null"}");
+				throw PropertyPathParser.Bad(
+					path, $"'{step.Name}' cannot be read from a {current?.GetType().Name ?? "null"}");
 			var dp = step.Parameter ?? FindProperty(step, obj.GetType());
 			if (dp == null && !last && IsOwnerQualifier(step, obj.GetType()))
 			{
@@ -39,7 +40,9 @@ internal static class StoryboardPathResolver
 			}
 			if (last)
 			{
-				if (dp == null) throw PropertyPathParser.Bad(path, $"'{step.Name}' is not a dependency property of {obj.GetType().Name}");
+				if (dp == null)
+					throw PropertyPathParser.Bad(
+						path, $"'{step.Name}' is not a dependency property of {obj.GetType().Name}");
 				return (obj, dp);
 			}
 			var value = dp != null ? obj.GetValue(dp) : ReadClr(obj, step.Name);

@@ -26,7 +26,7 @@ namespace System.Windows.Media;
 /// a no-op paint.
 /// </para>
 /// </remarks>
-public class VisualBrush : TileBrush
+public partial class VisualBrush : TileBrush
 {
 	/// <summary>Creates an empty visual brush.</summary>
 	public VisualBrush() { }

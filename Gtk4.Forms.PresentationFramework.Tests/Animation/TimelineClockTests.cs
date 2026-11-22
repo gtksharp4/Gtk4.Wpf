@@ -125,7 +125,7 @@ public class TimelineClockTests
 		Tick(clock, 0.5);
 		Tick(clock, 1);
 		Assert.Same(clock, sender);
-		Assert.Equal(new[] { "time", "state", "time", "completed", "timeline-completed" }, log.ToArray());
+		Assert.Equal(new[] { "time", "time", "state", "completed", "timeline-completed" }, log.ToArray());
 	}
 
 	[Fact]

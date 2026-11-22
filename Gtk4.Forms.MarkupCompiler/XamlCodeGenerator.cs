@@ -755,7 +755,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				else if (IsDynamicResourceValue(val, out string freezableKey) && IsKnownDp(fqType, propName)
 					&& IsNonElementDependencyObject(fqType))
 					w.Line($"{Converter}.SetResourceValue(this, {varName}, {fqType}.{propName}Property, " +
-						$"{ResourceKeyExpression(EscapeString(freezableKey))});");
+						$"{ResourceKeyExpression(EscapeString(freezableKey))}{ResourceScopeArgs(varName)});");
 				else if (IsDynamicResourceValue(val, out string dynKey) && IsKnownDp(fqType, propName))
 					w.Line($"{Converter}.SetLocalResourceReference({varName}, {fqType}.{propName}Property, " +
 						$"{ResourceKeyExpression(EscapeString(dynKey))});");

@@ -9,12 +9,6 @@ namespace System.Windows.Media;
 public abstract partial class Brush
 {
 	/// <summary>
-	/// Overall opacity multiplier; 0 = fully transparent, 1 = fully opaque.
-	/// Applied on top of any per-colour alpha.
-	/// </summary>
-	public double Opacity { get; set; } = 1.0;
-
-	/// <summary>
 	/// Applies this brush as the Cairo source on <paramref name="cr"/>.
 	/// Subclasses override to paint their specific pattern.
 	/// </summary>

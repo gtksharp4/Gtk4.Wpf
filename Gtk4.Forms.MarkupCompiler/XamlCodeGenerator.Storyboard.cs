@@ -206,13 +206,7 @@ namespace Gtk4.Forms.MarkupCompiler
 					$"System.Windows.Markup.XamlValueConverter.ConvertByType(" +
 					$"typeof(System.Windows.Thickness), \"{EscapeString(val)}\")";
 			}
-			// PointAnimation: Point? → emit via converter.
-			if (animFqType == "System.Windows.Media.Animation.PointAnimation")
-			{
-				return $"(System.Windows.Point?)" +
-					$"System.Windows.Markup.XamlValueConverter.ConvertByType(" +
-					$"typeof(System.Windows.Point), \"{EscapeString(val)}\")";
-			}
+			if (animFqType == PointAnimationType) return PointAnimValueExpression(val);
 			// Fallback: quoted string.
 			return $"\"{EscapeString(val)}\"";
 		}

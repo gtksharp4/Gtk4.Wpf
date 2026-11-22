@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Documents;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -156,5 +157,20 @@ public class Round51aRuntimeXamlWriterTests : WpfGtkTestBase, IDisposable
 		Assert.Equal(20, rect.Width);
 		Assert.Equal(2, rect.StrokeThickness);
 		Assert.Equal(Colors.Red, ((SolidColorBrush)rect.Stroke!).Color);
+	});
+
+	[Fact]
+	public void Local_default_value_on_an_inheriting_property_is_still_written() => Run(() =>
+	{
+		var panel = new StackPanel();
+		TextElement.SetFontWeight(panel, FontWeights.Bold);
+		var text = new TextBlock { FontWeight = FontWeights.Normal };
+		panel.Children.Add(text);
+
+		string xaml = XamlWriter.Save(panel);
+		var loaded = (StackPanel)XamlReader.Parse(xaml);
+
+		Assert.Matches("<TextBlock[^>]*FontWeight=", xaml);
+		Assert.Equal(FontWeights.Normal, ((TextBlock)loaded.Children[0]).FontWeight);
 	});
 }

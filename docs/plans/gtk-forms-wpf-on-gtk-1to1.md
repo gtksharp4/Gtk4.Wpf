@@ -1879,8 +1879,9 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   a window for 10 s, one at a time (19 first read as no-window while the other lane was running; all 19 re-checked
   alone run); no regression.
 - **Round 49 (lane A) follow-up - DONE.** **A-F2** the hooked-type `{DynamicResource}` emission no longer declares a
-  `__eN_fe` pattern variable (two attributes on one local element was CS0128); it casts per attribute. A runtime test
-  covers the emitted `is FrameworkElement` call and resolution after parenting. **A-F1** the public
+  `__eN_fe` pattern variable (two attributes on one local element was CS0128); it casts per attribute. A hand-written
+  test of the emitted `is FrameworkElement` call stood in for the generator (Round 51 CI-1 replaced it with the
+  XamlBacked `HookedDynWindowTests`, which runs the generated `InitializeComponent`). **A-F1** the public
   `SetResourceReference` drops a XAML-attribute (Local) reference on the same property, as WPF's Local-precedence
   write does; `_applyingLocalDp` replaces the element-wide flag so a callback that sets another property detaches that
   property's reference. The `XamlReader`/`ProvideValue` divergence (dyn-res layer, not Local) stays open. The
@@ -1890,7 +1891,9 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `XamlReader` still resolves through the dyn-res layer (not Local); template bodies read by `XamlReader` rebuild
   from the markup on every apply (no `x:Shared`/`TemplateBinding` tracking beyond the builder's own); the
   `SerializationInfo` ctor of `XamlParseException` is missing; `Style.Triggers` content-model entries other than
-  `Setters` are not read from bare content; `samples-coverage.json` is still the Round 48 measurement.
+  `Setters` are not read from bare content; `samples-coverage.json` is still the Round 48 measurement. Round 51: a
+  plain explicit local value still beats a later public `SetResourceReference` here, where WPF's Local-precedence
+  write replaces it (only a XAML-local reference is replaced, in one change).
 - **Round 50 (lane B) track A - imaging-codecs (DONE, merged).** `gf50b/imaging-codecs` (merge `2063d423`): the pixel
   model (`PixelFormats`, indexed formats, `BitmapPalette(s)`), `BitmapFrame`, `BitmapDecoder`/`BitmapEncoder` for BMP,
   GIF, JPEG, PNG and TIFF on gdk-pixbuf plus managed BMP/GIF codecs (WDP is a documented gap), `BitmapMetadata`,
@@ -1962,6 +1965,53 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `FrameworkContentElement.Name` validates XAML identifiers. Long lines wrapped; the `end=9` text-range test now
   asserts the surviving text. Not applied: `TextPointer.Offset` caching (direct tree edits are not versioned, and a
   test pins the clamp) and `FileFormatException` (still open, an actual move was not attempted).
+- **Round 51 (lane A) track A - animation-clocks (DONE, merged).** `gf51a/animation-clocks` (merge `4a1a9325`): lands
+  `gf49a/animation-clocks` (`Clock`/`AnimationClock`/`ClockGroup`, `BeginAnimation`, typed animation bases,
+  `PropertyPath`/`NameScope`), animatable geometry, drawing and transform DPs, `PointAnimation`, `Storyboard.Seek` and
+  the sub-object/indexed storyboard path resolver, plus Freezable emission in the MarkupCompiler. Samples evidence is
+  the Round 51 gate below.
+- **Round 51 (lane A) track B - startup-run-sweep (DONE, merged).** `gf51a/startup-run-sweep` (merge `b7f4842b`):
+  re-measures the lane-A target apps, fixes runtime value conversion and hosts a non-Window `StartupUri` root in a
+  `NavigationWindow`; the two empty-output hangs (ContextMenuOpening, DragDropThumbOps) were diagnosed.
+- **Round 51 (lane A) track C - runtime-xaml-navigation (DONE, merged).** `gf51a/runtime-xaml-navigation` (merge
+  `b0846dab`): runs the Round 49 targets, Local-precedence `{DynamicResource}` in `XamlReader`, the trigger content
+  model, `NavigationService.Refresh`/`StopLoading`, ordered `PageFunction` return and `XamlWriter` fidelity.
+- **Round 51 (lane A) review (Opus) + fixes - DONE.** **a-F1** `Brush.Opacity` is a dependency property
+  (`Brush.Opacity.cs`), so a frozen brush rejects a write, `Changed` fires and a storyboard path such as
+  `(Button.Background).(SolidColorBrush.Opacity)` resolves. **a-F2** `Clone()` now copies `GradientStops` (deeply),
+  mapping mode, spread method, linear and radial points/radii, the `TileBrush` state, `ImageBrush.ImageSource` and
+  `VisualBrush.Visual`. **a-F3** `{DynamicResource}` on a Freezable passes the enclosing scopes to
+  `XamlValueConverter.SetResourceValue(scope, target, dp, key, params scopes)`, built by the helper that also feeds
+  `StaticResourceLookup`; the value is resolved once at construction and is not re-evaluated on a resource change
+  (documented divergence). **a-F4** `Clock` raises time, speed, state, then completed (WPF
+  `RaiseAccumulatedEvents`). **a-F5** `AnimationTimeline.GetCurrentValue` returns the destination value instead of
+  calling a throwing object-typed core, and `Timeline.AllocateClock` is `protected internal abstract` so a consumer
+  can derive from `Timeline`. **a-F6** long lines wrapped; the `PointAnimation` emit and `PathGeometry` clone moved
+  into partials. **b-F1/b-F2** a root from `GtkFormsXamlRegistry` runs the generated `InitializeComponent` in `Host`
+  (once; `CreateInstance` no longer repeats it); the test now registers a type whose factory only calls `new T()`
+  and fails without the fix. **c-F1** `XamlWriter` writes a default-equal local value on an inheriting property
+  (`TextElement.FontWeight` overridden back to Normal round-trips). **c-F2** a `Binding` with `StringFormat`,
+  `FallbackValue`, `TargetNullValue`, validation or `BindingGroupName` is skipped, not written lossy. **c-F3**
+  `ReturnTo` keeps the caller's URI, and `Refresh`/a removing return drop the replaced content from the source map.
+  **c-F4** long lines wrapped (`ReferenceEqualityComparer` stays qualified: `System.Windows` defines its own).
+  **CI-1** the hand-written hooked-element test became the XamlBacked `HookedDynWindowTests` (generated
+  `InitializeComponent`, hooked `is FrameworkElement` path). **CI-2** one long comment wrapped. **CI-3**
+  `SetResourceReference` over a XAML-local reference replaces it as a Local reference in one A -> B change (it no
+  longer clears first); `ClearResourceReference` also detaches a local reference.
+  **Round 51 (lane A) totals: 6007 tests** (255 WindowsBase + 5037 PresentationFramework + 606 MarkupCompiler
+  (1 skipped, Windows) + 43 ProjectConverter + 66 Wpf.Testing (5 skipped)), all pass; `dotnet build Gtk4.Wpf.sln`
+  0 warnings. `Integration.Tests` not run. **Samples gate (Gtk4.Forms.Wpf packed from the fixed tree, lane-private
+  feed, isolated cache):** all 130 `build=pass` projects build through the two-build recipe with 0 warnings and all 119
+  `run=runs` apps stay up with a window for 10 s, one at a time (10 first read as no-window while the other lane was
+  running; all 10 re-checked alone run); no regression.
+- **Carry-over (Round 51 lane A)**: brush state other than `Opacity` (`GradientStops`, `StartPoint`/`EndPoint`, the
+  radial members, the `TileBrush` members, `ImageBrush.ImageSource`, `VisualBrush.Visual`) is still plain CLR
+  properties, copied by `Clone()` but not DPs and not enforced by `IsFrozen`; `{DynamicResource}` on a Freezable is
+  resolved once and not live; a plain explicit local value beats a later `SetResourceReference` (see Round 49);
+  DragDropThumbOps (Round 52 item) needs the MarkupCompiler to register its x:Class root in `GtkFormsXamlRegistry`;
+  the runtime `Initialize` on registry roots is now done, so the generator registration is the remaining piece;
+  `Binding` has no `Delay`/`XPath`, so they are not guarded in `XamlWriter`; `samples-coverage.json` still holds the
+  Round 48 measurement.
 - **Round 19 Track B — Adorners (DONE).** New `System.Windows.Documents.Adorner` (abstract, `AdornedElement`),
   `AdornerLayer` (`Add`/`Remove`/`GetAdorners` returning null when none, static `GetAdornerLayer` walking
   `VisualParent` to the nearest `AdornerDecorator`), and `AdornerDecorator` (`Decorator`+`Child`, exposes a

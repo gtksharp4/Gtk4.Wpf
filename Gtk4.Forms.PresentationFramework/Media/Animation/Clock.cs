@@ -85,6 +85,12 @@ public abstract partial class Clock
 	void Raise(ClockState oldState, TimeSpan? oldTime, double? oldSpeed)
 	{
 		var speed = CurrentGlobalSpeed;
+		// WPF Clock.RaiseAccumulatedEvents order: time, speed, state, completed.
+		if (_currentTime != oldTime)
+		{
+			CurrentTimeInvalidated?.Invoke(this, EventArgs.Empty);
+			Timeline.RaiseTime(this);
+		}
 		if (speed != oldSpeed)
 		{
 			CurrentGlobalSpeedInvalidated?.Invoke(this, EventArgs.Empty);
@@ -94,11 +100,6 @@ public abstract partial class Clock
 		{
 			CurrentStateInvalidated?.Invoke(this, EventArgs.Empty);
 			Timeline.RaiseState(this);
-		}
-		if (_currentTime != oldTime)
-		{
-			CurrentTimeInvalidated?.Invoke(this, EventArgs.Empty);
-			Timeline.RaiseTime(this);
 		}
 		if (_state != ClockState.Active && oldState == ClockState.Active && !_completedRaised)
 		{

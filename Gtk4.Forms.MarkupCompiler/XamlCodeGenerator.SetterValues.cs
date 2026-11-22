@@ -53,16 +53,31 @@ namespace Gtk4.Forms.MarkupCompiler
 		/// </summary>
 		bool _rootIsDictionary;
 
-		string StaticResourceLookup(string receiver, string escapedKey)
+		/// <summary>
+		/// The enclosing scope variables, innermost first, minus <paramref name="excluded"/>. A dictionary root
+		/// has no FindResource of its own, so its keys are probed as the outermost scope (<c>this</c>).
+		/// </summary>
+		System.Collections.Generic.List<string> ScopeVarList(string excluded)
 		{
 			var scopes = new System.Collections.Generic.List<string>();
-			var vars = _scopeVars;
-			for (int i = vars.Count - 1; i >= 0; i--)
-				scopes.Add(vars[i]);
+			for (int i = _scopeVars.Count - 1; i >= 0; i--)
+				if (_scopeVars[i] != excluded) scopes.Add(_scopeVars[i]);
+			if (_rootIsDictionary && !scopes.Contains("this")) scopes.Add("this");
+			return scopes;
+		}
+
+		/// <summary>Trailing scope arguments for <c>SetResourceValue</c>; empty when there are none.</summary>
+		string ResourceScopeArgs(string receiver)
+		{
+			var scopes = ScopeVarList(receiver);
+			return scopes.Count == 0 ? "" : ", " + string.Join(", ", scopes);
+		}
+
+		string StaticResourceLookup(string receiver, string escapedKey)
+		{
+			var scopes = ScopeVarList(null);
 			if (receiver != "this" && !scopes.Contains(receiver))
 				scopes.Insert(0, receiver);
-			// A dictionary root has no FindResource of its own: its keys are probed as the outermost scope.
-			if (_rootIsDictionary && !scopes.Contains("this")) scopes.Add("this");
 			if (scopes.Count == 0)
 				return $"this.FindResource({ResourceKeyExpression(escapedKey)})";
 			return $"System.Windows.Markup.StaticResourceScope.Find({ResourceKeyExpression(escapedKey)}, this, " +

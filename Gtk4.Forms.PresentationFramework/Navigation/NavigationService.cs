@@ -146,11 +146,12 @@ public sealed partial class NavigationService
 	{
 		if (!removeFromJournal || !ReferenceEquals(_journal.Current, pageFunction))
 		{
-			NavigateCore(caller, null, null);
+			NavigateCore(caller, SourceOf(caller), null);
 			return;
 		}
 		if (!RaiseNavigating(new NavigatingCancelEventArgs(caller, SourceOf(caller), NavigationMode.Back))) return;
 		_journal.RemoveCurrent();
+		_sources.Remove(pageFunction);
 		if (!ReferenceEquals(_journal.Current, caller)) _journal.Push(caller);
 		CommitContent(caller, SourceOf(caller), null);
 	}

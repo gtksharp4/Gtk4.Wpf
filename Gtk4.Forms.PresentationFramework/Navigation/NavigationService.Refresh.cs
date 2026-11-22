@@ -6,7 +6,8 @@ namespace System.Windows.Navigation;
 public sealed partial class NavigationService
 {
 	// Source URI per navigated content, so GoBack/GoForward and Refresh know where an entry came from.
-	readonly Dictionary<object, Uri> _sources = new Dictionary<object, Uri>(System.Collections.Generic.ReferenceEqualityComparer.Instance);
+	readonly Dictionary<object, Uri> _sources =
+		new Dictionary<object, Uri>(System.Collections.Generic.ReferenceEqualityComparer.Instance);
 
 	// Set while Navigating handlers run, so StopLoading can cancel the navigation in flight.
 	NavigatingCancelEventArgs? _pending;
@@ -18,6 +19,8 @@ public sealed partial class NavigationService
 		Resolver.Resolve(uri) ?? Markup.GtkFormsXamlRegistry.TryCreate(uri, Application.Current?.GetType().Assembly);
 
 	Uri? SourceOf(object content) => _sources.TryGetValue(content, out Uri? uri) ? uri : null;
+
+	internal bool HasSource(object content) => _sources.ContainsKey(content);
 
 	void RememberSource(object? content, Uri? uri)
 	{
@@ -61,7 +64,11 @@ public sealed partial class NavigationService
 		Uri? uri = CurrentSource;
 		object? target = uri == null ? Content : Resolve(uri) ?? Content;
 		if (!RaiseNavigating(new NavigatingCancelEventArgs(target, uri, NavigationMode.Refresh))) return;
-		if (!ReferenceEquals(target, Content)) _journal.ReplaceCurrent(target);
+		if (!ReferenceEquals(target, Content))
+		{
+			_sources.Remove(Content);
+			_journal.ReplaceCurrent(target);
+		}
 		CommitContent(target, uri, null);
 	}
 

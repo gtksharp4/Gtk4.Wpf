@@ -33,7 +33,8 @@ public abstract partial class Timeline
 		return clock;
 	}
 
-	internal abstract Clock AllocateClock();
+	/// <summary>Creates the clock for this timeline.</summary>
+	protected internal abstract Clock AllocateClock();
 
 	/// <summary>The duration used when <see cref="Duration"/> is Automatic.</summary>
 	internal virtual Duration GetAutomaticDuration() => new Duration(TimeSpan.FromSeconds(1));

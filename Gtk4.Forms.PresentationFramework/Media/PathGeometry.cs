@@ -144,7 +144,7 @@ public class PathFigure
 /// A geometry built from one or more <see cref="PathFigure"/> instances.
 /// Mirrors <c>System.Windows.Media.PathGeometry</c>.
 /// </summary>
-public class PathGeometry : Geometry
+public partial class PathGeometry : Geometry
 {
 	/// <summary>Creates an empty path geometry.</summary>
 	public PathGeometry() { }
@@ -158,14 +158,6 @@ public class PathGeometry : Geometry
 
 	/// <summary>The collection of path figures.</summary>
 	public PathFigureCollection Figures { get; set; } = new PathFigureCollection();
-
-	/// <inheritdoc/>
-	protected override void CloneOverride(Freezable destination, bool currentValueOnly)
-	{
-		base.CloneOverride(destination, currentValueOnly);
-		var g = (PathGeometry)destination;
-		foreach (var figure in Figures) g.Figures.Add(figure);
-	}
 
 	/// <inheritdoc/>
 	public override System.Windows.Rect Bounds

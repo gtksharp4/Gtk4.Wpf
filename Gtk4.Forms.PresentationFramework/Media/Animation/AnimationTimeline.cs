@@ -19,22 +19,16 @@ public abstract class AnimationTimeline : Timeline
 	public new AnimationClock CreateClock(bool hasControllableRoot) =>
 		(AnimationClock)base.CreateClock(hasControllableRoot);
 
-	internal override Clock AllocateClock() => new AnimationClock(this);
+	protected internal override Clock AllocateClock() => new AnimationClock(this);
 
 	/// <summary>
-	/// Computes the animated value for the clock's current progress.
-	/// <paramref name="defaultOriginValue"/> is the value the animation starts from by default and
-	/// <paramref name="defaultDestinationValue"/> the one it ends at when no destination is set.
+	/// Computes the animated value for the clock's current progress; the base returns
+	/// <paramref name="defaultDestinationValue"/>. <paramref name="defaultOriginValue"/> is the value the
+	/// animation starts from by default and <paramref name="defaultDestinationValue"/> the one it ends at when
+	/// no destination is set.
 	/// </summary>
 	public virtual object? GetCurrentValue(
 		object? defaultOriginValue,
 		object? defaultDestinationValue,
-		AnimationClock animationClock) =>
-		GetCurrentValueCore(defaultOriginValue, defaultDestinationValue, animationClock);
-
-	/// <summary>Override to compute the animated value.</summary>
-	protected virtual object? GetCurrentValueCore(
-		object? defaultOriginValue,
-		object? defaultDestinationValue,
-		AnimationClock animationClock) => throw new NotImplementedException();
+		AnimationClock animationClock) => defaultDestinationValue;
 }

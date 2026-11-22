@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using Gtk4.Forms.PresentationFramework.Tests.Lifecycle;
 using System.Windows.Markup;
 using System.Windows.Navigation;
 using Xunit;
@@ -17,6 +18,19 @@ public class SweepPane : StackPanel
 		if (_contentLoaded) return;
 		_contentLoaded = true;
 		Children.Add(new TextBlock { Text = "loaded" });
+	}
+}
+
+/// <summary>Registry root whose factory only calls new T(): the child comes from InitializeComponent.</summary>
+public class RegisteredPane : Canvas
+{
+	bool _contentLoaded;
+
+	public void InitializeComponent()
+	{
+		if (_contentLoaded) return;
+		_contentLoaded = true;
+		Children.Add(new System.Windows.Controls.Primitives.Thumb { Width = 20, Height = 20 });
 	}
 }
 
@@ -40,22 +54,18 @@ public class Round51aSweepStartupTests : WpfGtkTestBase, IDisposable
 	});
 
 	[Fact]
-	public void Canvas_root_registered_under_another_file_name_is_hosted_with_its_thumb() => Run(() =>
+	public void Registered_root_without_a_constructor_call_is_initialised_by_the_host() => Run(() =>
 	{
-		GtkFormsXamlRegistry.Register("SweepMain.xaml", () =>
-		{
-			var canvas = new Canvas();
-			canvas.Children.Add(new System.Windows.Controls.Primitives.Thumb { Width = 20, Height = 20 });
-			return canvas;
-		});
-		var app = new RecordingApp { StartupUri = new Uri("SweepMain.xaml", UriKind.Relative) };
-		Window? main = null;
-		app.RunLoopOverride = a => main = a.MainWindow;
+		GtkFormsXamlRegistry.Register("RegisteredPaneHost.xaml", () => new RegisteredPane());
+		var app = new RecordingApp();
 
-		app.RunCore(new string[0]);
+		var nav = Assert.IsType<NavigationWindow>(
+			app.CreateWindowFromStartupUri(new Uri("RegisteredPaneHost.xaml", UriKind.Relative)));
 
-		var nav = Assert.IsType<NavigationWindow>(main);
-		var canvas = Assert.IsType<Canvas>(nav.Content);
-		Assert.IsType<System.Windows.Controls.Primitives.Thumb>(Assert.Single(canvas.Children));
+		Assert.Single(Assert.IsType<RegisteredPane>(nav.Content).Children);
+		nav.Show();
+		Assert.True(GtkPump.Until(() => nav.IsVisible));
+		Assert.Single(Assert.IsType<RegisteredPane>(nav.Content).Children);
+		nav.Close();
 	});
 }

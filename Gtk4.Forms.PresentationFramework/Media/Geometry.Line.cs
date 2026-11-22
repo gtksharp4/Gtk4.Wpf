@@ -19,7 +19,8 @@ public class LineGeometry : Geometry
 
 	/// <summary>Identifies <see cref="StartPoint"/>.</summary>
 	public static readonly DependencyProperty StartPointProperty = DependencyProperty.Register(
-		nameof(StartPoint), typeof(System.Windows.Point), typeof(LineGeometry), new PropertyMetadata(new System.Windows.Point()));
+		nameof(StartPoint), typeof(System.Windows.Point), typeof(LineGeometry),
+		new PropertyMetadata(new System.Windows.Point()));
 
 	/// <summary>Start point.</summary>
 	public System.Windows.Point StartPoint
@@ -30,7 +31,8 @@ public class LineGeometry : Geometry
 
 	/// <summary>Identifies <see cref="EndPoint"/>.</summary>
 	public static readonly DependencyProperty EndPointProperty = DependencyProperty.Register(
-		nameof(EndPoint), typeof(System.Windows.Point), typeof(LineGeometry), new PropertyMetadata(new System.Windows.Point()));
+		nameof(EndPoint), typeof(System.Windows.Point), typeof(LineGeometry),
+		new PropertyMetadata(new System.Windows.Point()));
 
 	/// <summary>End point.</summary>
 	public System.Windows.Point EndPoint
