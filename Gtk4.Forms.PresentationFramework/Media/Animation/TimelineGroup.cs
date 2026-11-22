@@ -36,7 +36,7 @@ public abstract class TimelineGroup : Timeline
 }
 
 /// <summary>Plays its children in parallel. Mirrors WPF's <c>ParallelTimeline</c>.</summary>
-public class ParallelTimeline : TimelineGroup
+public partial class ParallelTimeline : TimelineGroup
 {
 	/// <summary>Creates an empty parallel timeline.</summary>
 	public ParallelTimeline() { }
