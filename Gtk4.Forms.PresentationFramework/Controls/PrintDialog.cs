@@ -10,8 +10,8 @@ namespace System.Windows.Controls;
 /// </summary>
 public partial class PrintDialog
 {
-	int _minPage = 1;
-	int _maxPage = 9999;
+	uint _minPage = 1;
+	uint _maxPage = 9999;
 	PageRange _pageRange = new PageRange(1, 1);
 	double _areaWidth = 816;
 	double _areaHeight = 1056;
@@ -38,25 +38,25 @@ public partial class PrintDialog
 	public bool CurrentPageEnabled { get; set; }
 
 	/// <summary>Gets or sets the lowest page number the user may pick (default 1).</summary>
-	/// <exception cref="ArgumentOutOfRangeException">The value is below 1.</exception>
-	public int MinPage
+	/// <exception cref="ArgumentException">The value is 0.</exception>
+	public uint MinPage
 	{
 		get => _minPage;
 		set
 		{
-			if (value < 1) throw new ArgumentOutOfRangeException(nameof(value));
+			if (value == 0) throw new ArgumentException("The page number must be at least 1.", nameof(value));
 			_minPage = value;
 		}
 	}
 
 	/// <summary>Gets or sets the highest page number the user may pick (default 9999).</summary>
-	/// <exception cref="ArgumentOutOfRangeException">The value is below 1.</exception>
-	public int MaxPage
+	/// <exception cref="ArgumentException">The value is 0.</exception>
+	public uint MaxPage
 	{
 		get => _maxPage;
 		set
 		{
-			if (value < 1) throw new ArgumentOutOfRangeException(nameof(value));
+			if (value == 0) throw new ArgumentException("The page number must be at least 1.", nameof(value));
 			_maxPage = value;
 		}
 	}

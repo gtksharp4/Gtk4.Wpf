@@ -54,14 +54,22 @@ public partial class FlowDocumentPageViewer : DocumentViewerBase
 	/// <inheritdoc/>
 	protected override void OnMasterPageNumberChanged() => SyncView();
 
+	internal override void OnPagesRefreshed() => SyncStatus();
+
 	void SyncView()
 	{
 		if (_presenter == null) return;
 		_presenter.Show(Document as FlowDocument);
+		SyncStatus();
+		ScrollToPage();
+	}
+
+	void SyncStatus()
+	{
+		if (_presenter == null) return;
 		_status!.Text = PageCount == 0 ? string.Empty : $"{MasterPageNumber} / {PageCount}";
 		_first!.Sensitive = _previous!.Sensitive = CanGoToPreviousPage;
 		_next!.Sensitive = _last!.Sensitive = CanGoToNextPage;
-		ScrollToPage();
 	}
 
 	void ScrollToPage()

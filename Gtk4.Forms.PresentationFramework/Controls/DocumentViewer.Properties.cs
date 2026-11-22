@@ -5,21 +5,22 @@ namespace System.Windows.Controls;
 public partial class DocumentViewer
 {
 	const int ThumbnailsAcross = 4;
+	const int MaxPagesAcrossLimit = 32;
 
 	/// <summary>The command that shows the pages as thumbnails.</summary>
-	public static readonly RoutedUICommand ViewThumbnailsCommand =
+	public static RoutedUICommand ViewThumbnailsCommand { get; } =
 		new RoutedUICommand("View Thumbnails", nameof(ViewThumbnailsCommand), typeof(DocumentViewer));
 
 	/// <summary>The command that fits the page width to the viewer.</summary>
-	public static readonly RoutedUICommand FitToWidthCommand =
+	public static RoutedUICommand FitToWidthCommand { get; } =
 		new RoutedUICommand("Fit To Width", nameof(FitToWidthCommand), typeof(DocumentViewer));
 
 	/// <summary>The command that fits the page height to the viewer.</summary>
-	public static readonly RoutedUICommand FitToHeightCommand =
+	public static RoutedUICommand FitToHeightCommand { get; } =
 		new RoutedUICommand("Fit To Height", nameof(FitToHeightCommand), typeof(DocumentViewer));
 
 	/// <summary>The command that fits a number of pages across the viewer; the parameter is the count.</summary>
-	public static readonly RoutedUICommand FitToMaxPagesAcrossCommand =
+	public static RoutedUICommand FitToMaxPagesAcrossCommand { get; } =
 		new RoutedUICommand("Fit To Max Pages Across", nameof(FitToMaxPagesAcrossCommand), typeof(DocumentViewer));
 
 	/// <summary>Identifies the Zoom property (default 100, kept between 5 and 5000).</summary>
@@ -43,7 +44,7 @@ public partial class DocumentViewer
 	/// <summary>Identifies the MaxPagesAcross property (default 1).</summary>
 	public static readonly DependencyProperty MaxPagesAcrossProperty = DependencyProperty.Register(
 		nameof(MaxPagesAcross), typeof(int), typeof(DocumentViewer), new FrameworkPropertyMetadata(1, Relayout),
-		v => v is int n && n >= 1);
+		v => v is int n && n >= 1 && n <= MaxPagesAcrossLimit);
 
 	static void Relayout(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((DocumentViewer)d).Rebuild();
 
@@ -92,14 +93,15 @@ public partial class DocumentViewer
 	/// <summary>Sets <see cref="Zoom"/> to fit the page height; unchanged before the viewer has a size.</summary>
 	public void FitToHeight() => Fit(ActualHeight, Document?.DocumentPaginator.PageSize.Height ?? 0);
 
-	/// <summary>Shows <see cref="PageCount"/> pages (at most 1 or more) across and fits them to the width.</summary>
-	public void FitToMaxPagesAcross() => FitToMaxPagesAcross(Math.Max(1, PageCount));
+	/// <summary>Fits the current <see cref="MaxPagesAcross"/> pages to the width, leaving it unchanged.</summary>
+	public void FitToMaxPagesAcross() => FitToMaxPagesAcross(MaxPagesAcross);
 
 	/// <summary>Shows <paramref name="pagesAcross"/> pages per row and fits them to the width.</summary>
-	/// <exception cref="ArgumentOutOfRangeException"><paramref name="pagesAcross"/> is below 1.</exception>
+	/// <exception cref="ArgumentOutOfRangeException"><paramref name="pagesAcross"/> is outside 1 to 32.</exception>
 	public void FitToMaxPagesAcross(int pagesAcross)
 	{
-		if (pagesAcross < 1) throw new ArgumentOutOfRangeException(nameof(pagesAcross));
+		if (pagesAcross < 1 || pagesAcross > MaxPagesAcrossLimit)
+			throw new ArgumentOutOfRangeException(nameof(pagesAcross));
 		MaxPagesAcross = pagesAcross;
 		double page = Document?.DocumentPaginator.PageSize.Width ?? 0;
 		Fit(ActualWidth, page * pagesAcross + HorizontalPageSpacing * (pagesAcross - 1));

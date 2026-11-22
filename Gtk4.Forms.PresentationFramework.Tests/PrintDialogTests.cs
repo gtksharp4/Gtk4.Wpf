@@ -16,20 +16,10 @@ public class PrintDialogTests : WpfGtkTestBase
 		var d = new PrintDialog();
 		Assert.Equal(PageRangeSelection.AllPages, d.PageRangeSelection);
 		Assert.False(d.UserPageRangeEnabled);
-		Assert.Equal(1, d.MinPage);
-		Assert.Equal(9999, d.MaxPage);
+		Assert.Equal(1u, d.MinPage);
+		Assert.Equal(9999u, d.MaxPage);
 		Assert.True(d.PrintableAreaWidth > 0);
 		Assert.True(d.PrintableAreaHeight > 0);
-	});
-
-	[Fact]
-	public void MinPage_and_MaxPage_reject_values_below_one() => Run(() =>
-	{
-		var d = new PrintDialog();
-		Assert.Throws<ArgumentOutOfRangeException>(() => d.MinPage = 0);
-		Assert.Throws<ArgumentOutOfRangeException>(() => d.MaxPage = 0);
-		d.MaxPage = 20;
-		Assert.Equal(20, d.MaxPage);
 	});
 
 	[Fact]

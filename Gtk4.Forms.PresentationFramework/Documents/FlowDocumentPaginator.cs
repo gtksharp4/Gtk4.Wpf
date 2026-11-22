@@ -38,7 +38,11 @@ sealed class FlowDocumentPaginator : DynamicDocumentPaginator
 	int _count = 1;
 	FlowDocumentPageMeter? _meter;
 
-	internal FlowDocumentPaginator(FlowDocument document) => _document = document;
+	internal FlowDocumentPaginator(FlowDocument document)
+	{
+		_document = document;
+		document.ContentChanged += Invalidate;
+	}
 
 	public override IDocumentPaginatorSource Source => _document;
 

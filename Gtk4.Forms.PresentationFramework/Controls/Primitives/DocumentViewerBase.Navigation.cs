@@ -102,12 +102,18 @@ public abstract partial class DocumentViewerBase
 		if (changed) OnMasterPageNumberChanged();
 	}
 
+	/// <summary>Called after the page count or the page state was refreshed.</summary>
+	internal virtual void OnPagesRefreshed()
+	{
+	}
+
 	void RefreshPages()
 	{
 		int count = _paginator?.PageCount ?? 0;
 		SetValue(PageCountPropertyKey, count);
 		int master = count == 0 ? 0 : Math.Max(1, Math.Min(MasterPageNumber, count));
 		SetMasterPage(master);
+		OnPagesRefreshed();
 	}
 
 	void UpdateCanGo()

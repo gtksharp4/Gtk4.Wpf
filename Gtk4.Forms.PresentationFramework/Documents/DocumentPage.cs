@@ -49,7 +49,7 @@ public class DocumentPage : IDisposable
 	}
 
 	/// <summary>Releases the visual and raises <see cref="PageDestroyed"/>; later calls do nothing.</summary>
-	public void Dispose()
+	public virtual void Dispose()
 	{
 		if (_disposed) return;
 		_disposed = true;
