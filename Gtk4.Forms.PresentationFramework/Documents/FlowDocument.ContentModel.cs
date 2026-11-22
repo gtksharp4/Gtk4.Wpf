@@ -2,8 +2,8 @@ namespace System.Windows.Documents;
 
 /// <summary>
 /// FlowDocument is a <see cref="FrameworkContentElement"/>: it carries a name, style, resources and data context,
-/// and its blocks inherit from it. The existing CLR members (string FontFamily, NaN-means-inherit FontSize,
-/// nullable TextAlignment, PagePadding, FlowDirection) are kept; the new members are real DPs.
+/// and its blocks inherit from it. FontFamily, FontSize and Foreground return the effective value, as in WPF;
+/// TextAlignment (nullable), PagePadding and FlowDirection keep their CLR shape; the new members are real DPs.
 /// </summary>
 public partial class FlowDocument : FrameworkContentElement
 {

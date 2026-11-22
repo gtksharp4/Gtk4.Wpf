@@ -21,7 +21,7 @@ public partial class Run
 	/// Inside a Run the run is split; inside a Paragraph or Span the run is inserted there; between blocks, or in an
 	/// empty document, Section or ListItem, a Paragraph is created to hold it.
 	/// </remarks>
-	/// <exception cref="InvalidOperationException">The position is inside a BlockUIContainer or InlineUIContainer.</exception>
+	/// <exception cref="InvalidOperationException">The position is in a BlockUIContainer or InlineUIContainer.</exception>
 	public Run(string text, TextPointer insertionPosition)
 	{
 		Text = text;

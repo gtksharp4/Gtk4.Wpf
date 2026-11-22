@@ -21,7 +21,7 @@ public abstract partial class TextElement
 	/// <summary>A pointer just after the start tag of this element, at its content (gravity Backward).</summary>
 	public TextPointer ContentStart => Pointer(false, true, LogicalDirection.Backward);
 
-	/// <summary>A pointer just before the end tag of this element, at the end of its content (gravity Forward).</summary>
+	/// <summary>A pointer just before the end tag of this element, at its content end (gravity Forward).</summary>
 	public TextPointer ContentEnd => Pointer(true, false, LogicalDirection.Forward);
 
 	/// <summary>A pointer just after the end tag of this element (gravity Backward).</summary>

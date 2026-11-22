@@ -8,7 +8,7 @@ public partial class FlowDocument
 	/// <summary>Raised when the blocks, Background, FontStyle or FontWeight change.</summary>
 	internal event Action? ViewChanged;
 
-	/// <summary>Raised when the blocks or a layout-affecting property change; the paginator repaginates on it.</summary>
+	/// <summary>Raised when the blocks or a layout-affecting property change; repaginates.</summary>
 	internal event Action? ContentChanged;
 
 	/// <inheritdoc/>

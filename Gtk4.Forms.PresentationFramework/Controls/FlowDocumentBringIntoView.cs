@@ -21,7 +21,8 @@ static class FlowDocumentBringIntoView
 		if (total > 0 && range > 0) adjustment.Value = range * before / total;
 	}
 
-	internal static void Register<T>(System.Action<T, RequestBringIntoViewEventArgs> handle) where T : FrameworkElement =>
+	internal static void Register<T>(Action<T, RequestBringIntoViewEventArgs> handle)
+		where T : FrameworkElement =>
 		EventManager.RegisterClassHandler(typeof(T), FrameworkElement.RequestBringIntoViewEvent,
 			new RequestBringIntoViewEventHandler((s, e) =>
 			{

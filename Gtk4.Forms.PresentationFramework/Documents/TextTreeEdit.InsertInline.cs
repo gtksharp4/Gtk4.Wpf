@@ -25,7 +25,7 @@ static partial class TextTreeEdit
 		else if (top is Span s)
 			InsertAmong(syms, s.Inlines, offset, inline);
 		else if (top is InlineUIContainer || top is BlockUIContainer)
-			throw new InvalidOperationException("The position is inside an embedded element and cannot hold an inline.");
+			throw new InvalidOperationException("The position is inside an embedded element.");
 		else if (top == null && doc.DetachedRoot == null || top is Section || top is ListItem)
 			InsertInNewParagraph(doc, syms, top ?? doc, offset, inline);
 		else
@@ -39,7 +39,8 @@ static partial class TextTreeEdit
 		doc.RecordTextEdit(offset, 0, TextTree.Total(TextTree.Build(doc)) - before);
 	}
 
-	static void InsertAmong(System.Collections.Generic.List<TextSym> syms, InlineCollection col, int offset, Inline inline)
+	static void InsertAmong(System.Collections.Generic.List<TextSym> syms, InlineCollection col, int offset,
+		Inline inline)
 	{
 		var items = col.ToList();
 		items.Insert(items.Count(i => StartOffset(syms, i) < offset), inline);

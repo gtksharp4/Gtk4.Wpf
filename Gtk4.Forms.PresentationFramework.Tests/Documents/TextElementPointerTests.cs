@@ -70,7 +70,8 @@ public class TextElementPointerTests
 		range.Save(ms, System.Windows.DataFormats.Text);
 		Assert.Equal("hello\r\n", System.Text.Encoding.UTF8.GetString(ms.ToArray()));
 		var data = System.Text.Encoding.UTF8.GetBytes("one\ntwo");
-		new TextRange(sec.ContentStart, sec.ContentEnd).Load(new System.IO.MemoryStream(data), System.Windows.DataFormats.Text);
+		new TextRange(sec.ContentStart, sec.ContentEnd)
+			.Load(new System.IO.MemoryStream(data), System.Windows.DataFormats.Text);
 		Assert.Equal(new[] { "one", "two" },
 			sec.Blocks.Cast<Paragraph>().Select(p => ((Run)p.Inlines.First()).Text).ToArray());
 	}
