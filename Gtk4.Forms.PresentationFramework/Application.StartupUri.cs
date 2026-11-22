@@ -37,7 +37,8 @@ public partial class Application
 		object? registered = GtkFormsXamlRegistry.TryCreate(startupUri, GetType().Assembly, true);
 		if (registered != null) return Host(registered);
 		string leaf = StartupUriToTypeName(startupUri);
-		object? byName = CreateInstance(typeof(Window), leaf) ?? CreateInstance(typeof(Controls.Page), leaf);
+		object? byName = CreateInstance(typeof(Window), leaf) ?? CreateInstance(typeof(Controls.Page), leaf)
+			?? CreateInstance(typeof(FrameworkElement), leaf);
 		return Host(byName ?? GtkFormsXamlRegistry.TryCreate(startupUri, GetType().Assembly));
 	}
 
@@ -61,8 +62,8 @@ public partial class Application
 
 			// Prefer a match in App's own namespace; otherwise take the first candidate.
 			if (string.Equals(t.Namespace, GetType().Namespace, StringComparison.Ordinal))
-				return Activator.CreateInstance(t)!;
-			fallback ??= Activator.CreateInstance(t)!;
+				return Initialize(Activator.CreateInstance(t)!);
+			fallback ??= Initialize(Activator.CreateInstance(t)!);
 		}
 		return fallback;
 	}
