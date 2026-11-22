@@ -1,455 +1,341 @@
 # WPF samples coverage
 
-Measured 2026-11-22 on `main` at `30f46d4a117f7192cdf184bf5d9f82403b4abdaf` (Rounds 49–52, the first two-lane batch,
-plus the Round 52 paginated-viewer review fixes), package `Gtk4.Forms.Wpf 1.0.0.26326` from a **pinned** local feed,
-against the official `microsoft/WPF-Samples` (256 projects: 243 apps, 9 libraries and 4 native C++ projects). All 252
-csproj were rebuilt and every built app was smoke-run. Per-project results are in
-[`samples-coverage.json`](samples-coverage.json). Each row also holds its result in report `ccd8dbb1` (main
-`142b53f6`, Round 48, `previous`).
+Measured 2026-11-22 on `main` at `466055e33f9a38db98b8391607ddce7f04801c8a` (Rounds 53–55, the first three-lane batch,
+plus the `gf52b/content-bindings-sweep` merge and the lane review follow-ups), package `Gtk4.Forms.Wpf 1.0.0.26326`
+from a **pinned** local feed, against the official `microsoft/WPF-Samples` (256 projects: 243 apps, 9 libraries and 4
+native C++ projects). All 252 csproj were rebuilt and every built app was smoke-run. Per-project results are in
+[`samples-coverage.json`](samples-coverage.json). Each row also holds its result in report `f3ea89fc` (main
+`30f46d4a`, Rounds 49–52, `previous`).
 
 ## Headline
 
-**159 of 204 portable official WPF sample apps build unmodified, and 152 run.** That is up from 129 / 119 in report
-`ccd8dbb1` (+30 build, +33 run), and from 0 / 0 in report `fedd13c8` (2026-11-19).
+**171 of 204 portable official WPF sample apps build unmodified, and 165 run.** That is up from 159 / 152 in report
+`f3ea89fc` (+12 build, +13 run), and from 0 / 0 in report `fedd13c8` (2026-11-19).
 
-- **30 apps moved fail→pass**: 26 run and 4 crash at startup. **7 built apps moved crash/hang→runs.** The library
-  wpfclock also builds now.
-- **No regressions.** No project went pass→fail, and no app went runs→crash/hang (see Regressions for the one app
-  that read as a hang).
-- Of the 7 apps that build but do not run, 6 crash and 1 hangs. 4 of them have a known, small cause in the
-  MarkupCompiler or the runtime converters (see Crashes).
-- 162 projects build in all: the 159 portable apps, the libraries CustomApplicationClient and wpfclock, and the
-  Windows-only console app FocusTracker.
-- Of the 30 fail→pass, lane A (Rounds 49 and 51: animation, runtime XAML, the startup sweep) accounts for 15 and
-  lane B (Rounds 50 and 52: imaging, flow documents, printing) for 14. One is not isolated. All 7 crash/hang→runs
-  are lane A.
+- **12 apps moved fail→pass**: 9 run and 3 crash at startup. **4 built apps moved crash/hang→runs.** The libraries
+  HostingWpfUserControlInWf and WPFControls also build now.
+- **No regressions.** No project went pass→fail, and no app went runs→crash/hang.
+- **No hangs are left.** Of the 6 apps that build but do not run, all crash. 3 are new builds whose cause is in the
+  MarkupCompiler (see Crashes); the other 3 are the known, deliberate or out-of-scope ones.
+- 176 projects build in all: the 171 portable apps, the libraries CustomApplicationClient, wpfclock,
+  HostingWpfUserControlInWf and WPFControls, and the Windows-only console app FocusTracker.
+- By lane: Round 55 lane C (startup and generator sweep, controls and media tail) accounts for 4 fail→pass and all
+  4 crash/hang→runs. Round 54 lane B (Media3D, documents text tail) accounts for 5 fail→pass, Round 53 lane A
+  (items and templates) for 2, and the `gf52b` merge for 1 (CommonDialogs).
+- **Round 53's track 1 (`gf53a/visual-layer-input`) never reached `main`.** That one commit covers the blockers of
+  12 of the 33 failing portable apps (see Next rounds, track 1).
+- FontProperties and FlowDocumentProperties were already recorded as building by the Round 54b lane gate. This is the
+  first full measure that includes them.
 
 ### Corrections to the raw batch data
 
-The final build log of each of the 252 csproj was re-parsed uniformly (UTF-8 and UTF-16). Run results were taken from
-each batch's per-project records, with every run's stderr scanned for unhandled exceptions. The top 15 missing symbols
+The final build log of each of the 252 csproj was re-parsed uniformly. Run results were taken from each batch's
+per-project records, and every run's stdout/stderr was scanned for unhandled exceptions. The top 15 missing symbols
 were checked against the `Gtk4.Forms.*` source.
 
-- **The aggregated totals were wrong.** They said 200 portable apps, 157 build and 64 run. The per-project data gives
-  204 / 159 / 152:
-  - 200 came from the batches' own regex `windowsOnly` flags. As in every earlier report, the verified
+- **The aggregated totals were wrong again.** They said 202 portable apps, 168 build and 162 run. The per-project data
+  gives 204 / 171 / 165:
+  - 202 came from the batches' own regex `windowsOnly` flags. As in every earlier report, the verified
     classification is carried over unchanged, so the denominator stays 204.
-  - 64 run under-counts because the batches record a run in different formats ("runs", "runs: MainWindow",
-    "runs (window: …)"). Every one of the 152 is a visible top-level window in the batch's records.
-  - Several batch summaries contradict their own per-project records. Batch 1 says 37 build, but its logs give 39.
-    Batch 2 says 26, but its results file and logs give 29. Batch 4 says 31, but its logs give 32. Batch 5 says 22,
-    but its logs give 24, and that includes Highlighter, a legacy csproj, which counts as not-built.
-  - The aggregated crash list omits CustomComboBox and GeometryDesignerDemo (batch 3), LocalizationResources
-    (batch 5) and the hang DragDropThumbOps.
-- **CustomApplicationClass is a run, not a hang.** It showed no window in the 10 s smoke run while other batches were
-  loading the machine. Re-run alone twice for this report, at 20 s and at 10 s, it showed its window within 1 s both
-  times. ContextMenuOpening likewise showed no window at 10 s under load, but its window appeared within 20 s alone.
-- **DragDropThumbOps was re-run alone for this report** (20 s) and is still a hang.
-- **Legacy (non-SDK) csproj files stay `not-built`.** Highlighter "builds and runs" again, but as real .NET
-  Framework WinForms/WPF, so it is not counted. The attempt is kept under `legacyBuild`.
+  - The batch summaries counted builds and runs in different ways, and batch 5 lost its build exit codes. The re-parse
+    of all 252 final logs is authoritative.
+- **WPFGallery's batch result was not a valid measurement.** Its build 1 stopped after restore (the log ends at
+  "Determining projects to restore"), so build 2 was the converting build ("converted … re-run the build"). A third
+  build was run alone for this report and is recorded: only `CS1069` on
+  `Microsoft.Win32.UserPreferenceChangedEventArgs` (6 files) remains, which is a missing `Microsoft.Win32.SystemEvents`
+  package reference. `UserControl` and `System.Windows.Shell` no longer appear.
+- **Legacy (non-SDK) csproj files stay `not-built`.** Highlighter "builds and runs" again, but as real .NET Framework,
+  so it is not counted. The attempt is kept under `legacyBuild`.
+- **FocusTracker** is a Windows-only console app that prints a prompt and exits. It is recorded as `crash` as before and
+  is not in the portable denominator.
 - **Top-15 symbol check** (the aggregated `topMissing` ranking):
-  - Artefacts. `System.Windows.Markup.XamlValueConverter` (6) and `FrameworkElement.AbandonInitialization` (6) exist
-    in the layer (`Markup/XamlValueConverter.cs`, `FrameworkElement.Initialized.cs`). Every hit is a legacy csproj,
-    built against real WPF with the layer's generated `.g.cs`.
-  - Windows-only, dropped from the ranking. `System.Windows.Forms` (6 + 4 as the namespace), `Form` (6) and `DpiScale`
-    (3, PerMonitorDPI only).
-  - Real gaps, absent from the source:
-    - 3D: `System.Windows.Media.Media3D` (7), `Viewport3D` (6), `Vector3D` (5), `Quaternion` (4);
-    - controls: `UserControl` (3 counted; 2 real, since FormsControlLibrary's is the WinForms one);
-      `ListBox.ScrollIntoView` (3); `Frame.NavigationUIVisibility` (2); `SystemParameters` (2, via `CS0400`);
-    - `MenuItem.Padding` (2): `MenuItem` derives from `FrameworkElement`, not `Control`
-      (`Controls/MenuItem.cs`), so it has no `Padding`.
-  - Labels. `M:CS0103:mySplineKeyFrame`/`myVector3DSplineKeyFrame` are `x:Name` fields that are missing because the
-    3D keyframe types are missing.
-- **Also found while checking:** `RoutedEventArgs.OriginalSource` does not exist (`Gtk4.Forms.WindowsBase/RoutedEventArgs.cs`
-  has only `RoutedEvent`, `Source` and `Handled`). `FlowDocument.FontFamily` and `TextElement.FontFamily` are typed
-  `string?`, not `FontFamily`, which causes the `CS0029` in FontProperties and FlowDocumentProperties.
-  `ItemsControl.Items` is an `IList<object?>`, not an `ItemCollection` view, so `Items.CurrentItem` does not bind.
-- **windowsOnly is carried over unchanged.** Batch 2 again flagged CustomBitmapEffect and KeyFrameAnimation as
-  Windows-only, but both build and run on the layer.
+  - Windows-only, dropped from the ranking: `System.Windows.Forms` (10), `Form` (6), `System.Windows.Interop` (3) and
+    `DpiScale` (3, PerMonitorDPI only).
+  - Artefact: `System.Windows.Markup.GtkFormsXamlRegistration` / `…Attribute` (7 each). The attribute exists
+    (`Gtk4.Forms.PresentationFramework/Markup/GtkFormsXamlRegistry.cs:13`, emitted by
+    `Gtk4.Forms.MarkupCompiler/XamlCodeGenerator.ImplicitClass.cs:113`). All 7 hits are legacy, Windows-only
+    csproj files built against real WPF with the layer's generated `.g.cs`. The symbol is new to the ranking because
+    Round 55 (`fe22f709`) registers every `x:Class` root, so every generated root now emits it. It replaces
+    `XamlValueConverter`, the previous artefact.
+  - Real gaps, absent from `main`:
+    - `MouseEventArgs.MouseDevice` / `MouseButtonEventArgs.MouseDevice` (4). There is no `MouseDevice` type; it is
+      only mentioned in a comment in `Input/Mouse.Capture.cs`.
+    - `BeginStoryboard` (3, `CS1955`). `FrameworkElement.BeginStoryboard(Storyboard)` does not exist, so the name binds
+      to the trigger-action class `Triggers/BeginStoryboard.cs`.
+    - `HitTestResultBehavior` (2).
+    - The `EditBox.OnMouseEnter`/`OnMouseLeave`/`OnMouseUp` overrides (2 each). `UIElement` has no protected
+      `OnMouse*` virtuals.
+    - `CachedBitmap` and `CroppedBitmap` (2 each).
+    - `HitTestResultBehavior` and the `OnMouse*` virtuals are on the unmerged `gf53a/visual-layer-input`. The others
+      are not.
+- **Also found while checking:** `SortDescription.PropertyName`/`Direction` are still get-only
+  (`Data/SortDescription.cs:13,16`). That is AnnotatedDocumentViewer's only blocker, and the Round 54 request to
+  lane A is still open. `Binding.Path` is still typed `string?` (`Data/Binding.cs:38`). That is MediaGallery's only
+  blocker.
 
 ## Per category
 
-These are portable apps on the strict recipe. Δ is the change since `ccd8dbb1`.
+These are portable apps on the strict recipe. Δ is the change since `f3ea89fc`.
 
 | Category | Projects | Windows-only apps | Portable apps | Build | Δ | Run | Δ |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| Accessibility | 12 | 10 | 2 | 2 | +1 | 2 | +1 |
-| Animation | 11 | 0 | 11 | 8 | +5 | 8 | +5 |
-| Application Management | 10 | 1 | 8 | 8 | +1 | 8 | +1 |
-| Clipboard | 2 | 0 | 2 | 2 | +1 | 2 | +1 |
+| Accessibility | 12 | 10 | 2 | 2 | 0 | 2 | 0 |
+| Animation | 11 | 0 | 11 | 9 | +1 | 8 | 0 |
+| Application Management | 10 | 1 | 8 | 8 | 0 | 8 | 0 |
+| Clipboard | 2 | 0 | 2 | 2 | 0 | 2 | 0 |
 | Compatibility | 1 | 0 | 1 | 1 | 0 | 0 | 0 |
-| Data Binding | 31 | 1 | 30 | 29 | 0 | 29 | 0 |
-| Documents | 17 | 2 | 15 | 10 | +5 | 10 | +5 |
-| Drag and Drop | 6 | 0 | 6 | 5 | 0 | 4 | 0 |
+| Data Binding | 31 | 1 | 30 | 30 | +1 | 30 | +1 |
+| Documents | 17 | 2 | 15 | 12 | +2 | 12 | +2 |
+| Drag and Drop | 6 | 0 | 6 | 5 | 0 | 5 | +1 |
 | Element Tree | 2 | 0 | 2 | 1 | 0 | 1 | 0 |
-| Elements | 10 | 0 | 10 | 9 | 0 | 9 | +2 |
+| Elements | 10 | 0 | 10 | 9 | 0 | 9 | 0 |
 | Events | 4 | 0 | 4 | 4 | 0 | 4 | 0 |
-| Getting Started | 8 | 0 | 8 | 6 | +1 | 5 | 0 |
-| Globalization and Localization | 14 | 0 | 14 | 13 | 0 | 12 | 0 |
-| Graphics | 26 | 0 | 25 | 19 | +9 | 18 | +11 |
-| Input and Commands | 18 | 1 | 16 | 16 | 0 | 16 | +1 |
+| Getting Started | 8 | 0 | 8 | 7 | +1 | 6 | +1 |
+| Globalization and Localization | 14 | 0 | 14 | 14 | +1 | 13 | +1 |
+| Graphics | 26 | 0 | 25 | 21 | +2 | 19 | +1 |
+| Input and Commands | 18 | 1 | 16 | 16 | 0 | 16 | 0 |
 | Migration and Interoperability | 23 | 15 | 0 | 0 | 0 | 0 | 0 |
 | PerMonitorDPI | 4 | 4 | 0 | 0 | 0 | 0 | 0 |
-| Properties | 3 | 0 | 3 | 3 | +1 | 3 | +1 |
-| Resources | 3 | 0 | 3 | 3 | +1 | 3 | +1 |
-| Sample Applications | 23 | 1 | 21 | 7 | +4 | 5 | +2 |
+| Properties | 3 | 0 | 3 | 3 | 0 | 3 | 0 |
+| Resources | 3 | 0 | 3 | 3 | 0 | 3 | 0 |
+| Sample Applications | 23 | 1 | 21 | 7 | 0 | 7 | +2 |
 | Speech and Media | 2 | 1 | 1 | 0 | 0 | 0 | 0 |
-| Styles & Templates | 5 | 0 | 5 | 4 | 0 | 4 | 0 |
-| Threading | 3 | 0 | 3 | 3 | +1 | 3 | +1 |
+| Styles & Templates | 5 | 0 | 5 | 5 | +1 | 5 | +1 |
+| Threading | 3 | 0 | 3 | 3 | 0 | 3 | 0 |
 | Tools | 3 | 0 | 2 | 0 | 0 | 0 | 0 |
 | Visual Layer | 3 | 1 | 2 | 0 | 0 | 0 | 0 |
-| Windows | 12 | 2 | 10 | 6 | 0 | 6 | +1 |
-| **Total** | **256** | **39** | **204** | **159** | **+30** | **152** | **+33** |
+| Windows | 12 | 2 | 10 | 9 | +3 | 9 | +3 |
+| **Total** | **256** | **39** | **204** | **171** | **+12** | **165** | **+13** |
 
 ## What moved
 
-Each move is attributed by elimination: the named change removed every blocker that `ccd8dbb1` recorded for the app.
+Each move is attributed by elimination: the named change removed every blocker that `f3ea89fc` recorded for the app.
 Nothing was bisected. Per-row attribution is in the JSON (`unblockedBy`).
 
-**Fail→pass, 30 apps.**
+**Fail→pass: 12 apps and 2 libraries.**
 
 | Change | Apps (run result) |
 |---|---|
-| Round 50 imaging-codecs (`2063d423`): pixel model, `BitmapFrame`, the six codecs, `BitmapMetadata`, `BitmapCacheOption`/`BitmapCreateOptions`, palettes and indexed `PixelFormats`, `BitmapImage.Format` | BitmapMetadata, BMPEncoderAndDecoder, GIFEncoderAndDecoder, ImageView, JPEGEncoderAndDecoder, PNGEncoderAndDecoder, TIFFEncoderAndDecoder (run); WDPEncoderAndDecoder (crash) |
-| Round 50 flow-document-tables (`adbdfb87`) and text-ranges-typefaces (`d969770b`): `FlowDocument` column/page/typography properties, the `Table` family, `FlowDocumentReader`, `TextRange.Load`/`Save`, `ContentStart`/`ContentEnd`. Round 52 paginated-viewers-printing (`e45d5695`): `PrintDialog` | ClipboardViewer, FlowContentElements, FlowDocumentNewsClient, ParagraphAndHyphenation, TableBuilder, TableRows (all run) |
-| Round 51 animation-clocks (`4a1a9325`, landing `gf49a/animation-clocks`): `Clock`, typed animation bases, `BeginAnimation`, DP-backed `TranslateTransform.X/Y` and `SolidColorBrush.Color`, `PropertyPath`, `HandoffBehavior`, `Storyboard.Seek` | CustomAnimation, LocalAnimations, PropertyAnimation, ConcentricRingsDemo, AnimationTiming (with the Round 49 `CreateWidget` fold) (all run); the library wpfclock builds |
-| Round 49 startup-build-sweep (`9a38e05e`): MarkupCompiler value conversion, `local:` element fields, `FrameworkElement.Parent`, the `CreateWidget` CS0534 fold, weak `LayoutUpdated`, the prefixed `RoutedEvent` owner | Callbacks, 2DTransforms, CalculatorDemo, KeyFrameAnimation (run); CustomComboBox (crash) |
-| Round 49 runtime-xaml-navigation (`8c44b817`): `XamlReader`/`XamlWriter`/`XamlParseException`, `Application.LoadComponent` | SkinnedApplication, MergedResources, FindText (also needs Round 50's `FlowDocumentReader`) (run); ControlsAndLayout (crash) |
-| Rounds 49 and 51 together: `Parent`, `XamlWriter`, `BeginAnimation`, `Geometry.Clone` | GeometryDesignerDemo (crash) |
-| Rounds 49–52, change not isolated (`CS1501` on a `Dispatcher` overload) | UsingDispatcher (runs) |
+| Round 55 lane C startup-generator-sweep (`43208b5a`): root attached property through its owner type, `NavigationWindow.Source` owned from `Frame.SourceProperty` | Wizard, GlobalizationHomepage (run) |
+| Round 55 lane C controls-media-tail (`33c0326c`): `MediaElement`, `UserControl` | WindowActivationAndDeactivation (runs); libraries HostingWpfUserControlInWf, WPFControls |
+| Round 55 lane C, both tracks: `NavigationWindow.Source`, the `DataGrid` tail, `MenuItem` on `Control`, `Popup`, `SystemParameters` | ExpenseItIntro (crash) |
+| Round 54 lane B media3d (`44cd947e`): `System.Windows.Media.Media3D`, `Viewport3D`, 3D key frames | Converter (runs); Geometry, KeySplineAnimations (crash) |
+| Round 54 lane B documents-text-tail (`767cbdec`): `FontFamily`-typed `FlowDocument`/`TextElement` typography | FlowDocumentProperties, FontProperties (run) |
+| Round 53 lane A items-templates (`9d6ca70d`): `Binding.UpdateSourceExceptionFilter`, `FrameworkTemplate.FindName`, `ItemContainerGenerator`, `ItemCollection.CurrentItem` | BindValidation, FindingElementsInTemplates (run) |
+| `gf52b/content-bindings-sweep` merge (`b25bc71e`): `Run.TextProperty` and `SetBinding` on flow content | CommonDialogs (runs) |
 
-**Crash/hang→runs, 7 apps:**
+**Crash/hang→runs: 4 apps, all from Round 55 lane C startup-generator-sweep (`43208b5a`).**
 
-- Round 49 startup-build-sweep, with the Round 51 startup-run-sweep runtime conversion fixes (the two were not
-  separated):
-  - ShapeElements: string → `DoubleCollection`.
-  - CustomWindowUI: string → `Cursor`.
-  - ICommandSourceImplementation: markup-extension arguments are trimmed.
-  - FocusVisualStyle: `{DynamicResource}` on a `Style`-typed DP is deferred.
-- Round 51 animation-clocks: storyboard paths into sub-object values (ClipRegion) and multi-step indexed paths into a
-  brush (DrawingBrush).
-- Round 51 startup-run-sweep: ContextMenuOpening, one of the two empty-output hangs, now opens its window.
+- ControlsAndLayout: scRGB `sc#` colours in `MediaConverters.ParseColor`.
+- CustomComboBox: `{StaticResource}` in a `ResourceDictionary` root resolves against its own keys.
+- GeometryDesignerDemo: `Visual` property elements of media objects are emitted, so the named `VisualBrush` is built and
+  registered.
+- DragDropThumbOps: every `x:Class` root is registered in `GtkFormsXamlRegistry`. This was the last hang.
 
-**Error landscape.** Counted as portable failing apps per code, `ccd8dbb1` → now:
+**Moved blockers in apps that still fail.** Media3D and the controls tail cleared walls that exposed the next ones:
 
-- Down: `CS0246` 44 → 25, `CS0103` 23 → 7, `CS1061` 19 → 16, `CS0117` 16 → 11, `CS0234` 16 → 13, `CS0534` 9 → 0,
-  `CS1501` 2 → 0.
-- Gone: the `CS1002`/`CS1026`/`CS1513`/… syntax family (CustomComboBox), and `NU1201` (BamlReflector restores now).
-- Flat: `CS0115` 4 → 4 (overridable `LogicalChildren`, `OnRender`, `OnMouseEnter`/`Leave`/`Up`).
-- Up: `CS0029` 2 → 5. The new ones are revealed by earlier fixes: `FontFamily` typed `string` (2 apps), and
-  conversions in AnimationExamples, FontDialogDemo and MediaGallery.
-- `CS2002` (a generated `.g.cs` specified twice) is a warning in 23 of 159 portable builds (21 of 129 before).
+- CubeAnimationDemo, HexSphereDemo and PhotoFlipperDemo now need `MouseDevice` and `FrameworkElement.BeginStoryboard`.
+- ParticlesDemo now needs `RenderTargetBitmap.Freeze`.
+- GraphingCalculatorDemo now needs `MouseDevice`/`KeyboardDevice`, the `Rect` edges and `TextBox.MaxLines`.
+- SlidePuzzleDemo now needs `DocumentViewerBase.IsMasterPage`, `ComboBoxItem.Tag` and `BeginStoryboard`.
+- DataBindingDemo now needs `CollectionViewSource.SetBinding` and `AutomationProperties.HeadingLevel`/`ItemStatus`.
+- MediaGallery, AnimationExamples, Concepts, DialogBox, AnnotationsStyling and AnnotatedDocumentViewer are each down to a
+  single blocker.
+
+**Error landscape.** Counted as portable failing apps per code, `f3ea89fc` → now:
+
+- Down: `CS0246` 25 → 12, `CS0234` 13 → 5, `CS1061` 16 → 12, `CS0117` 11 → 4, `CS0103` 7 → 3, `CS0029` 5 → 2,
+  `CS0400` 2 → 1.
+- Gone: `CS5001` (Concepts) and `CS1729`.
+- Flat: `CS0115` 4 → 4 (the overridable `LogicalChildren`, `OnRender` and `OnMouse*`, all on `gf53a`), `CS0200` 1,
+  `CS0123` 1, `CS1069` 1 (WPFGallery), `CS1503` 1.
+- New: `CS1955` 0 → 3 (`BeginStoryboard` called as a method, revealed by Media3D).
+- `CS2002` (a generated `.g.cs` specified twice) is a warning in 25 of 171 portable builds (23 of 159 before).
 
 ## Regressions
 
 None. No project went pass→fail, and no app went runs→crash/hang.
 
-- **CustomApplicationClass** read as a hang (no window at 10 s) under parallel load. Re-run alone twice, it showed
-  its window within 1 s, so it is unchanged (runs).
-- **DragDropThumbOps** is still a hang. Round 51 diagnosed it (the MarkupCompiler must register the `x:Class` root in
-  `GtkFormsXamlRegistry`), and the fix was carried to Round 52 but is not on `main`.
+Nine apps showed no window in their first 10 s run under parallel load and showed one when re-run for 20 s:
+FindingSourceElement, AnimationTiming, PathAnimations, ClipboardViewer, ShapeElements, KeyStrokeCounter, FindText,
+FlowDirection and Wizard. They are recorded as `runs`, as in earlier reports.
 
 ## API demand
 
-The counts are failing portable apps (45). Windows-only and legacy-csproj demand is excluded. "Apps" is the number of
-failing portable apps whose errors touch the theme (from `blockerThemes`, a regex ranking aid); "only" is the number
+The counts are failing portable apps (33). Windows-only and legacy-csproj demand is excluded. "Apps" is the number of
+failing portable apps whose errors touch the theme (from `blockerThemes`, a regex ranking aid). "Only" is the number
 whose every recorded blocker is in the theme.
 
 | Theme | Symbols (apps) | Apps | Only |
 |---|---|---:|---:|
-| Controls and media tail | `MediaElement` (3), `UserControl` + `System.Windows.Shell` (WPFGallery), `ListViewItem` (ExpenseItDemo), `RangeBase.ValueProperty` (2), `MenuItem.Padding` (2), `SystemParameters` (2), `Frame.NavigationUIVisibility`/`ContentRendered`/`CurrentSource` (2), `TabItem.IsSelected`, `TabControl.TabStripPlacement`, `Expander.ExpandDirection`, `TreeView.SelectedValuePath`, `WrapPanel.ItemWidth/ItemHeight`, `GridSplitter.ShowsPreview`, `TextBox.TextAlignment`, `ScrollViewer.CanContentScroll`, `Hyperlink.TargetName`, `Popup.AllowsTransparency`, the `DataGrid` tail (`DataGridRow`, `DataGridColumnHeader`, `HeadersVisibility`, `CanUserResize*`), `FontStyleConverter`/`FontWeightConverter` | 14 | 4 |
-| 2D graphics, visual layer and input | `RoutedEventArgs.OriginalSource`, `GeneralTransform`, `HitTestResultBehavior` and the hit-test parameter/result types, `CompositionTarget`, `ThicknessConverter`/`BrushConverter`/`RectConverter`, `Mouse.SetCursor`/`Synchronize`, `UIElement.TranslatePoint`, `AddVisualChild`, `Rect.Size`/`Location`, `LinearGradientBrush.ColorInterpolationMode`, the `BitmapEffect` family (`BevelBitmapEffect`, `EdgeProfile`), and the overridable `LogicalChildren`/`OnRender`/`OnMouse*` (`CS0115`) | 12 | 10 |
-| 3D | `System.Windows.Media.Media3D` (7): `Viewport3D` (6), `Vector3D` (5), `Quaternion` (4), `Point3D` (2), `GeometryModel3D` (2), `MeshGeometry3D`, `Model3DGroup`, the 3D keyframe types | 9 | 8 |
-| Documents and text | `Section`/`Paragraph` `ContentStart`/`ContentEnd`/`BringIntoView`, `FontFamily`-typed `FlowDocument`/`TextElement.FontFamily` (2), `Run.TextProperty` + `SetBinding` (on the held `gf52b/content-bindings-sweep`), `FlowDocument.FlowDirectionProperty`/`SetBinding`, `SystemFonts.Message*Key`, `Paragraph.FontStretch`, `TextDecorationCollection.Freeze`, Fixed/XPS documents (`FixedDocument`, `FixedPage`, `XpsDocument`) | 7 | 5 |
-| XAML generator | attached-property binding on the root (`this.FocusManager`, 2), `NavigationWindow.Source` from a string (2), `CS5001` (Concepts) | 5 | 2 |
-| Items, data and templates | `ListBox.ScrollIntoView` (3), `ItemCollection` (`Items.CurrentItem`, 2), `ItemContainerGenerator`, `ControlTemplate`/`DataTemplate.FindName`, `FilterEventArgs`, `Binding.UpdateSourceExceptionFilter`, `Binding.XmlNamespaceManager` | 7 | 3 |
-| Imaging tail | `CachedBitmap`, `CroppedBitmap`, `FormatConvertedBitmap`, `TransformedBitmap` (2: PhotoStoreDemo, PhotoViewerDemo, which also need controls) | 2 | 0 |
+| 2D graphics, visual layer and input | **On `gf53a`:** `RoutedEventArgs.OriginalSource`, `GeneralTransform`/`TranslatePoint`, hit testing (`HitTestResultBehavior`, `PointHitTestParameters`, `GeometryHitTestParameters`/`Result`), `CompositionTarget`, `ThicknessConverter`/`BrushConverter`/`RectConverter`, `Mouse.SetCursor`/`Synchronize`, `AddVisualChild`, `Rect.Size`/`Location`/edges, `ColorInterpolationMode`, the `BitmapEffect` family, the overridable `LogicalChildren`/`OnRender`/`OnMouse*`, `Adorner.GetDesiredTransform`. **Not on `gf53a`:** `MouseDevice`/`KeyboardDevice` on the event args (4), `FrameworkElement.BeginStoryboard` (4), `RenderTargetBitmap.Freeze` | 19 | 16 |
+| Controls tail | `Hyperlink.TargetName` (Concepts), `FontStyleConverter`/`FontWeightConverter` (DialogBox), `InkCanvasEditingMode` (AnnotationsStyling), `TextBox.TextAlignment`/`MaxLines`, `ComboBoxItem.Tag` | 6 | 3 |
+| Documents and text | Fixed/XPS (`FixedDocument`, `FixedPage`, `PageContent`, `DocumentReference`, `XpsDocument`: DocumentMerge), `DocumentViewerBase.IsMasterPage`, `TextBlock.ContentStart`/`ContentEnd`, `TextDecorationCollection.Freeze` | 3 | 1 |
+| Items and data | `SortDescription` settable (AnnotatedDocumentViewer), `Binding.Path` typed `PropertyPath` (MediaGallery), `CollectionViewSource.SetBinding` | 3 | 2 |
+| XAML generator | `{Binding}` on an animation's `To` emitted as a string (AnimationExamples); `SetBinding` emitted on a non-`FrameworkElement` `DependencyObject` (DataBindingDemo) | 2 | 1 |
+| Imaging tail | `CachedBitmap`, `CroppedBitmap`, `FormatConvertedBitmap`, `TransformedBitmap` (PhotoViewerDemo, PhotoStoreDemo) | 2 | 1 |
 | System.Xaml/BAML tooling | `System.Xaml` (`XamlSchemaContext`, `XamlType`, `Baml2006Reader`, …), `System.Windows.Markup.Localizer` | 2 | 2 |
+| Packaging | `Microsoft.Win32.SystemEvents` (WPFGallery, `CS1069`) | 1 | 1 |
+| Automation | `AutomationProperties.HeadingLevel`/`ItemStatus` (DataBindingDemo, with `CollectionViewSource.SetBinding`) | 1 | 0 |
 | Code access security | `PermissionSet`/`PermissionSetAttribute` (EditingExaminerDemo; on .NET these come from the `System.Security.Permissions` package, not WPF) | 1 | 1 |
 
-## Round 55c, track a (startup and generator sweep)
+## Crashes (built, did not run)
 
-Measured on 162 building projects plus Wizard and GlobalizationHomepage, with the two-build recipe against a
-lane-private feed: no pass-to-fail, no runs-to-crash. 157 of 161 apps showed a window; the other four are the known
-non-runners (FocusTracker, a console app; AppCompat-Quirks; LocalizationResources; WDPEncoder).
+| Sample | Cause |
+|---|---|
+| ExpenseItIntro | **New build.** `InvalidOperationException: Resource with key 'NavButtonFocusVisualStyle' not found`, from `NavigationWindowKeyboardAccessibleStyle.InitializeComponent` (a merged `ResourceDictionary`). The key is defined nowhere in the sample. It is used only by `NavigationWindowForwardButtonStyle`, which is reached only through a template. WPF creates dictionary values lazily, so the lookup never runs. The generated code builds every keyed value eagerly, and `StaticResourceScope.Find` throws. |
+| Graphics/Geometry | **New build.** `NullReferenceException` at `SampleViewer.SampleSelected` (`SampleViewer.cs:72`, `myGeometry.Positions = points`). The MarkupCompiler drops the `Viewport3D.Camera` and `ModelVisual3D.Content` property elements, and it never assigns the `x:Name` field of the nested `MeshGeometry3D`. This is the generator limit that Round 54 lane B recorded. |
+| KeySplineAnimations | **New build.** `InvalidOperationException: Cannot find the element named 'TimeProgressTransform' to animate 'X'`. The target is a `TranslateTransform` named inside `LineGeometry.Transform` in a `GeometryDrawing` (`SplineExample.xaml:190`). Names on freezables nested in Geometry/Drawing property elements are not registered, so `Storyboard.TargetName` does not resolve. |
+| WDPEncoderAndDecoder | Unchanged: `NotSupportedException: JPEG XR (WDP) has no encoder in the GTK runtime`. This is a deliberate limit: gdk-pixbuf/GdkTexture have no JPEG XR codec. |
+| AppCompat-Quirks | Unchanged: `NullReferenceException` in the sample's `PopulateAppContextInformation`, which reflects over WPF-internal AppContext switch types. A compatibility gap, not worth chasing. |
+| LocalizationResources | Unchanged: `MissingManifestResourceException` for `LocalizationResources.data.stringtable.resources`. There is only an en-US satellite and no neutral resource. |
 
-| Sample | Before | Now | Cause fixed |
-|---|---|---|---|
-| ControlsAndLayout | crash | runs | scRGB `sc#` colours in `MediaConverters.ParseColor` |
-| CustomComboBox | crash | runs | `{StaticResource}` in a `ResourceDictionary` root looks up the scratch owner that holds the keys |
-| GeometryDesignerDemo | crash | runs | `VisualBrush.Visual` property element was dropped, so the named brush was never built or registered |
-| DragDropThumbOps | hang | runs | every `x:Class` root (not just Page/Window) is registered in `GtkFormsXamlRegistry` |
-| Wizard | build fail | runs | root attached property resolved through its owner type |
-| GlobalizationHomepage | build fail | runs | `NavigationWindow.SourceProperty` owned from `Frame.SourceProperty` |
-| DialogBox | build fail | still fails | root-binding error gone; `ListBox.ScrollIntoView`, `FontStyleConverter`, `ScrollViewer.CanContentScroll` remain |
-| ExpenseItIntro | build fail | still fails | `MainWindow.Source` error gone; `DataGrid` tail, `MenuItem.Padding`/`IsSubmenuOpen`, `Popup.AllowsTransparency`, `SystemParameters` remain |
-| Concepts | build fail (`CS5001`) | still fails | `CS5001` fixed: an `ApplicationDefinition` without `x:Class` now gets a class and `Main`. Remaining: `TabControl.TabStripPlacement`, `TabItem.IsSelected`, `Hyperlink.TargetName`, `SystemFonts`, `Binding.XmlNamespaceManager` |
-
-OpacityAnimation ran at base, regressed to a crash on this branch when the path resolver started rejecting a
-non-`DependencyObject` `GradientStop` step (`(Rectangle.Fill).(LinearGradientBrush.GradientStops)[1].(GradientStop.Color)`),
-and is restored by skipping that animation. `GradientStop` is a CLR class in this layer, so it is a known-gap skip
-(`StoryboardPathResolver`, Round 55c review a-F1); any other non-`DependencyObject` step now throws, as in WPF.
-
-## Round 55c, lane C review (carry-overs)
-
-Review fixes applied in lane C: path resolver known-gap set and diagnostics, `sc#` parser (ordinal prefix, whitespace
-separators, NaN), registry roots initialised for `LoadComponent`/navigation, `NavigationWindow.Source` metadata,
-Slider/MediaElement/WindowChrome/TabControl/MenuItem WPF parity, `MediaTimeline` binding in `Storyboard`, attached
-property elements on the root.
-
-Carry-over:
-
-- **`Color.FromScRgb`/`ScR`/`ScG`/`ScB` skip the sRGB transfer** (`Media/Color.cs`, outside lane C). `Color.FromScRgb(1, 0.5f, 0, 0).R`
-  is 128 while XAML `sc#1,0.5,0,0` gives 188 (WPF gives 188 for both). Follow-up: fix `Color.cs` (and relax
-  `ColorTests.FromScRgb_is_byte_normalization_not_linear_light`) and have `ScRgbColor.Parse` call it.
-- **SlidePuzzleDemo**: `DocumentViewerBase.IsMasterPage` (lane B, Documents) and `ControlTemplate.FindName` (lane A, templates).
-- **MediaGallery**: `Binding.Path` is typed `string` instead of `PropertyPath` (`Data/Binding.cs`, lane A).
-- **WPFGallery**: needs a `Microsoft.Win32.SystemEvents` package reference (packaging).
-- **SystemParameters `*Key` objects** do not resolve through `DynamicResource` (needs a system-key fallback in the
-  resource lookup chain).
-- **ScrollBar** is still on `Control`, not `RangeBase`.
-- Deliberate store-only members (GTK has no equivalent): `Balance`, `ScrubbingEnabled`, `SpeedRatio`,
-  `StretchDirection`, `Expander.ExpandDirection`, DataGrid header resize, Popup animation.
-- Remote (`http`) `MediaElement` sources are unverified.
-
-## Crashes and hangs (built, did not run)
-
-ControlsAndLayout, CustomComboBox, GeometryDesignerDemo and DragDropThumbOps now run (see the Round 55c table).
-
-| Sample | Result | Cause |
-|---|---|---|
-| WDPEncoderAndDecoder | crash | `NotSupportedException: JPEG XR (WDP) has no encoder in the GTK runtime`. The decoder side exists. This is a deliberate limit: gdk-pixbuf/GdkTexture have no JPEG XR codec |
-| AppCompat-Quirks | crash | Unchanged: `NullReferenceException` in the sample's `PopulateAppContextInformation`. It reflects over WPF-internal AppContext switch types. A compatibility gap, not worth chasing |
-| LocalizationResources | crash | Unchanged: `MissingManifestResourceException` for `LocalizationResources.data.stringtable.resources`. There is only an en-US satellite and no neutral resource |
+The three new crashes are all MarkupCompiler work (track 4 below).
 
 ## XAML generator errors
 
 These are the remaining generator-side causes in portable apps. Per-project messages are in the JSON (`xamlErrors`).
 
-1. **Attached property with a binding on the root element** (Wizard: 3 pages; DialogBox: 3 dialogs). **Fixed in Round 55c for Wizard**; DialogBox's remaining blockers are kept
-   (`ListBox.ScrollIntoView`, `FontStyleConverter`, `ScrollViewer.CanContentScroll`).
-   `FocusManager.FocusedElement="{Binding ElementName=…}"` on the root is emitted as
-   `this.SetBinding(this.FocusManager.FocusedElementProperty, …)`. The owner type is resolved as a member of `this`
-   instead of `System.Windows.Input.FocusManager`. Wizard's Round 49 blockers (`PageFunction<T>`) are gone, so this is
-   now its only blocker.
-2. **Fixed in Round 55c.** **`NavigationWindow Source="Homepage.xaml"`** (GlobalizationHomepage, ExpenseItIntro) is emitted as
-   `this.Source = "Homepage.xaml"`. `NavigationWindow` has no `Source` in the layer, and the string needs a `Uri`
-   conversion. GlobalizationHomepage fails on nothing else.
-3. **Fixed in Round 55c.** **`ResourceDictionary` root scope** (CustomComboBox).
-4. **Fixed in Round 55c.** **`x:Class` root registration in `GtkFormsXamlRegistry`** (DragDropThumbOps).
-5. **Missing `x:Name` fields for elements of missing types:** `mediaElement` (WindowActivationAndDeactivation, which
-   needs only `MediaElement`), `myMediaElement`/`MediaElement1` (MediaGallery), the 3D keyframe names (KeySplineAnimations,
-   AnimationExamples), `InteractiveEffect` (BitmapEffectsGallery, a `BevelBitmapEffect`). These follow from the layer
-   gaps, not from the generator.
-6. **Fixed in Round 55c.** **No `Main` (`CS5001`, Concepts).** `App.xaml` is an explicit `ApplicationDefinition` item. Not diagnosed. Concepts
-   also needs 7 control and binding members.
-7. **Not generator bugs, though surfaced in `.g.cs`:** `TabItem.IsSelected`, `TabControl.TabStripPlacement`,
-   `WrapPanel.ItemWidth`/`ItemHeight(Property)`, `GridSplitter.ShowsPreview`, `TextBox.TextAlignment`,
-   `Run.TextProperty`, `Frame.NavigationUIVisibility`, `Expander.ExpandDirection`, `TreeView.SelectedValuePath`,
-   `SystemFonts.Message*Key`, `DataGridRow`/`DataGridColumnHeader`, and `ConeControl.Content` (the library
-   HostingWpfUserControlInWf, from the missing `UserControl`). All are missing layer members.
+1. **`{Binding}` on an animation property** (AnimationExamples, its only blocker).
+   `To="{Binding ElementName=SampleDisplayBorder, Path=ActualWidth}"` on a `DoubleAnimation` is emitted as
+   `__anim.To = "{Binding …}"` (`CS0029`, string to `double?`). It needs `BindingOperations.SetBinding` on
+   `DoubleAnimation.ToProperty`.
+2. **`SetBinding` on a non-`FrameworkElement`** (DataBindingDemo). A `CollectionViewSource` resource with
+   `Source="{Binding …}"` is emitted as `__e.SetBinding(…)`. `CollectionViewSource` derives from `DependencyObject`, so
+   the call needs `BindingOperations.SetBinding`.
+3. **Media3D property elements dropped** (Geometry crash). `Viewport3D.Camera`, `ModelVisual3D.Content` and
+   `ModelVisual3D.Transform` are not emitted, and `x:Name` on nested freezables is declared but never assigned. The
+   runtime `XamlReader` builds the same scene correctly (`Media3DXamlTests`).
+4. **Names inside Geometry/Drawing property elements not registered** (KeySplineAnimations crash).
+5. **Eager `StaticResource` in dictionary values** (ExpenseItIntro crash). See Crashes.
+6. **Not generator bugs, though surfaced in `.g.cs`:** `Hyperlink.TargetName` (Concepts), `InkCanvasEditingMode`
+   (AnnotationsStyling), `TextBox.TextAlignment` (FontDialogDemo), `TextBox.MaxLines` (GraphingCalculatorDemo),
+   `DocumentViewerBase.IsMasterPage` and `ComboBoxItem.Tag` (SlidePuzzleDemo), `AutomationProperties.HeadingLevel`
+   (DataBindingDemo). All are missing layer members.
    - DocumentStructure's `fixedpage1_structure.xaml` is malformed XML, and that app is Windows-only.
+   - The "Skipped property element … not supported by the markup compiler" lines (e.g. `Button.ContextMenu`,
+     `Expander.Header` in Concepts; `RowDefinition`/`ColumnDefinition` in UsingSpeech) are MSBuild messages, not
+     errors. They are a silent-drop risk at run time, so treat them as a generator backlog.
 
-## Round 54 lane B, Track 2 part A: Media3D (`gf54b/media3d`)
+Fixed since `f3ea89fc` (Round 55 lane C): root attached-property bindings (Wizard), `NavigationWindow Source="…"`
+(GlobalizationHomepage), the `ResourceDictionary` root scope (CustomComboBox), `x:Class` root registration
+(DragDropThumbOps), `Visual` property elements of media objects (GeometryDesignerDemo), and `CS5001` for an
+`ApplicationDefinition` without `x:Class` (Concepts).
 
-Adds `System.Windows.Media.Media3D` from nothing, plus the key-frame animation types it needs. Measured 2026-11-22
-on the branch with `Gtk4.Forms.Wpf 1.0.0.26326` packed from the worktree into a lane-private feed (same recipe as
-Method). All 8 target samples were built and the ones that built were smoke-run.
+## Media3D: known gaps against WPF
 
-**What exists now**
-
-- Math structs: `Point3D`, `Vector3D`, `Size3D`, `Point4D`, `Quaternion`, `Matrix3D`, `Rect3D`, with converters and
-  `Parse`. `default(Quaternion)` and `default(Matrix3D)` are identity.
-- Object model: transforms, rotations, models, materials, lights, cameras, `Geometry3D`/`MeshGeometry3D`,
-  `Visual3D`/`ModelVisual3D`, `Viewport3D`. Freezable collections forward `Changed`, so any change raises one redraw.
-- Animation: `KeyTime`, `KeySpline`, `DoubleAnimationUsingKeyFrames` (+ the four key-frame types) and
-  `ParallelTimeline.SlipBehavior`. `System.Windows.PointConverter`, `VectorConverter` and
-  `System.Windows.Media.MatrixConverter` were added to WindowsBase.
-- Rendering: a managed software rasterizer on Cairo inside a `Gtk.DrawingArea` (GSK has no textured-triangle
-  primitive, and Cairo lets textures reuse `Brush.ApplyToCairo`).
-
-**Gaps against WPF (documented, not fixed)**
+From Round 54 lane B (`gf54b/media3d`). These are documented, not fixed:
 
 - Hidden surfaces use a back-to-front sort of whole triangles (painter's algorithm), not a per-pixel z-buffer.
-  Intersecting triangles can overlap wrongly.
-- Lighting is flat per triangle (the mean of the vertex normals), with Blinn-Phong specular.
-- Brush textures are mapped with a per-triangle affine matrix, not perspective-correct.
-- `Paced` key times are treated as `Uniform`, except a leading `Paced` frame, which is pinned to time 0.
-  `ParallelTimeline.SlipBehavior` is stored only.
+- Lighting is flat per triangle, with Blinn-Phong specular. Brush textures use a per-triangle affine mapping, not a
+  perspective-correct one.
+- `Paced` key times are treated as `Uniform`. `ParallelTimeline.SlipBehavior` is stored only.
 - Typed 3D animations (`Rotation3DAnimation`, `Point3DAnimation`, `Vector3DAnimation`, `QuaternionAnimation`) are
-  deferred: every target sample animates through `DoubleAnimation` on `AxisAngleRotation3D.Angle` or
-  `TranslateTransform3D.OffsetX`.
-- `MeshGeometry3D.TextureCoordinates` is the existing `System.Windows.Shapes.PointCollection`, a plain list: editing
-  it in place does not repaint. Moving `PointCollection` to `System.Windows.Media` also needs the MarkupCompiler's
-  `ConverterBackedClasses` entry, which this lane may not edit.
-- `Point`/`Vector`/`Matrix` carry no `[TypeConverter]` attribute (their files are not owned by this lane); the new
-  converters work when instantiated.
+  deferred.
+- `MeshGeometry3D.TextureCoordinates` is a plain list: editing it in place does not repaint.
+- The generated-code path drops 3D property elements (see XAML generator errors, item 3).
 
-**Generator limits found (lane C, recorded, not worked around)**
+Carry-overs from the Round 55 lane C review that are still open:
 
-A probe app with a `Viewport3D` scene in XAML (camera, `ModelVisual3D.Content`, `ModelVisual3D.Transform`, keyed
-`MeshGeometry3D`/`DiffuseMaterial` resources) compiles without error, but the generated `InitializeComponent`
-silently drops it: `Viewport3D.Camera`, `ModelVisual3D.Content` and `ModelVisual3D.Transform` property elements are
-not emitted, only `__e0.Children.Add(new ModelVisual3D())`, and the keyed resources become
-`this.Resources["Tri"] = "";`. `x:Name` on a nested freezable (`AxisAngleRotation3D`) is declared as a field but never
-assigned, so using it throws `NullReferenceException`. The runtime `XamlReader` path builds the same scene
-correctly (`Media3DXamlTests`).
-
-**Target samples**
-
-| Sample | Builds | Runs 10 s with a window | 3D scene paints |
-|---|---|---|---|
-| Graphics/Converter | yes | yes | n/a (type-conversion demo, no `Viewport3D`) |
-| Animation/KeySplineAnimations | yes | no: crashes at startup, `Cannot find the element named 'TimeProgressTransform' to animate 'X'` (storyboard target resolution, lane C) | no |
-| Graphics/Geometry | no: 4 x CS1061 (`Frame.ContentRendered`, `Frame.NavigationUIVisibility`) | not run | not run |
-| CubeAnimationDemo | no: CS1955 `BeginStoryboard` called as a method; CS1061 `MouseEventArgs.MouseDevice` | not run | not run |
-| HexSphereDemo | no: same as CubeAnimationDemo | not run | not run |
-| PhotoFlipperDemo | no: same as CubeAnimationDemo | not run | not run |
-| ParticlesDemo | no: CS1061 `RenderTargetBitmap.Freeze` | not run | not run |
-| GraphingCalculatorDemo | no: 70 x CS1061 (`Rect.Left/Right/Top/Bottom`), 4 x CS1503 (`Point` to `Size` argument) | not run | not run |
-
-None of the build errors in the six failing samples mentions a 3D type. They belong to lane A (`MouseDevice`) and
-lane C (`BeginStoryboard`, `Frame`), or are WindowsBase gaps (`Rect.Left`, `Freeze` on `RenderTargetBitmap`).
-KeySplineAnimations' 3D key-frame fields compile now, but its fields are never assigned (see above) and its
-storyboard does not resolve.
-
-A scratch app that loads the probe scene through the runtime `XamlReader` and paints it through the shipped package
-reads back an opaque red pixel in the middle of the lit triangle.
-
-**Samples gate**
-
-All 162 projects with `build=pass` still build (2 builds each, lane-private feed, isolated cache). All 152 apps with
-`run=runs` still start with a window: 147 on the first 10 s run, and 5 (EditingCollections,
-ValidateItemsInItemsControl, Paths, VideoViewerDemo, WindowSizingOrder) showed no window at 10 s under load from the
-other lanes and ran at once when re-run alone for 20 s.
+- `Color.FromScRgb`/`ScR`/`ScG`/`ScB` skip the sRGB transfer (`Media/Color.cs`).
+- `SystemParameters` `*Key` objects do not resolve through `DynamicResource`.
+- `ScrollBar` is still on `Control`, not `RangeBase`.
 
 ## Next rounds
 
 These are ranked by portable samples unblocked. "Only" means samples whose sole recorded blocker is the track. The
 compiler reports nearly all errors in one pass, but a later phase (generated code, a second wall at run time) can
-still hold an app back, so treat "only" as an upper bound for build and an estimate for run.
+still hold an app back. Treat "only" as an upper bound for build and an estimate for run.
 
-**Not eligible: `System.Windows.Automation.Peers`.** It belongs to `docs/plans/ui-automation.md` (Phases 0–5 merged in
-`f977d105`). No portable sample is blocked on it now; the parity scout must not pick it.
+**Not eligible: `System.Windows.Automation.Peers`.** It belongs to `docs/plans/ui-automation.md`. The
+`AutomationProperties.HeadingLevel`/`ItemStatus` attached properties (DataBindingDemo) belong there too. Hand them to
+that plan; they are not a parity track.
 
-1. **2D graphics, visual layer and input: 10 only, 12 involved.**
-   - Only: ThicknessConverter, VisualBrush, ImageBrush, LayoutTransitionsDemo, CompositionTarget, DrawingVisual,
-     Per-FrameAnimation, DragDropObjects, OverridingLogicalTree, BitmapEffectsGallery. Involved: Brushes and
-     ExpenseItDemo (both also need controls).
-   - Covers: `RoutedEventArgs.OriginalSource`; `GeneralTransform` and `UIElement.TranslatePoint`; `VisualTreeHelper`
-     hit testing (`HitTestResultBehavior`, `PointHitTestParameters`, `GeometryHitTestParameters`/`Result`);
-     `CompositionTarget.Rendering`; `ThicknessConverter`, `BrushConverter` and `RectConverter`; `Mouse.SetCursor`/
-     `Synchronize`; `AddVisualChild`; `Rect.Size`/`Location`; `LinearGradientBrush.ColorInterpolationMode`; the
-     overridable `FrameworkElement.LogicalChildren`, `UIElement.OnRender` and `OnMouseEnter`/`Leave`/`Up`; and the
-     obsolete `BitmapEffect` family as no-op types.
-   - Owns: `Gtk4.Forms.WindowsBase/RoutedEventArgs.cs`, `Input/Mouse*.cs`, `UIElement*.cs`,
-     `LogicalTreeHelper.cs` and the `Controls/*.LogicalChildren.cs` partials (including `ItemsControl`'s, carved out
-     of track 6), `Media/VisualTreeHelper.cs`, new `Media/HitTest*.cs`, `Media/GeneralTransform*.cs`,
-     `Media/CompositionTarget.cs` and `Media/Effects/*BitmapEffect*.cs`, and new `ThicknessConverter`/`BrushConverter`/
-     `RectConverter` files. It must not touch `Markup/XamlValueConverter*.cs`, which belongs to track 3.
-2. **Media3D: 8 only, 9 involved.**
-   - Only: Converter, Geometry, KeySplineAnimations, CubeAnimationDemo, GraphingCalculatorDemo, HexSphereDemo,
-     ParticlesDemo, PhotoFlipperDemo. Involved: AnimationExamples (also needs `Frame` members, track 5).
-   - Covers: `Viewport3D`, cameras, lights, `Model3D`/`Model3DGroup`/`GeometryModel3D`, `MeshGeometry3D`,
-     `Vector3D`/`Point3D`/`Quaternion`/`Matrix3D`, `Transform3D`/`RotateTransform3D`, the 3D animations and keyframes,
-     rendered through GSK 3D transforms or a `Gtk.GLArea`. The largest surface.
-   - Owns: new `Media/Media3D/**`, new `Controls/Viewport3D.cs`, new 3D animation files under `Media/Animation/`
-     (no edits to existing `Storyboard*.cs`), and the `XmlnsDefinition` line for `System.Windows.Media.Media3D`.
-3. **Startup and generator sweep: 4 crash→runs, 2 only builds, 2 partial.**
-   - Runs: ControlsAndLayout (scRGB `sc#` colours), CustomComboBox (`ResourceDictionary` root scope),
-     GeometryDesignerDemo (the `VisualBrush.Visual` property element was dropped by the generator, so the named brush was
-     never built or registered), DragDropThumbOps (`x:Class` root registration, the Round 51
-     carry-over).
-   - Builds: Wizard (root attached-property binding), GlobalizationHomepage (`NavigationWindow.Source` with a string →
-     `Uri` conversion). Partial: DialogBox, ExpenseItIntro.
-   - Also: diagnose Concepts' missing `Main` (`CS5001`).
-   - Gate: all 162 building projects, plus the 7 non-runners.
-   - Owns: `Gtk4.Forms.MarkupCompiler/**`, `Markup/XamlValueConverter*.cs` (`MediaConverters` is in
-     `XamlValueConverter.Media.cs`), `Markup/GtkFormsXamlRegistry*.cs`, `Navigation/NavigationWindow.cs`,
-     `NameScope.cs`, and the
-     target-resolution part of `Media/Animation/Storyboard*.cs`.
-4. **Documents and text tail: Round 54b (lane B) done, see the gate below; Fixed/XPS next.**
-   - Landed in `gf54b/documents-text-tail`: WPF-typed `TextElement`/`FlowDocument` typography (FontFamily,
-     FontWeight, FontStyle, FontStretch, Foreground, FontSize: effective values, never null or NaN);
-     `TextElement.ContentStart`/`ContentEnd`/`ElementStart`/`ElementEnd` with a private container for
-     detached elements; `RequestBringIntoView`/`BringIntoView`; `FrameworkContentElement.ContextMenu`
-     (stored); coalesced, nested-edit-aware repagination; `Run(string, TextPointer)` between blocks.
-   - Now build and run: FontProperties, FlowDocumentProperties. CommonDialogs came with the content bindings.
-   - AnnotatedDocumentViewer: only CS0200 is left. `SortDescription.PropertyName`/`Direction` are get-only in
-     `Data/SortDescription.cs` (lane A's area; WPF's are settable). With that one initializer replaced in a scratch
-     copy it builds and runs.
-   - **Next lane-B round: DocumentMerge and the Fixed/XPS model.** It needs `FixedDocument`, `FixedPage`,
-     `PageContent`, `DocumentReference`, `FixedDocumentSequence`, `IUriContext`, then `XpsDocument` and
-     `XpsDocumentWriter` on a ZIP package with FixedPage markup parsing (Glyphs, obfuscated fonts). Owns new
-     `System.Windows.Xps/**` and the Fixed types under `Documents/**`.
-   - **Request for lane A:** make `SortDescription.PropertyName` and `SortDescription.Direction` settable in
-     `Data/SortDescription.cs` (WPF's are). It is AnnotatedDocumentViewer's only remaining blocker (CS0200).
-   - Known gaps: a view change from an edit or an inherited property is coalesced to one `ViewChanged` per dispatcher
-     turn, so a viewer repaints at the next turn, not synchronously. A detached `TextPointer` has `Parent == null` at
-     the root level. The document's font family and size reach the viewer markup as one outer span.
-   - **Request for lane C:** add `DocumentViewer` to `CommandConverters._controlOwners` (next to `Slider`) so
-     command names owned by `DocumentViewer` resolve in XAML; `Markup/**` was out of lane B's scope.
-   - Still open: AnnotationsStyling (also needs `MenuItem.Padding`, `SystemParameters`, `InkCanvasEditingMode`) and
-     FontDialogDemo (also needs items). ScrollViewer does not handle RequestBringIntoView yet (not lane B).
-5. **Controls and media tail: 4 only, 14 involved.**
-   - Only: SlidePuzzleDemo, MediaGallery and WindowActivationAndDeactivation (`MediaElement` on
-     `Gtk.MediaFile`/`Gtk.Video`, plus `RangeBase.ValueProperty`), and WPFGallery (`UserControl`,
-     `System.Windows.Shell.WindowChrome`/`NonClientFrameEdges`).
-   - Involved: Brushes, ExpenseItIntro, ExpenseItDemo (`ListViewItem`), AnnotationsStyling, PhotoViewerDemo, Concepts,
-     AnimationExamples.
-   - Covers: `MenuItem` on `Control` (`Padding`), `SystemParameters`, the `Frame`/`TabControl`/`TabItem`/`Expander`/
-     `TreeView`/`WrapPanel`/`GridSplitter`/`TextBox`/`ScrollViewer`/`Hyperlink`/`Popup` members, the `DataGrid` tail,
-     and `FontStyleConverter`/`FontWeightConverter`.
-   - Owns: new `Controls/MediaElement.cs`, `Controls/UserControl.cs`, `Controls/ListViewItem.cs`,
-     `System.Windows.Shell/**`, `Controls/Primitives/RangeBase.cs`, and the existing `Controls/` files of the controls
-     named above (not `ItemsControl*`/`ListBox*`), plus `SystemParameters.cs`.
-6. **Items, data and templates: 3 only, 7 involved.**
-   - Only: BindValidation (`Binding.UpdateSourceExceptionFilter`), DataBindingDemo (`CollectionViewSource.Filter` with
-     `FilterEventArgs`), FindingElementsInTemplates (`FrameworkTemplate.FindName`, `ItemContainerGenerator`,
-     `ItemCollection.CurrentItem`).
-   - Involved: DialogBox, FontDialogDemo, PhotoStoreDemo (`ListBox.ScrollIntoView`), Concepts
-     (`Binding.XmlNamespaceManager`).
-   - Owns: `Controls/ItemsControl*.cs` (except `ItemsControl.LogicalChildren.cs`), `Controls/ListBox*.cs`, new
-     `Controls/ItemCollection.cs` and `Controls/ItemContainerGenerator.cs`, `Templates/FrameworkTemplate.cs`/
-     `ControlTemplate.cs`/`DataTemplate.cs`, `Data/Binding.cs`, `Data/CollectionViewSource.cs`.
-     It starts after `gf52b/content-bindings-sweep` is on `main`.
+1. **Land the visual layer and input track (`gf53a/visual-layer-input`): 12 only.**
+   - Only: Per-FrameAnimation, DragDropObjects, OverridingLogicalTree, ThicknessConverter, BitmapEffectsGallery, Brushes,
+     ImageBrush, VisualBrush, ExpenseItDemo, LayoutTransitionsDemo, CompositionTarget, DrawingVisual. Also clears part of
+     PhotoStoreDemo (`AddVisualChild`, `Rect.Size`/`Location`) and GraphingCalculatorDemo (`Rect` edges).
+   - The branch is one commit (`d4e0ee3c`, 92 tests, 64 files) on the `b25bc71e` base, 39 commits behind `main`. It
+     was built in Round 53 but not merged. Rebase it, re-run the review, and gate it on the 176 building projects. The
+     12 are expected from its symbol list, not yet measured.
+   - Owns: `Gtk4.Forms.WindowsBase/RoutedEventArgs.cs`, `Rect.*.cs`, `RectConverter.cs`, `ThicknessConverter.cs`,
+     `ConverterParsing.cs`; `UIElement.*.cs` (`MouseVirtuals`, `OnRender`, `RenderLayer`, `VisualGeometry`,
+     `BitmapEffect`); `FrameworkElement.LogicalChildren.cs`, `LogicalTreeHelper.cs` and the
+     `Controls/*.LogicalChildren.cs` partials; `Media/Visual*.cs`, `Media/VisualTreeHelper*.cs`, `Media/HitTestTypes.cs`,
+     `Media/GeneralTransform*.cs`, `Media/CompositionTarget.cs`, `Media/BrushConverter.cs`, `Media/Effects/**`,
+     `Media/DrawingContext*.cs`, `Input/Mouse.Cursor.cs`, and `Documents/Adorner.cs` + `Adorner.DesiredTransform.cs`
+     (the `CI-3` carve-out).
+   - After it lands, lane B applies `CI-2`: `FlowDocumentPaginator` uses the `DrawingContext` that `RenderOpen` returns,
+     and the `Context` shim is deleted.
+2. **Input devices and storyboard entry points: 3 only, 2 involved.**
+   - Only: CubeAnimationDemo, HexSphereDemo, PhotoFlipperDemo (`MouseEventArgs.MouseDevice`, `FrameworkElement.BeginStoryboard`).
+     Involved: GraphingCalculatorDemo (also `KeyEventArgs.KeyboardDevice`, `TextBox.MaxLines` from track 3, and
+     track 1's `Rect` edges) and SlidePuzzleDemo (`BeginStoryboard`, plus tracks 3 and 6).
+   - Covers: a `MouseDevice`/`KeyboardDevice` surface on `InputDevice`, exposed from the input event args;
+     `FrameworkElement.BeginStoryboard(Storyboard[, HandoffBehavior, bool])`.
+   - Owns: `Input/MouseEventArgs.cs`, `Input/KeyboardEventArgs.cs`, `Input/InputDevice.cs`, new `Input/MouseDevice.cs`,
+     new `FrameworkElement.BeginStoryboard.cs`. It must not touch `Input/Mouse.Cursor.cs` or `UIElement.*` (track 1).
+3. **Controls tail II and packaging: 4 only, 3 involved.**
+   - Only: Concepts (`Hyperlink.TargetName`), DialogBox (`FontStyleConverter`/`FontWeightConverter`), AnnotationsStyling
+     (`InkCanvasEditingMode`, plus an `InkCanvas` shell), WPFGallery (`Microsoft.Win32.SystemEvents` as a
+     `Gtk4.Forms.Wpf` dependency, like `System.Configuration.ConfigurationManager`).
+   - Involved: FontDialogDemo (`TextBox.TextAlignment`, `TextBlock.ContentStart`/`ContentEnd`), GraphingCalculatorDemo
+     (`TextBox.MaxLines`), SlidePuzzleDemo (`ComboBoxItem.Tag`).
+   - Owns: `Controls/TextBox*.cs`, `Controls/TextBlock*.cs`, `Controls/ComboBoxItem*.cs`, new `Controls/InkCanvas*.cs`,
+     `Documents/Hyperlink.cs` (carved out of track 6), new `FontStyleConverter`/`FontWeightConverter` files, and
+     `Gtk4.Forms.Wpf/Gtk4.Forms.Wpf.csproj` (package dependencies).
+4. **Startup and generator sweep II: 3 crash→runs, 1 only, 1 involved.**
+   - Runs: ExpenseItIntro (defer `StaticResource` in dictionary values, or resolve a missing key lazily as WPF does),
+     Geometry (emit `Viewport3D.Camera`/`ModelVisual3D.Content`/`Transform` and assign nested freezable names),
+     KeySplineAnimations (register names inside Geometry/Drawing property elements).
+   - Builds: AnimationExamples (`{Binding}` on an animation property). Involved: DataBindingDemo (`SetBinding` on a
+     non-`FrameworkElement` via `BindingOperations`).
+   - Also: work down the "Skipped property element" backlog, starting with `ContextMenu` and `Expander.Header`.
+   - Gate: all 176 building projects, plus the 6 non-runners.
+   - Owns: `Gtk4.Forms.MarkupCompiler/**`, `Markup/StaticResourceScope*.cs`, `Markup/XamlValueConverter*.cs`,
+     `Markup/GtkFormsXamlRegistry*.cs`, `NameScope.cs`, and the target-resolution part of
+     `Media/Animation/Storyboard*.cs`.
+5. **Items and data tail: 2 only, 1 involved.**
+   - Only: AnnotatedDocumentViewer (`SortDescription.PropertyName`/`Direction` settable), MediaGallery (`Binding.Path`
+     typed `PropertyPath`, with a string-compatible path for existing callers).
+   - Involved: DataBindingDemo (with track 4 and the UI automation plan).
+   - Owns: `Data/**` (`SortDescription.cs`, `Binding.cs`, `BindingEngine*.cs`, `CollectionViewSource*.cs`).
+     `Binding.Path` is a public-API type change: check every `Binding.Path` reader in `Markup/**` and coordinate with
+     track 4.
+6. **Documents and imaging tail: 3 only, 3 involved.**
+   - Only: DocumentMerge (Fixed/XPS: `FixedDocument`, `FixedPage`, `PageContent`, `DocumentReference`,
+     `FixedDocumentSequence`, then `XpsDocument` on a ZIP package), PhotoViewerDemo (`CachedBitmap`, `CroppedBitmap`,
+     `FormatConvertedBitmap`, `TransformedBitmap`), ParticlesDemo (`RenderTargetBitmap.Freeze`).
+   - Involved: PhotoStoreDemo (imaging plus track 1), SlidePuzzleDemo (`DocumentViewerBase.IsMasterPage`),
+     FontDialogDemo (`TextDecorationCollection.Freeze`).
+   - Owns: new `System.Windows.Xps/**`, the Fixed types under `Documents/**` (not `Documents/Hyperlink.cs` or
+     `Documents/Adorner*.cs`), `Controls/Primitives/DocumentViewerBase*.cs`, `Media/Imaging/**`, and
+     `Media/TextDecoration*.cs`.
 
 **Lanes (three in parallel, two tracks each, file-disjoint):**
 
 | Lane | Tracks | Only | Boundary to watch |
 |---|---|---:|---|
-| A | 1 (2D graphics, visual layer and input) + 6 (items, data and templates) | 13 | Track 1 owns `UIElement`/`FrameworkElement` virtuals; track 6 owns `ItemsControl`/`ListBox`/`Data` |
-| B | 2 (Media3D) + 4 (documents and text, after `gf52b` lands) | 12–13 | Track 2 adds only new files under `Media/Animation/` |
-| C | 3 (startup and generator sweep) + 5 (controls and media tail) | 10 | Track 3 owns `Markup/**` and `NavigationWindow`; track 5 owns `Frame` and the other `Controls/` files |
-
-Lane hand-offs after integration (Round 53 lane A review):
-
-- **To lane B (`CI-2`).** When track 1 (`gf53a/visual-layer-input`) lands the `internal DrawingContext Context => this`
-  shim, `Documents/FlowDocumentPaginator.cs:123` (`DrawColumns(scope.Context, ...)`) should use the `DrawingContext`
-  that `RenderOpen` returns directly, and the shim should then be deleted. Today it compiles against
-  `DrawingContextScope.Context` (`Media/DrawingContext.cs:89`) because track 1 is not merged.
-- **To lane B, conditional (`CI-3`).** DragDropObjects needs `Adorner.GetDesiredTransform`. Track 1 makes
-  `Documents/Adorner.cs` `partial` and adds `Documents/Adorner.DesiredTransform.cs`, both under lane B's `Documents/**`.
-  If integration refuses that change, lane B adds `public virtual GeneralTransform GetDesiredTransform(GeneralTransform
-  transform)` on `Adorner`. The sample stays blocked until then; do not drop it.
+| A | 1 (land `gf53a`) + 2 (input devices, `BeginStoryboard`) | 15 | Track 1 owns `UIElement.*`, `Input/Mouse.Cursor.cs` and the visual layer. Track 2 owns the event-args and device files only |
+| B | 6 (documents and imaging) + 5 (items and data) | 5 | Track 6 owns `Documents/**` minus `Hyperlink.cs` and `Adorner*.cs`. Track 5 owns `Data/**` |
+| C | 4 (generator sweep II) + 3 (controls tail II, packaging) | 5 + 3 crash→runs | Track 4 owns `Gtk4.Forms.MarkupCompiler/**` and `Markup/**`. Track 3 owns the named `Controls/` files, `Documents/Hyperlink.cs` and the package |
 
 Held branches:
 
-- **`gf52b/content-bindings-sweep` (held): 1 sample only (CommonDialogs), 1 commit on `main`'s Round 50 base.** Merge it
-  first (see track 4). Its `Data/` edits overlap track 6.
-- **`gf46/input-focus` (held): 0 samples.** Every Input and Commands app builds and all 16 portable ones run. What
-  remains on the branch is focus-transaction behaviour, owned by the focus-behaviour design. Rework it there against
-  `main`. It moves no sample count and is not in the lanes.
-- **`gf39/xaml-content-model` (held, blocked 3 times): 0 samples on its own.** Re-scope it as a test-only change
-  (the compile-checked generator test) on top of track 3, which owns `Gtk4.Forms.MarkupCompiler/**`.
+- **`gf53a/visual-layer-input` (unmerged since Round 53): 12 samples.** This is track 1. Land it first.
+- **`gf52b/content-bindings-sweep`: merged** (`b25bc71e`). CommonDialogs builds and runs. The branch ref is gone.
+- **`gf46/input-focus` (held, 6 commits, 144 behind `main`): 0 samples.** Every Input and Commands app builds and all 16
+  portable ones run. What remains on the branch is focus-transaction behaviour, owned by the focus-behaviour design.
+  Rework it there against `main`. It moves no sample count and is not in the lanes.
+- **`gf39/xaml-content-model` (held, blocked 3 times; 3 commits, 197 behind): 0 samples on its own.** Re-scope it as a
+  test-only change (the compile-checked generator test) on top of track 4, which owns
+  `Gtk4.Forms.MarkupCompiler/**`. The "Skipped property element" backlog is its natural regression corpus.
 
 Deliberately not next:
 
-- The imaging tail (`CachedBitmap`, `CroppedBitmap`, `FormatConvertedBitmap`, `TransformedBitmap`): 2 apps, and both
-  also need controls. Fold it in after tracks 5 and 6.
 - JPEG XR encoding (WDPEncoderAndDecoder). There is no codec in the GTK stack.
 - System.Xaml/BAML tooling (LocBaml, BamlReflector/BamlTools) and code access security (EditingExaminerDemo).
+- AppCompat-Quirks (WPF-internal AppContext switches) and LocalizationResources (the sample ships no neutral resource).
 - Legacy (non-SDK) csproj conversion: 21 projects. That is a converter feature, not a layer gap.
 
 ## Method
@@ -462,43 +348,44 @@ Deliberately not next:
   5. Globalization and Localization, Windows, Accessibility, Element Tree, PerMonitorDPI.
   6. Application Management, Elements, Properties, Resources, Styles & Templates, Threading, Tools.
 
-  Each batch was copied under `.claude/samples-remeasure-r52/batchN` without `bin`/`obj`. The scratch root has empty
-  `Directory.Build.props`/`.targets`, so `TreatWarningsAsErrors` was off. No original or tracked file was modified.
-- **Feed, pinned.** `samples-remeasure-r52/nuget.config` sets the following:
-  - An isolated `globalPackagesFolder` (`samples-remeasure-r52/.nuget-packages`, which started empty) and cleared
+  Each batch was copied under `.claude/samples-remeasure-r55/batchN` without `bin`/`obj`, `NuGet.config` or
+  `global.json`. The scratch root has empty `Directory.Build.props`/`.targets`, so `TreatWarningsAsErrors` was off. No
+  original or tracked file was modified: `git status` is clean in the worktree and in the `WPF-Samples` submodule.
+- **Feed, pinned.** `samples-remeasure-r55/nuget.config` sets the following:
+  - An isolated `globalPackagesFolder` (`samples-remeasure-r55/.nuget-packages`, which started empty) and cleared
     `fallbackPackageFolders`.
-  - Cleared `packageSources`, then the pinned feed (`samples-remeasure-r52/feed`) and nuget.org.
+  - Cleared `packageSources`, then the pinned feed (`samples-remeasure-r55/feed`) and nuget.org.
   - `packageSourceMapping` that maps `Gtk4.*` to the local feed only. Everything else, including `GtkSharp4`, maps to
     nuget.org.
   - Why: nuget.org publishes `Gtk4.Forms.*` with the same date-based versions as local packs.
 - **Pinning proven by a probe.** Getting Started/HelloWorld was built with the full recipe from an empty cache.
   - Build 1 exited 1, as expected: the converter gave `MSB3073` (exit 10), then "re-run the build". Build 2 exited 0
     with 0 warnings and 0 errors.
-  - The cached SHA-256 values equal the feed's: `Gtk4.Forms.Wpf` `1a7a9dac…29e0dd`, `PresentationFramework`
-    `41331669…b38e12`, `WindowsBase` `4a9b2bf3…6c25`, `MarkupCompiler` `66aef909…c236`.
+  - The cached SHA-256 values equal the feed's: `Gtk4.Forms.Wpf` `670a821c…cb81c`, `PresentationFramework`
+    `acf7fab6…ff8f17`, `WindowsBase` `d9e92ace…604811`, `MarkupCompiler` `3f4c3c7e…d755f`.
   - Every `Gtk4.Forms.*` `.nupkg.metadata` source is the scratch feed.
-  - `project.assets.json` lists only the isolated cache as a package folder.
+  - `project.assets.json` lists only the isolated cache as a package folder and no fallback folders. Its sources are
+    the feed, nuget.org and the SDK-implicit `library-packs`.
   - `gtksharp4 4.22.4.26325` came from nuget.org.
+  - The probe's 10 s smoke run stayed alive with 1 visible top-level window and no stderr.
   - Every batch re-checked the cached `Gtk4.Forms.Wpf` hash
-    (`1a7a9dacf4e01b69896fc59c6212e9a6a1f974e12a6e9b697631b3597829e0dd`).
+    (`670a821c197092b0a158fc352f0ac10a0ef43776bb8968005eb2995e919cb81c`). It was checked again after the WPFGallery
+    re-build.
 - **Recipe (strict).**
   1. Add a `PackageReference` to `Gtk4.Forms.Wpf 1.0.0.26326`.
   2. Build once with `-nodeReuse:false`. The converter rewrites the csproj and stops with exit 10.
   3. Build again. This result is recorded.
   - Nothing else is changed. Original csproj files are kept beside the copies (`*.csproj.orig`).
-  - The six batches ran concurrently against the shared cache.
-  - Four projects in batch 3 never reached the converter (`NU1201`/`NETSDK1005`; all Windows-only or legacy). A third
-    build changed nothing, so the second build is recorded.
+  - Exception: WPFGallery's build 1 stopped after restore, so its third build is recorded (see Corrections).
 - **Pass/fail.** Pass means `Build succeeded` and `0 Error(s)` in the final build log. Codes, symbols and messages were
   re-parsed uniformly from the final logs of all six batches (252 logs, one per csproj).
 - **Run.** Each app that built got a smoke run on Windows of about 10 s, with the GTK runtime
   (`%LOCALAPPDATA%\Gtk\4.22.4\bin`) on `PATH`.
-  - "Runs" means alive with a visible top-level window (`EnumWindows`).
-  - "Crash" means an unhandled exception (including one printed by a process that stays alive), or an exit with no
-    window. Every run's stdout/stderr was scanned for unhandled exceptions; only the 6 crashes have one.
+  - "Runs" means alive with a visible, unowned top-level window (`EnumWindows`).
+  - "Crash" means an unhandled exception, or an exit with no window. Every run's stdout/stderr was scanned for
+    unhandled exceptions; only the 6 crashes (and FocusTracker's exit) lack a window.
   - "Hang" means alive with no window and no exception.
-  - Apps with no window at 10 s were re-run alone for 20 s. The batch 2 script stopped an app once a window had been
-    seen after 3 s, so those apps were not kept up for the full 10 s.
+  - Apps with no window at 10 s were re-run alone for 20 s.
   - The run proves nothing about visual or behavioural correctness.
 - **Windows-only.** The verified classification of the earlier reports, unchanged.
 - **Limits.**
@@ -523,40 +410,9 @@ Deliberately not next:
 | 2026-11-21 | `28d1eef2` + Round 48 review fixes | 1.0.0.26325 | **yes** | 92 / 204 | 89 | Gate, lower bounds (94 / 91 counting Round 47 extras) |
 | 2026-11-21 | `40db59fe` + Round 48 follow-up fixes | 1.0.0.26325 | **yes** | 92 / 204 | 89 | Gate, lower bounds |
 | 2026-11-21 | `142b53f6` | 1.0.0.26325 | **yes** | 129 / 204 | 119 | Round 48; full re-measure; 8 crash, 2 hang; no regressions |
-| 2026-11-22 | `30f46d4a` | 1.0.0.26326 | **yes** | **159 / 204** | **152** | Rounds 49–52 (first two-lane batch) + Round 52 paginated-viewer fixes; full re-measure; 6 crash, 1 hang; no regressions |
+| 2026-11-22 | `30f46d4a` | 1.0.0.26326 | **yes** | 159 / 204 | 152 | Rounds 49–52 (first two-lane batch) + Round 52 paginated-viewer fixes; full re-measure; 6 crash, 1 hang; no regressions |
 | 2026-11-22 | `b25bc71e` + `gf54b/documents-text-tail` | 1.0.0.26326 | **yes** | 161 / 204 | 154 | Lane B gate, lower bounds; no regressions; FontProperties and FlowDocumentProperties build and run |
-
-### Round 54b gate (lane B, `gf54b/documents-text-tail`)
-
-Strict recipe, package `Gtk4.Forms.Wpf 1.0.0.26326` packed from the worktree into a lane-private feed, isolated package
-cache. All 162 previously building projects still build, and FontProperties and FlowDocumentProperties now build too
-(AppCompat-Quirks was built by hand: the batch script skips a project that sits at its category root). Every one of the
-152 apps that ran still runs (7 read as hangs under load and ran alone for 20 s). FontProperties and
-FlowDocumentProperties run. AnnotatedDocumentViewer still fails on CS0200 (see Next rounds, item 4). The per-project
-JSON rows are updated; the headline totals above stay until the lanes merge.
-
-### Round 54 (lane B) review gate
-
-Run after the review fixes, on `lane/b`. Strict recipe: `Gtk4.Forms.Wpf 1.0.0.26326` and its three `Gtk4.Forms.*`
-dependencies packed from the worktree (`dotnet pack -c Debug --no-build`) into a lane-private feed, `Gtk4.*` mapped to
-that feed only, an isolated package cache, `fallbackPackageFolders` cleared, two builds per project.
-
-- **Build: all 164 projects with `build=pass` still build** (162 from the last full measure plus FontProperties and
-  FlowDocumentProperties). 0 failures.
-- **Run: all 154 apps with `run=runs` still start with a visible window.** 144 on the first 10 s run. Ten
-  (ApplicationShutdown, ExceptionHandlingSecondaryWorkerThread, MasterDetailXml, FlowContentProperty,
-  DragDropOpenTextFile, ShapeElements, CursorType, MouseState, ConcentricRingsDemo, WindowSizingOrder)
-  showed no window at 10 s under load from the other lanes and ran when re-run alone for 20 s.
-  No run printed an unhandled exception.
-- **AnnotatedDocumentViewer** (re-measured): 2 errors, both CS0200 on `SortDescription.PropertyName`/`Direction`
-  (lane A, requested in Next rounds item 4).
-- **AnnotationsStyling** (re-measured; the old record listed `FlowDocument.SetBinding`,
-  `FlowDocument.FlowDirectionProperty` and `SystemFonts.Message*Key`, all of which exist now): 7 errors, all
-  outside lane B. `MenuItem.Padding` (2, lane C:
-  `MenuItem` derives from `FrameworkElement`), `InkCanvasEditingMode` (3) and `SystemParameters` (2, lane C).
-- Rejected in triage, not fixed: the review's B-F7 build-count claim (162 = 159 portable apps + CustomApplicationClient
-  and wpfclock + the console app FocusTracker, as line 21 defines) and CI-3 (`FlowDocument`/`TextElement.FontFamily` is
-  already typed `FontFamily`; the string-typed carry-over was cleared in Round 54b).
+| 2026-11-22 | `466055e3` | 1.0.0.26326 | **yes** | **171 / 204** | **165** | Rounds 53–55 (first three-lane batch) + `gf52b` merge; full re-measure; 6 crash, 0 hang; no regressions |
 
 ## Known layer defects found by the UI tests
 
