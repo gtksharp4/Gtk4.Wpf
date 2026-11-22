@@ -24,14 +24,52 @@ namespace System.Windows.Media;
 /// </remarks>
 public class DrawingBrush : TileBrush
 {
+	readonly FreezableChildWatcher _watcher;
+
 	/// <summary>Creates an empty drawing brush.</summary>
-	public DrawingBrush() { }
+	public DrawingBrush() => _watcher = new FreezableChildWatcher(() => OnChanged());
 
 	/// <summary>Creates a drawing brush backed by <paramref name="drawing"/>.</summary>
-	public DrawingBrush(Drawing drawing) => Drawing = drawing;
+	public DrawingBrush(Drawing drawing) : this() => Drawing = drawing;
+
+	/// <summary>Identifies <see cref="Drawing"/>.</summary>
+	public static readonly DependencyProperty DrawingProperty = DependencyProperty.Register(
+		nameof(Drawing), typeof(Drawing), typeof(DrawingBrush), new PropertyMetadata(null));
 
 	/// <summary>The drawing used as the brush content.</summary>
-	public Drawing? Drawing { get; set; }
+	public Drawing? Drawing
+	{
+		get => (Drawing?)GetValue(DrawingProperty);
+		set => SetValue(DrawingProperty, value);
+	}
+
+	/// <inheritdoc/>
+	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+	{
+		base.OnPropertyChanged(e);
+		if (e.Property == DrawingProperty || e.Property == TransformProperty
+			|| e.Property == RelativeTransformProperty)
+			_watcher.Set(e.Property, e.NewValue);
+	}
+
+	/// <inheritdoc/>
+	protected override void OnFreeze()
+	{
+		Drawing?.Freeze();
+		Transform?.Freeze();
+		RelativeTransform?.Freeze();
+	}
+
+	/// <inheritdoc/>
+	protected override void CloneOverride(Freezable destination, bool currentValueOnly)
+	{
+		base.CloneOverride(destination, currentValueOnly);
+		var b = (DrawingBrush)destination;
+		b.Stretch = Stretch; b.TileMode = TileMode;
+		b.Viewport = Viewport; b.ViewportUnits = ViewportUnits;
+		b.Viewbox = Viewbox; b.ViewboxUnits = ViewboxUnits;
+		b.AlignmentX = AlignmentX; b.AlignmentY = AlignmentY;
+	}
 
 	/// <inheritdoc/>
 	internal override void ApplyToCairo(Cairo.Context cr, double width, double height)

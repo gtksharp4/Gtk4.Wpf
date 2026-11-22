@@ -1,176 +1,75 @@
-using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace System.Windows.Media.Animation;
 
-/// <summary>State of an <see cref="AnimationClock"/>.</summary>
-public enum ClockState
-{
-	/// <summary>The clock is running (or in its delay period).</summary>
-	Active,
-	/// <summary>The clock has completed its active period.</summary>
-	Filling,
-	/// <summary>The clock has stopped (FillBehavior.Stop or explicitly stopped).</summary>
-	Stopped
-}
-
 /// <summary>
-/// Tracks time progression for a single <see cref="AnimationTimeline"/> running against
-/// one target DP on one target object.
-///
-/// Design: the clock stores a local elapsed time and can be ticked either by the
-/// <see cref="AnimationScheduler"/> (via GLib.Timeout) or directly via
-/// <see cref="Tick"/> for deterministic unit testing (no GLib loop required).
+/// A <see cref="Clock"/> that produces animated values for one <see cref="AnimationTimeline"/>
+/// and writes them to the properties it is applied to.
 /// </summary>
-public sealed class AnimationClock
+public sealed class AnimationClock : Clock
 {
-	readonly AnimationTimeline _timeline;
-	readonly DependencyObject _target;
-	readonly DependencyProperty _targetProperty;
+	readonly List<(DependencyObject Target, DependencyProperty Property)> _attachments =
+		new List<(DependencyObject, DependencyProperty)>();
 
-	TimeSpan _elapsed = TimeSpan.Zero;
-	bool _paused;
-	ClockState _state = ClockState.Active;
+	internal AnimationClock(AnimationTimeline timeline) : base(timeline) { }
 
-	internal AnimationClock(
-		AnimationTimeline timeline,
-		DependencyObject target,
-		DependencyProperty targetProperty)
+	/// <summary>Creates a clock applied to <paramref name="target"/>'s <paramref name="property"/>.</summary>
+	internal AnimationClock(AnimationTimeline timeline, DependencyObject target, DependencyProperty property)
+		: base(timeline)
 	{
-		_timeline = timeline;
-		_target = target;
-		_targetProperty = targetProperty;
+		InitializeRoot(false);
+		AnimationStore.AttachClock(target, property, this);
 	}
 
-	/// <summary>Current state of this clock.</summary>
-	public ClockState CurrentState => _state;
+	/// <summary>The animation timeline this clock runs.</summary>
+	public new AnimationTimeline Timeline => (AnimationTimeline)base.Timeline;
 
-	/// <summary>Total elapsed time (not counting pauses).</summary>
-	public TimeSpan CurrentTime => _elapsed;
+	/// <summary>The value taken from a snapshot when this clock replaced others; see <see cref="HasSnapshot"/>.</summary>
+	internal object? SnapshotValue { get; private set; }
 
-	/// <summary>Normalised progress within the current iteration [0,1].</summary>
-	public double CurrentProgress { get; private set; }
+	internal bool HasSnapshot { get; private set; }
 
-	/// <summary>
-	/// Advances this clock by <paramref name="delta"/> and writes the interpolated
-	/// value to the target DP via the animation layer.
-	/// Safe to call without a GLib main loop — used by unit tests.
-	/// </summary>
-	public void Tick(TimeSpan delta)
+	/// <summary>True once the clock is running (or filling) and so contributes a value.</summary>
+	internal bool HasValue => CurrentState != ClockState.Stopped && CurrentTime != null;
+
+	/// <summary>Computes the animated value for this clock's current progress.</summary>
+	public object? GetCurrentValue(object? defaultOriginValue, object? defaultDestinationValue) =>
+		Timeline.GetCurrentValue(defaultOriginValue, defaultDestinationValue, this);
+
+	internal void SetSnapshot(object? value)
 	{
-		if (_state == ClockState.Stopped) return;
-		if (_paused) return;
-		if (delta <= TimeSpan.Zero) return;
-
-		_elapsed += delta;
-
-		// Respect BeginTime delay.
-		var beginTime = _timeline.BeginTime ?? TimeSpan.Zero;
-		if (_elapsed < beginTime) return;
-
-		var localTime = _elapsed - beginTime;
-
-		// Resolve the effective duration.
-		// Duration.Automatic (the Timeline default) maps to 1 second, matching WPF behaviour.
-		// Duration.Forever is infinite — keep clock Active at current progress indefinitely.
-		Duration effectiveDuration = _timeline.Duration;
-		if (effectiveDuration.DurationType == DurationType.Automatic)
-			effectiveDuration = new Duration(TimeSpan.FromSeconds(1));
-
-		if (!effectiveDuration.HasTimeSpan)
-		{
-			// Forever: run indefinitely at current progress (no completion).
-			ApplyValue(CurrentProgress);
-			return;
-		}
-
-		var dur = effectiveDuration.TimeSpan;
-		if (dur == TimeSpan.Zero)
-		{
-			// Zero-duration: immediately at end.
-			Complete();
-			return;
-		}
-
-		double iterDuration = dur.TotalSeconds * (_timeline.AutoReverse ? 2.0 : 1.0);
-		double totalSeconds = localTime.TotalSeconds;
-
-		RepeatBehavior rb = _timeline.RepeatBehavior;
-		bool isForever = rb.Type == RepeatBehaviorType.Forever;
-
-		// Compute max total run time.
-		double maxSeconds = isForever
-			? double.PositiveInfinity
-			: rb.HasCount
-				? iterDuration * rb.Count
-				: rb.HasDuration
-					? rb.Duration.TotalSeconds
-					: iterDuration; // default = count 1
-
-		if (totalSeconds >= maxSeconds)
-		{
-			// Completed all iterations.
-			Complete();
-			return;
-		}
-
-		// Position within the current iteration.
-		double posInIter = totalSeconds % iterDuration;
-		double progress;
-		if (_timeline.AutoReverse && posInIter >= dur.TotalSeconds)
-		{
-			// In the reverse phase.
-			progress = 1.0 - (posInIter - dur.TotalSeconds) / dur.TotalSeconds;
-		}
-		else
-		{
-			progress = Math.Min(posInIter / dur.TotalSeconds, 1.0);
-		}
-
-		CurrentProgress = progress;
-		ApplyValue(progress);
+		SnapshotValue = value;
+		HasSnapshot = true;
 	}
 
-	/// <summary>Pauses this clock; <see cref="Tick"/> calls are ignored while paused.</summary>
-	public void Pause() => _paused = true;
+	internal void AddAttachment(DependencyObject target, DependencyProperty dp) => _attachments.Add((target, dp));
 
-	/// <summary>Resumes a paused clock.</summary>
-	public void Resume() => _paused = false;
+	internal void RemoveAttachment(DependencyObject target, DependencyProperty dp) =>
+		_attachments.RemoveAll(a => ReferenceEquals(a.Target, target) && a.Property == dp);
 
-	/// <summary>Stops this clock and clears the animation value.</summary>
-	public void Stop()
+	internal override void OnEvaluated(TimeSpan childTime)
 	{
-		_state = ClockState.Stopped;
-		_target.ClearAnimationValue(_targetProperty);
+		foreach (var (target, property) in _attachments.ToArray())
+			AnimationStore.Refresh(target, property);
 	}
 
-	// ── internals ────────────────────────────────────────────────────────────
-
-	void ApplyValue(double progress)
+	internal override void RemoveClock()
 	{
-		CurrentProgress = progress;
-		var baseValue = _target.ReadLocalValue(_targetProperty);
-		if (ReferenceEquals(baseValue, DependencyProperty.UnsetValue))
-			baseValue = _targetProperty.GetMetadata(_target.GetType()).DefaultValue;
-
-		var value = _timeline.GetCurrentValue(baseValue, baseValue, this);
-		_target.SetAnimationValue(_targetProperty, value);
+		foreach (var (target, property) in _attachments.ToArray())
+			AnimationStore.Detach(target, property, this);
+		base.RemoveClock();
 	}
 
-	void Complete()
-	{
-		if (_state == ClockState.Stopped) return;
+	/// <summary>Pauses the clock.</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public void Pause() => SetPaused(true);
 
-		if (_timeline.FillBehavior == FillBehavior.HoldEnd)
-		{
-			// Snap to the final value and hold it.
-			ApplyValue(_timeline.AutoReverse ? 0.0 : 1.0);
-			_state = ClockState.Filling;
-		}
-		else
-		{
-			// FillBehavior.Stop: remove the animation value.
-			_state = ClockState.Stopped;
-			_target.ClearAnimationValue(_targetProperty);
-		}
-	}
+	/// <summary>Resumes the clock.</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public void Resume() => SetPaused(false);
+
+	/// <summary>Stops the clock and clears its animated values.</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public void Stop() => StopClock();
 }

@@ -12,15 +12,16 @@ public class GeneratorV2FixTests : GeneratorV2TestBase
 	static string Window(string resources, string ns = "")
 		=> $@"<Window x:Class=""A.W"" {Head} {ns}><Window.Resources>{resources}</Window.Resources></Window>";
 
+
 	[Fact]
-	public void F1_StaticResource_on_a_non_DependencyObject_assigns_the_CLR_property()
+	public void F1_StaticResource_on_a_Freezable_coerces_the_resource_and_never_calls_FindResource_on_it()
 	{
 		string code = Gen(Window(
 			"<Color x:Key=\"c\">Red</Color><SolidColorBrush x:Key=\"b\" Color=\"{StaticResource c}\"/>"));
-		Assert.DoesNotContain("SolidColorBrush.ColorProperty", code);
-		Assert.Contains(".Color = (global::System.Windows.Media.Color)System.Windows.Markup.XamlValueConverter" +
-			".CoerceResource(typeof(global::System.Windows.Media.Color), System.Windows.Markup" +
-			".StaticResourceScope.Find(\"c\"", code);
+		Assert.Contains("SetValue(System.Windows.Media.SolidColorBrush.ColorProperty, (global::System.Windows.Media.Color)" +
+			"System.Windows.Markup.XamlValueConverter.CoerceResource(typeof(global::System.Windows.Media.Color), " +
+			"System.Windows.Markup.StaticResourceScope.Find(\"c\"", code);
+		Assert.DoesNotContain("__e0.FindResource", code);
 		AssertCompiles(code, WindowStub);
 	}
 
@@ -45,11 +46,13 @@ public class GeneratorV2FixTests : GeneratorV2TestBase
 	}
 
 	[Fact]
-	public void F1_DynamicResource_on_a_non_DependencyObject_keeps_the_plain_emission_and_compiles()
+	public void F1_DynamicResource_on_a_Freezable_resolves_against_the_enclosing_element_and_compiles()
 	{
 		string code = Gen(Window(
 			"<Color x:Key=\"c\">Red</Color><SolidColorBrush x:Key=\"b\" Color=\"{DynamicResource c}\"/>"));
-		Assert.Contains("Resources[\"b\"] = \"\";", code);
+		Assert.Contains("XamlValueConverter.SetResourceValue(this, __e0, System.Windows.Media.SolidColorBrush" +
+			".ColorProperty, \"c\");", code);
+		Assert.DoesNotContain("SetLocalResourceReference(__e0", code);
 		AssertCompiles(code, WindowStub);
 	}
 

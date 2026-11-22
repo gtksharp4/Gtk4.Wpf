@@ -1,44 +1,78 @@
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace System.Windows;
 
 /// <summary>
-/// Per-element name registry. Stores a dictionary on the root element of a XAML tree
-/// (the one that owns the generated <c>InitializeComponent</c>) so that
-/// <see cref="FrameworkElement.FindName"/> can resolve <c>x:Name</c> references.
+/// Maps names to objects. Mirrors <c>System.Windows.NameScope</c>; the root of a XAML tree
+/// owns one through the <see cref="NameScopeProperty"/> attached property.
 /// </summary>
-internal static class NameScope
+public class NameScope : INameScope
 {
-	// Use ConditionalWeakTable so the dictionary is released when the owner is GC'd.
-	static readonly ConditionalWeakTable<FrameworkElement, Dictionary<string, object>> _scopes =
-		new ConditionalWeakTable<FrameworkElement, Dictionary<string, object>>();
+	/// <summary>Identifies the NameScope attached property.</summary>
+	public static readonly DependencyProperty NameScopeProperty = DependencyProperty.RegisterAttached(
+		"NameScope", typeof(INameScope), typeof(NameScope), new PropertyMetadata(null));
 
-	/// <summary>
-	/// Registers <paramref name="name"/> → <paramref name="element"/> on the scope
-	/// rooted at <paramref name="owner"/>.
-	/// </summary>
-	internal static void Register(FrameworkElement owner, string name, object element)
+	readonly Dictionary<string, object> _names = new Dictionary<string, object>();
+
+	/// <summary>Gets the name scope attached to <paramref name="dependencyObject"/>.</summary>
+	public static INameScope? GetNameScope(DependencyObject dependencyObject)
 	{
-		var dict = _scopes.GetOrCreateValue(owner);
-		dict[name] = element;
+		if (dependencyObject == null) throw new ArgumentNullException(nameof(dependencyObject));
+		return (INameScope?)dependencyObject.GetValue(NameScopeProperty);
 	}
 
-	/// <summary>
-	/// Walks up from <paramref name="start"/> to find the first scope that contains
-	/// <paramref name="name"/>. Returns the element, or null if not found.
-	/// </summary>
+	/// <summary>Attaches <paramref name="value"/> to <paramref name="dependencyObject"/>.</summary>
+	public static void SetNameScope(DependencyObject dependencyObject, INameScope? value)
+	{
+		if (dependencyObject == null) throw new ArgumentNullException(nameof(dependencyObject));
+		dependencyObject.SetValue(NameScopeProperty, value);
+	}
+
+	/// <inheritdoc/>
+	public object? FindName(string name) =>
+		name != null && _names.TryGetValue(name, out var found) ? found : null;
+
+	/// <inheritdoc/>
+	public void RegisterName(string name, object scopedElement)
+	{
+		if (name == null) throw new ArgumentNullException(nameof(name));
+		if (scopedElement == null) throw new ArgumentNullException(nameof(scopedElement));
+		if (name.Length == 0) throw new ArgumentException("Name must not be empty.", nameof(name));
+		if (_names.ContainsKey(name))
+			throw new ArgumentException($"Cannot register duplicate name '{name}' in this name scope.", nameof(name));
+		_names[name] = scopedElement;
+	}
+
+	/// <inheritdoc/>
+	public void UnregisterName(string name)
+	{
+		if (name == null) throw new ArgumentNullException(nameof(name));
+		if (name.Length == 0) throw new ArgumentException("Name must not be empty.", nameof(name));
+		if (!_names.Remove(name))
+			throw new ArgumentException($"'{name}' is not registered in this name scope.", nameof(name));
+	}
+
+	internal static void Register(FrameworkElement owner, string name, object element)
+	{
+		if (!(owner.GetValue(NameScopeProperty) is INameScope scope))
+		{
+			scope = new NameScope();
+			owner.SetValue(NameScopeProperty, scope);
+		}
+		scope.RegisterName(name, element);
+	}
+
+	internal static void Unregister(FrameworkElement owner, string name) =>
+		(owner.GetValue(NameScopeProperty) as INameScope)?.UnregisterName(name);
+
+	/// <summary>Walks up from <paramref name="start"/> to the first scope that holds <paramref name="name"/>.</summary>
 	internal static object? FindName(FrameworkElement start, string name)
 	{
 		DependencyObject? current = start;
 		while (current != null)
 		{
-			if (current is FrameworkElement fe &&
-			    _scopes.TryGetValue(fe, out var dict) &&
-			    dict.TryGetValue(name, out var found))
-			{
+			if (current.GetValue(NameScopeProperty) is INameScope scope && scope.FindName(name) is { } found)
 				return found;
-			}
 			current = current.InheritanceParent;
 		}
 		return null;

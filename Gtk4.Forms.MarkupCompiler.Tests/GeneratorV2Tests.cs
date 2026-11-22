@@ -126,7 +126,8 @@ public class Scale { public static double Conv(double d, int t) => d; } }";
 		string code = Gen($@"<Window x:Class=""A.W"" {Head}><Window.Resources>
 <SolidColorBrush x:Key=""B"" Color=""Gold""/></Window.Resources></Window>");
 		Assert.DoesNotContain("Resources[\"B\"] = \"\"", code);
-		Assert.True(code.Contains(".Color = (global::System.Windows.Media.Color)"), code);
+		Assert.Contains("SetValue(System.Windows.Media.SolidColorBrush.ColorProperty, ", code);
+		Assert.Contains("\"Gold\"", code);
 		AssertCompiles(code, UserTypes);
 	}
 

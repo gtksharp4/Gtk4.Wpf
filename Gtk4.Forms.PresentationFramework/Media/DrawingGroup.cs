@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 
 namespace System.Windows.Media;
 
@@ -6,7 +7,14 @@ namespace System.Windows.Media;
 /// An ordered, mutable collection of <see cref="Drawing"/> objects.
 /// Mirrors <c>System.Windows.Media.DrawingCollection</c>.
 /// </summary>
-public class DrawingCollection : Collection<Drawing> { }
+public class DrawingCollection : ObservableCollection<Drawing>
+{
+	/// <summary>Creates an empty collection.</summary>
+	public DrawingCollection() { }
+
+	/// <summary>Creates a collection with the given drawings.</summary>
+	public DrawingCollection(System.Collections.Generic.IEnumerable<Drawing> drawings) : base(drawings) { }
+}
 
 /// <summary>
 /// A composite drawing that groups child drawings, with optional transform, clip and opacity.
@@ -20,19 +28,92 @@ public class DrawingCollection : Collection<Drawing> { }
 /// </remarks>
 public class DrawingGroup : Drawing
 {
+	readonly FreezableChildWatcher _watcher;
 	DrawingCollection? _children;
 
+	/// <summary>Creates an empty drawing group.</summary>
+	public DrawingGroup() => _watcher = new FreezableChildWatcher(() => OnChanged());
+
+	/// <summary>Identifies <see cref="Transform"/>.</summary>
+	public static readonly DependencyProperty TransformProperty = DependencyProperty.Register(
+		nameof(Transform), typeof(Transform), typeof(DrawingGroup), new PropertyMetadata(null));
+
+	/// <summary>Identifies <see cref="ClipGeometry"/>.</summary>
+	public static readonly DependencyProperty ClipGeometryProperty = DependencyProperty.Register(
+		nameof(ClipGeometry), typeof(Geometry), typeof(DrawingGroup), new PropertyMetadata(null));
+
+	/// <summary>Identifies <see cref="Opacity"/>. Default 1.</summary>
+	public static readonly DependencyProperty OpacityProperty = DependencyProperty.Register(
+		nameof(Opacity), typeof(double), typeof(DrawingGroup), new PropertyMetadata(1.0));
+
 	/// <summary>The ordered child drawings.</summary>
-	public DrawingCollection Children => _children ??= new DrawingCollection();
+	public DrawingCollection Children
+	{
+		get
+		{
+			if (_children == null)
+			{
+				_children = new DrawingCollection();
+				_children.CollectionChanged += OnChildrenChanged;
+			}
+			return _children;
+		}
+	}
 
 	/// <summary>Optional transform applied before drawing children.</summary>
-	public Transform? Transform { get; set; }
+	public Transform? Transform
+	{
+		get => (Transform?)GetValue(TransformProperty);
+		set => SetValue(TransformProperty, value);
+	}
 
 	/// <summary>Optional geometry used to clip children.</summary>
-	public Geometry? ClipGeometry { get; set; }
+	public Geometry? ClipGeometry
+	{
+		get => (Geometry?)GetValue(ClipGeometryProperty);
+		set => SetValue(ClipGeometryProperty, value);
+	}
 
 	/// <summary>Opacity multiplier (0–1) applied to the whole group.</summary>
-	public double Opacity { get; set; } = 1.0;
+	public double Opacity
+	{
+		get => (double)GetValue(OpacityProperty)!;
+		set => SetValue(OpacityProperty, value);
+	}
+
+	void OnChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
+	{
+		ThrowIfFrozen();
+		_watcher.Reset(Children);
+		OnChanged();
+	}
+
+	/// <inheritdoc/>
+	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+	{
+		base.OnPropertyChanged(e);
+		if (e.Property == TransformProperty || e.Property == ClipGeometryProperty)
+			_watcher.Set(e.Property, e.NewValue);
+	}
+
+	/// <inheritdoc/>
+	protected override void CloneOverride(Freezable destination, bool currentValueOnly)
+	{
+		base.CloneOverride(destination, currentValueOnly);
+		if (_children == null) return;
+		var group = (DrawingGroup)destination;
+		foreach (var child in _children)
+			group.Children.Add((Drawing)(currentValueOnly ? child.CloneCurrentValue() : child.Clone()));
+	}
+
+	/// <inheritdoc/>
+	protected override void OnFreeze()
+	{
+		Transform?.Freeze();
+		ClipGeometry?.Freeze();
+		if (_children != null)
+			foreach (var child in _children) child.Freeze();
+	}
 
 	/// <inheritdoc/>
 	public override Rect Bounds
@@ -78,29 +159,5 @@ public class DrawingGroup : Drawing
 		}
 
 		cr.Restore();
-	}
-}
-
-/// <summary>
-/// Pure helpers for <see cref="DrawingGroup"/> bound computation.
-/// Extracted for unit-testability without a surface.
-/// </summary>
-internal static class DrawingGroupMath
-{
-	/// <summary>
-	/// Computes the union of the bounding rectangles of all drawings in
-	/// <paramref name="drawings"/>.  Returns <see cref="Rect.Empty"/> when the
-	/// collection is empty.
-	/// </summary>
-	internal static Rect Union(System.Collections.Generic.IEnumerable<Drawing> drawings)
-	{
-		Rect result = Rect.Empty;
-		foreach (var d in drawings)
-		{
-			var b = d.Bounds;
-			if (b.IsEmpty) continue;
-			result = result.IsEmpty ? b : Rect.Union(result, b);
-		}
-		return result;
 	}
 }
