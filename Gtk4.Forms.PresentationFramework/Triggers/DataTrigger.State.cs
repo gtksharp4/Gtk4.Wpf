@@ -52,7 +52,7 @@ public partial class DataTrigger
 		void SubscribeSource(object? root)
 		{
 			DisposePathWatcher();
-			var path = _trigger.Binding?.Path;
+			var path = _trigger.Binding?.PathString;
 			_pathWatcher = new PathWatcher(root, path);
 			_pathWatcher.Changed += OnPathChanged;
 		}
@@ -72,7 +72,7 @@ public partial class DataTrigger
 		internal void Evaluate()
 		{
 			var root = GetRoot();
-			var current = BindingEngine.ResolvePath(root, _trigger.Binding?.Path);
+			var current = BindingEngine.ResolvePath(root, _trigger.Binding?.PathString);
 			bool match = Equals(current, _trigger.Value);
 			bool active = _appliedDps != null;
 			if (match && !active) Apply();

@@ -30,6 +30,7 @@ public class SortDescriptionCollection : Collection<SortDescription>, INotifyCol
 	/// <inheritdoc/>
 	protected override void InsertItem(int index, SortDescription item)
 	{
+		item.Seal();
 		base.InsertItem(index, item);
 		Raise(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, index));
 	}
@@ -46,6 +47,7 @@ public class SortDescriptionCollection : Collection<SortDescription>, INotifyCol
 	protected override void SetItem(int index, SortDescription item)
 	{
 		var old = this[index];
+		item.Seal();
 		base.SetItem(index, item);
 		Raise(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, item, old, index));
 	}

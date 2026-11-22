@@ -29,13 +29,16 @@ public partial class Binding : BindingBase
 	public Binding() { }
 
 	/// <summary>Creates a binding with the specified property path.</summary>
-	public Binding(string path) => Path = path;
+	public Binding(string path)
+	{
+		if (path != null) Path = new PropertyPath(path, (object[])null!);
+	}
 
 	/// <summary>
-	/// Dot-separated property path on the source object (e.g. <c>"Name"</c>,
-	/// <c>"Address.City"</c>). An empty or null path binds to the source itself.
+	/// Property path on the source object (e.g. <c>"Name"</c>,
+	/// <c>"Address.City"</c>, or one <see cref="DependencyProperty"/> via <c>(0)</c>). Null binds to the source itself.
 	/// </summary>
-	public string? Path { get; set; }
+	public PropertyPath? Path { get; set; }
 
 	/// <summary>Direction of data flow. Default is <see cref="BindingMode.Default"/>.</summary>
 	public BindingMode Mode { get; set; } = BindingMode.Default;

@@ -53,7 +53,7 @@ internal static partial class BindingEngine
 		{
 			INotifyDataErrorInfo? owner = null, value = null;
 			string? prop = null;
-			if (_binding.ValidatesOnNotifyDataErrors && TryGetLeaf(source, _binding.Path, out var o, out prop))
+			if (_binding.ValidatesOnNotifyDataErrors && TryGetLeaf(source, _binding.PathString, out var o, out prop))
 			{
 				owner = o as INotifyDataErrorInfo;
 				value = resolvedValue as INotifyDataErrorInfo;

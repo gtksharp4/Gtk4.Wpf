@@ -46,7 +46,7 @@ internal static partial class BindingEngine
 		bool CollectDataErrors(object? source, List<ValidationError> errors)
 		{
 			if (!_binding.ValidatesOnDataErrors) return true;
-			if (!TryGetLeaf(source, _binding.Path, out var owner, out var prop)) return true;
+			if (!TryGetLeaf(source, _binding.PathString, out var owner, out var prop)) return true;
 			if (!(owner is IDataErrorInfo dei)) return true;
 			var msg = prop == null ? dei.Error : dei[prop];
 			if (string.IsNullOrEmpty(msg)) return true;

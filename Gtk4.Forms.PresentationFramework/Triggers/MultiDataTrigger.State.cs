@@ -65,7 +65,7 @@ public partial class MultiDataTrigger
 			foreach (var cond in _trigger.Conditions)
 			{
 				var source = GetSource(cond);
-				var current = BindingEngine.ResolvePath(source, cond.Binding?.Path);
+				var current = BindingEngine.ResolvePath(source, cond.Binding?.PathString);
 				if (!Equals(current, cond.Value)) return false;
 			}
 			return true;
@@ -142,7 +142,7 @@ public partial class MultiDataTrigger
 			if (source is INotifyPropertyChanged inpc)
 			{
 				_inpcSource = inpc;
-				var path = _cond.Binding?.Path;
+				var path = _cond.Binding?.PathString;
 				_watchedProp = string.IsNullOrEmpty(path) ? null : path!.Split('.')[0];
 				_inpcSource.PropertyChanged += OnSourceChanged;
 			}

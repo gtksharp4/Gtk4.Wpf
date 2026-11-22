@@ -41,7 +41,7 @@ public class Round51aRuntimeXamlTriggerTests : WpfGtkTestBase, IDisposable
 			"</DataTrigger></Style.Triggers></Style>");
 
 		var t = Assert.IsType<DataTrigger>(s.Triggers[0]);
-		Assert.Equal("Done", t.Binding!.Path);
+		Assert.Equal("Done", t.Binding!.Path!.Path);
 		Assert.Single(t.Setters);
 	});
 
@@ -55,7 +55,7 @@ public class Round51aRuntimeXamlTriggerTests : WpfGtkTestBase, IDisposable
 
 		var t = Assert.IsType<MultiDataTrigger>(s.Triggers[0]);
 		Assert.Equal(2, t.Conditions.Count);
-		Assert.Equal("B", t.Conditions[1].Binding!.Path);
+		Assert.Equal("B", t.Conditions[1].Binding!.Path!.Path);
 		Assert.Single(t.Setters);
 	});
 

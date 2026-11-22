@@ -84,7 +84,7 @@ public class Round51aRuntimeXamlWriterTests : WpfGtkTestBase, IDisposable
 
 		Assert.Contains("Text=\"{Binding Path=Label, Mode=OneWay}\"", xaml);
 		var binding = BindingOperations.GetBinding(loaded, TextBlock.TextProperty)!;
-		Assert.Equal("Label", binding.Path);
+		Assert.Equal("Label", binding.Path!.Path);
 		Assert.Equal(BindingMode.OneWay, binding.Mode);
 		Assert.Equal(5, loaded.Width);
 	});

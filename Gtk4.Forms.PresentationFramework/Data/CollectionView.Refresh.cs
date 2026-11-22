@@ -48,17 +48,31 @@ public partial class CollectionView
 	void Rebuild()
 	{
 		_view.Clear();
+		_viewSource.Clear();
 		_groupObjects.Clear();
 
 		// Null items pass through when there is no filter or the filter accepts them.
+		var kept = new List<KeyValuePair<object?, int>>();
+		int sourceIndex = 0;
 		foreach (var item in _source)
 		{
-			if (_filter != null && !_filter(item!)) continue;
-			_view.Add(item);
+			if (_filter == null || _filter(item!)) kept.Add(new KeyValuePair<object?, int>(item, sourceIndex));
+			sourceIndex++;
 		}
 
+		// Ties keep source order, so a view position maps to one source slot even for equal items.
 		if (SortDescriptions.Count > 0)
-			_view.Sort(CompareItems);
+			kept.Sort((a, b) =>
+			{
+				int c = CompareItems(a.Key, b.Key);
+				return c != 0 ? c : a.Value.CompareTo(b.Value);
+			});
+
+		foreach (var entry in kept)
+		{
+			_view.Add(entry.Key);
+			_viewSource.Add(entry.Value);
+		}
 
 		if (GroupDescriptions.Count > 0)
 		{
