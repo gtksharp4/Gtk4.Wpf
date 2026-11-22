@@ -1,3 +1,4 @@
+using System;
 using System.Xml.Linq;
 
 namespace Gtk4.Forms.MarkupCompiler
@@ -21,8 +22,12 @@ namespace Gtk4.Forms.MarkupCompiler
 
 		// The statement binding <paramref name="dp"/> on <paramref name="target"/> (of type fqType) to the binding.
 		string SetBindingLine(string target, string fqType, string dp, string binding)
-			=> HasSetBinding(fqType)
-				? $"{target}.SetBinding({dp}, {binding});"
-				: $"global::System.Windows.Markup.NonElementBinding.TrySetBinding({target}, {dp}, {binding});";
+		{
+			if (HasSetBinding(fqType)) return $"{target}.SetBinding({dp}, {binding});";
+			string prop = dp.Substring(dp.LastIndexOf('.') + 1);
+			if (prop.EndsWith("Property", StringComparison.Ordinal)) prop = prop.Substring(0, prop.Length - 8);
+			Note($"binding on non-element {fqType?.Replace("global::", "")}.{prop} is not evaluated.");
+			return $"global::System.Windows.Markup.NonElementBinding.TrySetBinding({target}, {dp}, {binding});";
+		}
 	}
 }

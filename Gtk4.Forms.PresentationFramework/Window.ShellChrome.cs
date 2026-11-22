@@ -56,7 +56,7 @@ public partial class Window
 		for (var guard = 0; guard < 64; guard++)
 		{
 			if (!(element is FrameworkElement fe) || fe.TemplatedParent == null
-				|| !Equals(fe.ReadLocalValue(dp), DependencyProperty.UnsetValue))
+				|| fe.HasNonInheritedValue(dp))
 				return (bool)element.GetValue(dp)!;
 			UIElement next = fe.TemplatedParent;
 			for (var w = fe.Widget.Parent; w != null; w = w.Parent)

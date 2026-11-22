@@ -12,7 +12,7 @@ namespace System.Windows;
 /// validation errors are recorded in Validation.Errors but the Error event is not raised and no BindingGroup
 /// is joined; a relative source of TemplatedParent resolves through the hosting element; triggers and templates
 /// are not available; <see cref="ToolTip"/> and <see cref="Cursor"/> are stored but not shown (the flow document
-/// is one GTK label); <see cref="Tag"/> is registered here because <see cref="FrameworkElement"/> has no Tag DP yet.
+/// is one GTK label).
 /// </para>
 /// </summary>
 [RuntimeNameProperty("Name")]

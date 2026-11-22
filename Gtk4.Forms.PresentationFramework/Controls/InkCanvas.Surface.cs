@@ -22,12 +22,15 @@ public partial class InkCanvas
 
 	readonly Surface _surface = new Surface();
 
+	/// <summary>Creates an ink canvas.</summary>
+	public InkCanvas() => _surface.LogicalParent = this;
+
 	/// <summary>The elements hosted on the canvas.</summary>
 	public UIElementCollection Children => _surface.Children;
 
 	internal override bool IsWidgetCreated => _surface.IsWidgetCreated;
 
-	internal override IEnumerable<UIElement> VisualChildren => _surface.Children;
+	internal override IEnumerable<UIElement> VisualChildren => new UIElement[] { _surface };
 
 	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget() => _surface.Widget;
@@ -57,6 +60,9 @@ public partial class InkCanvas
 	// The inner Canvas places children; the offsets are mirrored onto its own attached properties.
 	sealed class Surface : Canvas
 	{
+		// The canvas stands in for the Surface in the public tree.
+		internal override DependencyObject? ParentOfChildren => LogicalParent;
+
 		protected override void AddChildWidget(UIElement child)
 		{
 			Mirror(child);

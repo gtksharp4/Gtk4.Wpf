@@ -102,4 +102,16 @@ public class ResourceDictionaryDeferredTests
 		Assert.Single(d.Values);
 		Assert.Equal(3, runs);
 	}
+
+	[Fact]
+	public void Removing_the_realised_pair_of_an_unrealised_entry_succeeds()
+	{
+		var obj = new object();
+		var d = new ResourceDictionary();
+		d.SetDeferred("k", () => obj);
+
+		Assert.False(d.Remove(new System.Collections.Generic.KeyValuePair<object, object?>("k", new object())));
+		Assert.True(d.Remove(new System.Collections.Generic.KeyValuePair<object, object?>("k", obj)));
+		Assert.False(d.ContainsKey("k"));
+	}
 }

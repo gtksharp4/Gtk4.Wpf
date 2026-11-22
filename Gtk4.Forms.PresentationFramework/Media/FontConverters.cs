@@ -4,9 +4,9 @@ using System.Globalization;
 namespace System.Windows.Media;
 
 /// <summary>
-/// XAML string parsing for font values. Internal helpers rather than public
-/// <c>TypeConverter</c>s: nothing here consumes TypeConverters, <see cref="Markup.XamlValueConverter"/>
-/// is the single entry point. Failures throw <see cref="FormatException"/>.
+/// XAML string parsing for font values, shared by <see cref="Markup.XamlValueConverter"/> and the public
+/// <c>FontWeightConverter</c> and <c>FontStyleConverter</c>, which add the WPF exception types and
+/// <c>InstanceDescriptor</c> support. Failures here throw <see cref="FormatException"/>.
 /// </summary>
 internal static class FontConverters
 {

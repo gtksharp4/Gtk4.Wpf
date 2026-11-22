@@ -56,4 +56,15 @@ public class GeneratorStoryboardKeyFrameTests : GeneratorV2TestBase
 		Assert.Contains("RegisterName(\"T\"", code);
 		Assert.Contains("this.T = ", code);
 	}
+
+	[Fact]
+	public void A_binding_on_a_non_element_is_reported_as_not_evaluated()
+	{
+		var msgs = Messages("<Page " + Head + @" x:Class=""App.P""><StackPanel><TextBox x:Name=""t""/>
+<Border><Border.RenderTransform><RotateTransform Angle=""{Binding Text, ElementName=t}""/></Border.RenderTransform>
+</Border></StackPanel></Page>");
+
+		Assert.Contains(msgs, m => m.Contains("binding on non-element") && m.Contains("RotateTransform.Angle")
+			&& m.Contains("is not evaluated"));
+	}
 }

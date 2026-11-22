@@ -30,7 +30,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			string[] lines = sb.ToString().Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
 			string prefix = $"{ownerVar}.Resources[\"{EscapeString(key)}\"] = ";
 			string last = lines.Length == 0 ? null : lines[lines.Length - 1].Trim();
-			if (last == null || !last.StartsWith(prefix, StringComparison.Ordinal) || !last.EndsWith(";", StringComparison.Ordinal)
+			if (last == null || !last.StartsWith(prefix, StringComparison.Ordinal)
+				|| !last.EndsWith(";", StringComparison.Ordinal)
 				|| lines.Take(lines.Length - 1).Any(l => l.Trim().StartsWith(prefix, StringComparison.Ordinal)))
 			{
 				counter = saved;

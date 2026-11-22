@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -45,8 +46,10 @@ public partial class ResourceDictionary
 	/// <summary>
 	/// Adds a value that is built by <paramref name="factory"/> on first lookup (generated code uses it for values
 	/// holding <c>{StaticResource}</c> references, which WPF resolves only when the value is realised). A factory
-	/// that throws stays unrealised and is retried on the next lookup. With <paramref name="shared"/> false (<c>x:Shared="False"</c>) every lookup builds a new value.
+	/// that throws stays unrealised and is retried on the next lookup. With <paramref name="shared"/> false
+	/// (<c>x:Shared="False"</c>) every lookup builds a new value.
 	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public void SetDeferred(object key, Func<object?> factory, bool shared = true)
 	{
 		if (key == null) throw new ArgumentNullException(nameof(key));
@@ -55,14 +58,18 @@ public partial class ResourceDictionary
 		_resourceChangedHandlers.Raise(key, DependencyProperty.UnsetValue);
 	}
 
-	/// <summary>Copies the local entries and merged dictionaries of <paramref name="source"/>, keeping deferred values deferred.</summary>
+	/// <summary>
+	/// Copies the local entries and merged dictionaries of <paramref name="source"/>, keeping deferred values deferred.
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public void CopyEntriesFrom(ResourceDictionary source)
 	{
 		if (source == null) throw new ArgumentNullException(nameof(source));
 		foreach (var pair in source._inner.ToList())
 		{
 			_inner[pair.Key] = pair.Value;
-			_resourceChangedHandlers.Raise(pair.Key, pair.Value is DeferredValue ? DependencyProperty.UnsetValue : pair.Value);
+			_resourceChangedHandlers.Raise(
+				pair.Key, pair.Value is DeferredValue ? DependencyProperty.UnsetValue : pair.Value);
 		}
 		foreach (var merged in source.MergedDictionaries) MergedDictionaries.Add(merged);
 	}

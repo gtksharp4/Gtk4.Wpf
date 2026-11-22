@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.ComponentModel.Design.Serialization;
 using System.Globalization;
 using System.Windows.Media;
 
@@ -14,12 +15,13 @@ public class FontStyleConverter : TypeConverter
 
 	/// <inheritdoc/>
 	public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType) =>
-		destinationType == typeof(string);
+		destinationType == typeof(InstanceDescriptor) || destinationType == typeof(string);
 
 	/// <inheritdoc/>
 	public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 	{
-		if (!(value is string text)) throw GetConvertFromException(value);
+		if (value == null) throw GetConvertFromException(value);
+		if (!(value is string text)) throw new ArgumentException("Cannot convert from this type.", nameof(value));
 		return FontConverters.ParseFontStyle(text);
 	}
 
@@ -28,7 +30,13 @@ public class FontStyleConverter : TypeConverter
 		Type destinationType)
 	{
 		if (destinationType == null) throw new ArgumentNullException(nameof(destinationType));
-		if (destinationType == typeof(string) && value is FontStyle style) return style.ToString();
-		throw GetConvertToException(value, destinationType);
+		if (value is FontStyle style)
+		{
+			if (destinationType == typeof(string)) return style.ToString();
+			if (destinationType == typeof(InstanceDescriptor)
+				&& typeof(FontStyles).GetProperty(style.ToString()) is { } member)
+				return new InstanceDescriptor(member, null);
+		}
+		return base.ConvertTo(context, culture, value, destinationType)!;
 	}
 }

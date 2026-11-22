@@ -42,7 +42,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			foreach (XElement frame in frames)
 			{
 				string fq = ResolveType(frame) ?? WpfXmlnsMap.Resolve(frame.Name.LocalName);
-				if (fq == null || !_resolver.TypeExists(fq) || !frame.Name.LocalName.EndsWith("KeyFrame", StringComparison.Ordinal))
+				if (fq == null || !_resolver.TypeExists(fq)
+					|| !frame.Name.LocalName.EndsWith("KeyFrame", StringComparison.Ordinal))
 				{
 					NoteDropped(frame, "element " + frame.Name.LocalName + " in " + anim.Name.LocalName);
 					continue;

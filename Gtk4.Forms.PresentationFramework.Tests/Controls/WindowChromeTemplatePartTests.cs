@@ -12,7 +12,8 @@ public class WindowChromeTemplatePartTests : WpfGtkTestBase
 	{
 	}
 
-	static (Window Window, Chip Chip, TextBlock Part) Build(bool flag, bool? partValue = null)
+	static (Window Window, Chip Chip, TextBlock Part) Build(bool flag, bool? partValue = null,
+		bool? styleValue = null, bool? borderValue = null)
 	{
 		TextBlock? part = null;
 		var chip = new Chip
@@ -25,7 +26,15 @@ public class WindowChromeTemplatePartTests : WpfGtkTestBase
 				{
 					part = new TextBlock { Text = "chip", Width = 100, Height = 30 };
 					if (partValue.HasValue) WindowChrome.SetIsHitTestVisibleInChrome(part, partValue.Value);
-					return new Border { Child = part };
+					if (styleValue.HasValue)
+					{
+						var style = new Style(typeof(TextBlock));
+						style.Setters.Add(new Setter(WindowChrome.IsHitTestVisibleInChromeProperty, styleValue.Value));
+						part.Style = style;
+					}
+					var border = new Border { Child = part };
+					if (borderValue.HasValue) WindowChrome.SetIsHitTestVisibleInChrome(border, borderValue.Value);
+					return border;
 				},
 			},
 		};
@@ -63,5 +72,46 @@ public class WindowChromeTemplatePartTests : WpfGtkTestBase
 	{
 		var (w, _, part) = Build(true, false);
 		Assert.False(AtPart(w, part));
+	});
+
+	[Fact]
+	public void A_style_set_true_on_a_part_of_an_unflagged_control_counts() => Run(() =>
+	{
+		var (w, _, part) = Build(false, styleValue: true);
+		Assert.True(AtPart(w, part));
+	});
+
+	[Fact]
+	public void A_style_set_false_on_a_part_of_a_flagged_control_counts() => Run(() =>
+	{
+		var (w, _, part) = Build(true, styleValue: false);
+		Assert.False(AtPart(w, part));
+	});
+
+	[Fact]
+	public void A_part_without_a_value_takes_its_in_template_ancestor() => Run(() =>
+	{
+		var (w, _, part) = Build(false, borderValue: true);
+		Assert.True(AtPart(w, part));
+	});
+
+	[Fact]
+	public void A_press_over_a_flagged_template_part_does_not_drag_but_plain_chrome_does() => Run(() =>
+	{
+		var (w, _, part) = Build(true);
+		Assert.True(GtkPump.Until(() => part.Widget.IsMapped && part.Widget.Width > 0));
+		Assert.True(part.Widget.ComputePoint(w.Widget, new Graphene.Point { X = 5, Y = 5 }, out var at));
+		var moved = false;
+		Window.BeginMoveOverride = (_, _, _, _, _) => moved = true;
+		try
+		{
+			w.RecordPress(null, at.X, at.Y, 1);
+			w.OnShellPressed(at.X, at.Y);
+			Assert.False(moved);
+			w.RecordPress(null, 280, 90, 1);
+			w.OnShellPressed(280, 90);
+			Assert.True(moved);
+		}
+		finally { Window.BeginMoveOverride = null; }
 	});
 }

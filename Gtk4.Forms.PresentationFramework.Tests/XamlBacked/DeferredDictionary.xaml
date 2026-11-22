@@ -8,4 +8,7 @@
 		<Setter Property="FocusVisualStyle" Value="{StaticResource Later}"/>
 	</Style>
 	<Style x:Key="Later"/>
+	<Style x:Key="Unshared" x:Shared="False" TargetType="Button">
+		<Setter Property="FocusVisualStyle" Value="{StaticResource Later}"/>
+	</Style>
 </ResourceDictionary>

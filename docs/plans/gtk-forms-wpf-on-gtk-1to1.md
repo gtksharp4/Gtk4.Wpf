@@ -2432,7 +2432,9 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
 - **Round 55 (lane C) follow-up.** Verified review findings applied failing-first. MarkupCompiler: an attached property
   element with a `Binding`/`MultiBinding`/`PriorityBinding`, template or markup-extension child goes to
   `SetBinding`/template emission again (not `Owner.SetProp`), and its owner resolves through the element's own xmlns
-  (user `clr-namespace` owners included). `Storyboard`: `PathFigure`, `PathSegment` and `Pen` path steps are skipped
+  (user `clr-namespace` attached owners are qualified as `global::Ns.Owner` only on the Binding/MultiBinding
+  property-element path; a value element on an owner the resolver cannot inspect is still skipped and reported, as
+  `GeneratorAttachedElementTests` pins). `Storyboard`: `PathFigure`, `PathSegment` and `Pen` path steps are skipped
   like `GradientStop`; a `MediaTimeline` with no target binds to the containing `MediaElement`. `WindowChrome`: the
   caption drag reads only the effective (inherited) `IsHitTestVisibleInChrome` of the hit element. `sc#` parsing rejects
   an empty comma token as WPF's `TokenizerHelper` does. `RegisteredCanvas` has an `Initialize` idempotency test back;
@@ -2448,6 +2450,55 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   resize, Popup animation) are deliberate GTK limits; `FontStyleConverter`/`FontWeightConverter`, `Hyperlink.TargetName`,
   `TextBox.TextAlignment` belong to other lanes; remote `http` media is unverified. If `Wpf.Testing.Tests` fails once
   (EvidenceTests, InputTests), re-run that suite alone before treating it as real.
+
+- **Round 58 (lane C) track 4 - startup and generator sweep II (DONE, merged).** `gf58c/startup-generator-sweep-2`: a
+  keyed `ResourceDictionary` value holding a `{StaticResource}` is built on first lookup (`SetDeferred`), so an unused
+  missing key no longer throws at load (ExpenseItIntro); `x:Shared="False"` builds a new value per lookup. The generator
+  emits Media3D graphs (`Viewport3D.Camera`, `ModelVisual3D.Content`/`Transform`, keyed 3D resources, nested `x:Name`),
+  key-frame storyboards (`DoubleAnimationUsingKeyFrames` is in the xmlns map; the `x:Name` in a geometry property
+  element registers), object property elements and collection property elements, user attached owners, and
+  `BasedOn="{StaticResource {x:Type T}}"` with no dictionary entry. A `{Binding}` on a non-element
+  (animation, freezable, `CollectionViewSource`) goes through `NonElementBinding.TrySetBinding` and is not evaluated
+  (the engine serves elements only). A compile-checked generator corpus replaces the unmerged `gf39/xaml-content-model`
+  idea. Samples: Graphics/Geometry and KeySplineAnimations run; AnimationExamples builds; ExpenseItIntro and
+  DataBindingDemo still fail further in (UI automation and engine causes).
+- **Round 58 (lane C) track 3 - controls tail II and packaging (DONE, merged).** `gf58c/controls-tail-packaging-2`:
+  `Hyperlink.TargetName`, `FontStyleConverter`/`FontWeightConverter`, an `InkCanvas` shell (store-only editing modes,
+  children on an inner `Canvas`), `TextBox.TextAlignment`/`MinLines`/`MaxLines`, `FrameworkElement.Tag`, and the
+  `Microsoft.Win32.SystemEvents` dependency on the `Gtk4.Forms.Wpf` package (WPFGallery's `CS1069`). The WindowChrome
+  template-part caption-drag fix landed first.
+- **Round 58 (lane C) review (Opus) + fixes - DONE.** Verified findings applied failing-first. **b-F1/b-F4**
+  `Window.ShellChrome.EffectiveHitTestVisibleInChrome` asks `HasNonInheritedValue`, so a Style, trigger, template,
+  `DynamicResource` or animation value on a template part counts (it only saw local values); tests cover a style-set
+  `True` on an unflagged control, a style-set `False` on a flagged one, the in-template ancestor walk, and the caption
+  drag (a press over a flagged part does not drag, plain chrome does). **b-F2** `InkCanvas` sets its inner surface's
+  `LogicalParent`, so children get `DataContext`, resources, `IsLoaded`/`IsVisible` and `IsEnabled`; `VisualChildren`
+  yields the surface and `FrameworkElement.Parent` of a child reports the `InkCanvas` (`ParentOfChildren`). **a-F1** an
+  unkeyed nested `ResourceDictionary` in the runtime loader merges with `CopyEntriesFrom`, keeping values deferred and
+  `x:Shared="False"` per-lookup. **a-F6** a merged-`Source` window test (the ExpenseItIntro shape);
+  `ResourceDictionary.Remove(KeyValuePair)` realises a deferred entry before comparing. **a-F2** `TrySetBinding` writes
+  a `Trace` warning naming the type, property and path, and the generator adds the message
+  `binding on non-element <Type>.<Prop> is not evaluated`. **a-F3** `SetDeferred`, `CopyEntriesFrom` and
+  `NonElementBinding` are `EditorBrowsable(Never)`. **b-F3** the font converters throw WPF's exception types (null:
+  `NotSupportedException`; other non-string: `ArgumentException("value")`; out-of-range number:
+  `ArgumentOutOfRangeException`), fall back to `base.ConvertTo`, and convert to `InstanceDescriptor`. **b-F6**
+  `RequestNavigateEventArgs.Target` is `string?` and keeps a null target. **b-F5/a-F5** stale comments reworded, long
+  lines wrapped. **a-F4** this entry, and the attached-owner claim below is corrected. Rejected in triage: CI-2 and
+  CI-4 (already resolved: `StoryboardPathResolverGapTests` pins the gaps; `DoubleAnimationUsingKeyFrames` is mapped),
+  CI-5 (`FrameworkElement.Tag.cs` registers `Tag`; only the comment was stale), CI-1 (superseded by b-F1/b-F4), CI-3
+  (pinned by `GeneratorAttachedElementTests`; the doc claim is fixed), CI-6 and CI-7 (other lanes: `TextBlock`
+  `ContentStart`/`ContentEnd` and `TextDecorationCollection.Freeze` are lane B; `Color.FromScRgb`,
+  `SystemParameters` keys and `ScrollBar` are other lanes).
+- **Round 58 (lane C) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. Targeted tests (the
+  suites run in full at integrate): `PresentationFramework.Tests` touched areas 379 passed, 1 skipped, 0 failed;
+  `MarkupCompiler.Tests` 641 passed, 1 skipped, 0 failed; 11 test methods added, 2 updated. Samples gate: all 176
+  projects that built at `270cdb7e` build through a lane-private feed (two builds each), and all 165 apps that ran
+  still run (19 apparent hangs under a crowded first pass re-checked alone: all run).
+- **Round 58 (lane C) carry-over.** The binding engine still serves `FrameworkElement` targets only, so a bound
+  animation `To`, a `Freezable` or a `CollectionViewSource` binding is not evaluated (lane B, `Data/**`; the follow
+  test `A_bound_animation_To_follows_the_source` stays skipped as its acceptance test). ExpenseItIntro and
+  DataBindingDemo need further work (`AutomationProperties.HeadingLevel`/`ItemStatus` belong to the UI-automation
+  plan). `RenderOptions.*` attributes and `VisualBrush.Visual="{Binding}"` are dropped with a message.
 
 ## Phased roadmap (after Phase 0 proves the spine)
 

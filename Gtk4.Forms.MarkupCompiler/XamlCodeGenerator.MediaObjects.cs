@@ -99,7 +99,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			foreach (XElement child in pe.Elements())
 			{
 				string cfq = ResolveType(child);
-				if (cfq == null && TryEmitResourceElementValue(w, child, parentVar, prop, _resolver.CollectionItemType(fq, prop) ?? _resolver.GetPropertyType(fq, prop), coll)) continue;
+				var valueType = _resolver.CollectionItemType(fq, prop) ?? _resolver.GetPropertyType(fq, prop);
+				if (cfq == null && TryEmitResourceElementValue(w, child, parentVar, prop, valueType, coll)) continue;
 				if (cfq == null)
 				{
 					NoteSkippedMedia(pe, "element " + child.Name.LocalName);

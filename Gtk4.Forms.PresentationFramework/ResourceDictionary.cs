@@ -138,10 +138,10 @@ public partial class ResourceDictionary : IDictionary<object, object?>
 	/// <inheritdoc/>
 	public bool Remove(KeyValuePair<object, object?> item)
 	{
-		bool removed = ((ICollection<KeyValuePair<object, object?>>)_inner).Remove(item);
-		if (removed)
-			_resourceChangedHandlers.Raise(item.Key, DependencyProperty.UnsetValue);
-		return removed;
+		if (!_inner.TryGetValue(item.Key, out var raw) || !Equals(Realize(item.Key, raw), item.Value)) return false;
+		_inner.Remove(item.Key);
+		_resourceChangedHandlers.Raise(item.Key, DependencyProperty.UnsetValue);
+		return true;
 	}
 
 	/// <inheritdoc/>

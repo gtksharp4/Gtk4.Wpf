@@ -1,9 +1,11 @@
 using System;
 using System.ComponentModel;
+using System.ComponentModel.Design.Serialization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using Gtk4.Forms.PresentationFramework.Tests.Lifecycle;
 using Gtk4.Forms.PresentationFramework.Tests.XamlBacked;
 using Xunit;
 
@@ -22,7 +24,8 @@ public class ControlsTail2Tests : WpfGtkTestBase
 		link.RequestNavigate += (s, e) => got = e;
 		link.OnClick();
 		Assert.Equal("frame2", got!.Target);
-		Assert.Equal(string.Empty, new RequestNavigateEventArgs(new Uri("http://x"), null).Target);
+		Assert.Null(new RequestNavigateEventArgs(new Uri("http://x"), null).Target);
+		Assert.Equal(string.Empty, new Hyperlink().TargetName);
 	}
 
 	[Fact]
@@ -71,15 +74,35 @@ public class ControlsTail2Tests : WpfGtkTestBase
 	{
 		var w = new FontWeightConverter();
 		Assert.Throws<FormatException>(() => w.ConvertFrom("heavier"));
-		Assert.Throws<FormatException>(() => w.ConvertFrom("1000"));
+		Assert.Throws<ArgumentOutOfRangeException>(() => w.ConvertFrom("1000"));
+		Assert.Throws<ArgumentOutOfRangeException>(() => w.ConvertFrom("0"));
 		Assert.Throws<NotSupportedException>(() => w.ConvertFrom(null!));
-		Assert.Throws<NotSupportedException>(() => w.ConvertFrom(5));
+		Assert.Equal("value", Assert.Throws<ArgumentException>(() => w.ConvertFrom(5)).ParamName);
+		Assert.Equal("value", Assert.Throws<ArgumentException>(() => new FontStyleConverter().ConvertFrom(5)).ParamName);
 		Assert.Throws<FormatException>(() => new FontStyleConverter().ConvertFrom("slanted"));
 		Assert.Throws<NotSupportedException>(() => new FontStyleConverter().ConvertFrom(null!));
 		Assert.Equal("Bold", w.ConvertTo(FontWeights.Bold, typeof(string)));
 		Assert.False(w.CanConvertTo(typeof(int)));
+		Assert.Equal("5", w.ConvertTo(5, typeof(string)));
+		Assert.Throws<NotSupportedException>(() => w.ConvertTo(FontWeights.Bold, typeof(int)));
+		Assert.Throws<NotSupportedException>(() => new FontStyleConverter().ConvertTo(FontStyles.Italic, typeof(int)));
 	}
 
+	[Fact]
+	public void Font_converters_round_trip_through_InstanceDescriptor()
+	{
+		var w = new FontWeightConverter();
+		Assert.True(w.CanConvertTo(typeof(InstanceDescriptor)));
+		var wd = (InstanceDescriptor)w.ConvertTo(FontWeights.Bold, typeof(InstanceDescriptor))!;
+		Assert.Equal(FontWeights.Bold, (FontWeight)wd.Invoke()!);
+		Assert.Equal(typeof(FontWeight).GetMethod("FromOpenTypeWeight", new[] { typeof(int) }), wd.MemberInfo);
+
+		var s = new FontStyleConverter();
+		Assert.True(s.CanConvertTo(typeof(InstanceDescriptor)));
+		var sd = (InstanceDescriptor)s.ConvertTo(FontStyles.Oblique, typeof(InstanceDescriptor))!;
+		Assert.Equal(FontStyles.Oblique, (FontStyle)sd.Invoke()!);
+		Assert.Equal(typeof(FontStyles).GetProperty("Oblique"), sd.MemberInfo);
+	}
 	[Fact]
 	public void InkCanvas_defaults_and_enum_values()
 	{
@@ -146,4 +169,20 @@ public class ControlsTail2Tests : WpfGtkTestBase
 		Assert.Throws<ArgumentException>(() => tb.MaxLines = 0);
 		Assert.Throws<ArgumentException>(() => tb.MinLines = -1);
 	}
+
+	[Fact]
+	public void InkCanvas_children_join_the_logical_tree() => Run(() =>
+	{
+		var button = new Button { Width = 40, Height = 20 };
+		var ink = new InkCanvas { Width = 100, Height = 100 };
+		ink.Children.Add(button);
+		var w = new Window { DataContext = "ctx", Content = ink, Width = 300, Height = 200 };
+		w.Resources["Key"] = "found";
+		w.Show();
+		Assert.True(GtkPump.Until(() => button.IsLoaded));
+		Assert.Equal("ctx", button.DataContext);
+		Assert.True(button.IsVisible);
+		Assert.Same(ink, button.Parent);
+		Assert.Equal("found", button.FindResource("Key"));
+	});
 }

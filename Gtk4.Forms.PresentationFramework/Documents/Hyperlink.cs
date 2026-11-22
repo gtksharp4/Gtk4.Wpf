@@ -50,14 +50,14 @@ public class RequestNavigateEventArgs : EventArgs
 	/// <summary>The URI the user wants to navigate to.</summary>
 	public Uri Uri { get; }
 
-	/// <summary>The name of the frame or window that should handle the navigation (empty when none).</summary>
-	public string Target { get; }
+	/// <summary>The name of the frame or window that should handle the navigation (null when none given).</summary>
+	public string? Target { get; }
 
 	/// <summary>Creates an instance with the given URI and target.</summary>
 	public RequestNavigateEventArgs(Uri uri, string? target)
 	{
 		Uri = uri ?? throw new ArgumentNullException(nameof(uri));
-		Target = target ?? string.Empty;
+		Target = target;
 	}
 
 	/// <summary>Creates an instance with the given URI.</summary>

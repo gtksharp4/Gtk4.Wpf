@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.ComponentModel.Design.Serialization;
 using System.Globalization;
 using System.Windows.Media;
 
@@ -16,12 +17,16 @@ public class FontWeightConverter : TypeConverter
 
 	/// <inheritdoc/>
 	public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType) =>
-		destinationType == typeof(string);
+		destinationType == typeof(InstanceDescriptor) || destinationType == typeof(string);
 
 	/// <inheritdoc/>
 	public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 	{
-		if (!(value is string text)) throw GetConvertFromException(value);
+		if (value == null) throw GetConvertFromException(value);
+		if (!(value is string text)) throw new ArgumentException("Cannot convert from this type.", nameof(value));
+		// A number goes through FromOpenTypeWeight, which rejects 0 and 1000+ as WPF does.
+		if (int.TryParse(text.Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out int n))
+			return FontWeight.FromOpenTypeWeight(n);
 		return FontConverters.ParseFontWeight(text);
 	}
 
@@ -30,8 +35,14 @@ public class FontWeightConverter : TypeConverter
 		Type destinationType)
 	{
 		if (destinationType == null) throw new ArgumentNullException(nameof(destinationType));
-		if (destinationType == typeof(string) && value is FontWeight weight) return NameOf(weight);
-		throw GetConvertToException(value, destinationType);
+		if (value is FontWeight weight)
+		{
+			if (destinationType == typeof(string)) return NameOf(weight);
+			if (destinationType == typeof(InstanceDescriptor))
+				return new InstanceDescriptor(typeof(FontWeight).GetMethod(nameof(FontWeight.FromOpenTypeWeight),
+					new[] { typeof(int) }), new object[] { weight.ToOpenTypeWeight() });
+		}
+		return base.ConvertTo(context, culture, value, destinationType)!;
 	}
 
 	static string NameOf(FontWeight weight)

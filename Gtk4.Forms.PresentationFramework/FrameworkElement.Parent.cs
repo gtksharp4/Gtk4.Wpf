@@ -10,8 +10,12 @@ public abstract partial class FrameworkElement
 	{
 		get
 		{
-			var parent = LogicalParent;
+			DependencyObject? parent = LogicalParent;
+			if (parent is FrameworkElement { ParentOfChildren: { } stand }) parent = stand;
 			return parent != null && ReferenceEquals(parent, TemplatedParent) ? null : parent;
 		}
 	}
+
+	/// <summary>The parent reported for this element's children when it is an internal host.</summary>
+	internal virtual DependencyObject? ParentOfChildren => null;
 }
