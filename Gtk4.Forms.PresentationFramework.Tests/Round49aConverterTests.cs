@@ -76,6 +76,8 @@ public class Round49aConverterTests
 		"System.Windows.TextDecorationCollection",
 		// FlowDocument.TextEffects (documents lane): TextEffectCollection has no type converter in WPF.
 		"System.Windows.Media.TextEffectCollection",
+		// DocumentViewerBase.Document: an interface, set as content; no type converter in WPF.
+		"System.Windows.Documents.IDocumentPaginatorSource",
 	};
 
 	[Fact]
