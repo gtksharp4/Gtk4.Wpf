@@ -79,7 +79,7 @@ internal sealed class PathWatcher : IDisposable
 			var prop = current.GetType().GetProperty(
 				_segments[i], BindingFlags.Public | BindingFlags.Instance);
 			if (prop == null) break;
-			current = prop.GetValue(current);
+			if (!BindingEngine.TryRead(prop, current, out current)) break;
 		}
 	}
 
@@ -117,7 +117,7 @@ internal sealed class PathWatcher : IDisposable
 			var prop = current.GetType().GetProperty(
 				_segments[i], BindingFlags.Public | BindingFlags.Instance);
 			if (prop == null) return;
-			current = prop.GetValue(current);
+			if (!BindingEngine.TryRead(prop, current, out current)) return;
 		}
 
 		for (int i = fromIdx; i < _segments.Length; i++)
@@ -143,7 +143,7 @@ internal sealed class PathWatcher : IDisposable
 			var p = current.GetType().GetProperty(
 				_segments[i], BindingFlags.Public | BindingFlags.Instance);
 			if (p == null) break;
-			current = p.GetValue(current);
+			if (!BindingEngine.TryRead(p, current, out current)) break;
 		}
 	}
 

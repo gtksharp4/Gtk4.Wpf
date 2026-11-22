@@ -83,6 +83,22 @@ public class PropertyPathBindingTests : WpfGtkTestBase, IDisposable
 			System.ComponentModel.TypeDescriptor.GetConverter(typeof(PropertyPath)).GetType());
 	}
 
+	class Throwing : System.ComponentModel.INotifyPropertyChanged
+	{
+		public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged { add { } remove { } }
+		public double Boom => throw new InvalidOperationException("not begun");
+	}
+
+	[Fact]
+	public void A_throwing_source_getter_is_a_binding_error_not_a_crash() => Run(() =>
+	{
+		var target = new TextBlock { Text = "x" };
+		target.SetBinding(TextBlock.TextProperty,
+			new Binding { Source = new Throwing(), Path = new PropertyPath("Boom"), FallbackValue = "fb" });
+
+		Assert.Equal("fb", target.Text);
+	});
+
 	const string Ns = "xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'";
 
 	[Fact]
