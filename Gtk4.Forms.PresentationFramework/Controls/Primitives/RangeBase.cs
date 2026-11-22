@@ -1,10 +1,10 @@
 namespace System.Windows.Controls.Primitives;
 
 /// <summary>
-/// Base class for controls that represent a value in a range. Only the value-changed event surface lives here;
-/// the range properties (<c>Minimum</c>, <c>Maximum</c>, <c>Value</c>, ...) are declared by each derived control.
+/// Base class for controls that represent a value in a range (<see cref="Slider"/>, <see cref="ProgressBar"/>).
+/// The range properties live in <c>RangeBase.Properties.cs</c>.
 /// </summary>
-public abstract class RangeBase : Control
+public abstract partial class RangeBase : Control
 {
 	/// <summary>Bubble event raised when the value changed.</summary>
 	public static readonly RoutedEvent ValueChangedEvent = EventManager.RegisterRoutedEvent(
@@ -15,6 +15,16 @@ public abstract class RangeBase : Control
 	{
 		add => AddHandler(ValueChangedEvent, value);
 		remove => RemoveHandler(ValueChangedEvent, value);
+	}
+
+	/// <summary>Called when <see cref="Minimum"/> changed.</summary>
+	protected virtual void OnMinimumChanged(double oldMinimum, double newMinimum)
+	{
+	}
+
+	/// <summary>Called when <see cref="Maximum"/> changed.</summary>
+	protected virtual void OnMaximumChanged(double oldMaximum, double newMaximum)
+	{
 	}
 
 	/// <summary>Raises <see cref="ValueChangedEvent"/>; override to react before handlers run.</summary>
