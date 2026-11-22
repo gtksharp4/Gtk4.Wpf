@@ -348,6 +348,11 @@ namespace Gtk4.Forms.MarkupCompiler
 					&& ClassifyQualified(w, rootFqType, "this", propName.Substring(0, rootDot), ref propName, val)
 						== Qualified.Emitted)
 					continue;
+				if (propName.IndexOf('.') > 0)
+				{
+					EmitRootAttached(w, "this", propName, val);
+					continue;
+				}
 
 				if (IsKnownEvent(rootFqType, propName))
 				{
