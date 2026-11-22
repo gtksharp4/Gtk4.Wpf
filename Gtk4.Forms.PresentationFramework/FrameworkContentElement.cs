@@ -8,8 +8,9 @@ namespace System.Windows;
 /// tool tip and cursor. Resources are looked up through the logical parents to the hosting
 /// <see cref="FrameworkElement"/>.
 /// <para>
-/// Gaps: only <see cref="Binding"/> is supported on content elements (no MultiBinding, PriorityBinding or
-/// validation); triggers and templates are not available, a
+/// Gaps: only <see cref="Binding"/> is supported on content elements (no MultiBinding or PriorityBinding);
+/// validation errors are recorded in Validation.Errors but the Error event is not raised and no BindingGroup
+/// is joined; triggers and templates are not available, a
 /// <see cref="ToolTip"/> and <see cref="Cursor"/> are stored but not shown (the flow document is one GTK
 /// label), and <see cref="Tag"/> is registered here because <see cref="FrameworkElement"/> has no Tag DP yet.
 /// </para>

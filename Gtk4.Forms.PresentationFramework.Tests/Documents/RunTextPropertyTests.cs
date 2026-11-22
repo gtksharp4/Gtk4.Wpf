@@ -20,7 +20,8 @@ public class RunTextPropertyTests : WpfGtkTestBase
 	{
 		var meta = (FrameworkPropertyMetadata)DRun.TextProperty.GetMetadata(typeof(Run));
 		Assert.Equal(string.Empty, meta.DefaultValue);
-		Assert.True(meta.AffectsMeasure);
+		Assert.True(meta.BindsTwoWayByDefault);
+		Assert.False(meta.AffectsMeasure);
 		Assert.Equal(string.Empty, new Run().Text);
 		Assert.Equal(typeof(string), DRun.TextProperty.PropertyType);
 	}

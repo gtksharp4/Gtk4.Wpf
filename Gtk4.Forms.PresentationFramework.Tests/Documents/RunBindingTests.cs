@@ -95,13 +95,26 @@ public class RunBindingTests : WpfGtkTestBase
 	});
 
 	[Fact]
-	public void OneWay_binding_does_not_write_back() => Run(() =>
+	public void Default_mode_binding_is_TwoWay_and_writes_back() => Run(() =>
 	{
 		var vm = new Vm();
 		var tb = new TextBlock { DataContext = vm };
 		var run = new DRun();
 		tb.Inlines.Add(run);
 		run.SetBinding(DRun.TextProperty, new Binding("Name"));
+		Assert.Equal("start", run.Text);
+		run.Text = "edited";
+		Assert.Equal("edited", vm.Name);
+	});
+
+	[Fact]
+	public void OneWay_binding_does_not_write_back() => Run(() =>
+	{
+		var vm = new Vm();
+		var tb = new TextBlock { DataContext = vm };
+		var run = new DRun();
+		tb.Inlines.Add(run);
+		run.SetBinding(DRun.TextProperty, new Binding("Name") { Mode = BindingMode.OneWay });
 		run.Text = "edited";
 		Assert.Equal("start", vm.Name);
 	});

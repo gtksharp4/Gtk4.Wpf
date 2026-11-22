@@ -8,7 +8,7 @@ public partial class Run
 	public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
 		nameof(Text), typeof(string), typeof(Run),
 		new FrameworkPropertyMetadata(
-			string.Empty, FrameworkPropertyMetadataOptions.AffectsMeasure, OnTextChanged, CoerceText));
+			string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnTextChanged, CoerceText));
 
 	/// <summary>Creates an empty run.</summary>
 	public Run() { }
@@ -16,7 +16,7 @@ public partial class Run
 	/// <summary>Creates a run holding <paramref name="text"/>.</summary>
 	public Run(string text) => Text = text;
 
-	/// <summary>Creates a run holding <paramref name="text"/> and inserts it at <paramref name="insertionPosition"/>.</summary>
+	/// <summary>Creates a run holding <paramref name="text"/> at <paramref name="insertionPosition"/>.</summary>
 	public Run(string text, TextPointer insertionPosition)
 	{
 		Text = text;

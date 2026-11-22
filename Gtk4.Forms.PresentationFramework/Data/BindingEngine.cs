@@ -33,6 +33,10 @@ internal static partial class BindingEngine
 		DependencyProperty dp,
 		BindingBase bindingBase)
 	{
+		var fe = target as FrameworkElement;
+		if (fe == null && bindingBase is not Binding)
+			throw new NotSupportedException("Only Binding is supported on a content element.");
+
 		var list = _bindings.GetOrCreateValue(target);
 
 		// Clear any existing simple-binding record for this DP.
@@ -44,7 +48,6 @@ internal static partial class BindingEngine
 		}
 
 		// Also clear any existing multi-binding record for this DP (R2: cross-engine leak).
-		var fe = target as FrameworkElement;
 		if (fe != null) MultiBindingEngine.ClearForDp(fe, dp);
 
 		// Clear any priority-binding record too.
@@ -54,9 +57,6 @@ internal static partial class BindingEngine
 		var exprMap = _expressions.GetOrCreateValue(target);
 		if (fe != null && exprMap.TryGetValue(dp, out var replaced)) BindingGroupEnlister.Withdraw(fe, replaced);
 		exprMap.Remove(dp);
-
-		if (fe == null && bindingBase is not Binding)
-			throw new NotSupportedException("Only Binding is supported on a content element.");
 
 		if (bindingBase is MultiBinding mb)
 		{

@@ -2295,6 +2295,11 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   wire computed arrange rects onto a `Gtk.Fixed` so managed layout drives live GTK positioning
   (replace Box/Grid native backing with `Gtk.Fixed` + SizeAllocate driven by the computed
   ArrangeRects — deferred until the managed math is verified stable).
+- **Round 52b content bindings (gf52b) — reviewed & fixed.** `Run.TextProperty` (BindsTwoWayByDefault, as WPF) and
+  `Binding` on `FrameworkContentElement` targets (no MultiBinding/PriorityBinding; a rejected call leaves the old
+  binding intact). `Run(string, TextPointer)` splits the enclosing Run; `ListItem` is now a `FrameworkContentElement`
+  and `List`/`ListItem` own their children, so a Run in a list inherits the viewer DataContext. The binding-engine
+  widening to `DependencyObject` is type-only; samples gate re-run (CommonDialogs now builds and runs).
 
 ## Phased roadmap (after Phase 0 proves the spine)
 

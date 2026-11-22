@@ -6,10 +6,13 @@ namespace System.Windows.Documents;
 /// An item within a <see cref="List"/>. Contains block content.
 /// </summary>
 [ContentProperty("Blocks")]
-public class ListItem
+public class ListItem : FrameworkContentElement
 {
+	/// <summary>Creates an empty list item.</summary>
+	public ListItem() => Blocks = new BlockCollection(this);
+
 	/// <summary>Block content of this list item.</summary>
-	public BlockCollection Blocks { get; } = new BlockCollection();
+	public BlockCollection Blocks { get; }
 
 	FlowDirection? _flowDirection;
 
