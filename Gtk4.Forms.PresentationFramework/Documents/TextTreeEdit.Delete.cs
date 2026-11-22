@@ -23,9 +23,11 @@ static partial class TextTreeEdit
 		else PruneDetachedInlines(doc.DetachedRoot, start, end);
 		if (p1 != null && p2 != null && !ReferenceEquals(p1, p2))
 		{
+			var emptied = doc.DetachedRoot is List dl ? ItemOf(dl, p2) : null;
 			foreach (var i in p2.Inlines.ToList()) p1.Inlines.Add(i);
 			p2.Inlines.Clear();
 			FindOwner(doc, p2)?.Remove(p2);
+			if (emptied != null) DropEmptyItems((List)doc.DetachedRoot!, new[] { emptied });
 		}
 		if (doc.DetachedRoot == null && doc.Blocks.Count == 0) doc.Blocks.Add(new Paragraph());
 		KeepListItem(doc.DetachedRoot as List);
@@ -85,13 +87,19 @@ static partial class TextTreeEdit
 
 	static void PruneListItems(List list, int start, int end, ref int inner)
 	{
+		var touched = new List<ListItem>();
 		foreach (var item in list.ListItems)
 		{
 			int itemStart = inner, itemSize = Size(item);
 			int body = itemStart + 1;
-			if (itemStart + itemSize > start && itemStart < end) PruneBlocks(item.Blocks, start, end, ref body);
+			if (itemStart + itemSize > start && itemStart < end)
+			{
+				PruneBlocks(item.Blocks, start, end, ref body);
+				touched.Add(item);
+			}
 			inner = itemStart + itemSize;
 		}
+		DropEmptyItems(list, touched);
 	}
 
 	static void PruneInlines(InlineCollection col, int start, int end, ref int off)

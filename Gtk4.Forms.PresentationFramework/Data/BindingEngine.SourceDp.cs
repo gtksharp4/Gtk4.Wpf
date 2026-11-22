@@ -27,7 +27,7 @@ internal static partial class BindingEngine
 		void AttachDpSource(object? source)
 		{
 			if (source is not FrameworkElement fe) return;
-			var path = _binding.PathString;
+			var path = PropertyPath.ResolveOwner(source, _binding.PathString);
 			if (string.IsNullOrEmpty(path) || path!.IndexOfAny(new[] { '.', '[', '(' }) >= 0) return;
 			var dp = FindDependencyProperty(fe.GetType(), path);
 			if (dp == null) return;

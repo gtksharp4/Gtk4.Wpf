@@ -77,6 +77,7 @@ internal static partial class BindingEngine
 			owner = null!;
 			prop = null;
 			if (source == null) return false;
+			path = PropertyPath.ResolveOwner(source, path);
 			if (string.IsNullOrEmpty(path)) { owner = source; return true; }
 			SplitLeaf(path!, out var headPath, out var leaf);
 			var head = headPath.Length > 0 ? ResolvePath(source, headPath) : source;

@@ -21,6 +21,7 @@ internal static partial class BindingEngine
 	{
 		owner = null!;
 		prop = null!;
+		path = PropertyPath.ResolveOwner(source, path);
 		if (source == null || string.IsNullOrEmpty(path)) return false;
 
 		SplitLeaf(path!, out var head, out var leaf);

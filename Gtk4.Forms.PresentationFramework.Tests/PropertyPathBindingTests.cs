@@ -161,4 +161,18 @@ public class PropertyPathBindingTests : WpfGtkTestBase, IDisposable
 			new Binding { Path = back, Source = new TextBlock { Text = "round" } });
 		Assert.Equal("round", target.Text);
 	});
+
+	class Positioned
+	{
+		public double Left { get; set; } = 7;
+	}
+
+	[Fact]
+	public void Attached_owner_path_does_not_read_a_same_named_clr_member() => Run(() =>
+	{
+		var target = new TextBlock();
+		target.SetBinding(TextBlock.TextProperty,
+			new Binding { Path = new PropertyPath("(Canvas.Left)"), Source = new Positioned(), FallbackValue = "none" });
+		Assert.Equal("none", target.Text);
+	});
 }

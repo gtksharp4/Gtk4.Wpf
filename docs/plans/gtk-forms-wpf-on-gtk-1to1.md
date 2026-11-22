@@ -2464,7 +2464,8 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   string to a null path (WPF leaves `Path` unset), so a null never throws and the binding uses the source itself.
   **a-F3** the `Direction` setter reports `ParamName` "value", the constructor "direction". **a-F4**
   `PropertyPathConverter.ConvertFrom(null)` throws `ArgumentNullException("source")`; `ConvertTo` writes a dependency
-  property as `(Owner.Name)` (no xmlns prefix, there is no serializer context), and `(Owner.Name)` resolves by name.
+  property as `(Owner.Name)` (no xmlns prefix, there is no serializer context), and `(Owner.Name)` resolves by name
+  only when Owner is the source type or a base type (see the follow-up).
   **CI-1** `TextTreeEdit.FindOwner` searches a detached `List` root, so a cross-item delete removes the emptied
   paragraph, multi-line text no longer dereferences a null owner, and a full-range `Text` set keeps a first item with a
   paragraph. The `FlowDocument.FlowDirection` doc now says "set locally or inherited as RightToLeft". The range text
@@ -2472,6 +2473,12 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   Rejected: **CI-2** and **CI-3** were already fixed by the merge (only the `ParamName` residue, a-F3); **CI-4** is lane
   C's (`XamlCodeGenerator.BindingElement.cs:80` must emit `new System.Windows.PropertyPath("x")`); **CI-5** waits on lane
   A's `DrawingContext` from `RenderOpen` (gf53a).
+- **Round 57 (lane B) follow-up.** **CI-1** a cross-item delete now merges the emptied `ListItem` away
+  (`ListItemCollection.Remove` added, as in WPF) and `PruneListItems` drops items it emptied, so a full-range `Text`
+  set leaves one item, not an empty bullet. **a-F4** the owner of a `(Owner.Name)` path is stripped only when Owner is
+  the source's type or a base type (`PropertyPath.ResolveOwner`, applied at the walk, write-back, leaf and watch
+  points). `(Canvas.Left)` or `(Grid.Row)` stays unresolved instead of binding an unrelated CLR `Left` or `Row`;
+  attached-property paths are still not resolved.
 - **Round 57 (lane B) totals.** `dotnet build Gtk4.Wpf.sln` 0 warnings. Targeted `PresentationFramework.Tests`
   (ItemCollection, SortDescription, PropertyPath, Binding, TextRange, RichTextBox, FlowDocument, TextTree, Paginator,
   Collection): 685 passed. Samples gate: 176 build=pass projects all build, 165 run=runs all start and stay up (4 needed

@@ -159,7 +159,7 @@ internal static partial class BindingEngine
 			{
 				_inpcSource = inpc;
 				_inpcSource.PropertyChanged += OnSourcePropertyChanged;
-				_watchedProperty = FirstPropertyName(_binding.PathString);
+				_watchedProperty = FirstPropertyName(PropertyPath.ResolveOwner(source, _binding.PathString));
 			}
 			else
 				AttachDpSource(source); // BindingEngine.SourceDp.cs

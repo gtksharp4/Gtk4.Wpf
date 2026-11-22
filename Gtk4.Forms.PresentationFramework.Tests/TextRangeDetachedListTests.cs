@@ -39,6 +39,7 @@ public class TextRangeDetachedListTests
 
 		Assert.DoesNotContain(list.ListItems, i => i.Blocks.Any(b => ReferenceEquals(b, p2)));
 		Assert.Equal("ad", new TextRange(list.ContentStart, list.ContentEnd).Text.Trim());
+		Assert.Single(list.ListItems);
 	}
 
 	[Fact]
@@ -50,7 +51,8 @@ public class TextRangeDetachedListTests
 		range.Text = "x";
 
 		Assert.Equal("x", range.Text.TrimEnd((char)13, (char)10)); // the paragraph break stays in the range
-		Assert.NotEmpty(list.ListItems);
+		Assert.Single(list.ListItems);
+		Assert.Single(list.ListItems[0].Blocks);
 	}
 
 	[Fact]

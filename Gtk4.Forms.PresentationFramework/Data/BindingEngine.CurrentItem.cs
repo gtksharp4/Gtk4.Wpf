@@ -70,6 +70,7 @@ internal static partial class BindingEngine
 	internal static bool TryWalk(object? source, string? path, List<ICollectionView>? views, out object? value)
 	{
 		value = source;
+		path = PropertyPath.ResolveOwner(source, path);
 		if (string.IsNullOrEmpty(path)) return true;
 		foreach (var step in ParseSteps(path!))
 		{

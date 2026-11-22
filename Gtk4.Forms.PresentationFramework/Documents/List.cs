@@ -144,6 +144,15 @@ public sealed class ListItemCollection : IEnumerable<ListItem>
 		ContentParenting.Changed(_owner);
 	}
 
+	/// <summary>Removes an item; false when it is not in the collection.</summary>
+	public bool Remove(ListItem item)
+	{
+		if (!_items.Remove(item)) return false;
+		ContentParenting.Release(_owner, item);
+		ContentParenting.Changed(_owner);
+		return true;
+	}
+
 	/// <inheritdoc/>
 	public IEnumerator<ListItem> GetEnumerator() => _items.GetEnumerator();
 
