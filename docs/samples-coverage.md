@@ -286,6 +286,17 @@ that plan; they are not a parity track.
      `FrameworkElement.BeginStoryboard(Storyboard[, HandoffBehavior, bool])`.
    - Owns: `Input/MouseEventArgs.cs`, `Input/KeyboardEventArgs.cs`, `Input/InputDevice.cs`, new `Input/MouseDevice.cs`,
      new `FrameworkElement.BeginStoryboard.cs`. It must not touch `Input/Mouse.Cursor.cs` or `UIElement.*` (track 1).
+   - **Round 56a, done (branch `gf56a/input-devices-storyboard`, 16 tests).** `MouseDevice`/`Mouse.PrimaryDevice`;
+     `MouseEventArgs : InputEventArgs` and `KeyEventArgs : KeyboardEventArgs` with WPF's device constructors (args built
+     that way read the device live); `FrameworkElement.BeginStoryboard` (3 overloads). Gaps kept: no `StylusDevice`
+     overload, no `PresentationSource` constructor on `KeyEventArgs`, and no `FrameworkContentElement.BeginStoryboard`
+     (`Storyboard.Begin` has no content-element overload).
+   - Measured: CubeAnimationDemo builds and runs. HexSphereDemo and PhotoFlipperDemo now build (CS1955 and the device
+     errors are gone) but exit at start-up: HexSphere on `'' is not a valid value for property 'Background'`,
+     PhotoFlipper on a `Visual3DCollection` index in `OnLoaded`. GraphingCalculatorDemo and SlidePuzzleDemo no longer report the
+     `MouseDevice` or `BeginStoryboard` error as their first error (only the first error was read); they fail on `Rect` edges (CS1503) and `ComboBoxItem.Tag`.
+     All other apps that built and ran still do (CustomApplicationClass was not reproducible per-project: NU1201/MSB3107
+     on its sibling project reference, unrelated to these files).
 3. **Controls tail II and packaging: 4 only, 3 involved.**
    - Only: Concepts (`Hyperlink.TargetName`), DialogBox (`FontStyleConverter`/`FontWeightConverter`), AnnotationsStyling
      (`InkCanvasEditingMode`, plus an `InkCanvas` shell), WPFGallery (`Microsoft.Win32.SystemEvents` as a

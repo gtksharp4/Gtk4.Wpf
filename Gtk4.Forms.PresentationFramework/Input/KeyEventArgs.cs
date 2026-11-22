@@ -15,7 +15,11 @@ public enum KeyStates
 }
 
 /// <summary>Event args for <c>KeyDown</c>/<c>KeyUp</c> and their Preview counterparts.</summary>
-public class KeyEventArgs : RoutedEventArgs
+/// <remarks>
+/// WPF's <c>KeyEventArgs(KeyboardDevice, PresentationSource, int, Key)</c> constructor is omitted:
+/// this layer has no <c>PresentationSource</c> type.
+/// </remarks>
+public class KeyEventArgs : KeyboardEventArgs
 {
 	/// <summary>The key involved.</summary>
 	public Key Key { get; }
@@ -42,7 +46,7 @@ public class KeyEventArgs : RoutedEventArgs
 		KeyStates keyStates,
 		ModifierKeys modifiers = ModifierKeys.None,
 		Key systemKey = Key.None)
-		: base(routedEvent)
+		: base(routedEvent, Keyboard.PrimaryDevice, Environment.TickCount)
 	{
 		Key = key;
 		KeyStates = keyStates;
