@@ -15,7 +15,11 @@ public abstract class DynamicDocumentPaginator : DocumentPaginator
 	public abstract ContentPosition GetObjectPosition(object element);
 
 	/// <summary>Gets or sets whether pagination continues in the background.</summary>
-	public abstract bool IsBackgroundPaginationEnabled { get; set; }
+	public virtual bool IsBackgroundPaginationEnabled
+	{
+		get => false;
+		set { }
+	}
 
 	/// <summary>Occurs when pagination has finished.</summary>
 	public event EventHandler? PaginationCompleted;

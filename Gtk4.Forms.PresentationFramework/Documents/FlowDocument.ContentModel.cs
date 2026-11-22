@@ -11,7 +11,11 @@ public partial class FlowDocument : FrameworkContentElement
 	public FlowDocument()
 	{
 		Blocks = new BlockCollection(this);
-		Blocks.Changed += () => ViewChanged?.Invoke();
+		Blocks.Changed += () =>
+		{
+			ViewChanged?.Invoke();
+			ContentChanged?.Invoke();
+		};
 	}
 
 	/// <summary>Creates a document holding <paramref name="block"/>.</summary>

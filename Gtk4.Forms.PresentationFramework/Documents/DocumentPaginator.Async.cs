@@ -6,7 +6,16 @@ namespace System.Windows.Documents;
 
 public abstract partial class DocumentPaginator
 {
-	readonly HashSet<object> _pending = new HashSet<object>();
+	readonly List<PendingCall> _pending = new List<PendingCall>();
+
+	sealed class PendingCall
+	{
+		internal PendingCall(object state) => State = state;
+
+		internal object State { get; }
+
+		internal bool Cancelled { get; set; }
+	}
 
 	/// <summary>Gets a page without blocking; <see cref="GetPageCompleted"/> carries this paginator as state.</summary>
 	public virtual void GetPageAsync(int pageNumber) => GetPageAsync(pageNumber, this);
@@ -54,18 +63,27 @@ public abstract partial class DocumentPaginator
 	public virtual void CancelAsync(object userState)
 	{
 		if (userState == null) throw new ArgumentNullException(nameof(userState));
-		lock (_pending) _pending.Remove(userState);
+		lock (_pending)
+		{
+			foreach (var call in _pending)
+				if (Equals(call.State, userState)) call.Cancelled = true;
+		}
 	}
 
-	// A cancelled state is dropped from _pending; the posted work then sees it missing and completes as cancelled.
-	// States are held per call so a repeat of the same state is one cancel target, as with AsyncOperation.
+	// Each call is tracked on its own: CancelAsync marks every outstanding call with that state, and a repeated
+	// state never cancels the other calls that share it.
 	internal void Post(object userState, Action<bool> work)
 	{
-		lock (_pending) _pending.Add(userState);
+		var call = new PendingCall(userState);
+		lock (_pending) _pending.Add(call);
 		Dispatcher.CurrentDispatcher.BeginInvoke(() =>
 		{
 			bool cancelled;
-			lock (_pending) cancelled = !_pending.Remove(userState);
+			lock (_pending)
+			{
+				cancelled = call.Cancelled;
+				_pending.Remove(call);
+			}
 			work(cancelled);
 		}, DispatcherPriority.Normal);
 	}

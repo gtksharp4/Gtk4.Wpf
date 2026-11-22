@@ -1,8 +1,8 @@
 namespace System.Windows.Controls;
 
 /// <summary>Which pages a print job covers.</summary>
-/// <remarks>WPF has AllPages and UserPages; CurrentPage and SelectedPages are additions that
-/// <see cref="PrintDialog"/> stores and treats as AllPages.</remarks>
+/// <remarks>The values match WPF. <see cref="PrintDialog"/> stores CurrentPage and SelectedPages but treats them
+/// as AllPages.</remarks>
 public enum PageRangeSelection
 {
 	/// <summary>Every page.</summary>

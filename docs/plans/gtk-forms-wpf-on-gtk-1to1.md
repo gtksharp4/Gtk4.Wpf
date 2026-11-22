@@ -2002,6 +2002,17 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   window under load in the first pass and ran when re-run alone (BindConversion, BindingDPToDP, EditingCollections,
   UpdateSource, ValidateItemSample, SpellChecking, DragDropTextOps, Image, CaptureUnCaptureMouse,
   EventOnGainAndLooseFocus, MouseState, DefiningResources, WindowHiding); no regression.
+- **Round 52 paginated-viewers review fixes - DONE** (`fix/r52b-paginated`). `DynamicDocumentPaginator`
+  `IsBackgroundPaginationEnabled` is virtual (false, no-op set) and `DocumentPage.Dispose` is virtual;
+  `PrintDialog.MinPage`/`MaxPage` are `uint` and 0 throws `ArgumentException`; async calls are tracked per call so a
+  repeated state no longer completes as cancelled; `FitToMaxPagesAcross()` keeps `MaxPagesAcross` and both are 1..32;
+  the flow paginator repaginates on block and property changes and `FlowDocumentPageViewer` refreshes its status on
+  a page-count change; the DocumentViewer commands are get-only static properties, `TextEffectTarget`'s constructor is
+  internal, and the `PageRangeSelection`/`TextEffect` remarks are corrected.
+  Paginator follow-ups from the fix check: repaginate on nested content edits (`Run.Text`, `Paragraph.Inlines`, nested
+  `Section`/`List`/`Table`) and only on layout-affecting properties; coalesce invalidation once per dispatcher turn
+  (building N blocks on a shown document is O(N^2) today); add `DocumentViewer` to `CommandConverters` owners so
+  `Command="DocumentViewer.FitToWidthCommand"` resolves.
 - **Carry-over (Round 52 lane B)**: `AttachedAnnotationChanged`/`IAttachedAnnotation`; highlights are not painted (no
   adorner layer); `TextPointer.Offset` caching; the `FileFormatException` move; `gf52b/content-bindings-sweep` still
   to be reviewed and merged.

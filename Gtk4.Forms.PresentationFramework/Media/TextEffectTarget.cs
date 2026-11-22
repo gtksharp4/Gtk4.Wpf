@@ -10,7 +10,7 @@ public class TextEffectTarget
 	/// <summary>Creates a target for <paramref name="effect"/> on <paramref name="element"/>.</summary>
 	/// <exception cref="ArgumentNullException">An argument is null.</exception>
 	/// <exception cref="ArgumentException">The element is not a <see cref="TextElement"/>.</exception>
-	public TextEffectTarget(DependencyObject element, TextEffect effect)
+	internal TextEffectTarget(DependencyObject element, TextEffect effect)
 	{
 		if (element == null) throw new ArgumentNullException(nameof(element));
 		if (effect == null) throw new ArgumentNullException(nameof(effect));

@@ -73,7 +73,6 @@ public class PaginatorFlowDocumentTests
 		paginator.PageSize = new Size(600, 600);
 		int plain = paginator.PageCount;
 		doc.PagePadding = new Thickness(100);
-		paginator.PageSize = new Size(600, 601);
 		Assert.True(paginator.PageCount > plain);
 	}
 
