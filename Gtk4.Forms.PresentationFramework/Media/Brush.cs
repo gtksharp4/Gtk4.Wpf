@@ -6,7 +6,7 @@ namespace System.Windows.Media;
 /// Abstract base for all WPF brushes.  Mirrors <c>System.Windows.Media.Brush</c>;
 /// implements <c>Freezable</c>-like semantics via <see cref="Opacity"/>.
 /// </summary>
-public abstract class Brush
+public abstract partial class Brush
 {
 	/// <summary>
 	/// Overall opacity multiplier; 0 = fully transparent, 1 = fully opaque.
@@ -34,7 +34,7 @@ public abstract class Brush
 /// A brush that paints with a single solid <see cref="Color"/>.
 /// Mirrors <c>System.Windows.Media.SolidColorBrush</c>.
 /// </summary>
-public class SolidColorBrush : Brush
+public partial class SolidColorBrush : Brush
 {
 	/// <summary>Creates a transparent solid brush.</summary>
 	public SolidColorBrush() { }
@@ -42,8 +42,6 @@ public class SolidColorBrush : Brush
 	/// <summary>Creates a solid brush with the given colour.</summary>
 	public SolidColorBrush(Color color) => Color = color;
 
-	/// <summary>The fill colour.</summary>
-	public Color Color { get; set; }
 
 	/// <inheritdoc/>
 	internal override void ApplyToCairo(Cairo.Context cr, double width, double height)

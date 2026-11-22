@@ -13,13 +13,20 @@ static class MatrixCairo
 }
 
 /// <summary>Abstract base for WPF 2D transforms.</summary>
-public abstract class Transform
+public abstract class Transform : System.Windows.Media.Animation.Animatable
 {
 	/// <summary>Returns the affine matrix represented by this transform.</summary>
 	public abstract Matrix Value { get; }
 
 	/// <summary>The identity transform (no-op).</summary>
-	public static Transform Identity { get; } = new MatrixTransform(Matrix.Identity);
+	public static Transform Identity { get; } = MakeIdentity();
+
+	static Transform MakeIdentity()
+	{
+		var t = new MatrixTransform(Matrix.Identity);
+		t.Freeze();
+		return t;
+	}
 
 	/// <summary>Applies this transform to the given Cairo context.</summary>
 	internal void ApplyToCairo(Cairo.Context cr) => cr.Transform(Value.ToCairo());
@@ -35,7 +42,25 @@ public class MatrixTransform : Transform
 	public MatrixTransform(Matrix matrix) => Matrix = matrix;
 
 	/// <summary>The underlying matrix.</summary>
-	public Matrix Matrix { get; set; }
+	public Matrix Matrix
+	{
+		get => _matrix;
+		set
+		{
+			ThrowIfFrozen();
+			_matrix = value;
+			OnChanged();
+		}
+	}
+
+	Matrix _matrix;
+
+	/// <inheritdoc/>
+	protected override Freezable CreateInstanceCore() => new MatrixTransform(Matrix.Identity);
+
+	/// <inheritdoc/>
+	protected override void CloneOverride(Freezable destination, bool currentValueOnly) =>
+		((MatrixTransform)destination)._matrix = _matrix;
 
 	/// <inheritdoc/>
 	public override Matrix Value => Matrix;
@@ -48,12 +73,36 @@ public class MatrixTransform : Transform
 public class TranslateTransform : Transform
 {
 	/// <summary>Creates a translate transform.</summary>
-	public TranslateTransform(double x = 0, double y = 0) { X = x; Y = y; }
+	public TranslateTransform(double x = 0, double y = 0)
+	{
+		if (x != 0) X = x;
+		if (y != 0) Y = y;
+	}
 
 	/// <summary>X translation in device-independent units.</summary>
-	public double X { get; set; }
+	public double X
+	{
+		get => (double)GetValue(XProperty)!;
+		set => SetValue(XProperty, value);
+	}
+
 	/// <summary>Y translation.</summary>
-	public double Y { get; set; }
+	public double Y
+	{
+		get => (double)GetValue(YProperty)!;
+		set => SetValue(YProperty, value);
+	}
+
+	/// <summary>Identifies <see cref="X"/>.</summary>
+	public static readonly DependencyProperty XProperty = DependencyProperty.Register(
+		nameof(X), typeof(double), typeof(TranslateTransform), new PropertyMetadata(0.0));
+
+	/// <summary>Identifies <see cref="Y"/>.</summary>
+	public static readonly DependencyProperty YProperty = DependencyProperty.Register(
+		nameof(Y), typeof(double), typeof(TranslateTransform), new PropertyMetadata(0.0));
+
+	/// <inheritdoc/>
+	protected override Freezable CreateInstanceCore() => new TranslateTransform();
 
 	/// <inheritdoc/>
 	public override Matrix Value => new Matrix(1, 0, 0, 1, X, Y);
@@ -83,6 +132,16 @@ public class ScaleTransform : Transform
 	public double CenterY { get; set; }
 
 	/// <inheritdoc/>
+	/// <inheritdoc/>
+	protected override Freezable CreateInstanceCore() => new ScaleTransform();
+
+	/// <inheritdoc/>
+	protected override void CloneOverride(Freezable destination, bool currentValueOnly)
+	{
+		var t = (ScaleTransform)destination;
+		t.ScaleX = ScaleX; t.ScaleY = ScaleY; t.CenterX = CenterX; t.CenterY = CenterY;
+	}
+
 	public override Matrix Value =>
 		new Matrix(ScaleX, 0, 0, ScaleY,
 			CenterX * (1 - ScaleX),
@@ -95,6 +154,16 @@ public class ScaleTransform : Transform
 /// </summary>
 public class RotateTransform : Transform
 {
+	/// <inheritdoc/>
+	protected override Freezable CreateInstanceCore() => new RotateTransform();
+
+	/// <inheritdoc/>
+	protected override void CloneOverride(Freezable destination, bool currentValueOnly)
+	{
+		var t = (RotateTransform)destination;
+		t.Angle = Angle; t.CenterX = CenterX; t.CenterY = CenterY;
+	}
+
 	/// <summary>Creates a rotate transform.</summary>
 	public RotateTransform(double angle = 0, double centerX = 0, double centerY = 0)
 	{

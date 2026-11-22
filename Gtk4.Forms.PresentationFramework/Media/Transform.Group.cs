@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 
 namespace System.Windows.Media;
 
@@ -9,6 +11,16 @@ namespace System.Windows.Media;
 /// </summary>
 public class SkewTransform : Transform
 {
+	/// <inheritdoc/>
+	protected override Freezable CreateInstanceCore() => new SkewTransform();
+
+	/// <inheritdoc/>
+	protected override void CloneOverride(Freezable destination, bool currentValueOnly)
+	{
+		var t = (SkewTransform)destination;
+		t.AngleX = AngleX; t.AngleY = AngleY; t.CenterX = CenterX; t.CenterY = CenterY;
+	}
+
 	/// <summary>Creates a skew transform.</summary>
 	public SkewTransform(double angleX = 0, double angleY = 0,
 		double centerX = 0, double centerY = 0)
@@ -46,7 +58,7 @@ public class SkewTransform : Transform
 /// An ordered list of <see cref="Transform"/> objects for <see cref="TransformGroup"/>.
 /// Mirrors <c>System.Windows.Media.TransformCollection</c>.
 /// </summary>
-public class TransformCollection : List<Transform>
+public class TransformCollection : ObservableCollection<Transform>
 {
 	/// <summary>Creates an empty collection.</summary>
 	public TransformCollection() { }
@@ -66,7 +78,36 @@ public class TransformGroup : Transform
 	public TransformGroup()
 	{
 		Children = new TransformCollection();
+		Children.CollectionChanged += OnChildrenChanged;
 	}
+
+	/// <inheritdoc/>
+	protected override Freezable CreateInstanceCore() => new TransformGroup();
+
+	/// <inheritdoc/>
+	protected override void CloneOverride(Freezable destination, bool currentValueOnly)
+	{
+		var g = (TransformGroup)destination;
+		foreach (var child in Children)
+			g.Children.Add((Transform)(currentValueOnly ? child.CloneCurrentValue() : child.Clone()));
+	}
+
+	/// <inheritdoc/>
+	protected override void OnFreeze()
+	{
+		foreach (var child in Children) child.Freeze();
+	}
+
+	void OnChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
+	{
+		if (e.OldItems != null)
+			foreach (Transform t in e.OldItems) t.Changed -= OnChildChanged;
+		if (e.NewItems != null)
+			foreach (Transform t in e.NewItems) t.Changed += OnChildChanged;
+		OnChanged();
+	}
+
+	void OnChildChanged(object? sender, EventArgs e) => OnChanged();
 
 	/// <summary>The ordered child transforms. Applied first→last.</summary>
 	public TransformCollection Children { get; }

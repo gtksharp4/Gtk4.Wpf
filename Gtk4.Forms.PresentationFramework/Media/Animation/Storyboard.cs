@@ -1,183 +1,106 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace System.Windows.Media.Animation;
 
 /// <summary>
-/// Groups a set of <see cref="AnimationTimeline"/> children and applies them to named
-/// properties on named target elements.  Mirrors WPF's
-/// <c>System.Windows.Media.Animation.Storyboard</c>.
-///
-/// Target resolution: each child timeline may have a target DP set via
-/// <see cref="SetTargetProperty"/>.  The target element is the <c>target</c> argument
-/// passed to <see cref="Begin(FrameworkElement)"/> unless overridden per-child by
-/// <see cref="SetTargetName"/>.
+/// Groups child timelines and applies them to the elements and properties named by the
+/// TargetName, TargetProperty and Target attached properties.
+/// Mirrors WPF's <c>System.Windows.Media.Animation.Storyboard</c>.
 /// </summary>
-public class Storyboard : Timeline
+public partial class Storyboard : ParallelTimeline
 {
-	// ── Children collection ──────────────────────────────────────────────────
+	/// <summary>Identifies the TargetName attached property.</summary>
+	public static readonly DependencyProperty TargetNameProperty = DependencyProperty.RegisterAttached(
+		"TargetName", typeof(string), typeof(Storyboard), new PropertyMetadata(null));
 
-	/// <summary>The timeline children owned by this storyboard.</summary>
-	public TimelineCollection Children { get; } = new TimelineCollection();
+	/// <summary>Identifies the TargetProperty attached property.</summary>
+	public static readonly DependencyProperty TargetPropertyProperty = DependencyProperty.RegisterAttached(
+		"TargetProperty", typeof(PropertyPath), typeof(Storyboard), new PropertyMetadata(null));
 
-	// ── Attached-property metadata ──────────────────────────────────────────
-	// Storyboard uses plain per-instance dictionaries (not real DPs) for the
-	// XAML-style SetTarget/SetTargetName/SetTargetProperty helpers.
+	/// <summary>Identifies the Target attached property.</summary>
+	public static readonly DependencyProperty TargetProperty = DependencyProperty.RegisterAttached(
+		"Target", typeof(DependencyObject), typeof(Storyboard), new PropertyMetadata(null));
 
-	readonly Dictionary<Timeline, string> _targetNames =
-		new Dictionary<Timeline, string>(System.Collections.Generic.ReferenceEqualityComparer.Instance);
+	/// <summary>Sets the name of the element a timeline animates.</summary>
+	public static void SetTargetName(DependencyObject element, string name) =>
+		Check(element).SetValue(TargetNameProperty, name);
 
-	readonly Dictionary<Timeline, DependencyProperty> _targetProperties =
-		new Dictionary<Timeline, DependencyProperty>(System.Collections.Generic.ReferenceEqualityComparer.Instance);
+	/// <summary>Gets the name of the element a timeline animates.</summary>
+	public static string? GetTargetName(DependencyObject element) =>
+		(string?)Check(element).GetValue(TargetNameProperty);
 
-	// Property-path strings stored when the DP is not yet known (compiler path).
-	readonly Dictionary<Timeline, string> _targetPropertyNames =
-		new Dictionary<Timeline, string>(System.Collections.Generic.ReferenceEqualityComparer.Instance);
+	/// <summary>Sets the property path a timeline animates.</summary>
+	public static void SetTargetProperty(DependencyObject element, PropertyPath path) =>
+		Check(element).SetValue(TargetPropertyProperty, path);
 
-	/// <summary>Sets the target element name for a child timeline.</summary>
-	public void SetTargetName(Timeline timeline, string name)
-	{
-		if (timeline == null) throw new ArgumentNullException(nameof(timeline));
-		_targetNames[timeline] = name;
-	}
+	/// <summary>Gets the property path a timeline animates.</summary>
+	public static PropertyPath? GetTargetProperty(DependencyObject element) =>
+		(PropertyPath?)Check(element).GetValue(TargetPropertyProperty);
 
-	/// <summary>Returns the target element name for <paramref name="timeline"/>, or null.</summary>
+	/// <summary>Sets the object a timeline animates, taking precedence over the target name.</summary>
+	public static void SetTarget(DependencyObject element, DependencyObject target) =>
+		Check(element).SetValue(TargetProperty, target);
+
+	/// <summary>Gets the object a timeline animates.</summary>
+	public static DependencyObject? GetTarget(DependencyObject element) =>
+		(DependencyObject?)Check(element).GetValue(TargetProperty);
+
+	static DependencyObject Check(DependencyObject element) =>
+		element ?? throw new ArgumentNullException(nameof(element));
+
+	/// <inheritdoc/>
+	protected override Freezable CreateInstanceCore() => new Storyboard();
+
+	// Instance shims: the markup compiler emits sb.SetTargetName(timeline, "x") and
+	// sb.SetTargetPropertyName(timeline, "(A.B)"), which predate the WPF static API.
+
+	/// <summary>Sets the target element name of a child timeline.</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public void SetTargetName(Timeline timeline, string name) => SetTargetName((DependencyObject)timeline, name);
+
+	/// <summary>Gets the target element name of a child timeline.</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public string? GetTargetName(Timeline timeline) =>
-		timeline != null && _targetNames.TryGetValue(timeline, out var n) ? n : null;
+		timeline == null ? null : (string?)timeline.GetValue(TargetNameProperty);
 
-	/// <summary>Sets the target <see cref="DependencyProperty"/> for a child timeline.</summary>
+	/// <summary>Sets the target property of a child timeline.</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public void SetTargetProperty(Timeline timeline, DependencyProperty dp)
 	{
-		if (timeline == null) throw new ArgumentNullException(nameof(timeline));
 		if (dp == null) throw new ArgumentNullException(nameof(dp));
-		_targetProperties[timeline] = dp;
+		SetTargetProperty((DependencyObject)timeline, new PropertyPath(dp));
 	}
 
-	/// <summary>Returns the target DP for <paramref name="timeline"/>, or null.</summary>
-	public DependencyProperty? GetTargetProperty(Timeline timeline) =>
-		timeline != null && _targetProperties.TryGetValue(timeline, out var dp) ? dp : null;
+	/// <summary>Gets the target property of a child timeline when it was set as a single property.</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public DependencyProperty? GetTargetProperty(Timeline timeline)
+	{
+		var path = timeline == null ? null : (PropertyPath?)timeline.GetValue(TargetPropertyProperty);
+		return path != null && path.Path == "(0)" && path.PathParameters.Count == 1
+			? path.PathParameters[0] as DependencyProperty
+			: null;
+	}
 
-	/// <summary>
-	/// Stores a property-name string for lazy DP resolution at <see cref="Begin"/> time.
-	/// Used by the markup compiler when the owner type is not known at code-gen time.
-	/// </summary>
+	/// <summary>Sets the target property of a child timeline from a path string.</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public void SetTargetPropertyName(Timeline timeline, string propertyName)
 	{
-		if (timeline == null) throw new ArgumentNullException(nameof(timeline));
 		if (propertyName == null) throw new ArgumentNullException(nameof(propertyName));
-		_targetPropertyNames[timeline] = propertyName;
+		SetTargetProperty((DependencyObject)timeline, new PropertyPath(propertyName));
 	}
 
-	/// <summary>Returns the stored property-name string for <paramref name="timeline"/>, or null.</summary>
+	/// <summary>Gets the path string of a child timeline target property.</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public string? GetTargetPropertyName(Timeline timeline) =>
-		timeline != null && _targetPropertyNames.TryGetValue(timeline, out var s) ? s : null;
+		timeline == null ? null : ((PropertyPath?)timeline.GetValue(TargetPropertyProperty))?.Path;
 
-	// ── Static helpers (WPF attached-property API style) ─────────────────────
-
-	/// <summary>
-	/// Sets the target element name on <paramref name="timeline"/> (attached-property style).
-	/// </summary>
+	/// <summary>Sets the target element name of <paramref name="timeline"/>.</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static void SetTargetName(Timeline timeline, Storyboard storyboard, string name) =>
 		storyboard.SetTargetName(timeline, name);
 
-	/// <summary>
-	/// Sets the target property on <paramref name="timeline"/> (attached-property style).
-	/// </summary>
+	/// <summary>Sets the target property of <paramref name="timeline"/>.</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static void SetTargetProperty(Timeline timeline, Storyboard storyboard, DependencyProperty dp) =>
 		storyboard.SetTargetProperty(timeline, dp);
-
-	// ── Playback ─────────────────────────────────────────────────────────────
-
-	readonly List<AnimationClock> _clocks = new List<AnimationClock>();
-
-	/// <summary>
-	/// Starts all child timelines against <paramref name="target"/>.
-	/// Each child that has a registered target DP gets an <see cref="AnimationClock"/>
-	/// that is ticked by the <see cref="AnimationScheduler"/> (or directly in tests).
-	/// </summary>
-	public void Begin(FrameworkElement target)
-	{
-		Stop();
-		foreach (var child in Children)
-		{
-			if (child is AnimationTimeline anim)
-			{
-				// Target element: resolve by name or fall back to the storyboard target.
-				DependencyObject animTarget = target;
-				var nameStr = GetTargetName(child);
-				if (!string.IsNullOrEmpty(nameStr))
-				{
-					var named = target.FindName(nameStr!) as DependencyObject;
-					if (named != null) animTarget = named;
-				}
-
-				// Resolve the DP: prefer a pre-set DP, fall back to name-based lookup.
-				var dp = GetTargetProperty(child);
-				if (dp == null)
-				{
-					var propName = GetTargetPropertyName(child);
-					if (!string.IsNullOrEmpty(propName))
-					{
-						// U3: strip surrounding parentheses and take the last dotted segment.
-						// Handles "(UIElement.Opacity)", "UIElement.Opacity", "Opacity".
-						var resolved = propName!.Trim();
-						if (resolved.Length >= 2 && resolved[0] == '(' && resolved[resolved.Length - 1] == ')')
-							resolved = resolved.Substring(1, resolved.Length - 2).Trim();
-						int dot = resolved.LastIndexOf('.');
-						if (dot >= 0)
-							resolved = resolved.Substring(dot + 1);
-						dp = DependencyProperty.FindByName(resolved, animTarget.GetType());
-					}
-				}
-				if (dp == null)
-				{
-					// U2c: unresolvable TargetProperty is a programming error; throw with a clear message.
-					var unresolved = GetTargetPropertyName(child);
-					throw new InvalidOperationException(
-						$"Storyboard.Begin: TargetProperty '{unresolved ?? "(null)"}' could not be resolved " +
-						$"to a DependencyProperty on '{animTarget.GetType().FullName}'. " +
-						$"Register the property or use a strongly-typed SetTargetProperty call.");
-				}
-
-				var clock = new AnimationClock(anim, animTarget, dp);
-				_clocks.Add(clock);
-				AnimationScheduler.Register(clock);
-			}
-		}
-	}
-
-	/// <summary>Stops all clocks and clears animation values.</summary>
-	public void Stop()
-	{
-		foreach (var c in _clocks)
-		{
-			AnimationScheduler.Unregister(c);
-			c.Stop();
-		}
-		_clocks.Clear();
-	}
-
-	/// <summary>Pauses all clocks.</summary>
-	public void Pause()
-	{
-		foreach (var c in _clocks)
-			c.Pause();
-	}
-
-	/// <summary>Resumes all paused clocks.</summary>
-	public void Resume()
-	{
-		foreach (var c in _clocks)
-			c.Resume();
-	}
-
-	/// <summary>
-	/// Returns the clocks started by the most recent <see cref="Begin(FrameworkElement)"/>
-	/// call. Used by unit tests to tick the clocks deterministically without GLib.
-	/// </summary>
-	internal IReadOnlyList<AnimationClock> ActiveClocks => _clocks.AsReadOnly();
 }
-
-/// <summary>Collection of <see cref="Timeline"/> children.</summary>
-public class TimelineCollection : Collection<Timeline> { }
