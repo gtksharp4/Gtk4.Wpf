@@ -2448,6 +2448,35 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   resize, Popup animation) are deliberate GTK limits; `FontStyleConverter`/`FontWeightConverter`, `Hyperlink.TargetName`,
   `TextBox.TextAlignment` belong to other lanes; remote `http` media is unverified. If `Wpf.Testing.Tests` fails once
   (EvidenceTests, InputTests), re-run that suite alone before treating it as real.
+- **Round 57 (lane B) track 5 - items-data-tail (DONE, merged).** `gf57b/items-data-tail` (merge `7237e943`):
+  `SortDescription.PropertyName`/`Direction` are settable (sealed once held by a collection), `Binding.Path` is a
+  `PropertyPath` (an implicit string bridge keeps generated code compiling until lane C emits
+  `new PropertyPath("x")`), `PropertyPathConverter`, and `ItemCollection.RemoveAt`/indexer/`Insert` address the view
+  position under a Filter or sort. Samples: AnnotatedDocumentViewer and MediaGallery are no longer blocked on those
+  two APIs; the 165 runnable samples still build and run (see gate).
+- **Round 57 (lane B) track 6 - documents-imaging-tail (NOT merged).** `gf57b/documents-imaging-tail` (Fixed/XPS
+  documents, the CachedBitmap family, `TextDecoration` collections, `DocumentViewerBase.IsMasterPage`) is not in
+  `lane/b` at `7237e943`; it stays a separate branch and this wrap-up changes none of it. Its detached-List
+  `TextRange` fix is carried by the review fixes below, written against `lane/b`.
+- **Round 57 (lane B) review (Opus) + fixes - DONE.** Applied failing-first. **a-F1** the duplicate-filter test
+  compared with `Tag.Equals` (Name only) and passed on the old `_inline.IndexOf` code; it now asserts by reference, and
+  the `CollectionChanged` test asserts the inline contents. **a-F2** the string-to-`PropertyPath` bridge maps a null
+  string to a null path (WPF leaves `Path` unset), so a null never throws and the binding uses the source itself.
+  **a-F3** the `Direction` setter reports `ParamName` "value", the constructor "direction". **a-F4**
+  `PropertyPathConverter.ConvertFrom(null)` throws `ArgumentNullException("source")`; `ConvertTo` writes a dependency
+  property as `(Owner.Name)` (no xmlns prefix, there is no serializer context), and `(Owner.Name)` resolves by name.
+  **CI-1** `TextTreeEdit.FindOwner` searches a detached `List` root, so a cross-item delete removes the emptied
+  paragraph, multi-line text no longer dereferences a null owner, and a full-range `Text` set keeps a first item with a
+  paragraph. The `FlowDocument.FlowDirection` doc now says "set locally or inherited as RightToLeft". The range text
+  after a full-range set keeps its trailing paragraph break (the test trims it).
+  Rejected: **CI-2** and **CI-3** were already fixed by the merge (only the `ParamName` residue, a-F3); **CI-4** is lane
+  C's (`XamlCodeGenerator.BindingElement.cs:80` must emit `new System.Windows.PropertyPath("x")`); **CI-5** waits on lane
+  A's `DrawingContext` from `RenderOpen` (gf53a).
+- **Round 57 (lane B) totals.** `dotnet build Gtk4.Wpf.sln` 0 warnings. Targeted `PresentationFramework.Tests`
+  (ItemCollection, SortDescription, PropertyPath, Binding, TextRange, RichTextBox, FlowDocument, TextTree, Paginator,
+  Collection): 685 passed. Samples gate: 176 build=pass projects all build, 165 run=runs all start and stay up (4 needed
+  a lone 20 s re-check). Carry-over: **CI-4**, **CI-5**, merging `gf57b/documents-imaging-tail`.
+
 
 ## Phased roadmap (after Phase 0 proves the spine)
 

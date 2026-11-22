@@ -31,7 +31,7 @@ public class PropertyPathBindingTests : WpfGtkTestBase, IDisposable
 		var b = new Binding();
 		b.Path = "Age";
 
-		Assert.Equal("Age", b.Path.Path);
+		Assert.Equal("Age", b.Path!.Path);
 	});
 
 	[Fact]
@@ -124,5 +124,41 @@ public class PropertyPathBindingTests : WpfGtkTestBase, IDisposable
 			$"<TextBlock {Ns}><TextBlock.Text><Binding Path='X'/></TextBlock.Text></TextBlock>");
 
 		Assert.Equal("X", BindingOperations.GetBinding(text, TextBlock.TextProperty)!.Path!.Path);
+	});
+
+	[Fact]
+	public void Assigning_a_null_string_leaves_the_path_unset_and_binds_the_source_itself() => Run(() =>
+	{
+		string? s = null;
+		var b = new Binding();
+		b.Path = s;
+		Assert.Null(b.Path);
+
+		b.Source = "abc";
+		var text = new TextBlock();
+		text.SetBinding(TextBlock.TextProperty, b);
+
+		Assert.Equal("abc", text.Text);
+	});
+
+	[Fact]
+	public void Converter_rejects_a_null_source()
+	{
+		Assert.Throws<ArgumentNullException>(() =>
+			new PropertyPathConverter().ConvertFrom(null!, System.Globalization.CultureInfo.InvariantCulture, null!));
+	}
+
+	[Fact]
+	public void Converter_writes_a_dependency_property_path_owner_qualified_and_round_trips() => Run(() =>
+	{
+		var conv = new PropertyPathConverter();
+		var text = (string)conv.ConvertTo(new PropertyPath(TextBlock.TextProperty), typeof(string))!;
+		Assert.Equal("(TextBlock.Text)", text);
+
+		var back = (PropertyPath)conv.ConvertFrom(null, System.Globalization.CultureInfo.InvariantCulture, text)!;
+		var target = new TextBlock();
+		target.SetBinding(TextBlock.TextProperty,
+			new Binding { Path = back, Source = new TextBlock { Text = "round" } });
+		Assert.Equal("round", target.Text);
 	});
 }

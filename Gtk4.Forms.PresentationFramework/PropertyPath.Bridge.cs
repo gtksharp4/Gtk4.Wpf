@@ -9,5 +9,6 @@ public sealed partial class PropertyPath
 	/// WPF has no such operator. Remove it once the markup compiler emits <c>new PropertyPath(...)</c>.
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static implicit operator PropertyPath(string path) => new PropertyPath(path, (object[])null!);
+	public static implicit operator PropertyPath?(string? path) =>
+		path == null ? null : new PropertyPath(path, (object[])null!);
 }

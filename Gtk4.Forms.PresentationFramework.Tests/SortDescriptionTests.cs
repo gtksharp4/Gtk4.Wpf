@@ -26,6 +26,11 @@ public class SortDescriptionTests
 
 		Assert.Throws<InvalidEnumArgumentException>(() => sd.Direction = (ListSortDirection)5);
 		Assert.Throws<InvalidEnumArgumentException>(() => new SortDescription("A", (ListSortDirection)(-1)));
+
+		var viaSetter = Assert.Throws<InvalidEnumArgumentException>(() => sd.Direction = (ListSortDirection)5);
+		Assert.Equal("value", viaSetter.ParamName);
+		var viaCtor = Assert.Throws<InvalidEnumArgumentException>(() => new SortDescription("A", (ListSortDirection)5));
+		Assert.Equal("direction", viaCtor.ParamName);
 	}
 
 	[Fact]

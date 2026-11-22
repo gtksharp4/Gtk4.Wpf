@@ -15,7 +15,7 @@ public struct SortDescription
 	/// <exception cref="InvalidEnumArgumentException"><paramref name="direction"/> is not a defined direction.</exception>
 	public SortDescription(string? propertyName, ListSortDirection direction)
 	{
-		Validate(direction);
+		Validate(direction, nameof(direction));
 		_propertyName = propertyName;
 		_direction = direction;
 		_sealed = false;
@@ -42,7 +42,7 @@ public struct SortDescription
 		set
 		{
 			CheckSealed();
-			Validate(value);
+			Validate(value, nameof(value));
 			_direction = value;
 		}
 	}
@@ -58,10 +58,10 @@ public struct SortDescription
 			throw new InvalidOperationException("Cannot change a SortDescription that is in a SortDescriptionCollection.");
 	}
 
-	static void Validate(ListSortDirection direction)
+	static void Validate(ListSortDirection direction, string paramName)
 	{
 		if (direction != ListSortDirection.Ascending && direction != ListSortDirection.Descending)
-			throw new InvalidEnumArgumentException(nameof(direction), (int)direction, typeof(ListSortDirection));
+			throw new InvalidEnumArgumentException(paramName, (int)direction, typeof(ListSortDirection));
 	}
 
 	/// <summary>Compares the property name and direction.</summary>

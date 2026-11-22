@@ -41,8 +41,19 @@ static partial class TextTreeEdit
 	/// <summary>The block collection that holds <paramref name="block"/>, or null.</summary>
 	internal static BlockCollection? FindOwner(FlowDocument doc, Block block)
 	{
+		if (doc.DetachedRoot is List list) return FindOwner(list, block);
 		var root = TextTree.RootBlocks(doc, out _);
 		return root == null ? null : FindOwner(root, block);
+	}
+
+	static BlockCollection? FindOwner(List list, Block block)
+	{
+		foreach (var item in list.ListItems)
+		{
+			var found = FindOwner(item.Blocks, block);
+			if (found != null) return found;
+		}
+		return null;
 	}
 
 	static BlockCollection? FindOwner(BlockCollection col, Block block)

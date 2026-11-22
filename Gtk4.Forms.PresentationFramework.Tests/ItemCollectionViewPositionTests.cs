@@ -88,8 +88,10 @@ public class ItemCollectionViewPositionTests : WpfGtkTestBase
 
 		list.Items.RemoveAt(1);
 
-		Assert.Equal(2, Inline(list).Length);
-		Assert.Contains(first, Inline(list));
+		var inline = Inline(list);
+		Assert.Equal(2, inline.Length);
+		Assert.Same(first, inline[0]);
+		Assert.DoesNotContain(inline, t => ReferenceEquals(t, second));
 	});
 
 	[Fact]
@@ -120,13 +122,15 @@ public class ItemCollectionViewPositionTests : WpfGtkTestBase
 	[Fact]
 	public void CollectionChanged_never_reports_an_inline_index_for_a_sorted_removal() => Run(() =>
 	{
-		var (list, _, _) = Build(sort: true);
+		var (list, first, _) = Build(sort: true);
 		var events = new List<NotifyCollectionChangedEventArgs>();
 		list.Items.CollectionChanged += (_, e) => events.Add(e);
 
 		list.Items.RemoveAt(0);
 
 		Assert.NotEmpty(events);
+		Assert.Equal(new[] { "dup", "other" }, Inline(list).Select(t => t.Name).ToArray());
+		Assert.Same(first, Inline(list)[0]);
 		Assert.All(events, e =>
 			Assert.True(e.Action == NotifyCollectionChangedAction.Reset || e.OldStartingIndex == 0));
 	});

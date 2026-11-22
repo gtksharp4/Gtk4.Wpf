@@ -28,7 +28,17 @@ static partial class TextTreeEdit
 			FindOwner(doc, p2)?.Remove(p2);
 		}
 		if (doc.DetachedRoot == null && doc.Blocks.Count == 0) doc.Blocks.Add(new Paragraph());
+		KeepListItem(doc.DetachedRoot as List);
 		doc.RecordTextEdit(start, before - doc.SymbolTotal, 0);
+	}
+
+	/// <summary>A detached List keeps a first item holding a paragraph, as WPF does.</summary>
+	static void KeepListItem(List? list)
+	{
+		if (list == null) return;
+		if (list.ListItems.Count == 0) list.ListItems.Add(new ListItem());
+		var first = list.ListItems[0];
+		if (first.Blocks.Count == 0) first.Blocks.Add(new Paragraph());
 	}
 
 	/// <summary>Prunes a detached root that is not a block collection: Paragraph, Span, List or Run.</summary>

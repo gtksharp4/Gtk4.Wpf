@@ -58,7 +58,7 @@ public partial class FlowDocument
 			? FlowDirection : (FlowDirection?)null;
 
 	/// <summary>Gets or sets the flow direction of the document (default LeftToRight). Rendered as a bidi
-	/// isolate inside each paragraph of <see cref="BuildMarkup"/> when set locally.</summary>
+	/// isolate inside each paragraph of <see cref="BuildMarkup"/> when set locally or inherited as RightToLeft.</summary>
 	public FlowDirection FlowDirection
 	{
 		get => (FlowDirection)GetValue(FlowDirectionProperty)!;
