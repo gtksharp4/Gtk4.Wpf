@@ -50,22 +50,24 @@ public abstract partial class Visual
 
 	internal virtual void OnVisualChildReleased(Visual child) { }
 
-	/// <summary>Whether this visual is an ancestor of <paramref name="descendant"/>.</summary>
+	/// <summary>Whether this visual is an ancestor of <paramref name="descendant"/> (a visual is its own).</summary>
 	/// <exception cref="ArgumentNullException"/>
+	/// <exception cref="ArgumentException">The argument is not a <see cref="Visual"/>.</exception>
 	public bool IsAncestorOf(DependencyObject descendant)
 	{
 		if (descendant == null) throw new ArgumentNullException(nameof(descendant));
-		for (var v = (descendant as Visual)?.VisualParent; v != null; v = v.VisualParent)
-			if (ReferenceEquals(v, this)) return true;
-		return false;
+		if (!(descendant is Visual v)) throw new ArgumentException("The type is not a Visual.", nameof(descendant));
+		return v.IsDescendantOf(this);
 	}
 
-	/// <summary>Whether this visual is a descendant of <paramref name="ancestor"/>.</summary>
+	/// <summary>Whether this visual is a descendant of <paramref name="ancestor"/> (a visual is its own).</summary>
 	/// <exception cref="ArgumentNullException"/>
+	/// <exception cref="ArgumentException">The argument is not a <see cref="Visual"/>.</exception>
 	public bool IsDescendantOf(DependencyObject ancestor)
 	{
 		if (ancestor == null) throw new ArgumentNullException(nameof(ancestor));
-		for (var v = VisualParent; v != null; v = v.VisualParent)
+		if (!(ancestor is Visual)) throw new ArgumentException("The type is not a Visual.", nameof(ancestor));
+		for (Visual? v = this; v != null; v = v.VisualParent)
 			if (ReferenceEquals(v, ancestor)) return true;
 		return false;
 	}
