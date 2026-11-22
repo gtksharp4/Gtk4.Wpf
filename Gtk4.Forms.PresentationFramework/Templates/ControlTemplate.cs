@@ -8,7 +8,7 @@ namespace System.Windows.Controls;
 /// <c>&lt;ControlTemplate&gt;</c> parsing is a later compiler round.
 /// </para>
 /// </summary>
-public class ControlTemplate : FrameworkTemplate
+public partial class ControlTemplate : FrameworkTemplate
 {
 	/// <summary>
 	/// The type of control this template is intended for.

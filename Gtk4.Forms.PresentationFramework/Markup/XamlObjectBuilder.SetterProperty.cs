@@ -5,18 +5,23 @@ namespace System.Windows.Markup;
 
 internal sealed partial class XamlObjectBuilder
 {
-	// Setter.Property and Trigger.Property name a DP by its short name, resolved against the enclosing
+	// Setter, Trigger and Condition .Property name a DP by short name, resolved against the enclosing
 	// Style/ControlTemplate TargetType ("Grid.Row" names its owner). Unresolvable names stay PropertyName.
 	bool TryApplySetterProperty(XElement el, XAttribute attr, object instance)
 	{
 		if (attr.Name.LocalName != "Property" || attr.Name.NamespaceName.Length != 0) return false;
-		if (instance is not Setter && instance is not Trigger) return false;
+		if (instance is not Setter && instance is not Trigger && instance is not Condition) return false;
 		string raw = attr.Value.Trim();
 		DependencyProperty? dp = ResolveSetterDp(el, raw);
 		if (instance is Setter setter)
 		{
 			if (dp != null) setter.Property = dp;
 			else setter.PropertyName = raw;
+		}
+		else if (instance is Condition condition)
+		{
+			if (dp != null) condition.Property = dp;
+			else condition.PropertyName = raw;
 		}
 		else
 		{

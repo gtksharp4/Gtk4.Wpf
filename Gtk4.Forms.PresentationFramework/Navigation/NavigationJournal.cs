@@ -63,6 +63,12 @@ internal sealed class NavigationJournal
 		_cursor--;
 	}
 
+	/// <summary>Replaces the current entry with <paramref name="content"/>.</summary>
+	public void ReplaceCurrent(object? content)
+	{
+		if (_cursor >= 0) _entries[_cursor] = content;
+	}
+
 	/// <summary>Clears all entries.</summary>
 	public void Clear()
 	{
