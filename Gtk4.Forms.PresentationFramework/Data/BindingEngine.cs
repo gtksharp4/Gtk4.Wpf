@@ -20,7 +20,8 @@ internal static partial class BindingEngine
 		new ConditionalWeakTable<DependencyObject, List<BindingRecord>>();
 
 	// Per-element map of DP → live BindingExpression, for GetBindingExpression.
-	static readonly ConditionalWeakTable<DependencyObject, Dictionary<DependencyProperty, BindingExpressionBase>> _expressions =
+	static readonly ConditionalWeakTable<DependencyObject,
+		Dictionary<DependencyProperty, BindingExpressionBase>> _expressions =
 		new ConditionalWeakTable<DependencyObject, Dictionary<DependencyProperty, BindingExpressionBase>>();
 
 	/// <summary>

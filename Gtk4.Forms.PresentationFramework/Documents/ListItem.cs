@@ -6,7 +6,7 @@ namespace System.Windows.Documents;
 /// An item within a <see cref="List"/>. Contains block content.
 /// </summary>
 [ContentProperty("Blocks")]
-public class ListItem : FrameworkContentElement
+public class ListItem : TextElement
 {
 	/// <summary>Creates an empty list item.</summary>
 	public ListItem() => Blocks = new BlockCollection(this);
@@ -14,21 +14,13 @@ public class ListItem : FrameworkContentElement
 	/// <summary>Block content of this list item.</summary>
 	public BlockCollection Blocks { get; }
 
-	FlowDirection? _flowDirection;
-
 	/// <summary>Gets or sets the flow direction of this item (default LeftToRight).</summary>
 	public FlowDirection FlowDirection
 	{
-		get => _flowDirection ?? FlowDirection.LeftToRight;
-		set
-		{
-			if (!FrameworkElement.IsValidFlowDirection(value))
-				throw new ArgumentException($"'{value}' is not a valid value for property 'FlowDirection'.");
-			_flowDirection = value;
-		}
+		get => GetFlowDirection();
+		set => SetFlowDirection(value);
 	}
 
-	internal FlowDirection? ExplicitFlowDirection => _flowDirection;
 
 	/// <summary>Builds the plain-text for this item (without the marker prefix).</summary>
 	internal void AppendPlainText(System.Text.StringBuilder sb)

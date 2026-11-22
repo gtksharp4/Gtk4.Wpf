@@ -17,6 +17,10 @@ public partial class Run
 	public Run(string text) => Text = text;
 
 	/// <summary>Creates a run holding <paramref name="text"/> at <paramref name="insertionPosition"/>.</summary>
+	/// <exception cref="InvalidOperationException">
+	/// Gap: the position is between blocks or in an empty document (WPF moves it to a valid position and creates a
+	/// Paragraph there); only positions inside a Paragraph, Span or Run are supported.
+	/// </exception>
 	public Run(string text, TextPointer insertionPosition)
 	{
 		Text = text;

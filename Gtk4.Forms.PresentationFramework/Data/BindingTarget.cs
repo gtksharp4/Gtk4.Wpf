@@ -3,7 +3,7 @@ namespace System.Windows.Data;
 /// <summary>
 /// Target-kind adapter for the binding engine: a <see cref="FrameworkElement"/> or a
 /// <see cref="FrameworkContentElement"/>. Content elements resolve names and relative sources through
-/// the hosting element reached along their logical parents.
+/// the hosting element reached along their logical parents; FindAncestor walks from the content element itself.
 /// </summary>
 internal static class BindingTarget
 {
@@ -32,6 +32,7 @@ internal static class BindingTarget
 	{
 		if (target is FrameworkElement fe) return source.Resolve(fe);
 		if (source.Mode == RelativeSourceMode.Self) return target;
+		if (source.Mode == RelativeSourceMode.FindAncestor) return source.FindAncestor(target);
 		var host = HostOf(target);
 		return host == null ? null : source.Resolve(host);
 	}

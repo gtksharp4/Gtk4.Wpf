@@ -93,7 +93,7 @@ public class RunTextPropertyTests : WpfGtkTestBase
 	}
 
 	[Fact]
-	public void Run_ctor_with_insertion_position_in_a_document_gap_throws()
+	public void Run_ctor_pins_documented_gap_position_between_blocks_throws()
 	{
 		var doc = new FlowDocument(new Paragraph(new Run("a")));
 		Assert.Throws<InvalidOperationException>(() => new Run("b", doc.ContentStart));
