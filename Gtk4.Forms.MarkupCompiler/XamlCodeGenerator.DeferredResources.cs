@@ -7,6 +7,10 @@ namespace Gtk4.Forms.MarkupCompiler
 {
 	public partial class XamlCodeGenerator
 	{
+		// x:Shared="False": every lookup builds a new instance.
+		static bool IsUnshared(XElement item, XNamespace xNs)
+			=> string.Equals((string)item.Attribute(xNs + "Shared"), "False", StringComparison.OrdinalIgnoreCase);
+
 		static bool ContainsStaticResource(XElement item)
 			=> item.DescendantsAndSelf().Any(e => e.Attributes().Any(IsStaticResourceAttribute)
 				|| e.Nodes().OfType<XText>().Any(t => t.Value.Contains("{StaticResource")));
@@ -38,13 +42,14 @@ namespace Gtk4.Forms.MarkupCompiler
 				counter = saved;
 				return false;
 			}
+			bool shared = !IsUnshared(item, xNs);
 			w.Line($"{ownerVar}.Resources.SetDeferred(\"{EscapeString(key)}\", () =>");
 			w.Line("{");
 			w.Indent++;
 			foreach (string line in lines.Take(lines.Length - 1)) w.Line(line);
 			w.Line($"return {value};");
 			w.Indent--;
-			w.Line("});");
+			w.Line(shared ? "});" : "}, false);");
 			return true;
 		}
 	}

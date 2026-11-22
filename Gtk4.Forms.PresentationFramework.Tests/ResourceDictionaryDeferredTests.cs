@@ -89,4 +89,17 @@ public class ResourceDictionaryDeferredTests
 
 		Assert.Throws<InvalidOperationException>(() => d["K"]);
 	}
+
+	[Fact]
+	public void An_unshared_deferred_value_is_built_on_every_lookup()
+	{
+		int runs = 0;
+		var d = new ResourceDictionary();
+		d.SetDeferred("K", () => { runs++; return new object(); }, shared: false);
+
+		Assert.NotSame(d["K"], d["K"]);
+		Assert.Equal(2, runs);
+		Assert.Single(d.Values);
+		Assert.Equal(3, runs);
+	}
 }

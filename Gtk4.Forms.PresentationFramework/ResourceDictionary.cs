@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace System.Windows;
 
@@ -111,8 +112,7 @@ public partial class ResourceDictionary : IDictionary<object, object?>
 	{
 		get
 		{
-			RealizeAll();
-			return _inner.Values;
+			return Snapshot().Select(p => p.Value).ToList();
 		}
 	}
 
@@ -126,15 +126,13 @@ public partial class ResourceDictionary : IDictionary<object, object?>
 	/// <inheritdoc/>
 	public bool Contains(KeyValuePair<object, object?> item)
 	{
-		RealizeAll();
-		return ((ICollection<KeyValuePair<object, object?>>)_inner).Contains(item);
+		return Snapshot().Contains(item);
 	}
 
 	/// <inheritdoc/>
 	public void CopyTo(KeyValuePair<object, object?>[] array, int arrayIndex)
 	{
-		RealizeAll();
-		((ICollection<KeyValuePair<object, object?>>)_inner).CopyTo(array, arrayIndex);
+		Snapshot().CopyTo(array, arrayIndex);
 	}
 
 	/// <inheritdoc/>
@@ -149,9 +147,8 @@ public partial class ResourceDictionary : IDictionary<object, object?>
 	/// <inheritdoc/>
 	public IEnumerator<KeyValuePair<object, object?>> GetEnumerator()
 	{
-		RealizeAll();
-		return _inner.GetEnumerator();
+		return Snapshot().GetEnumerator();
 	}
 
 	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-}
+}

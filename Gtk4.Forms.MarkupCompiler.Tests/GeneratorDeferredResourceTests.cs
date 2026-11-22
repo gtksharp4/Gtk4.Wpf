@@ -45,4 +45,17 @@ public class GeneratorDeferredResourceTests : GeneratorV2TestBase
 		Assert.Matches(@"Find(Resource)?[(]""Other""", code);
 		AssertCompiles(code, stub);
 	}
+
+	[Fact]
+	public void Unshared_resource_is_deferred_and_built_per_lookup()
+	{
+		const string stub = "namespace App { public partial class C { } }";
+		string code = Gen("<Page " + Head + @" x:Class=""App.C""><Page.Resources>
+			<ModelVisual3D x:Key=""Cube"" x:Shared=""False""/></Page.Resources><Button/></Page>",
+			sources: new[] { stub });
+
+		Assert.Contains("SetDeferred(\"Cube\", () =>", code);
+		Assert.Contains("}, false);", code);
+		AssertCompiles(code, stub);
+	}
 }

@@ -22,7 +22,7 @@ namespace Gtk4.Forms.MarkupCompiler
 					continue;
 				}
 				string key = (string)item.Attribute(xNs + "Key");
-				if (key != null && ContainsStaticResource(item)
+				if (key != null && (ContainsStaticResource(item) || IsUnshared(item, xNs))
 					&& TryEmitDeferredResource(w, item, xNs, ownerVar, key, ref counter))
 					continue;
 				EmitResourceItem(w, item, xNs, ownerVar, key, ref counter);
