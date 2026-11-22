@@ -25,4 +25,19 @@ public abstract class FrameworkTemplate
 	/// Returns <c>true</c> when the template has a factory and can produce a tree.
 	/// </summary>
 	public virtual bool HasContent => Factory != null;
+
+	/// <summary>
+	/// Returns the element named <paramref name="name"/> in the template instance applied to
+	/// <paramref name="templatedParent"/>, or null.
+	/// </summary>
+	/// <exception cref="ArgumentNullException"><paramref name="templatedParent"/> is null.</exception>
+	/// <exception cref="InvalidOperationException">The template was not applied to the parent.</exception>
+	public object? FindName(string name, FrameworkElement templatedParent)
+	{
+		if (templatedParent == null) throw new ArgumentNullException(nameof(templatedParent));
+		if (!ReferenceEquals(templatedParent.TemplateInternal, this))
+			throw new InvalidOperationException("The template was not applied to the given templatedParent.");
+		var root = templatedParent.TemplateRootInternal;
+		return root == null ? null : FrameworkElement.FindInTemplate(root, name, templatedParent);
+	}
 }

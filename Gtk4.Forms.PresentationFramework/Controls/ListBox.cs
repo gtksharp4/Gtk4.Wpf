@@ -92,6 +92,7 @@ public partial class ListBox : Selector
 	protected override UIElement GetContainerForItem(object? item)
 	{
 		var lbi = new ListBoxItem { Content = item };
+		ConfigurePresenter(lbi, item);
 		_containers.Add(lbi);
 		return lbi;
 	}
@@ -112,7 +113,7 @@ public partial class ListBox : Selector
 		var surviving = new List<object?>();
 		foreach (var item in prevSelected)
 		{
-			if (Items.Contains(item))
+			if (Items.IndexOf(item) >= 0)
 				surviving.Add(item);
 		}
 

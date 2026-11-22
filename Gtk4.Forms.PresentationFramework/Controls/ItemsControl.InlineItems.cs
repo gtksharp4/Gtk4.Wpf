@@ -1,78 +1,14 @@
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-
 namespace System.Windows.Controls;
 
 public partial class ItemsControl
 {
-	ItemList? _itemList;
-	bool _itemsFromSource;
+	ItemCollection? _items;
 
-	void FillItemsFromSource()
+	/// <summary>Called after an inline edit of <see cref="Items"/>.</summary>
+	internal void OnInlineItemsEdited()
 	{
-		var list = (ItemList)Items;
-		list.Filling = true;
-		try
-		{
-			list.Clear();
-			if (ItemsSource != null)
-				foreach (var item in EffectiveItems)
-					list.Add(item);
-		}
-		finally { list.Filling = false; }
-		_itemsFromSource = ItemsSource != null;
-	}
-
-	sealed partial class ItemList : Collection<object?>
-	{
-		readonly ItemsControl _owner;
-
-		public ItemList(ItemsControl owner) => _owner = owner;
-
-		public bool Filling { get; set; }
-
-		void Guard()
-		{
-			if (!Filling && _owner.ItemsSource != null)
-				throw new InvalidOperationException(
-					"Operation is not valid while ItemsSource is in use. "
-					+ "Access and modify elements with ItemsControl.ItemsSource instead.");
-		}
-
-		void Changed()
-		{
-			if (Filling) return;
-			if (_owner.RebuildsOnInlineItemsChange) _owner.RebuildItems();
-			else _owner.ExistingAutomationPeer?.NotifyChildrenChanged();
-		}
-
-		protected override void InsertItem(int index, object? item)
-		{
-			Guard();
-			base.InsertItem(index, item);
-			Changed();
-		}
-
-		protected override void SetItem(int index, object? item)
-		{
-			Guard();
-			base.SetItem(index, item);
-			Changed();
-		}
-
-		protected override void RemoveItem(int index)
-		{
-			Guard();
-			base.RemoveItem(index);
-			Changed();
-		}
-
-		protected override void ClearItems()
-		{
-			Guard();
-			base.ClearItems();
-			Changed();
-		}
+		if (RebuildsOnInlineItemsChange) RebuildItems();
+		else ExistingAutomationPeer?.NotifyChildrenChanged();
 	}
 
 	/// <summary>Whether inline <see cref="Items"/> edits rebuild the control (only ComboBox needs it).</summary>
