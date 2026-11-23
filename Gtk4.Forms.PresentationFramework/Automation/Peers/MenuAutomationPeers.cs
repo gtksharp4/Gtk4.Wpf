@@ -42,7 +42,11 @@ public class MenuItemAutomationPeer : FrameworkElementAutomationPeer, IInvokePro
 
 	protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.MenuItem;
 
-	protected override string GetAcceleratorKeyCore() => Item.InputGestureText ?? string.Empty;
+	protected override string GetAcceleratorKeyCore()
+	{
+		var key = base.GetAcceleratorKeyCore();
+		return key == string.Empty ? Item.InputGestureText ?? string.Empty : key;
+	}
 
 	internal override string ContentName() => PeerText.FromContent(Item.Header);
 
