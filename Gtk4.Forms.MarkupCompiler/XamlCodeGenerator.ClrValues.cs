@@ -44,6 +44,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			if (t == null || t.IsGenericType) return ClrValueExpression(propName, val);
 			if (t.FullName == "System.String") return $"\"{EscapeString(val)}\"";
 			if (t.IsEnum) return ClrEnumExpression(t, propName, val);
+			if (t.FullName == "System.Double" && !IsPlainNumber(val))
+				return $"(double){Converter}.ConvertByType(typeof(double), \"{EscapeString(val)}\")";
 			if (t.FullName == "System.Uri")
 				return $"new System.Uri(\"{EscapeString(val)}\", System.UriKind.RelativeOrAbsolute)";
 			if (t.FullName == MediaNs + "PathFigureCollection")

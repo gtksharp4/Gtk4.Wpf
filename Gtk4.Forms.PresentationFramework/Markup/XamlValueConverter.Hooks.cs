@@ -15,7 +15,7 @@ public static partial class XamlValueConverter
 	public static void SetClrProperty(object target, string name, string raw)
 	{
 		PropertyInfo prop = FindClrProperty(target, name);
-		prop.SetValue(target, ConvertByType(prop.PropertyType, raw));
+		prop.SetValue(target, ConvertText(prop.PropertyType, raw));
 	}
 
 	/// <summary>
@@ -37,7 +37,7 @@ public static partial class XamlValueConverter
 	public static object? CoerceResource(Type targetType, object? value)
 	{
 		if (targetType == null) throw new ArgumentNullException(nameof(targetType));
-		return value is string s && !targetType.IsInstanceOfType(value) ? ConvertByType(targetType, s) : value;
+		return value is string s && !targetType.IsInstanceOfType(value) ? ConvertText(targetType, s) : value;
 	}
 
 	static PropertyInfo FindClrProperty(object target, string name)

@@ -37,7 +37,11 @@ namespace Gtk4.Forms.MarkupCompiler
 			{
 				string n = a.Name.LocalName;
 				if (SkippableMediaAttribute(el, fq, a)) continue;
-				if (n.IndexOf('.') >= 0) return false;
+				if (n.IndexOf('.') >= 0)
+				{
+					if (IsEmittableAttachedAttribute(el, a)) continue;
+					return false;
+				}
 				if (_resolver.GetPropertyType(fq, n) == null) continue;
 				if (!_resolver.IsWritable(fq, n) || !ClrAttributeConvertible(fq, n, a.Value)) return false;
 			}

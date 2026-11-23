@@ -83,6 +83,8 @@ internal sealed partial class XamlObjectBuilder
 		if (type == typeof(string) || type == typeof(object)) return raw;
 		if (type == typeof(Type)) return ResolveTypeName(raw.Trim(), _ctx);
 		if (type == typeof(RoutedEvent)) return ResolveRoutedEvent(raw.Trim());
+		if (type == typeof(System.Windows.Input.ICommand) && raw.IndexOf(':') > 0)
+			return CommandConverters.ParseCommand(raw, n => ResolveTypeName(n, _ctx));
 		object? value = dp != null
 			? XamlValueConverter.Convert(dp.OwnerType, dp, raw)
 			: XamlValueConverter.ConvertByType(type, raw);

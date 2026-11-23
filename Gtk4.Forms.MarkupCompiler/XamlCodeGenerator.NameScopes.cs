@@ -16,8 +16,9 @@ namespace Gtk4.Forms.MarkupCompiler
 			=> e.Name.NamespaceName == WpfXmlnsMap.PresentationNs
 				&& e.Name.LocalName.EndsWith("Template", StringComparison.Ordinal);
 
-		static string NameOf(XElement el, XNamespace xNs)
-			=> (string)(el.Attribute(xNs + "Name") ?? el.Attribute("Name"));
+		string NameOf(XElement el, XNamespace xNs)
+			=> (string)(el.Attribute(xNs + "Name")
+				?? (IsNamingAttribute(el, el.Attribute("Name")) ? el.Attribute("Name") : null));
 
 		/// <summary>Collects the root-scope named elements; the first element of a name owns its field.</summary>
 		void CollectNamedElements(XElement parent, XNamespace xNs, List<(string, string)> results)
