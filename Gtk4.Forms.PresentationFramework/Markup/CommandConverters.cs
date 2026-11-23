@@ -8,7 +8,7 @@ using System.Windows.Input;
 namespace System.Windows.Markup;
 
 /// <summary>String to <see cref="ICommand"/> for the built-in command libraries (WPF CommandConverter).</summary>
-static class CommandConverters
+static partial class CommandConverters
 {
 	// WPF's lookup order.
 	static readonly Type[] _libraries =
@@ -24,7 +24,7 @@ static class CommandConverters
 	/// Accepts "Open" or "ApplicationCommands.Open" (case-sensitive); the empty string is null.
 	/// </summary>
 	/// <remarks>
-	/// Prefixed custom owners (<c>local:MyCommands.Exit</c>) and namespace-qualified names are not supported.
+	/// Prefixed owners (<c>local:MyCommands.Exit</c>) need a type resolver: see the two-argument overload.
 	/// </remarks>
 	internal static ICommand? ParseCommand(string raw)
 	{

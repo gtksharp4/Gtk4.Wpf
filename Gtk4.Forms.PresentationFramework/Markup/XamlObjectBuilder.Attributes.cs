@@ -60,6 +60,7 @@ internal sealed partial class XamlObjectBuilder
 				throw Fail(attr, "Event handler '" + name + "' cannot be set in loose XAML (no code-behind).");
 			throw Fail(attr, "Cannot find property '" + name + "' in type '" + type.Name + "'.");
 		}
+		if (member.Prop != null && TryApplyDefinitionShorthand(instance, name, attr.Value)) return;
 		object? value = EvaluateValue(attr.Value, instance, member);
 		if (ReferenceEquals(value, Applied)) return;
 		Assign(instance, member, value);

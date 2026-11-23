@@ -78,6 +78,10 @@ namespace Gtk4.Forms.MarkupCompiler
 				{
 					EmitResourceObject(w, item, xNs, ownerVar, key, objType, ref counter);
 				}
+				else if (key != null && ObjectResourceType(item, xNs) is string objFq)
+				{
+					EmitResourceObject(w, item, xNs, ownerVar, key, objFq, ref counter);
+				}
 				else if (key != null)
 				{
 					// Simple keyed value — emit as string for now; type-converter is later.

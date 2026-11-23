@@ -91,6 +91,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			_xNs = xNs;
 			_prefixMap = CollectXmlnsPrefixMap(root);
 			_ignorableNamespaces = CollectIgnorableNamespaces(root);
+			NormalizeBaseQualifiedPropertyElements(root);
+			UnwrapExplicitCollections(root);
 			XAttribute classAttr = root.Attribute(xNs + "Class");
 			string implicitBase = null;
 			className = classAttr?.Value.Trim() ?? ImplicitClass(root, xamlPath, rootNamespace, out implicitBase);
@@ -620,7 +622,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			ref int counter)
 		{
 			string parentLocalName = parent.Name.LocalName;
-			ContentInfo ci = GetContentInfo(ResolveType(parent));
+			ContentInfo ci = GetContentInfo(ResolveType(parent) ?? UserElementFqType(parent));
 			bool inlines = ci != null && ci.IsCollection && ci.Name == "Inlines";
 
 			List<object> content = CollectContent(parent, inlines);
@@ -680,7 +682,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			_scopeVars.Add(varName);
 
 			// x:Name / Name field assignment
-			string xName = (string)(el.Attribute(xNs + "Name") ?? el.Attribute("Name"));
+			string xName = NameOf(el, xNs);
 			bool hasField = ResolveType(el) != null; // user-type resource objects get no field
 			if (xName != null && _fieldElements.Contains(el))
 			{
@@ -699,7 +701,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				if (attr.Name.Namespace == xNs) continue;
 				if (attr.Name.Namespace == XNamespace.Xml) continue; // xml:space/xml:lang directives
 				if (IsIgnorableAttribute(attr)) continue;  // mc:Ignorable, d: design attrs
-				if (attr.Name.LocalName == "Name" && hasField) continue;
+				if (attr.Name.LocalName == "Name" && hasField && IsNamingAttribute(el, attr)) continue;
 
 				string propName = attr.Name.LocalName;
 				string val = attr.Value;
@@ -790,6 +792,13 @@ namespace Gtk4.Forms.MarkupCompiler
 					else
 						w.Line($"{varName}.SetValue({fqType}.{propName}Property, " +
 							$"{(IsNonElementDependencyObject(fqType) ? CoercedDpValue(fqType, propName, find) : find)});");
+				}
+				else if (TryEmitDefinitionShorthand(w, fqType, varName, propName, val)) { }
+				else if (TryPrefixedCommand(fqType, propName, val, out string commandExpr))
+				{
+					w.Line(IsKnownDp(fqType, propName)
+						? $"{varName}.SetValue({fqType}.{propName}Property, {commandExpr});"
+						: $"{varName}.{propName} = {commandExpr};");
 				}
 				else if (IsXNull(val))
 				{
@@ -930,6 +939,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			}
 			if (TryEmitElementMediaProperty(w, propEl, xNs, parentVar, propName, ref counter)) return;
 			if (TryEmitObjectPropertyElement(w, propEl, xNs, parentVar, propName, ref counter)) return;
+			if (TryEmitTextPropertyElement(w, propEl, parentVar, propName)) return;
 			if (!_ignorableNamespaces.Contains(propEl.Name.NamespaceName)) NoteDroppedPropertyElement(propEl);
 		}
 
