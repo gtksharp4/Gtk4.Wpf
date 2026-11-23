@@ -2572,6 +2572,59 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   DataBindingDemo need further work (`AutomationProperties.HeadingLevel`/`ItemStatus` belong to the UI-automation
   plan). `RenderOptions.*` attributes and `VisualBrush.Visual="{Binding}"` are dropped with a message.
 
+- **Round 59 (lane A) track 3 - controls and freezable tail III (DONE, merged).** `gf59a/controls-freezable-tail-3`: the
+  `DataGrid` cell model (`DataGridCell`, `DataGridCellsPresenter`, `DataGridCellInfo`, `CurrentCell`, cell and header
+  styles), a routed `TextBox.SelectionChanged`, `TextBlock.ContentStart`/`ContentEnd`, typed
+  `SolidColorBrush.Clone`/`CloneCurrentValue` and the WPF `FontWeight` names. It covers ExpenseItDemo's
+  `DataGridCell`/`DataGridCellsPresenter` and the FontDialogDemo and SlidePuzzleDemo members that lane A owns; both
+  still need lane B's documents and imaging work. The samples gate below (197 projects) is the evidence.
+- **Round 59 (lane A) track 6 - the .NET 9 WPF surface for WPFGallery (DONE, merged).** `gf59a/net9-wpf-surface`: the
+  `SystemColors` accent family, `Application.GetResourceStream`/`StreamResourceInfo`, `ToolTipService.ToolTipProperty`,
+  `FocusManager.IsFocusScope`, `ContentPresenter.RecognizesAccessKey`, `Window.IsActive`, a routed
+  `Hyperlink.RequestNavigate` with `System.Windows.Navigation` args, `ItemsControl.ItemsPanel` with
+  `ItemsPanelTemplate`, and the new `MessageBoxButton`/`MessageBoxResult` values. Where GTK has no equivalent the
+  object model is exact and store-only.
+- **Round 59 (lane A) review (Opus) + fixes - DONE.** Verified findings applied failing-first. **a-F1** the full suite
+  was red on the merge: `DataGridColumn` joined the audited `Unconverted` list (object-valued DP, no converter in
+  WPF). **a-F2** `DataGridCellsPresenter` no longer hides `ItemsControl.ItemContainerGenerator`: the base property
+  calls an internal virtual `CreateItemContainerGenerator()` and the presenter overrides it with the column-to-cell
+  host, so `((ItemsControl)presenter).ItemContainerGenerator` maps columns to cells. **a-F3** `DataGrid.CellStyle`,
+  `ColumnHeaderStyle`, `IsReadOnly` and the column's `CellStyle`/`HeaderStyle`/`IsReadOnly` now re-apply in place to
+  the built cells and headers (`DataGridColumn.DataGridOwner`, `DataGrid.RefreshCellsAndHeaders`, shared with
+  `Realize` and `CreateHeader`). **a-F4** `DataGridCellInfo` follows WPF: only a null column throws, a null item is
+  valid, validity depends on the column, and equality uses `object.Equals` on the item (boxed `5` equals boxed `5`,
+  so `CurrentCellChanged` fires once). **a-F5** pinned with a skipped test: `TextBlock.ContentStart.Parent` returns
+  the internal `TextBlockHost`, not the `TextBlock`; follow-up for lane B in `Documents/TextPointer.cs` (an internal
+  hook in `TextPointer.Parent` that maps a `TextBlockHost` root to its owner). **a-F6** over-long lines wrapped, stray
+  blank lines removed. **b-F1** a single-instance `ItemsPanelTemplate.Content` panel backs only the first control;
+  `InstallItemsPanel` leaves a second control on the default stack and writes a one-time `Trace` message (the
+  `Content` XML doc says so). Lane C follow-up: the generator must emit `Factory = () => new WrapPanel{...}` for
+  `ItemsPanelTemplate` so `Content` can be removed. **b-F2** `Application.GetResourceStream` throws WPF's
+  `IOException("Cannot locate resource '<lower-cased relative path>'.")` instead of returning null. **b-F3**
+  `SystemColors.AccentColor` is `#0078D4`, the default of dotnet/wpf `AccentColorHelper`; the Light/Dark shades are
+  documented as the Windows default palette. **b-F4** `MessageBoxButton.AbortRetryIgnore`/`RetryCancel`/
+  `CancelTryContinue` and `MessageBoxResult.Abort`/`Retry`/`Ignore`/`TryAgain`/`Continue` are documented as WPF .NET 10
+  (dotnet/wpf main), not .NET 9, with matching ordinals; the coverage notes no longer imply WPF may lack them. **b-F5**
+  `IsSealed` and `Seal()` moved from `ItemsPanelTemplate` to `FrameworkTemplate` (public, store-only, no
+  modification lock). **b-F6** the test csproj comment sits above the `Page` group again. **CI-3** a pin test: the
+  `KeyboardFocusChangedEventArgs.Timestamp` of a focus change is `Environment.TickCount`. Rejected in triage: CI-1
+  (`FontWeight.ToString` already returns the WPF names), CI-2 (`default(FontWeight)` already equals `Normal`), CI-4
+  (`TextCompositionEventArgs` already derives from `InputEventArgs` and stamps `TickCount`), CI-5 (the
+  `MessageBoxButton`/`Image`/`Result` values already match WPF) and CI-6 (the dismissed-dialog mapping already matches
+  Win32).
+- **Round 59 (lane A) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. Full
+  `PresentationFramework.Tests` on the fixed tree: 5894 passed, 4 skipped, 0 failed (10 test methods added, 3
+  updated). Samples gate: all 197 projects with `build=pass` at `85493c8b` build through a lane-private feed (two
+  builds each; a harness bug and a parallel-conversion race in CustomApplicationClass were fixed by patching its
+  csproj and rebuilding), and all 182 apps that ran
+  still run (16 apparent hangs under a crowded pass re-checked alone for 20 s: all run).
+- **Round 59 (lane A) follow-up.** `DataGrid.CurrentCell` now depends only on `CurrentColumn`, so a null-item cell
+  round-trips and raises `CurrentCellChanged` once. A `Columns` reset no longer disowns auto-generated columns. Stray
+  blank lines removed; the totals entry now counts 10 added test methods and one gate-retry account.
+- **Round 59 (lane A) carry-over.** Lane B: `TextPointer.Parent` for a `TextBlock` pointer (skipped test
+  `The_pointers_Parent_is_the_TextBlock`), plus the documents and imaging members FontDialogDemo and SlidePuzzleDemo
+  still need. Lane C: emit `ItemsPanelTemplate` as `Factory` so `ItemsPanelTemplate.Content` can go.
+  Store-only gaps: the accent keys have no GTK source, and `FrameworkTemplate.Seal` does not lock the template.
 - **Round 60 (lane B) track 2 - documents-imaging-tail (DONE, merged).** `gf60b/documents-imaging-tail`: `gf57b`
   re-applied onto `main` without `06cd79ce` (its detached-List `TextRange` fix is already on `main`). Fixed and XPS
   documents (`FixedPage` as a `FrameworkElement` with its own `Children`, `PageContent`, `Glyphs`, XPS read/write and
@@ -2624,6 +2677,58 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   Carry-over: lane C registers `Int32RectConverter`/`PixelFormatConverter` and fixes the ParticlesDemo `x:Name` in a
   `Model3D` tree and `x:Name` inside `TextEffect.Transform`; lane A takes `UIElement.TranslatePoint`,
   `AdornerLayer.GetAdornerLayer`, a typed `SolidColorBrush.Clone()` and the `TextBlock`/`TextBox` members.
+- **Round 61 (lane C) track 1 - startup and generator sweep III (DONE, merged).** `gf61a/startup-generator-sweep-3`
+  (`414525fe`): unit suffixes `px`/`in`/`cm`/`pt` on `LengthConverter` properties (Brushes `Margin="12pt"`), the
+  base-qualified `GradientBrush.GradientStops` property element (HexSphereDemo), an explicit `Viewport3D.Children`
+  (PhotoFlipperDemo, via `UnwrapExplicitCollections`), prefixed `clr-namespace` commands in `CommandConverter`
+  (AnnotatedDocumentViewer), content properties of project-declared types (Per-FrameAnimation), the Grid
+  `RowDefinitions`/`ColumnDefinitions` shorthand (WPFGallery), the plain-`Name` rule (`IsNamingAttribute`), and the
+  `RenderOptions` attached properties. The idea in `gf39/xaml-content-model` is re-done as a compile-checked generator
+  corpus test (the branch is not rebased). Measured: see the gate in the totals bullet.
+- **Round 61 (lane C) track 5 - packaging: NOT merged.** `gf61b/packaging-permissions` carries no commits (it still
+  points at `4fd5749d`), so there is nothing to merge: EditingExaminerDemo's `System.Security.Permissions` dependency
+  and the WPFGallery `Microsoft.Win32.SystemEvents` leftovers stay open. The package's dependency list is unchanged.
+- **Round 61 (lane C) review + fixes - DONE.** Verified findings applied failing-first. **a-F1** `Timeline` carries
+  `[RuntimeNameProperty("Name")]` (new `Timeline.RuntimeName.cs`), so `<Storyboard Name="sb">` and named animations get
+  their field and `RegisterName` again (sweep III's plain-`Name` rule had dropped them); tests include a code-behind
+  that calls `sb.Begin(this)`. **a-F2** `Command="local:MainWindow.ExitCommand"` on a project type resolves at compile
+  time: the code-behind is scanned for a static member (then `Member + "Command"`) and emits `global::<owner>.<member>`,
+  else the runtime converter stays the fallback. **a-F3** the keyed-resource fallback no longer stores element text as
+  a string: only `String`/primitive/decimal value elements keep it; a `Color` of `R`/`G`/`B`/`A` or `ScA`/`ScR`/`ScG`/
+  `ScB` literals becomes `Color.FromArgb`/`FromScRgb` (A defaults to 0 as `default(Color)`), a text-only
+  converter-backed struct goes through `ConvertByType`, an attribute-less instantiable object is `new`ed, and anything
+  else gets no entry plus `Skipped resource <Name> (line N)`. **a-F4** `RenderOptions` cache-invalidation thresholds
+  default to 0.707 and 1.414 as WPF. **a-F5** `UnwrapExplicitCollections` detaches the nodes before re-parenting, so
+  their line info survives. **a-F6** the unit-suffix test used a plain `double` (`ArcSegment.RotationAngle`), which WPF's
+  `DoubleConverter` rejects; it is now `Infinity` routed through the converter. **a-F7** the Grid shorthand applies to
+  Grid subclasses, including project types through their declared base. Rejected in triage: CI-1 (already fixed:
+  `IsNamingAttribute` gates `NameScopes` and the generator; the `Timeline` regression it caused is a-F1), CI-2 (already
+  fixed: keyed elements with attributes are built, `Keyed_element_with_attributes_in_a_dictionary_is_built_not_stringified`;
+  the string fallback is a-F3), CI-3 (already fixed: `RenderOptions` exists and the generator emits `Set*`; the default
+  mismatch is a-F4; `VisualBrush.Visual={Binding}` is lane B), CI-4 (already fixed: the `CommandConverters` remark points
+  to the resolver-taking overload).
+- **Round 61 (lane C) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. Targeted tests (the
+  suites run in full at integrate): `MarkupCompiler.Tests` 716 (715 passed, 1 skipped, 0 failed);
+  `PresentationFramework.Tests` `RenderOptions`/`Timeline`/`Storyboard` 88 passed; 13 test methods added, 7 updated
+  (the four that locked in the string fallback now assert no entry). Samples gate: all 197 projects that built at
+  `85493c8b` build through a lane-private feed (two builds each; CustomApplicationClass needs its sibling client built
+  first), and all 182 apps that ran still run (172 in a crowded first pass; the 10 without a window handle re-checked
+  alone for 20 s: all alive with a window). The gate caught one regression (XmlnsBind: `XmlDataProvider` with an
+  unbuildable `XmlNamespaceManager`, used by a `{StaticResource}`, lost its entry and threw at load); that case keeps a
+  placeholder entry and a message, pinned by a test.
+- **Round 61 (lane C) follow-up.** The keyed-resource placeholder rule now counts `{StaticResource}` references across
+  every XAML file of the project, not only the file being generated: `MarkupCompileTask` pre-scans the XAML items into
+  `ProjectStaticResourceKeys` (attribute and `<StaticResource ResourceKey=.../>` element forms), so an unbuildable
+  resource in `App.xaml` or a shared dictionary keeps its entry for other files (WPFGallery `WrapPanelTemplate` and
+  `GitHubIconGeometry`, DocumentSerialization `ZoomIconDrawingImage`). The scan is by key name, so a same-named key in
+  another file over-keeps a placeholder, never drops one; keys written as `{x:Type ...}` are not matched. Without the
+  task (direct generator use) the old same-document search applies, now also by key text only. The carry-over wording
+  above ("not referenced by a `{StaticResource}`") means "by no XAML file of the project". Grid
+  `RowDefinitions`/`ColumnDefinitions` shorthand tests the property name before `IsGrid`, so plain attributes no
+  longer scan the code-behind sources.
+- **Round 61 (lane C) carry-over.** Packaging (EditingExaminerDemo, WPFGallery `SystemEvents`) is unstarted. Keyed
+  elements that are unbuildable and not referenced by a `{StaticResource}` get no `Resources` entry (a later
+  `FindResource` for them throws as in WPF for a missing key); `XmlDataProvider.XmlNamespaceManager` is still not built.
 
 ## Phased roadmap (after Phase 0 proves the spine)
 

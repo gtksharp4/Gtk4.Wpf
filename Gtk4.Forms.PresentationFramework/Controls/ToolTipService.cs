@@ -22,16 +22,6 @@ namespace System.Windows.Controls;
 /// </summary>
 public static partial class ToolTipService
 {
-	// ── ToolTip (delegates to FrameworkElement.ToolTipProperty) ──────────────
-
-	/// <summary>Gets the tooltip set on <paramref name="element"/>.</summary>
-	public static object? GetToolTip(DependencyObject element)
-		=> FrameworkElement.GetToolTip(element);
-
-	/// <summary>Sets the tooltip on <paramref name="element"/>.</summary>
-	public static void SetToolTip(DependencyObject element, object? value)
-		=> FrameworkElement.SetToolTip(element, value);
-
 	// ── InitialShowDelay DP ──────────────────────────────────────────────────
 
 	/// <summary>

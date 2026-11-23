@@ -119,6 +119,7 @@ public partial class TextBlock : FrameworkElement
 	/// </summary>
 	void ApplyToLabel()
 	{
+		SyncPointerHost();
 		if (_label == null) return;
 		if (_inlines.Count == 0)
 		{
@@ -132,7 +133,7 @@ public partial class TextBlock : FrameworkElement
 		string typographyFeatures = Documents.TypographyPango.BuildFontFeatures(this);
 		if (_inlines.Count == 1 && _inlines[0] is Run r &&
 		    !r.HasFlowOrLanguage &&
-		    !r.HasLocalFormat &&
+		    !r.HasLocalFormat && LocalFamily(r) == null &&
 		    (r.TextDecorations == null || r.TextDecorations.Count == 0) &&
 		    (blockDec == null || blockDec.Count == 0) &&
 		    typographyFeatures.Length == 0)
@@ -174,7 +175,7 @@ public partial class TextBlock : FrameworkElement
 	{
 		var sb = new System.Text.StringBuilder();
 		foreach (var inline in _inlines)
-			inline.AppendWrappedMarkup(sb);
+			AppendInline(sb, inline);
 		string inner = sb.ToString();
 		string withDecorations = Documents.TextDecorationMarkup.WrapWithDecorations(TextDecorations, inner);
 		return Documents.TypographyPango.WrapWithFontFeatures(this, withDecorations);

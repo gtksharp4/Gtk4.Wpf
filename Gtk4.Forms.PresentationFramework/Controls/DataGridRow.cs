@@ -4,7 +4,7 @@ namespace System.Windows.Controls;
 /// A row of a <see cref="DataGrid"/>. The GTK grid draws its rows itself, so this type is the WPF object model
 /// only: it stores <see cref="Item"/>, <see cref="Header"/> and <see cref="IsSelected"/> and is not placed in the grid.
 /// </summary>
-public class DataGridRow : Control
+public partial class DataGridRow : Control
 {
 	/// <summary>Identifies <see cref="Item"/>.</summary>
 	public static readonly DependencyProperty ItemProperty = DependencyProperty.Register(

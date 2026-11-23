@@ -56,6 +56,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			string name = fqType.StartsWith("global::", StringComparison.Ordinal) ? fqType.Substring(8) : fqType;
 			if (name == MediaNs + "GradientStopCollection")
 				return new ContentInfo { Name = "", IsCollection = true };
+			if (!_resolver.TypeExists(name) && UserClassExists(name)) return UserContentInfo(name);
 			if (_resolver.TryGetContentProperty(name, out string prop, out bool coll))
 				return new ContentInfo { Name = prop, IsCollection = coll };
 			if (!_contentFallback.TryGetValue(name, out ContentInfo info)) return null;

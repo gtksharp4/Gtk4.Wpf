@@ -113,11 +113,11 @@ public class Scale { public static double Conv(double d, int t) => d; } }";
 	}
 
 	[Fact]
-	public void G4_provider_with_an_attribute_the_layer_lacks_keeps_the_plain_emission()
+	public void G4_provider_with_an_attribute_the_layer_lacks_gets_no_entry()
 	{
 		string code = Gen($@"<Window x:Class=""A.W"" {Head}><Window.Resources>
 <XmlDataProvider x:Key=""p"" XmlNamespaceManager=""{{StaticResource m}}"" XPath=""a""/></Window.Resources></Window>");
-		Assert.Contains("Resources[\"p\"] = \"\";", code);
+		Assert.DoesNotContain("Resources[\"p\"]", code);
 	}
 
 	[Fact]

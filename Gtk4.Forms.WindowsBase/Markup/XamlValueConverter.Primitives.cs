@@ -15,54 +15,26 @@ static class PrimitiveConverters
 	// ── Thickness ────────────────────────────────────────────────────────────
 
 	/// <summary>
-	/// Parses "5" | "5,10" | "l,t,r,b" (invariant culture).
+	/// WPF ThicknessConverter: one, two or four lengths separated by comma and/or whitespace; each has an
+	/// optional px/in/cm/pt suffix, or is "Auto" (NaN).
 	/// </summary>
-	internal static Thickness ParseThickness(string raw)
-	{
-		var parts = raw.Split(',');
-		if (parts.Length == 1)
-		{
-			double v = ParseDouble(parts[0].Trim());
-			return new Thickness(v);
-		}
-		if (parts.Length == 2)
-		{
-			double h = ParseDouble(parts[0].Trim());
-			double vv = ParseDouble(parts[1].Trim());
-			return new Thickness(h, vv, h, vv);
-		}
-		if (parts.Length == 4)
-		{
-			return new Thickness(
-				ParseDouble(parts[0].Trim()),
-				ParseDouble(parts[1].Trim()),
-				ParseDouble(parts[2].Trim()),
-				ParseDouble(parts[3].Trim()));
-		}
-		throw new FormatException($"Cannot parse Thickness from \"{raw}\".");
-	}
+	internal static Thickness ParseThickness(string raw) =>
+		(Thickness)new ThicknessConverter().ConvertFromString(null, CultureInfo.InvariantCulture, raw)!;
 
 	// ── CornerRadius ─────────────────────────────────────────────────────────
 
 	/// <summary>
-	/// Parses "5" | "tl,tr,br,bl" (invariant culture).
+	/// WPF CornerRadiusConverter: one or four plain numbers (no unit suffixes) separated by comma and/or
+	/// whitespace, invariant culture.
 	/// </summary>
 	internal static CornerRadius ParseCornerRadius(string raw)
 	{
-		var parts = raw.Split(',');
+		var parts = ConverterParsing.Tokenize(raw, CultureInfo.InvariantCulture);
 		if (parts.Length == 1)
-		{
-			double v = ParseDouble(parts[0].Trim());
-			return new CornerRadius(v);
-		}
+			return new CornerRadius(ParseDouble(parts[0]));
 		if (parts.Length == 4)
-		{
-			return new CornerRadius(
-				ParseDouble(parts[0].Trim()),
-				ParseDouble(parts[1].Trim()),
-				ParseDouble(parts[2].Trim()),
-				ParseDouble(parts[3].Trim()));
-		}
+			return new CornerRadius(ParseDouble(parts[0]), ParseDouble(parts[1]),
+				ParseDouble(parts[2]), ParseDouble(parts[3]));
 		throw new FormatException($"Cannot parse CornerRadius from \"{raw}\".");
 	}
 

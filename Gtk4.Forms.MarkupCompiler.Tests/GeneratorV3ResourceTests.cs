@@ -84,17 +84,17 @@ xmlns:po=""http://schemas.microsoft.com/winfx/2006/xaml/presentation/options""><
 	}
 
 	[Fact]
-	public void G1_an_attribute_with_no_safe_conversion_keeps_the_plain_emission()
+	public void G1_an_attribute_with_no_safe_conversion_gets_no_entry()
 	{
 		string code = Gen(App(@"<DrawingBrush x:Key=""g"" Stretch=""{StaticResource t}""/>"));
-		Assert.Contains("Resources[\"g\"] = \"\";", code);
+		Assert.DoesNotContain("Resources[\"g\"]", code);
 		AssertCompiles(code, AppStub);
 	}
 
 	[Fact]
-	public void G1_value_resources_keep_the_plain_emission()
+	public void G1_text_value_of_a_converter_backed_struct_goes_through_the_converter()
 	{
 		string code = Gen(App(@"<Color x:Key=""c"">Red</Color>"));
-		Assert.Contains("Resources[\"c\"] = \"Red\";", code);
+		Assert.Contains("ConvertByType(typeof(global::System.Windows.Media.Color), \"Red\")", code);
 	}
 }

@@ -70,6 +70,8 @@ public class Round49aConverterTests
 		"System.Windows.Controls.ContextMenu", "System.Windows.Controls.DataTemplateSelector",
 		"System.Windows.Controls.StyleSelector", "System.Windows.Data.BindingGroup", "System.Windows.IInputElement",
 		"System.Xml.XmlNamespaceManager",
+		// Object-valued (DataGrid.CurrentColumn, DataGridCell.Column); WPF has no converter or string form.
+		"System.Windows.Controls.DataGridColumn",
 		// Deferred to the documents/effects work (other lane): no sample sets them from plain text yet.
 		// TextDecorationCollection belongs to the documents lane (PerMonitorDPI/TextFormatting sets
 		// TextDecorations="Underline").

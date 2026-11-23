@@ -70,6 +70,17 @@ namespace Gtk4.Forms.MarkupCompiler
 			return IOPath.GetFileName(xamlPath);
 		}
 
+		HashSet<string> ReadStaticResourceKeys()
+		{
+			var keys = new HashSet<string>(StringComparer.Ordinal);
+			foreach (ITaskItem item in XamlFiles)
+			{
+				try { XamlCodeGenerator.CollectStaticResourceKeys(File.ReadAllText(item.ItemSpec), keys); }
+				catch (Exception e) when (e is IOException || e is UnauthorizedAccessException) { }
+			}
+			return keys;
+		}
+
 		/// <inheritdoc />
 		public override bool Execute()
 		{
@@ -95,6 +106,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			if (CompileFiles != null)
 				generator.CodeBehindSources = CodeBehindScan.ReadSources(
 					System.Linq.Enumerable.Select(CompileFiles, i => i.ItemSpec), OutputDirectory);
+
+			generator.ProjectStaticResourceKeys = ReadStaticResourceKeys();
 
 			// Thread reference paths into the DP symbol resolver and xmlns-definition source.
 			if (ReferencePaths != null && ReferencePaths.Length > 0)

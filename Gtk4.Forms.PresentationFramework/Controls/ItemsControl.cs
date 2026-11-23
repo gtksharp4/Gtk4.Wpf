@@ -64,14 +64,15 @@ public partial class ItemsControl : Control
 	protected virtual Gtk.Widget CreateItemsWidget()
 	{
 		_defaultBox = new Gtk.Box(Gtk.Orientation.Vertical, 0);
+		InstallItemsPanel();
 		return _defaultBox;
 	}
 
 	/// <summary>Adds an item's GTK widget to the items container.</summary>
-	protected virtual void AddItemWidget(Gtk.Widget w) => _defaultBox!.Add(w);
+	protected virtual void AddItemWidget(Gtk.Widget w) => AddDefaultHostItem(w);
 
 	/// <summary>Removes an item's GTK widget from the items container.</summary>
-	protected virtual void RemoveItemWidget(Gtk.Widget w) => _defaultBox!.Remove(w);
+	protected virtual void RemoveItemWidget(Gtk.Widget w) => RemoveDefaultHostItem(w);
 
 	Gtk.Box? _defaultBox;
 

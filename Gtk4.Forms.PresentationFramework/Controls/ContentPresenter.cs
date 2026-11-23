@@ -142,7 +142,7 @@ public partial class ContentPresenter : FrameworkElement
 
 		// 3. String / ToString fallback.
 		var text = content?.ToString() ?? string.Empty;
-		var label = new Gtk.Label(text);
+		var label = new Gtk.Label(text) { UseUnderline = RecognizesAccessKey };
 		_hostedWidget = label;
 		_box!.Add(_hostedWidget);
 	}

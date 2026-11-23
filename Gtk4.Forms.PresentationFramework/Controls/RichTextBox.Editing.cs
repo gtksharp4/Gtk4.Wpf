@@ -14,11 +14,8 @@ public partial class RichTextBox
 	/// <summary>Raised whenever the content changes (user edit or programmatic edit).</summary>
 	public event EventHandler? TextChanged;
 
-	/// <summary>Raised when the caret moves or the selection changes.</summary>
-	public event EventHandler? SelectionChanged;
-
 	internal void RaiseTextChanged() => TextChanged?.Invoke(this, EventArgs.Empty);
-	void RaiseSelectionChanged() => SelectionChanged?.Invoke(this, EventArgs.Empty);
+	void RaiseSelectionChanged() => RaiseSelectionChangedEvent();
 
 	// Wired to Gtk.TextBuffer.MarkSet in CreateWidget; fires only for the caret/selection marks.
 	void OnBufferMarkSet(object? sender, Gtk.MarkSetArgs args)
