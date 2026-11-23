@@ -10,17 +10,13 @@ namespace System.Windows.Controls;
 /// Two-way <see cref="Text"/> binding works in both modes.
 /// Selection model lives in <c>TextBox.Selection.cs</c>.
 /// </summary>
-public partial class TextBox : Control
+public partial class TextBox : Primitives.TextBoxBase
 {
 	// ── TextChanged event ────────────────────────────────────────────────────
 
 	/// <summary>Raised when <see cref="Text"/> changes.</summary>
 	public event EventHandler<TextChangedEventArgs>? TextChanged;
 
-	// ── SelectionChanged event ───────────────────────────────────────────────
-
-	/// <summary>Raised when the selection changes.</summary>
-	public event EventHandler? SelectionChanged;
 
 	// ── Text DP ──────────────────────────────────────────────────────────────
 

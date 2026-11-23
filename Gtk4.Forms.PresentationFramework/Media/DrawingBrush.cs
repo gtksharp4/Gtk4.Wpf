@@ -22,7 +22,7 @@ namespace System.Windows.Media;
 /// zero/empty, <see cref="ApplyToCairo"/> is a no-op.
 /// </para>
 /// </remarks>
-public class DrawingBrush : TileBrush
+public partial class DrawingBrush : TileBrush
 {
 	readonly FreezableChildWatcher _watcher;
 
