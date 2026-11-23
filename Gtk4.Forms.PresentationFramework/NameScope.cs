@@ -61,11 +61,11 @@ public partial class NameScope : INameScope
 			scope = new NameScope();
 			owner.SetValue(NameScopeProperty, scope);
 		}
-		scope.RegisterName(name, element);
+		NotifyingOwner(owner, () => scope.RegisterName(name, element));
 	}
 
 	internal static void Unregister(FrameworkElement owner, string name) =>
-		(owner.GetValue(NameScopeProperty) as INameScope)?.UnregisterName(name);
+		NotifyingOwner(owner, () => (owner.GetValue(NameScopeProperty) as INameScope)?.UnregisterName(name));
 
 	/// <summary>Walks up from <paramref name="start"/> to the first scope that holds <paramref name="name"/>.</summary>
 	internal static object? FindName(FrameworkElement start, string name)

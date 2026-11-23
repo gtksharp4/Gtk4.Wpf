@@ -21,10 +21,23 @@ internal static partial class DependencyObjectInheritance
 		}
 	}
 
+	[ThreadStatic]
+	static HashSet<DependencyObject>? _seen;
+
+	/// <summary>Whether anything hangs below <paramref name="root"/> on the context chain.</summary>
+	internal static bool HasDescendants(DependencyObject root)
+	{
+		lock (_lock)
+			return (_children.TryGetValue(root, out var c) && c.Items.Count > 0)
+				|| (_contextChildren.TryGetValue(root, out var x) && x.Items.Count > 0);
+	}
+
 	/// <summary>Adds <paramref name="root"/> and everything below it on the context chain.</summary>
 	internal static void CollectSubtree(DependencyObject root, List<DependencyObject> into)
 	{
-		var seen = new HashSet<DependencyObject>(ReferenceEqualityComparer.Instance) { root };
+		var seen = _seen ??= new HashSet<DependencyObject>(ReferenceEqualityComparer.Instance);
+		seen.Clear();
+		seen.Add(root);
 		into.Add(root);
 		for (int i = 0; i < into.Count; i++)
 			lock (_lock)
@@ -32,6 +45,7 @@ internal static partial class DependencyObjectInheritance
 				AddChildren(_children, into[i], seen, into);
 				AddChildren(_contextChildren, into[i], seen, into);
 			}
+		seen.Clear();
 	}
 
 	static void AddChildren(ConditionalWeakTable<DependencyObject, ChildList> table, DependencyObject parent,

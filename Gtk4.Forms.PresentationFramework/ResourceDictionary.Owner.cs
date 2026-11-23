@@ -10,6 +10,10 @@ public partial class ResourceDictionary
 		get => _owner?.Target as DependencyObject;
 		set
 		{
+			var old = Owner;
+			if (old != null && !ReferenceEquals(old, value))
+				foreach (var item in _inner.Values)
+					if (item is Freezable f && ReferenceEquals(f.InheritanceContext, old)) f.InheritanceContext = null;
 			_owner = value == null ? null : new WeakReference(value);
 			foreach (var entry in _inner.Values) ClaimEntry(entry);
 		}
@@ -19,6 +23,6 @@ public partial class ResourceDictionary
 	{
 		if (value is DependencyObject entry && !Data.BindingTarget.IsElement(entry) && Owner is { } owner
 		    && !(entry is Freezable { IsFrozen: true }))
-			entry.InheritanceContext = owner;
+			entry.AddContextHolder(owner);
 	}
 }

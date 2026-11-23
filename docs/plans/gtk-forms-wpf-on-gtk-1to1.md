@@ -2591,7 +2591,7 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   **a-R2** the `DocumentViewer` test now shows the viewer in a window and asserts the page's 200x100 size and the
   child's `Gtk.Fixed` placement against an unplaced sibling (it goes red when `FixedPage.Left` is ignored).
   **b-R60b-1** context listeners are indexed per target and per ElementName; a tree change walks only the changed
-  subtree (inheritance children plus freezable holders) and allocates nothing when no listener applies, so building a
+  subtree (inheritance children plus freezable holders), so building a
   bound tree is linear (t(2000)/t(500) was 24.5, now under 6). **b-R60b-2** a freezable with a live binding reports
   `CanFreeze == false` and `Freeze()` throws, as does any group, brush or collection holding one; `ClearBinding`
   makes it freezable again. **b-R60b-3** a multi-step path on an element source (`ElementName=b0, Path=Tag.Rule`)
@@ -2661,3 +2661,10 @@ Approve **Phase 0 only** first: the `WindowsBase` property-system subset + the f
 is small, fully testable, and settles every architectural unknown (xmlns binding, the compiler fork,
 the hybrid bridge, the drop-in). Only after it runs a real one-window WPF app unmodified on two OSes
 is it worth committing to the multi-phase build toward 1:1.
+- **Round 60 (lane B) follow-up.** **b-R60b-1** dead ElementName registrations are pruned whenever a name is walked
+  (the `_byName` lists no longer grow when targets are dropped); a name registered through an element re-resolves only
+  the listeners below that element (a new scope owner likewise, filtered to ElementName users), so per-item name
+  scopes are linear; a leaf with no listener, and any subtree walk, no longer allocate (pooled traversal, lazy result;
+  the count fast path is only a hint because collected targets keep it above 0). Earlier wording "allocates nothing"
+  was wrong for a populated subtree with hits. **b-R60b-5** `ResourceDictionary` owners now go through
+  `AddContextHolder`, so a freezable held by a dictionary and by another element has no context in either order.

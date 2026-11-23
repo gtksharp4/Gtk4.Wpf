@@ -357,7 +357,7 @@ and the binding engine). The walls below were measured after that round. None of
   - Brushes returned by `Brushes.*` are new, unfrozen instances here (WPF returns frozen shared ones).
 - **Binding engine gaps (lane B, not scheduled):**
   - A freezable shared by several holders has no inheritance context, as in WPF. A binding on it resolves only when
-    its context comes from one holder or from a `ResourceDictionary` owner.
+    its context comes from one holder (a `ResourceDictionary` owner counts as a holder).
   - A single-segment path to a non-dependency property of an element source is read once.
 - **Rejected in the Round 60 triage: the null-owner `InvalidOperationException` in `TextTreeEdit.Split.cs`.** Not a
   defect. After dropping `06cd79ce`, `main`'s detached-`List` fix (Round 57, `2f4a566d`) covers

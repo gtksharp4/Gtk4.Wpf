@@ -41,7 +41,7 @@ public partial class DependencyObject
 		if (newLocal is Freezable { IsFrozen: false } added) added.AddContextHolder(this);
 	}
 
-	void AddContextHolder(DependencyObject holder)
+	internal void AddContextHolder(DependencyObject holder)
 	{
 		var current = InheritanceContext;
 		if (current == null && !_hasMultipleContexts)

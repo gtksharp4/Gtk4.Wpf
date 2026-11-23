@@ -4,9 +4,25 @@ namespace System.Windows;
 
 public partial class NameScope
 {
+	// The element whose Register/Unregister is running: only the bindings below it can see the change.
+	[ThreadStatic]
+	static DependencyObject? _notifying;
+
 	static void OnNameScopeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) =>
-		BindingEngine.NameScopeChanged(null);
+		BindingEngine.NameScopeChanged(d);
 
 	// Bindings by ElementName re-resolve when a name appears or goes.
-	static void NameChanged(string name) => BindingEngine.NameScopeChanged(name);
+	static void NameChanged(string name)
+	{
+		if (_notifying is { } owner) BindingEngine.NameScopeChanged(owner, name);
+		else BindingEngine.NameScopeChanged(name);
+	}
+
+	static void NotifyingOwner(DependencyObject owner, System.Action change)
+	{
+		var previous = _notifying;
+		_notifying = owner;
+		try { change(); }
+		finally { _notifying = previous; }
+	}
 }

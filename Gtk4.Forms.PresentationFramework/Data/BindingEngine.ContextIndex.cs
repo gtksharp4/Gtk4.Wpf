@@ -59,28 +59,61 @@ internal static partial class BindingEngine
 				: Array.Empty<IContextListener>();
 	}
 
-	/// <summary>The listeners of everything at or below <paramref name="root"/> on the context chain.</summary>
-	static List<IContextListener> ListenersUnder(DependencyObject root)
+	[ThreadStatic]
+	static List<DependencyObject>? _subtree;
+
+	/// <summary>
+	/// The listeners of everything at or below <paramref name="root"/> on the context chain. A leaf with no
+	/// listener returns without allocating; larger subtrees walk with a pooled list.
+	/// </summary>
+	static IContextListener[] ListenersUnder(DependencyObject root, bool namedOnly = false, string? name = null)
 	{
-		var found = new List<IContextListener>();
-		if (_listenerCount == 0) return found;
-		var subtree = new List<DependencyObject>();
+		if (_listenerCount == 0) return Array.Empty<IContextListener>();
+		List<IContextListener>? found = null;
+		if (!DependencyObjectInheritance.HasDescendants(root))
+		{
+			Collect(root, namedOnly, name, ref found);
+			return found?.ToArray() ?? Array.Empty<IContextListener>();
+		}
+		var subtree = _subtree ??= new List<DependencyObject>();
+		subtree.Clear();
 		DependencyObjectInheritance.CollectSubtree(root, subtree);
-		foreach (var node in subtree) found.AddRange(ListenersOn(node));
-		return found;
+		for (int i = 0; i < subtree.Count; i++) Collect(subtree[i], namedOnly, name, ref found);
+		subtree.Clear();
+		return found?.ToArray() ?? Array.Empty<IContextListener>();
 	}
 
-	/// <summary>The listeners using ElementName <paramref name="name"/>, or all ElementName users when null.</summary>
-	static List<IContextListener> ListenersNamed(string? name)
+	static void Collect(DependencyObject node, bool namedOnly, string? name, ref List<IContextListener>? found)
+	{
+		foreach (var listener in ListenersOn(node))
+		{
+			if (namedOnly && (name == null ? listener.ElementName == null : listener.ElementName != name)) continue;
+			(found ??= new List<IContextListener>()).Add(listener);
+		}
+	}
+
+	/// <summary>The listeners using ElementName <paramref name="name"/>; dead registrations are dropped.</summary>
+	static List<IContextListener> ListenersNamed(string name)
 	{
 		var found = new List<IContextListener>();
 		lock (_gate)
-			foreach (var pair in _byName)
-			{
-				if (name != null && pair.Key != name) continue;
-				foreach (var weak in pair.Value)
-					if (weak.TryGetTarget(out var listener)) found.Add(listener);
-			}
+		{
+			if (!_byName.TryGetValue(name, out var named)) return found;
+			named.RemoveAll(w => !w.TryGetTarget(out _));
+			if (named.Count == 0) _byName.Remove(name);
+			foreach (var weak in named)
+				if (weak.TryGetTarget(out var listener)) found.Add(listener);
+		}
 		return found;
 	}
+
+	/// <summary>Diagnostics for tests: ReResolve calls so far, and live plus dead ElementName registrations.</summary>
+	internal static int ReResolveCalls;
+
+	internal static int NamedRegistrations(string name)
+	{
+		lock (_gate) return _byName.TryGetValue(name, out var named) ? named.Count : 0;
+	}
+
+	internal static IContextListener[] ListenersUnderForTest(DependencyObject root) => ListenersUnder(root);
 }

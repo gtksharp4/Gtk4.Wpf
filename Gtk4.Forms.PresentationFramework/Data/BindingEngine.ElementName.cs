@@ -23,11 +23,23 @@ internal static partial class BindingEngine
 		Freezable.HasBindingsHook = HasActiveBindings;
 	}
 
-	/// <summary>A name was registered or removed (null: a whole scope changed): re-resolve what uses it.</summary>
-	internal static void NameScopeChanged(string? name)
+	/// <summary>A name was registered or removed: re-resolve what uses it.</summary>
+	internal static void NameScopeChanged(string name)
 	{
 		if (_listenerCount == 0) return;
 		foreach (var listener in ListenersNamed(name)) listener.ReResolve();
+	}
+
+	/// <summary>The name scope of <paramref name="owner"/> changed: re-resolve the ElementName users below it.</summary>
+	internal static void NameScopeChanged(DependencyObject owner)
+	{
+		foreach (var listener in ListenersUnder(owner, namedOnly: true)) listener.ReResolve();
+	}
+
+	/// <summary>A name changed in the scope of <paramref name="owner"/>: re-resolve the users below it.</summary>
+	internal static void NameScopeChanged(DependencyObject owner, string name)
+	{
+		foreach (var listener in ListenersUnder(owner, namedOnly: true, name: name)) listener.ReResolve();
 	}
 
 	/// <summary>The data context of <paramref name="mentor"/> changed: refresh the non-element bindings.</summary>
@@ -57,6 +69,7 @@ internal static partial class BindingEngine
 
 		public void ReResolve()
 		{
+			ReResolveCalls++;
 			if (!_targetRef.TryGetTarget(out var target)) return;
 			if (_binding.ElementName == null
 			    || !ReferenceEquals(BindingTarget.FindName(target, _binding.ElementName), _elementSource))
