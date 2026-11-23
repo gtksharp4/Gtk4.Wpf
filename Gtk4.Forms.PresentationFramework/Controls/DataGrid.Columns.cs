@@ -22,6 +22,7 @@ public partial class DataGrid
 			foreach (var item in ItemsSource) { first = item; break; }
 
 		var cols = new List<DataGridColumn>();
+		_autoColumns = cols; // set early: Own() re-enters GetEffectiveColumns through the width refresh
 		if (first == null) return cols;
 		foreach (var prop in first.GetType().GetProperties(
 			         BindingFlags.Public | BindingFlags.Instance))
@@ -76,7 +77,6 @@ public partial class DataGrid
 		{
 			var col = cols[c];
 			var hdr = new Gtk.Label(col.Header?.ToString() ?? string.Empty);
-			hdr.Hexpand = true;
 			hdr.AddCssClass("datagrid-header");
 			_grid.Attach(hdr, c, 0, 1, 1);
 			AttachHeaderClick(hdr, col);
@@ -90,7 +90,6 @@ public partial class DataGrid
 			for (int c = 0; c < cells.Count; c++)
 			{
 				var cell = cells[c].Widget;
-				cell.Hexpand = true;
 				cell.AddCssClass("datagrid-cell");
 				_grid.Attach(cell, c, r + 1, 1, 1);
 			}
@@ -104,5 +103,6 @@ public partial class DataGrid
 				cells[0].Widget.AddController(click);
 			}
 		}
+		ApplyColumnWidths();
 	}
 }
