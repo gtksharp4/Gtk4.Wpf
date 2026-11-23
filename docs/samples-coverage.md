@@ -164,11 +164,16 @@ and GIFEncoderAndDecoder. CustomAnimation was missing from the first log and run
 `DataBindingToStringFomat.exe`, which the first pass did not find; it runs. All are recorded as `runs`, as in earlier
 reports.
 
-Two apps write heavy stderr while running. Neither is a crash, but both are worth a look (track 6):
+Round 63b (rendering hygiene) fixed both stderr sources. Measured through the lane-private package, one app at a time:
 
-- Per-FrameAnimation and ParticlesDemo print "Cairo.Context is leaking, programmer is missing a call to Dispose" 248
-  and 189 times in 15 s. That is GtkSharp's finalizer warning for an undisposed `Cairo.Context`. Not root-caused.
-- ParticlesDemo also logs `Gsk-WARNING: drawing failure for render node GskTransformNode: out of memory` (6 times).
+- "Cairo.Context is leaking": GtkSharp's `DrawingArea.DrawFunc` wrapper creates a `Cairo.Context` per draw and never
+  disposes it. Every DrawFunc in the layer now disposes its context in a `finally` (`Media/CairoDrawFunc.cs`).
+  Per-FrameAnimation went from 254 in 15 s (before, same machine) to 0 in two runs. ParticlesDemo went from 153-293 in
+  15-20 s to 0 in 9 runs.
+- `Gsk-WARNING ... out of memory`: Viewport3D painted textured triangles whose texel-to-pixel area scale fell below
+  1e-8 (a particle dying to nearly zero size). Cairo cannot represent the inverse pattern matrix and the compositor
+  rejects the frame. Such triangles are now skipped. Before: up to 128 warnings per 20 s run, in most runs; after: 0 in
+  4 runs of 20 s.
 
 ## API demand
 
