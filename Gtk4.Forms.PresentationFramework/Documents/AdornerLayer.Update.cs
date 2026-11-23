@@ -18,9 +18,12 @@ public sealed partial class AdornerLayer
 			Invalidate(list);
 	}
 
-	static void Invalidate(System.Collections.Generic.List<Adorner> adorners)
+	void Invalidate(System.Collections.Generic.List<Adorner> adorners)
 	{
 		foreach (var adorner in adorners)
+		{
 			adorner.InvalidateMeasure();
+			Reposition(adorner);
+		}
 	}
 }

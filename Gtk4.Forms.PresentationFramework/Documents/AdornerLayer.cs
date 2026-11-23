@@ -81,9 +81,8 @@ public sealed partial class AdornerLayer : FrameworkElement
 	/// the first <see cref="AdornerLayer"/> found, or <c>null</c> when none.
 	/// </summary>
 	/// <remarks>
-	/// An <see cref="AdornerDecorator"/> in the ancestor chain registers its
-	/// layer via its <see cref="LogicalParent"/> link; the walk finds it by
-	/// looking for a <see cref="AdornerDecorator"/> in the parent chain.
+	/// The nearest <see cref="AdornerDecorator"/> ancestor wins; otherwise a containing
+	/// <see cref="Window"/> supplies its implicit layer. The window itself has none, as in WPF.
 	/// </remarks>
 	public static AdornerLayer? GetAdornerLayer(Visual visual)
 	{
@@ -93,6 +92,9 @@ public sealed partial class AdornerLayer : FrameworkElement
 		{
 			if (current is AdornerDecorator dec)
 				return dec.AdornerLayer;
+			// WPF's default Window template carries an AdornerDecorator; see Window.AdornerLayer.cs.
+			if (current is Window window)
+				return window.ImplicitAdornerLayer;
 			current = current.VisualParent;
 		}
 		return null;

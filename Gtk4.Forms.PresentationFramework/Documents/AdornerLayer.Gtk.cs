@@ -2,30 +2,30 @@ namespace System.Windows.Documents;
 
 public sealed partial class AdornerLayer
 {
-	// Set by AdornerDecorator after creating the Gtk.Overlay.
-	internal Gtk.Overlay? GtkOverlay { get; set; }
+	Gtk.Overlay? _gtkOverlay;
 
 	/// <summary>
-	/// When a <see cref="Gtk.Overlay"/> is wired, adds the adorner's widget as an
-	/// overlay child so it renders above the content.
-	/// Widget creation is deferred: adorners added before widget realisation are
-	/// placed when the layer is later attached to an overlay (not yet implemented —
-	/// noted as a limitation).
+	/// The overlay hosting adorner widgets, set by <see cref="AdornerDecorator"/> or
+	/// <see cref="Window"/> once its widget exists. Adorners added earlier are placed on assignment.
 	/// </summary>
+	internal Gtk.Overlay? GtkOverlay
+	{
+		get => _gtkOverlay;
+		set
+		{
+			if (ReferenceEquals(_gtkOverlay, value)) return;
+			UnplaceAll();
+			_gtkOverlay = value;
+			if (value != null) PlaceAll();
+		}
+	}
+
+	/// <summary>Places the adorner's widget in the overlay when one is wired.</summary>
 	partial void OnAdornerAdded(Adorner adorner)
 	{
-		if (GtkOverlay == null) return;
-		if (!adorner.IsWidgetCreated) return;
-		GtkOverlay.AddOverlay(adorner.Widget);
+		if (_gtkOverlay != null) Place(adorner);
 	}
 
-	/// <summary>
-	/// Removes the adorner's widget from the overlay when present.
-	/// </summary>
-	partial void OnAdornerRemoved(Adorner adorner)
-	{
-		if (GtkOverlay == null) return;
-		if (!adorner.IsWidgetCreated) return;
-		GtkOverlay.RemoveOverlay(adorner.Widget);
-	}
+	/// <summary>Removes the adorner's widget from the overlay if it was placed.</summary>
+	partial void OnAdornerRemoved(Adorner adorner) => Unplace(adorner);
 }
