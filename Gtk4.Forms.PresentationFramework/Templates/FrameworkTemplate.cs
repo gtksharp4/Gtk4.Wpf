@@ -16,6 +16,15 @@ public abstract class FrameworkTemplate
 	public Func<UIElement>? Factory { get; set; }
 
 	/// <summary>
+	/// Gets whether the template is sealed. Store-only: WPF also locks a sealed template against modification,
+	/// which this layer does not enforce.
+	/// </summary>
+	public bool IsSealed { get; private set; }
+
+	/// <summary>Seals the template (see <see cref="IsSealed"/>; the lock itself is not enforced).</summary>
+	public void Seal() => IsSealed = true;
+
+	/// <summary>
 	/// Creates a new instance of the visual tree defined by this template.
 	/// Returns <c>null</c> when no <see cref="Factory"/> has been set.
 	/// </summary>

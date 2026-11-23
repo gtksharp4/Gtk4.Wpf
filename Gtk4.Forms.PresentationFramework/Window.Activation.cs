@@ -14,9 +14,14 @@ public partial class Window
 		NotifyActivation(_window.IsActive);
 	}
 
-	/// <summary>Raises Activated/Deactivated and informs the <see cref="Application"/>; also the test seam.</summary>
+	/// <summary>
+	/// Updates <see cref="IsActive"/>, then raises Activated/Deactivated and informs the
+	/// <see cref="Application"/>; also the test seam. Only a real transition does anything, as in WPF.
+	/// </summary>
 	internal void NotifyActivation(bool active)
 	{
+		if (active == (bool)GetValue(IsActiveProperty)!) return;
+		SetValue(IsActivePropertyKey, active);
 		if (active)
 			Activated?.Invoke(this, EventArgs.Empty);
 		else

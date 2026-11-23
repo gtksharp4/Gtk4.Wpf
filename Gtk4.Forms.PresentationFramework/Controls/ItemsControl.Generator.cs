@@ -7,7 +7,9 @@ public partial class ItemsControl
 	ItemContainerGenerator? _generator;
 
 	/// <summary>Gets the generator that maps the items to their containers.</summary>
-	public ItemContainerGenerator ItemContainerGenerator => _generator ??= new ItemContainerGenerator(this);
+	public ItemContainerGenerator ItemContainerGenerator => _generator ??= CreateItemContainerGenerator();
+
+	internal virtual ItemContainerGenerator CreateItemContainerGenerator() => new ItemContainerGenerator(this);
 
 	internal bool IsOwnContainer(object? item) => IsItemItsOwnContainerOverride(item);
 

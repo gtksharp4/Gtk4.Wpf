@@ -15,7 +15,7 @@ namespace System.Windows.Controls;
 ///
 /// <para><b>IsReadOnly</b> maps to <c>Gtk.TextView.Editable = !value</c>.</para>
 /// </summary>
-public partial class RichTextBox : Control
+public partial class RichTextBox : Primitives.TextBoxBase
 {
 	// ── Document DP ──────────────────────────────────────────────────────────
 

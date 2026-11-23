@@ -2624,6 +2624,60 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   elements that are unbuildable and not referenced by a `{StaticResource}` get no `Resources` entry (a later
   `FindResource` for them throws as in WPF for a missing key); `XmlDataProvider.XmlNamespaceManager` is still not built.
 
+- **Round 59 (lane A) track 3 - controls and freezable tail III (DONE, merged).** `gf59a/controls-freezable-tail-3`: the
+  `DataGrid` cell model (`DataGridCell`, `DataGridCellsPresenter`, `DataGridCellInfo`, `CurrentCell`, cell and header
+  styles), a routed `TextBox.SelectionChanged`, `TextBlock.ContentStart`/`ContentEnd`, typed
+  `SolidColorBrush.Clone`/`CloneCurrentValue` and the WPF `FontWeight` names. It covers ExpenseItDemo's
+  `DataGridCell`/`DataGridCellsPresenter` and the FontDialogDemo and SlidePuzzleDemo members that lane A owns; both
+  still need lane B's documents and imaging work. The samples gate below (197 projects) is the evidence.
+- **Round 59 (lane A) track 6 - the .NET 9 WPF surface for WPFGallery (DONE, merged).** `gf59a/net9-wpf-surface`: the
+  `SystemColors` accent family, `Application.GetResourceStream`/`StreamResourceInfo`, `ToolTipService.ToolTipProperty`,
+  `FocusManager.IsFocusScope`, `ContentPresenter.RecognizesAccessKey`, `Window.IsActive`, a routed
+  `Hyperlink.RequestNavigate` with `System.Windows.Navigation` args, `ItemsControl.ItemsPanel` with
+  `ItemsPanelTemplate`, and the new `MessageBoxButton`/`MessageBoxResult` values. Where GTK has no equivalent the
+  object model is exact and store-only.
+- **Round 59 (lane A) review (Opus) + fixes - DONE.** Verified findings applied failing-first. **a-F1** the full suite
+  was red on the merge: `DataGridColumn` joined the audited `Unconverted` list (object-valued DP, no converter in
+  WPF). **a-F2** `DataGridCellsPresenter` no longer hides `ItemsControl.ItemContainerGenerator`: the base property
+  calls an internal virtual `CreateItemContainerGenerator()` and the presenter overrides it with the column-to-cell
+  host, so `((ItemsControl)presenter).ItemContainerGenerator` maps columns to cells. **a-F3** `DataGrid.CellStyle`,
+  `ColumnHeaderStyle`, `IsReadOnly` and the column's `CellStyle`/`HeaderStyle`/`IsReadOnly` now re-apply in place to
+  the built cells and headers (`DataGridColumn.DataGridOwner`, `DataGrid.RefreshCellsAndHeaders`, shared with
+  `Realize` and `CreateHeader`). **a-F4** `DataGridCellInfo` follows WPF: only a null column throws, a null item is
+  valid, validity depends on the column, and equality uses `object.Equals` on the item (boxed `5` equals boxed `5`,
+  so `CurrentCellChanged` fires once). **a-F5** pinned with a skipped test: `TextBlock.ContentStart.Parent` returns
+  the internal `TextBlockHost`, not the `TextBlock`; follow-up for lane B in `Documents/TextPointer.cs` (an internal
+  hook in `TextPointer.Parent` that maps a `TextBlockHost` root to its owner). **a-F6** over-long lines wrapped, stray
+  blank lines removed. **b-F1** a single-instance `ItemsPanelTemplate.Content` panel backs only the first control;
+  `InstallItemsPanel` leaves a second control on the default stack and writes a one-time `Trace` message (the
+  `Content` XML doc says so). Lane C follow-up: the generator must emit `Factory = () => new WrapPanel{...}` for
+  `ItemsPanelTemplate` so `Content` can be removed. **b-F2** `Application.GetResourceStream` throws WPF's
+  `IOException("Cannot locate resource '<lower-cased relative path>'.")` instead of returning null. **b-F3**
+  `SystemColors.AccentColor` is `#0078D4`, the default of dotnet/wpf `AccentColorHelper`; the Light/Dark shades are
+  documented as the Windows default palette. **b-F4** `MessageBoxButton.AbortRetryIgnore`/`RetryCancel`/
+  `CancelTryContinue` and `MessageBoxResult.Abort`/`Retry`/`Ignore`/`TryAgain`/`Continue` are documented as WPF .NET 10
+  (dotnet/wpf main), not .NET 9, with matching ordinals; the coverage notes no longer imply WPF may lack them. **b-F5**
+  `IsSealed` and `Seal()` moved from `ItemsPanelTemplate` to `FrameworkTemplate` (public, store-only, no
+  modification lock). **b-F6** the test csproj comment sits above the `Page` group again. **CI-3** a pin test: the
+  `KeyboardFocusChangedEventArgs.Timestamp` of a focus change is `Environment.TickCount`. Rejected in triage: CI-1
+  (`FontWeight.ToString` already returns the WPF names), CI-2 (`default(FontWeight)` already equals `Normal`), CI-4
+  (`TextCompositionEventArgs` already derives from `InputEventArgs` and stamps `TickCount`), CI-5 (the
+  `MessageBoxButton`/`Image`/`Result` values already match WPF) and CI-6 (the dismissed-dialog mapping already matches
+  Win32).
+- **Round 59 (lane A) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. Full
+  `PresentationFramework.Tests` on the fixed tree: 5894 passed, 4 skipped, 0 failed (10 test methods added, 3
+  updated). Samples gate: all 197 projects with `build=pass` at `85493c8b` build through a lane-private feed (two
+  builds each; a harness bug and a parallel-conversion race in CustomApplicationClass were fixed by patching its
+  csproj and rebuilding), and all 182 apps that ran
+  still run (16 apparent hangs under a crowded pass re-checked alone for 20 s: all run).
+- **Round 59 (lane A) follow-up.** `DataGrid.CurrentCell` now depends only on `CurrentColumn`, so a null-item cell
+  round-trips and raises `CurrentCellChanged` once. A `Columns` reset no longer disowns auto-generated columns. Stray
+  blank lines removed; the totals entry now counts 10 added test methods and one gate-retry account.
+- **Round 59 (lane A) carry-over.** Lane B: `TextPointer.Parent` for a `TextBlock` pointer (skipped test
+  `The_pointers_Parent_is_the_TextBlock`), plus the documents and imaging members FontDialogDemo and SlidePuzzleDemo
+  still need. Lane C: emit `ItemsPanelTemplate` as `Factory` so `ItemsPanelTemplate.Content` can go.
+  Store-only gaps: the accent keys have no GTK source, and `FrameworkTemplate.Seal` does not lock the template.
+
 ## Phased roadmap (after Phase 0 proves the spine)
 
 1. **Core controls, layout, binding.** `StackPanel`/`DockPanel`/`Canvas`/`WrapPanel` with WPF

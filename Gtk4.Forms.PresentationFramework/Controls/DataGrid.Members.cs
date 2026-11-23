@@ -35,7 +35,8 @@ public partial class DataGrid
 
 	/// <summary>Identifies <see cref="ColumnHeaderStyle"/>. Default null.</summary>
 	public static readonly DependencyProperty ColumnHeaderStyleProperty = DependencyProperty.Register(
-		nameof(ColumnHeaderStyle), typeof(Style), typeof(DataGrid), new FrameworkPropertyMetadata(null));
+		nameof(ColumnHeaderStyle), typeof(Style), typeof(DataGrid),
+		new FrameworkPropertyMetadata(null, (d, e) => ((DataGrid)d).RefreshCellsAndHeaders()));
 
 	/// <summary>Gets or sets which headers are shown. Stored only: the GTK grid always shows its header row.</summary>
 	public DataGridHeadersVisibility HeadersVisibility

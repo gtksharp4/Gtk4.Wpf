@@ -42,10 +42,10 @@ public class MessageBoxTests : IDisposable
 
 	[Theory]
 	[InlineData(MessageBoxButton.OK,          MessageBoxResult.OK)]
-	[InlineData(MessageBoxButton.OKCancel,    MessageBoxResult.OK)]
-	[InlineData(MessageBoxButton.YesNo,       MessageBoxResult.Yes)]
-	[InlineData(MessageBoxButton.YesNoCancel, MessageBoxResult.Yes)]
-	public void DefaultResult_is_first_button(MessageBoxButton btn, MessageBoxResult expected)
+	[InlineData(MessageBoxButton.OKCancel,    MessageBoxResult.Cancel)]
+	[InlineData(MessageBoxButton.YesNo,       MessageBoxResult.None)]
+	[InlineData(MessageBoxButton.YesNoCancel, MessageBoxResult.Cancel)]
+	public void DefaultResult_is_the_win32_dismissal_result(MessageBoxButton btn, MessageBoxResult expected)
 	{
 		Assert.Equal(expected, MessageBoxButtonMapping.DefaultResult(btn));
 	}
@@ -125,13 +125,13 @@ public class MessageBoxTests : IDisposable
 	}
 
 	[Theory]
-	[InlineData(MessageBoxButton.OK)]
-	[InlineData(MessageBoxButton.OKCancel)]
-	[InlineData(MessageBoxButton.YesNo)]
-	[InlineData(MessageBoxButton.YesNoCancel)]
-	public void MapResponse_negative_index_returns_None(MessageBoxButton button)
+	[InlineData(MessageBoxButton.OK, MessageBoxResult.OK)]
+	[InlineData(MessageBoxButton.OKCancel, MessageBoxResult.Cancel)]
+	[InlineData(MessageBoxButton.YesNo, MessageBoxResult.None)]
+	[InlineData(MessageBoxButton.YesNoCancel, MessageBoxResult.Cancel)]
+	public void MapResponse_negative_index_is_the_dismissal_result(MessageBoxButton button, MessageBoxResult expected)
 	{
-		Assert.Equal(MessageBoxResult.None, GtkMessageBoxPresenter.MapResponse(-1, button));
+		Assert.Equal(expected, GtkMessageBoxPresenter.MapResponse(-1, button));
 	}
 
 	[Theory]
@@ -148,13 +148,9 @@ public class MessageBoxTests : IDisposable
 
 	[Theory]
 	[InlineData(MessageBoxImage.Error, "dialog-error")]
-	[InlineData(MessageBoxImage.Stop, "dialog-error")]
-	[InlineData(MessageBoxImage.Hand, "dialog-error")]
 	[InlineData(MessageBoxImage.Warning, "dialog-warning")]
-	[InlineData(MessageBoxImage.Exclamation, "dialog-warning")]
 	[InlineData(MessageBoxImage.Question, "dialog-question")]
 	[InlineData(MessageBoxImage.Information, "dialog-information")]
-	[InlineData(MessageBoxImage.Asterisk, "dialog-information")]
 	public void MapIconName_maps_known_images(MessageBoxImage image, string expected)
 	{
 		Assert.Equal(expected, GtkMessageBoxPresenter.MapIconName(image));

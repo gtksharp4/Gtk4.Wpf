@@ -5,7 +5,7 @@ namespace System.Windows.Input;
 /// A focus scope (e.g. a <see cref="System.Windows.Window"/>) remembers which element
 /// inside it last held focus.
 /// </summary>
-public static class FocusManager
+public static partial class FocusManager
 {
 	/// <summary>
 	/// Attached DP that tracks the focused element within a focus scope.
