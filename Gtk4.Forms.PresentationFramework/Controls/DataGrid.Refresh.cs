@@ -12,8 +12,9 @@ public partial class DataGrid
 		_containersDirty = true;
 		if (e.Action == NotifyCollectionChangedAction.Reset)
 		{
-			foreach (var old in _ownedColumns) old.DataGridOwner = null;
-			_ownedColumns.Clear();
+			foreach (var old in _ownedColumns)
+				if (_autoColumns == null || !_autoColumns.Contains(old)) old.DataGridOwner = null;
+			_ownedColumns.RemoveAll(c => _autoColumns == null || !_autoColumns.Contains(c));
 			foreach (var column in Columns) Own(column);
 			return;
 		}

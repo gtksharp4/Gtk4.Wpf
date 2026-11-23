@@ -34,8 +34,8 @@ public partial class DataGrid
 	/// <summary>Gets or sets the current cell; an invalid info clears it.</summary>
 	public DataGridCellInfo CurrentCell
 	{
-		get => CurrentItem != null && CurrentColumn != null
-			? new DataGridCellInfo(CurrentItem, CurrentColumn)
+		get => CurrentColumn != null
+			? new DataGridCellInfo(CurrentItem!, CurrentColumn)
 			: default(DataGridCellInfo);
 		set
 		{

@@ -180,7 +180,6 @@ public class KeyboardFocusEventTests : WpfGtkTestBase
 		Assert.Equal(7, e.Timestamp);
 	});
 
-
 	[Fact]
 	public void The_event_Timestamp_is_the_Environment_TickCount_at_the_focus_change() => Run(() =>
 	{

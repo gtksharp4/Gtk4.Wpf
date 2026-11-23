@@ -2613,10 +2613,14 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `MessageBoxButton`/`Image`/`Result` values already match WPF) and CI-6 (the dismissed-dialog mapping already matches
   Win32).
 - **Round 59 (lane A) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. Full
-  `PresentationFramework.Tests` on the fixed tree: 5894 passed, 4 skipped, 0 failed (11 test methods added, 3
+  `PresentationFramework.Tests` on the fixed tree: 5894 passed, 4 skipped, 0 failed (10 test methods added, 3
   updated). Samples gate: all 197 projects with `build=pass` at `85493c8b` build through a lane-private feed (two
-  builds each; one project reference needed a third build after its library was converted), and all 182 apps that ran
+  builds each; a harness bug and a parallel-conversion race in CustomApplicationClass were fixed by patching its
+  csproj and rebuilding), and all 182 apps that ran
   still run (16 apparent hangs under a crowded pass re-checked alone for 20 s: all run).
+- **Round 59 (lane A) follow-up.** `DataGrid.CurrentCell` now depends only on `CurrentColumn`, so a null-item cell
+  round-trips and raises `CurrentCellChanged` once. A `Columns` reset no longer disowns auto-generated columns. Stray
+  blank lines removed; the totals entry now counts 10 added test methods and one gate-retry account.
 - **Round 59 (lane A) carry-over.** Lane B: `TextPointer.Parent` for a `TextBlock` pointer (skipped test
   `The_pointers_Parent_is_the_TextBlock`), plus the documents and imaging members FontDialogDemo and SlidePuzzleDemo
   still need. Lane C: emit `ItemsPanelTemplate` as `Factory` so `ItemsPanelTemplate.Content` can go.

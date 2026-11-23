@@ -106,5 +106,4 @@ public class TextBlockContentPointerTests : WpfGtkTestBase
 static class InlineCollectionTestExtensions
 {
 	internal static Inline FirstInline(this InlineCollection inlines) => inlines[0];
-
 }

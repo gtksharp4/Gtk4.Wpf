@@ -116,6 +116,33 @@ public class DataGridCellModelTests : WpfGtkTestBase
 	}
 
 	[Fact]
+	public void A_null_item_cell_round_trips_and_raises_once()
+	{
+		var grid = Grid();
+		int changed = 0;
+		grid.CurrentCellChanged += (_, _) => changed++;
+		var cell = new DataGridCellInfo(null!, grid.Columns[0]);
+		grid.CurrentCell = cell;
+		grid.CurrentCell = cell;
+		Assert.True(grid.CurrentCell.IsValid);
+		Assert.Equal(cell, grid.CurrentCell);
+		Assert.Equal(1, changed);
+	}
+
+	[Fact]
+	public void Clearing_Columns_keeps_the_auto_generated_columns_owned()
+	{
+		var grid = new DataGrid { AutoGenerateColumns = true, ItemsSource = new[] { new Item() } };
+		var flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+		var effective = (System.Collections.Generic.IReadOnlyList<DataGridColumn>)typeof(DataGrid)
+			.GetMethod("GetEffectiveColumns", flags)!.Invoke(grid, null)!;
+		var auto = effective[0];
+		Assert.Same(grid, auto.DataGridOwner);
+		grid.Columns.Clear();
+		Assert.Same(grid, auto.DataGridOwner);
+	}
+
+	[Fact]
 	public void CurrentCell_syncs_with_CurrentItem_and_CurrentColumn_and_raises_once()
 	{
 		var grid = Grid();
