@@ -89,8 +89,9 @@ namespace Gtk4.Forms.MarkupCompiler
 			return $"global::System.Windows.Media.Color.{(sc ? "FromScRgb" : "FromArgb")}({string.Join(", ", values)})";
 		}
 
-		static bool IsStaticResourceTarget(XElement item, string key)
+		bool IsStaticResourceTarget(XElement item, string key)
 		{
+			if (ProjectStaticResourceKeys?.Contains(key) == true) return true;
 			var re = new System.Text.RegularExpressions.Regex(@"\{\s*StaticResource\s+(ResourceKey\s*=\s*)?"
 				+ System.Text.RegularExpressions.Regex.Escape(key) + @"\s*[,}]");
 			return item.Document?.Root.DescendantsAndSelf().Any(e => e.Attributes().Any(a => re.IsMatch(a.Value))) == true;

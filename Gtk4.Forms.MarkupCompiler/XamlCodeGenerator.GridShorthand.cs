@@ -9,8 +9,8 @@ namespace Gtk4.Forms.MarkupCompiler
 		bool TryEmitDefinitionShorthand(IndentedWriter w, string fqType, string varName, string propName, string val)
 		{
 			bool rows = propName == "RowDefinitions";
-			if (!IsGrid(fqType) || (!rows && propName != "ColumnDefinitions")
-				|| val.TrimStart().StartsWith("{", System.StringComparison.Ordinal)) return false;
+			if ((!rows && propName != "ColumnDefinitions")
+				|| val.TrimStart().StartsWith("{", System.StringComparison.Ordinal) || !IsGrid(fqType)) return false;
 			string def = rows ? "RowDefinition { Height" : "ColumnDefinition { Width";
 			foreach (string token in Regex.Split(val.Trim(), @"[\s,]+"))
 			{

@@ -2610,6 +2610,16 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   alone for 20 s: all alive with a window). The gate caught one regression (XmlnsBind: `XmlDataProvider` with an
   unbuildable `XmlNamespaceManager`, used by a `{StaticResource}`, lost its entry and threw at load); that case keeps a
   placeholder entry and a message, pinned by a test.
+- **Round 61 (lane C) follow-up.** The keyed-resource placeholder rule now counts `{StaticResource}` references across
+  every XAML file of the project, not only the file being generated: `MarkupCompileTask` pre-scans the XAML items into
+  `ProjectStaticResourceKeys` (attribute and `<StaticResource ResourceKey=.../>` element forms), so an unbuildable
+  resource in `App.xaml` or a shared dictionary keeps its entry for other files (WPFGallery `WrapPanelTemplate` and
+  `GitHubIconGeometry`, DocumentSerialization `ZoomIconDrawingImage`). The scan is by key name, so a same-named key in
+  another file over-keeps a placeholder, never drops one; keys written as `{x:Type ...}` are not matched. Without the
+  task (direct generator use) the old same-document search applies, now also by key text only. The carry-over wording
+  above ("not referenced by a `{StaticResource}`") means "by no XAML file of the project". Grid
+  `RowDefinitions`/`ColumnDefinitions` shorthand tests the property name before `IsGrid`, so plain attributes no
+  longer scan the code-behind sources.
 - **Round 61 (lane C) carry-over.** Packaging (EditingExaminerDemo, WPFGallery `SystemEvents`) is unstarted. Keyed
   elements that are unbuildable and not referenced by a `{StaticResource}` get no `Resources` entry (a later
   `FindResource` for them throws as in WPF for a missing key); `XmlDataProvider.XmlNamespaceManager` is still not built.
