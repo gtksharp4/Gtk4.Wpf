@@ -18,8 +18,8 @@ public class RenderOptionsTests : WpfGtkTestBase
 		Assert.Equal(EdgeMode.Unspecified, RenderOptions.GetEdgeMode(image));
 		Assert.Equal(CachingHint.Unspecified, RenderOptions.GetCachingHint(image));
 		Assert.Equal(ClearTypeHint.Auto, RenderOptions.GetClearTypeHint(image));
-		Assert.Equal(0.707107, RenderOptions.GetCacheInvalidationThresholdMinimum(image));
-		Assert.Equal(1.414214, RenderOptions.GetCacheInvalidationThresholdMaximum(image));
+		Assert.Equal(0.707, RenderOptions.GetCacheInvalidationThresholdMinimum(image));
+		Assert.Equal(1.414, RenderOptions.GetCacheInvalidationThresholdMaximum(image));
 	});
 
 	[Fact]

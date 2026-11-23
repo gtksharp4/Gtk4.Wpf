@@ -70,12 +70,12 @@ public static class RenderOptions
 	/// <summary>Identifies the <c>CacheInvalidationThresholdMinimum</c> attached property.</summary>
 	public static readonly DependencyProperty CacheInvalidationThresholdMinimumProperty =
 		DependencyProperty.RegisterAttached("CacheInvalidationThresholdMinimum", typeof(double), typeof(RenderOptions),
-			new UIPropertyMetadata(0.707107));
+			new UIPropertyMetadata(0.707));
 
 	/// <summary>Identifies the <c>CacheInvalidationThresholdMaximum</c> attached property.</summary>
 	public static readonly DependencyProperty CacheInvalidationThresholdMaximumProperty =
 		DependencyProperty.RegisterAttached("CacheInvalidationThresholdMaximum", typeof(double), typeof(RenderOptions),
-			new UIPropertyMetadata(1.414214));
+			new UIPropertyMetadata(1.414));
 
 	/// <summary>Identifies the <c>ClearTypeHint</c> attached property.</summary>
 	public static readonly DependencyProperty ClearTypeHintProperty = DependencyProperty.RegisterAttached(

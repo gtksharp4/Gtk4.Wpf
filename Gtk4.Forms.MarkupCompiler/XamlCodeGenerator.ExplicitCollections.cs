@@ -7,7 +7,7 @@ namespace Gtk4.Forms.MarkupCompiler
 	{
 		// <Transform3DGroup.Children><Transform3DCollection>items</Transform3DCollection></...>: the explicit
 		// collection element is unwrapped so its items are emitted one by one into the collection property.
-		void UnwrapExplicitCollections(XElement root)
+		internal void UnwrapExplicitCollections(XElement root)
 		{
 			if (!_resolver.HasReferences) return;
 			foreach (XElement pe in root.Descendants().Where(e => e.Name.LocalName.IndexOf('.') > 0).ToList())
@@ -26,7 +26,9 @@ namespace Gtk4.Forms.MarkupCompiler
 				if (item == null || kidFq == null || kids[0].Name.LocalName.IndexOf('.') >= 0
 					|| _resolver.IsAssignable(kidFq, item)
 					|| !_resolver.IsAssignable(kidFq, _resolver.GetPropertyType(ownerFq, prop))) continue;
-				kids[0].ReplaceWith(kids[0].Nodes().ToList());
+				var nodes = kids[0].Nodes().ToList();
+				foreach (XNode n in nodes) n.Remove();
+				kids[0].ReplaceWith(nodes);
 			}
 		}
 	}

@@ -105,12 +105,12 @@ MethodName=""GetValues"">
 	}
 
 	[Fact]
-	public void F3_a_parameter_that_cannot_be_emitted_keeps_the_plain_emission_for_the_whole_provider()
+	public void F3_a_parameter_that_cannot_be_emitted_gives_the_whole_provider_no_entry()
 	{
 		string code = Gen(Window(@"<ObjectDataProvider x:Key=""p"" ObjectType=""{x:Type sys:Math}"" MethodName=""Max"">
 <ObjectDataProvider.MethodParameters><sys:Int32>1</sys:Int32><Button/></ObjectDataProvider.MethodParameters>
 </ObjectDataProvider>", Local));
-		Assert.Contains("Resources[\"p\"] = ", code);
+		Assert.DoesNotContain("Resources[\"p\"]", code);
 		Assert.DoesNotContain("ObjectDataProvider()", code);
 		Assert.DoesNotContain("MethodParameters", code);
 	}

@@ -22,9 +22,9 @@ public class GeneratorSweep3NameTests : Sweep3Base
 	[Fact]
 	public void Plain_Name_on_a_non_element_creates_no_field()
 	{
-		string code = Compile(Page("<Button/>", "<DoubleAnimation x:Key=\"A\" Name=\"anim\"/>"));
+		string code = Compile(Page("<Button/>", "<AnnotationResource x:Key=\"A\" Name=\"anim\"/>"), Stub);
 
-		Lacks(code, "internal System.Windows.Media.Animation.DoubleAnimation anim");
+		Lacks(code, "AnnotationResource anim");
 		Lacks(code, "RegisterName(\"anim\"");
 	}
 
@@ -53,5 +53,36 @@ public class GeneratorSweep3NameTests : Sweep3Base
 
 		Has(code, "RegisterName(\"c0\"");
 		Lacks(code, ".Name = ");
+	}
+
+	[Fact]
+	public void Plain_Name_on_a_Timeline_creates_the_field_and_registers_it()
+	{
+		string xaml = Page("<Button/>", "<Storyboard x:Key=\"k\" Name=\"sb\"/>");
+
+		string code = Gen(xaml, sources: new[] { Stub });
+
+		Has(code, "Storyboard sb");
+		Has(code, "RegisterName(\"sb\"");
+	}
+
+	[Fact]
+	public void A_named_Storyboard_field_is_usable_from_the_code_behind()
+	{
+		const string stub = "namespace App { public partial class C { void Go() { sb.Begin(this); } } }";
+
+		string code = Compile(Page("<Button/>", "<Storyboard x:Key=\"k\" Name=\"sb\"/>"), stub);
+
+		Has(code, "Storyboard sb");
+	}
+
+	[Fact]
+	public void A_named_animation_in_a_Storyboard_creates_its_field()
+	{
+		string code = Compile(Page("<Button/>", "<Storyboard x:Key=\"k\"><DoubleAnimation Name=\"anim\" To=\"1\"/>"
+			+ "</Storyboard>"));
+
+		Has(code, "DoubleAnimation anim");
+		Has(code, "RegisterName(\"anim\"");
 	}
 }

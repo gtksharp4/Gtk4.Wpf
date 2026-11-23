@@ -84,10 +84,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				}
 				else if (key != null)
 				{
-					// Simple keyed value — emit as string for now; type-converter is later.
-					string escapedKey = EscapeString(key);
-					string escapedVal = EscapeString(item.Value.Trim());
-					w.Line($"{ownerVar}.Resources[\"{escapedKey}\"] = \"{escapedVal}\";");
+					EmitFallbackResource(w, item, xNs, ownerVar, key);
 				}
 			}
 		}

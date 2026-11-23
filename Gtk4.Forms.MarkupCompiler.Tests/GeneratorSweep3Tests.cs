@@ -87,15 +87,15 @@ public class GeneratorSweep3Tests : Sweep3Base
 	}
 
 	[Fact]
-	public void Length_units_on_a_CLR_double_property_are_converted_not_emitted_as_text()
+	public void Non_literal_double_text_is_routed_through_the_converter()
 	{
 		string xaml = Page("<Path><Path.Data><PathGeometry><PathFigure><ArcSegment Point=\"1,1\" Size=\"1,1\" "
-			+ "RotationAngle=\"1in\"/></PathFigure></PathGeometry></Path.Data></Path>");
+			+ "RotationAngle=\"Infinity\"/></PathFigure></PathGeometry></Path.Data></Path>");
 
 		string code = Compile(xaml);
 
-		Has(code, "ConvertByType(typeof(double), \"1in\")");
-		Lacks(code, "RotationAngle = \"1in\"");
+		Has(code, "ConvertByType(typeof(double), \"Infinity\")");
+		Lacks(code, "RotationAngle = \"Infinity\"");
 	}
 
 	[Fact]

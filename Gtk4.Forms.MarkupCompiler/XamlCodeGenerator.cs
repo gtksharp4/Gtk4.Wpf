@@ -753,6 +753,7 @@ namespace Gtk4.Forms.MarkupCompiler
 
 				string hookFind = IsStaticResourceValue(val, out string hookKey)
 					? StaticResourceLookup(varName, EscapeString(hookKey)) : null;
+				if (varName == _hookVar && TryEmitDefinitionShorthand(w, fqType, varName, propName, val)) continue;
 				if (TryEmitHookProperty(w, varName, propName, val, hookFind)) continue;
 
 				if (IsTemplateBindingExpression(val, out string tbBindingInit))

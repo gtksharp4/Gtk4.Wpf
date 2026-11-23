@@ -24,4 +24,18 @@ public class GeneratorSweep3GridTests : Sweep3Base
 		Has(code, ".RowDefinitions.Add(");
 		Has(code, "Grid.SetRow(");
 	}
+
+	[Fact]
+	public void Shorthand_applies_to_a_Grid_subclass()
+	{
+		const string stub = "namespace App { public partial class C { } "
+			+ "public class MyGrid : System.Windows.Controls.Grid { } }";
+		string xaml = Page("<local:MyGrid RowDefinitions=\"Auto,*\"/>", "", "xmlns:local=\"clr-namespace:App\"");
+
+		string code = Compile(xaml, stub);
+
+		Assert.Equal(2, code.Split(new[] { ".RowDefinitions.Add(new global::System.Windows.Controls.RowDefinition" },
+			System.StringSplitOptions.None).Length - 1);
+		Lacks(code, "RowDefinitions = \"Auto,*\"");
+	}
 }

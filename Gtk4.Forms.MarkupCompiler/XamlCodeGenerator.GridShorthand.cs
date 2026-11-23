@@ -9,7 +9,7 @@ namespace Gtk4.Forms.MarkupCompiler
 		bool TryEmitDefinitionShorthand(IndentedWriter w, string fqType, string varName, string propName, string val)
 		{
 			bool rows = propName == "RowDefinitions";
-			if (fqType != GridType || (!rows && propName != "ColumnDefinitions")
+			if (!IsGrid(fqType) || (!rows && propName != "ColumnDefinitions")
 				|| val.TrimStart().StartsWith("{", System.StringComparison.Ordinal)) return false;
 			string def = rows ? "RowDefinition { Height" : "ColumnDefinition { Width";
 			foreach (string token in Regex.Split(val.Trim(), @"[\s,]+"))
@@ -20,6 +20,22 @@ namespace Gtk4.Forms.MarkupCompiler
 					+ $"\"{EscapeString(token)}\") }});");
 			}
 			return true;
+		}
+
+		// Grid or a subclass: a layer/referenced type through the resolver, a project type through its declared base.
+		bool IsGrid(string fqType)
+		{
+			string user = fqType.StartsWith("global::", System.StringComparison.Ordinal) ? fqType.Substring(8) : fqType;
+			if (user == GridType || _resolver.DerivesFromByName(user, GridType)) return true;
+			for (int hop = 0; hop < 8 && CodeBehindSources != null; hop++)
+			{
+				string baseName = DeclaredBaseOf(user, out string[] usings);
+				if (baseName == null) return false;
+				string resolved = ResolveBaseType(baseName, usings);
+				if (resolved != null) return resolved == GridType || _resolver.DerivesFromByName(resolved, GridType);
+				user = baseName.Contains(".") ? baseName : NamespaceOf(user) + "." + baseName;
+			}
+			return false;
 		}
 	}
 }

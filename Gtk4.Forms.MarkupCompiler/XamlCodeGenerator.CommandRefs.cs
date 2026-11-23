@@ -26,6 +26,25 @@ namespace Gtk4.Forms.MarkupCompiler
 					expr = "global::" + owner + "." + candidate;
 					return true;
 				}
+			return TryProjectStaticCommand(owner, member, out expr);
+		}
+
+		// The owner is a project type the resolver cannot see: look for its static member in the code-behind.
+		bool TryProjectStaticCommand(string owner, string member, out string expr)
+		{
+			expr = null;
+			if (_resolver.TypeExists(owner) || !UserClassExists(owner)) return false;
+			foreach (string candidate in new[] { member, member + "Command" })
+			{
+				var re = new System.Text.RegularExpressions.Regex(
+					@"\bstatic\b[^;{(=]*\b" + System.Text.RegularExpressions.Regex.Escape(candidate) + @"\b\s*(=|;|\{)");
+				foreach (string source in CodeBehindSources)
+					if (re.IsMatch(StripCommentsAndStrings(source)))
+					{
+						expr = "global::" + owner + "." + candidate;
+						return true;
+					}
+			}
 			return false;
 		}
 	}
