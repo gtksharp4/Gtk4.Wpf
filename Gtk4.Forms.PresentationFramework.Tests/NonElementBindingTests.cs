@@ -152,4 +152,17 @@ public class NonElementBindingTests : WpfGtkTestBase
 		vm.Rule = FillRule.EvenOdd;
 		Assert.Equal(FillRule.Nonzero, geometry.FillRule);
 	});
+
+	[Fact]
+	public void TwoWay_binding_on_a_freezable_writes_back_to_the_source() => Run(() =>
+	{
+		var geometry = new PathGeometry();
+		var vm = new Vm { Rule = FillRule.Nonzero };
+		BindingOperations.SetBinding(geometry, PathGeometry.FillRuleProperty,
+			new Binding("Rule") { Source = vm, Mode = BindingMode.TwoWay });
+
+		geometry.FillRule = FillRule.EvenOdd;
+
+		Assert.Equal(FillRule.EvenOdd, vm.Rule);
+	});
 }
