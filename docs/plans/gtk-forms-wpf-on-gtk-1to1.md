@@ -2572,6 +2572,49 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   DataBindingDemo need further work (`AutomationProperties.HeadingLevel`/`ItemStatus` belong to the UI-automation
   plan). `RenderOptions.*` attributes and `VisualBrush.Visual="{Binding}"` are dropped with a message.
 
+- **Round 60 (lane B) track 2 - documents-imaging-tail (DONE, merged).** `gf60b/documents-imaging-tail`: `gf57b`
+  re-applied onto `main` without `06cd79ce` (its detached-List `TextRange` fix is already on `main`). Fixed and XPS
+  documents (`FixedPage` as a `FrameworkElement` with its own `Children`, `PageContent`, `Glyphs`, XPS read/write and
+  copy), the freezable `ImageSource` family (`CachedBitmap`, `CroppedBitmap`, `FormatConvertedBitmap`,
+  `TransformedBitmap`), freezable `TextDecoration` collections and `DocumentViewerBase.IsMasterPage`. Samples:
+  DocumentMerge, PhotoViewerDemo, PhotoStoreDemo and ParticlesDemo are past their imaging/document walls and now stop
+  on other lanes' items (see `docs/samples-coverage.md`, Round 60 hand-offs).
+- **Round 60 (lane B) track 4 - binding-engine (DONE, merged).** `gf60b/binding-engine-targets`: bindings on
+  non-element targets (freezables, animation To/From, `CollectionViewSource`) resolve through the inheritance context;
+  ElementName bindings set before the target is in the tree resolve when the name scope becomes reachable and keep
+  following their source (generated `InitializeComponent` order); prefixed owners such as `(local:Data.Label)`;
+  `DataTrigger`/`MultiDataTrigger` honour RelativeSource, ElementName and converters and compare a string `Value` to a
+  boxed int as WPF does. Samples: AnimationExamples gets past the binding wall (next stop: `TextEffect.Transform`).
+- **Round 60 (lane B) review (Opus) + fixes - DONE.** Applied failing-first. **a-R1** `PageContent.Child` is
+  write-once as in WPF: null throws `ArgumentNullException`, a second set or `AddChild` throws
+  `InvalidOperationException`, and a `Source` no longer blocks it (the reload path replaces the child internally).
+  **a-R2** the `DocumentViewer` test now shows the viewer in a window and asserts the page's 200x100 size and the
+  child's `Gtk.Fixed` placement against an unplaced sibling (it goes red when `FixedPage.Left` is ignored).
+  **b-R60b-1** context listeners are indexed per target and per ElementName; a tree change walks only the changed
+  subtree (inheritance children plus freezable holders) and allocates nothing when no listener applies, so building a
+  bound tree is linear (t(2000)/t(500) was 24.5, now under 6). **b-R60b-2** a freezable with a live binding reports
+  `CanFreeze == false` and `Freeze()` throws, as does any group, brush or collection holding one; `ClearBinding`
+  makes it freezable again. **b-R60b-3** a multi-step path on an element source (`ElementName=b0, Path=Tag.Rule`)
+  keeps listening through the `PathWatcher` and re-subscribes downstream steps. **b-R60b-4** an unknown attached
+  owner is scanned once (misses are cached and dropped on `AssemblyLoad`). **b-R60b-5** frozen freezables get no
+  inheritance context and one held by two objects has none, as in WPF. **b-R60b-6** the Resources/Owner wiring and the
+  NameScope notifications moved into partials, `DependencyObject.cs` is back to 204 lines, long lines wrapped and the
+  now-unused `BindingTarget.IsUnder` removed.
+  Rejected: **CI-1** (the null-owner `InvalidOperationException` in `TextTreeEdit.Split.cs`) is not a defect: after
+  dropping `06cd79ce`, `main`'s fix covers `ListItemCollection.Remove`/`Clear` (975 passed in the merged lane) and a
+  paragraph in a table cell fails earlier with "The element is not in a text container". **CI-2** and **CI-3** are
+  recorded as hand-offs in `docs/samples-coverage.md`.
+- **Round 60 (lane B) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. 14 new or
+  rewritten tests. Targeted `PresentationFramework.Tests` (Binding, DataTrigger, ElementName, NonElement, Prefixed,
+  Owner, Storyboard, ResourceDictionary, Freezable, Media, Document, Fixed, Xps, Imaging, TextDecoration, Round49a,
+  Style, Name, Animation, Xaml): 2585 passed, 2 skipped. `WindowsBase.Tests`: 286 passed.
+  Samples gate: all 197 build=pass projects still build (0 errors) through `Gtk4.Forms.Wpf` packed from this
+  worktree, and all 182 run=runs apps still start and stay up (24 needed a lone 20 s re-check, where each showed its
+  window).
+  Carry-over: lane C registers `Int32RectConverter`/`PixelFormatConverter` and fixes the ParticlesDemo `x:Name` in a
+  `Model3D` tree and `x:Name` inside `TextEffect.Transform`; lane A takes `UIElement.TranslatePoint`,
+  `AdornerLayer.GetAdornerLayer`, a typed `SolidColorBrush.Clone()` and the `TextBlock`/`TextBox` members.
+
 ## Phased roadmap (after Phase 0 proves the spine)
 
 1. **Core controls, layout, binding.** `StackPanel`/`DockPanel`/`Canvas`/`WrapPanel` with WPF

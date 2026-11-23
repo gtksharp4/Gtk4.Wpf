@@ -94,8 +94,7 @@ public partial class DependencyObject : System.Windows.Threading.DispatcherObjec
 		if (!_localValues.TryGetValue(dp, out var oldLocalValue)) return;
 
 		var oldEffective = ResolveEffectiveValue(dp);
-		_localValues.Remove(dp);
-		UpdateContextOfLocal(oldLocalValue, null);
+		RemoveLocalValue(dp, oldLocalValue);
 		CommitLayerChange(dp, oldEffective);
 	}
 

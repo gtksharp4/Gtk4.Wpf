@@ -7,7 +7,9 @@ using Xunit;
 
 namespace Gtk4.Forms.PresentationFramework.Tests;
 
-/// <summary>DataTrigger / MultiDataTrigger honour RelativeSource, ElementName, converters and WPF's comparison.</summary>
+/// <summary>
+/// DataTrigger / MultiDataTrigger honour RelativeSource, ElementName, converters and WPF's comparison.
+/// </summary>
 public class DataTriggerParityTests : WpfGtkTestBase
 {
 	sealed class Vm : INotifyPropertyChanged

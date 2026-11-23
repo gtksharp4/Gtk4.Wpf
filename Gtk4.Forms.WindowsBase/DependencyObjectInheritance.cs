@@ -11,7 +11,7 @@ namespace System.Windows;
 /// Uses <see cref="ConditionalWeakTable{TKey,TValue}"/> so entries are collected
 /// when the parent <see cref="DependencyObject"/> is GC'd (no memory leak).
 /// </remarks>
-internal static class DependencyObjectInheritance
+internal static partial class DependencyObjectInheritance
 {
 	// Parent → weak list of children.
 	// ConditionalWeakTable holds the parent weakly; the value (ChildList) is

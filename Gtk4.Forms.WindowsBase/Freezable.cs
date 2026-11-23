@@ -10,14 +10,14 @@ namespace System.Windows;
 /// A frozen <see cref="Freezable"/> rejects all mutations with
 /// <see cref="InvalidOperationException"/>. Cloning always produces an unfrozen copy.
 /// </remarks>
-public abstract class Freezable : DependencyObject
+public abstract partial class Freezable : DependencyObject
 {
 	bool _isFrozen;
 
 	// ── Freeze / state ───────────────────────────────────────────────────────────
 
 	/// <summary>Gets whether this instance can currently be frozen.</summary>
-	public virtual bool CanFreeze => !_isFrozen;
+	public virtual bool CanFreeze => !_isFrozen && !BlockedByBindingOrChild();
 
 	/// <summary>Gets whether this instance is frozen (read-only).</summary>
 	public bool IsFrozen => _isFrozen;

@@ -113,4 +113,8 @@ public partial class FrameworkElement
 		// No implicit style — fall back to theme default style (lowest precedence).
 		ApplyDefaultStyle();
 	}
+
+	ResourceDictionary? _resources;
+
+	ResourceDictionary NewResources() => new ResourceDictionary { Owner = this };
 }

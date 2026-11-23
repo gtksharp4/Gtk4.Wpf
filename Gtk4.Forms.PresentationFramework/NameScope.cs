@@ -1,4 +1,3 @@
-using System.Windows.Data;
 using System.Collections.Generic;
 
 namespace System.Windows;
@@ -7,12 +6,11 @@ namespace System.Windows;
 /// Maps names to objects. Mirrors <c>System.Windows.NameScope</c>; the root of a XAML tree
 /// owns one through the <see cref="NameScopeProperty"/> attached property.
 /// </summary>
-public class NameScope : INameScope
+public partial class NameScope : INameScope
 {
 	/// <summary>Identifies the NameScope attached property.</summary>
 	public static readonly DependencyProperty NameScopeProperty = DependencyProperty.RegisterAttached(
-		"NameScope", typeof(INameScope), typeof(NameScope),
-		new PropertyMetadata(null, (d, e) => BindingEngine.NameScopeChanged(null)));
+		"NameScope", typeof(INameScope), typeof(NameScope), new PropertyMetadata(null, OnNameScopeChanged));
 
 	readonly Dictionary<string, object> _names = new Dictionary<string, object>();
 
@@ -43,7 +41,7 @@ public class NameScope : INameScope
 		if (_names.ContainsKey(name))
 			throw new ArgumentException($"Cannot register duplicate name '{name}' in this name scope.", nameof(name));
 		_names[name] = scopedElement;
-		BindingEngine.NameScopeChanged(name);
+		NameChanged(name);
 	}
 
 	/// <inheritdoc/>
@@ -51,10 +49,9 @@ public class NameScope : INameScope
 	{
 		if (name == null) throw new ArgumentNullException(nameof(name));
 		if (name.Length == 0) throw new ArgumentException("Name must not be empty.", nameof(name));
-		bool removed = _names.Remove(name);
-		if (removed) BindingEngine.NameScopeChanged(name);
-		if (!removed)
+		if (!_names.Remove(name))
 			throw new ArgumentException($"'{name}' is not registered in this name scope.", nameof(name));
+		NameChanged(name);
 	}
 
 	internal static void Register(FrameworkElement owner, string name, object element)

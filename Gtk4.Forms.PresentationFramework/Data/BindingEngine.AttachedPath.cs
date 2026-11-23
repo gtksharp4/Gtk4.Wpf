@@ -47,22 +47,40 @@ internal static partial class BindingEngine
 		return null;
 	}
 
-	/// <summary>The dependency property named <paramref name="name"/> by a plain step on <paramref name="source"/>.</summary>
+	/// <summary>The dependency property a plain step names on <paramref name="source"/>.</summary>
 	internal static DependencyProperty? NamedProperty(object source, string name) =>
 		source is DependencyObject ? DependencyProperty.FindByName(name, source.GetType()) : null;
+
+	// Scans of all loaded types, for tests: a miss is cached too and dropped only when an assembly loads.
+	internal static int OwnerScanCount;
+
+	static bool _watchingAssemblies;
 
 	static List<Type> TypesNamed(string name)
 	{
 		lock (_ownerTypes)
 		{
+			if (!_watchingAssemblies)
+			{
+				_watchingAssemblies = true;
+				AppDomain.CurrentDomain.AssemblyLoad += (s, e) => ForgetMissingOwners();
+			}
 			if (_ownerTypes.TryGetValue(name, out var cached)) return cached;
+			OwnerScanCount++;
 			var found = new List<Type>();
 			foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
 				foreach (var t in SafeTypes(assembly))
 					if (t.Name == name) found.Add(t);
-			if (found.Count > 0) _ownerTypes[name] = found;
+			_ownerTypes[name] = found;
 			return found;
 		}
+	}
+
+	static void ForgetMissingOwners()
+	{
+		lock (_ownerTypes)
+			foreach (var name in new List<string>(_ownerTypes.Keys))
+				if (_ownerTypes[name].Count == 0) _ownerTypes.Remove(name);
 	}
 
 	static IEnumerable<Type> SafeTypes(Assembly assembly)

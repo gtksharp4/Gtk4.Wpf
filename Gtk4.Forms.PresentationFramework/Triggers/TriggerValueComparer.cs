@@ -13,7 +13,8 @@ internal static class TriggerValueComparer
 	internal static bool AreEqual(object? current, object? triggerValue)
 	{
 		if (current == null || triggerValue == null) return current == null && triggerValue == null;
-		if (triggerValue is string text && current is not string && TryConvert(text, current.GetType(), out var converted))
+		if (triggerValue is string text && current is not string
+		    && TryConvert(text, current.GetType(), out var converted))
 			triggerValue = converted;
 		return Equals(current, triggerValue);
 	}

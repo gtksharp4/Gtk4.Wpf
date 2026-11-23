@@ -65,16 +65,4 @@ internal static class BindingTarget
 			: new RelativeSource(RelativeSourceMode.FindAncestor, source.AncestorType, source.AncestorLevel - 1)
 				.FindAncestor(mentor);
 	}
-
-	/// <summary>Whether <paramref name="ancestor"/> is <paramref name="target"/> or above it on the context chain.</summary>
-	internal static bool IsUnder(DependencyObject target, DependencyObject ancestor)
-	{
-		var current = target;
-		for (int steps = 0; current != null && steps < 1000; steps++)
-		{
-			if (ReferenceEquals(current, ancestor)) return true;
-			current = current.ContextParent;
-		}
-		return false;
-	}
 }

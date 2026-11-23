@@ -6,7 +6,7 @@ using DRun = System.Windows.Documents.Run;
 
 namespace Gtk4.Forms.PresentationFramework.Tests;
 
-/// <summary>ElementName bindings set before the target is in the tree, in generated InitializeComponent order.</summary>
+/// <summary>ElementName bindings set before the target is in the tree, in generated order.</summary>
 public class ElementNameDeferredBindingTests : WpfGtkTestBase
 {
 	static Binding ToSlider(string path = "Value") => new Binding(path) { ElementName = "slider" };

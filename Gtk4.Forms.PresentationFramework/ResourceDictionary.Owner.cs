@@ -17,7 +17,8 @@ public partial class ResourceDictionary
 
 	void ClaimEntry(object? value)
 	{
-		if (value is DependencyObject entry && !Data.BindingTarget.IsElement(entry) && Owner is { } owner)
+		if (value is DependencyObject entry && !Data.BindingTarget.IsElement(entry) && Owner is { } owner
+		    && !(entry is Freezable { IsFrozen: true }))
 			entry.InheritanceContext = owner;
 	}
 }

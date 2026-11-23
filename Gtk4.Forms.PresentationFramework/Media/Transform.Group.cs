@@ -44,6 +44,9 @@ public class TransformGroup : Transform
 	}
 
 	/// <inheritdoc/>
+	public override bool CanFreeze => base.CanFreeze && CanFreezeAll(Children);
+
+	/// <inheritdoc/>
 	protected override void OnFreeze()
 	{
 		foreach (var child in Children) child.Freeze();

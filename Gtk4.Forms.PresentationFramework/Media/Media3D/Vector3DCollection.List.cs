@@ -87,6 +87,9 @@ public partial class Vector3DCollection : IList<Vector3D>, IList
 	void ICollection.CopyTo(Array array, int index) => ((ICollection)List.Items).CopyTo(array, index);
 
 	/// <inheritdoc/>
+	public override bool CanFreeze => base.CanFreeze && (_core?.CanFreezeItems() ?? true);
+
+	/// <inheritdoc/>
 	protected override void OnFreeze()
 	{
 		base.OnFreeze();

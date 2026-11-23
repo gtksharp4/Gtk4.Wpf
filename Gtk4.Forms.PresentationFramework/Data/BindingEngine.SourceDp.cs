@@ -9,19 +9,15 @@ internal static partial class BindingEngine
 		DependencyObject? _dpSource;
 		DependencyProperty? _dpSourceProperty;
 		PropertyChangedCallback? _dpSourceCallback;
+		PathWatcher? _dpPathWatcher;
 
 		/// <summary>
-		/// Watches a dependency-property source (e.g. <c>{Binding ActualWidth, ElementName=x}</c>):
-		/// when the source is a <see cref="FrameworkElement"/> (not INPC) and the path is a single
-		/// segment naming one of its DPs, re-pushes the target whenever that DP changes — WPF
-		/// listens to DP sources the same way it listens to INPC sources.
+		/// Watches a <see cref="DependencyObject"/> source (e.g. <c>{Binding ActualWidth, ElementName=x}</c>),
+		/// which is not INPC. A single-segment path naming one of its DPs is hooked directly. A longer path
+		/// (<c>Tag.Rule</c>, <c>Items[0].Name</c>) is watched step by step through a <see cref="PathWatcher"/>,
+		/// which re-subscribes the downstream steps when an upstream step changes.
 		/// <para>
-		/// <b>Gap vs WPF:</b> only <see cref="FrameworkElement"/> sources with a single-segment
-		/// path are watched (the hook reuses the FE-keyed <c>TargetChangeTracker</c>). A binding
-		/// whose source is any other <see cref="DependencyObject"/> (a Freezable, a non-FE
-		/// element, a DO held in DataContext), or whose DP sits behind a multi-segment path,
-		/// reads the value once and does not update live; WPF's <c>PropertyPathWorker</c>
-		/// listens on any DependencyObject source.
+		/// <b>Gap vs WPF:</b> a single-segment path that does not name a dependency property is read once.
 		/// </para>
 		/// </summary>
 		void AttachDpSource(object? source)
@@ -29,9 +25,13 @@ internal static partial class BindingEngine
 			if (source is not DependencyObject fe) return;
 			var path = PropertyPath.ResolveOwner(source, _binding.PathString);
 			if (string.IsNullOrEmpty(path)) return;
-			var dp = path![0] == '(' && path.IndexOf(')') == path.Length - 1
-				? AttachedProperty(source, path)
-				: path.IndexOfAny(new[] { '.', '[', '(' }) >= 0 ? null : FindDependencyProperty(fe.GetType(), path);
+			var single = path![0] == '(' && path.IndexOf(')') == path.Length - 1;
+			if (!single && path.IndexOfAny(new[] { '.', '[', '(' }) >= 0)
+			{
+				AttachPathWatcher(fe, path);
+				return;
+			}
+			var dp = single ? AttachedProperty(source, path) : FindDependencyProperty(fe.GetType(), path);
 			if (dp == null) return;
 
 			_dpSource = fe;
@@ -40,10 +40,22 @@ internal static partial class BindingEngine
 			fe.AddChangeHook(dp, _dpSourceCallback);
 		}
 
+		void AttachPathWatcher(DependencyObject source, string path)
+		{
+			_dpSource = source;
+			_dpPathWatcher = new PathWatcher(source, path);
+			_dpPathWatcher.Changed += () =>
+			{
+				if (_targetRef.TryGetTarget(out var target)) PushToTarget(target, source);
+			};
+		}
+
 		void DetachDpSource()
 		{
 			if (_dpSource != null && _dpSourceProperty != null && _dpSourceCallback != null)
 				_dpSource.RemoveChangeHook(_dpSourceProperty, _dpSourceCallback);
+			_dpPathWatcher?.Dispose();
+			_dpPathWatcher = null;
 			_dpSource = null;
 			_dpSourceProperty = null;
 			_dpSourceCallback = null;

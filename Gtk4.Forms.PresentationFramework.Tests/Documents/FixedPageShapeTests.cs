@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Markup;
 using System.Windows.Media;
+using Gtk4.Forms.PresentationFramework.Tests.Lifecycle;
 using Xunit;
 
 namespace Gtk4.Forms.PresentationFramework.Tests;
@@ -46,26 +47,35 @@ public class FixedPageShapeTests : WpfGtkTestBase
 			.Single();
 		Assert.Equal("Children", attr.Name);
 	});
-
 	[Fact]
-	public void A_DocumentViewer_hosts_the_pages_and_their_children_on_GTK() => Run(() =>
+	public void A_DocumentViewer_hosts_the_pages_and_places_their_children_on_GTK() => Run(() =>
 	{
 		var page = new FixedPage { Width = 200, Height = 100, Background = Brushes.White };
 		var button = new Button { Content = "x" };
+		var origin = new Button { Content = "x" };
 		FixedPage.SetLeft(button, 10);
 		page.Children.Add(button);
+		page.Children.Add(origin);
 		var content = new PageContent();
 		content.Child = page;
 		var document = new FixedDocument();
 		document.Pages.Add(content);
-		var viewer = new DocumentViewer { Document = document };
-		Assert.NotNull(viewer.Widget);
-		Assert.NotNull(page.Widget.Parent);
-		Assert.NotNull(button.Widget.Parent);
+		var window = new Window { Content = new DocumentViewer { Document = document }, Width = 400, Height = 300 };
+		window.Show();
+		Assert.True(GtkPump.Until(() => button.Widget.IsMapped && button.Widget.Width > 0));
+		Assert.Equal(200, page.Widget.WidthRequest);
+		Assert.Equal(100, page.Widget.HeightRequest);
+		var fixedPage = (Gtk.Fixed)page.Widget;
+		fixedPage.GetChildPosition(button.Widget, out var x, out var y);
+		fixedPage.GetChildPosition(origin.Widget, out var x0, out var y0);
+		// GTK adds a widget-specific offset to both, so the placement is measured against an unplaced sibling.
+		Assert.Equal(10, x - x0);
+		Assert.Equal(0, y - y0);
+		window.Close();
 	});
 
 	[Fact]
-	public void PageContent_Child_setter_replaces_the_logical_child_and_paginates() => Run(() =>
+	public void PageContent_Child_can_be_set_once_and_paginates() => Run(() =>
 	{
 		var first = new FixedPage { Width = 10, Height = 20 };
 		var second = new FixedPage { Width = 30, Height = 40 };
@@ -73,27 +83,37 @@ public class FixedPageShapeTests : WpfGtkTestBase
 		content.Child = first;
 		Assert.Same(first, content.Child);
 		Assert.Same(content, LogicalTreeHelper.GetParent(first));
-		content.Child = second;
-		Assert.Same(second, content.Child);
-		Assert.Same(content, LogicalTreeHelper.GetParent(second));
-		Assert.Null(LogicalTreeHelper.GetParent(first));
+		Assert.Throws<System.InvalidOperationException>(() => content.Child = second);
+		Assert.Same(first, content.Child);
+		Assert.Same(content, LogicalTreeHelper.GetParent(first));
+		Assert.Null(LogicalTreeHelper.GetParent(second));
 		var document = new FixedDocument();
 		document.Pages.Add(content);
-		Assert.Same(second, document.DocumentPaginator.GetPage(0).Visual);
-		content.Child = null;
-		Assert.Null(content.Child);
-		Assert.Null(LogicalTreeHelper.GetParent(second));
+		Assert.Same(first, document.DocumentPaginator.GetPage(0).Visual);
 	});
 
 	[Fact]
-	public void PageContent_Child_setter_works_alongside_IAddChild_and_Source() => Run(() =>
+	public void PageContent_Child_rejects_null_and_a_second_AddChild() => Run(() =>
 	{
 		var content = new PageContent();
-		((IAddChild)content).AddChild(new FixedPage());
-		var replacement = new FixedPage();
-		content.Child = replacement;
-		Assert.Same(replacement, content.GetPageRoot(false));
-		var withSource = new PageContent { Source = new System.Uri("a.fpage", System.UriKind.Relative) };
-		Assert.Throws<System.InvalidOperationException>(() => withSource.Child = new FixedPage());
+		Assert.Throws<System.ArgumentNullException>(() => content.Child = null);
+		var page = new FixedPage();
+		((IAddChild)content).AddChild(page);
+		Assert.Same(page, content.Child);
+		Assert.Throws<System.InvalidOperationException>(() => ((IAddChild)content).AddChild(new FixedPage()));
+		Assert.Throws<System.InvalidOperationException>(() => content.Child = new FixedPage());
+		Assert.Same(page, content.GetPageRoot(false));
+	});
+
+	[Fact]
+	public void PageContent_Child_can_be_set_while_Source_is_non_null() => Run(() =>
+	{
+		var content = new PageContent { Source = new System.Uri("a.fpage", System.UriKind.Relative) };
+		var page = new FixedPage();
+		content.Child = page;
+		Assert.Same(page, content.Child);
+		var other = new PageContent { Source = new System.Uri("b.fpage", System.UriKind.Relative) };
+		((IAddChild)other).AddChild(new FixedPage());
+		Assert.NotNull(other.Child);
 	});
 }

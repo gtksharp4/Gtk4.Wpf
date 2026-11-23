@@ -107,6 +107,9 @@ public class DrawingGroup : Drawing
 	}
 
 	/// <inheritdoc/>
+	public override bool CanFreeze => base.CanFreeze && (_children == null || CanFreezeAll(_children));
+
+	/// <inheritdoc/>
 	protected override void OnFreeze()
 	{
 		Transform?.Freeze();

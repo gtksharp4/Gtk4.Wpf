@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Gtk4.Forms.PresentationFramework.Tests;
 
-/// <summary>Bindings on freezables, animations and <see cref="CollectionViewSource"/> resolve through the mentor.</summary>
+/// <summary>Bindings on freezables, animations and <see cref="CollectionViewSource"/> use the mentor.</summary>
 public class NonElementBindingTests : WpfGtkTestBase
 {
 	sealed class Vm : INotifyPropertyChanged

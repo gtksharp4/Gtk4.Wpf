@@ -39,7 +39,8 @@ internal sealed class TriggerBindingSource : BindingEngine.IContextListener, IDi
 			if (_binding.Converter == null) return raw;
 			var culture = BindingEngine.ResolveCulture(_binding.ConverterCulture);
 			var converted = _binding.Converter.Convert(raw, typeof(object), _binding.ConverterParameter, culture);
-			return ReferenceEquals(converted, Binding.DoNothing) || ReferenceEquals(converted, DependencyProperty.UnsetValue)
+			return ReferenceEquals(converted, Binding.DoNothing)
+				|| ReferenceEquals(converted, DependencyProperty.UnsetValue)
 				? null
 				: converted;
 		}
@@ -68,10 +69,9 @@ internal sealed class TriggerBindingSource : BindingEngine.IContextListener, IDi
 		_changed();
 	}
 
-	string? BindingEngine.IContextListener.ElementName => _binding.ElementName;
+	DependencyObject? BindingEngine.IContextListener.Target => _target;
 
-	bool BindingEngine.IContextListener.IsUnder(DependencyObject ancestor) =>
-		BindingTarget.IsUnder(_target, ancestor);
+	string? BindingEngine.IContextListener.ElementName => _binding.ElementName;
 
 	void BindingEngine.IContextListener.ReResolve()
 	{

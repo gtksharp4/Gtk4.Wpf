@@ -293,9 +293,8 @@ properties.** They belong to `docs/plans/ui-automation.md`. They block DataBindi
      `ImageSource`, so `RenderTargetBitmap.Freeze`).
    - Involved: SlidePuzzleDemo (`DocumentViewerBase.IsMasterPage`; it still needs track 3) and FontDialogDemo
      (`TextDecorationCollection.Freeze`; it still needs track 3).
-   - State: 4 commits, 37 behind `main`, unreviewed, not sample-measured. `06cd79ce` ("TextRange edits on a detached
-     List") overlaps the Round 57 review fix in `97277fb2`. Rebase onto `main`, drop it if it is equivalent, review
-     the rest, then gate on the 197 plus the 6 targets.
+   - State: re-applied onto `main` in Round 60 (lane B) without `06cd79ce`, whose detached-List fix `main` already has,
+     reviewed and fixed (see the Round 60 hand-offs for the remaining walls of the 6 targets).
    - Owns: `Documents/**` except `Documents/Hyperlink.cs` and `Documents/Adorner*.cs`, `Media/Imaging/**`,
      `Media/ImageSource.cs`, `Media/DrawingImage.cs`, new `System.Windows.Xps/**`, and
      `Controls/Primitives/DocumentViewerBase*.cs`.
@@ -332,6 +331,40 @@ properties.** They belong to `docs/plans/ui-automation.md`. They block DataBindi
      `Controls/ItemsControl*.cs`, `Controls/ToolTipService*.cs`, `Input/FocusManager*.cs`,
      `Controls/ContentPresenter*.cs`, `Navigation/RequestNavigateEventArgs.cs`, and `Window*.cs`.
 
+**Round 60 (lane B) hand-offs.** Tracks 2 and 4 are in `lane/b` (the documents/imaging tail re-applied from `gf57b`,
+and the binding engine). The walls below were measured after that round. None of them is in lane B's files.
+
+- **For lane C (MarkupCompiler and `XamlValueConverter`; notes only, no code was written in lane B):**
+  - Register `Int32RectConverter` and `PixelFormatConverter` in `XamlValueConverter`, add `Int32Rect` and `PixelFormat`
+    to the MarkupCompiler `ConverterBackedStructs` list (a drift test enforces the mirror), then remove both types from
+    the Round49a audited list in `Round49aConverterTests`.
+  - ParticlesDemo throws a `NullReferenceException` on an `x:Name` inside a `Model3D` tree (generated code).
+  - AnimationExamples now gets past the binding wall and stops on "Cannot find the element named
+    TextEffectRotateTransform": an `x:Name` inside `TextEffect.Transform` is not registered in the name scope.
+- **For lane A:**
+  - DocumentMerge needs `UIElement.TranslatePoint`.
+  - PhotoStoreDemo now builds but exits: `AdornerLayer.GetAdornerLayer(CurrentPhoto)` returns null (`MainWindow.cs:38`).
+    The `AddVisualChild` and `Rect.Size`/`Rect.Location` walls are gone.
+  - SlidePuzzleDemo needs a typed `SolidColorBrush.Clone()` (`PuzzleGrid.cs:216`).
+  - FontDialogDemo needs `TextBlock.ContentStart`/`ContentEnd` and a `RoutedEventHandler`-typed
+    `TextBox.SelectionChanged`.
+- **Known documents/imaging gaps (lane B, not scheduled):**
+  - `DocumentPageView` does not paint a `FixedPage`; only `DocumentViewer` hosts one, as a widget.
+  - `TransformedBitmap` handles only 90-degree rotations and scales.
+  - `CroppedBitmap`, `FormatConvertedBitmap` and `TransformedBitmap` do not follow later pixel changes in their
+    `Source`.
+  - XPS resource-dictionary parts are copied verbatim by `CopyPage`; only the page's own references are rewritten.
+  - Brushes returned by `Brushes.*` are new, unfrozen instances here (WPF returns frozen shared ones).
+- **Binding engine gaps (lane B, not scheduled):**
+  - A freezable shared by several holders has no inheritance context, as in WPF. A binding on it resolves only when
+    its context comes from one holder or from a `ResourceDictionary` owner.
+  - A single-segment path to a non-dependency property of an element source is read once.
+- **Rejected in the Round 60 triage: the null-owner `InvalidOperationException` in `TextTreeEdit.Split.cs`.** Not a
+  defect. After dropping `06cd79ce`, `main`'s detached-`List` fix (Round 57, `2f4a566d`) covers
+  `ListItemCollection.Remove`/`Clear`, and the `ListItemCollectionClear` tests pass in the merged lane (975 passed). The
+  null owner has no reachable path: a paragraph in a table cell fails earlier with "The element is not in a text
+  container". There is no failing test and no genuine delta to port.
+
 **Lanes (three in parallel, two tracks each, file-disjoint):**
 
 | Lane | Tracks | Only | Boundary to watch |
@@ -342,8 +375,8 @@ properties.** They belong to `docs/plans/ui-automation.md`. They block DataBindi
 
 Held branches:
 
-- **`gf57b/documents-imaging-tail` (unmerged, 4 commits, 37 behind): 4 samples only, 2 involved.** This is track 2.
-  Land it first in lane B.
+- **`gf57b/documents-imaging-tail`: re-applied in Round 60 (lane B)** (3 of its 4 commits, onto `main`). The old
+  branch ref is superseded; delete it once `lane/b` is merged.
 - **`gf52b/content-bindings-sweep`: merged** (`b25bc71e`, before `270cdb7e`). The branch ref is gone. Nothing to do.
 - **`gf46/input-focus` (held, 6 commits, 182 behind): 0 samples.** Every Input and Commands app builds and runs. What
   remains is focus-transaction behaviour, owned by the focus-behaviour design. It overlaps track 6 on

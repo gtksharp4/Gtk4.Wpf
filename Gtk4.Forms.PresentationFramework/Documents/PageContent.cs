@@ -32,15 +32,18 @@ public sealed class PageContent : FrameworkElement, IAddChild, IUriContext
 	}
 
 	/// <summary>
-	/// The page, or null when it has not been loaded or added. Setting it replaces the logical child.
+	/// The page, or null when it has not been loaded or added. It can be set only once.
 	/// </summary>
-	/// <exception cref="InvalidOperationException">The page content has a <see cref="Source"/>.</exception>
+	/// <exception cref="ArgumentNullException">The value is null.</exception>
+	/// <exception cref="InvalidOperationException">The page content already has a child.</exception>
 	public FixedPage? Child
 	{
 		get => _child;
 		set
 		{
-			if (Source != null)
+			if (value == null)
+				throw new ArgumentNullException(nameof(value));
+			if (_child != null)
 				throw new InvalidOperationException("A PageContent can have only one page.");
 			SetChild(value);
 		}
@@ -97,7 +100,7 @@ public sealed class PageContent : FrameworkElement, IAddChild, IUriContext
 		if (!(value is FixedPage page))
 			throw new ArgumentException("A PageContent holds a FixedPage, not " + value.GetType().FullName + ".",
 				nameof(value));
-		if (_child != null || Source != null)
+		if (_child != null)
 			throw new InvalidOperationException("A PageContent can have only one page.");
 		SetChild(page);
 	}

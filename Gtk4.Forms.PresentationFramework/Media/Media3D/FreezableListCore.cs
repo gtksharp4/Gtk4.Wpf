@@ -93,6 +93,8 @@ sealed class FreezableListCore<T>
 		_changed();
 	}
 
+	internal bool CanFreezeItems() => !_holdsFreezables || Freezable.CanFreezeAll(_items);
+
 	internal void FreezeItems()
 	{
 		if (!_holdsFreezables) return;
