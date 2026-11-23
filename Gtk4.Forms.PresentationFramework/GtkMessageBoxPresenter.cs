@@ -83,7 +83,7 @@ sealed class GtkMessageBoxPresenter : IMessageBoxPresenter
 
 		win.Child = root;
 
-		// Closing the window with no button click maps to None.
+		// Closing the window with no button click maps to DefaultResult (Win32 dismissal).
 		win.CloseRequest += (_, _) => { responded = true; };
 
 		win.Present();
@@ -102,12 +102,12 @@ sealed class GtkMessageBoxPresenter : IMessageBoxPresenter
 	/// <summary>
 	/// Maps the response index (assigned during button creation) back to a
 	/// <see cref="MessageBoxResult"/> via the button label at that index.
-	/// A negative index means the window was closed without a button click.
+	/// A negative index means the window was closed without a click: <see cref="MessageBoxButtonMapping.DefaultResult"/>.
 	/// </summary>
 	internal static MessageBoxResult MapResponse(int responseIndex, MessageBoxButton button)
 	{
 		if (responseIndex < 0)
-			return MessageBoxResult.None;
+			return MessageBoxButtonMapping.DefaultResult(button);
 
 		var labels = MessageBoxButtonMapping.ButtonLabels(button);
 		if (responseIndex >= labels.Count)
@@ -117,17 +117,14 @@ sealed class GtkMessageBoxPresenter : IMessageBoxPresenter
 	}
 
 	/// <summary>Maps the WPF message image to a themed icon name, or null for none.</summary>
+	/// <remarks>Stop/Error/Hand, Warning/Exclamation and Information/Asterisk share enum values.</remarks>
 	internal static string? MapIconName(MessageBoxImage icon) =>
 		icon switch
 		{
-			MessageBoxImage.Error or
-				MessageBoxImage.Stop or
-				MessageBoxImage.Hand        => "dialog-error",
-			MessageBoxImage.Warning or
-				MessageBoxImage.Exclamation => "dialog-warning",
+			MessageBoxImage.Error       => "dialog-error",
+			MessageBoxImage.Warning     => "dialog-warning",
 			MessageBoxImage.Question    => "dialog-question",
-			MessageBoxImage.Information or
-				MessageBoxImage.Asterisk    => "dialog-information",
+			MessageBoxImage.Information => "dialog-information",
 			_                           => null
 		};
 }
