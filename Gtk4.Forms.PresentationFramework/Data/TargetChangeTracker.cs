@@ -20,6 +20,7 @@ internal static class TargetChangeTracker
 		DependencyProperty dp,
 		PropertyChangedCallback callback)
 	{
+		if (!BindingTarget.IsElement(target)) { target.AddChangeHook(dp, callback); return; }
 		var list = _subs.GetOrCreateValue(target);
 		list.Add((dp, callback));
 	}
@@ -29,6 +30,7 @@ internal static class TargetChangeTracker
 		DependencyProperty dp,
 		PropertyChangedCallback callback)
 	{
+		if (!BindingTarget.IsElement(target)) { target.RemoveChangeHook(dp, callback); return; }
 		if (!_subs.TryGetValue(target, out var list)) return;
 		list.RemoveAll(e => ReferenceEquals(e.dp, dp) && ReferenceEquals(e.cb, callback));
 	}

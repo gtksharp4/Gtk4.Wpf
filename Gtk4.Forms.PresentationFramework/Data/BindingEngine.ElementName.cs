@@ -43,14 +43,21 @@ internal static partial class BindingEngine
 	internal static void NameScopeChanged(string? name)
 	{
 		foreach (var record in SnapshotElementNameRecords())
-			if (name == null || record.ElementName == name) record.ReResolveElementName();
+			if (record.ElementName != null && (name == null || record.ElementName == name)) record.ReResolve();
+	}
+
+	/// <summary>The data context of <paramref name="mentor"/> changed: refresh the non-element bindings it serves.</summary>
+	static void RefreshMentored(DependencyObject mentor)
+	{
+		foreach (var record in SnapshotElementNameRecords())
+			if (record.UsesMentorDataContext(mentor)) record.Activate();
 	}
 
 	/// <summary>The tree around <paramref name="changed"/> changed: re-resolve bindings in its subtree.</summary>
 	internal static void TreeChanged(DependencyObject changed)
 	{
 		foreach (var record in SnapshotElementNameRecords())
-			if (record.IsTargetUnder(changed)) record.ReResolveElementName();
+			if (record.IsTargetUnder(changed)) record.ReResolve();
 	}
 
 	internal sealed partial class BindingRecord
@@ -59,18 +66,24 @@ internal static partial class BindingEngine
 
 		internal string? ElementName => _binding.ElementName;
 
+		internal bool UsesMentorDataContext(DependencyObject mentor) =>
+			UsesDataContext && _targetRef.TryGetTarget(out var t) && !BindingTarget.IsElement(t)
+			&& ReferenceEquals(BindingTarget.MentorOf(t), mentor);
+
 		internal bool IsTargetUnder(DependencyObject ancestor)
 		{
 			if (!_targetRef.TryGetTarget(out var target)) return false;
-			for (var current = target; current != null; current = current.InheritanceParent)
+			for (var current = target; current != null; current = current.ContextParent)
 				if (ReferenceEquals(current, ancestor)) return true;
 			return false;
 		}
 
-		internal void ReResolveElementName()
+		internal void ReResolve()
 		{
 			if (!_targetRef.TryGetTarget(out var target)) return;
-			if (!ReferenceEquals(BindingTarget.FindName(target, _binding.ElementName!), _elementSource)) Activate();
+			if (_binding.ElementName == null
+			    || !ReferenceEquals(BindingTarget.FindName(target, _binding.ElementName), _elementSource))
+				Activate();
 		}
 	}
 }

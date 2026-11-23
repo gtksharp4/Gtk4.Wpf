@@ -45,8 +45,12 @@ public partial class FrameworkContentElement : ContentElement
 	/// <summary>Gets or sets the local resource dictionary.</summary>
 	public ResourceDictionary Resources
 	{
-		get => _resources ??= new ResourceDictionary();
-		set => _resources = value;
+		get => _resources ??= new ResourceDictionary { Owner = this };
+		set
+		{
+			_resources = value;
+			if (value != null) value.Owner = this;
+		}
 	}
 
 	/// <summary>Finds a resource in the logical parents, the hosting element and the application.</summary>

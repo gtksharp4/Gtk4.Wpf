@@ -53,7 +53,9 @@ public abstract partial class FrameworkElement : UIElement
 	// ── Resources ────────────────────────────────────────────────────────────
 
 	/// <summary>Local resource dictionary for this element.</summary>
-	public ResourceDictionary Resources { get; } = new ResourceDictionary();
+	public ResourceDictionary Resources => _resources ??= new ResourceDictionary { Owner = this };
+
+	ResourceDictionary? _resources;
 
 	// ── FindName ─────────────────────────────────────────────────────────────
 

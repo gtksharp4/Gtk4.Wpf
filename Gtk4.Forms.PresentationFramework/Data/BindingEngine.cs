@@ -79,7 +79,7 @@ internal static partial class BindingEngine
 			var record = new BindingRecord(target, dp, binding, expr);
 			expr.Record = record;
 			list.Add(record);
-			if (binding.ElementName != null) TrackElementName(record);
+			if (binding.ElementName != null || !BindingTarget.IsElement(target)) TrackElementName(record);
 			exprMap[dp] = expr;
 			record.Activate();
 			if (fe != null) BindingGroupEnlister.Enlist(fe, expr);

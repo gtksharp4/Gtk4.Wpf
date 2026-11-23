@@ -37,6 +37,7 @@ public partial class Storyboard
 			previous.Root.RemoveClock();
 			_runs.Remove(containingObject);
 		}
+		AdoptContext(containingObject);
 		var run = new Run { Root = (ClockGroup)CreateClock(isControllable), Controllable = isControllable };
 		BindClocks(run.Root, containingObject, (string?)GetValue(TargetNameProperty),
 			(DependencyObject?)GetValue(TargetProperty), (PropertyPath?)GetValue(TargetPropertyProperty),
