@@ -75,6 +75,12 @@ public class ImageSourceFreezableTests
 		var clone = rtb.Clone();
 		Assert.IsType<RenderTargetBitmap>(clone);
 		Assert.False(clone.IsFrozen);
+		var expected = new byte[64];
+		var actual = new byte[64];
+		rtb.CopyPixels(expected, 16, 0);
+		clone.CopyPixels(actual, 16, 0);
+		Assert.Equal(expected, actual);
+		Assert.Equal(255, actual[2]);
 		((RenderTargetBitmap)clone).Render(new DrawingVisual());
 		var original = new byte[64];
 		rtb.CopyPixels(original, 16, 0);
