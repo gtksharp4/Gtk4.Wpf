@@ -4,6 +4,7 @@ using System.ComponentModel.Design.Serialization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Navigation;
 using System.Windows.Media;
 using Gtk4.Forms.PresentationFramework.Tests.Lifecycle;
 using Gtk4.Forms.PresentationFramework.Tests.XamlBacked;
