@@ -10,15 +10,19 @@ public partial class DataGrid
 	{
 		if (Columns.Count > 0) return Columns;
 		if (!AutoGenerateColumns) return Array.Empty<DataGridColumn>();
+		return _autoColumns ??= GenerateColumns();
+	}
 
-		// Reflect public readable properties of first item.
+	// Reflects the public readable properties of the first item. Kept until the items change, so the columns
+	// (and the cells that name them) stay the same objects between calls.
+	List<DataGridColumn> GenerateColumns()
+	{
 		object? first = null;
 		if (ItemsSource != null)
 			foreach (var item in ItemsSource) { first = item; break; }
 
-		if (first == null) return Array.Empty<DataGridColumn>();
-
 		var cols = new List<DataGridColumn>();
+		if (first == null) return cols;
 		foreach (var prop in first.GetType().GetProperties(
 			         BindingFlags.Public | BindingFlags.Instance))
 		{
@@ -38,6 +42,8 @@ public partial class DataGrid
 		if (ItemsSource != null)
 			foreach (var item in ItemsSource)
 				_rows.Add(item);
+		_autoColumns = null;
+		_containersDirty = true;
 
 		if (_grid != null) RebuildGrid();
 		ExistingAutomationPeer?.NotifyChildrenChanged();
@@ -61,7 +67,7 @@ public partial class DataGrid
 		var cols = GetEffectiveColumns();
 		if (cols.Count == 0) return;
 
-		// Header row (with sort click handlers).
+		// Header row (with sort click handlers). Each header is a label: DataGridColumnHeader is object model only.
 		for (int c = 0; c < cols.Count; c++)
 		{
 			var col = cols[c];
@@ -72,28 +78,27 @@ public partial class DataGrid
 			AttachHeaderClick(hdr, col);
 		}
 
-		// Data rows.
-		int row = 1;
-		foreach (var item in _rows)
+		// Data rows: each GTK cell is the widget of a DataGridCell hosting a TextBlock.
+		var rows = RowContainers;
+		for (int r = 0; r < rows.Count; r++)
 		{
-			for (int c = 0; c < cols.Count; c++)
+			var cells = rows[r].Presenter!.Cells;
+			for (int c = 0; c < cells.Count; c++)
 			{
-				var cell = new Gtk.Label(cols[c].GetCellText(item));
+				var cell = cells[c].Widget;
 				cell.Hexpand = true;
-				cell.Xalign = 0.0f;
 				cell.AddCssClass("datagrid-cell");
-				_grid.Attach(cell, c, row, 1, 1);
+				_grid.Attach(cell, c, r + 1, 1, 1);
 			}
-			// Row click for selection — attach gesture to first cell.
-			var firstCell = _grid.GetChildAt(0, row);
-			if (firstCell != null)
+			// Row click for selection: the gesture sits on the first cell, once per cell.
+			if (cells.Count > 0 && !cells[0].RowClickWired)
 			{
-				var capturedItem = item;
+				cells[0].RowClickWired = true;
+				var capturedItem = rows[r].Item;
 				var click = new Gtk.GestureClick();
 				click.Pressed += (s, e) => SelectRow(capturedItem);
-				firstCell.AddController(click);
+				cells[0].Widget.AddController(click);
 			}
-			row++;
 		}
 	}
 }

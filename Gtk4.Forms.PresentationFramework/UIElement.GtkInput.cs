@@ -74,11 +74,11 @@ public abstract partial class UIElement
 		string text = KeyvalToString(keyval);
 		if (!string.IsNullOrEmpty(text))
 		{
-			var previewTI = new TextCompositionEventArgs(PreviewTextInputEvent, text);
+			var previewTI = new TextCompositionEventArgs(PreviewTextInputEvent, text, timestamp);
 			RaiseEvent(previewTI);
 			if (!previewTI.Handled)
 			{
-				var ti = new TextCompositionEventArgs(TextInputEvent, text);
+				var ti = new TextCompositionEventArgs(TextInputEvent, text, timestamp);
 				RaiseEvent(ti);
 			}
 		}

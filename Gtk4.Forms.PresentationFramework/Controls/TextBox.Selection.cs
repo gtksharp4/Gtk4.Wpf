@@ -60,7 +60,7 @@ public partial class TextBox
 			// Re-clamp SelectionLength so start+length never exceeds text end.
 			_selectionLength = Math.Max(0, Math.Min(_selectionLength, Text.Length - _selectionStart));
 			SyncSelectionToWidget();
-			SelectionChanged?.Invoke(this, EventArgs.Empty);
+			RaiseSelectionChangedEvent();
 		}
 	}
 
@@ -74,7 +74,7 @@ public partial class TextBox
 			if (_selectionLength == value) return;
 			_selectionLength = value;
 			SyncSelectionToWidget();
-			SelectionChanged?.Invoke(this, EventArgs.Empty);
+			RaiseSelectionChangedEvent();
 		}
 	}
 
@@ -100,7 +100,7 @@ public partial class TextBox
 			_selectionStart  = insertionPoint;
 			_selectionLength = 0;
 			SyncSelectionToWidget();
-			SelectionChanged?.Invoke(this, EventArgs.Empty);
+			RaiseSelectionChangedEvent();
 		}
 	}
 
@@ -130,7 +130,7 @@ public partial class TextBox
 		_selectionStart  = start;
 		_selectionLength = length;
 		SyncSelectionToWidget();
-		SelectionChanged?.Invoke(this, EventArgs.Empty);
+		RaiseSelectionChangedEvent();
 	}
 
 	/// <summary>Selects all text.</summary>
@@ -139,7 +139,7 @@ public partial class TextBox
 		_selectionStart  = 0;
 		_selectionLength = Text.Length;
 		SyncSelectionToWidget();
-		SelectionChanged?.Invoke(this, EventArgs.Empty);
+		RaiseSelectionChangedEvent();
 	}
 
 	/// <summary>Clears the text.</summary>

@@ -2,12 +2,15 @@ namespace System.Windows;
 
 /// <summary>Represents the weight of a typeface.</summary>
 [System.ComponentModel.TypeConverter(typeof(FontWeightConverter))]
-public struct FontWeight : IEquatable<FontWeight>
+public struct FontWeight : IEquatable<FontWeight>, IFormattable
 {
-	/// <summary>Numeric weight value (100–900, matching CSS font-weight).</summary>
-	public int Weight { get; }
+	// 0 means "not set", which WPF treats as Normal (400).
+	readonly int _weight;
 
-	internal FontWeight(int weight) { Weight = weight; }
+	/// <summary>Numeric weight value (1..999); a default-constructed value reads as Normal (400).</summary>
+	public int Weight => _weight == 0 ? 400 : _weight;
+
+	internal FontWeight(int weight) { _weight = weight; }
 
 	/// <summary>Creates a weight from an OpenType value in 1..999.</summary>
 	/// <exception cref="ArgumentOutOfRangeException">Value is outside 1..999.</exception>
@@ -18,6 +21,9 @@ public struct FontWeight : IEquatable<FontWeight>
 		return new FontWeight(weightValue);
 	}
 
+	/// <summary>Compares two weights; negative when <paramref name="left"/> is lighter.</summary>
+	public static int Compare(FontWeight left, FontWeight right) => left.Weight.CompareTo(right.Weight);
+
 	/// <inheritdoc/>
 	public bool Equals(FontWeight other) => Weight == other.Weight;
 	/// <inheritdoc/>
@@ -25,14 +31,43 @@ public struct FontWeight : IEquatable<FontWeight>
 	/// <inheritdoc/>
 	public override int GetHashCode() => Weight;
 	/// <inheritdoc/>
-	public static bool operator ==(FontWeight a, FontWeight b) => a.Weight == b.Weight;
+	public static bool operator ==(FontWeight left, FontWeight right) => Compare(left, right) == 0;
 	/// <inheritdoc/>
-	public static bool operator !=(FontWeight a, FontWeight b) => a.Weight != b.Weight;
-	/// <summary>Returns the OpenType weight (1..999); a default-constructed value is Normal (400).</summary>
-	public int ToOpenTypeWeight() => Weight == 0 ? 400 : Weight;
+	public static bool operator !=(FontWeight left, FontWeight right) => Compare(left, right) != 0;
+	/// <summary>Whether <paramref name="left"/> is lighter than <paramref name="right"/>.</summary>
+	public static bool operator <(FontWeight left, FontWeight right) => Compare(left, right) < 0;
+	/// <summary>Whether <paramref name="left"/> is lighter than or equal to <paramref name="right"/>.</summary>
+	public static bool operator <=(FontWeight left, FontWeight right) => Compare(left, right) <= 0;
+	/// <summary>Whether <paramref name="left"/> is heavier than <paramref name="right"/>.</summary>
+	public static bool operator >(FontWeight left, FontWeight right) => Compare(left, right) > 0;
+	/// <summary>Whether <paramref name="left"/> is heavier than or equal to <paramref name="right"/>.</summary>
+	public static bool operator >=(FontWeight left, FontWeight right) => Compare(left, right) >= 0;
 
-	/// <inheritdoc/>
-	public override string ToString() => Weight.ToString();
+	/// <summary>Returns the OpenType weight (1..999); a default-constructed value is Normal (400).</summary>
+	public int ToOpenTypeWeight() => Weight;
+
+	/// <summary>Returns the WPF name (Thin..ExtraBlack) or the number for other weights.</summary>
+	public override string ToString() => ConvertToString(null, null);
+
+	string IFormattable.ToString(string? format, IFormatProvider? provider) => ConvertToString(format, provider);
+
+	string ConvertToString(string? format, IFormatProvider? provider)
+	{
+		switch (Weight)
+		{
+			case 100: return "Thin";
+			case 200: return "ExtraLight";
+			case 300: return "Light";
+			case 400: return "Normal";
+			case 500: return "Medium";
+			case 600: return "SemiBold";
+			case 700: return "Bold";
+			case 800: return "ExtraBold";
+			case 900: return "Black";
+			case 950: return "ExtraBlack";
+			default: return Weight.ToString(provider);
+		}
+	}
 }
 
 /// <summary>Provides predefined <see cref="FontWeight"/> values.</summary>
