@@ -9,13 +9,14 @@ public class SystemColorsAccentTests
 	[Fact]
 	public void Accent_colours_match_the_windows_default_palette()
 	{
-		Assert.Equal(Color.FromRgb(0, 120, 215), SystemColors.AccentColor);
+		Assert.Equal(Color.FromRgb(0, 120, 212), SystemColors.AccentColor);
 		Assert.Equal(Color.FromRgb(58, 150, 221), SystemColors.AccentColorLight1);
 		Assert.Equal(Color.FromRgb(118, 185, 237), SystemColors.AccentColorLight2);
 		Assert.Equal(Color.FromRgb(167, 216, 255), SystemColors.AccentColorLight3);
 		Assert.Equal(Color.FromRgb(0, 90, 158), SystemColors.AccentColorDark1);
 		Assert.Equal(Color.FromRgb(0, 78, 140), SystemColors.AccentColorDark2);
 		Assert.Equal(Color.FromRgb(0, 66, 117), SystemColors.AccentColorDark3);
+		Assert.Equal(Color.FromRgb(0, 120, 212), SystemColors.AccentColorBrush.Color);
 	}
 
 	[Fact]

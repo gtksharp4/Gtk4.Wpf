@@ -180,4 +180,19 @@ public class KeyboardFocusEventTests : WpfGtkTestBase
 		Assert.Equal(7, e.Timestamp);
 	});
 
+
+	[Fact]
+	public void The_event_Timestamp_is_the_Environment_TickCount_at_the_focus_change() => Run(() =>
+	{
+		var a = new Button();
+		var panel = Panel(a);
+		int stamp = 0;
+		a.GotKeyboardFocus += (_, e) => stamp = e.Timestamp;
+		int before = Environment.TickCount;
+		a.Focus();
+		int after = Environment.TickCount;
+		Assert.True(unchecked(stamp - before) >= 0 && unchecked(after - stamp) >= 0);
+		Assert.NotNull(panel);
+		a.SetFocusedInternal(false);
+	});
 }

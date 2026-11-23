@@ -123,4 +123,36 @@ public class ItemsPanelTemplateContentTests : WpfGtkTestBase
 		template.Content = null;
 		Assert.False(template.HasContent);
 	});
+
+	[Fact]
+	public void A_shared_Content_panel_backs_only_the_first_control_the_second_uses_the_default_stack() => Run(() =>
+	{
+		var shared = new ItemsPanelTemplate { Content = new WrapPanel() };
+		var a = new ItemsControl { ItemsPanel = shared, ItemsSource = new[] { "a1", "a2" } };
+		var b = new ItemsControl { ItemsPanel = shared, ItemsSource = new[] { "b1", "b2" } };
+		var host = new StackPanel();
+		host.Children.Add(a);
+		host.Children.Add(b);
+		_ = host.Widget;
+		var wrap = Assert.IsType<WrapPanel>(a.HostedItemsPanel);
+		Assert.Equal(2, wrap.Children.Count);
+		Assert.Same(a, wrap.LogicalParent);
+		Assert.Null(b.HostedItemsPanel);
+		var container = b.ItemContainerGenerator.ContainerFromIndex(1);
+		Assert.NotNull(container);
+		Assert.Same(b, ((FrameworkElement)container!).LogicalParent);
+	});
+
+	[Fact]
+	public void Seal_and_IsSealed_live_on_FrameworkTemplate()
+	{
+		var isSealed = typeof(FrameworkTemplate).GetProperty("IsSealed");
+		Assert.NotNull(isSealed);
+		Assert.True(isSealed!.GetMethod!.IsPublic);
+		Assert.True(typeof(FrameworkTemplate).GetMethod("Seal", Type.EmptyTypes)!.IsPublic);
+		var template = new ControlTemplate();
+		Assert.False(template.IsSealed);
+		template.Seal();
+		Assert.True(template.IsSealed);
+	}
 }

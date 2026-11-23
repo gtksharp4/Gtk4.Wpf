@@ -4,12 +4,13 @@ namespace System.Windows;
 
 /// <summary>
 /// The .NET 9 accent family. GTK 4 exposes no queryable accent colour without the obsolete
-/// <c>StyleContext</c>, so the values are the Windows default blue accent palette (the UISettings
-/// Accent, AccentLight1..3 and AccentDark1..3 values of an unmodified Windows 10 install).
+/// <c>StyleContext</c>, so <c>AccentColor</c> is the default accent of dotnet/wpf's <c>AccentColorHelper</c>
+/// (#0078D4). The Light1..3 and Dark1..3 shades are the Windows default palette (UISettings on an unmodified
+/// install), not values sourced from WPF.
 /// </summary>
 static class SystemAccentPalette
 {
-	internal static readonly SystemColorEntry Accent = new SystemColorEntry("AccentColor", 0, 120, 215);
+	internal static readonly SystemColorEntry Accent = new SystemColorEntry("AccentColor", 0, 120, 212);
 	internal static readonly SystemColorEntry Light1 = new SystemColorEntry("AccentColorLight1", 58, 150, 221);
 	internal static readonly SystemColorEntry Light2 = new SystemColorEntry("AccentColorLight2", 118, 185, 237);
 	internal static readonly SystemColorEntry Light3 = new SystemColorEntry("AccentColorLight3", 167, 216, 255);

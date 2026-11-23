@@ -11,13 +11,13 @@ public class DataGridCellsPresenter : ItemsControl
 {
 	readonly List<DataGridCell> _cells = new List<DataGridCell>();
 	List<DataGridColumn> _columns = new List<DataGridColumn>();
-	ItemContainerGenerator? _generator;
 
 	/// <summary>Gets the row item the presenter shows.</summary>
 	public object? Item { get; internal set; }
 
-	/// <summary>Gets the generator that maps the columns to their cells.</summary>
-	public new ItemContainerGenerator ItemContainerGenerator => _generator ??= new ItemContainerGenerator(new CellHost(this));
+	/// <summary>Maps the columns to their cells (instead of items to containers).</summary>
+	internal override ItemContainerGenerator CreateItemContainerGenerator() =>
+		new ItemContainerGenerator(new CellHost(this));
 
 	internal IReadOnlyList<DataGridCell> Cells => _cells;
 
@@ -33,16 +33,12 @@ public class DataGridCellsPresenter : ItemsControl
 		foreach (var column in columns)
 		{
 			var cell = new DataGridCell { Column = column, RowItem = Item, LogicalParent = this };
-			cell.IsReadOnly = column.IsReadOnly || grid.IsReadOnly;
-			var style = column.CellStyle ?? grid.CellStyle;
-			if (style != null) cell.Style = style;
-			else cell.ApplyImplicitStyle();
+			grid.ApplyCellSettings(cell);
 			cell.Content = new TextBlock { Text = column.GetCellText(Item) };
 			cell.GotKeyboardFocus += (s, e) => grid.CurrentCell = new DataGridCellInfo(cell);
 			_cells.Add(cell);
 		}
 	}
-
 
 	sealed class CellHost : IContainerHost
 	{

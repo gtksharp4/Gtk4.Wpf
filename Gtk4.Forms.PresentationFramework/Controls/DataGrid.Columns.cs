@@ -27,11 +27,13 @@ public partial class DataGrid
 			         BindingFlags.Public | BindingFlags.Instance))
 		{
 			if (!prop.CanRead) continue;
-			cols.Add(new DataGridTextColumn
+			var column = new DataGridTextColumn
 			{
 				Header = prop.Name,
 				Binding = new Windows.Data.Binding(prop.Name),
-			});
+			};
+			Own(column);
+			cols.Add(column);
 		}
 		return cols;
 	}
@@ -42,6 +44,8 @@ public partial class DataGrid
 		if (ItemsSource != null)
 			foreach (var item in ItemsSource)
 				_rows.Add(item);
+		if (_autoColumns != null)
+			foreach (var old in _autoColumns) Disown(old);
 		_autoColumns = null;
 		_containersDirty = true;
 

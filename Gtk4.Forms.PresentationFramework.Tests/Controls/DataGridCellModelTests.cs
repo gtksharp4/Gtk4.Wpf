@@ -153,4 +153,69 @@ public class DataGridCellModelTests : WpfGtkTestBase
 		Assert.Equal(new DataGridCellInfo(cell), grid.CurrentCell);
 		cell.SetFocusedInternal(false);
 	});
+
+	[Fact]
+	public void Equal_but_distinct_boxed_items_raise_CurrentCellChanged_once() => Run(() =>
+	{
+		var grid = Grid();
+		var column = grid.Columns[0];
+		int changed = 0;
+		grid.CurrentCellChanged += (_, _) => changed++;
+		grid.CurrentCell = new DataGridCellInfo(5, column);
+		grid.CurrentCell = new DataGridCellInfo(5, column);
+		Assert.Equal(1, changed);
+	});
+
+	[Fact]
+	public void The_presenter_generator_is_the_inherited_one_and_maps_columns_to_cells() => Run(() =>
+	{
+		var grid = new DataGrid { AutoGenerateColumns = false };
+		grid.Columns.Add(new DataGridTextColumn { Header = "A", Binding = new Binding("Type") });
+		grid.Columns.Add(new DataGridTextColumn { Header = "B", Binding = new Binding("Type") });
+		grid.ItemsSource = new[] { new Item() };
+		var row = (DataGridRow)grid.ItemContainerGenerator.ContainerFromIndex(0)!;
+		var presenter = row.Presenter!;
+		var cell = Assert.IsType<DataGridCell>(((ItemsControl)presenter).ItemContainerGenerator.ContainerFromIndex(1));
+		Assert.Same(grid.Columns[1], cell.Column);
+		Assert.Null(typeof(DataGridCellsPresenter).GetProperty("ItemContainerGenerator",
+			System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance
+			| System.Reflection.BindingFlags.DeclaredOnly));
+	});
+
+	static DataGridColumnHeader HeaderOf(DataGrid grid, int index) => grid.HeaderContainers[index];
+
+	[Fact]
+	public void Grid_and_column_cell_style_and_read_only_changes_reach_the_built_cell() => Run(() =>
+	{
+		var grid = Grid();
+		var cell = CellOf(grid);
+		var column = grid.Columns[0];
+		var styleA = Aligned(TextAlignment.Right);
+		var styleB = Aligned(TextAlignment.Center);
+		grid.CellStyle = styleA;
+		Assert.Same(styleA, cell.Style);
+		column.CellStyle = styleB;
+		Assert.Same(styleB, cell.Style);
+		Assert.Same(cell, CellOf(grid));
+		grid.IsReadOnly = true;
+		Assert.True(cell.IsReadOnly);
+		grid.IsReadOnly = false;
+		Assert.False(cell.IsReadOnly);
+		column.IsReadOnly = true;
+		Assert.True(cell.IsReadOnly);
+	});
+
+	[Fact]
+	public void Grid_and_column_header_style_changes_reach_the_built_header() => Run(() =>
+	{
+		var grid = Grid();
+		var header = HeaderOf(grid, 0);
+		var s = new Style(typeof(DataGridColumnHeader));
+		var s2 = new Style(typeof(DataGridColumnHeader));
+		grid.ColumnHeaderStyle = s;
+		Assert.Same(s, header.Style);
+		grid.Columns[0].HeaderStyle = s2;
+		Assert.Same(s2, header.Style);
+		Assert.Same(header, HeaderOf(grid, 0));
+	});
 }

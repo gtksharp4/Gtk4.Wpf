@@ -16,24 +16,25 @@ public struct DataGridCellInfo : IEquatable<DataGridCellInfo>
 	}
 
 	/// <summary>Creates the info of the cell of <paramref name="item"/> in <paramref name="column"/>.</summary>
-	/// <exception cref="ArgumentNullException">An argument is null.</exception>
+	/// <exception cref="ArgumentNullException"><paramref name="column"/> is null.</exception>
 	public DataGridCellInfo(object item, DataGridColumn column)
 	{
-		_item = item ?? throw new ArgumentNullException(nameof(item));
+		_item = item;
 		_column = column ?? throw new ArgumentNullException(nameof(column));
 	}
 
 	/// <summary>The row item, or <see cref="DependencyProperty.UnsetValue"/> for an invalid info.</summary>
-	public object Item => _item ?? DependencyProperty.UnsetValue;
+	public object Item => _column != null ? _item! : DependencyProperty.UnsetValue;
 
 	/// <summary>The column, or null for an invalid info.</summary>
 	public DataGridColumn? Column => _column;
 
 	/// <summary>Whether the info names a cell.</summary>
-	public bool IsValid => _item != null && _column != null;
+	public bool IsValid => _column != null;
 
 	/// <inheritdoc/>
-	public bool Equals(DataGridCellInfo other) => ReferenceEquals(_column, other._column) && _item == other._item;
+	public bool Equals(DataGridCellInfo other) =>
+		ReferenceEquals(_column, other._column) && Equals(_item, other._item);
 
 	/// <inheritdoc/>
 	public override bool Equals(object? obj) => obj is DataGridCellInfo other && Equals(other);

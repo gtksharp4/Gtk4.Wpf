@@ -32,11 +32,11 @@
                       ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" PrivateAssets="all" />
   </ItemGroup>
 
-  <!-- XAML-backed test windows are compiled by the real markup compiler, as in a converted WPF app. -->
   <ItemGroup>
     <EmbeddedResource Include="ResourceStreamData/embedded-sample.txt" />
   </ItemGroup>
 
+  <!-- XAML-backed test windows are compiled by the real markup compiler, as in a converted WPF app. -->
   <ItemGroup>
     <Page Include="XamlBacked\*.xaml" />
   </ItemGroup>

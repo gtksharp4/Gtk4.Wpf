@@ -17,7 +17,6 @@ public partial class TextBox : Primitives.TextBoxBase
 	/// <summary>Raised when <see cref="Text"/> changes.</summary>
 	public event EventHandler<TextChangedEventArgs>? TextChanged;
 
-
 	// ── Text DP ──────────────────────────────────────────────────────────────
 
 	/// <summary>The text in the box.</summary>

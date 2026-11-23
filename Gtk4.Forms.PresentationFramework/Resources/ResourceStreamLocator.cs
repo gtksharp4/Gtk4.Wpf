@@ -45,9 +45,13 @@ static class ResourceStreamLocator
 		return stream == null ? null : new StreamResourceInfo(stream, ContentType(relative));
 	}
 
+	internal static string LowerRelative(Uri uri) => Relative(uri).ToLowerInvariant();
+
 	static string Relative(Uri uri)
 	{
-		string text = uri.IsAbsoluteUri ? Uri.UnescapeDataString(uri.AbsolutePath) : Uri.UnescapeDataString(uri.OriginalString);
+		string text = uri.IsAbsoluteUri
+			? Uri.UnescapeDataString(uri.AbsolutePath)
+			: Uri.UnescapeDataString(uri.OriginalString);
 		text = text.Replace((char)92, '/').TrimStart('/');
 		int component = text.IndexOf(";component/", StringComparison.OrdinalIgnoreCase);
 		return component >= 0 ? text.Substring(component + ";component/".Length) : text;

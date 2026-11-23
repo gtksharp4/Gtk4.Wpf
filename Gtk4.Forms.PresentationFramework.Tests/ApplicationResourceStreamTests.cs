@@ -51,10 +51,14 @@ public class ApplicationResourceStreamTests : IDisposable
 	}
 
 	[Fact]
-	public void Missing_resource_returns_null()
+	public void Missing_resource_throws_IOException_like_WPF()
 	{
-		Assert.Null(Application.GetResourceStream(new Uri("nope/missing.bin", UriKind.Relative)));
-		Assert.Null(Application.GetResourceStream(new Uri("pack://application/nope.bin")));
+		var ex = Assert.Throws<IOException>(
+			() => Application.GetResourceStream(new Uri("no/such-resource.txt", UriKind.Relative)));
+		Assert.Contains("Cannot locate resource", ex.Message);
+		ex = Assert.Throws<IOException>(
+			() => Application.GetResourceStream(new Uri("pack://application/no/such.txt")));
+		Assert.Contains("Cannot locate resource", ex.Message);
 	}
 
 	[Fact]

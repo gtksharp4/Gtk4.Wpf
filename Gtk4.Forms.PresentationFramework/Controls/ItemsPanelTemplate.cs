@@ -18,11 +18,6 @@ public partial class ItemsPanelTemplate : FrameworkTemplate
 	/// <summary>Creates a template whose root is produced by <paramref name="factory"/> (must return a Panel).</summary>
 	public ItemsPanelTemplate(Func<UIElement> factory) => Factory = factory;
 
-	/// <summary>True once the template is sealed (the default <see cref="ItemsControl.ItemsPanelProperty"/> value).</summary>
-	public bool IsSealed { get; private set; }
-
-	internal void Seal() => IsSealed = true;
-
 	/// <summary>The panel type the template targets when one is hosted by an ItemsPresenter (WPF: ItemsPresenter).</summary>
 	internal static Type DefaultTargetType => typeof(Panel);
 

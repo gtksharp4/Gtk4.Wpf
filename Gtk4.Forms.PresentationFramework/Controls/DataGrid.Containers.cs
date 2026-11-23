@@ -14,10 +14,11 @@ public partial class DataGrid
 	ItemContainerGenerator? _generator;
 
 	/// <summary>Creates a grid.</summary>
-	public DataGrid() => Columns.CollectionChanged += (s, e) => _containersDirty = true;
+	public DataGrid() => Columns.CollectionChanged += OnColumnsChanged;
 
 	/// <summary>Gets the generator that maps the rows to their <see cref="DataGridRow"/> containers.</summary>
-	public ItemContainerGenerator ItemContainerGenerator => _generator ??= new ItemContainerGenerator(new RowHost(this));
+	public ItemContainerGenerator ItemContainerGenerator =>
+		_generator ??= new ItemContainerGenerator(new RowHost(this));
 
 	internal IReadOnlyList<DataGridRow> RowContainers
 	{
@@ -79,9 +80,7 @@ public partial class DataGrid
 	DataGridColumnHeader CreateHeader(DataGridColumn column)
 	{
 		var header = new DataGridColumnHeader { Column = column, Content = column.Header, LogicalParent = this };
-		var style = column.HeaderStyle ?? ColumnHeaderStyle;
-		if (style != null) header.Style = style;
-		else header.ApplyImplicitStyle();
+		ApplyHeaderSettings(header);
 		return header;
 	}
 

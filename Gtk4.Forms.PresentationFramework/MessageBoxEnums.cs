@@ -1,6 +1,10 @@
 namespace System.Windows;
 
 /// <summary>Specifies the button set shown by <see cref="MessageBox"/>.</summary>
+/// <remarks>
+/// AbortRetryIgnore, RetryCancel and CancelTryContinue come from WPF in .NET 10 (dotnet/wpf main), not .NET 9;
+/// the ordinals match WPF.
+/// </remarks>
 public enum MessageBoxButton
 {
 	/// <summary>OK button only.</summary>
@@ -43,6 +47,10 @@ public enum MessageBoxImage
 }
 
 /// <summary>Return value from <see cref="MessageBox.Show"/>. Win32 values.</summary>
+/// <remarks>
+/// Abort, Retry, Ignore, TryAgain and Continue come from WPF in .NET 10 (dotnet/wpf main), not .NET 9;
+/// the ordinals match WPF.
+/// </remarks>
 public enum MessageBoxResult
 {
 	/// <summary>No result or default close.</summary>

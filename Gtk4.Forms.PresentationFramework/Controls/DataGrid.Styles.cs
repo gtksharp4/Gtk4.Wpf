@@ -9,12 +9,17 @@ public partial class DataGrid
 
 	/// <summary>Identifies <see cref="CellStyle"/>. Default null.</summary>
 	public static readonly DependencyProperty CellStyleProperty = DependencyProperty.Register(
-		nameof(CellStyle), typeof(Style), typeof(DataGrid), new FrameworkPropertyMetadata(null));
+		nameof(CellStyle), typeof(Style), typeof(DataGrid),
+		new FrameworkPropertyMetadata(null, (d, e) => ((DataGrid)d).RefreshCellsAndHeaders()));
 
 	/// <summary>Identifies <see cref="IsReadOnly"/>. Default false.</summary>
 	public static readonly DependencyProperty IsReadOnlyProperty = DependencyProperty.Register(
 		nameof(IsReadOnly), typeof(bool), typeof(DataGrid),
-		new FrameworkPropertyMetadata(false, (d, e) => d.CoerceValue(CanUserAddRowsProperty)));
+		new FrameworkPropertyMetadata(false, (d, e) =>
+		{
+			d.CoerceValue(CanUserAddRowsProperty);
+			((DataGrid)d).RefreshCellsAndHeaders();
+		}));
 
 	// WPF: a read-only grid cannot add rows. The source-side checks (IEditableCollectionView.CanAddNew) are not
 	// modelled because the GTK grid keeps a plain snapshot of the items.
@@ -28,7 +33,9 @@ public partial class DataGrid
 		set => SetValue(CanUserAddRowsProperty, value);
 	}
 
-	/// <summary>Gets or sets the style of the cells; a column's own <see cref="DataGridColumn.CellStyle"/> wins.</summary>
+	/// <summary>
+	/// Gets or sets the style of the cells; a column's own <see cref="DataGridColumn.CellStyle"/> wins.
+	/// </summary>
 	public Style? CellStyle
 	{
 		get => (Style?)GetValue(CellStyleProperty);

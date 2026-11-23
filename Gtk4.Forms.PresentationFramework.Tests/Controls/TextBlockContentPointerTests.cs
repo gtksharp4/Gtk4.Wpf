@@ -93,9 +93,18 @@ public class TextBlockContentPointerTests : WpfGtkTestBase
 		var tb = new DerivedBlock { Text = "abc" };
 		Assert.Equal("abc", new TextRange(tb.ContentStart, tb.ContentEnd).Text);
 	}
+
+	[Fact(Skip = "lane B: TextPointer.Parent must map the TextBlockHost root to its TextBlock")]
+	public void The_pointers_Parent_is_the_TextBlock()
+	{
+		var tb = new TextBlock { Text = "hello" };
+		Assert.Same(tb, tb.ContentStart.Parent);
+		Assert.Same(tb, tb.ContentEnd.Parent);
+	}
 }
 
 static class InlineCollectionTestExtensions
 {
 	internal static Inline FirstInline(this InlineCollection inlines) => inlines[0];
+
 }

@@ -49,9 +49,28 @@ public partial class ItemsControl
 	{
 		var template = ItemsPanel;
 		if (template == null || ReferenceEquals(template, _defaultItemsPanel)) return;
-		_itemsPanelHost = template.CreatePanel();
+		var panel = template.CreatePanel();
+		// A single-instance template (ItemsPanelTemplate.Content) hands every control the same Panel, which one
+		// control already hosts: fall back to the default vertical box rather than steal it.
+		if (panel.LogicalParent != null && !ReferenceEquals(panel.LogicalParent, this))
+		{
+			ReportSharedPanel();
+			return;
+		}
+		_itemsPanelHost = panel;
 		_itemsPanelHost.LogicalParent = this;
 		_defaultBox!.Add(_itemsPanelHost.Widget);
+	}
+
+	static bool _sharedPanelReported;
+
+	static void ReportSharedPanel()
+	{
+		if (_sharedPanelReported) return;
+		_sharedPanelReported = true;
+		System.Diagnostics.Trace.WriteLine(
+			"ItemsPanelTemplate.Content is a single-instance template shared by several ItemsControls; "
+			+ "the others use the default stack panel. Use Factory instead.");
 	}
 
 	void UninstallItemsPanel()
