@@ -187,6 +187,7 @@ public static partial class XamlValueConverter
 
 		RegisterInputBuiltIns();
 		RegisterMedia3DBuiltIns();
+		RegisterImagingBuiltIns();
 
 		// Animation primitives
 		Register<Duration>(AnimationConverters.ParseDuration);
