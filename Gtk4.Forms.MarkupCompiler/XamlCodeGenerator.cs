@@ -873,6 +873,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				return;
 			}
 
+			if (TryEmitSweep4PropertyElement(w, propEl, xNs, parentVar, propName, ref counter)) return;
 			if (TryEmitMediaPropertyElement(w, propEl, xNs, parentVar, propName, ref counter)) return;
 
 			if (TryEmitItemCollection(w, propEl, xNs, parentVar, QualifyTypeName(ownerLocalName), propName,
@@ -1075,15 +1076,14 @@ namespace Gtk4.Forms.MarkupCompiler
 
 		/// <summary>
 		/// Emits code that constructs a <see cref="System.Windows.Style"/> from a
-		/// <c>&lt;Style x:Key="k" TargetType="T"&gt;</c> element and assigns it to
-		/// <c><paramref name="ownerVar"/>.Resources["k"]</c>.
+		/// <c>&lt;Style TargetType="T"&gt;</c> element and returns the local holding it;
+		/// <see cref="EmitStyleResource"/> files it under its key.
 		/// </summary>
-		void EmitStyleResource(
+		string EmitStyleObject(
 			IndentedWriter w,
 			XElement styleEl,
 			XNamespace xNs,
 			string ownerVar,
-			string key,
 			ref int counter)
 		{
 			string styleVar = $"__style{counter++}";
@@ -1123,9 +1123,7 @@ namespace Gtk4.Forms.MarkupCompiler
 				}
 			}
 
-			string styleKey = StyleResourceKey(key, targetTypeAttr);
-			if (styleKey != null)
-				w.Line($"{ownerVar}.Resources[{styleKey}] = {styleVar};");
+			return styleVar;
 		}
 
 		/// <summary>

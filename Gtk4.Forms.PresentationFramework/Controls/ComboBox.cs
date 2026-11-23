@@ -127,7 +127,9 @@ public partial class ComboBox : Selector
 		_dropDown.Model = _stringList;
 		_dropDown.AddNotification("selected", OnGtkSelectionChanged);
 		RebuildStringList(); // push any items set before widget creation
-		ApplySelectedIndex(SelectedIndex);
+		_updating = true; // GTK echoes the initial index back; WPF raises no SelectionChanged for it
+		try { ApplySelectedIndex(SelectedIndex); }
+		finally { _updating = false; }
 		SyncSelectedItemToIndex();
 		return IsEditable ? CreateEditableHost() : _dropDown;
 	}
