@@ -37,11 +37,8 @@ public partial class FrameworkElement
 
 	/// <summary>Attached DP: the tooltip for any <see cref="FrameworkElement"/>.</summary>
 	public static readonly DependencyProperty ToolTipProperty =
-		DependencyProperty.RegisterAttached(
-			"ToolTip",
-			typeof(object),
-			typeof(FrameworkElement),
-			new PropertyMetadata(null, OnToolTipChanged));
+		Controls.ToolTipService.ToolTipProperty.AddOwner(
+			typeof(FrameworkElement), new PropertyMetadata(null, OnToolTipChanged));
 
 	static void OnToolTipChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
