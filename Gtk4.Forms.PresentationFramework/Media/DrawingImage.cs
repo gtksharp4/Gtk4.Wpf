@@ -9,12 +9,32 @@ namespace System.Windows.Media;
 /// </remarks>
 public class DrawingImage : ImageSource
 {
+	Drawing? _drawing;
+
 	/// <summary>Creates an empty drawing image.</summary>
 	public DrawingImage() { }
 
 	/// <summary>Creates a drawing image over <paramref name="drawing"/>.</summary>
-	public DrawingImage(Drawing? drawing) => Drawing = drawing;
+	public DrawingImage(Drawing? drawing) => _drawing = drawing;
 
 	/// <summary>The drawing this image shows.</summary>
-	public Drawing? Drawing { get; set; }
+	/// <exception cref="InvalidOperationException">The image is frozen.</exception>
+	public Drawing? Drawing
+	{
+		get => _drawing;
+		set
+		{
+			ThrowIfFrozen();
+			_drawing = value;
+		}
+	}
+
+	/// <summary>Creates an unfrozen, independent copy of this image.</summary>
+	public new DrawingImage Clone() => (DrawingImage)base.Clone();
+
+	/// <summary>Creates an unfrozen, independent copy of this image using its current values.</summary>
+	public new DrawingImage CloneCurrentValue() => (DrawingImage)base.CloneCurrentValue();
+
+	/// <inheritdoc/>
+	protected override Freezable CreateInstanceCore() => new DrawingImage(_drawing);
 }

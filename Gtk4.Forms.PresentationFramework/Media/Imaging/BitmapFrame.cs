@@ -99,6 +99,10 @@ sealed class SourceBitmapFrame : BitmapFrame
 	public override ReadOnlyCollection<ColorContext>? ColorContexts { get; }
 
 	internal override byte[] GetPixelData() => _source.GetPixelData();
+
+	/// <inheritdoc/>
+	protected override Freezable CreateInstanceCore() =>
+		new SourceBitmapFrame(_source, Thumbnail, Metadata, ColorContexts, Decoder);
 }
 
 /// <summary>Writes metadata back to the file it was read from (WPF <c>InPlaceBitmapMetadataWriter</c>).</summary>

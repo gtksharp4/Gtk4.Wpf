@@ -153,6 +153,15 @@ public sealed class ListItemCollection : IEnumerable<ListItem>
 		return true;
 	}
 
+	/// <summary>Removes all list items.</summary>
+	public void Clear()
+	{
+		foreach (var item in _items)
+			ContentParenting.Release(_owner, item);
+		_items.Clear();
+		ContentParenting.Changed(_owner);
+	}
+
 	/// <inheritdoc/>
 	public IEnumerator<ListItem> GetEnumerator() => _items.GetEnumerator();
 

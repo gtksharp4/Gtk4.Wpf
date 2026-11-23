@@ -12,9 +12,17 @@ namespace System.Windows.Controls;
 public sealed class UIElementCollection : IList<UIElement>
 {
 	readonly List<UIElement> _items = new List<UIElement>();
-	readonly Panel _owner;
+	readonly Action<UIElement> _added;
+	readonly Action<UIElement> _removed;
 
-	internal UIElementCollection(Panel owner) => _owner = owner;
+	internal UIElementCollection(Panel owner) : this(owner.OnChildAdded, owner.OnChildRemoved) { }
+
+	/// <summary>Creates a collection for a non-panel owner (for example <c>FixedPage</c>).</summary>
+	internal UIElementCollection(Action<UIElement> added, Action<UIElement> removed)
+	{
+		_added = added;
+		_removed = removed;
+	}
 
 	/// <inheritdoc/>
 	public UIElement this[int index]
@@ -24,8 +32,8 @@ public sealed class UIElementCollection : IList<UIElement>
 		{
 			var old = _items[index];
 			_items[index] = value;
-			_owner.OnChildRemoved(old);
-			_owner.OnChildAdded(value);
+			_removed(old);
+			_added(value);
 		}
 	}
 
@@ -40,7 +48,7 @@ public sealed class UIElementCollection : IList<UIElement>
 	{
 		if (item == null) throw new ArgumentNullException(nameof(item));
 		_items.Add(item);
-		_owner.OnChildAdded(item);
+		_added(item);
 	}
 
 	/// <inheritdoc/>
@@ -48,14 +56,14 @@ public sealed class UIElementCollection : IList<UIElement>
 	{
 		if (item == null) throw new ArgumentNullException(nameof(item));
 		_items.Insert(index, item);
-		_owner.OnChildAdded(item);
+		_added(item);
 	}
 
 	/// <inheritdoc/>
 	public bool Remove(UIElement item)
 	{
 		var removed = _items.Remove(item);
-		if (removed) _owner.OnChildRemoved(item);
+		if (removed) _removed(item);
 		return removed;
 	}
 
@@ -64,14 +72,14 @@ public sealed class UIElementCollection : IList<UIElement>
 	{
 		var item = _items[index];
 		_items.RemoveAt(index);
-		_owner.OnChildRemoved(item);
+		_removed(item);
 	}
 
 	/// <inheritdoc/>
 	public void Clear()
 	{
 		foreach (var item in _items.ToArray())
-			_owner.OnChildRemoved(item);
+			_removed(item);
 		_items.Clear();
 	}
 

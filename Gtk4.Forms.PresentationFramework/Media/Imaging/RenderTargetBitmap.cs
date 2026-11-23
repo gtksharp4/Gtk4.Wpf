@@ -72,8 +72,10 @@ public sealed class RenderTargetBitmap : BitmapSource
 	/// Each call replaces the previous pixel data.
 	/// </remarks>
 	/// <param name="visual">The visual to render, or <see langword="null"/>.</param>
+	/// <exception cref="InvalidOperationException">The bitmap is frozen.</exception>
 	public void Render(Visual? visual)
 	{
+		ThrowIfFrozen();
 		int stride = PixelWidth * 4;
 		byte[] pixels = new byte[PixelHeight * stride];
 
@@ -110,6 +112,17 @@ public sealed class RenderTargetBitmap : BitmapSource
 		byte[] data = surface.Data;
 		int len = Math.Min(data.Length, pixels.Length);
 		Array.Copy(data, 0, pixels, 0, len);
+	}
+
+	/// <inheritdoc/>
+	protected override Freezable CreateInstanceCore() =>
+		new RenderTargetBitmap(PixelWidth, PixelHeight, DpiX, DpiY, Format);
+
+	/// <inheritdoc/>
+	protected override void CloneOverride(Freezable destination, bool currentValueOnly)
+	{
+		base.CloneOverride(destination, currentValueOnly);
+		((RenderTargetBitmap)destination)._pixels = (byte[]?)_pixels?.Clone();
 	}
 
 	internal override byte[] GetPixelData() => _pixels ?? new byte[PixelHeight * PixelWidth * 4];

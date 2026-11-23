@@ -76,4 +76,8 @@ sealed class MemoryBitmapSource : BitmapSource
 	}
 
 	internal override byte[] GetPixelData() => _data;
+
+	/// <inheritdoc/>
+	protected override Freezable CreateInstanceCore() =>
+		new MemoryBitmapSource(PixelWidth, PixelHeight, DpiX, DpiY, Format, Palette, (byte[])_data.Clone());
 }
