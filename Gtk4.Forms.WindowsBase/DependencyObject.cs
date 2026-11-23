@@ -55,6 +55,7 @@ public partial class DependencyObject : System.Windows.Threading.DispatcherObjec
 				if (!Equals(oldValues[i], newVal))
 					NotifyInheritedValueChanged(inheriting[i], oldValues[i], newVal);
 			}
+			InheritanceParentChangedHook?.Invoke(this);
 		}
 	}
 

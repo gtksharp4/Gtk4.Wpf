@@ -52,6 +52,7 @@ public abstract partial class FrameworkElement
 	internal void SetLoadedAndRaise(bool loaded)
 	{
 		_isLoaded = loaded;
+		Data.BindingEngine.TreeChanged(this);
 		RaiseEvent(new RoutedEventArgs(loaded ? LoadedEvent : UnloadedEvent) { Source = this });
 	}
 }
