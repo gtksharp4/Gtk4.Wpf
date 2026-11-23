@@ -15,11 +15,14 @@ internal static class MessageBoxButtonMapping
 	internal static IReadOnlyList<string> ButtonLabels(MessageBoxButton button) =>
 		button switch
 		{
-			MessageBoxButton.OK          => new[] { "_OK" },
-			MessageBoxButton.OKCancel    => new[] { "_OK", "_Cancel" },
-			MessageBoxButton.YesNo       => new[] { "_Yes", "_No" },
-			MessageBoxButton.YesNoCancel => new[] { "_Yes", "_No", "_Cancel" },
-			_                            => new[] { "_OK" }
+			MessageBoxButton.OK                => new[] { "_OK" },
+			MessageBoxButton.OKCancel          => new[] { "_OK", "_Cancel" },
+			MessageBoxButton.AbortRetryIgnore  => new[] { "_Abort", "_Retry", "_Ignore" },
+			MessageBoxButton.YesNoCancel       => new[] { "_Yes", "_No", "_Cancel" },
+			MessageBoxButton.YesNo             => new[] { "_Yes", "_No" },
+			MessageBoxButton.RetryCancel       => new[] { "_Retry", "_Cancel" },
+			MessageBoxButton.CancelTryContinue => new[] { "_Cancel", "_Try Again", "_Continue" },
+			_                                  => new[] { "_OK" }
 		};
 
 	/// <summary>
@@ -29,24 +32,31 @@ internal static class MessageBoxButtonMapping
 	internal static MessageBoxResult ResultFromLabel(string? label) =>
 		label switch
 		{
-			"_OK"     or "OK"     => MessageBoxResult.OK,
-			"_Cancel" or "Cancel" => MessageBoxResult.Cancel,
-			"_Yes"    or "Yes"    => MessageBoxResult.Yes,
-			"_No"     or "No"     => MessageBoxResult.No,
-			_                     => MessageBoxResult.None
+			"_OK"        or "OK"        => MessageBoxResult.OK,
+			"_Cancel"    or "Cancel"    => MessageBoxResult.Cancel,
+			"_Abort"     or "Abort"     => MessageBoxResult.Abort,
+			"_Retry"     or "Retry"     => MessageBoxResult.Retry,
+			"_Ignore"    or "Ignore"    => MessageBoxResult.Ignore,
+			"_Yes"       or "Yes"       => MessageBoxResult.Yes,
+			"_No"        or "No"        => MessageBoxResult.No,
+			"_Try Again" or "Try Again" => MessageBoxResult.TryAgain,
+			"_Continue"  or "Continue"  => MessageBoxResult.Continue,
+			_                           => MessageBoxResult.None
 		};
 
 	/// <summary>
-	/// Maps the default button (first) in <paramref name="button"/> to the expected
-	/// <see cref="MessageBoxResult"/> — used when a dialog is dismissed without a click.
+	/// The result of dismissing the dialog without a click, with Win32 semantics: Cancel when the
+	/// set has a Cancel button, OK for the OK-only set, otherwise <see cref="MessageBoxResult.None"/>
+	/// (Win32 does not allow dismissing Yes/No or Abort/Retry/Ignore).
 	/// </summary>
 	internal static MessageBoxResult DefaultResult(MessageBoxButton button) =>
 		button switch
 		{
-			MessageBoxButton.OK          => MessageBoxResult.OK,
-			MessageBoxButton.OKCancel    => MessageBoxResult.OK,
-			MessageBoxButton.YesNo       => MessageBoxResult.Yes,
-			MessageBoxButton.YesNoCancel => MessageBoxResult.Yes,
-			_                            => MessageBoxResult.None
+			MessageBoxButton.OK                => MessageBoxResult.OK,
+			MessageBoxButton.OKCancel          => MessageBoxResult.Cancel,
+			MessageBoxButton.YesNoCancel       => MessageBoxResult.Cancel,
+			MessageBoxButton.RetryCancel       => MessageBoxResult.Cancel,
+			MessageBoxButton.CancelTryContinue => MessageBoxResult.Cancel,
+			_                                  => MessageBoxResult.None
 		};
 }
