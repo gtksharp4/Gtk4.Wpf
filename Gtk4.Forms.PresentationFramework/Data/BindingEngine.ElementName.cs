@@ -81,13 +81,8 @@ internal static partial class BindingEngine
 			UsesDataContext && _targetRef.TryGetTarget(out var t) && !BindingTarget.IsElement(t)
 			&& ReferenceEquals(BindingTarget.MentorOf(t), mentor);
 
-		public bool IsUnder(DependencyObject ancestor)
-		{
-			if (!_targetRef.TryGetTarget(out var target)) return false;
-			for (var (current, steps) = ((DependencyObject?)target, 0); current != null && steps < 1000; current = current.ContextParent, steps++)
-				if (ReferenceEquals(current, ancestor)) return true;
-			return false;
-		}
+		public bool IsUnder(DependencyObject ancestor) =>
+			_targetRef.TryGetTarget(out var target) && BindingTarget.IsUnder(target, ancestor);
 
 		public void ReResolve()
 		{

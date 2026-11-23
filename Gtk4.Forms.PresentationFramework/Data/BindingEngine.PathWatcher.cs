@@ -55,7 +55,9 @@ internal sealed class PathWatcher : IDisposable
 		}
 		if (node is DependencyObject d)
 		{
-			var dp = name[0] == '(' ? BindingEngine.AttachedProperty(node, name) : BindingEngine.NamedProperty(node, name);
+			var dp = name[0] == '('
+				? BindingEngine.AttachedProperty(node, name)
+				: BindingEngine.NamedProperty(node, name);
 			if (dp == null) return;
 			PropertyChangedCallback callback = (o, e) => OnNodeChanged();
 			d.AddChangeHook(dp, callback);

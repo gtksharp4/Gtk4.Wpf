@@ -70,13 +70,8 @@ internal sealed class TriggerBindingSource : BindingEngine.IContextListener, IDi
 
 	string? BindingEngine.IContextListener.ElementName => _binding.ElementName;
 
-	bool BindingEngine.IContextListener.IsUnder(DependencyObject ancestor)
-	{
-		for (var (current, steps) = ((DependencyObject?)_target, 0); current != null && steps < 1000;
-			 current = current.ContextParent, steps++)
-			if (ReferenceEquals(current, ancestor)) return true;
-		return false;
-	}
+	bool BindingEngine.IContextListener.IsUnder(DependencyObject ancestor) =>
+		BindingTarget.IsUnder(_target, ancestor);
 
 	void BindingEngine.IContextListener.ReResolve()
 	{
