@@ -90,3 +90,4 @@ artifacts/
 gf-wpf-generated/
 /.claude/scheduled_tasks.lock
 /.claude/samples*
+/.claude/lane*
