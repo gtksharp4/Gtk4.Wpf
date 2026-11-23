@@ -38,7 +38,9 @@ public abstract partial class BitmapSource
 	/// <summary>True between BeginInit and EndInit of a derived bitmap; nothing is computed meanwhile.</summary>
 	internal bool IsInitializing { get; set; }
 
-	/// <summary>Computes the bitmap from its inputs; <see langword="null"/> for a bitmap that stores its pixels.</summary>
+	/// <summary>
+	/// Computes the bitmap from its inputs; <see langword="null"/> for a bitmap that stores its pixels.
+	/// </summary>
 	internal virtual RealizedBitmap? Realize() => null;
 
 	/// <summary>Drops the computed result; the next read computes it again.</summary>

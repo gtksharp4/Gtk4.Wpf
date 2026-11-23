@@ -13,11 +13,15 @@ public static class TextDecorations
 		return collection;
 	}
 
-	/// <summary>A single-entry collection containing an <see cref="TextDecorationLocation.Underline"/> decoration.</summary>
+	/// <summary>
+	/// A single-entry collection containing an <see cref="TextDecorationLocation.Underline"/> decoration.
+	/// </summary>
 	public static TextDecorationCollection Underline { get; } =
 		Frozen(TextDecorationLocation.Underline);
 
-	/// <summary>A single-entry collection containing a <see cref="TextDecorationLocation.Strikethrough"/> decoration.</summary>
+	/// <summary>
+	/// A single-entry collection containing a <see cref="TextDecorationLocation.Strikethrough"/> decoration.
+	/// </summary>
 	public static TextDecorationCollection Strikethrough { get; } =
 		Frozen(TextDecorationLocation.Strikethrough);
 

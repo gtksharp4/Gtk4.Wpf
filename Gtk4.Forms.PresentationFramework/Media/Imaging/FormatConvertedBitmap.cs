@@ -98,7 +98,10 @@ public sealed class FormatConvertedBitmap : BitmapSource, ISupportInitialize
 	/// <summary>Creates an unfrozen, independent copy of this bitmap using its current values.</summary>
 	public new FormatConvertedBitmap CloneCurrentValue() => (FormatConvertedBitmap)base.CloneCurrentValue();
 
-	internal override DependencyProperty[] InputProperties => new[] { SourceProperty, DestinationFormatProperty, DestinationPaletteProperty, AlphaThresholdProperty };
+	internal override DependencyProperty[] InputProperties => new[]
+	{
+		SourceProperty, DestinationFormatProperty, DestinationPaletteProperty, AlphaThresholdProperty,
+	};
 
 	/// <inheritdoc/>
 	protected override Freezable CreateInstanceCore() => new FormatConvertedBitmap();

@@ -44,7 +44,7 @@ public sealed partial class Glyphs
 		{
 			desc.Family = Family;
 			desc.AbsoluteSize = FontRenderingEmSize * PangoScale;
-			var layout = Pango.CairoHelper.CreateLayout(cr);
+			using var layout = Pango.CairoHelper.CreateLayout(cr);
 			layout.FontDescription = desc;
 			layout.SetText(UnicodeString);
 			cr.Save();

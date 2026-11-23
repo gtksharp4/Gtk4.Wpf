@@ -21,7 +21,6 @@ public enum TextDecorationLocation
 	Baseline,
 }
 
-
 /// <summary>
 /// Describes a single text decoration (underline, strikethrough, etc.). Freezable as in WPF; only
 /// <see cref="Location"/> is modelled (no pen, offset or unit properties).

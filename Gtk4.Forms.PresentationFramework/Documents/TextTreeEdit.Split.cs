@@ -13,7 +13,8 @@ static partial class TextTreeEdit
 	{
 		var lines = text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
 		DeleteRange(doc, start, end);
-		int at = new TextPointer(doc, start, LogicalDirection.Backward).GetInsertionPosition(LogicalDirection.Forward).Offset;
+		int at = new TextPointer(doc, start, LogicalDirection.Backward)
+			.GetInsertionPosition(LogicalDirection.Forward).Offset;
 		int after = InsertText(doc, at, lines[0], create: lines.Length > 1);
 		if (lines.Length == 1) return;
 
