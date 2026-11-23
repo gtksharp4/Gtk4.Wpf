@@ -1,25 +1,27 @@
+using System.Collections;
+using System.Collections.Generic;
 using System.Windows.Controls;
 using System.Windows.Markup;
 
 namespace System.Windows.Documents;
 
 /// <summary>
-/// A fixed-size page: a panel whose children sit at absolute positions given by the attached
+/// A fixed-size page: an element whose children sit at absolute positions given by the attached
 /// <see cref="LeftProperty"/>, <see cref="TopProperty"/>, <see cref="RightProperty"/> and
 /// <see cref="BottomProperty"/>. Mirrors WPF <c>FixedPage</c>.
 /// </summary>
-/// <remarks>
-/// Deviation: WPF derives <c>FixedPage</c> straight from <c>FrameworkElement</c>; here it derives from
-/// <see cref="Panel"/> (which is a <c>FrameworkElement</c>) to reuse the GTK child hosting. Panel's
-/// <c>Background</c> is the page background. <see cref="PrintTicket"/> is stored only.
-/// </remarks>
-public sealed partial class FixedPage : Panel, IUriContext
+/// <remarks><see cref="PrintTicket"/> is stored only.</remarks>
+[ContentProperty("Children")]
+public sealed partial class FixedPage : FrameworkElement, IAddChild, IUriContext
 {
 	Gtk.Fixed? _fixed;
 	Uri? _baseUri;
 
 	/// <summary>Creates an empty page.</summary>
-	public FixedPage() { }
+	public FixedPage() => Children = new UIElementCollection(OnChildAdded, OnChildRemoved);
+
+	/// <summary>The elements of the page, placed with the attached Left/Top/Right/Bottom properties.</summary>
+	public UIElementCollection Children { get; }
 
 	/// <summary>Gets or sets the print ticket of the page (stored only; no printing is performed).</summary>
 	public object? PrintTicket
@@ -43,6 +45,11 @@ public sealed partial class FixedPage : Panel, IUriContext
 
 	internal override bool IsWidgetCreated => _fixed != null;
 
+	internal override IEnumerable<UIElement> VisualChildren => Children;
+
+	/// <inheritdoc/>
+	protected internal override IEnumerator LogicalChildren => ((IEnumerable)Children).GetEnumerator();
+
 	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
@@ -53,11 +60,34 @@ public sealed partial class FixedPage : Panel, IUriContext
 		return _fixed;
 	}
 
-	/// <inheritdoc/>
-	protected override void AddChildWidget(UIElement child) => PlaceChild(child);
+	void OnChildAdded(UIElement child)
+	{
+		child.LogicalParent = this;
+		if (_fixed != null)
+			PlaceChild(child);
+	}
 
-	/// <inheritdoc/>
-	protected override void RemoveChildWidget(UIElement child) => _fixed!.Remove(child.Widget);
+	void OnChildRemoved(UIElement child)
+	{
+		child.LogicalParent = null;
+		_fixed?.Remove(child.Widget);
+	}
+
+	void IAddChild.AddChild(object value)
+	{
+		if (value == null)
+			throw new ArgumentNullException(nameof(value));
+		if (!(value is UIElement child))
+			throw new ArgumentException("A FixedPage holds UIElements, not " + value.GetType().FullName + ".",
+				nameof(value));
+		Children.Add(child);
+	}
+
+	void IAddChild.AddText(string text)
+	{
+		if (!string.IsNullOrWhiteSpace(text))
+			throw new ArgumentException("A FixedPage does not accept text.", nameof(text));
+	}
 
 	void PlaceChild(UIElement child)
 	{
