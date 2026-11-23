@@ -79,6 +79,7 @@ public abstract partial class BitmapSource
 		if (IsInitializing)
 			throw new InvalidOperationException("BeginInit was already called.");
 		IsInitializing = true;
+		UnlockInputs();
 	}
 
 	internal void EndInitCore()
@@ -87,6 +88,7 @@ public abstract partial class BitmapSource
 			throw new InvalidOperationException("EndInit requires a matching BeginInit.");
 		IsInitializing = false;
 		RealizeNow();
+		LockInputs();
 	}
 
 	/// <summary>Computes the result now, so invalid inputs throw at <c>EndInit</c> as in WPF.</summary>

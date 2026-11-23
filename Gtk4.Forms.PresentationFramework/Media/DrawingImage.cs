@@ -29,6 +29,12 @@ public class DrawingImage : ImageSource
 		}
 	}
 
+	/// <summary>Creates an unfrozen, independent copy of this image.</summary>
+	public new DrawingImage Clone() => (DrawingImage)base.Clone();
+
+	/// <summary>Creates an unfrozen, independent copy of this image using its current values.</summary>
+	public new DrawingImage CloneCurrentValue() => (DrawingImage)base.CloneCurrentValue();
+
 	/// <inheritdoc/>
 	protected override Freezable CreateInstanceCore() => new DrawingImage(_drawing);
 }

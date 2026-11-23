@@ -10,11 +10,13 @@ public sealed class CroppedBitmap : BitmapSource, ISupportInitialize
 {
 	/// <summary>Identifies the Source property.</summary>
 	public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
-		nameof(Source), typeof(BitmapSource), typeof(CroppedBitmap), new PropertyMetadata(null));
+		nameof(Source), typeof(BitmapSource), typeof(CroppedBitmap),
+		new PropertyMetadata(null, null, (d, v) => CoerceInput(d, SourceProperty, v)));
 
 	/// <summary>Identifies the SourceRect property.</summary>
 	public static readonly DependencyProperty SourceRectProperty = DependencyProperty.Register(
-		nameof(SourceRect), typeof(Int32Rect), typeof(CroppedBitmap), new PropertyMetadata(Int32Rect.Empty));
+		nameof(SourceRect), typeof(Int32Rect), typeof(CroppedBitmap),
+		new PropertyMetadata(Int32Rect.Empty, null, (d, v) => CoerceInput(d, SourceRectProperty, v)));
 
 	/// <summary>Creates an uninitialised bitmap; set the properties between BeginInit and EndInit.</summary>
 	public CroppedBitmap() { }
@@ -54,7 +56,16 @@ public sealed class CroppedBitmap : BitmapSource, ISupportInitialize
 	public void EndInit() => EndInitCore();
 
 	/// <inheritdoc/>
-	public override bool CanFreeze => !IsInitializing && base.CanFreeze;
+	public override bool CanFreeze => !IsInitializing && base.CanFreeze
+		&& CanFreezeInput(Source);
+
+	/// <summary>Creates an unfrozen, independent copy of this bitmap.</summary>
+	public new CroppedBitmap Clone() => (CroppedBitmap)base.Clone();
+
+	/// <summary>Creates an unfrozen, independent copy of this bitmap using its current values.</summary>
+	public new CroppedBitmap CloneCurrentValue() => (CroppedBitmap)base.CloneCurrentValue();
+
+	internal override DependencyProperty[] InputProperties => new[] { SourceProperty, SourceRectProperty };
 
 	/// <inheritdoc/>
 	protected override Freezable CreateInstanceCore() => new CroppedBitmap();
@@ -63,6 +74,7 @@ public sealed class CroppedBitmap : BitmapSource, ISupportInitialize
 	protected override void OnFreeze()
 	{
 		RealizeNow();
+		FreezeValue(Source);
 		base.OnFreeze();
 	}
 

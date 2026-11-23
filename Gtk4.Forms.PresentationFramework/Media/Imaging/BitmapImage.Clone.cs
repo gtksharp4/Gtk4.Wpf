@@ -5,6 +5,12 @@ public sealed partial class BitmapImage
 	/// <summary>Whether the bitmap can be frozen: not while <see cref="BeginInit"/> is open.</summary>
 	public override bool CanFreeze => !_initializing && base.CanFreeze;
 
+	/// <summary>Creates an unfrozen, independent copy of this bitmap.</summary>
+	public new BitmapImage Clone() => (BitmapImage)base.Clone();
+
+	/// <summary>Creates an unfrozen, independent copy of this bitmap using its current values.</summary>
+	public new BitmapImage CloneCurrentValue() => (BitmapImage)base.CloneCurrentValue();
+
 	/// <inheritdoc/>
 	protected override Freezable CreateInstanceCore() => new BitmapImage();
 

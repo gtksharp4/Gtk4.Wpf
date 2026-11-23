@@ -12,21 +12,23 @@ public sealed class FormatConvertedBitmap : BitmapSource, ISupportInitialize
 {
 	/// <summary>Identifies the Source property.</summary>
 	public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
-		nameof(Source), typeof(BitmapSource), typeof(FormatConvertedBitmap), new PropertyMetadata(null));
+		nameof(Source), typeof(BitmapSource), typeof(FormatConvertedBitmap),
+		new PropertyMetadata(null, null, (d, v) => CoerceInput(d, SourceProperty, v)));
 
 	/// <summary>Identifies the DestinationFormat property.</summary>
 	public static readonly DependencyProperty DestinationFormatProperty = DependencyProperty.Register(
 		nameof(DestinationFormat), typeof(PixelFormat), typeof(FormatConvertedBitmap),
-		new PropertyMetadata(PixelFormats.Pbgra32));
+		new PropertyMetadata(PixelFormats.Pbgra32, null, (d, v) => CoerceInput(d, DestinationFormatProperty, v)));
 
 	/// <summary>Identifies the DestinationPalette property.</summary>
 	public static readonly DependencyProperty DestinationPaletteProperty = DependencyProperty.Register(
 		nameof(DestinationPalette), typeof(BitmapPalette), typeof(FormatConvertedBitmap),
-		new PropertyMetadata(null));
+		new PropertyMetadata(null, null, (d, v) => CoerceInput(d, DestinationPaletteProperty, v)));
 
 	/// <summary>Identifies the AlphaThreshold property.</summary>
 	public static readonly DependencyProperty AlphaThresholdProperty = DependencyProperty.Register(
-		nameof(AlphaThreshold), typeof(double), typeof(FormatConvertedBitmap), new PropertyMetadata(0.0));
+		nameof(AlphaThreshold), typeof(double), typeof(FormatConvertedBitmap),
+		new PropertyMetadata(0.0, null, (d, v) => CoerceInput(d, AlphaThresholdProperty, v)));
 
 	/// <summary>Creates an uninitialised bitmap; set the properties between BeginInit and EndInit.</summary>
 	public FormatConvertedBitmap() { }
@@ -87,7 +89,16 @@ public sealed class FormatConvertedBitmap : BitmapSource, ISupportInitialize
 	public void EndInit() => EndInitCore();
 
 	/// <inheritdoc/>
-	public override bool CanFreeze => !IsInitializing && base.CanFreeze;
+	public override bool CanFreeze => !IsInitializing && base.CanFreeze
+		&& CanFreezeInput(Source);
+
+	/// <summary>Creates an unfrozen, independent copy of this bitmap.</summary>
+	public new FormatConvertedBitmap Clone() => (FormatConvertedBitmap)base.Clone();
+
+	/// <summary>Creates an unfrozen, independent copy of this bitmap using its current values.</summary>
+	public new FormatConvertedBitmap CloneCurrentValue() => (FormatConvertedBitmap)base.CloneCurrentValue();
+
+	internal override DependencyProperty[] InputProperties => new[] { SourceProperty, DestinationFormatProperty, DestinationPaletteProperty, AlphaThresholdProperty };
 
 	/// <inheritdoc/>
 	protected override Freezable CreateInstanceCore() => new FormatConvertedBitmap();
@@ -96,6 +107,7 @@ public sealed class FormatConvertedBitmap : BitmapSource, ISupportInitialize
 	protected override void OnFreeze()
 	{
 		RealizeNow();
+		FreezeValue(Source);
 		base.OnFreeze();
 	}
 

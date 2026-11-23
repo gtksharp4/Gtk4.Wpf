@@ -30,6 +30,12 @@ public class ImageSource : Animatable
 	/// <summary>Creates a new instance of the same concrete type; derived sources override it.</summary>
 	protected override Freezable CreateInstanceCore() => new ImageSource(FilePath);
 
+	/// <summary>Creates an unfrozen, independent copy of this image source.</summary>
+	public new ImageSource Clone() => (ImageSource)base.Clone();
+
+	/// <summary>Creates an unfrozen, independent copy of this image source using its current values.</summary>
+	public new ImageSource CloneCurrentValue() => (ImageSource)base.CloneCurrentValue();
+
 	/// <inheritdoc/>
 	public override string ToString() => FilePath;
 }

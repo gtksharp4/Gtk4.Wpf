@@ -13,11 +13,13 @@ public sealed class TransformedBitmap : BitmapSource, ISupportInitialize
 
 	/// <summary>Identifies the Source property.</summary>
 	public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
-		nameof(Source), typeof(BitmapSource), typeof(TransformedBitmap), new PropertyMetadata(null));
+		nameof(Source), typeof(BitmapSource), typeof(TransformedBitmap),
+		new PropertyMetadata(null, null, (d, v) => CoerceInput(d, SourceProperty, v)));
 
 	/// <summary>Identifies the Transform property.</summary>
 	public static readonly DependencyProperty TransformProperty = DependencyProperty.Register(
-		nameof(Transform), typeof(Transform), typeof(TransformedBitmap), new PropertyMetadata(Transform.Identity));
+		nameof(Transform), typeof(Transform), typeof(TransformedBitmap),
+		new PropertyMetadata(Transform.Identity, null, (d, v) => CoerceInput(d, TransformProperty, v)));
 
 	/// <summary>Creates an uninitialised bitmap; set the properties between BeginInit and EndInit.</summary>
 	public TransformedBitmap() { }
@@ -59,7 +61,16 @@ public sealed class TransformedBitmap : BitmapSource, ISupportInitialize
 	public void EndInit() => EndInitCore();
 
 	/// <inheritdoc/>
-	public override bool CanFreeze => !IsInitializing && base.CanFreeze;
+	public override bool CanFreeze => !IsInitializing && base.CanFreeze
+		&& CanFreezeInput(Source) && CanFreezeInput(Transform);
+
+	/// <summary>Creates an unfrozen, independent copy of this bitmap.</summary>
+	public new TransformedBitmap Clone() => (TransformedBitmap)base.Clone();
+
+	/// <summary>Creates an unfrozen, independent copy of this bitmap using its current values.</summary>
+	public new TransformedBitmap CloneCurrentValue() => (TransformedBitmap)base.CloneCurrentValue();
+
+	internal override DependencyProperty[] InputProperties => new[] { SourceProperty, TransformProperty };
 
 	/// <inheritdoc/>
 	protected override Freezable CreateInstanceCore() => new TransformedBitmap();
@@ -68,6 +79,8 @@ public sealed class TransformedBitmap : BitmapSource, ISupportInitialize
 	protected override void OnFreeze()
 	{
 		RealizeNow();
+		FreezeValue(Source);
+		FreezeValue(Transform);
 		base.OnFreeze();
 	}
 
