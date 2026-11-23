@@ -5,7 +5,9 @@ namespace System.Windows.Xps.Packaging;
 /// <summary>Reads the family name of a font part (an obfuscated or plain TrueType file) in an XPS package.</summary>
 static class XpsFontNames
 {
-	/// <summary>The font family of <paramref name="fontUri"/> in <paramref name="package"/>, or null if unreadable.</summary>
+	/// <summary>
+	/// The font family of <paramref name="fontUri"/> in <paramref name="package"/>, or null if unreadable.
+	/// </summary>
 	internal static string? FamilyOf(XpsPackage? package, Uri? fontUri)
 	{
 		if (package == null || fontUri == null)

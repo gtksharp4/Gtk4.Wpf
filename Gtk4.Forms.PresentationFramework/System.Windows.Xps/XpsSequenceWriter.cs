@@ -7,7 +7,14 @@ using System.Xml.Linq;
 
 namespace System.Windows.Xps.Packaging;
 
-/// <summary>Collects the parts of a new package for a fixed document sequence, then writes them.</summary>
+/// <summary>
+/// Collects the parts of a new package for a fixed document sequence, then writes them. A copied page keeps its XML
+/// but its ImageSource, FontUri and Source attributes are rewritten as absolute part names of the new package.
+/// </summary>
+/// <remarks>
+/// Gap: resource dictionary and other resource parts are copied verbatim; references inside them, and their own
+/// relationships, are not rewritten.
+/// </remarks>
 sealed class XpsSequenceWriter
 {
 	static readonly XNamespace Ns = XpsNames.Markup;
@@ -49,20 +56,44 @@ sealed class XpsSequenceWriter
 			SerializePage(root, pagePart);
 	}
 
+	// Attributes that name a package part. Their values are resolved against the source page and written back as
+	// the absolute part name of the new package.
+	static readonly string[] UriAttributes = { "ImageSource", "FontUri", "Source" };
+
 	void CopyPage(XpsPackage source, string sourcePart, string pagePart)
 	{
-		string xml = Encoding.UTF8.GetString(source.ReadPart(sourcePart)).TrimStart('﻿');
+		var xml = XDocument.Parse(Encoding.UTF8.GetString(source.ReadPart(sourcePart)).TrimStart('\uFEFF'));
 		var rels = new XElement(RelNs + "Relationships");
+		var targets = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 		foreach (var rel in source.Relationships(sourcePart))
 		{
-			string target = AddResource(source, rel.Target, out string? renamed);
-			if (renamed != null)
-				xml = xml.Replace(rel.Target, renamed);
+			targets[rel.Target] = AddResource(source, rel.Target, out _);
 			rels.Add(new XElement(RelNs + "Relationship", new XAttribute("Type", rel.Type),
-				new XAttribute("Target", target), new XAttribute("Id", rel.Id)));
+				new XAttribute("Target", targets[rel.Target]), new XAttribute("Id", rel.Id)));
 		}
-		_parts[pagePart] = (new UTF8Encoding(false).GetBytes(xml), XpsNames.PageType);
+		foreach (var attribute in xml.Descendants().SelectMany(e => e.Attributes()).ToList())
+			RewriteReference(source, sourcePart, attribute, targets, rels);
+		_parts[pagePart] = (XpsPackage.Serialize(xml), XpsNames.PageType);
 		AddRelationships(pagePart, rels);
+	}
+
+	void RewriteReference(XpsPackage source, string sourcePart, XAttribute attribute,
+		Dictionary<string, string> targets, XElement rels)
+	{
+		string value = attribute.Value;
+		if (!UriAttributes.Contains(attribute.Name.LocalName) || value.Length == 0 || value[0] == '{')
+			return;
+		string uri = value.Split(' ')[0];
+		string part = XpsPackage.ResolveTarget(sourcePart, uri);
+		if (!source.PartExists(part))
+			return;
+		if (!targets.TryGetValue(part, out string? target))
+		{
+			target = targets[part] = AddResource(source, part, out _);
+			rels.Add(new XElement(RelNs + "Relationship", new XAttribute("Type", XpsNames.RequiredResource),
+				new XAttribute("Target", target), new XAttribute("Id", "R" + Guid.NewGuid().ToString("N"))));
+		}
+		attribute.Value = target + value.Substring(uri.Length);
 	}
 
 	// A resource keeps its path unless another package already put different bytes there.

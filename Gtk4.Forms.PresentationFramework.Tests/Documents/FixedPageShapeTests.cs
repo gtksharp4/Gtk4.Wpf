@@ -41,7 +41,8 @@ public class FixedPageShapeTests : WpfGtkTestBase
 		page.Children.Remove(button);
 		Assert.Null(LogicalTreeHelper.GetParent(button));
 		Assert.Equal(0, VisualTreeHelper.GetChildrenCount(page));
-		var attr = (ContentPropertyAttribute)typeof(FixedPage).GetCustomAttributes(typeof(ContentPropertyAttribute), true)
+		var attr = (ContentPropertyAttribute)typeof(FixedPage)
+			.GetCustomAttributes(typeof(ContentPropertyAttribute), true)
 			.Single();
 		Assert.Equal("Children", attr.Name);
 	});

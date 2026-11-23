@@ -108,7 +108,8 @@ sealed class XpsPageReader
 		var glyphs = new Glyphs
 		{
 			UnicodeString = (string?)e.Attribute("UnicodeString") ?? string.Empty,
-			FontUri = e.Attribute("FontUri") == null ? null : new Uri((string)e.Attribute("FontUri")!, UriKind.RelativeOrAbsolute),
+			FontUri = e.Attribute("FontUri") == null ? null
+				: new Uri((string)e.Attribute("FontUri")!, UriKind.RelativeOrAbsolute),
 			FontRenderingEmSize = XpsValues.Double((string?)e.Attribute("FontRenderingEmSize"), 1),
 			OriginX = XpsValues.Double((string?)e.Attribute("OriginX")),
 			OriginY = XpsValues.Double((string?)e.Attribute("OriginY")),

@@ -28,7 +28,8 @@ static class XpsTestPackage
 			["_rels/.rels"] = "<Relationships xmlns=\"" + Rels + "\"><Relationship Type=\"" + Xps
 				+ "/fixedrepresentation\" Target=\"/FixedDocumentSequence.fdseq\" Id=\"R1\" /></Relationships>",
 			["[Content_Types].xml"] = "<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">"
-				+ "<Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\" />"
+				+ "<Default Extension=\"rels\" "
+				+ "ContentType=\"application/vnd.openxmlformats-package.relationships+xml\" />"
 				+ "<Default Extension=\"ttf\" ContentType=\"application/x-font-truetype\" /></Types>",
 		};
 		var sequence = new StringBuilder("<FixedDocumentSequence xmlns=\"" + Xps + "\">");
@@ -61,5 +62,6 @@ static class XpsTestPackage
 			s.Write(data, 0, data.Length);
 	}
 
-	internal static string TempPath() => Path.Combine(Path.GetTempPath(), "gf57b-" + Guid.NewGuid().ToString("N") + ".xps");
+	internal static string TempPath() =>
+		Path.Combine(Path.GetTempPath(), "gf57b-" + Guid.NewGuid().ToString("N") + ".xps");
 }

@@ -105,7 +105,10 @@ public class FixedDocumentTests : WpfGtkTestBase
 	{
 		var uri = new Uri("http://example.com/a/b.fdoc");
 		foreach (IUriContext context in new IUriContext[]
-			{ new FixedPage(), new PageContent(), new FixedDocument(), new DocumentReference(), new FixedDocumentSequence() })
+			{
+				new FixedPage(), new PageContent(), new FixedDocument(), new DocumentReference(),
+				new FixedDocumentSequence(),
+			})
 		{
 			Assert.Null(context.BaseUri);
 			context.BaseUri = uri;
@@ -163,7 +166,8 @@ public class FixedDocumentTests : WpfGtkTestBase
 	public void A_DocumentViewer_shows_page_one_of_a_FixedDocument() => Run(() =>
 	{
 		var document = DocumentOf(200, 300);
-		document.Pages[0].Child!.Children.Add(new Glyphs { UnicodeString = "One", FontRenderingEmSize = 16, OriginY = 20 });
+		document.Pages[0].Child!.Children.Add(
+			new Glyphs { UnicodeString = "One", FontRenderingEmSize = 16, OriginY = 20 });
 		var viewer = new DocumentViewer { Document = document };
 		Assert.Equal(2, viewer.PageCount);
 		Assert.Equal(1, viewer.MasterPageNumber);

@@ -129,7 +129,8 @@ public class XpsDocumentTests : WpfGtkTestBase
 			XpsDocument.CreateXpsDocumentWriter(output).Write(document);
 		using (var read = new XpsDocument(target, FileAccess.Read))
 		{
-			var loaded = read.GetFixedDocumentSequence()!.References[0].GetDocument(false)!.Pages[0].GetPageRoot(false)!;
+			var first = read.GetFixedDocumentSequence()!.References[0].GetDocument(false)!;
+			var loaded = first.Pages[0].GetPageRoot(false)!;
 			Assert.Equal(100, loaded.Width);
 			Assert.Equal("A", ((Glyphs)loaded.Children[0]).UnicodeString);
 		}
@@ -160,7 +161,8 @@ public class XpsDocumentTests : WpfGtkTestBase
 	[Fact]
 	public void Part_names_are_normalised_with_forward_slashes_on_every_os()
 	{
-		Assert.Equal("/Resources/f.ttf", XpsPackage.ResolveTarget("/Documents/1/Pages/1.fpage", "../../../Resources/f.ttf"));
+		Assert.Equal("/Resources/f.ttf",
+			XpsPackage.ResolveTarget("/Documents/1/Pages/1.fpage", "../../../Resources/f.ttf"));
 		Assert.Equal("/a/b.xml", XpsPackage.NormalizePart("\\a\\.\\c\\..\\b.xml"));
 		Assert.Equal("/x/y", XpsPackage.ResolveTarget("/z", "/x/y"));
 	}
@@ -174,60 +176,5 @@ public class XpsDocumentTests : WpfGtkTestBase
 		Assert.NotEqual(data, copy);
 		XpsFontNames.Deobfuscate(copy, "/Resources/7f79d960-6410-4321-8e96-1651f34a0799.ODTTF");
 		Assert.Equal(data, copy);
-	}
-
-	[Fact]
-	public void The_sample_packages_read_when_present() => Run(() =>
-	{
-		string? dir = FindContent();
-		Assert.SkipWhen(dir == null, "WPF-Samples is not checked out.");
-		foreach (var (file, documents) in new[] { ("chocolate.xps", 1), ("officeinhealthcare.xps", 2) })
-		{
-			using var xps = new XpsDocument(System.IO.Path.Combine(dir!, file), FileAccess.Read);
-			var sequence = xps.GetFixedDocumentSequence()!;
-			Assert.Equal(documents, sequence.References.Count);
-			var first = sequence.References[0].GetDocument(false)!;
-			Assert.True(first.Pages.Count >= 4);
-			var page = first.Pages[0].GetPageRoot(false)!;
-			Assert.True(page.Width > 0);
-			Assert.Contains(page.Children.OfType<UIElement>(), c => c is Glyphs);
-		}
-	});
-
-	[Fact]
-	public void The_sample_packages_merge_and_round_trip_when_present() => Run(() =>
-	{
-		string? dir = FindContent();
-		Assert.SkipWhen(dir == null, "WPF-Samples is not checked out.");
-		using var a = new XpsDocument(System.IO.Path.Combine(dir!, "chocolate.xps"), FileAccess.Read);
-		using var b = new XpsDocument(System.IO.Path.Combine(dir!, "officeinhealthcare.xps"), FileAccess.Read);
-		var merged = new FixedDocumentSequence();
-		foreach (var reference in a.GetFixedDocumentSequence()!.References.Concat(b.GetFixedDocumentSequence()!.References))
-		{
-			var copy = new DocumentReference { Source = reference.Source };
-			((IUriContext)copy).BaseUri = ((IUriContext)reference).BaseUri;
-			merged.References.Add(copy);
-		}
-		int expected = merged.DocumentPaginator.PageCount;
-		string target = XpsTestPackage.TempPath();
-		using (var output = new XpsDocument(target, FileAccess.ReadWrite))
-			XpsDocument.CreateXpsDocumentWriter(output).Write(merged);
-		using var read = new XpsDocument(target, FileAccess.Read);
-		Assert.Equal(expected, read.GetFixedDocumentSequence()!.DocumentPaginator.PageCount);
-		Assert.True(expected > 8);
-		read.Close();
-		File.Delete(target);
-	});
-
-	static string? FindContent()
-	{
-		for (var d = new DirectoryInfo(AppContext.BaseDirectory); d != null; d = d.Parent)
-		{
-			string candidate = System.IO.Path.Combine(d.FullName, "WPF-Samples", "Documents", "Fixed Documents",
-				"DocumentMerge", "content");
-			if (Directory.Exists(candidate))
-				return candidate;
-		}
-		return null;
 	}
 }

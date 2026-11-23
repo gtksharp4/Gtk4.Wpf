@@ -94,7 +94,8 @@ sealed class XpsBrushReader
 		}
 		var brush = new ImageBrush(image)
 		{
-			ViewportUnits = XpsValues.Enum((string?)e.Attribute("ViewportUnits"), BrushMappingMode.RelativeToBoundingBox),
+			ViewportUnits = XpsValues.Enum((string?)e.Attribute("ViewportUnits"),
+				BrushMappingMode.RelativeToBoundingBox),
 			ViewboxUnits = XpsValues.Enum((string?)e.Attribute("ViewboxUnits"), BrushMappingMode.RelativeToBoundingBox),
 			TileMode = XpsValues.Enum((string?)e.Attribute("TileMode"), TileMode.None),
 		};
