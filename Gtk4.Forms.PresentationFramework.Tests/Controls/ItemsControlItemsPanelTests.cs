@@ -107,3 +107,20 @@ public class ItemsControlItemsPanelTests : WpfGtkTestBase
 		Assert.Null(list.HostedItemsPanel);
 	});
 }
+
+public class ItemsPanelTemplateContentTests : WpfGtkTestBase
+{
+	[Fact]
+	public void Content_assigned_by_generated_code_backs_the_template_factory() => Run(() =>
+	{
+		var panel = new WrapPanel();
+		var template = new ItemsPanelTemplate { Content = panel };
+		Assert.True(template.HasContent);
+		Assert.Same(panel, template.CreateVisualTree());
+		var ic = new ItemsControl { ItemsPanel = template, ItemsSource = new[] { "a" } };
+		_ = ic.Widget;
+		Assert.Same(panel, ic.HostedItemsPanel);
+		template.Content = null;
+		Assert.False(template.HasContent);
+	});
+}

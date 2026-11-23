@@ -8,7 +8,7 @@ namespace System.Windows.Controls;
 /// root is produced by <see cref="FrameworkTemplate.Factory"/> (or the <see cref="Func{UIElement}"/> constructor)
 /// and must return a <see cref="Panel"/>. Unlike WPF the check happens when the panel is created, not on seal.
 /// </remarks>
-public class ItemsPanelTemplate : FrameworkTemplate
+public partial class ItemsPanelTemplate : FrameworkTemplate
 {
 	/// <summary>Creates an empty template.</summary>
 	public ItemsPanelTemplate()
