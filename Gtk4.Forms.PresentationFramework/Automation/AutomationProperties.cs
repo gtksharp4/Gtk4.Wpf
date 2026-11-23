@@ -21,6 +21,14 @@ namespace System.Windows.Automation;
 ///       Pushed to <c>Gtk.AccessibleProperty.HelpText</c> via the same mechanism.
 ///     </description>
 ///   </item>
+///   <item>
+///     <term><see cref="AcceleratorKeyProperty"/></term>
+///     <description>
+///       Pushed to <c>Gtk.AccessibleProperty.KeyShortcuts</c> by the element's peer (a menu item falls back
+///       to its <c>InputGestureText</c>). The text goes verbatim: WPF's "Ctrl+Shift+C" is not rewritten into
+///       ARIA's "Control+Shift+C". An empty value resets the property.
+///     </description>
+///   </item>
 /// </list>
 /// <para><b>Object-model only (no GTK push):</b></para>
 /// <list type="bullet">
@@ -45,6 +53,17 @@ namespace System.Windows.Automation;
 ///     <description>
 ///       Stored in the DP system; GTK 4 live-region support requires calling
 ///       <c>GtkWidget.Announce()</c> on content change, not a persistent property.
+///     </description>
+///   </item>
+///   <item>
+///     <term><see cref="ItemStatusProperty"/></term>
+///     <description>Stored in the DP system; GTK has no counterpart.</description>
+///   </item>
+///   <item>
+///     <term><see cref="HeadingLevelProperty"/></term>
+///     <description>
+///       Stored in the DP system; GTK 4's heading role is construct-only and
+///       <c>AccessibleProperty.Level</c> only means something on that role.
 ///     </description>
 ///   </item>
 /// </list>
