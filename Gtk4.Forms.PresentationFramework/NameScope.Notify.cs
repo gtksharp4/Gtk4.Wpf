@@ -14,7 +14,10 @@ public partial class NameScope
 	// Bindings by ElementName re-resolve when a name appears or goes.
 	static void NameChanged(string name)
 	{
-		if (_notifying is { } owner) BindingEngine.NameScopeChanged(owner, name);
+		// Clear first: ReResolve can run user code that registers on another scope.
+		var owner = _notifying;
+		_notifying = null;
+		if (owner != null) BindingEngine.NameScopeChanged(owner, name);
 		else BindingEngine.NameScopeChanged(name);
 	}
 

@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -10,6 +11,7 @@ namespace Gtk4.Forms.PresentationFramework.Tests;
 /// <summary>The listener index must not leak dead targets, re-resolve per scope, or allocate for a miss.</summary>
 public class ContextIndexHygieneTests : WpfGtkTestBase
 {
+	[MethodImpl(MethodImplOptions.NoInlining)]
 	static void BuildAndDrop(int count)
 	{
 		for (int i = 0; i < count; i++)
@@ -22,12 +24,17 @@ public class ContextIndexHygieneTests : WpfGtkTestBase
 	[Fact]
 	public void Dropped_ElementName_targets_do_not_stay_registered() => Run(() =>
 	{
-		BuildAndDrop(50);
-		GC.Collect();
-		GC.WaitForPendingFinalizers();
-		GC.Collect();
-		BindingEngine.NameScopeChanged("leakHead");
-		Assert.True(BindingEngine.NamedRegistrations("leakHead") < 5,
+		var page = new Border();
+		for (int round = 0; round < 10; round++)
+		{
+			BuildAndDrop(20);
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+			page.RegisterName("leakHead", new TextBlock());
+			page.UnregisterName("leakHead");
+		}
+		Assert.True(BindingEngine.NamedRegistrations("leakHead") <= 64,
 			$"{BindingEngine.NamedRegistrations("leakHead")} registrations left");
 	});
 

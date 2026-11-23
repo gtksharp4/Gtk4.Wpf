@@ -13,7 +13,7 @@ public partial class ResourceDictionary
 			var old = Owner;
 			if (old != null && !ReferenceEquals(old, value))
 				foreach (var item in _inner.Values)
-					if (item is Freezable f && ReferenceEquals(f.InheritanceContext, old)) f.InheritanceContext = null;
+					if (item is DependencyObject d && ReferenceEquals(d.InheritanceContext, old)) d.InheritanceContext = null;
 			_owner = value == null ? null : new WeakReference(value);
 			foreach (var entry in _inner.Values) ClaimEntry(entry);
 		}

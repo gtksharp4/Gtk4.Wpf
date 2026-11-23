@@ -30,6 +30,9 @@ internal static partial class BindingEngine
 			{
 				if (!_byName.TryGetValue(name, out var named))
 					_byName[name] = named = new List<WeakReference<IContextListener>>();
+				// Prune dead registrations at each doubling so rebuilt trees cannot grow the list without bound.
+				if (named.Count >= 16 && (named.Count & (named.Count - 1)) == 0)
+					named.RemoveAll(w => !w.TryGetTarget(out _));
 				named.Add(new WeakReference<IContextListener>(listener));
 			}
 			_listenerCount++;

@@ -2604,6 +2604,16 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   dropping `06cd79ce`, `main`'s fix covers `ListItemCollection.Remove`/`Clear` (975 passed in the merged lane) and a
   paragraph in a table cell fails earlier with "The element is not in a text container". **CI-2** and **CI-3** are
   recorded as hand-offs in `docs/samples-coverage.md`.
+- **Round 60 (lane B) follow-up.** **b-R60b-1** dead ElementName registrations are pruned in `_byName` when a list
+  doubles on registration (and on unregister), so rebuilt trees no longer grow it without bound; a name registered
+  through an element re-resolves only the listeners below that element (a new scope owner likewise, filtered to
+  ElementName users), so per-item name scopes are linear; a leaf with no listener does not allocate. A populated
+  subtree walk still allocates its result array. **b-R60b-5** `ResourceDictionary` owners now go through
+  `AddContextHolder`, so a freezable held by a dictionary and by another element has no context in either order.
+- **Round 60 (lane B) regression fix.** ElementName listener lists no longer leak (pruned at registration);
+  `ResourceDictionary.Owner` change clears every `DependencyObject` context (CollectionViewSource included); name
+  notification attribution is cleared before re-resolve callbacks run.
+  Targeted: 477 PresentationFramework + 10 WindowsBase passed; samples gate 197 build, 182 run.
 - **Round 60 (lane B) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. 14 new or
   rewritten tests. Targeted `PresentationFramework.Tests` (Binding, DataTrigger, ElementName, NonElement, Prefixed,
   Owner, Storyboard, ResourceDictionary, Freezable, Media, Document, Fixed, Xps, Imaging, TextDecoration, Round49a,
@@ -2661,10 +2671,3 @@ Approve **Phase 0 only** first: the `WindowsBase` property-system subset + the f
 is small, fully testable, and settles every architectural unknown (xmlns binding, the compiler fork,
 the hybrid bridge, the drop-in). Only after it runs a real one-window WPF app unmodified on two OSes
 is it worth committing to the multi-phase build toward 1:1.
-- **Round 60 (lane B) follow-up.** **b-R60b-1** dead ElementName registrations are pruned whenever a name is walked
-  (the `_byName` lists no longer grow when targets are dropped); a name registered through an element re-resolves only
-  the listeners below that element (a new scope owner likewise, filtered to ElementName users), so per-item name
-  scopes are linear; a leaf with no listener, and any subtree walk, no longer allocate (pooled traversal, lazy result;
-  the count fast path is only a hint because collected targets keep it above 0). Earlier wording "allocates nothing"
-  was wrong for a populated subtree with hits. **b-R60b-5** `ResourceDictionary` owners now go through
-  `AddContextHolder`, so a freezable held by a dictionary and by another element has no context in either order.
