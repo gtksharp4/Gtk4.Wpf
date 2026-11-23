@@ -1,79 +1,30 @@
 using System.Collections.Generic;
-using System.Windows.Data;
 
 namespace System.Windows;
 
 public partial class DataTrigger
 {
 	/// <summary>
-	/// Per-element live state for a <see cref="DataTrigger"/>.
-	/// Subscribes to DataContext changes and uses <see cref="PathWatcher"/> to
-	/// track every segment of a dot-separated binding path, re-evaluating the
-	/// trigger condition whenever any segment raises PropertyChanged.
+	/// Per-element live state for a <see cref="DataTrigger"/>: a <see cref="TriggerBindingSource"/> reports every
+	/// change of the bound value and the condition is re-evaluated each time.
 	/// </summary>
 	sealed class DataTriggerState
 	{
 		readonly DataTrigger _trigger;
 		readonly FrameworkElement _target;
+		readonly TriggerBindingSource _source;
 		List<DependencyProperty>? _appliedDps;
-
-		PathWatcher? _pathWatcher;
-		PropertyChangedCallback? _dcHook;
 
 		internal DataTriggerState(DataTrigger trigger, FrameworkElement target)
 		{
 			_trigger = trigger;
 			_target = target;
-			Subscribe();
+			_source = new TriggerBindingSource(trigger.Binding!, target, Evaluate);
 		}
-
-		void Subscribe()
-		{
-			_dcHook = OnDcChanged;
-			_target.AddChangeHook(FrameworkElement.DataContextProperty, _dcHook);
-			SubscribeSource(GetRoot());
-		}
-
-		void OnDcChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			DisposePathWatcher();
-			SubscribeSource(GetRoot());
-			Evaluate();
-		}
-
-		object? GetRoot()
-		{
-			var b = _trigger.Binding;
-			if (b == null) return null;
-			if (b.Source != null) return b.Source;
-			return _target.DataContext;
-		}
-
-		void SubscribeSource(object? root)
-		{
-			DisposePathWatcher();
-			var path = PropertyPath.ResolveOwner(root, _trigger.Binding?.PathString);
-			_pathWatcher = new PathWatcher(root, path);
-			_pathWatcher.Changed += OnPathChanged;
-		}
-
-		void DisposePathWatcher()
-		{
-			if (_pathWatcher != null)
-			{
-				_pathWatcher.Changed -= OnPathChanged;
-				_pathWatcher.Dispose();
-				_pathWatcher = null;
-			}
-		}
-
-		void OnPathChanged() => Evaluate();
 
 		internal void Evaluate()
 		{
-			var root = GetRoot();
-			var current = BindingEngine.ResolvePath(root, _trigger.Binding?.PathString);
-			bool match = Equals(current, _trigger.Value);
+			bool match = TriggerValueComparer.AreEqual(_source.Value, _trigger.Value);
 			bool active = _appliedDps != null;
 			if (match && !active) Apply();
 			else if (!match && active) UnApply(runActions: true);
@@ -108,9 +59,7 @@ public partial class DataTrigger
 
 		internal void Dispose()
 		{
-			if (_dcHook != null)
-				_target.RemoveChangeHook(FrameworkElement.DataContextProperty, _dcHook);
-			DisposePathWatcher();
+			_source.Dispose();
 			UnApply(runActions: false);
 		}
 	}

@@ -6,7 +6,7 @@ internal static partial class BindingEngine
 {
 	internal sealed partial class BindingRecord
 	{
-		FrameworkElement? _dpSource;
+		DependencyObject? _dpSource;
 		DependencyProperty? _dpSourceProperty;
 		PropertyChangedCallback? _dpSourceCallback;
 
@@ -26,22 +26,24 @@ internal static partial class BindingEngine
 		/// </summary>
 		void AttachDpSource(object? source)
 		{
-			if (source is not FrameworkElement fe) return;
+			if (source is not DependencyObject fe) return;
 			var path = PropertyPath.ResolveOwner(source, _binding.PathString);
-			if (string.IsNullOrEmpty(path) || path!.IndexOfAny(new[] { '.', '[', '(' }) >= 0) return;
-			var dp = FindDependencyProperty(fe.GetType(), path);
+			if (string.IsNullOrEmpty(path)) return;
+			var dp = path![0] == '(' && path.IndexOf(')') == path.Length - 1
+				? AttachedProperty(source, path)
+				: path.IndexOfAny(new[] { '.', '[', '(' }) >= 0 ? null : FindDependencyProperty(fe.GetType(), path);
 			if (dp == null) return;
 
 			_dpSource = fe;
 			_dpSourceProperty = dp;
 			_dpSourceCallback = OnSourceDpChanged;
-			TargetChangeTracker.Subscribe(fe, dp, _dpSourceCallback);
+			fe.AddChangeHook(dp, _dpSourceCallback);
 		}
 
 		void DetachDpSource()
 		{
 			if (_dpSource != null && _dpSourceProperty != null && _dpSourceCallback != null)
-				TargetChangeTracker.Unsubscribe(_dpSource, _dpSourceProperty, _dpSourceCallback);
+				_dpSource.RemoveChangeHook(_dpSourceProperty, _dpSourceCallback);
 			_dpSource = null;
 			_dpSourceProperty = null;
 			_dpSourceCallback = null;

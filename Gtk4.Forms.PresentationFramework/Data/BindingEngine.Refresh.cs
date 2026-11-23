@@ -9,6 +9,7 @@ internal static partial class BindingEngine
 	/// <summary>Re-evaluates all bindings whose source is the inherited DataContext.</summary>
 	internal static void RefreshBindings(DependencyObject target)
 	{
+		RefreshMentored(target);
 		if (!_bindings.TryGetValue(target, out var list)) return;
 		foreach (var record in list)
 		{

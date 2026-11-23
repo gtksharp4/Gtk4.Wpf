@@ -55,6 +55,7 @@ public partial class DependencyObject : System.Windows.Threading.DispatcherObjec
 				if (!Equals(oldValues[i], newVal))
 					NotifyInheritedValueChanged(inheriting[i], oldValues[i], newVal);
 			}
+			InheritanceParentChangedHook?.Invoke(this);
 		}
 	}
 
@@ -90,10 +91,11 @@ public partial class DependencyObject : System.Windows.Threading.DispatcherObjec
 	{
 		if (dp == null) throw new ArgumentNullException(nameof(dp));
 		OnExplicitLocalChange(dp);
-		if (!_localValues.ContainsKey(dp)) return;
+		if (!_localValues.TryGetValue(dp, out var oldLocalValue)) return;
 
 		var oldEffective = ResolveEffectiveValue(dp);
 		_localValues.Remove(dp);
+		UpdateContextOfLocal(oldLocalValue, null);
 		CommitLayerChange(dp, oldEffective);
 	}
 
@@ -148,6 +150,7 @@ public partial class DependencyObject : System.Windows.Threading.DispatcherObjec
 			RecomputeCoerced(dp);
 			throw;
 		}
+		UpdateContextOfLocal(hadLocal ? oldLocal : null, value);
 		FireChangeIfDifferent(dp, oldEffective, ResolveEffectiveValue(dp));
 		NotifyValueSource(dp);
 	}

@@ -23,9 +23,8 @@ public static class BindingOperations
 		if (dp == null) throw new ArgumentNullException(nameof(dp));
 		if (binding == null) throw new ArgumentNullException(nameof(binding));
 
-		if (target is not FrameworkElement && target is not FrameworkContentElement)
-			throw new NotSupportedException(
-				"BindingOperations only supports FrameworkElement and FrameworkContentElement targets.");
+		if (target is Freezable { IsFrozen: true })
+			throw new InvalidOperationException("Cannot bind a property of a frozen Freezable.");
 
 		// All binding kinds (Binding, MultiBinding, PriorityBinding) route through
 		// BindingEngine.SetBinding so the expression map stays in one place.
@@ -39,7 +38,6 @@ public static class BindingOperations
 	{
 		if (target == null) throw new ArgumentNullException(nameof(target));
 		if (dp == null) throw new ArgumentNullException(nameof(dp));
-		if (target is not FrameworkElement && target is not FrameworkContentElement) return;
 
 		// BindingEngine.ClearBinding is the single authority: it clears simple,
 		// multi, and priority records plus the expression map entry.
@@ -50,7 +48,6 @@ public static class BindingOperations
 	public static void ClearAllBindings(DependencyObject target)
 	{
 		if (target == null) throw new ArgumentNullException(nameof(target));
-		if (target is not FrameworkElement && target is not FrameworkContentElement) return;
 		BindingEngine.ClearAllBindings(target);
 	}
 
@@ -100,7 +97,6 @@ public static class BindingOperations
 	{
 		if (target == null) throw new ArgumentNullException(nameof(target));
 		if (dp == null) throw new ArgumentNullException(nameof(dp));
-		if (target is not FrameworkElement && target is not FrameworkContentElement) return null;
 		return BindingEngine.GetBindingExpression(target, dp);
 	}
 

@@ -79,6 +79,7 @@ internal static partial class BindingEngine
 			var record = new BindingRecord(target, dp, binding, expr);
 			expr.Record = record;
 			list.Add(record);
+			if (binding.ElementName != null || !BindingTarget.IsElement(target)) RegisterContextListener(record);
 			exprMap[dp] = expr;
 			record.Activate();
 			if (fe != null) BindingGroupEnlister.Enlist(fe, expr);
@@ -171,6 +172,7 @@ internal static partial class BindingEngine
 
 		internal void Deactivate()
 		{
+			UnregisterContextListener(this);
 			DetachInpc();
 			UnsubscribeTargetChanges();
 			DetachNotifyErrors();
@@ -189,7 +191,7 @@ internal static partial class BindingEngine
 		{
 			if (_binding.Source != null) return _binding.Source;
 			if (_binding.ElementName != null)
-				return BindingTarget.FindName(target, _binding.ElementName) as FrameworkElement;
+				return _elementSource = BindingTarget.FindName(target, _binding.ElementName);
 			if (_binding.RelativeSource != null)
 				return BindingTarget.ResolveRelative(target, _binding.RelativeSource);
 			return BindingTarget.DataContextOf(target);

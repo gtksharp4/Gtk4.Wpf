@@ -18,21 +18,32 @@ public class NonElementBindingTraceTests
 	}
 
 	[Fact]
-	public void An_unsupported_target_writes_a_trace_warning_and_returns_null()
+	public void A_MultiBinding_on_a_non_element_writes_a_trace_warning_and_returns_null()
 	{
 		var listener = new Capture();
 		Trace.Listeners.Add(listener);
 		try
 		{
 			var result = NonElementBinding.TrySetBinding(
-				new DoubleAnimation(), DoubleAnimation.ToProperty, new Binding("Width"));
+				new DoubleAnimation(), DoubleAnimation.ToProperty, new MultiBinding());
 
 			Assert.Null(result);
 			var text = listener.Text.ToString();
 			Assert.Contains("DoubleAnimation", text);
 			Assert.Contains("To", text);
-			Assert.Contains("Width", text);
 		}
 		finally { Trace.Listeners.Remove(listener); }
+	}
+
+	[Fact]
+	public void A_Binding_on_a_non_element_is_applied_and_returns_the_expression()
+	{
+		var animation = new DoubleAnimation();
+
+		var result = NonElementBinding.TrySetBinding(
+			animation, DoubleAnimation.ToProperty, new Binding { Source = 7.0 });
+
+		Assert.NotNull(result);
+		Assert.Equal(7.0, animation.To);
 	}
 }

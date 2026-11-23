@@ -49,6 +49,7 @@ public partial class ResourceDictionary : IDictionary<object, object?>
 		set
 		{
 			_inner[key] = value;
+			ClaimEntry(value);
 			_resourceChangedHandlers.Raise(key, value);
 		}
 	}
@@ -79,6 +80,7 @@ public partial class ResourceDictionary : IDictionary<object, object?>
 	public void Add(object key, object? value)
 	{
 		_inner.Add(key, value);
+		ClaimEntry(value);
 		_resourceChangedHandlers.Raise(key, value);
 	}
 
@@ -120,6 +122,7 @@ public partial class ResourceDictionary : IDictionary<object, object?>
 	public void Add(KeyValuePair<object, object?> item)
 	{
 		_inner.Add(item.Key, item.Value);
+		ClaimEntry(item.Value);
 		_resourceChangedHandlers.Raise(item.Key, item.Value);
 	}
 

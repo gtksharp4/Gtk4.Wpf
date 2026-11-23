@@ -46,7 +46,7 @@ public class Round58cWindowTests : WpfGtkTestBase
 		Assert.Same(dictionary["Later"], dictionary["Later"]);
 	});
 
-	[Fact(Skip = "The binding engine serves FrameworkElement targets only (Data/**); an animation's To is not bound.")]
+	[Fact]
 	public void A_bound_animation_To_follows_the_source() => Run(() =>
 	{
 		var window = new Round58cWindow();
