@@ -2619,8 +2619,8 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   still run (16 apparent hangs under a crowded pass re-checked alone for 20 s: all run).
 - **Round 59 (lane A) carry-over.** Lane B: `TextPointer.Parent` for a `TextBlock` pointer (skipped test
   `The_pointers_Parent_is_the_TextBlock`), plus the documents and imaging members FontDialogDemo and SlidePuzzleDemo
-  still need. Lane C: emit `ItemsPanelTemplate` as `Factory` so `ItemsPanelTemplate.Content` can go. Store-only gaps: the accent keys have no GTK source, and `FrameworkTemplate.Seal` does not lock the
-  template.
+  still need. Lane C: emit `ItemsPanelTemplate` as `Factory` so `ItemsPanelTemplate.Content` can go.
+  Store-only gaps: the accent keys have no GTK source, and `FrameworkTemplate.Seal` does not lock the template.
 
 ## Phased roadmap (after Phase 0 proves the spine)
 
