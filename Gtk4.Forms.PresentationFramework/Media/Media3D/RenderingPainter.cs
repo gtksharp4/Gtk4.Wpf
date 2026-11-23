@@ -14,6 +14,13 @@ static class ScenePainter
 {
 	const double TextureSize = 256;
 
+	/// <summary>
+	/// Smallest texel-to-pixel area scale painted. Below it the whole texture covers a hundredth of a pixel; cairo
+	/// cannot represent the inverse pattern matrix (pixman uses 16.16 fixed point) and the compositor fails the
+	/// frame with "out of memory". WPF draws nothing for such a triangle.
+	/// </summary>
+	const double MinTextureScale = 1e-8;
+
 	internal static void Paint(Cairo.Context cr, List<PaintItem> items)
 	{
 		foreach (var item in items)
@@ -76,6 +83,7 @@ static class ScenePainter
 	static bool PaintTexture(Cairo.Context cr, ScreenPolygon polygon, ShadedLayer layer)
 	{
 		if (!TryAffine(polygon, out var matrix)) return false;
+		if (Math.Abs(matrix.Xx * matrix.Yy - matrix.Xy * matrix.Yx) < MinTextureScale) return true;
 		Path(cr, polygon);
 		cr.Clip();
 		cr.Save();
