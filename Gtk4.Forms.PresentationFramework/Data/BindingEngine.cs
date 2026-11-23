@@ -79,7 +79,7 @@ internal static partial class BindingEngine
 			var record = new BindingRecord(target, dp, binding, expr);
 			expr.Record = record;
 			list.Add(record);
-			if (binding.ElementName != null || !BindingTarget.IsElement(target)) TrackElementName(record);
+			if (binding.ElementName != null || !BindingTarget.IsElement(target)) RegisterContextListener(record);
 			exprMap[dp] = expr;
 			record.Activate();
 			if (fe != null) BindingGroupEnlister.Enlist(fe, expr);
@@ -172,7 +172,7 @@ internal static partial class BindingEngine
 
 		internal void Deactivate()
 		{
-			UntrackElementName(this);
+			UnregisterContextListener(this);
 			DetachInpc();
 			UnsubscribeTargetChanges();
 			DetachNotifyErrors();

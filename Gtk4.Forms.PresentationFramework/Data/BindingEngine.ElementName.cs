@@ -4,81 +4,92 @@ namespace System.Windows.Data;
 
 /// <summary>
 /// ElementName bindings are generated before the target is in the tree and before the names are registered, so
-/// each stays registered here and is re-resolved when a name scope or the tree around its target changes.
+/// each stays registered here and is re-resolved when a name scope or the tree around its target changes. Bindings
+/// on non-element targets register too: their mentor can appear later.
 /// </summary>
 internal static partial class BindingEngine
 {
-	static readonly List<WeakReference<BindingRecord>> _elementNameRecords = new List<WeakReference<BindingRecord>>();
+	/// <summary>Something whose source depends on a name scope or on the tree around its target.</summary>
+	internal interface IContextListener
+	{
+		string? ElementName { get; }
+
+		bool IsUnder(DependencyObject ancestor);
+
+		void ReResolve();
+	}
+
+	static readonly List<WeakReference<IContextListener>> _listeners = new List<WeakReference<IContextListener>>();
 
 	static BindingEngine() => DependencyObject.InheritanceParentChangedHook = TreeChanged;
 
-	static void TrackElementName(BindingRecord record)
+	internal static void RegisterContextListener(IContextListener listener)
 	{
-		lock (_elementNameRecords) _elementNameRecords.Add(new WeakReference<BindingRecord>(record));
+		lock (_listeners) _listeners.Add(new WeakReference<IContextListener>(listener));
 	}
 
-	static void UntrackElementName(BindingRecord record)
+	internal static void UnregisterContextListener(IContextListener listener)
 	{
-		lock (_elementNameRecords)
-			_elementNameRecords.RemoveAll(w => !w.TryGetTarget(out var r) || ReferenceEquals(r, record));
+		lock (_listeners)
+			_listeners.RemoveAll(w => !w.TryGetTarget(out var l) || ReferenceEquals(l, listener));
 	}
 
-	static List<BindingRecord> SnapshotElementNameRecords()
+	static List<IContextListener> SnapshotListeners()
 	{
-		var live = new List<BindingRecord>();
-		lock (_elementNameRecords)
+		var live = new List<IContextListener>();
+		lock (_listeners)
 		{
-			if (_elementNameRecords.Count == 0) return live;
-			_elementNameRecords.RemoveAll(w =>
+			if (_listeners.Count == 0) return live;
+			_listeners.RemoveAll(w =>
 			{
-				if (!w.TryGetTarget(out var r)) return true;
-				live.Add(r);
+				if (!w.TryGetTarget(out var l)) return true;
+				live.Add(l);
 				return false;
 			});
 		}
 		return live;
 	}
 
-	/// <summary>A name was registered or removed: re-resolve the bindings that use it.</summary>
+	/// <summary>A name was registered or removed (null: a whole scope changed): re-resolve what uses it.</summary>
 	internal static void NameScopeChanged(string? name)
 	{
-		foreach (var record in SnapshotElementNameRecords())
-			if (record.ElementName != null && (name == null || record.ElementName == name)) record.ReResolve();
+		foreach (var listener in SnapshotListeners())
+			if (listener.ElementName != null && (name == null || listener.ElementName == name)) listener.ReResolve();
 	}
 
 	/// <summary>The data context of <paramref name="mentor"/> changed: refresh the non-element bindings it serves.</summary>
 	static void RefreshMentored(DependencyObject mentor)
 	{
-		foreach (var record in SnapshotElementNameRecords())
-			if (record.UsesMentorDataContext(mentor)) record.Activate();
+		foreach (var listener in SnapshotListeners())
+			if (listener is BindingRecord record && record.UsesMentorDataContext(mentor)) record.Activate();
 	}
 
-	/// <summary>The tree around <paramref name="changed"/> changed: re-resolve bindings in its subtree.</summary>
+	/// <summary>The tree around <paramref name="changed"/> changed: re-resolve listeners in its subtree.</summary>
 	internal static void TreeChanged(DependencyObject changed)
 	{
-		foreach (var record in SnapshotElementNameRecords())
-			if (record.IsTargetUnder(changed)) record.ReResolve();
+		foreach (var listener in SnapshotListeners())
+			if (listener.IsUnder(changed)) listener.ReResolve();
 	}
 
-	internal sealed partial class BindingRecord
+	internal sealed partial class BindingRecord : IContextListener
 	{
 		object? _elementSource;
 
-		internal string? ElementName => _binding.ElementName;
+		public string? ElementName => _binding.ElementName;
 
 		internal bool UsesMentorDataContext(DependencyObject mentor) =>
 			UsesDataContext && _targetRef.TryGetTarget(out var t) && !BindingTarget.IsElement(t)
 			&& ReferenceEquals(BindingTarget.MentorOf(t), mentor);
 
-		internal bool IsTargetUnder(DependencyObject ancestor)
+		public bool IsUnder(DependencyObject ancestor)
 		{
 			if (!_targetRef.TryGetTarget(out var target)) return false;
-			for (var current = target; current != null; current = current.ContextParent)
+			for (var (current, steps) = ((DependencyObject?)target, 0); current != null && steps < 1000; current = current.ContextParent, steps++)
 				if (ReferenceEquals(current, ancestor)) return true;
 			return false;
 		}
 
-		internal void ReResolve()
+		public void ReResolve()
 		{
 			if (!_targetRef.TryGetTarget(out var target)) return;
 			if (_binding.ElementName == null

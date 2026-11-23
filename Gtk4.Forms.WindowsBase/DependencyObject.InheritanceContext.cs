@@ -6,7 +6,8 @@ public partial class DependencyObject
 
 	/// <summary>
 	/// The object that holds this one as a property value (WPF's inheritance context / mentor chain), for
-	/// objects that are not in a tree of their own, such as freezables. The latest holder wins; WPF tracks all.
+	/// freezables (and non-element objects in a resource dictionary), which are not in a tree of their own. The
+	/// latest holder wins; WPF tracks all.
 	/// </summary>
 	internal DependencyObject? InheritanceContext
 	{
@@ -14,6 +15,7 @@ public partial class DependencyObject
 		set
 		{
 			if (ReferenceEquals(InheritanceContext, value)) return;
+			if (value != null && ContextChainReaches(value, this)) return;
 			_inheritanceContext = value == null ? null : new WeakReference(value);
 			InheritanceParentChangedHook?.Invoke(this);
 		}
@@ -25,8 +27,16 @@ public partial class DependencyObject
 	void UpdateContextOfLocal(object? oldLocal, object? newLocal)
 	{
 		if (ReferenceEquals(oldLocal, newLocal)) return;
-		if (oldLocal is DependencyObject old && ReferenceEquals(old.InheritanceContext, this))
+		if (oldLocal is Freezable old && ReferenceEquals(old.InheritanceContext, this))
 			old.InheritanceContext = null;
-		if (newLocal is DependencyObject added && !ReferenceEquals(added, this)) added.InheritanceContext = this;
+		if (newLocal is Freezable added) added.InheritanceContext = this;
+	}
+
+	// A context that would close a loop is ignored: the chain is only ever walked upward.
+	static bool ContextChainReaches(DependencyObject start, DependencyObject target)
+	{
+		for (var (current, steps) = (start, 0); current != null && steps < 1000; current = current.ContextParent, steps++)
+			if (ReferenceEquals(current, target)) return true;
+		return false;
 	}
 }

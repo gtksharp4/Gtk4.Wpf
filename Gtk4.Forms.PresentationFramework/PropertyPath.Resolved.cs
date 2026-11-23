@@ -4,7 +4,7 @@ namespace System.Windows;
 
 public sealed partial class PropertyPath
 {
-	static readonly Regex _qualified = new Regex(@"^\(\s*([A-Za-z_]\w*)\.([A-Za-z_]\w*)\s*\)$");
+	static readonly Regex _qualified = new Regex(@"^\(\s*(?:[A-Za-z_][\w.\-]*:)?([A-Za-z_]\w*)\.([A-Za-z_]\w*)\s*\)$");
 
 	// A lone dependency property resolves by its name.
 	internal string ResolvedString
@@ -18,7 +18,8 @@ public sealed partial class PropertyPath
 
 	/// <summary>
 	/// Strips the owner from a single-segment "(Owner.Name)" path when Owner is the source's type or a base type, so
-	/// the CLR member resolves. Any other owner (an attached property) is left unresolved rather than matched to an
+	/// the CLR member resolves; an xmlns prefix on the owner is ignored (matched by simple name). Any other owner (an
+	/// attached property) is left unresolved rather than matched to an
 	/// unrelated CLR member of the same name.
 	/// </summary>
 	internal static string? ResolveOwner(object? source, string? path)

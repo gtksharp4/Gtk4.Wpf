@@ -32,10 +32,13 @@ internal static partial class BindingEngine
 			if (name.Length > 0) steps.Add(new PathStep(name.ToString()));
 			name.Clear();
 		}
+		int depth = 0;
 		foreach (char c in path)
 		{
-			if (c == '.') Flush();
-			else if (c == '/')
+			if (c == '(') depth++;
+			else if (c == ')' && depth > 0) depth--;
+			if (c == '.' && depth == 0) Flush();
+			else if (c == '/' && depth == 0)
 			{
 				Flush();
 				steps.Add(new PathStep(null));
@@ -90,9 +93,21 @@ internal static partial class BindingEngine
 	}
 
 	/// <summary>Reads a property; one not found on a collection is looked up on its current item.</summary>
-	static bool TryGetMember(object owner, string name, List<ICollectionView>? views, out object? value)
+	internal static bool TryGetMember(object owner, string name, List<ICollectionView>? views, out object? value)
 	{
 		value = null;
+		if (name.Length > 0 && name[0] == '(')
+		{
+			var clr = ClrNameOfOwnedStep(owner, name);
+			if (clr != null) name = clr;
+			else
+			{
+				var attached = AttachedProperty(owner, name);
+				if (attached == null) return false;
+				value = ((DependencyObject)owner).GetValue(attached);
+				return true;
+			}
+		}
 		var prop = owner.GetType().GetProperty(name, Members);
 		if (prop == null && owner is IEnumerable && owner is not string)
 		{

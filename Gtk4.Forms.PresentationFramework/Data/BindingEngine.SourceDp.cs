@@ -28,8 +28,10 @@ internal static partial class BindingEngine
 		{
 			if (source is not DependencyObject fe) return;
 			var path = PropertyPath.ResolveOwner(source, _binding.PathString);
-			if (string.IsNullOrEmpty(path) || path!.IndexOfAny(new[] { '.', '[', '(' }) >= 0) return;
-			var dp = FindDependencyProperty(fe.GetType(), path);
+			if (string.IsNullOrEmpty(path)) return;
+			var dp = path![0] == '(' && path.IndexOf(')') == path.Length - 1
+				? AttachedProperty(source, path)
+				: path.IndexOfAny(new[] { '.', '[', '(' }) >= 0 ? null : FindDependencyProperty(fe.GetType(), path);
 			if (dp == null) return;
 
 			_dpSource = fe;
