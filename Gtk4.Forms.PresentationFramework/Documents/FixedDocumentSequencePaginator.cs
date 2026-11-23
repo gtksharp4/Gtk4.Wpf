@@ -40,7 +40,8 @@ sealed class FixedDocumentSequencePaginator : DocumentPaginator
 		set => _pageSize = value;
 	}
 
-	/// <exception cref="ArgumentOutOfRangeException"><paramref name="pageNumber"/> is outside the sequence.</exception>
+	/// <exception cref="ArgumentOutOfRangeException"><paramref name="pageNumber"/> is negative.</exception>
+	/// <returns>The page, or <see cref="DocumentPage.Missing"/> past the last page.</returns>
 	public override DocumentPage GetPage(int pageNumber)
 	{
 		if (pageNumber < 0)
@@ -52,7 +53,7 @@ sealed class FixedDocumentSequencePaginator : DocumentPaginator
 				return paginator.GetPage(remaining);
 			remaining -= paginator.PageCount;
 		}
-		throw new ArgumentOutOfRangeException(nameof(pageNumber));
+		return DocumentPage.Missing;
 	}
 
 	IEnumerable<DocumentPaginator> Paginators()

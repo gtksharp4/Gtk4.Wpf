@@ -26,11 +26,14 @@ sealed class FixedDocumentPaginator : DocumentPaginator
 		set => _pageSize = value;
 	}
 
-	/// <exception cref="ArgumentOutOfRangeException"><paramref name="pageNumber"/> is outside the document.</exception>
+	/// <exception cref="ArgumentOutOfRangeException"><paramref name="pageNumber"/> is negative.</exception>
+	/// <returns>The page, or <see cref="DocumentPage.Missing"/> past the last page.</returns>
 	public override DocumentPage GetPage(int pageNumber)
 	{
-		if (pageNumber < 0 || pageNumber >= PageCount)
+		if (pageNumber < 0)
 			throw new ArgumentOutOfRangeException(nameof(pageNumber));
+		if (pageNumber >= PageCount)
+			return DocumentPage.Missing;
 		var root = _document.Pages[pageNumber].GetPageRoot(false);
 		if (root == null)
 			return DocumentPage.Missing;

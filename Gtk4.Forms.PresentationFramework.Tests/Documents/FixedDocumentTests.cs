@@ -42,7 +42,7 @@ public class FixedDocumentTests : WpfGtkTestBase
 		Assert.Equal(12, paginator.GetPage(2).Size.Width);
 		Assert.Equal(10, paginator.PageSize.Width);
 		Assert.Same(sequence, paginator.Source);
-		Assert.Throws<ArgumentOutOfRangeException>(() => paginator.GetPage(3));
+		Assert.Same(DocumentPage.Missing, paginator.GetPage(3));
 		Assert.Throws<ArgumentOutOfRangeException>(() => paginator.GetPage(-1));
 	});
 
@@ -53,7 +53,7 @@ public class FixedDocumentTests : WpfGtkTestBase
 		var paginator = document.DocumentPaginator;
 		Assert.Same(document.Pages[1].Child, paginator.GetPage(1).Visual);
 		Assert.Equal(new Size(20, 100), paginator.GetPage(1).Size);
-		Assert.Throws<ArgumentOutOfRangeException>(() => paginator.GetPage(2));
+		Assert.Same(DocumentPage.Missing, paginator.GetPage(2));
 		paginator.PageSize = new Size(1, 2);
 		Assert.Equal(new Size(1, 2), paginator.PageSize);
 	});
