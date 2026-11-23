@@ -92,6 +92,10 @@ public class Round49aConverterTests
 		// Legacy BitmapEffect store-only DPs (UIElement.BitmapEffect/Input): no string form in WPF.
 		"System.Windows.Media.Effects.BitmapEffect", "System.Windows.Media.Effects.BitmapEffectInput",
 		"System.Windows.Media.Imaging.BitmapSource",
+		// CroppedBitmap/FormatConvertedBitmap DPs. BitmapPalette has no converter in WPF; Int32RectConverter and
+		// PixelFormatConverter exist in WPF but no sample sets SourceRect/DestinationFormat from text
+		// (follow-up for the XamlValueConverter lane).
+		"System.Windows.Int32Rect", "System.Windows.Media.PixelFormat", "System.Windows.Media.Imaging.BitmapPalette",
 	};
 
 	[Fact]
