@@ -100,6 +100,8 @@ public partial class Window : ContentControl
 			_contentOverlay.Child = contentElement.Widget;
 		}
 
+		RefreshScrollViewers();
+
 		// Apply startup location before presenting (GTK4 has no Move() — currently a no-op).
 		ApplyStartupLocation(win);
 

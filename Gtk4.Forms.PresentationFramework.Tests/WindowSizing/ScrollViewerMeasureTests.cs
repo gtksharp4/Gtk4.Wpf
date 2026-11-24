@@ -52,7 +52,8 @@ public class ScrollViewerMeasureTests : WpfGtkTestBase
 		var probe = new MeasureProbe();
 		var sv = Viewer(probe, h: ScrollBarVisibility.Disabled);
 		sv.Measure(new Size(100, 80));
-		Assert.Equal(new Size(100, double.PositiveInfinity), probe.Last);
+		// The 200 high content overflows 80, so the Auto vertical bar shows and narrows the viewport (WPF remeasure).
+		Assert.Equal(new Size(100 - SystemParameters.VerticalScrollBarWidth, double.PositiveInfinity), probe.Last);
 	});
 
 	[Fact]
@@ -61,7 +62,8 @@ public class ScrollViewerMeasureTests : WpfGtkTestBase
 		var probe = new MeasureProbe();
 		var sv = Viewer(probe, v: ScrollBarVisibility.Disabled);
 		sv.Measure(new Size(100, 80));
-		Assert.Equal(new Size(double.PositiveInfinity, 80), probe.Last);
+		// The 300 wide content overflows 100, so the Auto horizontal bar shows and shortens the viewport.
+		Assert.Equal(new Size(double.PositiveInfinity, 80 - SystemParameters.HorizontalScrollBarHeight), probe.Last);
 	});
 
 	[Fact]

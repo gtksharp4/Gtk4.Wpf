@@ -2858,3 +2858,9 @@ is it worth committing to the multi-phase build toward 1:1.
   BorderThickness and a Visible scroll bar. R68E-3 defaults are WPF's (Disabled / Visible). R68E-4 the F1 test notes
   Margin is not mapped; docs now say the Window default size is the user-visible imaging fix. Grid star weights other
   than equal are not proportional on GTK (pre-existing, outside this lane). See `samples-coverage.md`.
+- **Round 68 (lane E) review fixes (second pass).** `ScrollViewer` natural-size propagation is now on only on an axis
+  its hosting Window sizes to content (`SizeToContent` Width/Height/WidthAndHeight, where WPF measures with an infinite
+  constraint); everywhere else, including wrapped in Border/StackPanel inside a Grid star track, it is off as on main.
+  Re-evaluated at creation, on Loaded, at Window show and when `SizeToContent` changes; the hexpand/vexpand heuristic is
+  gone. `BorderThickness` no longer adds to the desired size (the WPF default template has no Border). An Auto bar that
+  the content overflows is shown and its size added (WPF MeasureOverride remeasure).

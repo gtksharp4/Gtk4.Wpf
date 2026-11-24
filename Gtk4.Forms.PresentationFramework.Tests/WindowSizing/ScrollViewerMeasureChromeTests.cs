@@ -5,7 +5,7 @@ using Xunit;
 namespace Gtk4.Forms.PresentationFramework.Tests.WindowSizing;
 
 /// <summary>
-/// WPF ScrollViewer desired size adds Padding (ScrollContentPresenter margin), BorderThickness and a Visible scroll
+/// WPF ScrollViewer desired size adds Padding (ScrollContentPresenter margin) and a Visible scroll
 /// bar before clamping to the constraint (R68E-2).
 /// </summary>
 public class ScrollViewerMeasureChromeTests : WpfGtkTestBase
@@ -29,13 +29,39 @@ public class ScrollViewerMeasureChromeTests : WpfGtkTestBase
 		Assert.Equal(new Size(304, 206), sv.DesiredSize);
 	});
 
+	// dotnet/wpf ScrollViewer.CreateDefaultControlTemplate has no Border: BorderThickness adds nothing.
 	[Fact]
-	public void BorderThickness_adds_to_the_desired_size() => Run(() =>
+	public void BorderThickness_adds_nothing_to_the_desired_size() => Run(() =>
 	{
 		var sv = Viewer(ScrollBarVisibility.Auto, ScrollBarVisibility.Auto);
 		sv.BorderThickness = new Thickness(2, 3, 4, 5);
 		sv.Measure(Infinite);
-		Assert.Equal(new Size(306, 208), sv.DesiredSize);
+		Assert.Equal(new Size(300, 200), sv.DesiredSize);
+	});
+
+	// dotnet/wpf ScrollViewer.MeasureOverride: an Auto bar shows when the extent exceeds the viewport.
+	[Fact]
+	public void An_Auto_vertical_bar_is_added_when_the_content_is_too_tall() => Run(() =>
+	{
+		var sv = Viewer(ScrollBarVisibility.Disabled, ScrollBarVisibility.Auto);
+		sv.Measure(new Size(500, 100));
+		Assert.Equal(new Size(300 + SystemParameters.VerticalScrollBarWidth, 100), sv.DesiredSize);
+	});
+
+	[Fact]
+	public void An_Auto_horizontal_bar_is_added_when_the_content_is_too_wide() => Run(() =>
+	{
+		var sv = Viewer(ScrollBarVisibility.Auto, ScrollBarVisibility.Disabled);
+		sv.Measure(new Size(100, 500));
+		Assert.Equal(new Size(100, 200 + SystemParameters.HorizontalScrollBarHeight), sv.DesiredSize);
+	});
+
+	[Fact]
+	public void An_Auto_bar_stays_hidden_when_the_content_fits() => Run(() =>
+	{
+		var sv = Viewer(ScrollBarVisibility.Auto, ScrollBarVisibility.Auto);
+		sv.Measure(new Size(500, 500));
+		Assert.Equal(new Size(300, 200), sv.DesiredSize);
 	});
 
 	[Fact]

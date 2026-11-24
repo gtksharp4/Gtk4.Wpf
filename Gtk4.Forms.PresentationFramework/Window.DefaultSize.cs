@@ -38,4 +38,14 @@ public partial class Window
 		}
 		return (int)Math.Round(Math.Max(min, Math.Min(DefaultExtent(workArea), max)));
 	}
+
+	// A ScrollViewer reports its content size to GTK only on axes this window sizes to content.
+	internal void RefreshScrollViewers()
+	{
+		foreach (var e in LifecycleBroadcaster.EnumeratePreOrder(this))
+		{
+			if (e is Controls.ScrollViewer sv && sv.HasBackingWidget)
+				sv.UpdateNaturalSizePropagation();
+		}
+	}
 }
