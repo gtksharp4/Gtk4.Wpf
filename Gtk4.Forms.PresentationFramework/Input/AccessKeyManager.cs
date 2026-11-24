@@ -90,8 +90,8 @@ public sealed partial class AccessKeyManager
 		return false;
 	}
 
-	// Any live targetable registration in the scope, whether or not it names a target: the window swallows
-	// the key then, so GTK never moves focus for it.
+	// Test-only probe: whether the scope holds any live targetable registration for the key, whether or not
+	// it names a target.
 	internal static bool HasRegistrationIn(object scope, string key)
 	{
 		foreach (var element in Alive(Normalize(key)))
