@@ -12,7 +12,7 @@ public sealed partial class Glyphs
 	protected override Gtk.Widget CreateWidget()
 	{
 		_area = new Gtk.DrawingArea();
-		_area.DrawFunc = (area, cr, w, h) => Draw(cr, w, h);
+		_area.DrawFunc = CairoDrawFunc.Wrap(Draw);
 		SyncSize();
 		return _area;
 	}

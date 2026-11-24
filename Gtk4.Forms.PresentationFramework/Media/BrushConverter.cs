@@ -59,20 +59,11 @@ public class BrushConverter : TypeConverter
 	{
 		string[] p = s.Substring(3).Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
 		if (p.Length != 3 && p.Length != 4) throw new FormatException($"Cannot parse scRGB colour '{s}'.");
-		double[] v = new double[p.Length];
+		float[] v = new float[p.Length];
 		for (int i = 0; i < p.Length; i++)
-			v[i] = double.Parse(p[i], NumberStyles.Float, CultureInfo.InvariantCulture);
+			v[i] = float.Parse(p[i], NumberStyles.Float, CultureInfo.InvariantCulture);
 		int o = p.Length == 4 ? 1 : 0;
-		byte alpha = o == 1 ? (byte)Math.Round(Math.Max(0, Math.Min(1, v[0])) * 255) : (byte)255;
-		return Color.FromArgb(alpha, Gamma(v[o]), Gamma(v[o + 1]), Gamma(v[o + 2]));
-	}
-
-	// scRGB (linear) to sRGB byte, as WPF does.
-	static byte Gamma(double linear)
-	{
-		double c = Math.Max(0, Math.Min(1, linear));
-		double s = c <= 0.0031308 ? 12.92 * c : 1.055 * Math.Pow(c, 1 / 2.4) - 0.055;
-		return (byte)Math.Round(s * 255);
+		return Color.FromScRgb(o == 1 ? v[0] : 1f, v[o], v[o + 1], v[o + 2]);
 	}
 }
 

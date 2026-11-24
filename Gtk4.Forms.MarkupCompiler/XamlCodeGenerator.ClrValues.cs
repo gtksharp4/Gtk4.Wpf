@@ -21,6 +21,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			"System.Windows.Media.Media3D.Size3D", "System.Windows.Media.Media3D.Point4D",
 			"System.Windows.Media.Media3D.Quaternion", "System.Windows.Media.Media3D.Matrix3D",
 			"System.Windows.Media.Media3D.Rect3D", "System.Windows.Media.Animation.KeyTime",
+			"System.Windows.Int32Rect", "System.Windows.Media.PixelFormat",
 		};
 
 		// Reference types with a built-in converter that CLR (non-DP) properties of exactly that type use.
@@ -42,7 +43,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			if (t != null && Nullable.GetUnderlyingType(t) is Type under)
 				return ClrNullableExpression(under, propName, val);
 			if (t == null || t.IsGenericType) return ClrValueExpression(propName, val);
-			if (t.FullName == "System.String") return $"\"{EscapeString(val)}\"";
+			if (t.FullName == "System.String" || t.FullName == "System.Object") return $"\"{EscapeString(val)}\"";
 			if (t.IsEnum) return ClrEnumExpression(t, propName, val);
 			if (t.FullName == "System.Double" && !IsPlainNumber(val))
 				return $"(double){Converter}.ConvertByType(typeof(double), \"{EscapeString(val)}\")";

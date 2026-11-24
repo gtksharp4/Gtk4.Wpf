@@ -32,7 +32,7 @@ public partial class MenuItem : Control, ICommandSource, IDisposable
 	static void OnHeaderChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
 		var mi = (MenuItem)d;
-		var text = e.NewValue?.ToString() ?? string.Empty;
+		var text = mi.HeaderMnemonic();
 		if (mi._gtkButton != null) mi._gtkButton.Label = text;
 		if (mi._gtkMenuButton != null) mi._gtkMenuButton.Label = text;
 	}
@@ -111,25 +111,31 @@ public partial class MenuItem : Control, ICommandSource, IDisposable
 	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
-		var label = Header?.ToString() ?? string.Empty;
+		var label = HeaderMnemonic();
 		if (Items.OfType<MenuItem>().Any())
 		{
-			_gtkMenuButton = new Gtk.MenuButton { Label = label };
+			_gtkMenuButton = new Gtk.MenuButton { UseUnderline = true, Label = label };
 			var popover = new Gtk.Popover();
 			var box = new Gtk.Box(Gtk.Orientation.Vertical, 2);
 			foreach (var child in Items)
 			{
 				if (child is MenuItem item)
+				{
+					item.LogicalParent = this;
 					box.Add(item.Widget);
+				}
 				else if (child is Separator separator)
+				{
+					separator.LogicalParent = this;
 					box.Add(separator.Widget);
+				}
 			}
 			popover.Child = box;
 			_gtkMenuButton.Popover = popover;
 			return _gtkMenuButton;
 		}
 
-		_gtkButton = new Gtk.Button { Label = label };
+		_gtkButton = new Gtk.Button { UseUnderline = true, Label = label };
 		_gtkButton.Clicked += OnGtkClicked;
 		return _gtkButton;
 	}

@@ -107,11 +107,5 @@ public abstract partial class UIElement
 	}
 
 	/// <summary>Returns the printable string for a GDK keyval, or empty for non-printable keys.</summary>
-	static string KeyvalToString(uint keyval)
-	{
-		// Skip GDK special keys (>= 0xff00 or < 0x0020)
-		if (keyval >= 0xff00 || keyval < 0x0020) return string.Empty;
-		try { return char.ConvertFromUtf32((int)keyval); }
-		catch { return string.Empty; }
-	}
+	static string KeyvalToString(uint keyval) => GdkKeyText.FromKeyval(keyval) ?? string.Empty;
 }

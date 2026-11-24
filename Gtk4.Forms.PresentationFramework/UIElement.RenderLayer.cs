@@ -62,7 +62,7 @@ public abstract partial class UIElement
 		if (!OverridesOnRender && !HasNonElementVisualChildren()) return;
 		if (!(_widget is Gtk.Box box) || !ReferenceEquals(box, _defaultBox)) return;
 		var area = new Gtk.DrawingArea { CanTarget = false };
-		area.DrawFunc = OnRenderLayerDraw;
+		area.DrawFunc = CairoDrawFunc.Wrap((cr, w, h) => PaintRenderLayer(cr));
 		box.LayoutManager = new Gtk.BinLayout();
 		box.Prepend(area);
 		_renderArea = area;
@@ -76,8 +76,6 @@ public abstract partial class UIElement
 		EnsureRenderLayer();
 		_renderArea?.QueueDraw();
 	}
-
-	void OnRenderLayerDraw(Gtk.DrawingArea area, Cairo.Context cr, int width, int height) => PaintRenderLayer(cr);
 
 	/// <summary>
 	/// Runs <see cref="OnRender"/> if invalidated and paints the layer content onto <paramref name="cr"/>.

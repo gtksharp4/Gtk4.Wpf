@@ -26,6 +26,7 @@ public partial class Image : FrameworkElement
 		var img = (Image)d;
 		if (img._picture != null)
 			img.ApplySource((ImageSource?)e.NewValue);
+		img.InvalidateMeasure();
 	}
 
 	/// <summary>Gets or sets the image source.</summary>
@@ -113,5 +114,6 @@ public partial class Image : FrameworkElement
 		// GTK has no natural-size fit: ScaleDown never enlarges, and a picture that cannot shrink
 		// requests the intrinsic (pixel) size of its paintable, so Stretch.None shows the image 1:1.
 		_picture.CanShrink = stretch != Media.Stretch.None;
+		ApplyAlignment();
 	}
 }

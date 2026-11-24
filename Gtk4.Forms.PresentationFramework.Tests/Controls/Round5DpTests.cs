@@ -23,17 +23,17 @@ public class Round5DpTests
 	// ── ScrollViewer ─────────────────────────────────────────────────────────
 
 	[Fact]
-	public void ScrollViewer_HorizontalScrollBarVisibility_default_is_Auto()
+	public void ScrollViewer_HorizontalScrollBarVisibility_default_is_Disabled()
 	{
 		var sv = new WpfScrollViewer();
-		Assert.Equal(WpfScrollBarVis.Auto, sv.HorizontalScrollBarVisibility);
+		Assert.Equal(WpfScrollBarVis.Disabled, sv.HorizontalScrollBarVisibility);
 	}
 
 	[Fact]
-	public void ScrollViewer_VerticalScrollBarVisibility_default_is_Auto()
+	public void ScrollViewer_VerticalScrollBarVisibility_default_is_Visible()
 	{
 		var sv = new WpfScrollViewer();
-		Assert.Equal(WpfScrollBarVis.Auto, sv.VerticalScrollBarVisibility);
+		Assert.Equal(WpfScrollBarVis.Visible, sv.VerticalScrollBarVisibility);
 	}
 
 	[Fact]
