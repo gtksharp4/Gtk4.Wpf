@@ -2811,6 +2811,20 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   and the alignment offset is folded into the stretch matrix. `PathFigureCollection`/`PathSegmentCollection`/segment edits raise
   `Changed`. The `Points` getter no longer creates a local value. Limit: Grid fixed column widths are not enforced by the
   Gtk.Grid backing, so a wide shape in a fixed column still takes the free space like an Auto column.
+  - Known gaps (Round 69 lane I): a large `Stretch.None` shape in a FIXED-size slot still squeezes its siblings, because
+    GTK lets a child's natural size beat the container's fixed size in `Gtk.Grid`/`Gtk.Box`. Measured in a 300 px window
+    (branch vs WPF): fixed 100 px column + `1*` column, Line `X2=400`: line 298, star column 2 vs WPF 100 and 200 (main: 0
+    and 300, invisible); fixed 50 px row + `1*` row, Path 200x200: height 200, star row 53 vs WPF 50 and 250 (main: 0
+    and 253); `Border Width=100` holding a Line `X2=400` beside a `Border Width=100` in a horizontal `StackPanel`:
+    first Border 200 wide vs WPF 100 (main: 100). Long `TextBlock`s behave the same on main. Follow-up: enforce fixed
+    track/explicit sizes as maximums for children (benefits Shape and TextBlock). Target test:
+    `ShapeSlotTests.Stretch_None_line_in_a_fixed_100px_column_...` (skipped).
+  - Known gap: a shape with `Stretch != None` and a non-`Stretch` alignment reports natural size 0 in GTK (as on main), so
+    e.g. a Uniform polygon with `VerticalAlignment=Center` in a 50x100 Border is allocated 48x0 and draws nothing (WPF: 50x50),
+    and a `Stretch=Fill` Line with `HorizontalAlignment=Left` in a 300 px StackPanel is 0x0 (WPF: about 300). The managed
+    alignment-matrix rows are `Managed_layout_*` tests; the `Stretch` alignment case is covered on real GTK.
+- **Round 69 (lane I) review fixes (pass 2).** Test and doc only: fixed-track and explicit-size limits recorded above, the
+  Uniform alignment rows renamed `Managed_layout_*`, a real-GTK Uniform-in-Border test, and the fixed-column target test skipped.
 
 ## Phased roadmap (after Phase 0 proves the spine)
 

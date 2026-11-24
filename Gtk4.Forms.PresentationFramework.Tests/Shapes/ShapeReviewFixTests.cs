@@ -81,12 +81,13 @@ public class ShapeReviewFixTests : WpfGtkTestBase
 		Points = new PointCollection { new Point(0, 0), new Point(10, 10), new Point(0, 10) }
 	};
 
+	// Managed Measure/Arrange only; the real GTK path is ShapeSlotTests.
 	[Theory]
 	[InlineData(VerticalAlignment.Stretch, 25)]
 	[InlineData(VerticalAlignment.Center, 0)]
 	[InlineData(VerticalAlignment.Top, 0)]
 	[InlineData(VerticalAlignment.Bottom, 0)]
-	public void Uniform_shape_is_aligned_inside_its_slot(VerticalAlignment alignment, double offsetY) => Run(() =>
+	public void Managed_layout_uniform_shape_is_aligned_inside_its_slot(VerticalAlignment alignment, double offsetY) => Run(() =>
 	{
 		var p = Triangle(alignment);
 		p.Measure(new Size(50, 100));
