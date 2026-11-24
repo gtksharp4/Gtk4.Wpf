@@ -114,6 +114,7 @@ public partial class ScrollViewer : ContentControl
 	{
 		_scroll = new Gtk.ScrolledWindow();
 		ApplyScrollPolicy();
+		ApplyNaturalSizePropagation();
 		if (Content is UIElement child)
 			_scroll.Child = child.Widget;
 		return _scroll;
