@@ -36,7 +36,7 @@ public class TextBlockInlineLayoutGtkTests : WpfGtkTestBase
 		try
 		{
 			var label = (Gtk.Label)((Gtk.Overlay)outer.Widget).Child!;
-			int before = label.Width;
+			label.Layout.GetPixelSize(out int before, out _);
 			outer.Inlines.Remove(container);
 			GtkPump.For(300);
 			Assert.Null(inner.Widget.Parent);
@@ -44,7 +44,7 @@ public class TextBlockInlineLayoutGtkTests : WpfGtkTestBase
 			Assert.Null(LogicalTreeHelper.GetParent(inner));
 			Assert.DoesNotContain('￼', label.Text ?? "");
 			label.Layout.GetPixelSize(out int w, out _);
-			Assert.True(w < before, $"text width {w} shrank from label {before}");
+			Assert.True(w < before, $"text width {w} shrank from {before}");
 		}
 		finally { win.Close(); }
 	});
@@ -62,11 +62,11 @@ public class TextBlockInlineLayoutGtkTests : WpfGtkTestBase
 		try
 		{
 			Assert.True(inner.Widget.ComputeBounds(outer.Widget, out var b));
-			var lbl = (Gtk.Label)((Gtk.Overlay)outer.Widget).Child!;
 			Assert.True(b.Y >= outer.InlineFirstLineHeight - 1);
 			var (before, after) = outer.InlineObjectEdges(0);
 			Assert.InRange(b.X, before - 1, before + 1);
 			Assert.True(after <= 120 + 1, $"box ends at {after}, inside the width");
+			Assert.True(b.X + b.Width <= after + 1, $"child ends at {b.X + b.Width}, before the run at {after}");
 		}
 		finally { win.Close(); }
 	});
@@ -85,6 +85,48 @@ public class TextBlockInlineLayoutGtkTests : WpfGtkTestBase
 		{
 			Assert.True(inner.Widget.ComputeBounds(outer.Widget, out var b));
 			Assert.Equal(outer.InlineLabelBaseline, b.Y + b.Height, 1.0);
+		}
+		finally { win.Close(); }
+	});
+
+	[Fact]
+	public void An_unhosted_child_keeps_its_own_alignment() => Run(() =>
+	{
+		using var gtk = new GtkDispatcherScope();
+		var inner = new Rectangle { Width = 30, Height = 10, HorizontalAlignment = HorizontalAlignment.Right };
+		var container = new InlineUIContainer(inner);
+		var outer = new TextBlock();
+		outer.Inlines.Add(new Run("a "));
+		outer.Inlines.Add(container);
+		var win = Show(outer, inner);
+		try
+		{
+			Assert.Equal(Gtk.Align.Start, inner.Widget.Halign);
+			outer.Inlines.Remove(container);
+			GtkPump.For(200);
+			Assert.Equal(Gtk.Align.End, inner.Widget.Halign);
+			Assert.Equal(Gtk.Align.Center, inner.Widget.Valign);
+		}
+		finally { win.Close(); }
+	});
+
+	[Fact]
+	public void A_nested_padded_text_block_with_children_is_placed_without_doubling_its_padding() => Run(() =>
+	{
+		using var gtk = new GtkDispatcherScope();
+		var leaf = new Rectangle { Width = 10, Height = 10 };
+		var nested = new TextBlock { Padding = new Thickness(10, 6, 0, 0) };
+		nested.Inlines.Add(new Run("n "));
+		nested.Inlines.Add(new InlineUIContainer(leaf));
+		var outer = new TextBlock();
+		outer.Inlines.Add(new Run("a "));
+		outer.Inlines.Add(new InlineUIContainer(nested));
+		var win = Show(outer, nested);
+		try
+		{
+			Assert.True(nested.HostsInlineObjects);
+			var (before, _) = outer.InlineObjectEdges(0);
+			Assert.InRange(nested.Widget.MarginStart, before - 1, before + 1);
 		}
 		finally { win.Close(); }
 	});

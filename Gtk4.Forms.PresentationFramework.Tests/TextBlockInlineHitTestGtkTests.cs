@@ -34,7 +34,8 @@ public class TextBlockInlineHitTestGtkTests : WpfGtkTestBase
 		win.Show();
 		try
 		{
-			GtkState.Require(() => button.Widget.IsMapped && button.Widget.ComputeBounds(button.Widget, out var bb) && bb.Width > 0,
+			GtkState.Require(
+				() => button.Widget.IsMapped && button.Widget.ComputeBounds(button.Widget, out var bb) && bb.Width > 0,
 				"button mapped", outer, button);
 			GtkPump.For(400);
 			var overlay = (Gtk.Overlay)outer.Widget;
@@ -45,9 +46,8 @@ public class TextBlockInlineHitTestGtkTests : WpfGtkTestBase
 			var pos = label.Layout.IndexToPos(index + 1);
 			double x = origin.X + dx + pos.X / 1024.0 + 2, y = origin.Y + dy + (pos.Y + pos.Height / 2) / 1024.0;
 			var tp = overlay.Pick(x, y, Gtk.PickFlags.Default);
-			Assert.True(IsOrInside(tp, label), $"text pick reaches the label: {tp?.GetType().Name} at {x},{y} origin {origin.X},{origin.Y} d {dx},{dy} idx {index} text [{label.Text}] pos {pos.X},{pos.Y}");
+			Assert.True(IsOrInside(tp, label), $"text pick reaches the label: {tp?.GetType().Name} at {x},{y}");
 
-			
 			Assert.True(button.Widget.ComputeBounds(overlay, out var b) && b.Width > 0 && b.Height > 0);
 			var hit = overlay.Pick(b.X + b.Width / 2, b.Y + b.Height / 2, Gtk.PickFlags.Default);
 			Assert.True(IsOrInside(hit, button.Widget), "button pick reaches the button");

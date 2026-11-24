@@ -2879,6 +2879,13 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   placeholder, wrapping to a later line, baseline of a short child, and pixel rows of the listing. **a-K71-6** two
   lines wrapped. Rejected: a-K71-5 (process: the Progress section is orchestrator-owned during concurrent lanes and
   the two root causes are recorded above and in `docs/samples-coverage.md`).
+- **Round 71 (lane K) follow-up.** Applied failing-first where a test can see it. The listing pixel test now checks
+  every literal layout row (extents from the label's Pango lines) and every nested block's bounds, so a blank middle
+  fails it. The `Inlines.Remove` test compares layout widths before and after. The wrapping test checks the child ends
+  before the following run, and an unused local was dropped. An unhosted child gets its previous
+  `Halign`/`Valign` back (it used to stretch). A label-rooted nested TextBlock keeps padding in its margins; one that
+  hosts children keeps it on its inner label, so the placement no longer adds it twice. Over-length lines and a
+  whitespace-only line were fixed.
 - **Round 71 (lane K) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 new warnings (only the known
   WPF-Samples-GTK4 HelloWorld error and warnings). Targeted tests (TextBlock, Inline, KeyFrameListing, Storyboard,
   Hyperlink, NameScope, LogicalTree): 254 passed, 1 skipped. Samples gate: all 207 build-pass projects still build (two

@@ -34,7 +34,8 @@ public partial class Storyboard
 						Trace.WriteLine($"Storyboard: animation of '{childPath?.Path}' skipped: {ex.Message}");
 						continue;
 					}
-					AnimationStore.Apply(resolved.Item1, resolved.Item2, clock, LayeredHandoff(bound, resolved, handoff));
+					AnimationStore.Apply(
+						resolved.Item1, resolved.Item2, clock, LayeredHandoff(bound, resolved, handoff));
 					leaves.Add(clock);
 					break;
 			}

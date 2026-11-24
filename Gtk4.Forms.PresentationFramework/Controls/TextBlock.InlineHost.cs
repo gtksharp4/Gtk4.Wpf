@@ -15,6 +15,8 @@ public partial class TextBlock
 	Gtk.Overlay? _inlineOverlay;
 	readonly List<InlineUIContainer> _inlineContainers = new List<InlineUIContainer>();
 	readonly List<UIElement> _hostedChildren = new List<UIElement>();
+	readonly Dictionary<UIElement, (Gtk.Align H, Gtk.Align V)> _hostedAlign
+		= new Dictionary<UIElement, (Gtk.Align H, Gtk.Align V)>();
 
 	/// <summary>Whether container elements are laid out inline (the root widget is the overlay).</summary>
 	internal bool HostsInlineObjects => _inlineOverlay != null;
@@ -67,7 +69,9 @@ public partial class TextBlock
 			if (_inlineOverlay != null && ReferenceEquals(old.Widget.Parent, _inlineOverlay))
 			{
 				_inlineOverlay.RemoveOverlay(old.Widget);
-				ResetHostedWidget(old);
+				_hostedAlign.TryGetValue(old, out var align);
+				_hostedAlign.Remove(old);
+				ResetHostedWidget(old, align);
 			}
 			RemoveLogicalChild(old);
 		}
@@ -84,6 +88,7 @@ public partial class TextBlock
 			if (_inlineOverlay == null) continue;
 			var w = child.Widget;
 			if (w.Parent != null) continue;
+			_hostedAlign[child] = (w.Halign, w.Valign);
 			w.Halign = Gtk.Align.Start;
 			w.Valign = Gtk.Align.Start;
 			_inlineOverlay.AddOverlay(w);

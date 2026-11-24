@@ -1,3 +1,5 @@
+using System;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using Gtk4.Forms.PresentationFramework.Tests.Lifecycle;
@@ -7,11 +9,11 @@ using WpfWindow = System.Windows.Window;
 
 namespace Gtk4.Forms.PresentationFramework.Tests;
 
-/// <summary>The listing's rows, including the ones around the nested blocks, are visibly drawn.</summary>
+/// <summary>Each literal row and each nested block of the listing is visibly drawn.</summary>
 public class KeyFrameListingPixelGtkTests : WpfGtkTestBase
 {
 	[Fact]
-	public void Every_listing_row_has_drawn_pixels() => Run(() =>
+	public void Every_literal_row_and_nested_block_has_drawn_pixels() => Run(() =>
 	{
 		using var gtk = new GtkDispatcherScope();
 		var page = new KeyFrameListingPage();
@@ -33,24 +35,48 @@ public class KeyFrameListingPixelGtkTests : WpfGtkTestBase
 			var texture = widget.Native!.Renderer.RenderTexture(node, node.Bounds);
 			var data = texture.Download();
 			int stride = data.Length / texture.Height;
-			int rows = 0, inked = 0;
-			// 14 px bands: a band is inked when enough pixels differ from the band's corner (the background).
-			for (int y0 = 0; y0 + 14 <= texture.Height; y0 += 14)
+			int Ink(int x0, int y0, int x1, int y1)
 			{
-				rows++;
-				int diff = 0;
-				for (int y = y0; y < y0 + 14; y++)
-					for (int x = 0; x < texture.Width; x++)
+				x0 = Math.Max(0, x0);
+				y0 = Math.Max(0, y0);
+				x1 = Math.Min(texture.Width, x1);
+				y1 = Math.Min(texture.Height, y1);
+				int j = y0 * stride + (texture.Width - 1) * 4, diff = 0;
+				for (int y = y0; y < y1; y++)
+					for (int x = x0; x < x1; x++)
 					{
 						int i = y * stride + x * 4;
-						int j = y0 * stride + (texture.Width - 1) * 4;
-						if (System.Math.Abs(data[i] - data[j]) + System.Math.Abs(data[i + 1] - data[j + 1])
-							+ System.Math.Abs(data[i + 2] - data[j + 2]) > 60) diff++;
+						if (Math.Abs(data[i] - data[j]) + Math.Abs(data[i + 1] - data[j + 1])
+							+ Math.Abs(data[i + 2] - data[j + 2]) > 60) diff++;
 					}
-				if (diff >= 20) inked++;
+				return diff;
 			}
-			Assert.True(rows >= 8, $"{rows} bands");
-			Assert.True(inked >= 8, $"{inked} of {rows} bands have text pixels");
+			var label = (Gtk.Label)((Gtk.Overlay)widget).Child!;
+			Assert.True(label.ComputeBounds(widget, out var origin));
+			label.GetLayoutOffsets(out _, out int dy);
+			var layout = label.Layout;
+			var bytes = Encoding.UTF8.GetBytes(label.Text ?? "");
+			int literal = 0;
+			for (int i = 0; i < layout.LineCount; i++)
+			{
+				var line = layout.GetLineReadonly(i);
+				var text = Encoding.UTF8.GetString(bytes, line.StartIndex, line.Length);
+				if (text.Contains('￼') || string.IsNullOrWhiteSpace(text)) continue;
+				var pos = layout.IndexToPos(line.StartIndex);
+				int top = (int)(origin.Y + dy + pos.Y / 1024.0), bottom = top + (int)Math.Ceiling(pos.Height / 1024.0);
+				literal++;
+				Assert.True(Ink(0, top, w, bottom) >= 20, $"literal row {i} [{text.Trim()}] y {top}-{bottom} is blank");
+			}
+			Assert.True(literal >= 6, $"{literal} literal rows");
+			var nested = new[] { first, page.FirstSplineTextBlock, page.SecondLinearTextBlock,
+				page.ThirdLinearTextBlock, page.SecondSplineTextBlock };
+			foreach (var block in nested)
+			{
+				Assert.True(block.Widget.ComputeBounds(widget, out var r), "nested block bounds");
+				Assert.True(r.Width > 0 && r.Height > 0, $"{block.Name} has an empty box");
+				Assert.True(Ink((int)r.X, (int)r.Y, (int)(r.X + r.Width), (int)(r.Y + r.Height)) >= 20,
+					$"nested block {block.Name} is blank");
+			}
 		}
 		finally { win.Close(); }
 	});
