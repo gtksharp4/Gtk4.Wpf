@@ -51,7 +51,8 @@ public class Round5GtkSmokeTests : WpfGtkTestBase
 			HorizontalScrollBarVisibility = WpfScrollBarVis.Disabled,
 		};
 		var sw = (Gtk.ScrolledWindow)sv.Widget;
-		Assert.Equal(Gtk.PolicyType.Never, sw.HscrollbarPolicy);
+		// Disabled clips like WPF: External shows no bar and, unlike Never, does not pin the window to the content width.
+		Assert.Equal(Gtk.PolicyType.External, sw.HscrollbarPolicy);
 	});
 
 	[Fact]

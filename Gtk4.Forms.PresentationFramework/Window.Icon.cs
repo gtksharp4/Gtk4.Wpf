@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -10,14 +11,15 @@ public partial class Window
 	const int IconSize = 24;
 	const uint IconHoverCssPriority = 601;
 	const string IconHoverCss = ".titlebar-icon:hover { filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.65)); }";
+	const string DefaultIconResourceName = "Gtk4.Forms.PresentationFramework.GtkSharp.png";
 
-	// GTK4 has no exe-icon equivalent; a generic application icon from the bundled theme is the
-	// cross-platform default shown when the app sets no Icon.
+	// Keep a theme fallback if the embedded icon cannot be decoded by GdkPixbuf.
 	const string DefaultIconName = "application-x-executable";
 
 	Gtk.HeaderBar? _headerBar;
 	Gtk.Image? _iconImage;
 	Gtk.CssProvider? _iconHoverCssProvider;
+	Gtk.Popover? _iconContextMenu;
 
 	/// <summary>The WPF-compatible window icon, shown in the GTK HeaderBar titlebar.</summary>
 	public static readonly DependencyProperty IconProperty =
@@ -65,6 +67,8 @@ public partial class Window
 
 		if (_iconImage != null)
 		{
+			_iconContextMenu?.Unparent();
+			_iconContextMenu = null;
 			if (_iconHoverCssProvider != null)
 				_iconImage.StyleContext.RemoveProvider(_iconHoverCssProvider);
 			_headerBar.Remove(_iconImage);
@@ -79,7 +83,7 @@ public partial class Window
 
 	Gtk.Image? CreateIconImage()
 	{
-		Gtk.Image? img = LoadIconImage(Icon) ?? Gtk.Image.NewFromIconName(DefaultIconName);
+		Gtk.Image? img = LoadIconImage(Icon) ?? LoadDefaultIconImage() ?? Gtk.Image.NewFromIconName(DefaultIconName);
 		if (img != null)
 		{
 			// Explicit size requests make the header-bar image take space and render.
@@ -95,6 +99,18 @@ public partial class Window
 			var click = new Gtk.GestureClick { Button = 1 };
 			click.Pressed += (_, e) => HandleTitleBarIconPress(e.NPress);
 			img.AddController(click);
+
+			var contextClick = new Gtk.GestureClick { Button = 3 };
+			contextClick.Pressed += (_, _) => _iconContextMenu?.Popup();
+			img.AddController(contextClick);
+
+			var closeButton = new Gtk.Button
+			{
+				Label = GetCloseWindowMenuLabel(CultureInfo.CurrentUICulture),
+				UseUnderline = false
+			};
+			closeButton.Clicked += (_, _) => HandleTitleBarIconContextMenuClose();
+			_iconContextMenu = new Gtk.Popover { Child = closeButton, Parent = img };
 		}
 		return img;
 	}
@@ -102,7 +118,47 @@ public partial class Window
 	internal void HandleTitleBarIconPress(int nPress)
 	{
 		if (nPress == 2)
-			Close();
+			CloseFromTitleBarIcon();
+	}
+
+	void CloseFromTitleBarIcon() => Close();
+
+	internal void HandleTitleBarIconContextMenuClose() => CloseFromTitleBarIcon();
+
+	internal Gtk.Popover? TitleBarIconContextMenu => _iconContextMenu;
+
+	internal static string GetCloseWindowMenuLabel(CultureInfo culture) =>
+		culture.TwoLetterISOLanguageName switch
+		{
+			"it" => "Chiudi finestra",
+			"fr" => "Fermer la fenêtre",
+			"de" => "Fenster schließen",
+			"es" => "Cerrar ventana",
+			"pt" => "Fechar janela",
+			_ => "Close Window"
+		};
+
+	internal static Gtk.Image? LoadDefaultIconImage()
+	{
+		string path = ExtractDefaultIconToTempFile();
+		try
+		{
+			return LoadIconImage(ImageSource.FromFile(path));
+		}
+		finally
+		{
+			File.Delete(path);
+		}
+	}
+
+	internal static string ExtractDefaultIconToTempFile()
+	{
+		using var resource = typeof(Window).Assembly.GetManifestResourceStream(DefaultIconResourceName)
+			?? throw new InvalidOperationException($"Embedded window icon '{DefaultIconResourceName}' was not found.");
+		string path = Path.Combine(Path.GetTempPath(), "gtk4wpf-" + Guid.NewGuid().ToString("N") + ".png");
+		using (var output = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+			resource.CopyTo(output);
+		return path;
 	}
 
 	/// <summary>Loads <paramref name="icon"/> as a scaled image, or null when it has no file.</summary>

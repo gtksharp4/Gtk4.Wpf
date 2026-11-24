@@ -53,7 +53,8 @@ public partial class Expander : HeaderedContentControl
 	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
-		_expander = new Gtk.Expander(HeaderText);
+		_expander = new Gtk.Expander(null) { UseUnderline = true };
+		_expander.Label = HeaderMnemonic();
 		_expander.Expanded = IsExpanded;
 		if (Content is UIElement child)
 			_expander.Child = child.Widget;
@@ -72,8 +73,9 @@ public partial class Expander : HeaderedContentControl
 	/// <inheritdoc/>
 	protected override void OnHeaderChanged(object? oldHeader, object? newHeader)
 	{
+		var mnemonic = HeaderMnemonic();
 		if (_expander != null)
-			_expander.Label = HeaderText;
+			_expander.Label = mnemonic;
 	}
 
 	/// <inheritdoc/>
@@ -90,6 +92,14 @@ public partial class Expander : HeaderedContentControl
 	}
 
 	string HeaderText => Header as string ?? Header?.ToString() ?? string.Empty;
+
+	// A string header recognizes access keys (WPF: the header ToggleButton's presenter); other headers are literal.
+	string HeaderMnemonic()
+	{
+		if (Header is string text) return AccessKeyBinding.Apply(this, text);
+		AccessKeyBinding.Register(this, null);
+		return HeaderText.Replace("_", "__");
+	}
 
 	void OnGtkNotifyExpanded(object? sender, GLib.NotifyArgs e)
 	{

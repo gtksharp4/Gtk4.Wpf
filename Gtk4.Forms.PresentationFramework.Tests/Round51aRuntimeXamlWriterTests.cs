@@ -19,6 +19,15 @@ public class Round51aRuntimeXamlWriterTests : WpfGtkTestBase, IDisposable
 	static T RoundTrip<T>(T value) => (T)XamlReader.Parse(XamlWriter.Save(value!));
 
 	[Fact]
+	public void Default_Paragraph_writes_no_Margin() => Run(() =>
+	{
+		string xaml = XamlWriter.Save(new Paragraph(new Run("x")));
+
+		Assert.DoesNotContain("Margin", xaml);
+		Assert.DoesNotContain("NaN", xaml);
+	});
+
+	[Fact]
 	public void ResourceDictionary_with_double_and_string_entries_round_trips() => Run(() =>
 	{
 		var dictionary = new ResourceDictionary { ["MeaningOfLife"] = 42.0, ["HelloWorld"] = "Hello, world" };

@@ -23,7 +23,7 @@ public partial class RadioButton : ToggleButton
 	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
-		_button = new Gtk.CheckButton { Active = IsChecked == true };
+		_button = new Gtk.CheckButton { Active = IsChecked == true, UseUnderline = true, Label = AccessLabel(Content) };
 		_button.Toggled += (s, e) => GtkToggled(_button.Active);
 		ApplyGtkGroup();
 		return _button;
@@ -31,6 +31,11 @@ public partial class RadioButton : ToggleButton
 
 	// GTK ignores a click on an already-active grouped radio, so no Click is raised for it.
 	internal override bool RaisesClickOnToggled(bool active) => active;
+
+	internal override void SetGtkLabel(string mnemonic)
+	{
+		if (_button != null) _button.Label = mnemonic;
+	}
 
 	internal override void SetGtkActive(bool active)
 	{
