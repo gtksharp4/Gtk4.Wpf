@@ -2738,9 +2738,9 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   test of Round 61 (the branch is not rebased).
 - **Round 63 (lane B) track 5 - packaging: NOT merged.** `gf63b/packaging-permissions` delivered nothing (Round 61's
   attempt was BLOCKed before any commit, and this one did not ship either), so there is nothing to merge:
-  EditingExaminerDemo's
-  `System.Security.Permissions` dependency (verify the net10.0 reference assembly, SYSLIB0003 staying a warning, pin it,
-  nuspec test) and the WPFGallery `SystemEvents` leftovers stay open lane work, not a defect in the merged code.
+  EditingExaminerDemo's `System.Security.Permissions` dependency (verify the net10.0 reference assembly,
+  SYSLIB0003 staying a warning, pin it, nuspec test) and the WPFGallery `SystemEvents` leftovers stay open lane work,
+  not a defect in the merged code.
 - **Round 63 (lane B) track 6 - rendering hygiene (DONE, merged).** `gf63b/rendering-hygiene` (`a0e4d8cb`): the
   DrawFunc `Cairo.Context` is disposed deterministically on the GTK thread (the 'Cairo.Context is leaking' finalizer
   warnings of Per-FrameAnimation and ParticlesDemo), and textures scaled below `MinTextureScale` are not applied (the
@@ -2753,8 +2753,10 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   the visual. Remaining deviation: the default is null, not WPF's empty frozen collection. **a-F2** unsupported
   attributes on a `CommandBinding` child (`PreviewExecuted`, `PreviewCanExecute`) are reported as `Skipped attribute
   <name> on CommandBinding: not available in the layer`; the supported handlers stay wired. **a-F3** run-time tests:
-  the generated code is compiled and run, so `Tag="1"` is a string, the `DiscreteObjectKeyFrame` Value case is
-  unchanged by the literal rule, and `FindName("TextEffectRotateTransform")` returns the `RotateTransform`;
+  the generated code is compiled and run, so `Tag="1"` is a string and `FindName("TextEffectRotateTransform")` returns
+  the `RotateTransform`; the object key frame test is text-only plus AssertCompiles (the layer has no
+  `ObjectAnimationUsingKeyFrames`/`DiscreteObjectKeyFrame`, so the generator drops that animation and the literal rule
+  cannot reach it, before and after the sweep);
   mutation-checked (reverting the object-literal rule turns the first red). **a-F6** `Int32Rect` 'Empty' is compared
   ordinally as in WPF ('empty' is a `FormatException`); `FormatException` for token counts and unknown pixel formats is
   this layer's convention (WPF throws `InvalidOperationException` / `ArgumentException`, the latter from memory).
@@ -2771,11 +2773,13 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
 - **Round 63 (lane B) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. Targeted tests (the
   suites run in full at integrate): `MarkupCompiler.Tests` `GeneratorSweep4*` 42 passed; `PresentationFramework.Tests`
   `TextBlockTextEffects`/`Viewport3DDegenerate`/`CairoDrawFunc`/`XamlValueConverterImaging`/`Round49aConverter` 56
-  passed; `ProjectConverter.Tests` `PackedNuspec` 2 passed. Samples gate: all 204 projects that built at `17c64167` build through a lane-private pinned feed (two builds each),
+  passed; `ProjectConverter.Tests` `PackedNuspec` 2 passed.
+  Samples gate: all 204 projects that built at `17c64167` build through a lane-private pinned feed (two builds each),
   and all 191 apps that ran still run and stay up for 10 s (20 with no window handle at 10 s re-checked alone for 20 s:
   all alive with a window; OpacityMasking needed 35 s and shows its window). A first pass packed a stale MarkupCompiler
   (a mutation-check build left in `bin`) and showed a false 2DTransforms failure (`Text = 0`); re-packed from a clean
   solution build it passes.
+- **Round 63 (lane B) follow-up.** The Run/Paragraph TextEffects guard is now checked by running generated  `InitializeComponent` (the hand-written null-guard test is removed); the object key frame test is documented as  text-only; the Viewport3D degenerate-texture test is renamed to match the corrected MinTextureScale wording; two  over-long test lines are wrapped. The MarkupCompiler run-time tests load the layer assemblies in the default load  context; the Linux and macOS CI legs still have to confirm they need no display.
 - **Round 63 (lane B) carry-over.** Packaging (EditingExaminerDemo `System.Security.Permissions`, WPFGallery
   `SystemEvents`) is still unstarted. `TextElement.TextEffects`, `FlowDocument.TextEffects` and `TextBlock.TextEffects`
   default to null (not an empty frozen collection). `CommandBinding` still has only `Executed` and `CanExecute`.

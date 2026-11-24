@@ -58,17 +58,6 @@ public class TextBlockTextEffectsTests
 	}
 
 	[Fact]
-	public void The_statements_generated_for_a_Run_create_the_collection_first()
-	{
-		var run = new Run("x");
-
-		if (run.TextEffects == null) run.TextEffects = new TextEffectCollection();
-		run.TextEffects.Add(new TextEffect { PositionCount = 1 });
-
-		Assert.Equal(1, run.TextEffects.Count);
-	}
-
-	[Fact]
 	public void TextEffects_can_be_replaced()
 	{
 		var tb = new TextBlock();

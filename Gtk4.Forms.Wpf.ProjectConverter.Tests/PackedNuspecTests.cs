@@ -56,7 +56,8 @@ public class PackedNuspecTests
 		Assert.NotEmpty(groups);
 		foreach (var group in groups)
 		{
-			var dep = group.Elements().SingleOrDefault(e => (string?)e.Attribute("id") == "Microsoft.Win32.SystemEvents");
+			var dep = group.Elements()
+				.SingleOrDefault(e => (string?)e.Attribute("id") == "Microsoft.Win32.SystemEvents");
 			Assert.True(dep != null, $"Missing in group {group.Attribute("targetFramework")}");
 			Assert.StartsWith("10.0.0", ((string)dep.Attribute("version")!).TrimStart('[', '('));
 		}

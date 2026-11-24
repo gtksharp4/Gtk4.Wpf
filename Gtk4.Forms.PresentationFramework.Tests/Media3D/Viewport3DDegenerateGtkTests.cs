@@ -88,7 +88,7 @@ public class Viewport3DDegenerateGtkTests : WpfGtkTestBase
 	/// <summary>
 	/// Smoke test only: the cairo image replay always reports Success, with or without the MinTextureScale guard, so
 	/// it does not reproduce the Gsk compositor failure. That is covered by
-	/// <see cref="A_texture_scaled_below_a_hundredth_of_a_pixel_is_never_applied"/>.
+	/// <see cref="A_texture_covering_a_negligible_fraction_of_a_pixel_is_never_applied"/>.
 	/// </summary>
 	[Theory]
 	[InlineData(1e-3)]
@@ -113,7 +113,7 @@ public class Viewport3DDegenerateGtkTests : WpfGtkTestBase
 	static Cairo.Rectangle NewExtents() => new Cairo.Rectangle(-10000, -10000, 20000, 20000);
 
 	[Fact]
-	public void A_texture_scaled_below_a_hundredth_of_a_pixel_is_never_applied() => Run(() =>
+	public void A_texture_covering_a_negligible_fraction_of_a_pixel_is_never_applied() => Run(() =>
 	{
 		var brush = new CountingBrush { ImageSource = ((ImageBrush)Texture()).ImageSource };
 		Ink(Quad(0.0003, Ortho(), texture: brush), out var status);

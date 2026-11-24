@@ -25,7 +25,8 @@ public class GeneratorSweep4RuntimeTests : Sweep3Base
 		var refs = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator)
 			.Where(p => !Path.GetFileName(p).StartsWith("WindowsBase", StringComparison.OrdinalIgnoreCase))
 			.Concat(Directory.GetFiles(Bin, "*.dll").Where(f => Path.GetFileName(f).StartsWith("Gtk4.Forms.P")
-				|| Path.GetFileName(f).StartsWith("Gtk4.Forms.WindowsBase") || Path.GetFileName(f).EndsWith("Sharp.dll")))
+				|| Path.GetFileName(f).StartsWith("Gtk4.Forms.WindowsBase")
+				|| Path.GetFileName(f).EndsWith("Sharp.dll")))
 			.Select(f => (MetadataReference)MetadataReference.CreateFromFile(f));
 		var ct = TestContext.Current.CancellationToken;
 		using var ms = new MemoryStream();
@@ -59,6 +60,7 @@ public class GeneratorSweep4RuntimeTests : Sweep3Base
 		Assert.True(tag is string s && s == "1");
 	}
 
+	// Text-only plus AssertCompiles: the layer has no object key frames, so the generator drops the animation.
 	[Fact]
 	public void Object_key_frames_are_not_emitted_so_the_literal_rule_cannot_reach_them()
 	{
@@ -72,6 +74,27 @@ public class GeneratorSweep4RuntimeTests : Sweep3Base
 		Lacks(with, "ObjectKeyFrame");
 		Assert.Equal(without, with);
 		AssertCompiles(with, Stub);
+	}
+
+	[Fact]
+	public void A_Run_with_TextEffects_runs_InitializeComponent_and_keeps_the_effect()
+	{
+		object panel = Run(Root("<TextBlock><Run><Run.TextEffects><TextEffect PositionCount=\"1\"/>"
+			+ "</Run.TextEffects></Run></TextBlock>"));
+		object block = ((System.Collections.IEnumerable)Prop(panel, "Children")).Cast<object>().Single();
+		object run = ((System.Collections.IEnumerable)Prop(block, "Inlines")).Cast<object>().Single();
+
+		Assert.Single(((System.Collections.IEnumerable)Prop(run, "TextEffects")).Cast<object>());
+	}
+
+	[Fact]
+	public void A_Paragraph_with_TextEffects_runs_InitializeComponent_and_keeps_the_effect()
+	{
+		object doc = Run("<FlowDocument " + Head + " x:Class=\"App.C\"><Paragraph><Paragraph.TextEffects>"
+			+ "<TextEffect PositionCount=\"1\"/></Paragraph.TextEffects></Paragraph></FlowDocument>");
+		object paragraph = ((System.Collections.IEnumerable)Prop(doc, "Blocks")).Cast<object>().Single();
+
+		Assert.Single(((System.Collections.IEnumerable)Prop(paragraph, "TextEffects")).Cast<object>());
 	}
 
 	[Fact]
