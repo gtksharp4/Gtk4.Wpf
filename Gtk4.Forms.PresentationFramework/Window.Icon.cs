@@ -10,9 +10,9 @@ public partial class Window
 	const int IconSize = 24;
 	const uint IconHoverCssPriority = 601;
 	const string IconHoverCss = ".titlebar-icon:hover { filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.65)); }";
+	const string DefaultIconResourceName = "Gtk4.Forms.PresentationFramework.GtkSharp.png";
 
-	// GTK4 has no exe-icon equivalent; a generic application icon from the bundled theme is the
-	// cross-platform default shown when the app sets no Icon.
+	// Keep a theme fallback if the embedded icon cannot be decoded by GdkPixbuf.
 	const string DefaultIconName = "application-x-executable";
 
 	Gtk.HeaderBar? _headerBar;
@@ -79,7 +79,7 @@ public partial class Window
 
 	Gtk.Image? CreateIconImage()
 	{
-		Gtk.Image? img = LoadIconImage(Icon) ?? Gtk.Image.NewFromIconName(DefaultIconName);
+		Gtk.Image? img = LoadIconImage(Icon) ?? LoadDefaultIconImage() ?? Gtk.Image.NewFromIconName(DefaultIconName);
 		if (img != null)
 		{
 			// Explicit size requests make the header-bar image take space and render.
@@ -103,6 +103,29 @@ public partial class Window
 	{
 		if (nPress == 2)
 			Close();
+	}
+
+	internal static Gtk.Image? LoadDefaultIconImage()
+	{
+		string path = ExtractDefaultIconToTempFile();
+		try
+		{
+			return LoadIconImage(ImageSource.FromFile(path));
+		}
+		finally
+		{
+			File.Delete(path);
+		}
+	}
+
+	internal static string ExtractDefaultIconToTempFile()
+	{
+		using var resource = typeof(Window).Assembly.GetManifestResourceStream(DefaultIconResourceName)
+			?? throw new InvalidOperationException($"Embedded window icon '{DefaultIconResourceName}' was not found.");
+		string path = Path.Combine(Path.GetTempPath(), "gtk4wpf-" + Guid.NewGuid().ToString("N") + ".png");
+		using (var output = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+			resource.CopyTo(output);
+		return path;
 	}
 
 	/// <summary>Loads <paramref name="icon"/> as a scaled image, or null when it has no file.</summary>

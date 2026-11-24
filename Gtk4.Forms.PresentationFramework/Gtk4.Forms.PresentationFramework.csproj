@@ -49,6 +49,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Gtk4.Forms.WindowsBase\Gtk4.Forms.WindowsBase.csproj" />
+    <EmbeddedResource Include="..\GtkSharp.png" LogicalName="Gtk4.Forms.PresentationFramework.GtkSharp.png" />
   </ItemGroup>
 
   <ItemGroup>
