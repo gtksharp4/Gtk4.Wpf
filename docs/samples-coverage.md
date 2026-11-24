@@ -388,6 +388,50 @@ MergedResources, Matrix, CubeAnimationDemo) and passed on a solo rebuild: conten
   Capture on a placed adorner re-targets input (unit-tested); no native drag was driven.
 - New walls: none beyond the two above (`DataGrid.Columns` generator gap; WPFGallery `ControlCornerRadius`).
 
+## Imaging samples draw their image (Round 65e)
+
+Reported: the BMP/GIF/JPEG/PNG/TIFF "Imaging Sample" windows showed no image. Measured in a shown
+`Window > ScrollViewer > StackPanel > Image { Stretch.None, Margin 20 }` (tests in
+`Gtk4.Forms.PresentationFramework.Tests/Imaging`), first wrong value per link of the chain:
+
+| Link | Measured | Verdict |
+|---|---|---|
+| Decoded frame | `SourceBitmapFrame`, 640x480 `Bgr24` (BMP, JPEG), `Indexed8` (GIF), 480x360 `Bgra32` (TIFF) | right |
+| `ToBgra32` | every format opaque, Indexed1 index 0 = opaque red (regression tests added) | right |
+| `Picture.Paintable` | `MemoryTexture`, full bitmap size; snapshot of the Image widget: every pixel non-transparent | right: **pixels reach the widget** |
+| `Image.DesiredSize` | `0,0`: Image never measured | wrong (fixed) |
+| `Image.ActualWidth` | 600 for a 64 px bitmap: a Fill-aligned `Stretch.None` Picture was stretched to the slot | wrong (fixed) |
+| Sample window | 438x93 (client 46 px tall): `ScrolledWindow` does not propagate its content's natural size, so the unsized sample window opens as a sliver showing the top 46 px of the first image | **remaining root cause of the report, not fixed** |
+
+Fixed (Image only): `Image.Layout.cs` measures/arranges from the source's DIP size with WPF's Stretch and
+StretchDirection scale factor (null source 0x0, `Stretch.None` natural size under an infinite constraint);
+`Image.Alignment.cs` pins a `Stretch.None` Image to its size at the slot start, as WPF does. Source changes
+invalidate measure.
+
+Not fixed, out of this lane (shared files): the `ScrollViewer` does not measure its content (DesiredSize 0), and
+`ScrolledWindow.PropagateNaturalWidth/Height` is off, so an unsized window around a ScrollViewer is tiny. Setting
+both to `true` on the `ScrolledWindow` made the window fit a 64 px image (111 px tall, 64 px viewport) in an
+experiment. A WPF window with no size uses the OS default, so the right fix is the Window default size
+(Window content hosting) rather than propagating the content size.
+
+Run results (pinned recipe, 10 s smoke, window screen-grabbed, `Gtk4.Forms.Wpf 1.0.0.26328` from a lane feed):
+
+| Sample | Builds | Runs | Image drawn | Window | Gap |
+|---|---|---|---|---|---|
+| BMPEncoderAndDecoder | yes | yes | yes, top strip of tulipfarm.bmp (640x480) | 466x122 | sliver window (above) |
+| GIFEncoderAndDecoder | yes | yes | yes (640x480) | 458x122 | same |
+| JPEGEncoderAndDecoder | yes | yes | yes (640x480) | 467x122 | same |
+| PNGEncoderAndDecoder | yes | yes | yes | 465x122 | same |
+| TIFFEncoderAndDecoder | yes | yes | yes (480x360) | 463x122 | same |
+| WDPEncoderAndDecoder | yes | crashes | no | none | JPEG XR has no GTK codec: `NotSupportedException` (documented) |
+| BitmapMetadata | yes | yes | yes, the smiley and its description | 437x276 | none |
+| ImageBrush | yes | yes | no: ellipse, button, text and border fills are solid black | 954x561 | `<Resource>` images are not packaged (`ResourceStreamLocator`), so the brush has no source and falls back to black; a build-target gap, not imaging |
+| ImageView | yes | yes | needs interaction (a file must be picked) | 1398x676 | not driven |
+
+Gate: all 204 `build=pass` projects build with the packed layer (1 needed a harness fix, my own `</Project>`
+replace hit a nested element) and all 191 `run=runs` apps start and stay up (30 showed no window within 10 s while
+other lanes loaded the machine and were re-run alone for 25 s: all run).
+
 ## Method
 
 - **Source.** The local `WPF-Samples` tree (`00f39dbb`), split into six category batches:
