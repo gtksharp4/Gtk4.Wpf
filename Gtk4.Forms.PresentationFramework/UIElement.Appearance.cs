@@ -46,7 +46,9 @@ public abstract partial class UIElement
 	internal void RefreshAppearance()
 	{
 		if (_widget == null) return;
-		(_appearance ??= new ElementCssStyle(_widget)).Update(BuildAppearanceCss());
+		var style = _appearance ??= new ElementCssStyle(_widget);
+		style.Update(BuildAppearanceCss(), BuildAppearanceRules());
+		style.UpdateChild(AppearanceChildTarget, BuildAppearanceChildRules());
 	}
 
 	/// <summary>Inheriting text-property metadata for an owner; keeps the shared default and refreshes CSS.</summary>

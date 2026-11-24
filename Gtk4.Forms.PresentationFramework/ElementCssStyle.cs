@@ -15,7 +15,7 @@ namespace System.Windows;
 /// to GTK CSS inheritance of <c>color</c>/<c>font-*</c>, mirroring WPF's TextElement inheritance.
 /// </para>
 /// </summary>
-internal sealed class ElementCssStyle
+internal sealed partial class ElementCssStyle
 {
 	const uint Priority = 600;
 	static int _counter;
@@ -34,10 +34,10 @@ internal sealed class ElementCssStyle
 	/// <summary>CSS parse errors GTK reported for the loaded declarations (GTK ignores bad CSS silently).</summary>
 	internal int ParseErrors { get; private set; }
 
-	internal void Update(string declarations)
+	internal void Update(string declarations, string rules = "")
 	{
-		if (_provider != null && declarations == Declarations) return;
-		if (_provider == null && declarations.Length == 0) return;
+		if (_provider != null && declarations == Declarations && rules == Rules) return;
+		if (_provider == null && declarations.Length == 0 && rules.Length == 0) return;
 		if (IsUnnamed(_widget.Name))
 			_widget.Name = $"ap-{Interlocked.Increment(ref _counter):x8}";
 		if (_provider == null)
@@ -47,8 +47,10 @@ internal sealed class ElementCssStyle
 			_widget.StyleContext.AddProvider(_provider, Priority);
 		}
 		Declarations = declarations;
+		Rules = rules;
 		ParseErrors = 0;
-		_provider.LoadFromData(declarations.Length == 0 ? string.Empty : $"#{_widget.Name} {{ {declarations} }}");
+		string main = declarations.Length == 0 ? string.Empty : $"#{_widget.Name} {{ {declarations} }}";
+		_provider.LoadFromData(main + ExpandRules(rules, _widget.Name));
 	}
 
 	/// <summary>
