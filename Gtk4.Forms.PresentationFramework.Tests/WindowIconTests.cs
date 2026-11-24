@@ -31,6 +31,18 @@ public class WindowIconTests : WpfGtkTestBase
 	}
 
 	[Fact]
+	public void Icon_is_a_dependency_property()
+	{
+		var window = new WpfWindow();
+		var icon = ImageSource.FromFile(@"C:\app\logo.png");
+
+		window.Icon = icon;
+
+		Assert.Same(icon, window.GetValue(WpfWindow.IconProperty));
+		Assert.Same(icon, window.Icon);
+	}
+
+	[Fact]
 	public void BitmapImage_absolute_uri_resolves_to_local_path()
 	{
 		var bmp = new BitmapImage(new Uri("file:///C:/app/logo.png", UriKind.Absolute));
@@ -54,19 +66,14 @@ public class WindowIconTests : WpfGtkTestBase
 		Assert.IsType<Gtk.HeaderBar>(gtkWin.Titlebar);
 	});
 
-	static Gtk.GestureClick? FindIconClickController(Gtk.Widget widget)
+	static Gtk.Image? FindTitlebarIcon(Gtk.Widget widget)
 	{
-		var controllers = widget.ObserveControllers();
-		if (widget is Gtk.Image)
-		{
-			for (uint i = 0; i < controllers.NItems; i++)
-				if (controllers.GetObject(i) is Gtk.GestureClick { Button: 1 } click)
-					return click;
-		}
+		if (widget is Gtk.Image { } image && image.HasCssClass("titlebar-icon"))
+			return image;
 
 		for (var child = widget.FirstChild; child != null; child = child.NextSibling)
-			if (FindIconClickController(child) is { } click)
-				return click;
+			if (FindTitlebarIcon(child) is { } foundIcon)
+				return foundIcon;
 		return null;
 	}
 
@@ -76,9 +83,16 @@ public class WindowIconTests : WpfGtkTestBase
 		var win = new WpfWindow { Title = "Iconned" };
 		var gtkWin = (Gtk.Window)win.Widget;
 		var headerBar = Assert.IsType<Gtk.HeaderBar>(gtkWin.Titlebar);
-		var click = FindIconClickController(headerBar);
-		Assert.NotNull(click);
+		var icon = FindTitlebarIcon(headerBar);
+		Assert.NotNull(icon);
+		Assert.True(icon!.HasCssClass("titlebar-icon"));
 
+		var controllers = icon.ObserveControllers();
+		Gtk.GestureClick? click = null;
+		for (uint i = 0; i < controllers.NItems; i++)
+			if (controllers.GetObject(i) is Gtk.GestureClick gesture)
+				click = gesture;
+		Assert.NotNull(click);
 		Assert.Equal(1u, click!.Button);
 
 		int closed = 0;
