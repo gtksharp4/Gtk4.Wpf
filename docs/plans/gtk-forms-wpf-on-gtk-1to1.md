@@ -2730,6 +2730,56 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   elements that are unbuildable and not referenced by a `{StaticResource}` get no `Resources` entry (a later
   `FindResource` for them throws as in WPF for a missing key); `XmlDataProvider.XmlNamespaceManager` is still not built.
 
+- **Round 63 (lane B) track 2 - startup and generator sweep IV (DONE, merged).** `gf63b/startup-generator-sweep-4`
+  (`2ca1bdb8`): an object-typed attribute literal stays a string (SlidePuzzleDemo `Tag="1"`), `TextBlock.TextEffects`
+  with names registered inside `TextEffect.Transform` (AnimationExamples), `CommandBindings`, inline styles,
+  `UIElement.OpacityMask`, `Int32RectConverter`/`PixelFormatConverter` (mirrored in `ConverterBackedStructs`), and the
+  most common 'Skipped property element' cases. The `gf39/xaml-content-model` idea stays the compile-checked corpus
+  test of Round 61 (the branch is not rebased).
+- **Round 63 (lane B) track 5 - packaging: NOT merged.** `gf63b/packaging-permissions` delivered nothing (Round 61's
+  attempt was BLOCKed before any commit, and this one did not ship either), so there is nothing to merge:
+  EditingExaminerDemo's
+  `System.Security.Permissions` dependency (verify the net10.0 reference assembly, SYSLIB0003 staying a warning, pin it,
+  nuspec test) and the WPFGallery `SystemEvents` leftovers stay open lane work, not a defect in the merged code.
+- **Round 63 (lane B) track 6 - rendering hygiene (DONE, merged).** `gf63b/rendering-hygiene` (`a0e4d8cb`): the
+  DrawFunc `Cairo.Context` is disposed deterministically on the GTK thread (the 'Cairo.Context is leaking' finalizer
+  warnings of Per-FrameAnimation and ParticlesDemo), and textures scaled below `MinTextureScale` are not applied (the
+  Gsk 'out of memory' frame failures of ParticlesDemo).
+- **Round 63 (lane B) review + fixes - DONE.** Applied failing-first. **a-F1** the TextEffects generator emits
+  `if (x.TextEffects == null) x.TextEffects = new TextEffectCollection();` once per property element before the first
+  `Add`: `TextElement.TextEffects` and `FlowDocument.TextEffects` default to null, so `<Run.TextEffects>` threw
+  `NullReferenceException` in `InitializeComponent`. **a-F4** `TextBlock.TextEffects` is a plain
+  `GetValue` (nullable): the old first-read `SetValue` made a local value that shadowed a Style setter and invalidated
+  the visual. Remaining deviation: the default is null, not WPF's empty frozen collection. **a-F2** unsupported
+  attributes on a `CommandBinding` child (`PreviewExecuted`, `PreviewCanExecute`) are reported as `Skipped attribute
+  <name> on CommandBinding: not available in the layer`; the supported handlers stay wired. **a-F3** run-time tests:
+  the generated code is compiled and run, so `Tag="1"` is a string, the `DiscreteObjectKeyFrame` Value case is
+  unchanged by the literal rule, and `FindName("TextEffectRotateTransform")` returns the `RotateTransform`;
+  mutation-checked (reverting the object-literal rule turns the first red). **a-F6** `Int32Rect` 'Empty' is compared
+  ordinally as in WPF ('empty' is a `FormatException`); `FormatException` for token counts and unknown pixel formats is
+  this layer's convention (WPF throws `InvalidOperationException` / `ArgumentException`, the latter from memory).
+  **c-N2** a degenerate texture on a triangle with at least 1 px² of screen area falls back to the solid colour instead
+  of painting nothing. **c-N1** the sub-pixel replay theory is renamed `_smoke`: the cairo image replay always reports
+  Success. **c-N3** test leaks fixed (`ImageSurface` disposed; `Graphene.Rect.Alloc` instead of a never-freed
+  `AllocHGlobal`). **c-N4** the `MinTextureScale` remark is corrected and says the 1e-8 threshold is empirical.
+  **CI-2** `Packed_nuspec_declares_SystemEvents_10x_in_every_dependency_group`. Rejected in triage: a-F5 (not a
+  defect: the `ComboBox` `CreateWidget` guard prevents a stack overflow and `UIElement.OpacityMask` matches WPF; both
+  sit outside Track 2's ownership, so integrate should check them for conflicts), CI-1 (already done: the imaging
+  converters are registered and mirrored), CI-3 (outside the lane: `Data/**`, `XmlDataProvider`,
+  `FlowDocument.TextEffectsProperty` identity, `SystemEvents` off Windows; the a-F1 guard removes the crash), CI-4
+  (`gf39/xaml-content-model` is superseded by `GeneratorContentModelCorpusTests`; only integrate may delete it).
+- **Round 63 (lane B) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. Targeted tests (the
+  suites run in full at integrate): `MarkupCompiler.Tests` `GeneratorSweep4*` 42 passed; `PresentationFramework.Tests`
+  `TextBlockTextEffects`/`Viewport3DDegenerate`/`CairoDrawFunc`/`XamlValueConverterImaging`/`Round49aConverter` 56
+  passed; `ProjectConverter.Tests` `PackedNuspec` 2 passed. Samples gate: all 204 projects that built at `17c64167` build through a lane-private pinned feed (two builds each),
+  and all 191 apps that ran still run and stay up for 10 s (20 with no window handle at 10 s re-checked alone for 20 s:
+  all alive with a window; OpacityMasking needed 35 s and shows its window). A first pass packed a stale MarkupCompiler
+  (a mutation-check build left in `bin`) and showed a false 2DTransforms failure (`Text = 0`); re-packed from a clean
+  solution build it passes.
+- **Round 63 (lane B) carry-over.** Packaging (EditingExaminerDemo `System.Security.Permissions`, WPFGallery
+  `SystemEvents`) is still unstarted. `TextElement.TextEffects`, `FlowDocument.TextEffects` and `TextBlock.TextEffects`
+  default to null (not an empty frozen collection). `CommandBinding` still has only `Executed` and `CanExecute`.
+
 ## Phased roadmap (after Phase 0 proves the spine)
 
 1. **Core controls, layout, binding.** `StackPanel`/`DockPanel`/`Canvas`/`WrapPanel` with WPF

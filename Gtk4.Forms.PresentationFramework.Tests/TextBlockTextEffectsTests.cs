@@ -23,24 +23,49 @@ public class TextBlockTextEffectsTests
 	}
 
 	[Fact]
-	public void TextEffects_is_never_null_and_is_stable()
+	public void Reading_TextEffects_does_not_create_a_local_value()
 	{
 		var tb = new TextBlock();
 
-		Assert.NotNull(tb.TextEffects);
-		Assert.Same(tb.TextEffects, tb.TextEffects);
-		Assert.Same(tb.TextEffects, tb.GetValue(TextBlock.TextEffectsProperty));
+		_ = tb.TextEffects;
+
+		Assert.Same(DependencyProperty.UnsetValue, tb.ReadLocalValue(TextBlock.TextEffectsProperty));
 	}
 
 	[Fact]
-	public void Effects_added_to_the_implicit_collection_are_kept()
+	public void A_style_setter_wins_after_a_read()
 	{
 		var tb = new TextBlock();
+		_ = tb.TextEffects;
+		var effect = new TextEffect { PositionCount = 3 };
+		var style = new Style(typeof(TextBlock));
+		style.Setters.Add(new Setter(TextBlock.TextEffectsProperty, new TextEffectCollection { effect }));
+
+		tb.Style = style;
+
+		Assert.Same(effect, Assert.Single(tb.TextEffects!));
+	}
+
+	[Fact]
+	public void Effects_added_to_a_created_collection_are_kept()
+	{
+		var tb = new TextBlock { TextEffects = new TextEffectCollection() };
 		var effect = new TextEffect { PositionStart = 1, PositionCount = 2 };
 
 		tb.TextEffects.Add(effect);
 
 		Assert.Same(effect, Assert.Single(tb.TextEffects));
+	}
+
+	[Fact]
+	public void The_statements_generated_for_a_Run_create_the_collection_first()
+	{
+		var run = new Run("x");
+
+		if (run.TextEffects == null) run.TextEffects = new TextEffectCollection();
+		run.TextEffects.Add(new TextEffect { PositionCount = 1 });
+
+		Assert.Equal(1, run.TextEffects.Count);
 	}
 
 	[Fact]

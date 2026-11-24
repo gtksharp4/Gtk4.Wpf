@@ -18,10 +18,11 @@ public class XamlValueConverterImagingTests
 		=> Assert.Equal(new Int32Rect(x, y, w, h), XamlValueConverter.ConvertByType(typeof(Int32Rect), raw));
 
 	[Fact]
-	public void Int32Rect_Empty_is_recognised_in_any_case()
+	public void Int32Rect_Empty_is_case_sensitive()
 	{
-		Assert.Equal(Int32Rect.Empty, XamlValueConverter.ConvertByType(typeof(Int32Rect), "Empty"));
-		Assert.Equal(Int32Rect.Empty, XamlValueConverter.ConvertByType(typeof(Int32Rect), " empty "));
+		Assert.Equal(Int32Rect.Empty, XamlValueConverter.ConvertByType(typeof(Int32Rect), " Empty "));
+		Assert.Throws<FormatException>(() => XamlValueConverter.ConvertByType(typeof(Int32Rect), "empty"));
+		Assert.Throws<FormatException>(() => XamlValueConverter.ConvertByType(typeof(Int32Rect), "EMPTY"));
 	}
 
 	[Theory]
@@ -50,9 +51,11 @@ public class XamlValueConverterImagingTests
 	[Fact]
 	public void Imaging_types_are_converted_through_a_dependency_property()
 	{
-		Assert.Equal(PixelFormats.Bgr24, XamlValueConverter.Convert(typeof(System.Windows.Media.Imaging.FormatConvertedBitmap),
+		Assert.Equal(PixelFormats.Bgr24, XamlValueConverter.Convert(
+			typeof(System.Windows.Media.Imaging.FormatConvertedBitmap),
 			System.Windows.Media.Imaging.FormatConvertedBitmap.DestinationFormatProperty, "Bgr24"));
-		Assert.Equal(new Int32Rect(1, 2, 3, 4), XamlValueConverter.Convert(typeof(System.Windows.Media.Imaging.CroppedBitmap),
+		Assert.Equal(new Int32Rect(1, 2, 3, 4), XamlValueConverter.Convert(
+			typeof(System.Windows.Media.Imaging.CroppedBitmap),
 			System.Windows.Media.Imaging.CroppedBitmap.SourceRectProperty, "1,2,3,4"));
 	}
 }

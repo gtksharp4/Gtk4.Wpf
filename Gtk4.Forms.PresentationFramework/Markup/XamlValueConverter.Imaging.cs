@@ -14,18 +14,21 @@ public static partial class XamlValueConverter
 		Register<PixelFormat>(ParsePixelFormat);
 	}
 
-	// WPF Int32RectConverter: "x,y,width,height" (comma or whitespace separated, invariant) or "Empty".
+	// WPF Int32RectConverter: "x,y,width,height" (comma or whitespace separated, invariant) or "Empty", compared
+	// ordinally as in WPF. Deviation: a wrong token count throws FormatException (WPF's TokenizerHelper throws
+	// InvalidOperationException); ConvertValue only rewraps FormatException, OverflowException, ArgumentException.
 	static Int32Rect ParseInt32Rect(string raw)
 	{
 		string text = raw.Trim();
-		if (string.Equals(text, "Empty", StringComparison.OrdinalIgnoreCase)) return Int32Rect.Empty;
+		if (string.Equals(text, "Empty", StringComparison.Ordinal)) return Int32Rect.Empty;
 		string[] parts = text.Split(new[] { ',', ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
 		if (parts.Length != 4) throw new FormatException($"\"{raw}\" is not an Int32Rect (x,y,width,height).");
 		int[] v = parts.Select(p => int.Parse(p, NumberStyles.Integer, CultureInfo.InvariantCulture)).ToArray();
 		return new Int32Rect(v[0], v[1], v[2], v[3]);
 	}
 
-	// WPF PixelFormatConverter: the name of a PixelFormats member, case-insensitive.
+	// WPF PixelFormatConverter: the name of a PixelFormats member, case-insensitive (WPF upper-cases it).
+	// Deviation: an unknown name throws FormatException; WPF throws ArgumentException (from memory, unverified).
 	static PixelFormat ParsePixelFormat(string raw)
 	{
 		string name = raw.Trim();

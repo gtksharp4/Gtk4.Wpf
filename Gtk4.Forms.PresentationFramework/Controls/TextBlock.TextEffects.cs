@@ -14,21 +14,13 @@ public partial class TextBlock
 			new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
 
 	/// <summary>
-	/// Gets or sets the effects on the text. The getter never returns null: like WPF's default value factory it
-	/// stores an empty collection on first read, so an implicit collection add in markup works.
+	/// Gets or sets the effects on the text. A plain property read: reading never creates a local value, so a
+	/// style or trigger setter still applies. Deviation from WPF: the default is null, not an empty frozen
+	/// collection, so code that adds effects creates the collection first (the markup compiler emits that).
 	/// </summary>
-	public TextEffectCollection TextEffects
+	public TextEffectCollection? TextEffects
 	{
-		get
-		{
-			var effects = (TextEffectCollection?)GetValue(TextEffectsProperty);
-			if (effects == null)
-			{
-				effects = new TextEffectCollection();
-				SetValue(TextEffectsProperty, effects);
-			}
-			return effects;
-		}
+		get => (TextEffectCollection?)GetValue(TextEffectsProperty);
 		set => SetValue(TextEffectsProperty, value);
 	}
 }

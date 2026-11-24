@@ -39,17 +39,19 @@ public class Viewport3DDegenerateGtkTests : WpfGtkTestBase
 	}
 
 	/// <summary>One textured quad of the given edge at the origin under the demo's orthographic camera.</summary>
-	static Viewport3D Quad(double size, Camera camera, double z = 0, Brush? texture = null)
+	static Viewport3D Quad(double size, Camera camera, double z = 0, Brush? texture = null,
+		double uvSpan = 1, bool centred = false)
 	{
+		double o = centred ? -size / 2 : 0;
 		var mesh = new MeshGeometry3D();
-		mesh.Positions.Add(new Point3D(0, 0, z));
-		mesh.Positions.Add(new Point3D(0, size, z));
-		mesh.Positions.Add(new Point3D(size, size, z));
-		mesh.Positions.Add(new Point3D(size, 0, z));
+		mesh.Positions.Add(new Point3D(o, o, z));
+		mesh.Positions.Add(new Point3D(o, o + size, z));
+		mesh.Positions.Add(new Point3D(o + size, o + size, z));
+		mesh.Positions.Add(new Point3D(o + size, o, z));
 		mesh.TextureCoordinates.Add(new Point(0, 0));
-		mesh.TextureCoordinates.Add(new Point(0, 1));
-		mesh.TextureCoordinates.Add(new Point(1, 1));
-		mesh.TextureCoordinates.Add(new Point(1, 0));
+		mesh.TextureCoordinates.Add(new Point(0, uvSpan));
+		mesh.TextureCoordinates.Add(new Point(uvSpan, uvSpan));
+		mesh.TextureCoordinates.Add(new Point(uvSpan, 0));
 		foreach (int i in new[] { 0, 2, 1, 0, 3, 2 }) mesh.TriangleIndices.Add(i);
 		var group = new Model3DGroup();
 		group.Children.Add(new AmbientLight());
@@ -62,18 +64,19 @@ public class Viewport3DDegenerateGtkTests : WpfGtkTestBase
 	static OrthographicCamera Ortho() =>
 		new OrthographicCamera(new Point3D(0, 0, 32), new Vector3D(0, 0, -32), new Vector3D(0, 1, 0), 128);
 
+	// An owned graphene_rect_t: Rect(IntPtr) only wraps the pointer, so Alloc is the one that can be freed.
 	static Graphene.Rect NewRect(float w, float h)
 	{
-		var raw = System.Runtime.InteropServices.Marshal.AllocHGlobal(16);
-		System.Runtime.InteropServices.Marshal.Copy(new[] { 0f, 0f, w, h }, 0, raw, 4);
-		return new Graphene.Rect(raw);
+		var rect = Graphene.Rect.Alloc();
+		rect.Init(0, 0, w, h);
+		return rect;
 	}
 
 	/// <summary>Paints through a GTK snapshot and replays the render node, as the compositor does.</summary>
 	static Cairo.Status Replay(Viewport3D viewport)
 	{
 		var snapshot = new Gtk.Snapshot();
-		var bounds = NewRect(W, H);
+		using var bounds = NewRect(W, H);
 		using (var cr = snapshot.AppendCairo(bounds)) viewport.PaintTo(cr, W, H);
 		var node = snapshot.FreeToNode();
 		using var surface = new Cairo.ImageSurface(Cairo.Format.Argb32, W, H);
@@ -82,6 +85,11 @@ public class Viewport3DDegenerateGtkTests : WpfGtkTestBase
 		return target.Status;
 	}
 
+	/// <summary>
+	/// Smoke test only: the cairo image replay always reports Success, with or without the MinTextureScale guard, so
+	/// it does not reproduce the Gsk compositor failure. That is covered by
+	/// <see cref="A_texture_scaled_below_a_hundredth_of_a_pixel_is_never_applied"/>.
+	/// </summary>
 	[Theory]
 	[InlineData(1e-3)]
 	[InlineData(1e-5)]
@@ -90,7 +98,7 @@ public class Viewport3DDegenerateGtkTests : WpfGtkTestBase
 	[InlineData(3e-6)]
 	[InlineData(1e-4)]
 	[InlineData(1e-2)]
-	public void A_sub_pixel_textured_quad_replays_without_a_cairo_error(double size) => Run(() =>
+	public void A_sub_pixel_textured_quad_replays_without_a_cairo_error_smoke(double size) => Run(() =>
 		Assert.Equal(Cairo.Status.Success, Replay(Quad(size, Ortho()))));
 
 	static Cairo.Rectangle Ink(Viewport3D viewport, out Cairo.Status status)
@@ -111,6 +119,21 @@ public class Viewport3DDegenerateGtkTests : WpfGtkTestBase
 		Ink(Quad(0.0003, Ortho(), texture: brush), out var status);
 		Assert.Equal(Cairo.Status.Success, status);
 		Assert.Equal(0, brush.Applied);
+	});
+
+	[Fact]
+	public void A_large_triangle_with_a_huge_uv_span_still_paints_its_solid_colour() => Run(() =>
+	{
+		var viewport = Quad(64, Ortho(), uvSpan: 1e5, centred: true);
+		using var surface = new Cairo.ImageSurface(Cairo.Format.Argb32, W, H);
+		using (var cr = new Cairo.Context(surface))
+		{
+			viewport.PaintTo(cr, W, H);
+			Assert.Equal(Cairo.Status.Success, cr.Status);
+		}
+		surface.Flush();
+		Assert.NotEqual(0, surface.Data[(H / 2) * surface.Stride + (W / 2) * 4 + 3]);
+		Assert.Equal(Cairo.Status.Success, Replay(viewport));
 	});
 
 	[Fact]

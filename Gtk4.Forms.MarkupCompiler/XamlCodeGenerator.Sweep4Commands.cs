@@ -18,8 +18,13 @@ namespace Gtk4.Forms.MarkupCompiler
 				string v = $"__cb{_sweep4Counter++}";
 				w.Line($"var {v} = new {CommandBindingType}({CommandBindingCommand(cb)});");
 				foreach (XAttribute a in cb.Attributes().Where(IsPlainAttribute))
-					if (a.Name.LocalName != "Command" && _resolver.IsEvent(CommandBindingType, a.Name.LocalName))
-						w.Line($"{v}.{a.Name.LocalName} += this.{a.Value};");
+				{
+					string n = a.Name.LocalName;
+					if (n == "Command") continue;
+					if (_resolver.IsEvent(CommandBindingType, n))
+						w.Line($"{v}.{n} += this.{a.Value};");
+					else NoteSkippedMedia(cb, "attribute " + n);
+				}
 				w.Line($"{parentVar}.CommandBindings.Add({v});");
 			}
 			return true;

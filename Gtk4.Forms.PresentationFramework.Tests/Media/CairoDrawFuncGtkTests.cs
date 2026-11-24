@@ -134,7 +134,8 @@ public class CairoDrawFuncGtkTests : WpfGtkTestBase
 	[Fact]
 	public void A_painter_that_throws_still_disposes_the_context() => Run(() =>
 	{
-		var cr = new Cairo.Context(new Cairo.ImageSurface(Cairo.Format.Argb32, 4, 4));
+		using var surface = new Cairo.ImageSurface(Cairo.Format.Argb32, 4, 4);
+		var cr = new Cairo.Context(surface);
 		var draw = CairoDrawFunc.Wrap((c, w, h) => throw new InvalidOperationException("boom"));
 		Assert.Throws<InvalidOperationException>(() => draw(null!, cr, 4, 4));
 		Assert.Equal(IntPtr.Zero, cr.Handle);
