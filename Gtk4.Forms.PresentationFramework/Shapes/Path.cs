@@ -1,3 +1,4 @@
+using System;
 using System.Windows.Media;
 
 namespace System.Windows.Shapes;
@@ -8,12 +9,14 @@ namespace System.Windows.Shapes;
 /// </summary>
 public class Path : Shape
 {
-	// ── Data DP ───────────────────────────────────────────────────────────────
-
 	/// <summary>The geometry that defines the shape.</summary>
 	public static readonly DependencyProperty DataProperty =
 		DependencyProperty.Register(nameof(Data), typeof(Geometry), typeof(Path),
-			new PropertyMetadata(null, (d, _) => ((Path)d).InvalidatePath()));
+			new FrameworkPropertyMetadata(null,
+				FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender,
+				OnDataChanged));
+
+	EventHandler? _dataChanged;
 
 	/// <summary>Gets or sets the geometry.</summary>
 	public Geometry? Data
@@ -22,11 +25,14 @@ public class Path : Shape
 		set => SetValue(DataProperty, value);
 	}
 
-	void InvalidatePath() => QueueRedraw();
-
-	/// <inheritdoc/>
-	protected override void BuildShapePath(Cairo.Context cr, int width, int height)
+	static void OnDataChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
-		Data?.BuildPath(cr);
+		var path = (Path)d;
+		path._dataChanged ??= (_, _) => path.OnMeasureAffected();
+		if (e.OldValue is Geometry old) old.Changed -= path._dataChanged;
+		if (e.NewValue is Geometry added) added.Changed += path._dataChanged;
+		path.OnMeasureAffected();
 	}
+
+	internal override Geometry? GetDefiningGeometry() => Data;
 }
