@@ -420,11 +420,10 @@ added and the user can still shrink the window. Explicit Width/Height keep the d
 and an axis sized by `SizeToContent` stays at -1.
 `ScrollViewer.Measure.cs` (Round 68e review fixes): WPF `MeasureOverride` (content measured unconstrained on every
 non-Disabled axis and with the constraint minus chrome on a Disabled one; desired size = content + Padding +
-BorderThickness + a Visible scroll bar, clamped to the constraint). `PropagateNaturalWidth/Height` is on only for an
-axis where the widget does not expand, so `SizeToContent` and Auto tracks fit the content while a Grid star track is
-still split by weight (a blanket propagation gave a ScrollViewer the whole star track). The ScrollViewer defaults are
-now WPF's: HorizontalScrollBarVisibility Disabled, VerticalScrollBarVisibility Visible. A Grid with no definitions
-(one implicit star track) does not propagate, so `SizeToContent` around it does not fit a ScrollViewer's content.
+a Visible scroll bar, never BorderThickness, clamped to the constraint). `PropagateNaturalWidth/Height` stay false as
+on main (three attempts at propagation regressed star rows, wrapped viewers or Height/MaxHeight). Known gap:
+`SizeToContent` around a ScrollViewer does not size to its content (same as before Round 68); needs a
+managed-measure-driven window size. The ScrollViewer defaults are now WPF's: Horizontal Disabled, Vertical Visible.
 Round 65 (re-landed, review findings fixed): `Image` measures from the source's DIP size with WPF's Stretch and
 StretchDirection scale factor, and a `Stretch.None` Image is centred in a larger slot like WPF (Gtk.Align.Center; the
 first review had it pinned top-left). Every `ImageSource` has Width/Height (`DrawingImage` from its drawing bounds).
