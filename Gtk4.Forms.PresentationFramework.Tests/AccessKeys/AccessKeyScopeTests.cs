@@ -108,14 +108,14 @@ public class AccessKeyScopeTests : AccessKeyTestBase
 	});
 
 	[Fact]
-	public void A_key_of_a_label_without_target_is_swallowed_and_focus_stays() => Run(() =>
+	public void A_key_of_a_label_without_target_is_not_handled_and_focus_stays() => Run(() =>
 	{
 		var other = new Label { Content = "_Other" };
 		var box = new TextBox();
 		var window = Show(Stack(other, box));
 		box.Focus();
 		GtkPump.For(100);
-		Assert.True(Alt(window, KeyO));
+		Assert.False(Alt(window, KeyO));
 		Assert.True(box.IsKeyboardFocused);
 		window.Close();
 	});

@@ -2744,13 +2744,13 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `ProcessKeyForScope` returns `NoMatch/LastMatch/MoreMatches`; public `ProcessKey` is true only for `MoreMatches`.
   **D-F4** candidates are narrowed to the scope of the focused sender (an open submenu is its own scope, as in WPF's
   `MenuItem.OnAccessKeyPressed`), so `o` in an open `_File` menu clicks `_Open` and not a window button. **D-F5**
-  `IsKeyRegistered` raises AccessKeyPressed (a Label without Target is not registered); the window still swallows a key
-  that has a live registration so GTK never moves focus for it. **D-F6** GTK's mnemonic matcher (the window's
+  `IsKeyRegistered` raises AccessKeyPressed (a Label without Target is not registered); only a matched key is
+  handled (see the Round 64 follow-up). **D-F6** GTK's mnemonic matcher (the window's
   capture-phase shortcut controller) is set to an unreachable modifier (`HyperMask`), so GTK only draws the
   underline and WPF owns activation. No real key event can be injected (GtkSharp4 binds no GDK event constructor), so
   the test asserts every window shortcut controller carries that modifier. **D-F7** `Normalize` copies WPF (`""` is
   accepted); keyvals map through `gdk_keyval_to_unicode` (P/Invoke, Latin-1 fallback) in one helper shared by Window
-  and UIElement (Cyrillic `0x6cf` gives "o" and activates `_ok`). **D-F8, CI-4** long lines wrapped, `Label.Target`
+  and UIElement (Cyrillic U+043E "о" activates `_ok`). **D-F8, CI-4** long lines wrapped, `Label.Target`
   doc reworded. Rejected in triage: CI-1 and CI-2 (already fixed in the merge; the TabItem/GroupBox part is D-F2), CI-3
   (ContentPresenter hosts AccessText only when `RecognizesAccessKey` and the text has `_`; the GTK double-fire risk is
   D-F6), CI-5 (the peer's access key is the normalized key, as in WPF `GetAccessKeyCore`; untestable until
@@ -2764,6 +2764,10 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
 - **Round 64 (lane D) carry-over.** GTK's own Alt-held underline cue may no longer appear because its mnemonic
   matcher is disabled (not verified visually). A real Alt+key event is untested for lack of an injection path.
   `AutomationProperties.AccessKey` and `GetAccessKeyCore` text await lane A.
+- **Round 64 (lane D) follow-up.** The D-F7 note now names the Cyrillic letter U+043E (it had been written with Latin
+  bytes). `Window.ProcessAccessKey` returns only `result != NoMatch`, so a registered key with no target (a lone
+  `_Other` Label) no longer marks TextInput handled nor swallows the Alt+key press, as in WPF; the swallow was only
+  there for GTK mnemonics, which D-F6 disabled.
 
 ## Phased roadmap (after Phase 0 proves the spine)
 

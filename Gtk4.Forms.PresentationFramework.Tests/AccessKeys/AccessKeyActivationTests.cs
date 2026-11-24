@@ -73,7 +73,7 @@ public class AccessKeyActivationTests : AccessKeyTestBase
 		Assert.True(Alt(window, KeyN));
 		GtkPump.For(100);
 		Assert.True(box.IsKeyboardFocused);
-		Assert.True(Alt(window, 'o')); // swallowed: registered, but names no target
+		Assert.False(Alt(window, 'o')); // no target: no match, so the key is not swallowed
 		Assert.True(box.IsKeyboardFocused);
 		window.Close();
 	});
@@ -125,6 +125,21 @@ public class AccessKeyActivationTests : AccessKeyTestBase
 		GtkPump.For(100);
 		other.DispatchGtkKeyPressed(KeyO, 0, 1);
 		Assert.Equal(1, clicks);
+		window.Close();
+	});
+
+	[Fact]
+	public void A_registered_key_without_a_target_leaves_TextInput_unhandled() => Run(() =>
+	{
+		var other = new Button { Content = "x" };
+		var orphan = new Label { Content = "_Other" };
+		var window = Show(Stack(other, orphan));
+		int seen = 0;
+		window.AddHandler(UIElement.TextInputEvent, new TextCompositionEventHandler((_, _) => seen++));
+		other.Focus();
+		GtkPump.For(100);
+		other.DispatchGtkKeyPressed('o', 0, 1);
+		Assert.Equal(1, seen);
 		window.Close();
 	});
 

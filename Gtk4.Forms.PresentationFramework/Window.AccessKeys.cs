@@ -25,8 +25,8 @@ public partial class Window
 
 	/// <summary>
 	/// The window controller's press handler: Alt+key (no Ctrl or Windows) goes to the access-key manager,
-	/// as does a plain key while nothing has focus. Returns true when the key is registered in this window,
-	/// which stops GTK's built-in mnemonic.
+	/// as does a plain key while nothing has focus. Returns true when the key matched,
+	/// which marks the press handled.
 	/// </summary>
 	internal bool HandleAccessKeyval(uint keyval, Gdk.ModifierType state)
 	{
@@ -46,13 +46,13 @@ public partial class Window
 		if (ProcessAccessKey(e.Text, e.OriginalSource as UIElement)) e.Handled = true;
 	}
 
-	// A registered key is swallowed even when it yields no target, so GTK never moves focus for it.
+	// As in WPF, only a matched key is handled; a registration without a target leaves the event alone.
 	bool ProcessAccessKey(string? text, UIElement? sender)
 	{
 		if (string.IsNullOrEmpty(text) || new System.Globalization.StringInfo(text!).LengthInTextElements != 1)
 			return false;
 		var result = AccessKeyManager.ProcessKeyForScope(this, text!, false, sender);
-		return result != ProcessKeyResult.NoMatch || AccessKeyManager.HasRegistrationIn(this, text!);
+		return result != ProcessKeyResult.NoMatch;
 	}
 
 	// A text editor consumes plain letters; WPF's TextBox handles TextInput itself, this layer's does not.
