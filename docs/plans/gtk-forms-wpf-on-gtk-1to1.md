@@ -2889,6 +2889,12 @@ only for a Shape that is the window content; lane H `RenderingPainter` reads `Vi
   change, once per loop turn, so an animated source follows every frame. **First paint:** a detached source is always
   mapped by hand under the never-mapped `Fixed` and captured synchronously, even with a window open, then moved into
   the painting window's layer in idle, so the first `Shape.PaintTo` shows it and no test depends on leftover windows.
+- **Round 70 (lane J) review fixes, final pass.** **Self-reference storm:** a brush that paints inside its own
+  source through a Style Setter or nested in a `DrawingBrush`/`GeometryDrawing`/`Pen` repainted forever (about 48
+  `Changed`/s idle). The structural check now follows effective Shape/Panel/Border brushes and nested
+  drawings and pens; a storm breaker backs it up: after two consecutive renders whose capture is pixel-identical,
+  `Changed` is held until a re-capture really differs (re-checked once after the frame, so a real change still
+  gets through).
 
 ## Phased roadmap (after Phase 0 proves the spine)
 

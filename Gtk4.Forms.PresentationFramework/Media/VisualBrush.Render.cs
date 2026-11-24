@@ -80,7 +80,9 @@ public partial class VisualBrush
 			return _cache;
 		}
 		_retries = 0;
-		_cacheHash = Hash(fresh);
+		ulong hash = Hash(fresh);
+		_identical = _cache != null && hash == _cacheHash ? _identical + 1 : 0;
+		_cacheHash = hash;
 		_cache?.Dispose();
 		_cache = fresh;
 		_dirty = false;

@@ -16,6 +16,9 @@ public partial class VisualBrush
 	// a brush is held back; any other follows every change.
 	bool _selfRef;
 	int _changedAt;
+	// Consecutive renders whose capture matched the previous one: a repaint storm that changes nothing.
+	int _identical;
+	bool _rechecking;
 
 	/// <inheritdoc/>
 	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
@@ -34,6 +37,7 @@ public partial class VisualBrush
 		_watched = element;
 		_dirty = true;
 		_selfRef = false;
+		_identical = 0;
 	}
 
 	// Created on the first paint: a source set while the app is still constructing (App.xaml resources) has no
@@ -67,6 +71,16 @@ public partial class VisualBrush
 	// that paints inside its source is that Changed echoing back: the hold-back takes over.
 	void RaiseOrSettle()
 	{
+		if (_identical >= 2)
+		{
+			// Storm breaker: stay quiet until the source really renders differently.
+			if (!SourceDiffers())
+			{
+				RecheckLater();
+				return;
+			}
+			_identical = 0;
+		}
 		if (_selfRef) { RaiseChanged(); return; }
 		bool recent = unchecked(Environment.TickCount - _changedAt) < EchoMilliseconds;
 		if (recent && PaintedInsideSource())
