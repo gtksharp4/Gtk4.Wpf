@@ -62,6 +62,7 @@ public partial class DataGrid
 	{
 		if (_grid == null) return;
 
+		ReleaseHeaderElements();
 		// Detach all children from the grid.
 		var toRemove = new List<Gtk.Widget>();
 		for (var child = _grid.FirstChild; child != null; child = child.NextSibling)
@@ -76,7 +77,7 @@ public partial class DataGrid
 		for (int c = 0; c < cols.Count; c++)
 		{
 			var col = cols[c];
-			var hdr = new Gtk.Label(col.Header?.ToString() ?? string.Empty);
+			var hdr = CreateHeaderWidget(col);
 			hdr.AddCssClass("datagrid-header");
 			_grid.Attach(hdr, c, 0, 1, 1);
 			AttachHeaderClick(hdr, col);

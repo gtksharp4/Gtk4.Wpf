@@ -9,6 +9,10 @@ namespace Gtk4.Forms.MarkupCompiler
 		static readonly Regex TypeKeyRef =
 			new Regex(@"\{\s*StaticResource\s+\{\s*x:Type\s+([^}\s]+)\s*\}\s*\}", RegexOptions.Compiled);
 
+		// Types whose key-less Styles the runtime applies on its own (generated ListBox containers).
+		static readonly HashSet<string> ImplicitStyleTargets =
+			new HashSet<string>(StringComparer.Ordinal) { "global::System.Windows.Controls.ListBoxItem" };
+
 		// Types referenced as {StaticResource {x:Type T}}: their key-less Styles are registered under typeof(T).
 		HashSet<string> _typeKeyRefs = new HashSet<string>(StringComparer.Ordinal);
 
@@ -25,7 +29,8 @@ namespace Gtk4.Forms.MarkupCompiler
 		string StyleResourceKey(string key, string targetTypeAttr)
 		{
 			if (key != null) return ResourceKeyExpression(EscapeString(key));
-			return targetTypeAttr != null && ResolveTypeRefName(targetTypeAttr) is string t && _typeKeyRefs.Contains(t)
+			return targetTypeAttr != null && ResolveTypeRefName(targetTypeAttr) is string t
+				&& (_typeKeyRefs.Contains(t) || ImplicitStyleTargets.Contains(t))
 				? $"typeof({t})" : null;
 		}
 

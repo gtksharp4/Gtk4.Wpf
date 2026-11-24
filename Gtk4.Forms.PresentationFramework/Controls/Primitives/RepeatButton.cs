@@ -73,7 +73,20 @@ public class RepeatButton : ButtonBase
 		pressCtrl.Released += OnGtkReleased;
 		_button.AddController(pressCtrl);
 
+		PresentAtCreation();
 		return _button;
+	}
+
+	internal override bool GtkWidgetReady => _button != null;
+
+	internal override void SetGtkLabel(string mnemonic)
+	{
+		if (_button != null) _button.Label = mnemonic;
+	}
+
+	internal override void SetGtkChild(Gtk.Widget? child)
+	{
+		if (_button != null) _button.Child = child!;
 	}
 
 	void OnGtkPressed(object o, Gtk.PressedArgs e)
@@ -109,17 +122,6 @@ public class RepeatButton : ButtonBase
 	}
 
 	void FireClick() => OnClick();
-
-	/// <inheritdoc/>
-	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
-	{
-		base.OnPropertyChanged(e);
-		if (e.Property == ContentProperty)
-		{
-			var label = AccessLabel(e.NewValue);
-			if (_button != null && e.NewValue is string) _button.Label = label;
-		}
-	}
 
 	/// <inheritdoc/>
 	public override void Dispose()

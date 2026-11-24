@@ -1150,6 +1150,9 @@ namespace Gtk4.Forms.MarkupCompiler
 					case "DataTrigger":
 						EmitDataTriggerToCollection(w, ch, trigVar, styleVar, receiver);
 						break;
+					case "MultiDataTrigger":
+						EmitMultiDataTriggerToCollection(w, ch, trigVar, styleVar, receiver);
+						break;
 					case "MultiTrigger":
 						EmitMultiTriggerToCollection(w, ch, xNs, trigVar, styleVar, receiver, ref counter);
 						break;

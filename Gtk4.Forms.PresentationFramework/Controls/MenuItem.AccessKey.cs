@@ -9,8 +9,16 @@ public partial class MenuItem
 	{
 		if (Header is string text) return AccessKeyBinding.Apply(this, text);
 		AccessKeyBinding.Register(this, null);
-		return (Header?.ToString() ?? string.Empty).Replace("_", "__");
+		return HeaderProjection(Header).Replace("_", "__");
 	}
+
+	// GTK popover menu items are text-only: an element header shows its text.
+	static string HeaderProjection(object? header) => header switch
+	{
+		TextBlock tb => tb.Text ?? string.Empty,
+		AccessText at => at.Text ?? string.Empty,
+		_ => ContentResolution.ToText(header, null),
+	};
 
 	/// <summary>Focuses the item, then opens its submenu or clicks it unless other elements share the key.</summary>
 	protected override void OnAccessKey(AccessKeyEventArgs e)

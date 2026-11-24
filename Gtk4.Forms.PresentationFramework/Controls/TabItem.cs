@@ -10,29 +10,32 @@ namespace System.Windows.Controls;
 public partial class TabItem : HeaderedContentControl
 {
 	/// <summary>Returns the header as a string (used to label the tab).</summary>
-	internal string HeaderText => Header as string ?? Header?.ToString() ?? string.Empty;
+	internal string HeaderText => HeaderTextProjection;
 
 	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
 		// TabItem's widget is a plain box that hosts its content.
 		var box = new Gtk.Box(Gtk.Orientation.Vertical, 0);
-		if (Content is UIElement child)
-			box.Add(child.Widget);
+		_tabBox = box;
+		RefreshPresentation();
 		return box;
 	}
 
-	/// <inheritdoc/>
-	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+	Gtk.Box? _tabBox;
+
+	internal override bool PresentationReady => _tabBox != null;
+
+	internal override void HostElement(Gtk.Widget widget) => _tabBox!.Add(widget);
+
+	internal override void UnhostElement(Gtk.Widget widget) => _tabBox!.Remove(widget);
+
+	internal override void ShowText(string text)
 	{
-		base.OnPropertyChanged(e);
-		if (e.Property == ContentProperty && IsWidgetCreated)
-		{
-			var box = (Gtk.Box)Widget;
-			if (e.OldValue is UIElement old)
-				box.Remove(old.Widget);
-			if (e.NewValue is UIElement newEl)
-				box.Add(newEl.Widget);
-		}
+		if (_textLabel != null) _tabBox!.Remove(_textLabel);
+		_textLabel = text.Length == 0 ? null : new Gtk.Label(text) { Xalign = 0f };
+		if (_textLabel != null) _tabBox!.Add(_textLabel);
 	}
+
+	Gtk.Label? _textLabel;
 }

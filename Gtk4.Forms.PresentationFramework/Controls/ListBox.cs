@@ -93,6 +93,7 @@ public partial class ListBox : Selector
 	{
 		var lbi = new ListBoxItem { Content = item };
 		ConfigurePresenter(lbi, item);
+		PrepareContainer(lbi, item);
 		_containers.Add(lbi);
 		return lbi;
 	}

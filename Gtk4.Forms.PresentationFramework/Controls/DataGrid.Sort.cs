@@ -91,7 +91,7 @@ public partial class DataGrid
 	}
 
 	/// <summary>Attaches a sort-click handler to a header label for a realized column.</summary>
-	void AttachHeaderClick(Gtk.Label header, DataGridColumn column)
+	void AttachHeaderClick(Gtk.Widget header, DataGridColumn column)
 	{
 		var click = new Gtk.GestureClick();
 		click.Pressed += (s, e) => ToggleSort(column);

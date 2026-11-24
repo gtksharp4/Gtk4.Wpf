@@ -22,6 +22,8 @@ namespace Gtk4.Forms.MarkupCompiler
 					continue;
 				}
 				string key = (string)item.Attribute(xNs + "Key");
+				if (key == null && EmitImplicitDataTemplate(w, item, xNs, ownerVar, ref counter))
+					continue;
 				if (key != null && (ContainsStaticResource(item) || IsUnshared(item, xNs))
 					&& TryEmitDeferredResource(w, item, xNs, ownerVar, key, ref counter))
 					continue;

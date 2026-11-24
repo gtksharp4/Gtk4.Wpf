@@ -82,6 +82,7 @@ public partial class TreeViewItem : HeaderedItemsControl
 	protected override Gtk.Widget CreateItemsWidget()
 	{
 		_expander = new Gtk.Expander(HeaderText);
+		if (ResolveHeaderWidget() is { } headerWidget) _expander.LabelWidget = headerWidget;
 		_expander.Expanded = IsExpanded;
 		_childBox = new Gtk.Box(Gtk.Orientation.Vertical, 2);
 		_expander.Child = _childBox;
@@ -92,7 +93,11 @@ public partial class TreeViewItem : HeaderedItemsControl
 	/// <inheritdoc/>
 	protected override void OnHeaderChanged(object? oldHeader, object? newHeader)
 	{
-		if (_expander != null)
+		if (_expander == null) return;
+		var widget = ResolveHeaderWidget();
+		if (widget != null)
+			_expander.LabelWidget = widget;
+		else
 			_expander.Label = HeaderText;
 	}
 
