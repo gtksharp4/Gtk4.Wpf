@@ -21,8 +21,14 @@ public abstract partial class Control
 	internal override string BuildAppearanceRules() => StateRules();
 
 	/// <inheritdoc/>
-	internal override Gtk.Widget? AppearanceChildTarget => ChildFace(Widget) == null ? null : Widget.FirstChild;
+	internal override Gtk.Widget? AppearanceChildTarget => FaceTarget(0);
 
 	/// <inheritdoc/>
-	internal override string BuildAppearanceChildRules() => FaceRule();
+	internal override string BuildAppearanceChildRules() => FaceRule(0);
+
+	/// <inheritdoc/>
+	internal override Gtk.Widget? AppearanceExtraTarget => FaceTarget(1);
+
+	/// <inheritdoc/>
+	internal override string BuildAppearanceExtraRules() => FaceRule(1);
 }

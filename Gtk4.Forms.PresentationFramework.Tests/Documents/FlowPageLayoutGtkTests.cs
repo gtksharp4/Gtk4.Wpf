@@ -23,7 +23,8 @@ public partial class FlowPageLayoutGtkTests : WpfGtkTestBase
 	static FlowDocument Doc(params string[] paragraphs)
 	{
 		var doc = new FlowDocument { PagePadding = new Thickness(20), Background = Brushes.White };
-		foreach (var text in paragraphs) doc.Blocks.Add(text.Length == 0 ? new Paragraph() : new Paragraph(new Run(text)));
+		foreach (var text in paragraphs)
+			doc.Blocks.Add(text.Length == 0 ? new Paragraph() : new Paragraph(new Run(text)));
 		return doc;
 	}
 
@@ -52,16 +53,6 @@ public partial class FlowPageLayoutGtkTests : WpfGtkTestBase
 				if (px.At(x, y).R < 128) { min = Math.Min(min, x); max = Math.Max(max, x); }
 		return (min, max);
 	}
-
-	[Fact]
-	public void An_empty_paragraph_between_two_paragraphs_collapses_to_one_line_height_gap() => Run(() =>
-	{
-		var m = Meter(Doc("one", string.Empty, "two"));
-		var s = Slices(m);
-		Assert.Equal(2, s.Count);
-		double gap = s[1].Y - (s[0].Y + s[0].Height);
-		Assert.Equal(m.Geometry.LineHeight, gap, 3);
-	});
 
 	[Fact]
 	public void Adjacent_paragraph_margins_collapse_to_the_larger_one() => Run(() =>
@@ -102,7 +93,10 @@ public partial class FlowPageLayoutGtkTests : WpfGtkTestBase
 	static double Measured(string line, FlowDocument doc)
 	{
 		var layout = new Pango.Layout(GtkFontCatalog.FontMap!.CreateContext());
-		using (var desc = new Pango.FontDescription { Family = doc.FontFamily.Source, AbsoluteSize = doc.FontSize * 1024.0 })
+		using (var desc = new Pango.FontDescription
+		{
+			Family = doc.FontFamily.Source, AbsoluteSize = doc.FontSize * 1024.0
+		})
 			layout.FontDescription = desc;
 		layout.SetText(line);
 		layout.GetPixelSize(out int w, out _);

@@ -2,9 +2,8 @@ namespace System.Windows;
 
 internal sealed partial class ElementCssStyle
 {
-	const uint ChildPriority = 600;
-	Gtk.CssProvider? _childProvider;
-	Gtk.Widget? _childTarget;
+	readonly ChildStyle _child = new ChildStyle();
+	readonly ChildStyle _extra = new ChildStyle();
 
 	/// <summary>
 	/// Extra rules loaded next to the main block (state pseudo-classes). <c>&amp;</c> stands for the widget's
@@ -13,10 +12,16 @@ internal sealed partial class ElementCssStyle
 	internal string Rules { get; private set; } = string.Empty;
 
 	/// <summary>Rules last loaded on the child widget (see <see cref="UpdateChild"/>).</summary>
-	internal string ChildRules { get; private set; } = string.Empty;
+	internal string ChildRules => _child.Rules;
 
 	/// <summary>CSS parse errors GTK reported for the child rules.</summary>
-	internal int ChildParseErrors { get; private set; }
+	internal int ChildParseErrors => _child.ParseErrors;
+
+	/// <summary>Rules last loaded on the second child widget (see <see cref="UpdateExtra"/>).</summary>
+	internal string ExtraRules => _extra.Rules;
+
+	/// <summary>CSS parse errors GTK reported for the second child's rules.</summary>
+	internal int ExtraParseErrors => _extra.ParseErrors;
 
 	static string ExpandRules(string rules, string name) =>
 		rules.Length == 0 ? string.Empty : " " + rules.Replace("&", "#" + name);
@@ -26,27 +31,48 @@ internal sealed partial class ElementCssStyle
 	/// CheckButton did nothing), so a rule for an inner node, such as the check indicator or the dropdown's
 	/// button, rides on a provider attached to that child widget.
 	/// </summary>
-	internal void UpdateChild(Gtk.Widget? child, string rules)
+	internal void UpdateChild(Gtk.Widget? child, string rules) => _child.Update(child, rules);
+
+	/// <summary>The same for a second inner widget (an editable ComboBox paints its entry and its button).</summary>
+	internal void UpdateExtra(Gtk.Widget? child, string rules) => _extra.Update(child, rules);
+
+	sealed class ChildStyle
 	{
-		if (child == null || rules.Length == 0)
+		const uint ChildPriority = 600;
+		Gtk.CssProvider? _provider;
+		Gtk.Widget? _target;
+
+		internal string Rules { get; private set; } = string.Empty;
+
+		internal int ParseErrors { get; private set; }
+
+		internal void Update(Gtk.Widget? child, string rules)
 		{
-			if (_childProvider != null && _childTarget != null) _childTarget.StyleContext.RemoveProvider(_childProvider);
-			_childProvider = null;
-			_childTarget = null;
-			ChildRules = string.Empty;
-			return;
+			if (child == null || rules.Length == 0)
+			{
+				Detach();
+				Rules = string.Empty;
+				return;
+			}
+			if (_provider != null && ReferenceEquals(child, _target) && rules == Rules) return;
+			if (_provider == null || !ReferenceEquals(child, _target))
+			{
+				Detach();
+				_provider = new Gtk.CssProvider();
+				_provider.ParsingError += (_, __) => ParseErrors++;
+				child.StyleContext.AddProvider(_provider, ChildPriority);
+				_target = child;
+			}
+			Rules = rules;
+			ParseErrors = 0;
+			_provider.LoadFromData(rules);
 		}
-		if (_childProvider != null && ReferenceEquals(child, _childTarget) && rules == ChildRules) return;
-		if (_childProvider == null || !ReferenceEquals(child, _childTarget))
+
+		void Detach()
 		{
-			if (_childProvider != null && _childTarget != null) _childTarget.StyleContext.RemoveProvider(_childProvider);
-			_childProvider = new Gtk.CssProvider();
-			_childProvider.ParsingError += (_, __) => ChildParseErrors++;
-			child.StyleContext.AddProvider(_childProvider, ChildPriority);
-			_childTarget = child;
+			if (_provider != null && _target != null) _target.StyleContext.RemoveProvider(_provider);
+			_provider = null;
+			_target = null;
 		}
-		ChildRules = rules;
-		ChildParseErrors = 0;
-		_childProvider.LoadFromData(rules);
 	}
 }

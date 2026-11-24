@@ -8,8 +8,11 @@ namespace System.Windows.Documents;
 /// </summary>
 public abstract partial class Block : TextElement
 {
-	/// <summary>Outer margin. Default is zero on all sides.</summary>
-	public Thickness Margin { get; set; }
+	/// <summary>
+	/// Outer margin. Default is auto (NaN on every side), as in WPF: a Paragraph, List or Table resolves auto to one
+	/// line height above and below, any other block to zero.
+	/// </summary>
+	public Thickness Margin { get; set; } = new Thickness(double.NaN);
 
 	/// <summary>Inner padding. Default is zero on all sides.</summary>
 	public Thickness Padding { get; set; }

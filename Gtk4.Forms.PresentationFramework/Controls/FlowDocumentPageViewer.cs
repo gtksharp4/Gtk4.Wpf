@@ -80,6 +80,8 @@ public partial class FlowDocumentPageViewer : DocumentViewerBase
 		{
 			if (_shown != null)
 			{
+				if (((IDocumentPaginatorSource)_shown).DocumentPaginator is FlowDocumentPaginator old)
+					old.Viewport = null;
 				_shown.ViewChanged -= OnDocumentViewChanged;
 				_shown.ContentChanged -= OnDocumentViewChanged;
 			}
@@ -88,7 +90,8 @@ public partial class FlowDocumentPageViewer : DocumentViewerBase
 			{
 				doc.ViewChanged += OnDocumentViewChanged;
 				doc.ContentChanged += OnDocumentViewChanged;
-				if (_surface.Viewport is Size v && ((IDocumentPaginatorSource)doc).DocumentPaginator is FlowDocumentPaginator p)
+				if (_surface.Viewport is Size v
+					&& ((IDocumentPaginatorSource)doc).DocumentPaginator is FlowDocumentPaginator p)
 					p.Viewport = v;
 			}
 		}

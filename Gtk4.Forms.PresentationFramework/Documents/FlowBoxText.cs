@@ -20,11 +20,21 @@ static class FlowBoxText
 			try
 			{
 				MeasurePango(box, doc, map);
+				EmptyParagraphIsOneLine(box);
 				return;
 			}
 			catch (Exception) { /* fall through to the estimate */ }
 		}
 		MeasureEstimate(box, (double)doc.GetValue(FlowDocument.FontSizeProperty)!);
+		EmptyParagraphIsOneLine(box);
+	}
+
+	// PTS formats an empty Paragraph as one blank line (its paragraph-end line); it never collapses through.
+	static void EmptyParagraphIsOneLine(FlowBox box)
+	{
+		if (!box.IsParagraph || box.Lines.Count > 0) return;
+		box.Lines = new List<string> { string.Empty };
+		box.LineStarts = new List<int> { 0 };
 	}
 
 	/// <summary>Font, width, alignment, indent and extra line spacing of <paramref name="box"/> on a layout.</summary>

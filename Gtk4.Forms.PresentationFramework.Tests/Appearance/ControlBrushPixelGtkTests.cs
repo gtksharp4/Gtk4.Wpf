@@ -13,7 +13,7 @@ namespace Gtk4.Forms.PresentationFramework.Tests.Appearance;
 /// <c>box-shadow</c>), which covers a plain <c>background-color</c>. A rule on the widget reaches only its own CSS
 /// node in GTK 4, so check/radio indicators and the dropdown's inner button take a provider on the child widget.
 /// </summary>
-public class ControlBrushPixelGtkTests : WpfGtkTestBase
+public partial class ControlBrushPixelGtkTests : WpfGtkTestBase
 {
 	static (Window Win, WidgetPixels Px) Show(FrameworkElement el)
 	{

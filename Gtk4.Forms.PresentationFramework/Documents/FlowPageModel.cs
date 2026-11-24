@@ -2,7 +2,9 @@ using System.Collections.Generic;
 
 namespace System.Windows.Documents;
 
-/// <summary>Lines <see cref="First"/> to <c>First + Count - 1</c> of a box, placed at <see cref="Y"/> in a column.</summary>
+/// <summary>
+/// Lines <see cref="First"/> to <c>First + Count - 1</c> of a box, placed at <see cref="Y"/> in a column.
+/// </summary>
 sealed class FlowSlice
 {
 	internal FlowSlice(FlowBox box, int first, int count, double y)

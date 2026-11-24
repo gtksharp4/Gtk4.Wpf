@@ -74,8 +74,8 @@ sealed class FlowPageGeometry
 		int columns = Math.Max(1, (int)((contentWidth + gap) / (width + gap)));
 		width = Math.Max(1, Math.Min(width, contentWidth));
 		double free = Math.Max(0, contentWidth - columns * width - (columns - 1) * gap);
+		// Non-flexible: the gap stays and the unused width stays on the right (PtsHelper.GetColumnsInfo).
 		if (doc.IsColumnWidthFlexible) width += free / columns;
-		else if (columns > 1) gap += free / (columns - 1);
 		return new FlowPageGeometry(page, padding, lineHeight, width, gap, columns);
 	}
 

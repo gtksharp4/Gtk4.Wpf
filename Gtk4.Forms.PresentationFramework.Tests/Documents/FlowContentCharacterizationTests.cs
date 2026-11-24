@@ -50,7 +50,8 @@ public class FlowContentCharacterizationTests
 		Assert.Same(SystemColors.ControlTextBrush, p.Foreground);
 		Assert.Null(p.TextAlignment);
 		Assert.True(double.IsNaN(p.LineHeight));
-		Assert.Equal(default, p.Margin);
+		Assert.True(double.IsNaN(p.Margin.Left) && double.IsNaN(p.Margin.Top)
+			&& double.IsNaN(p.Margin.Right) && double.IsNaN(p.Margin.Bottom));
 		Assert.Equal(System.Windows.FlowDirection.LeftToRight, p.FlowDirection);
 		Assert.Equal("en-us", p.Language.IetfLanguageTag);
 		Assert.Throws<System.ArgumentNullException>(() => p.Language = null!);

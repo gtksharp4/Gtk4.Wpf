@@ -5,15 +5,16 @@ namespace System.Windows.Documents;
 
 /// <summary>
 /// One top-level block as the page meter lays it out: its own Pango markup wrapped to the column, its resolved
-/// margins and the line texts. Paragraph Margin defaults to auto, resolved to lineHeight above and below; a zero
-/// Margin reads as auto because <see cref="Block.Margin"/> keeps no "unset" state (gap: an explicit zero margin on
-/// a Paragraph cannot be told apart).
+/// margins and the line texts. Only NaN margin sides are auto (WPF MbpInfo.IsMarginAuto): lineHeight above and
+/// below for a Paragraph, List or Table, zero for other blocks; an explicit zero is honoured.
 /// </summary>
 sealed class FlowBox
 {
 	internal string Markup { get; private set; } = string.Empty;
 
 	internal string Plain { get; private set; } = string.Empty;
+
+	internal bool IsParagraph { get; private set; }
 
 	/// <summary>Index of this block's first character in the text tree's plain count (one newline per block).</summary>
 	internal int CharStart { get; private set; }
@@ -53,6 +54,7 @@ sealed class FlowBox
 			{
 				Markup = markup.ToString(),
 				Plain = plain.ToString(),
+				IsParagraph = block is Paragraph,
 				CharStart = start,
 				Margin = ResolveMargin(block, lineHeight),
 				Padding = Clean(block.Padding),
@@ -72,8 +74,7 @@ sealed class FlowBox
 	static Thickness ResolveMargin(Block block, double lineHeight)
 	{
 		var m = block.Margin;
-		if (block is Paragraph && m.Equals(default(Thickness))) return new Thickness(0, lineHeight, 0, lineHeight);
-		double auto = block is Paragraph ? lineHeight : 0;
+		double auto = block is Paragraph || block is List || block is Table ? lineHeight : 0;
 		return new Thickness(Zero(m.Left), double.IsNaN(m.Top) ? auto : m.Top, Zero(m.Right),
 			double.IsNaN(m.Bottom) ? auto : m.Bottom);
 	}

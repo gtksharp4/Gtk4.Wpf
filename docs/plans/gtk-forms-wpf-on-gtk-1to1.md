@@ -2730,6 +2730,47 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   elements that are unbuildable and not referenced by a `{StaticResource}` get no `Resources` entry (a later
   `FindResource` for them throws as in WPF for a missing key); `XmlDataProvider.XmlNamespaceManager` is still not built.
 
+- **Round 66 (lane G) track 1 - control brushes over the GTK theme (DONE, merged).** `gf66g/control-brushes-flow-pages`:
+  FlowDocumentProperties showed white captions on the light theme face because the theme paints a `Gtk.Button` with
+  `background-image`/`box-shadow`, which covers a plain `background-color` (confirmed by snapshot pixels of a shown
+  Button with `Background=Blue`). Control Background/BorderBrush/BorderThickness now go on the node that paints the face
+  with `background-image: none` and no theme shadow; check/radio indicators, the dropdown button and other inner nodes
+  take a provider on the child widget; Aero2 `:hover`/`:active`/`:checked`/`:disabled` faces are emulated for
+  Button/RepeatButton/ToggleButton. Controls with no brush keep the pure theme (no provider). Samples evidence: the
+  FlowDocumentProperties buttons paint blue with white captions.
+- **Round 66 (lane G) track 2 - paginated FlowDocumentPageViewer layout (DONE, merged).** Same branch: a block-aware
+  page meter (`FlowDocumentPageMeter`) lays the document out per page and column from PageWidth/PageHeight (or the viewer
+  area), Min/Max, PagePadding, ColumnWidth/ColumnGap/IsColumnWidthFlexible and ColumnRule; text wraps to the column with
+  Pango, paragraph margins collapse as in WPF, and the paginator counts pages with the same meter. Samples evidence:
+  in FlowDocumentProperties the text wraps inside the page, and the ColumnWidth, ColumnGap, PageWidth, PagePadding,
+  FontSize and TextAlignment buttons change the page as in WPF.
+- **Round 66 (lane G) review + fixes - DONE.** Applied failing-first (the new tests failed before each product change).
+  **g-F1** non-flexible columns keep ColumnGap and leave the unused width on the right (PTS `GetColumnsInfo`); 200/10 on
+  650 gives column x 0/210/420, flexible still widens to 210. **g-F2** the check/radio face rule names `check, radio`
+  (GTK 4 names the indicator `radio` once a Group is set), so a grouped RadioButton paints Background. **g-F3** the
+  Aero2 state faces apply only to Button, RepeatButton and ToggleButton (not CheckBox/RadioButton); MenuItem and
+  DataGridColumnHeader, which sit on a `Gtk.Button` but whose templates have no such triggers, keep their Background
+  when disabled. **g-F4** an empty `<Paragraph/>` formats as one blank line (one pitch) between the collapsed margins, so
+  P1 to P2 is pitch + 3 line heights; only non-paragraph blocks without content collapse through. **g-F5** `Block.Margin`
+  defaults to auto (NaN sides) as in WPF; only NaN sides resolve to a line height above and below for Paragraph, List and
+  Table (zero for other blocks), so `Margin="0"` removes the spacing. **g-F6** a multiline TextBox paints its
+  `textview, text` nodes and an editable ComboBox its entry and dropdown button, through a second child provider
+  (`AppearanceExtraTarget`); the scrolled-window frame around the TextBox keeps the theme. **g-F7** the viewer clears the
+  old document's paginator Viewport when its document changes or becomes null, so printing paginates at 816x1056 again.
+  **g-F8** over-long lines wrapped, no behaviour change.
+- **Round 66 (lane G) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. Targeted tests
+  (the suites run in full at integrate): `PresentationFramework.Tests` filtered to Appearance, Flow*, Documents, DataGrid, MenuItem, ComboBox,
+  TextBox, RadioButton, Block and Paragraph 921 (920 passed, 1 skipped, 0 failed); 14 test methods added (6 pixel or
+  rule tests, 6 page-layout tests, 2 viewer cases), 1 replaced (the old one-line-height pin), 1 updated (Block.Margin
+  default). Samples gate: all 204 projects that built at the last
+  run build through a lane-private feed (two builds each; CustomApplicationClass needs its sibling client built first),
+  and all 191 apps that ran still run (114 in a crowded first pass; the 77 without a window handle re-checked alone for
+  25 s one at a time: all alive with a window).
+- **Round 66 (lane G) carry-over.** Hover and pressed fades and the focus rectangle of Aero2 are not reproduced; the
+  scrolled-window frame of a multiline TextBox is not recoloured; ImageBrush/VisualBrush/DrawingBrush backgrounds on
+  controls are store-only. FlowDocumentPageViewer still lays tables, lists and floaters out as one text block and does
+  not apply widows/orphans, KeepTogether or KeepWithNext; Zoom is stored, not applied.
+
 ## Phased roadmap (after Phase 0 proves the spine)
 
 1. **Core controls, layout, binding.** `StackPanel`/`DockPanel`/`Canvas`/`WrapPanel` with WPF

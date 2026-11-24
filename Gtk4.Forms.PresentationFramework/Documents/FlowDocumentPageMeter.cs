@@ -9,8 +9,8 @@ namespace System.Windows.Documents;
 /// display the wrap uses an average glyph width, which keeps the count deterministic.
 /// <para>
 /// Differences from WPF's PTS: a paragraph splits between columns or pages at any line (no widows/orphans,
-/// KeepTogether or KeepWithNext), a top margin is dropped at the head of a column, an empty block collapses its
-/// margins through, and tables, lists and floaters are laid out as one block of text.
+/// KeepTogether or KeepWithNext), a top margin is dropped at the head of a column, a non-paragraph block with no
+/// content collapses its margins through, and tables, lists and floaters are laid out as one block of text.
 /// </para>
 /// </summary>
 sealed class FlowDocumentPageMeter
