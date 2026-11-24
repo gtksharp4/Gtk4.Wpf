@@ -8,7 +8,8 @@ public partial class UIElementAutomationPeer
 	/// <summary>Whether a change of <paramref name="property"/> must be pushed to GTK again.</summary>
 	internal virtual bool AffectsAccessible(DependencyProperty property) =>
 		property == UIElement.IsEnabledProperty || property == AutomationProperties.NameProperty
-		|| property == AutomationProperties.HelpTextProperty || property == AutomationProperties.LabeledByProperty
+		|| property == AutomationProperties.HelpTextProperty
+		|| property == AutomationProperties.AcceleratorKeyProperty || property == AutomationProperties.LabeledByProperty
 		|| property == AutomationProperties.IsRequiredForFormProperty;
 
 	/// <summary>The widget that carries the accessible node; the element's widget unless a wrapper hides it.</summary>
@@ -37,6 +38,7 @@ public partial class UIElementAutomationPeer
 		var name = AutomationProperties.GetName(Owner);
 		if (string.IsNullOrEmpty(name)) name = GetLabeledBy()?.GetName();
 		SyncLabel(widget, name);
+		SyncKeyShortcuts(widget, GetAcceleratorKey());
 		SyncRequired(widget, IsRequiredForForm());
 		SyncLabelledBy(widget);
 		PushState(widget);
@@ -44,6 +46,7 @@ public partial class UIElementAutomationPeer
 
 	bool _labelPushed;
 	bool _requiredPushed;
+	bool _keysPushed;
 	bool _labelledByPushed;
 
 	// Push a value, or reset the property when it was pushed before and is now empty.
@@ -59,5 +62,13 @@ public partial class UIElementAutomationPeer
 		if (required) PeerAccessible.SetProperty(widget, Gtk.AccessibleProperty.Required, true);
 		else if (_requiredPushed) PeerAccessible.ResetProperty(widget, Gtk.AccessibleProperty.Required);
 		_requiredPushed = required;
+	}
+
+	// The text goes verbatim: WPF's "Ctrl+Shift+C" is not rewritten into ARIA's "Control+Shift+C".
+	void SyncKeyShortcuts(Gtk.Widget widget, string keys)
+	{
+		if (!string.IsNullOrEmpty(keys)) PeerAccessible.SetProperty(widget, Gtk.AccessibleProperty.KeyShortcuts, keys);
+		else if (_keysPushed) PeerAccessible.ResetProperty(widget, Gtk.AccessibleProperty.KeyShortcuts);
+		_keysPushed = !string.IsNullOrEmpty(keys);
 	}
 }
