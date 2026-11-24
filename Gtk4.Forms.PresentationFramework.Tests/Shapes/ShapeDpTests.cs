@@ -39,10 +39,10 @@ public class ShapeDpTests
 	}
 
 	[Fact]
-	public void Rectangle_Stretch_default_is_None()
+	public void Rectangle_Stretch_default_is_Fill()
 	{
 		var r = new WpfRectangle();
-		Assert.Equal(Stretch.None, r.Stretch);
+		Assert.Equal(Stretch.Fill, r.Stretch);
 	}
 
 	// ── Rectangle specific ────────────────────────────────────────────────────

@@ -7,7 +7,7 @@ namespace System.Windows.Media;
 /// Abstract base for all WPF geometry types.
 /// Mirrors <c>System.Windows.Media.Geometry</c>.
 /// </summary>
-public abstract class Geometry : System.Windows.Media.Animation.Animatable
+public abstract partial class Geometry : System.Windows.Media.Animation.Animatable
 {
 	/// <summary>Identifies <see cref="Transform"/>. Default <see cref="Media.Transform.Identity"/>.</summary>
 	public static readonly DependencyProperty TransformProperty = DependencyProperty.Register(

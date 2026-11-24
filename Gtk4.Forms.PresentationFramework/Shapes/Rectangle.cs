@@ -1,4 +1,5 @@
 using System;
+using System.Windows.Media;
 
 namespace System.Windows.Shapes;
 
@@ -9,6 +10,17 @@ namespace System.Windows.Shapes;
 /// </summary>
 public class Rectangle : Shape
 {
+	static Rectangle() =>
+		StretchProperty.OverrideMetadata(typeof(Rectangle), new FrameworkPropertyMetadata(Stretch.Fill));
+
+	internal override bool UsesStretchMatrix => false;
+
+	/// <inheritdoc/>
+	protected override Size MeasureOverride(Size constraint) => MeasureRectLike(constraint);
+
+	/// <inheritdoc/>
+	protected override Size ArrangeOverride(Size finalSize) => finalSize;
+
 	// ── RadiusX DP ───────────────────────────────────────────────────────────
 
 	/// <summary>Horizontal corner radius.</summary>
@@ -40,16 +52,18 @@ public class Rectangle : Shape
 	/// <inheritdoc/>
 	protected override void BuildShapePath(Cairo.Context cr, int width, int height)
 	{
-		double rx = Math.Min(RadiusX, width / 2.0);
-		double ry = Math.Min(RadiusY, height / 2.0);
+		var r = GetRectLikeRect(width, height);
+		if (Stretch == Stretch.None || r.Width <= 0 || r.Height <= 0) return;
+		double rx = Math.Min(RadiusX, r.Width / 2.0);
+		double ry = Math.Min(RadiusY, r.Height / 2.0);
 
 		if (rx <= 0 || ry <= 0)
 		{
-			cr.Rectangle(0, 0, width, height);
+			cr.Rectangle(r.X, r.Y, r.Width, r.Height);
 			return;
 		}
 
-		BuildRoundedRectPath(cr, 0, 0, width, height, rx, ry);
+		BuildRoundedRectPath(cr, r.X, r.Y, r.Width, r.Height, rx, ry);
 	}
 
 	/// <summary>

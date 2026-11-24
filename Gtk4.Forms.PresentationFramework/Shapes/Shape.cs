@@ -15,12 +15,17 @@ namespace System.Windows.Shapes;
 /// </summary>
 public abstract partial class Shape : FrameworkElement, IDisposable
 {
+	const FrameworkPropertyMetadataOptions RenderOnly =
+		FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.SubPropertiesDoNotAffectRender;
+	const FrameworkPropertyMetadataOptions MeasureAndRender =
+		FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender;
+
 	// ── Fill DP ──────────────────────────────────────────────────────────────
 
 	/// <summary>The brush used to fill the shape interior.</summary>
 	public static readonly DependencyProperty FillProperty =
 		DependencyProperty.Register(nameof(Fill), typeof(Brush), typeof(Shape),
-			new PropertyMetadata(null, (d, _) => ((Shape)d).QueueRedraw()));
+			new FrameworkPropertyMetadata(null, RenderOnly, (d, _) => ((Shape)d).QueueRedraw()));
 
 	/// <summary>Gets or sets the fill brush.</summary>
 	public Brush? Fill
@@ -34,7 +39,7 @@ public abstract partial class Shape : FrameworkElement, IDisposable
 	/// <summary>The brush used to paint the shape outline.</summary>
 	public static readonly DependencyProperty StrokeProperty =
 		DependencyProperty.Register(nameof(Stroke), typeof(Brush), typeof(Shape),
-			new PropertyMetadata(null, (d, _) => ((Shape)d).QueueRedraw()));
+			new FrameworkPropertyMetadata(null, RenderOnly, MeasureChanged));
 
 	/// <summary>Gets or sets the stroke brush.</summary>
 	public Brush? Stroke
@@ -48,7 +53,7 @@ public abstract partial class Shape : FrameworkElement, IDisposable
 	/// <summary>Width of the shape's outline in device-independent units.</summary>
 	public static readonly DependencyProperty StrokeThicknessProperty =
 		DependencyProperty.Register(nameof(StrokeThickness), typeof(double), typeof(Shape),
-			new PropertyMetadata(1.0, (d, _) => ((Shape)d).QueueRedraw()));
+			new FrameworkPropertyMetadata(1.0, MeasureAndRender, MeasureChanged));
 
 	/// <summary>Gets or sets the stroke thickness.</summary>
 	public double StrokeThickness
@@ -62,7 +67,9 @@ public abstract partial class Shape : FrameworkElement, IDisposable
 	/// <summary>How the shape content is stretched to fill its bounds.</summary>
 	public static readonly DependencyProperty StretchProperty =
 		DependencyProperty.Register(nameof(Stretch), typeof(Stretch), typeof(Shape),
-			new PropertyMetadata(Stretch.None, (d, _) => ((Shape)d).QueueRedraw()));
+			new FrameworkPropertyMetadata(Stretch.None,
+				FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsArrange,
+				MeasureChanged));
 
 	/// <summary>Gets or sets the stretch mode.</summary>
 	public Stretch Stretch
@@ -81,6 +88,7 @@ public abstract partial class Shape : FrameworkElement, IDisposable
 	{
 		_area = new Gtk.DrawingArea();
 		_area.DrawFunc = OnDraw;
+		SyncNaturalSize();
 		return _area;
 	}
 
@@ -111,7 +119,7 @@ public abstract partial class Shape : FrameworkElement, IDisposable
 		cr.Save();
 		ApplyClip(cr);
 
-		BuildShapePath(cr, width, height);
+		BuildStretchedPath(cr, width, height);
 
 		var fill = Fill;
 		var stroke = Stroke;
@@ -150,7 +158,8 @@ public abstract partial class Shape : FrameworkElement, IDisposable
 	/// Subclasses build their Cairo path into <paramref name="cr"/> for a widget of
 	/// <paramref name="width"/> × <paramref name="height"/> pixels.
 	/// </summary>
-	protected abstract void BuildShapePath(Cairo.Context cr, int width, int height);
+	protected virtual void BuildShapePath(Cairo.Context cr, int width, int height) =>
+		GetDefiningGeometry()?.BuildTransformedPath(cr);
 
 	// ── IDisposable ───────────────────────────────────────────────────────────
 
