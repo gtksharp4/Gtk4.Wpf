@@ -71,6 +71,8 @@ public partial class VisualBrush
 	// that paints inside its source is that Changed echoing back: the hold-back takes over.
 	void RaiseOrSettle()
 	{
+		// A lost host must repaint so the next render re-hosts the source; its capture cannot differ meanwhile.
+		if (_lease != null && !DetachedSourceHost.IsHealthy(_lease)) _identical = 0;
 		if (_identical >= 2)
 		{
 			// Storm breaker: stay quiet until the source really renders differently.

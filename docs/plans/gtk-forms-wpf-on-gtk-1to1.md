@@ -2894,7 +2894,13 @@ only for a Shape that is the window content; lane H `RenderingPainter` reads `Vi
   `Changed`/s idle). The structural check now follows effective Shape/Panel/Border brushes and nested
   drawings and pens; a storm breaker backs it up: after two consecutive renders whose capture is pixel-identical,
   `Changed` is held until a re-capture really differs (re-checked once after the frame, so a real change still
-  gets through).
+  gets through). The breaker is bypassed while the source's host is not healthy, so a settled brush whose host
+  window closes is re-hosted and follows later changes (`VisualBrushHostingTests.A_settled_brush_*`).
+  - Known gaps (Round 70 lane J): a self-containing brush used as `Border.BorderBrush`, `Control.Background`/
+    `Foreground` or `TextBlock.Foreground` through a Style is caught only by the pixel-identical storm breaker,
+    not the structural check; the breaker re-checks once 100 ms after a change, so under a heavily loaded loop
+    a change GTK has not drawn yet waits for the next source invalidation. `VisualBrush` as a 3D material
+    texture (Graphics/Geometry's `DiffuseMaterial`) is not implemented: that pane stays dark.
 
 ## Phased roadmap (after Phase 0 proves the spine)
 

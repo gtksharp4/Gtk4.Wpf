@@ -79,6 +79,70 @@ public class VisualBrushHostingTests : WpfGtkTestBase
 	});
 
 	[Fact]
+	public void A_settled_brush_is_hosted_again_when_its_host_window_closes() => Run(() =>
+	{
+		var a = Open();
+		var b = Open();
+		try
+		{
+			var source = new Border { Width = 40, Height = 40, Background = Brushes.Red };
+			var brush = Corner(source);
+			var inA = new Rectangle { Width = 50, Height = 50, Fill = brush };
+			var inB = new Rectangle { Width = 50, Height = 50, Fill = brush };
+			((StackPanel)a.Content!).Children.Add(inA);
+			((StackPanel)b.Content!).Children.Add(inB);
+			Assert.True(GtkPump.Until(() => source.HasBackingWidget && source.Widget.Root != null, 3000));
+			GtkPump.For(1500);
+			var host = source.Widget.Root == a.Widget ? a : b;
+			var kept = host == a ? inB : inA;
+			host.Close();
+			GtkPump.For(300);
+			source.Background = Brushes.Blue;
+			Assert.True(GtkPump.Until(() => IsBlue(Sample(kept, 10, 10)), 3000), "the settled brush froze");
+		}
+		finally { a.Close(); b.Close(); }
+	});
+
+	static (byte R, byte G, byte B, byte A) OnScreen(Gtk.Widget widget, int x, int y)
+	{
+		int w = Math.Max(1, widget.Width), h = Math.Max(1, widget.Height);
+		var snapshot = new Gtk.Snapshot();
+		new Gtk.WidgetPaintable(widget).Snapshot(snapshot, w, h);
+		using var surface = new Cairo.ImageSurface(Cairo.Format.Argb32, w, h);
+		var node = snapshot.FreeToNode();
+		if (node != null)
+			using (var cr = new Cairo.Context(surface))
+				node.Draw(cr);
+		surface.Flush();
+		var d = surface.Data;
+		int i = y * surface.Stride + x * 4;
+		return (d[i + 2], d[i + 1], d[i], d[i + 3]);
+	}
+
+	// The shape is the window content, so no panel records the painting window and the source falls back
+	// to the newest window (B); after it settles, B closes and a change must still reach A.
+	[Fact]
+	public void A_settled_brush_whose_fallback_host_closes_follows_a_change() => Run(() =>
+	{
+		var source = new Border { Width = 40, Height = 40, Background = Brushes.Red };
+		var rect = new Rectangle { Width = 60, Height = 60, Fill = Corner(source) };
+		var a = new WpfWindow { Width = 200, Height = 200 };
+		a.Show();
+		GtkPump.For(500);
+		var b = Open();
+		try
+		{
+			a.Content = rect;
+			GtkPump.For(1500);
+			b.Close();
+			GtkPump.For(800);
+			source.Background = Brushes.Blue;
+			Assert.True(GtkPump.Until(() => IsBlue(OnScreen(rect.Widget, 10, 10)), 3000), "the settled brush froze");
+		}
+		finally { a.Close(); }
+	});
+
+	[Fact]
 	public void A_detached_source_paints_with_no_window_at_all() => Run(() =>
 	{
 		var source = new Border { Width = 60, Height = 60, Background = Brushes.Red };
