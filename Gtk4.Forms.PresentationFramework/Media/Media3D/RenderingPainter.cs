@@ -27,14 +27,20 @@ static partial class ScenePainter
 		if (layer.A <= 0) return;
 		cr.Save();
 		cr.Operator = layer.Additive ? Cairo.Operator.Add : Cairo.Operator.Over;
-		if (layer.TextureBrush != null)
+		// A brush with no paint source (missing image, empty visual) paints a transparent texture, as in WPF.
+		if (layer.TextureBrush != null && PaintTexture(cr, polygon, layer, textures))
 		{
-			// A brush with no paint source (missing image, empty visual) is transparent, as in WPF.
-			PaintTexture(cr, polygon, layer, textures);
 			cr.Restore();
 			return;
 		}
 		double r = Clamp(layer.R * layer.LightR), g = Clamp(layer.G * layer.LightG), b = Clamp(layer.B * layer.LightB);
+		if (layer.TextureBrush != null)
+		{
+			var c = layer.TextureBrush.ToGdkRgba();
+			r = Clamp(c.Red * layer.LightR);
+			g = Clamp(c.Green * layer.LightG);
+			b = Clamp(c.Blue * layer.LightB);
+		}
 		Path(cr, polygon);
 		cr.SetSourceRGBA(r, g, b, layer.A);
 		if (layer.A >= 1)

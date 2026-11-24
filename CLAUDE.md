@@ -50,6 +50,9 @@ it up serially to avoid a parallel-download race (see below).
 
 Build-wide settings live in `Directory.Build.props` / `Environment.Build.props`:
 - **`TreatWarningsAsErrors=true` for every project** — a new warning breaks the build.
+- **Strong-name signing**: every `Gtk4.Forms.*` project is signed with the repo-root `sign-key.snk` (public key
+  token `a5ab967c088e8330`). Each `InternalsVisibleTo` must carry `Key="$(Gtk4FormsPublicKey)"`, or the signed
+  friend loses access. Projects outside the prefix (user-app stand-ins, WPF-Samples) stay unsigned.
 - `UseOSSpecificOutputPaths=true` redirects output to `bin-wsl/` / `obj-wsl/`, so a Windows build
   and a WSL build of the same tree do not fight over `obj/`.
 - Versions come from GitInfo + `Version.targets`.

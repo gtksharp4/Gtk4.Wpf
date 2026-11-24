@@ -64,6 +64,7 @@ public class AdornerDecorator : FrameworkElement
 	{
 		_overlay = new Gtk.Overlay();
 		AdornerLayer.GtkOverlay = _overlay;
+		AdornerLayer.HookFrameLayout(_overlay);
 		if (Child != null)
 			_overlay.Child = Child.Widget;
 		return _overlay;

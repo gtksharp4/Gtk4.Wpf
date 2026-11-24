@@ -27,7 +27,7 @@ sealed class FlowContentPosition : ContentPosition
 
 /// <summary>
 /// The paginator behind <see cref="IDocumentPaginatorSource.DocumentPaginator"/> of a <see cref="FlowDocument"/>.
-/// Page counts come from <see cref="FlowDocumentPageMeter"/>, an approximation of WPF's layout.
+/// Page counts come from <see cref="FlowDocumentPageMeter"/>, the block-aware layout the page viewer draws.
 /// </summary>
 sealed class FlowDocumentPaginator : DynamicDocumentPaginator
 {
@@ -74,9 +74,22 @@ sealed class FlowDocumentPaginator : DynamicDocumentPaginator
 		}
 	}
 
-	Size DocumentPageSize => new Size(
-		double.IsNaN(_document.PageWidth) ? FlowDocumentPageMeter.DefaultWidth : _document.PageWidth,
-		double.IsNaN(_document.PageHeight) ? FlowDocumentPageMeter.DefaultHeight : _document.PageHeight);
+	Size DocumentPageSize => FlowPageGeometry.PageSize(_document,
+		_viewport ?? new Size(FlowDocumentPageMeter.DefaultWidth, FlowDocumentPageMeter.DefaultHeight));
+
+	Size? _viewport;
+
+	/// <summary>The viewer's content area: the page size wherever PageWidth/PageHeight are NaN.</summary>
+	internal Size? Viewport
+	{
+		get => _viewport;
+		set
+		{
+			if (_viewport == value) return;
+			_viewport = value;
+			Invalidate();
+		}
+	}
 
 	public override int PageCount
 	{
@@ -124,7 +137,7 @@ sealed class FlowDocumentPaginator : DynamicDocumentPaginator
 		_valid = true;
 	}
 
-	FlowDocumentPageMeter Meter
+	internal FlowDocumentPageMeter Meter
 	{
 		get
 		{
@@ -145,23 +158,23 @@ sealed class FlowDocumentPaginator : DynamicDocumentPaginator
 			(double)_document.GetValue(FlowDocument.FontSizeProperty)!);
 		using (var scope = visual.RenderOpen())
 			DrawColumns(scope.Context, meter, pageNumber);
-		var content = new Rect(meter.Padding.Left, meter.Padding.Top,
-			Math.Max(0, size.Width - meter.Padding.Left - meter.Padding.Right),
-			Math.Max(0, size.Height - meter.Padding.Top - meter.Padding.Bottom));
+		var pad = meter.Geometry.Padding;
+		var content = new Rect(pad.Left, pad.Top, meter.Geometry.ContentWidth, meter.Geometry.ContentHeight);
 		return new DocumentPage(visual, size, new Rect(0, 0, size.Width, size.Height), content);
 	}
 
 	static void DrawColumns(DrawingContext dc, FlowDocumentPageMeter meter, int pageNumber)
 	{
-		int first = pageNumber * meter.LinesPerPage;
-		for (int c = 0; c < meter.Columns; c++)
+		var g = meter.Geometry;
+		var page = meter.Pages[pageNumber];
+		for (int c = 0; c < page.Columns.Count; c++)
 		{
-			int start = first + c * meter.LinesPerColumn;
-			if (start >= meter.Lines.Count) break;
-			int n = Math.Min(meter.LinesPerColumn, meter.Lines.Count - start);
-			var text = string.Join("\n", meter.Lines.GetRange(start, n));
-			double x = meter.Padding.Left + c * (meter.ColumnWidth + meter.ColumnGap);
-			dc.DrawText(new FormattedText(text), new Point(x, meter.Padding.Top));
+			foreach (var slice in page.Columns[c].Slices)
+			{
+				var lines = slice.Box.Lines.GetRange(slice.First, slice.Count);
+				double x = g.ColumnX(c) + slice.Box.Margin.Left + slice.Box.Padding.Left;
+				dc.DrawText(new FormattedText(string.Join("\n", lines)), new Point(x, g.Padding.Top + slice.Y));
+			}
 		}
 	}
 

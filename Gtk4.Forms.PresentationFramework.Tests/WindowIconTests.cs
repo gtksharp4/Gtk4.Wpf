@@ -31,6 +31,42 @@ public class WindowIconTests : WpfGtkTestBase
 	}
 
 	[Fact]
+	public void Icon_is_a_dependency_property()
+	{
+		var window = new WpfWindow();
+		var icon = ImageSource.FromFile(@"C:\app\logo.png");
+
+		window.Icon = icon;
+
+		Assert.Same(icon, window.GetValue(WpfWindow.IconProperty));
+		Assert.Same(icon, window.Icon);
+	}
+
+	[Fact]
+	public void Default_icon_resource_is_extracted_to_a_temporary_file()
+	{
+		string path = WpfWindow.ExtractDefaultIconToTempFile();
+		try
+		{
+			Assert.StartsWith(Path.GetTempPath(), path, StringComparison.OrdinalIgnoreCase);
+			using var resource = typeof(WpfWindow).Assembly.GetManifestResourceStream(
+				"Gtk4.Forms.PresentationFramework.GtkSharp.png");
+			Assert.NotNull(resource);
+			using var expected = new MemoryStream();
+			resource.CopyTo(expected);
+			Assert.Equal(expected.ToArray(), File.ReadAllBytes(path));
+		}
+		finally
+		{
+			File.Delete(path);
+		}
+	}
+
+	[Fact]
+	public void Default_icon_loads_from_the_embedded_resource() => Run(() =>
+		Assert.NotNull(WpfWindow.LoadDefaultIconImage()));
+
+	[Fact]
 	public void BitmapImage_absolute_uri_resolves_to_local_path()
 	{
 		var bmp = new BitmapImage(new Uri("file:///C:/app/logo.png", UriKind.Absolute));
@@ -52,5 +88,44 @@ public class WindowIconTests : WpfGtkTestBase
 		var win = new WpfWindow { Title = "Iconned" };
 		var gtkWin = (Gtk.Window)win.Widget;
 		Assert.IsType<Gtk.HeaderBar>(gtkWin.Titlebar);
+	});
+
+	static Gtk.Image? FindTitlebarIcon(Gtk.Widget widget)
+	{
+		if (widget is Gtk.Image { } image && image.HasCssClass("titlebar-icon"))
+			return image;
+
+		for (var child = widget.FirstChild; child != null; child = child.NextSibling)
+			if (FindTitlebarIcon(child) is { } foundIcon)
+				return foundIcon;
+		return null;
+	}
+
+	[Fact]
+	public void Double_clicking_the_titlebar_icon_closes_the_window() => Run(() =>
+	{
+		var win = new WpfWindow { Title = "Iconned" };
+		var gtkWin = (Gtk.Window)win.Widget;
+		var headerBar = Assert.IsType<Gtk.HeaderBar>(gtkWin.Titlebar);
+		var icon = FindTitlebarIcon(headerBar);
+		Assert.NotNull(icon);
+		Assert.True(icon!.HasCssClass("titlebar-icon"));
+
+		var controllers = icon.ObserveControllers();
+		Gtk.GestureClick? click = null;
+		for (uint i = 0; i < controllers.NItems; i++)
+			if (controllers.GetObject(i) is Gtk.GestureClick gesture)
+				click = gesture;
+		Assert.NotNull(click);
+		Assert.Equal(1u, click!.Button);
+
+		int closed = 0;
+		win.Closed += (_, _) => closed++;
+
+		win.HandleTitleBarIconPress(1);
+		Assert.Equal(0, closed);
+
+		win.HandleTitleBarIconPress(2);
+		Assert.Equal(1, closed);
 	});
 }

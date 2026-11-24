@@ -5661,27 +5661,15 @@
 			"windowsOnly": false,
 			"legacyCsproj": false,
 			"batch": 3,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0117"
-			],
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
 			"missingTypes": [],
-			"missingMembers": [
-				"AutomationProperties.GetItemStatus",
-				"AutomationProperties.HeadingLevelProperty",
-				"AutomationProperties.SetHeadingLevel",
-				"AutomationProperties.SetItemStatus"
-			],
-			"xamlErrors": [
-				"MainWindow.g.cs(66,259): CS0117: 'AutomationProperties' does not contain a definition for 'HeadingLevelProperty'",
-				"MainWindow.g.cs(66,60): CS0117: 'AutomationProperties' does not contain a definition for 'SetHeadingLevel'"
-			],
-			"firstError": "MainWindow.g.cs: CS0117 'AutomationProperties' does not contain a definition for 'HeadingLevelProperty'",
+			"missingMembers": [],
+			"xamlErrors": [],
+			"firstError": "",
 			"warnings": [],
-			"blockerThemes": [
-				"automation"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -5690,7 +5678,8 @@
 					"CS0117"
 				]
 			},
-			"change": "unchanged"
+			"change": "fail->pass",
+			"round62LaneA": "Round 62 lane A: builds and runs (AutomationProperties HeadingLevel/ItemStatus)"
 		},
 		{
 			"project": "Sample Applications/DropShadow/DropShadow.csproj",
@@ -5782,31 +5771,17 @@
 			"windowsOnly": false,
 			"legacyCsproj": false,
 			"batch": 3,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0117",
-				"CS1061"
-			],
+			"build": "pass",
+			"run": "runs",
+			"errorCodes": [],
 			"missingTypes": [],
-			"missingMembers": [
-				"AutomationProperties.AcceleratorKeyProperty",
-				"AutomationProperties.SetAcceleratorKey",
-				"DataGrid.ColumnWidth"
-			],
-			"xamlErrors": [
-				"MainWindow.g.cs(224,262): CS0117: 'AutomationProperties' does not contain a definition for 'AcceleratorKeyProperty'",
-				"MainWindow.g.cs(224,60): CS0117: 'AutomationProperties' does not contain a definition for 'SetAcceleratorKey'",
-				"CreateExpenseReportDialogBox.g.cs(207,11): CS1061: 'DataGrid' does not contain a definition for 'ColumnWidth' and no accessible extension method 'ColumnWidth' accepting a first argument of type 'DataGrid' could be found (are you missing a using directive or an assembly reference?)"
-			],
-			"firstError": "MainWindow.g.cs: CS0117 'AutomationProperties' does not contain a definition for 'AcceleratorKeyProperty'",
+			"missingMembers": [],
+			"xamlErrors": [],
+			"firstError": "",
 			"warnings": [
 				"CS0162"
 			],
-			"blockerThemes": [
-				"automation",
-				"controls"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -5815,8 +5790,8 @@
 					"CS0246"
 				]
 			},
-			"change": "unchanged",
-			"note": "DataGridCell/DataGridCellsPresenter are gone (Round 59 lane A). The next wall is AutomationProperties.AcceleratorKey and DataGrid.ColumnWidth (DataGridLength)"
+			"change": "fail->pass",
+			"round62LaneA": "Round 62 lane A: builds and runs. The generator does not emit DataGrid.Columns (property element), so CreateExpenseReportDialogBox shows an empty grid; ColumnWidth=* is applied"
 		},
 		{
 			"project": "Sample Applications/FontDialog/FontDialogDemo.csproj",
@@ -6039,7 +6014,7 @@
 			"legacyCsproj": false,
 			"batch": 3,
 			"build": "pass",
-			"run": "crash",
+			"run": "runs",
 			"errorCodes": [],
 			"missingTypes": [],
 			"missingMembers": [],
@@ -6057,9 +6032,9 @@
 					"CS0246"
 				]
 			},
-			"change": "fail->pass",
+			"change": "crash->runs",
 			"unblockedBy": "Round 60 lane B documents-imaging-tail (re-applied gf57b: af71a13f, 40de56af, eed18bd9; merged 8c49c8e7, reviewed e99d8776): the imaging bitmap family; builds, then crashes (see runCause)",
-			"runCause": "NullReferenceException in MainWindow.WindowLoaded (MainWindow.cs:38): AdornerLayer.GetAdornerLayer(CurrentPhoto) returns null. The layer's GetAdornerLayer (Documents/AdornerLayer.cs:88) only finds an explicit AdornerDecorator ancestor; WPF's Window template supplies one, so every element in a Window has a layer"
+			"round62LaneA": "Round 62 lane A: window implicit adorner layer; a native click on the image reaches OnMouseDown (CropButton enabled)"
 		},
 		{
 			"project": "Sample Applications/PhotoViewerDemo/PhotoViewerDemo.csproj",
@@ -6196,21 +6171,13 @@
 			"windowsOnly": false,
 			"legacyCsproj": false,
 			"batch": 3,
-			"build": "fail",
-			"run": "not-run",
-			"errorCodes": [
-				"CS0117"
-			],
+			"build": "pass",
+			"run": "crash",
+			"errorCodes": [],
 			"missingTypes": [],
-			"missingMembers": [
-				"AutomationProperties.HeadingLevelProperty",
-				"AutomationProperties.SetHeadingLevel"
-			],
-			"xamlErrors": [
-				"Templates.g.cs(51,262): CS0117: 'AutomationProperties' does not contain a definition for 'HeadingLevelProperty'",
-				"Templates.g.cs(51,62): CS0117: 'AutomationProperties' does not contain a definition for 'SetHeadingLevel'"
-			],
-			"firstError": "Templates.g.cs: CS0117 'AutomationProperties' does not contain a definition for 'HeadingLevelProperty'",
+			"missingMembers": [],
+			"xamlErrors": [],
+			"firstError": "",
 			"warnings": [
 				"CA1416",
 				"CS8600",
@@ -6227,9 +6194,7 @@
 				"MVVMTK0034",
 				"NU1701"
 			],
-			"blockerThemes": [
-				"automation"
-			],
+			"blockerThemes": [],
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -6241,8 +6206,9 @@
 					"CS1061"
 				]
 			},
-			"change": "unchanged",
-			"note": "The .NET 9 WPF surface wall (about 25 members) is gone (Round 59 lane A), and so are the Grid shorthand and ControlExample content-property errors (Round 61 lane C). Only AutomationProperties.HeadingLevel is left (10 errors, CS0117); expect a further wall at run time"
+			"change": "fail->pass",
+			"note": "The .NET 9 WPF surface wall (about 25 members) is gone (Round 59 lane A), and so are the Grid shorthand and ControlExample content-property errors (Round 61 lane C). Only AutomationProperties.HeadingLevel is left (10 errors, CS0117); expect a further wall at run time",
+			"runCause": "InvalidOperationException: Resource with key ControlCornerRadius not found (MainWindow.g.cs:34), the run-time wall behind HeadingLevel"
 		},
 		{
 			"project": "Speech and Media/MediaGallery/MediaGallery.csproj",

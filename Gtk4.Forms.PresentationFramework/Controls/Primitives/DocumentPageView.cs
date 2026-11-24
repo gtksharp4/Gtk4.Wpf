@@ -72,12 +72,12 @@ public class DocumentPageView : FrameworkElement
 	protected override Gtk.Widget CreateWidget()
 	{
 		_area = new Gtk.DrawingArea();
-		_area.DrawFunc = (area, cr, w, h) =>
+		_area.DrawFunc = CairoDrawFunc.Wrap((cr, w, h) =>
 		{
 			cr.SetSourceRGB(1, 1, 1);
 			cr.Paint();
 			if (_page != null) DocumentPageRenderer.Render(_page, cr);
-		};
+		});
 		SyncSize(_area);
 		return _area;
 	}

@@ -5,12 +5,22 @@ static partial class ScenePainter
 	const double TextureSize = TextureCache.Size;
 
 	/// <summary>
-	/// Maps the cached brush texture through the triangle's texture coordinates with an affine matrix (not
-	/// perspective-correct) and darkens by the light level.
+	/// Smallest texel-to-pixel area scale painted. Below it a texel shrinks below about 1e-4 px (the 256x256 texture
+	/// covers under a thousandth of a pixel); cairo cannot represent the inverse pattern matrix (pixman uses 16.16
+	/// fixed point) and the compositor fails the frame with "out of memory". The 1e-8 threshold is empirical,
+	/// measured on ParticlesDemo. Such a triangle gets the solid colour unless it covers under a pixel.
 	/// </summary>
-	static void PaintTexture(Cairo.Context cr, ScreenPolygon polygon, ShadedLayer layer, TextureCache textures)
+	const double MinTextureScale = 1e-8;
+
+	/// <summary>
+	/// Maps the cached brush texture through the triangle's texture coordinates with an affine matrix (not
+	/// perspective-correct) and darkens by the light level. False when the caller should paint the solid colour.
+	/// </summary>
+	static bool PaintTexture(Cairo.Context cr, ScreenPolygon polygon, ShadedLayer layer, TextureCache textures)
 	{
-		if (!TryAffine(polygon, out var matrix)) return;
+		if (!TryAffine(polygon, out var matrix)) return false;
+		if (Math.Abs(matrix.Xx * matrix.Yy - matrix.Xy * matrix.Yx) < MinTextureScale)
+			return ScreenArea(polygon) < 1;
 		var pattern = textures.Get(layer.TextureBrush!);
 		matrix.Invert();
 		pattern.Matrix = matrix;
@@ -33,6 +43,21 @@ static partial class ScenePainter
 		cr.Operator = op;
 		cr.PaintWithAlpha(Clamp(layer.A));
 		cr.Restore();
+		return true;
+	}
+
+	// Shoelace area in px²: a degenerate texture on a visible triangle falls back to solid colour (like WPF).
+	static double ScreenArea(ScreenPolygon polygon)
+	{
+		var v = polygon.Vertices;
+		double sum = 0;
+		for (int i = 0; i < v.Count; i++)
+		{
+			var a = v[i];
+			var b = v[(i + 1) % v.Count];
+			sum += a.X * b.Y - b.X * a.Y;
+		}
+		return Math.Abs(sum) / 2;
 	}
 
 	/// <summary>The affine matrix taking texture pixels (u, v scaled to 256) to screen pixels.</summary>

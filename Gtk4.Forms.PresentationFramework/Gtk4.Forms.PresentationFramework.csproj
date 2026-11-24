@@ -42,13 +42,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Gtk4.Forms.PresentationFramework.Tests" />
-    <InternalsVisibleTo Include="Gtk4.Forms.Wpf.Testing" />
-    <InternalsVisibleTo Include="Gtk4.Forms.Wpf.Testing.Tests" />
+    <InternalsVisibleTo Include="Gtk4.Forms.PresentationFramework.Tests" Key="$(Gtk4FormsPublicKey)" />
+    <InternalsVisibleTo Include="Gtk4.Forms.Wpf.Testing" Key="$(Gtk4FormsPublicKey)" />
+    <InternalsVisibleTo Include="Gtk4.Forms.Wpf.Testing.Tests" Key="$(Gtk4FormsPublicKey)" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Gtk4.Forms.WindowsBase\Gtk4.Forms.WindowsBase.csproj" />
+    <EmbeddedResource Include="..\GtkSharp.png" LogicalName="Gtk4.Forms.PresentationFramework.GtkSharp.png" />
   </ItemGroup>
 
   <ItemGroup>

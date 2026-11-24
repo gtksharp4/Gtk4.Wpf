@@ -32,7 +32,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Gtk4.Forms.MarkupCompiler.Tests" />
+    <InternalsVisibleTo Include="Gtk4.Forms.MarkupCompiler.Tests" Key="$(Gtk4FormsPublicKey)" />
   </ItemGroup>
 
   <!--

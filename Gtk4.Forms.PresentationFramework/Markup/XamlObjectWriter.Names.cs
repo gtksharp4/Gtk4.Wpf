@@ -59,7 +59,7 @@ internal sealed partial class XamlObjectWriter
 			if (p.SetMethod == null || !p.SetMethod.IsPublic) continue;
 			if (p.Name == contentName || FindDp(type, p.Name) != null) continue;
 			object? value = p.GetValue(obj);
-			if (value == null || fresh != null && Equals(value, p.GetValue(fresh))) continue;
+			if (value == null || fresh != null && SameValue(value, p.GetValue(fresh))) continue;
 			if (Format(value, p.PropertyType) is { } text) el.SetAttributeValue(p.Name, text);
 		}
 	}
@@ -76,6 +76,10 @@ internal sealed partial class XamlObjectWriter
 			content.AddRange(items.Cast<object>().Select(WriteObject));
 		else AddContent(value, content);
 	}
+
+	// Thickness.Equals is false for NaN sides (auto margins), which would write every default value.
+	static bool SameValue(object a, object? b) => a is Thickness x && b is Thickness y
+		? x.ToString() == y.ToString() : Equals(a, b);
 
 	static object? CreateDefault(Type type)
 	{
