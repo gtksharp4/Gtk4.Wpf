@@ -2852,3 +2852,20 @@ Approve **Phase 0 only** first: the `WindowsBase` property-system subset + the f
 is small, fully testable, and settles every architectural unknown (xmlns binding, the compiler fork,
 the hybrid bridge, the drop-in). Only after it runs a real one-window WPF app unmodified on two OSes
 is it worth committing to the multi-phase build toward 1:1.
+
+- **Round 68 (lane E) review fixes.** R68E-1 `ScrollViewer` no longer propagates its natural size on every axis (it
+  broke Grid star rows): only on an axis where the widget does not expand. R68E-2 desired size adds Padding
+  and a Visible scroll bar (no BorderThickness). R68E-3 defaults are WPF's (Disabled / Visible). R68E-4 the F1 test notes
+  Margin is not mapped; docs now say the Window default size is the user-visible imaging fix. Grid star weights other
+  than equal are not proportional on GTK (pre-existing, outside this lane). See `samples-coverage.md`.
+- **Round 68 (lane E) review fixes (second pass).** `ScrollViewer` natural-size propagation is now on only on an axis
+  its hosting Window sizes to content (`SizeToContent` Width/Height/WidthAndHeight, where WPF measures with an infinite
+  constraint); everywhere else, including wrapped in Border/StackPanel inside a Grid star track, it is off as on main.
+  Re-evaluated at creation, on Loaded, at Window show and when `SizeToContent` changes; the hexpand/vexpand heuristic is
+  gone. `BorderThickness` no longer adds to the desired size (the WPF default template has no Border). An Auto bar that
+  the content overflows is shown and its size added (WPF MeasureOverride remeasure).
+- **Round 68 (lane E) review fixes (third pass).** ScrollViewer natural-size propagation to GTK is removed entirely
+  (PropagateNaturalWidth/Height stay false as on main); three attempts each regressed star rows, wrapped ScrollViewers or
+  Height/MaxHeight under SizeToContent. Kept: the Window default size, Image centring, the WPF ScrollViewer measure and
+  defaults. Known gap: SizeToContent around a ScrollViewer does not size to its content (same as before Round 68);
+  needs a managed-measure-driven window size.

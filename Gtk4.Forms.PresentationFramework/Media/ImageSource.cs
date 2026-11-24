@@ -21,6 +21,12 @@ public class ImageSource : Animatable
 	/// </summary>
 	protected ImageSource() => FilePath = string.Empty;
 
+	/// <summary>The width in device-independent units; 0 for a source with no intrinsic size.</summary>
+	public virtual double Width => 0;
+
+	/// <summary>The height in device-independent units; 0 for a source with no intrinsic size.</summary>
+	public virtual double Height => 0;
+
 	/// <summary>The image metadata; <see langword="null"/> for a source without any.</summary>
 	public virtual ImageMetadata? Metadata => null;
 
