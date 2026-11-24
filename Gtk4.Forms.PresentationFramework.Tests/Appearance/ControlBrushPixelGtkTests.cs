@@ -125,9 +125,12 @@ public partial class ControlBrushPixelGtkTests : WpfGtkTestBase
 	{
 		var c = new CheckBox { Content = "Caption", Background = Brushes.Blue };
 		var (win, px) = Show(c);
-		var box = px.Center;
+		// The caption label sits beside the indicator, so the widget's centre is no longer the box.
+		int blue = CountBlue(px);
+		var root = px.At(px.Width - 2, px.Height / 2);
 		win.Close();
-		Assert.True(IsBlue(box), box.ToString());
+		Assert.True(blue > 20, $"blue pixels: {blue}");
+		Assert.False(IsBlue(root), root.ToString());
 		Assert.DoesNotContain("background", c.AppearanceCss);
 		Assert.Contains("background-color", c.AppearanceChildRules);
 	});
@@ -135,10 +138,11 @@ public partial class ControlBrushPixelGtkTests : WpfGtkTestBase
 	[Fact]
 	public void RadioButton_background_paints_the_indicator() => Run(() =>
 	{
-		var (win, px) = Show(new RadioButton { Content = "Caption", Background = Brushes.Blue });
-		var box = px.Center;
+		var r = new RadioButton { Content = "Caption", Background = Brushes.Blue };
+		var (win, px) = Show(r);
+		int blue = CountBlue(px);
 		win.Close();
-		Assert.True(IsBlue(box), box.ToString());
+		Assert.True(blue > 20, $"blue pixels: {blue}");
 	});
 
 	[Fact]
