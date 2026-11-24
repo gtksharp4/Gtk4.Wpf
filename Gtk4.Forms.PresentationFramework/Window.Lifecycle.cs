@@ -96,7 +96,10 @@ public partial class Window
 	{
 		_laidOut = true;
 		if (IsLoaded)
+		{
 			GtkAllocationSync.Sync(this);
+			ImplicitAdornerLayer.RepositionAll();
+		}
 	}
 
 	void OnFrameAfterPaint(object? sender, EventArgs e)

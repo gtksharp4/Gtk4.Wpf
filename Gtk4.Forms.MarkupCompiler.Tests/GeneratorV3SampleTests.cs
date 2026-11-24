@@ -19,7 +19,7 @@ public class GeneratorV3SampleTests : GeneratorV2TestBase
 		Assert.DoesNotContain("Resources[\"ArrowBackgroundBrush\"] = \"\"", code);
 		Assert.DoesNotContain("Resources[\"MyGlassBrushResource\"] = \"\"", code);
 		Assert.Equal(2, Regex.Matches(code, @"new System\.Windows\.Media\.DrawingBrush\(\)").Count);
-		Assert.Equal(10, Regex.Matches(code, @"\.GradientStops\.Add\(").Count);
+		Assert.Equal(12, Regex.Matches(code, @"\.GradientStops\.Add\(").Count);
 		Assert.Contains("GeometryProperty, System.Windows.Markup.XamlValueConverter.Convert(typeof(System.Windows.Media" +
 			".GeometryDrawing), System.Windows.Media.GeometryDrawing.GeometryProperty, \"M0,0 L1,1\")", code);
 		Assert.DoesNotContain("Freeze", code);

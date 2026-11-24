@@ -17,6 +17,7 @@ static partial class PeerAccessible
 	/// <summary>Removes an explicit property so GTK derives it from the widget again.</summary>
 	internal static void ResetProperty(Gtk.Widget widget, Gtk.AccessibleProperty property)
 	{
+		Spy?.Invoke(widget, property, null);
 		try
 		{
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) ResetWindows(widget.Handle, (int)property);

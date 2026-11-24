@@ -39,5 +39,5 @@ public abstract partial class UIElement
 	}
 
 	void ApplyCanTarget(Gtk.Widget widget) =>
-		widget.CanTarget = VisibilityGtkMap.CanTarget(WidgetVisibility, IsHitTestVisible);
+		widget.CanTarget = !SuppressCanTarget && VisibilityGtkMap.CanTarget(WidgetVisibility, IsHitTestVisible);
 }
