@@ -14,30 +14,25 @@ static partial class ScenePainter
 		var pattern = textures.Get(layer.TextureBrush!);
 		matrix.Invert();
 		pattern.Matrix = matrix;
-		cr.Save();
-		cr.SetSource(pattern);
-		Path(cr, polygon);
-		if (layer.A >= 1)
-		{
-			cr.Fill();
-		}
-		else
-		{
-			cr.Clip();
-			cr.PaintWithAlpha(Clamp(layer.A));
-		}
-		cr.Restore();
 		double light = Clamp((layer.LightR + layer.LightG + layer.LightB) / 3);
+		var op = cr.Operator;
+		cr.Save();
+		Path(cr, polygon);
+		cr.Clip();
+		// Darken the texel before compositing: Atop scales its colour and keeps its alpha.
+		cr.PushGroup();
+		cr.SetSource(pattern);
+		cr.Paint();
 		if (light < 1)
 		{
-			// The mask keeps transparent texels transparent: a texel's colour is scaled, its alpha is not.
-			cr.Save();
-			Path(cr, polygon);
-			cr.Clip();
-			cr.SetSourceRGBA(0, 0, 0, (1 - light) * Clamp(layer.A));
-			cr.Mask(pattern);
-			cr.Restore();
+			cr.Operator = Cairo.Operator.Atop;
+			cr.SetSourceRGBA(0, 0, 0, 1 - light);
+			cr.Paint();
 		}
+		cr.PopGroupToSource();
+		cr.Operator = op;
+		cr.PaintWithAlpha(Clamp(layer.A));
+		cr.Restore();
 	}
 
 	/// <summary>The affine matrix taking texture pixels (u, v scaled to 256) to screen pixels.</summary>

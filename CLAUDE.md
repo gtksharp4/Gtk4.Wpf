@@ -62,7 +62,7 @@ Six suites, all **xUnit v3 on `net10.0`**, run with `dotnet test`:
 |---|---|---|---|
 | `Gtk4.Forms.WindowsBase.Tests` | ~83 | no | DP / routed-event / property system |
 | `Gtk4.Forms.MarkupCompiler.Tests` | ~173 | no | XAML → `InitializeComponent` code generation |
-| `Gtk4.Forms.Wpf.ProjectConverter.Tests` | ~15 | no | csproj rewrite |
+| `Gtk4.Forms.Wpf.ProjectConverter.Tests` | ~46 | no GTK | csproj rewrite, plus MSBuild target tests that spawn a nested `dotnet build` (needs a working SDK on PATH) |
 | `Gtk4.Forms.PresentationFramework.Tests` | ~1399 | **yes** | controls, binding, themes — on **real GTK 4 widgets** |
 | `Gtk4.Forms.Wpf.Testing.Tests` | ~50 | **yes** | the driver itself, plus UI tests of `Gtk4.Forms.WpfSample` and five official WPF-Samples compiled in process (SimpleBinding, MasterDetail, DirectionalBinding, HandlingEventOnCommandUsingCode, MousePointer) |
 | `Gtk4.Forms.Integration.Tests` | few | yes | end-to-end: add `Gtk4.Forms.Wpf` to the embedded WPF sample, build (converts), run, detect the window |
@@ -73,7 +73,7 @@ dotnet test Gtk4.Forms.WindowsBase.Tests --no-build
 dotnet test Gtk4.Forms.PresentationFramework.Tests --no-build
 ```
 
-The first three suites are pure logic — no GTK runtime, no display. `PresentationFramework.Tests`
+The first three suites need no GTK runtime or display (the converter suite needs an SDK on PATH). `PresentationFramework.Tests`
 drives real GTK 4 widgets. `Integration.Tests` needs the `Gtk4.Forms.Wpf` package already packed in
 the repo `Packages/` feed and the native GTK runtime; its window detection is Windows-only and it is
 **not** part of CI.

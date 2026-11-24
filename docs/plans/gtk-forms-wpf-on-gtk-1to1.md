@@ -2753,6 +2753,12 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   window only after a longer wait under load, Concepts re-checked alone at 40 s).
 - **Round 67 (lane H) carry-over.** Textures map affinely, not perspective-correct (see Media3D gaps). Rejected in
   triage: none.
+- **Round 67 (lane H) follow-up.** Fixed and tested failing-first: the texture darkening painted the texel and then a
+  black mask of alpha `(1-light)*a`, which is exact only for `a` of 0 or 1 (a half-opacity brush darkened the backdrop
+  share to 0.375 instead of 0.5). The texel is now darkened inside a group (`Atop` keeps its alpha) and the group is
+  composited once with the layer's operator and alpha. New test: brush `Opacity=0.5` under `#808080` ambient (old code
+  G=96, now about 127); the no-pixels theory now covers ambient and no-light. Docs: CLAUDE.md describes
+  `ProjectConverter.Tests` as 46 tests that include nested `dotnet build` MSBuild tests.
 
 
 ## Phased roadmap (after Phase 0 proves the spine)

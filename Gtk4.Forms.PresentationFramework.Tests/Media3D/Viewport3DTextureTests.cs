@@ -97,14 +97,18 @@ public class Viewport3DTextureTests : WpfGtkTestBase
 	});
 
 	[Theory]
-	[InlineData(true)]
-	[InlineData(false)]
-	public void A_texture_with_no_pixels_stays_transparent_under_dim_light(bool missingFile) => Run(() =>
+	[InlineData(true, true)]
+	[InlineData(false, true)]
+	[InlineData(true, false)]
+	[InlineData(false, false)]
+	public void A_texture_with_no_pixels_stays_transparent_under_dim_or_no_light(bool missingFile, bool ambient)
+		=> Run(() =>
 	{
 		var brush = missingFile
 			? BrushOf(System.IO.Path.Combine(System.AppContext.BaseDirectory, "does-not-exist.png"))
 			: new ImageBrush();
-		var scene = Lit(Quad(new DiffuseMaterial(brush)), Color.FromRgb(128, 128, 128));
+		var quad = Quad(new DiffuseMaterial(brush));
+		var scene = ambient ? Lit(quad, Color.FromRgb(128, 128, 128)) : new Model3DGroup { Children = { quad } };
 		using var surface = Paint(Viewport(scene));
 		Assert.True(IsBackdrop(PixelAt(surface, 100, 100)), $"centre was {PixelAt(surface, 100, 100)}");
 	});
@@ -119,6 +123,19 @@ public class Viewport3DTextureTests : WpfGtkTestBase
 		var opaque = PixelAt(surface, 115, 100);
 		Assert.InRange(opaque.R, 120, 135);
 		Assert.True(opaque.G < 10 && opaque.B < 10, $"opaque half was {opaque}");
+	});
+
+	[Fact]
+	public void A_half_opacity_texture_keeps_half_the_backdrop_under_dim_light() => Run(() =>
+	{
+		var brush = BrushOf(TwoColourPng());
+		brush.Opacity = 0.5;
+		var scene = Lit(Quad(new DiffuseMaterial(brush)), Color.FromRgb(128, 128, 128));
+		using var surface = Paint(Viewport(scene));
+		var top = PixelAt(surface, 100, 80);
+		// 0.5 * backdrop + 0.5 * red * 0.5 light; the old mask-on-top darkened the backdrop share to 0.375.
+		Assert.InRange(top.G, 120, 135);
+		Assert.InRange(top.R, 58, 70);
 	});
 
 	[Fact]
