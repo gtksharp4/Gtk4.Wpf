@@ -2759,13 +2759,18 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   old document's paginator Viewport when its document changes or becomes null, so printing paginates at 816x1056 again.
   **g-F8** over-long lines wrapped, no behaviour change.
 - **Round 66 (lane G) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. Targeted tests
-  (the suites run in full at integrate): `PresentationFramework.Tests` filtered to Appearance, Flow*, Documents, DataGrid, MenuItem, ComboBox,
-  TextBox, RadioButton, Block and Paragraph 921 (920 passed, 1 skipped, 0 failed); 14 test methods added (6 pixel or
-  rule tests, 6 page-layout tests, 2 viewer cases), 1 replaced (the old one-line-height pin), 1 updated (Block.Margin
+  (the suites run in full at integrate): `PresentationFramework.Tests` filtered to Appearance, Flow*, Documents,
+  DataGrid, MenuItem, ComboBox, TextBox, RadioButton, Block and Paragraph 921 (920 passed, 1 skipped, 0 failed); 14 test
+  cases (13 methods) added (6 pixel or rule tests, 6 page-layout tests, 1 viewer theory with 2 cases), 1 replaced (the old one-line-height pin), 1 updated (Block.Margin
   default). Samples gate: all 204 projects that built at the last
   run build through a lane-private feed (two builds each; CustomApplicationClass needs its sibling client built first),
   and all 191 apps that ran still run (114 in a crowded first pass; the 77 without a window handle re-checked alone for
   25 s one at a time: all alive with a window).
+- **Round 66 (lane G) follow-up.** The auto `Block.Margin` default (NaN sides) leaked into `XamlWriter` output
+  (`<Paragraph Margin="NaN,NaN,NaN,NaN" />`) because `Thickness.Equals` is false for NaN. The writer's CLR-property
+  comparison now treats equal `Thickness` strings as equal, so a default Paragraph writes no Margin (test
+  `Default_Paragraph_writes_no_Margin`, failing first). `WindowsBase` is untouched; WPF's NaN-aware Thickness equality
+  stays a cross-lane item. The totals line above now counts 14 test cases in 13 methods.
 - **Round 66 (lane G) carry-over.** Hover and pressed fades and the focus rectangle of Aero2 are not reproduced; the
   scrolled-window frame of a multiline TextBox is not recoloured; ImageBrush/VisualBrush/DrawingBrush backgrounds on
   controls are store-only. FlowDocumentPageViewer still lays tables, lists and floaters out as one text block and does
