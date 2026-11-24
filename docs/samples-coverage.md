@@ -249,10 +249,25 @@ These come from Round 54 lane B (`gf54b/media3d`). They are documented, not fixe
 - `MeshGeometry3D.TextureCoordinates` is a plain list: editing it in place does not repaint.
 - The generated-code path now emits an explicit `Viewport3D.Children` and nested `ModelVisual3D.Content` too
   (Round 61), so PhotoFlipperDemo and HexSphereDemo run.
+- Round 67 lane H (HexSphereDemo, user report "black window, nothing happens"): the demo now renders and animates.
+  The spheres are textured, the radial gradient shows behind them, and "Image 1 animate" spins them. Causes:
+  - A material brush with no paint source (a texture that did not load) was painted with cairo's default opaque
+    black source. It now paints nothing, as an empty brush is transparent in WPF.
+  - The sample's `<Resource>` images were never copied to the output, so the texture file did not exist. The
+    `Gtk4.Forms.Wpf` targets now copy `<Resource>` items beside the app (`GtkFormsCopyResources`).
+  - The generator dropped `ParallelTimeline` children, so `RotateStoryboard` was an empty storyboard.
+  - Brushes are rasterised once per paint pass (not once per triangle), and `Color.FromScRgb` matches WPF.
+  - `EmissiveMaterial` keeps painting Over when it is the first layer and additive after that. The WPF docs do not
+    settle whether a lone emissive layer is additive, and in WPF the model is lit into its own buffer before it is
+    composited over the 2D background, so a backdrop would not show through either way. Not changed.
+  - Texture mapping is still affine. On the 16x16 spheres the triangles are small, and the only visible artefacts
+    are thin wedges at the poles, so perspective-correct mapping was not added.
+  - On Linux the markup path `images\roundcornersheet.png` does not match the `Images` folder (case). The fix
+    belongs to `ImageSourceLocation` (lane E) and was not made here.
 
 Carry-overs that are still open:
 
-- `Color.FromScRgb` skips the sRGB transfer (`Media/Color.cs`, re-checked: byte normalization only).
+- (Closed in Round 67 lane H: `Color.FromScRgb` and `ScR`/`ScG`/`ScB` now use the sRGB transfer, with the byte rounding of WPF. WPF also keeps the float values it was given; `Color` stores only bytes, so a read-back is the byte's linear value.)
 - `ScrollBar` is still on `Control`, not `RangeBase` (`Controls/Primitives/ScrollBar.cs:16`, re-checked).
 - `SystemParameters` `*Key` objects do not resolve through `DynamicResource` (carried over, not re-checked).
 - `Int32RectConverter` and `PixelFormatConverter` are still unregistered; `Int32Rect`, `PixelFormat` and
