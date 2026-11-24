@@ -115,6 +115,29 @@ and Tools (2). The 7 non-runners are spread over six categories (see Crashes).
 Each move is attributed by elimination: the named change removed every blocker that `4fd5749d` recorded for the app.
 Nothing was bisected. Per-row attribution is in the JSON (`unblockedBy`).
 
+**Round 64 (lane D) access keys, no row changed.** A user-reported difference: `_` in `Button.Content` or
+`MenuItem.Header` showed literally. Content and headers of Button, RepeatButton, ToggleButton, CheckBox, RadioButton,
+Label, MenuItem, GroupBox, Expander and TabItem now follow WPF's `AccessText` rules (`_Open` shows `Open` with key O,
+`__Open` shows `_Open`, `Open_` and `A__B` as in WPF). Gate, recipe from Method with a lane-private feed packed from
+the lane branch (`1.0.0.26328`): all 204 apps and libraries with `build=pass` still build (two builds each, 0 errors),
+and all 191 with `run=runs` still start and stay up with a window; 23 showed no window within 10 s in the first pass
+and all 23 showed one when re-run alone with a 30 s wait (cold start, not a hang).
+
+| Target sample | Status | Underscore strings |
+|---|---|---|
+| Windows/DialogBox | builds, runs (screen grab shows the `File` menu header without the underscore) | `_File`, `_Open`, `_Print`, `_Exit` |
+| Sample Applications/FontDialog | builds, runs | `_Font family`, `_Size:`, `_Typeface:`, `F_ormat` |
+| Windows/WindowActivationAndDeactivation | builds, runs | `_File`, `_Edit`, `_Exit` |
+| Documents/Fixed Documents/DocumentMerge | builds, runs | `_File`, `_Open` |
+| Documents/Annotations/AnnotationsStyling | builds, runs | in `defaultstickynotestyle.xaml` |
+| Sample Applications/ExpenseIt/ExpenseItDemo | still fails: `AutomationProperties.AcceleratorKeyProperty` (another lane) | not checked |
+| Documents/Fixed Documents/DocumentStructure | still fails: XAML parse error in `fixedpage1_structure.xaml` | not checked |
+| Tools/BamlReflector | still fails: `System.Windows.Baml2006` missing | not checked |
+| Graphics/Brushes/SampleViewer | not a project in the coverage list | not checked |
+
+Not verified: that the key letter is underlined while Alt is held (GTK shows it, WPF's keyboard cues do the same; no
+screenshot with Alt held was taken).
+
 **Fail→pass: 7 apps.**
 
 | Change | Apps (run result) |
@@ -164,11 +187,16 @@ and GIFEncoderAndDecoder. CustomAnimation was missing from the first log and run
 `DataBindingToStringFomat.exe`, which the first pass did not find; it runs. All are recorded as `runs`, as in earlier
 reports.
 
-Two apps write heavy stderr while running. Neither is a crash, but both are worth a look (track 6):
+Round 63b (rendering hygiene) fixed both stderr sources. Measured through the lane-private package, one app at a time:
 
-- Per-FrameAnimation and ParticlesDemo print "Cairo.Context is leaking, programmer is missing a call to Dispose" 248
-  and 189 times in 15 s. That is GtkSharp's finalizer warning for an undisposed `Cairo.Context`. Not root-caused.
-- ParticlesDemo also logs `Gsk-WARNING: drawing failure for render node GskTransformNode: out of memory` (6 times).
+- "Cairo.Context is leaking": GtkSharp's `DrawingArea.DrawFunc` wrapper creates a `Cairo.Context` per draw and never
+  disposes it. Every DrawFunc in the layer now disposes its context in a `finally` (`Media/CairoDrawFunc.cs`).
+  Per-FrameAnimation went from 254 in 15 s (before, same machine) to 0 in two runs. ParticlesDemo went from 153-293 in
+  15-20 s to 0 in 9 runs.
+- `Gsk-WARNING ... out of memory`: Viewport3D painted textured triangles whose texel-to-pixel area scale fell below
+  1e-8 (a particle dying to nearly zero size). Cairo cannot represent the inverse pattern matrix and the compositor
+  rejects the frame. Such triangles are now skipped. Before: up to 128 warnings per 20 s run, in most runs; after: 0 in
+  4 runs of 20 s.
 
 ## API demand
 
@@ -249,10 +277,25 @@ These come from Round 54 lane B (`gf54b/media3d`). They are documented, not fixe
 - `MeshGeometry3D.TextureCoordinates` is a plain list: editing it in place does not repaint.
 - The generated-code path now emits an explicit `Viewport3D.Children` and nested `ModelVisual3D.Content` too
   (Round 61), so PhotoFlipperDemo and HexSphereDemo run.
+- Round 67 lane H (HexSphereDemo, user report "black window, nothing happens"): the demo now renders and animates.
+  The spheres are textured, the radial gradient shows behind them, and "Image 1 animate" spins them. Causes:
+  - A material brush with no paint source (a texture that did not load) was painted with cairo's default opaque
+    black source. It now paints nothing, as an empty brush is transparent in WPF.
+  - The sample's `<Resource>` images were never copied to the output, so the texture file did not exist. The
+    `Gtk4.Forms.Wpf` targets now copy `<Resource>` items beside the app (`GtkFormsCopyResources`).
+  - The generator dropped `ParallelTimeline` children, so `RotateStoryboard` was an empty storyboard.
+  - Brushes are rasterised once per paint pass (not once per triangle), and `Color.FromScRgb` matches WPF.
+  - `EmissiveMaterial` keeps painting Over when it is the first layer and additive after that. The WPF docs do not
+    settle whether a lone emissive layer is additive, and in WPF the model is lit into its own buffer before it is
+    composited over the 2D background, so a backdrop would not show through either way. Not changed.
+  - Texture mapping is still affine. On the 16x16 spheres the triangles are small, and the only visible artefacts
+    are thin wedges at the poles, so perspective-correct mapping was not added.
+  - On Linux the markup path `images\roundcornersheet.png` does not match the `Images` folder (case). The fix
+    belongs to `ImageSourceLocation` (lane E) and was not made here.
 
 Carry-overs that are still open:
 
-- `Color.FromScRgb` skips the sRGB transfer (`Media/Color.cs`, re-checked: byte normalization only).
+- (Closed in Round 67 lane H: `Color.FromScRgb` and `ScR`/`ScG`/`ScB` now use the sRGB transfer, with the byte rounding of WPF. WPF also keeps the float values it was given; `Color` stores only bytes, so a read-back is the byte's linear value.)
 - `ScrollBar` is still on `Control`, not `RangeBase` (`Controls/Primitives/ScrollBar.cs:16`, re-checked).
 - `SystemParameters` `*Key` objects do not resolve through `DynamicResource` (carried over, not re-checked).
 - `Int32RectConverter` and `PixelFormatConverter` are still unregistered; `Int32Rect`, `PixelFormat` and

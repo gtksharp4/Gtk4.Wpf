@@ -20,8 +20,8 @@ public partial class Button : ButtonBase
 	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
-		_button = new Gtk.Button();
-		_button.Label = (Content as string) ?? string.Empty;
+		_button = new Gtk.Button { UseUnderline = true };
+		_button.Label = AccessLabel(Content);
 		_button.Clicked += (s, e) => OnClick();
 		return _button;
 	}
@@ -30,7 +30,10 @@ public partial class Button : ButtonBase
 	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
 	{
 		base.OnPropertyChanged(e);
-		if (e.Property == ContentProperty && _button != null && e.NewValue is string s)
-			_button.Label = s;
+		if (e.Property == ContentProperty)
+		{
+			var label = AccessLabel(e.NewValue);
+			if (_button != null && e.NewValue is string) _button.Label = label;
+		}
 	}
 }

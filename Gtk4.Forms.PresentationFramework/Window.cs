@@ -72,6 +72,8 @@ public partial class Window : ContentControl
 		// ShowDialog unblocks when the user dismisses the window.
 		_window.CloseRequest += OnCloseRequest;
 		AttachAcceleratorController(_window);
+		AttachAccessKeyController(_window);
+		DisableGtkMnemonics(_window);
 		_window.Child = CreateContentOverlay();
 		return _window;
 	}

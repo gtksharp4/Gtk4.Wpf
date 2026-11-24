@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Gtk4.Forms.Wpf.ProjectConverter.Tests" />
+    <InternalsVisibleTo Include="Gtk4.Forms.Wpf.ProjectConverter.Tests" Key="$(Gtk4FormsPublicKey)" />
   </ItemGroup>
 
 </Project>

@@ -19,7 +19,7 @@ public class TreeViewItemAutomationPeer : ItemsControlAutomationPeer, IExpandCol
 
 	protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.TreeItem;
 
-	internal override string ContentName() => PeerText.FromContent(Node.Header);
+	internal override string ContentName() => PeerText.FromContentLiteral(Node.Header);
 
 	protected override ItemAutomationPeer CreateItemAutomationPeer(object item) =>
 		new TreeViewDataItemAutomationPeer(item, this);
