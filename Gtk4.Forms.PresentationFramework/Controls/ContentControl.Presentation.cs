@@ -30,6 +30,15 @@ public partial class ContentControl
 	/// <summary>The element hosting the content (null while the content is shown as plain text).</summary>
 	internal UIElement? HostedElement => _hosted;
 
+	/// <summary>The template presented with: <see cref="ContentTemplate"/>, unless a subclass takes it from an owner.</summary>
+	internal virtual DataTemplate? EffectiveContentTemplate => ContentTemplate;
+
+	/// <summary>The template selector presented with.</summary>
+	internal virtual DataTemplateSelector? EffectiveContentTemplateSelector => ContentTemplateSelector;
+
+	/// <summary>The string format presented with.</summary>
+	internal virtual string? EffectiveContentStringFormat => ContentStringFormat;
+
 	/// <summary>Resolves <see cref="Content"/> through the shared rules and shows it.</summary>
 	internal void RefreshPresentation()
 	{
@@ -45,7 +54,7 @@ public partial class ContentControl
 		}
 
 		var element = ContentResolution.ResolveStructured(
-			this, content, ContentTemplate, ContentTemplateSelector, out _);
+			this, content, EffectiveContentTemplate, EffectiveContentTemplateSelector, out _);
 		if (element != null)
 		{
 			_hosted = element;
@@ -58,17 +67,17 @@ public partial class ContentControl
 
 	void ShowContentAsText(object? content)
 	{
-		if (content is string s && string.IsNullOrEmpty(ContentStringFormat))
+		if (content is string s && string.IsNullOrEmpty(EffectiveContentStringFormat))
 			ShowContentText(s);
 		else
-			ShowText(ContentResolution.ToText(content, ContentStringFormat));
+			ShowText(ContentResolution.ToText(content, EffectiveContentStringFormat));
 	}
 
 	// The implicit template the last presentation used; a resource scope change only matters if the lookup differs.
 	DataTemplate? _implicitSeen;
 
 	DataTemplate? LookUpImplicitTemplate() =>
-		Content is null or UIElement || ContentTemplate != null || ContentTemplateSelector != null
+		Content is null or UIElement || EffectiveContentTemplate != null || EffectiveContentTemplateSelector != null
 			? null
 			: FindTemplateResource(this, Content);
 

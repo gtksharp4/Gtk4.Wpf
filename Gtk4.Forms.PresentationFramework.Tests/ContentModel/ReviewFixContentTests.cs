@@ -64,7 +64,7 @@ public class ReviewFixContentTests : ContentModelTestBase
 		Assert.Equal(new[] { "body:One" }, Texts(item));
 		Assert.Contains("head:One", Texts(item.CreateTabWidget()));
 		Assert.Same(tc.ItemTemplate, item.HeaderTemplate);
-		Assert.Same(tc.ContentTemplate, item.ContentTemplate);
+		Assert.Null(item.ContentTemplate);
 	});
 
 	[Fact]
@@ -81,7 +81,7 @@ public class ReviewFixContentTests : ContentModelTestBase
 		_ = tc.Widget;
 		var item = (TabItem)tc.ContainerAt(0)!;
 		Assert.Same(headers, item.HeaderTemplateSelector);
-		Assert.Same(bodies, item.ContentTemplateSelector);
+		Assert.Null(item.ContentTemplateSelector);
 		Assert.Equal(new[] { "bs:One" }, Texts(item));
 		Assert.Contains("hs:One", Texts(item.CreateTabWidget()));
 	});

@@ -47,11 +47,23 @@ public class HyperlinkNavigationTests : ContentModelTestBase
 	});
 
 	[Fact]
-	public void An_unhandled_failure_throws_like_WPF_and_does_not_blank_the_frame() => Run(() =>
+	public void An_unhandled_external_link_neither_throws_nor_blanks_the_frame() => Run(() =>
 	{
 		var link = Link("http://example.org/a");
 		var (frame, page) = PageInFrame(link);
-		Assert.Throws<NotSupportedException>(() => link.OnClick());
+		NavigationFailedEventArgs? failed = null;
+		frame.NavigationFailed += (s, e) => failed = e;
+		link.OnClick();
+		Assert.NotNull(failed);
+		Assert.Same(page, frame.Content);
+	});
+
+	[Fact]
+	public void An_unhandled_missing_page_throws_like_WPF_and_does_not_blank_the_frame() => Run(() =>
+	{
+		var link = Link("missing/page.xaml");
+		var (frame, page) = PageInFrame(link);
+		Assert.Throws<FileNotFoundException>(() => link.OnClick());
 		Assert.Same(page, frame.Content);
 	});
 
@@ -121,6 +133,41 @@ public class HyperlinkNavigationTests : ContentModelTestBase
 		GLib.Signal.Emit(click!, "released", 1, 4.0, label.Height / 2.0);
 
 		Assert.Equal(1, clicks);
+		window.Close();
+	});
+
+	[Fact]
+	public void A_real_click_on_an_external_link_in_a_Frame_does_not_throw_and_keeps_the_page() => Run(() =>
+	{
+		var link = Link("http://example.org/a");
+		var item = new ListBoxItem { Content = link };
+		var list = new ListBox();
+		list.Items.Add(item);
+		var frame = new Frame();
+		var window = new Window { Content = frame, Width = 300, Height = 200 };
+		window.Show();
+		frame.Navigate(list);
+		GtkPump.Until(() => item.Widget.IsMapped && item.Widget.Width > 0);
+		GtkPump.For(200);
+		NavigationFailedEventArgs? failed = null;
+		frame.NavigationFailed += (s, e) => failed = e;
+
+		var label = Descendants(item.Widget).OfType<Gtk.Label>().Single();
+		var controllers = label.ObserveControllers();
+		Gtk.GestureClick? click = null;
+		for (uint i = 0; i < controllers.NItems; i++)
+		{
+			var controller = controllers.GetObject(i);
+			if (controller is Gtk.GestureClick { PropagationPhase: Gtk.PropagationPhase.Capture } gc) click = gc;
+			if (controller is Gtk.EventControllerMotion)
+				GLib.Signal.Emit(controller, "motion", 4.0, label.Height / 2.0);
+		}
+		Assert.NotNull(click);
+		GLib.Signal.Emit(click!, "pressed", 1, 4.0, label.Height / 2.0);
+		GLib.Signal.Emit(click!, "released", 1, 4.0, label.Height / 2.0);
+
+		Assert.NotNull(failed);
+		Assert.Same(list, frame.Content);
 		window.Close();
 	});
 }
