@@ -388,49 +388,77 @@ MergedResources, Matrix, CubeAnimationDemo) and passed on a solo rebuild: conten
   Capture on a placed adorner re-targets input (unit-tested); no native drag was driven.
 - New walls: none beyond the two above (`DataGrid.Columns` generator gap; WPFGallery `ControlCornerRadius`).
 
-## Imaging samples draw their image (Round 65e)
+## Imaging samples show the whole image (Rounds 65e and 68e)
 
-Reported: the BMP/GIF/JPEG/PNG/TIFF "Imaging Sample" windows showed no image. Measured in a shown
-`Window > ScrollViewer > StackPanel > Image { Stretch.None, Margin 20 }` (tests in
-`Gtk4.Forms.PresentationFramework.Tests/Imaging`), first wrong value per link of the chain:
+Reported: the BMP/GIF/JPEG/TIFF "Imaging Sample" windows showed no image while the PNG one worked. The decoded
+frames were always drawn correctly (pixel-verified per codec in Round 65). The fault was window layout.
 
-| Link | Measured | Verdict |
-|---|---|---|
-| Decoded frame | `SourceBitmapFrame`, 640x480 `Bgr24` (BMP, JPEG), `Indexed8` (GIF), 480x360 `Bgra32` (TIFF) | right |
-| `ToBgra32` | every format opaque, Indexed1 index 0 = opaque red (regression tests added) | right |
-| `Picture.Paintable` | `MemoryTexture`, full bitmap size; snapshot of the Image widget: every pixel non-transparent | right: **pixels reach the widget** |
-| `Image.DesiredSize` | `0,0`: Image never measured | wrong (fixed) |
-| `Image.ActualWidth` | 600 for a 64 px bitmap: a Fill-aligned `Stretch.None` Picture was stretched to the slot | wrong (fixed) |
-| Sample window | 438x93 (client 46 px tall): `ScrolledWindow` does not propagate its content's natural size, so the unsized sample window opens as a sliver showing the top 46 px of the first image | **remaining root cause of the report, not fixed** |
+**Cause.** Each sample sets `Window.Content = ScrollViewer { StackPanel { Image { Stretch.None, Margin 20 } ... } }`
+and never sets Width/Height. Two defects combined:
 
-Fixed (Image only): `Image.Layout.cs` measures/arranges from the source's DIP size with WPF's Stretch and
-StretchDirection scale factor (null source 0x0, `Stretch.None` natural size under an infinite constraint);
-`Image.Alignment.cs` pins a `Stretch.None` Image to its size at the slot start, as WPF does. Source changes
-invalidate measure.
+1. `Window` left a NaN Width/Height at -1, so GTK opened the window at its content's natural size. WPF opens a Manual
+   window at the OS default size (Win32 `CW_USEDEFAULT`).
+2. `ScrollViewer` had no `MeasureOverride`, and `Gtk.ScrolledWindow` does not report its child's natural size, so the
+   window and `SizeToContent` saw about 0 px. The samples opened as a sliver of about 466x122 with a 46 px viewport.
 
-Not fixed, out of this lane (shared files): the `ScrollViewer` does not measure its content (DesiredSize 0), and
-`ScrolledWindow.PropagateNaturalWidth/Height` is off, so an unsized window around a ScrollViewer is tiny. Setting
-both to `true` on the `ScrolledWindow` made the window fit a 64 px image (111 px tall, 64 px viewport) in an
-experiment. A WPF window with no size uses the OS default, so the right fix is the Window default size
-(Window content hosting) rather than propagating the content size.
+**Why PNG looked fine.** Measured on the sample files (the sliver shows the top 46 px of the first image):
 
-Run results (pinned recipe, 10 s smoke, window screen-grabbed, `Gtk4.Forms.Wpf 1.0.0.26328` from a lane feed):
-
-| Sample | Builds | Runs | Image drawn | Window | Gap |
+| Sample image | Pixels | DPI | DIP size | Decode | Top 46 rows |
 |---|---|---|---|---|---|
-| BMPEncoderAndDecoder | yes | yes | yes, top strip of tulipfarm.bmp (640x480) | 466x122 | sliver window (above) |
-| GIFEncoderAndDecoder | yes | yes | yes (640x480) | 458x122 | same |
-| JPEGEncoderAndDecoder | yes | yes | yes (640x480) | 467x122 | same |
-| PNGEncoderAndDecoder | yes | yes | yes | 465x122 | same |
-| TIFFEncoderAndDecoder | yes | yes | yes (480x360) | 463x122 | same |
-| WDPEncoderAndDecoder | yes | crashes | no | none | JPEG XR has no GTK codec: `NotSupportedException` (documented) |
-| BitmapMetadata | yes | yes | yes, the smiley and its description | 437x276 | none |
-| ImageBrush | yes | yes | no: ellipse, button, text and border fills are solid black | 954x561 | `<Resource>` images are not packaged (`ResourceStreamLocator`), so the brush has no source and falls back to black; a build-target gap, not imaging |
-| ImageView | yes | yes | needs interaction (a file must be picked) | 1398x676 | not driven |
+| tulipfarm.bmp | 640x480 | 96.01 | 639.92x479.94 | 102 ms | pale sky, sd 1.2 (236-241 of 255) |
+| tulipfarm.gif | 640x480 | 96 | 640x480 | 63 ms | pale sky, sd 2.0 |
+| tulipfarm.jpg | 640x480 | 96 | 640x480 | 209 ms | pale sky, sd 1.2 |
+| tulipfarm.tif | 480x360 | 96 | 480x360 | 56 ms | pale sky, sd 1.3 |
+| smiley.png | 75x75 | 95.99 | 75.01x75.01 | 8 ms | the face, sd 54 (1-254) |
 
-Gate: all 204 `build=pass` projects build with the packed layer (1 needed a harness fix, my own `</Project>`
-replace hit a nested element) and all 191 `run=runs` apps start and stay up (30 showed no window within 10 s while
-other lanes loaded the machine and were re-run alone for 25 s: all run).
+Decode time and DPI play no part. The PNG sample's image is a 75 px smiley, so the sliver still shows most of its face.
+The other four open on a tulip photo whose top 46 rows are an almost uniform pale lavender sky, which reads as an empty
+window. All five now behave alike.
+
+**Fix (Round 68e).**
+`Window.DefaultSize.cs`: an axis that is NaN under `SizeToContent.Manual` opens at 3/4 of the primary monitor work area
+(floored, clamped by Min/Max). GTK honours `SetDefaultSize` alone for this case (measured), so no size request is
+added and the user can still shrink the window. Explicit Width/Height keep the default size plus the size-request pin,
+and an axis sized by `SizeToContent` stays at -1.
+`ScrollViewer.Measure.cs`: WPF `MeasureOverride` (content measured unconstrained on every non-Disabled axis, result
+clamped to the constraint, null content 0x0) and `ScrolledWindow.PropagateNaturalWidth/Height`, so `SizeToContent`
+around a ScrollViewer fits its content (46 px viewport before, 300x200 content now fills it).
+Round 65 (re-landed, review findings fixed): `Image` measures from the source's DIP size with WPF's Stretch and
+StretchDirection scale factor, and a `Stretch.None` Image is centred in a larger slot like WPF (Gtk.Align.Center; the
+first review had it pinned top-left). Every `ImageSource` has Width/Height (`DrawingImage` from its drawing bounds).
+The `Image.DesiredSize` change is WPF-correct but does not reach the GTK runtime path, so it is not part of this fix.
+
+**Run results** (pinned recipe, lane feed, `Gtk4.Forms.Wpf 1.0.0.26328`; running window screen-captured; the primary
+monitor work area is 1957x1119 here, so the default is 1468x839):
+
+| Sample | Builds | Runs | Window | Whole first image visible | Note |
+|---|---|---|---|---|---|
+| BMPEncoderAndDecoder | yes | yes | 1468x839 (was 466x122) | yes, 640x480 centred | second image scrolls |
+| GIFEncoderAndDecoder | yes | yes | 1468x839 (was 458x122) | yes | same |
+| JPEGEncoderAndDecoder | yes | yes | 1468x839 (was 467x122) | yes | same |
+| PNGEncoderAndDecoder | yes | yes | 1468x839 (was 465x122) | yes | both smileys and the author text |
+| TIFFEncoderAndDecoder | yes | yes | 1468x839 (was 463x122) | yes, 480x360 | both images and the text |
+| WDPEncoderAndDecoder | yes | crashes | none | no | JPEG XR has no GTK codec: `NotSupportedException` (documented) |
+| BitmapMetadata | yes | yes | 1468x839 (was 437x276) | yes | smiley and its description |
+| ImageBrush | yes | yes | 1468x839 (was 954x561) | n/a | ellipse, button and border fills still solid black |
+| ImageView | yes | yes | 1418x676 (explicit size) | not driven | needs a file picked |
+
+Found, not fixed (outside this lane):
+- **ImageBrush black fills:** its `<Resource>` images are not packaged by the converted build
+  (`ResourceStreamLocator`), so the brush has no source and falls back to black. A `Gtk4.Forms.Wpf` build-target gap.
+- **`FrameworkElement.Margin` is never applied to the GTK widget** (`FrameworkElement.GtkLayout.cs` maps only
+  Width/Height and alignment). The samples' `Margin = 20` on each Image is therefore absent: the images sit flush
+  against each other and the title bar. A shared-layout defect for another lane.
+- A Disabled ScrollViewer axis (`PolicyType.Never`) propagates the content's minimum, so a window narrower than the
+  content cannot hold it, where WPF clips. Existing behaviour, unchanged.
+
+**Gate** (Round 68e; `Gtk4.Forms.Wpf 1.0.0.26328` packed from the branch into a lane-private feed, each sample built twice
+with only the package reference): all 204 `build=pass` projects still build (0 errors), and all 192 apps marked
+`run=runs` in `samples-coverage.json` still start and stay up. In the first 10 s pass 139 showed a window and 53 did not
+while other lanes loaded the machine; re-run alone for 20 s, 52 of the 53 showed one. The last, Concepts, showed none
+in 20 s and 25 s runs and a window after 3 s in a 60 s run (no exception), so it is a slow or flaky detection, not a
+regression. WDPEncoderAndDecoder still crashes with the documented `NotSupportedException`. The gate proves start-up
+only: no sample beyond the nine above was inspected for content that depended on the window fitting its content.
 
 ## Method
 
