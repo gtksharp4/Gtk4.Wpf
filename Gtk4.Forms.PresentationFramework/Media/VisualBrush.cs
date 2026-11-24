@@ -10,8 +10,21 @@ namespace System.Windows.Media;
 /// from its GTK widget (a <c>Gtk.WidgetPaintable</c> drawn into a cached Cairo surface that is refreshed when the
 /// widget invalidates), see <c>VisualBrush.Source.cs</c>. Content bounds are (0,0,RenderSize).
 /// <para>
-/// <b>Gaps:</b> an element with no background or with descendants overflowing its bounds is clipped to its render
-/// size (WPF uses the descendant bounds). A source that is not realised, or has no size, paints transparent.
+/// <b>Live refresh:</b> the brush raises <c>Changed</c> (one per main-loop turn) when the source widget invalidates,
+/// so bindings, layout, animation and size changes repaint the owner. A brush painted inside its own source returns
+/// the last frame. Changing only the Viewbox keeps the cached source pixels.
+/// </para>
+/// <para>
+/// <b>Detached sources:</b> an unparented element is measured to infinity and arranged to its desired size
+/// (<see cref="AutoLayoutContent"/>), then mapped inside one shared, near-transparent, non-interactive host window
+/// (<c>DetachedSourceHost</c>, not a WPF window) that is released with the last brush.
+/// </para>
+/// <para>
+/// <b>Gaps:</b> descendant overflow is clipped to the render size (WPF uses descendant bounds); the tile raster is
+/// at device scale 1 (no HiDPI factor). A <c>Control</c> Background (BrushCss) and a TextBlock Foreground paint a
+/// VisualBrush as nothing rather than black until those owners call <c>BrushPaint.Fill</c> from a Backdrop snapshot;
+/// <c>Shape.OpacityMask</c> is store-only until Shape gets the same snapshot hook. A source that is not realised or has
+/// no size paints transparent.
 /// </para>
 /// </remarks>
 public partial class VisualBrush : TileBrush
