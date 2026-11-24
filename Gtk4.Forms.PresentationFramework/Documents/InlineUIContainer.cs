@@ -8,6 +8,8 @@ namespace System.Windows.Documents;
 /// Inside a <see cref="TextBlock"/> (also through Span, Bold, Hyperlink, ...) the child is laid out inline: the
 /// text carries a Pango object placeholder sized to the child, and the child's widget sits over it. In a
 /// <see cref="FlowDocument"/> the container stays store-only (no child widget; the paginator is not wired to it).
+/// Gaps: a container added after the TextBlock widget exists is not hosted; <see cref="Inline.BaselineAlignment"/>
+/// other than Baseline is stored only; the child is not part of the label's text selection.
 /// </remarks>
 [ContentProperty("Child")]
 public partial class InlineUIContainer : Inline

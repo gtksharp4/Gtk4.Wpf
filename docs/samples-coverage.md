@@ -393,6 +393,32 @@ MergedResources, Matrix, CubeAnimationDemo) and passed on a solo rebuild: conten
   Capture on a placed adorner re-targets input (unit-tested); no native drag was driven.
 - New walls: none beyond the two above (`DataGrid.Columns` generator gap; WPFGallery `ControlCornerRadius`).
 
+## Round 71k (lane K) gate: KeyFrameAnimation, inline UIElements in TextBlock
+
+Measured on `gf71k/inline-uielements-keyframes` over `lane/k`, package `1.0.0.26328` from a lane-private pinned feed.
+
+Root causes (by measurement): the generator already wrapped each nested `TextBlock` in an `InlineUIContainer` and
+registered its name, but `InlineUIContainer` was store-only (no Pango text, no widget parent), so the five listing
+lines were blank. Separately, the storyboard's second FontSize clock per target replaced the first
+(`SnapshotAndReplace` per clock), so no nested block ever grew. `Canvas.Left` key frames and splines were already
+right (`KeyFrameCanvasLeftTests`: 14 sample times and the `Forever` restart against the Bezier math, 1 px).
+
+- **Fix.** A `TextBlock` with inline containers is rooted in a `Gtk.Overlay` (label plus a `Gtk.Fixed` layer); inline-free
+  blocks keep the bare `Gtk.Label`. Each container emits U+FFFC with a `Pango.AttrShape` sized to the child; the child
+  widget is placed at the placeholder position. A child size change (FontSize animation) rebuilds the shapes.
+  `Inline.BaselineAlignment` and the `BaselineAlignment` enum were added (Baseline lays out; other values are stored).
+  `Storyboard.Binding.cs` (lane H file, 6 lines, no 3D change): clocks of one `Begin` on one property layer (first
+  replaces earlier runs, the rest compose).
+- **Acceptance (KeyFrameAnimation through the pinned recipe, window screenshots over time).** Every listing line,
+  literal and nested, is visible. The first nested line is enlarged at ~3 s, the second at ~8 s, the third at ~14 s,
+  and each returns to 12 pt when the next grows. The rectangle (judged by position; its DrawingBrush fill is another
+  lane) moved from the left edge to ~484 px of the 600 px canvas by 8 s and back to ~250 px at 14 s.
+- **Samples gate.** All 207 projects that built at `17c64167` build twice (first build converts) with 0 errors. All 194
+  apps that ran still run with a visible window; 3 (DragDropObjects, Concepts, HtmlToXamlDemo) showed no window in the
+  serial pass and each ran with one when re-run alone.
+- **Known gaps.** A container added after the TextBlock widget exists is not hosted; `BaselineAlignment` other than
+  Baseline is stored only; the child is not part of the label's selection; FlowDocument containers stay store-only.
+
 ## Method
 
 - **Source.** The local `WPF-Samples` tree (`00f39dbb`), split into six category batches:
