@@ -8,8 +8,10 @@ public partial class Storyboard
 	/// <summary>Applies every animation clock below <paramref name="group"/> to its target property.</summary>
 	void BindClocks(
 		ClockGroup group, FrameworkElement container, string? name, DependencyObject? target,
-		PropertyPath? path, HandoffBehavior handoff, List<AnimationClock> leaves)
+		PropertyPath? path, HandoffBehavior handoff, List<AnimationClock> leaves,
+		HashSet<(DependencyObject, DependencyProperty)>? bound = null)
 	{
+		bound ??= new HashSet<(DependencyObject, DependencyProperty)>();
 		for (var i = 0; i < group.Children.Count; i++)
 		{
 			var timeline = group.Timeline.Children[i];
@@ -19,7 +21,7 @@ public partial class Storyboard
 			switch (group.Children[i])
 			{
 				case ClockGroup nested:
-					BindClocks(nested, container, childName, childTarget, childPath, handoff, leaves);
+					BindClocks(nested, container, childName, childTarget, childPath, handoff, leaves, bound);
 					break;
 				case MediaClock media:
 					BindMedia(media, container, childName, childTarget);
@@ -32,7 +34,9 @@ public partial class Storyboard
 						Trace.WriteLine($"Storyboard: animation of '{childPath?.Path}' skipped: {ex.Message}");
 						continue;
 					}
-					AnimationStore.Apply(resolved.Item1, resolved.Item2, clock, handoff);
+					// Clocks of one Begin layer on a property; only the first replaces earlier runs.
+					var hand = bound.Add(resolved) ? handoff : HandoffBehavior.Compose;
+					AnimationStore.Apply(resolved.Item1, resolved.Item2, clock, hand);
 					leaves.Add(clock);
 					break;
 			}

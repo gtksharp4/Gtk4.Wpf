@@ -30,7 +30,8 @@ public static class LogicalTreeHelper
 	public static DependencyObject? GetParent(DependencyObject current)
 	{
 		if (current == null) throw new ArgumentNullException(nameof(current));
-		if (current is UIElement el) return el.LogicalParent;
+		if (current is UIElement el) return (DependencyObject?)el.InlineContainer ?? el.LogicalParent;
+		if (current is FrameworkContentElement fce) return fce.Parent;
 		return null;
 	}
 
@@ -44,6 +45,8 @@ public static class LogicalTreeHelper
 	{
 		if (current == null) throw new ArgumentNullException(nameof(current));
 		if (current is FrameworkElement fe) return new LogicalChildrenEnumerable(fe);
+		if (current is Documents.InlineUIContainer { Child: { } hosted }) return new object[] { hosted };
+		if (current is Documents.Span span) return span.Inlines;
 		return Array.Empty<object>();
 	}
 
