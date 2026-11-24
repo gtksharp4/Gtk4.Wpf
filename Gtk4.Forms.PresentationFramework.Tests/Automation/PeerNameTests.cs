@@ -17,7 +17,8 @@ public class PeerNameTests : WpfGtkTestBase
 	[InlineData("Save _As", "Save As")]
 	[InlineData("A__B", "A_B")]
 	[InlineData("plain", "plain")]
-	[InlineData("trailing_", "trailing")]
+	[InlineData("trailing_", "trailing_")]
+	[InlineData("a_b_c", "ab_c")]
 	public void Access_key_markers_are_removed_from_string_content(string content, string name) => Run(() =>
 	{
 		Assert.Equal(name, NameOf(new Button { Content = content }));
@@ -48,6 +49,16 @@ public class PeerNameTests : WpfGtkTestBase
 		var explicitName = (ListBoxItem)list.Items[0]!;
 		AutomationProperties.SetName(explicitName, "Fruit");
 		Assert.Equal("Fruit", items[0].GetName());
+	});
+
+	[Fact]
+	public void Items_keep_underscores_and_the_menu_item_header_loses_its_marker() => Run(() =>
+	{
+		Assert.Equal("file_name.txt", NameOf(new ListBoxItem { Content = "file_name.txt" }));
+		Assert.Equal("a_b", NameOf(new ComboBoxItem { Content = "a_b" }));
+		Assert.Equal("a_b", NameOf(new TreeViewItem { Header = "a_b" }));
+		Assert.Equal("_Tab", NameOf(new TabItem { Header = "_Tab" }));
+		Assert.Equal("Open", NameOf(new MenuItem { Header = "_Open" }));
 	});
 
 	[Fact]

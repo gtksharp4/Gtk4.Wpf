@@ -140,9 +140,19 @@ public partial class ContentPresenter : FrameworkElement
 			}
 		}
 
-		// 3. String / ToString fallback.
+		// 3. String / ToString fallback. A string with '_' hosts an AccessText when RecognizesAccessKey is set
+		// (WPF SelectTemplateForString); otherwise underscores stay literal.
+		if (RecognizesAccessKey && content is string accessText && accessText.IndexOf('_') >= 0)
+		{
+			var access = new AccessText { Text = accessText, LogicalParent = this };
+			_hostedElement = access;
+			_hostedWidget = access.Widget;
+			_box!.Add(_hostedWidget);
+			return;
+		}
 		var text = content?.ToString() ?? string.Empty;
-		var label = new Gtk.Label(text) { UseUnderline = RecognizesAccessKey };
+		var label = new Gtk.Label(string.Empty);
+		label.Text = text;
 		_hostedWidget = label;
 		_box!.Add(_hostedWidget);
 	}

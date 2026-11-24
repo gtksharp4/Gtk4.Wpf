@@ -72,6 +72,7 @@ public partial class Window : ContentControl
 		// ShowDialog unblocks when the user dismisses the window.
 		_window.CloseRequest += OnCloseRequest;
 		AttachAcceleratorController(_window);
+		AttachAccessKeyController(_window);
 		return _window;
 	}
 

@@ -6,7 +6,7 @@ namespace System.Windows.Controls;
 /// A check control backed by <see cref="Gtk.CheckButton"/>. State, events and three-state
 /// behaviour come from <see cref="ToggleButton"/>.
 /// </summary>
-public class CheckBox : ToggleButton
+public partial class CheckBox : ToggleButton
 {
 	static CheckBox()
 	{
@@ -23,12 +23,17 @@ public class CheckBox : ToggleButton
 	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
-		_check = new Gtk.CheckButton { Active = IsChecked == true };
+		_check = new Gtk.CheckButton { Active = IsChecked == true, UseUnderline = true, Label = AccessLabel(Content) };
 		_check.Toggled += (s, e) => GtkToggled(_check.Active);
 		return _check;
 	}
 
 	internal override bool RaisesClickOnToggled(bool active) => true;
+
+	internal override void SetGtkLabel(string mnemonic)
+	{
+		if (_check != null) _check.Label = mnemonic;
+	}
 
 	internal override void SetGtkActive(bool active)
 	{
