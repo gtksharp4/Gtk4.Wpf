@@ -113,7 +113,8 @@ CI is `.github/workflows/build-and-test.yml` (Windows, Linux, macOS); per-OS log
    **returns exit code 10 when it changed the project** and the target stops this build with an
    actionable message. The **next** build re-evaluates the converted (non-WPF) project and compiles
    against `Gtk4.Forms`. Exit 0 = already converted → build proceeds. (`SkipGtkFormsConvert=true`
-   opts out; design-time/IntelliSense builds are skipped.)
+   opts out of the rewrite only; design-time/IntelliSense builds are skipped. `<Resource>` files are
+   copied to the output either way; `SkipGtkFormsCopyResources=true` opts out of that.)
 
 The csproj rewrite is a **one-time conversion** — a build target cannot retarget the build in
 progress, so the first build rewrites and the second is clean. `Gtk4.Forms.Integration.Tests` proves

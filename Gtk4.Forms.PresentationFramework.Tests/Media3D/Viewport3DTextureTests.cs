@@ -95,4 +95,68 @@ public class Viewport3DTextureTests : WpfGtkTestBase
 		Assert.Equal(1, TextureCache.RasterizeCount - before);
 		Assert.False(IsBackdrop(PixelAt(surface, 100, 100)));
 	});
+
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public void A_texture_with_no_pixels_stays_transparent_under_dim_light(bool missingFile) => Run(() =>
+	{
+		var brush = missingFile
+			? BrushOf(System.IO.Path.Combine(System.AppContext.BaseDirectory, "does-not-exist.png"))
+			: new ImageBrush();
+		var scene = Lit(Quad(new DiffuseMaterial(brush)), Color.FromRgb(128, 128, 128));
+		using var surface = Paint(Viewport(scene));
+		Assert.True(IsBackdrop(PixelAt(surface, 100, 100)), $"centre was {PixelAt(surface, 100, 100)}");
+	});
+
+	[Fact]
+	public void Transparent_texels_stay_transparent_under_dim_light_and_opaque_ones_are_dimmed() => Run(() =>
+	{
+		var brush = BrushOf(HalfTransparentPng());
+		var scene = Lit(Quad(new DiffuseMaterial(brush)), Color.FromRgb(128, 128, 128));
+		using var surface = Paint(Viewport(scene));
+		Assert.True(IsBackdrop(PixelAt(surface, 85, 100)), $"transparent half was {PixelAt(surface, 85, 100)}");
+		var opaque = PixelAt(surface, 115, 100);
+		Assert.InRange(opaque.R, 120, 135);
+		Assert.True(opaque.G < 10 && opaque.B < 10, $"opaque half was {opaque}");
+	});
+
+	[Fact]
+	public void A_shared_brush_maps_texels_by_texture_coordinate_across_many_triangles() => Run(() =>
+	{
+		var brush = BrushOf(TwoColourPng());
+		var mesh = new MeshGeometry3D();
+		const int strips = 10;
+		for (int s = 0; s <= strips; s++)
+		{
+			double u = (double)s / strips;
+			mesh.Positions.Add(new Point3D(-1 + 2 * u, -1, 0));
+			mesh.Positions.Add(new Point3D(-1 + 2 * u, 1, 0));
+			mesh.TextureCoordinates.Add(new System.Windows.Point(u, 1));
+			mesh.TextureCoordinates.Add(new System.Windows.Point(u, 0));
+		}
+		for (int s = 0; s < strips; s++)
+		{
+			int a = s * 2;
+			foreach (int i in new[] { a, a + 2, a + 1, a + 2, a + 3, a + 1 }) mesh.TriangleIndices.Add(i);
+		}
+		using var mine = Paint(Viewport(Lit(new GeometryModel3D(mesh, new DiffuseMaterial(brush)))));
+		using var reference = Paint(Viewport(Lit(Quad(new DiffuseMaterial(brush)))));
+		foreach (int x in new[] { 83, 90, 97, 103, 117 })
+		{
+			var top = PixelAt(mine, x, 85);
+			var bottom = PixelAt(mine, x, 115);
+			Assert.True(top.R > 200 && top.B < 60, $"top at {x}: {top}");
+			Assert.True(bottom.B > 200 && bottom.R < 60, $"bottom at {x}: {bottom}");
+			AssertClose(PixelAt(reference, x, 85), top);
+			AssertClose(PixelAt(reference, x, 115), bottom);
+		}
+	});
+
+	static void AssertClose((byte R, byte G, byte B, byte A) expected, (byte R, byte G, byte B, byte A) actual)
+	{
+		Assert.InRange(actual.R, expected.R - 8, expected.R + 8);
+		Assert.InRange(actual.G, expected.G - 8, expected.G + 8);
+		Assert.InRange(actual.B, expected.B - 8, expected.B + 8);
+	}
 }

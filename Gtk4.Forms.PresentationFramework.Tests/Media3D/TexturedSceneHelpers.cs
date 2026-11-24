@@ -32,6 +32,23 @@ static class TexturedSceneHelpers
 		return path;
 	}
 
+	/// <summary>A 64x64 PNG whose left half is fully transparent and right half opaque red.</summary>
+	internal static string HalfTransparentPng()
+	{
+		string dir = Path.Combine(AppContext.BaseDirectory, "lane-h-textures");
+		Directory.CreateDirectory(dir);
+		string path = Path.Combine(dir, "half-transparent.png");
+		using var surface = new Cairo.ImageSurface(Cairo.Format.Argb32, 64, 64);
+		using (var cr = new Cairo.Context(surface))
+		{
+			cr.SetSourceRGB(1, 0, 0);
+			cr.Rectangle(32, 0, 32, 64);
+			cr.Fill();
+		}
+		surface.WriteToPng(path);
+		return path;
+	}
+
 	internal static ImageBrush BrushOf(string path) => new ImageBrush(new BitmapImage(new Uri(path)));
 
 	/// <summary>The sample's plane: -1..1 at z=0, v=0 at the top.</summary>

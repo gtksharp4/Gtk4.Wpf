@@ -2729,6 +2729,31 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
 - **Round 61 (lane C) carry-over.** Packaging (EditingExaminerDemo, WPFGallery `SystemEvents`) is unstarted. Keyed
   elements that are unbuildable and not referenced by a `{StaticResource}` get no `Resources` entry (a later
   `FindResource` for them throws as in WPF for a missing key); `XmlDataProvider.XmlNamespaceManager` is still not built.
+- **Round 67 (lane H) track 1 - HexSphereDemo (DONE, merged).** `gf67h/hexsphere-3d`: the "3D Materials Demo" showed a black
+  window and its button did nothing. Measured causes: `<Resource>` images were not copied beside the exe, so every
+  relative `ImageBrush` URI failed; the storyboard's `ParallelTimeline` children were never generated; sc#
+  `GradientStop` colours used the wrong sRGB transfer (`Color.FromScRgb`). Fixed with a per-brush texture cache on the
+  software `Viewport3D`, an empty-brush fallback (an unloadable brush paints nothing), `Resource` copy to the output and
+  the gradient CSS test. Samples evidence: the sample builds and runs through the packed layer.
+- **Round 67 (lane H) review + fixes - DONE.** Applied failing-first. **A-H67-1** `GtkFormsCopyResources` was gated on
+  `SkipGtkFormsConvert`, so already-converted projects (exactly those that set it) lost their `<Resource>` files: it
+  now depends on `SkipGtkFormsCopyResources` (default false, in `Gtk4.Forms.Wpf.props`) and registers its copies in
+  `FileWrites` so `dotnet clean` removes them (3 MSBuild tests in `ResourceCopyTargetTests`). **A-H67-2** the
+  texture darkening filled the whole polygon with `rgba(0,0,0,1-light)` whatever the texture's alpha, so an unloaded
+  image or transparent texels darkened the backdrop under any light below white. It now masks the cached pattern, so a
+  texel's colour is scaled and its alpha kept; the earlier clip no longer leaks (`Save`/`Restore`). Tests: missing or
+  null brush under `#808080` ambient leaves the backdrop exact (the old code painted `rgb(0,144,0)`), and a half
+  transparent PNG stays transparent on its left half and about 50% red on its right. **A-H67-3** a new test maps a
+  10-strip mesh with a shared brush and asserts red above and blue below at several columns, compared with a single
+  quad; scaling `TextureSize` by 3 makes it fail.
+- **Round 67 (lane H) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. 7 new tests
+  (4 in `Viewport3DTextureTests`, 3 in `ResourceCopyTargetTests`). Targeted: `PresentationFramework.Tests` Media3D 107
+  passed; `Wpf.ProjectConverter.Tests` 46 passed. Samples gate: 204 build=pass projects built through the packed layer
+  (2 builds each, 0 failures); 191 run=runs apps started and stayed up 10 s (all alive, none exited; 57 showed their
+  window only after a longer wait under load, Concepts re-checked alone at 40 s).
+- **Round 67 (lane H) carry-over.** Textures map affinely, not perspective-correct (see Media3D gaps). Rejected in
+  triage: none.
+
 
 ## Phased roadmap (after Phase 0 proves the spine)
 

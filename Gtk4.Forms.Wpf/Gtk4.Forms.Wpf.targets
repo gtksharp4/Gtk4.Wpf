@@ -36,13 +36,18 @@
     WPF packs a <Resource> into the assembly and resolves a relative URI such as "images\a.png" from there.
     This layer has no .g.resources, so it looks for the file under the app directory (see
     ResourceStreamLocator): copy every <Resource> item to the output, keeping its relative path or Link.
+    Independent of SkipGtkFormsConvert (already-converted projects still need their files); opt out with
+    SkipGtkFormsCopyResources=true. The copies are registered in FileWrites so `dotnet clean` removes them.
   -->
   <Target Name="GtkFormsCopyResources" AfterTargets="CopyFilesToOutputDirectory"
-          Condition="'@(Resource)' != '' and '$(SkipGtkFormsConvert)' != 'true'">
+          Condition="'@(Resource)' != '' and '$(SkipGtkFormsCopyResources)' != 'true'">
     <ItemGroup>
       <_GtkFormsResource Include="@(Resource)" Rel="$([MSBuild]::ValueOrDefault('%(Resource.Link)', '%(Resource.RelativeDir)%(Resource.Filename)%(Resource.Extension)'))" />
     </ItemGroup>
     <Copy SourceFiles="@(_GtkFormsResource)" DestinationFiles="@(_GtkFormsResource->'$(OutDir)%(Rel)')"
           SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <FileWrites Include="@(_GtkFormsResource->'$(OutDir)%(Rel)')" />
+    </ItemGroup>
   </Target>
 </Project>

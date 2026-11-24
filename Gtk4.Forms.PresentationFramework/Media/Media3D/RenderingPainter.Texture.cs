@@ -14,6 +14,7 @@ static partial class ScenePainter
 		var pattern = textures.Get(layer.TextureBrush!);
 		matrix.Invert();
 		pattern.Matrix = matrix;
+		cr.Save();
 		cr.SetSource(pattern);
 		Path(cr, polygon);
 		if (layer.A >= 1)
@@ -25,12 +26,17 @@ static partial class ScenePainter
 			cr.Clip();
 			cr.PaintWithAlpha(Clamp(layer.A));
 		}
+		cr.Restore();
 		double light = Clamp((layer.LightR + layer.LightG + layer.LightB) / 3);
 		if (light < 1)
 		{
+			// The mask keeps transparent texels transparent: a texel's colour is scaled, its alpha is not.
+			cr.Save();
 			Path(cr, polygon);
-			cr.SetSourceRGBA(0, 0, 0, 1 - light);
-			cr.Fill();
+			cr.Clip();
+			cr.SetSourceRGBA(0, 0, 0, (1 - light) * Clamp(layer.A));
+			cr.Mask(pattern);
+			cr.Restore();
 		}
 	}
 
