@@ -34,6 +34,8 @@ public class ShapeSlotTests : WpfGtkTestBase
 			window.Show();
 			GtkState.Require(() => polygon.ActualWidth > 0, "layout", polygon);
 			GtkPump.For(150);
+			// GTK keeps the slot as the render size (known gap): WPF's RenderSize is 50x50 and ArrangeCore
+			// applies the 25 px offset; here the offset is folded into the stretch matrix instead.
 			var m = polygon.StretchMatrix;
 			Assert.Equal(m.M11, m.M22, 0.001);
 			Assert.InRange(polygon.ActualWidth, 40, 50);
@@ -60,7 +62,8 @@ public class ShapeSlotTests : WpfGtkTestBase
 			window.Show();
 			GtkState.Require(() => sibling.ActualWidth > 0, "layout", sibling);
 			GtkPump.For(150);
-			Assert.Equal(100, line.ActualWidth, 1);
+			// WPF: ArrangeCore keeps the unclipped desired size (about 400) and clips to the 100 px column.
+			Assert.InRange(line.ActualWidth, 399, 402);
 			Assert.Equal(200, sibling.ActualWidth, 1);
 		}
 		finally { window.Close(); }
