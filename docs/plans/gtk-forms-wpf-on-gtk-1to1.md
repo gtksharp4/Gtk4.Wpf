@@ -2852,3 +2852,9 @@ Approve **Phase 0 only** first: the `WindowsBase` property-system subset + the f
 is small, fully testable, and settles every architectural unknown (xmlns binding, the compiler fork,
 the hybrid bridge, the drop-in). Only after it runs a real one-window WPF app unmodified on two OSes
 is it worth committing to the multi-phase build toward 1:1.
+
+- **Round 68 (lane E) review fixes.** R68E-1 `ScrollViewer` no longer propagates its natural size on every axis (it
+  broke Grid star rows): only on an axis where the widget does not expand. R68E-2 desired size adds Padding,
+  BorderThickness and a Visible scroll bar. R68E-3 defaults are WPF's (Disabled / Visible). R68E-4 the F1 test notes
+  Margin is not mapped; docs now say the Window default size is the user-visible imaging fix. Grid star weights other
+  than equal are not proportional on GTK (pre-existing, outside this lane). See `samples-coverage.md`.

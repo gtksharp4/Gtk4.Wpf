@@ -30,14 +30,14 @@ public partial class ScrollViewer : ContentControl
 			nameof(HorizontalScrollBarVisibility),
 			typeof(ScrollBarVisibility),
 			typeof(ScrollViewer),
-			new PropertyMetadata(ScrollBarVisibility.Auto, OnScrollBarVisibilityChanged),
+			new PropertyMetadata(ScrollBarVisibility.Disabled, OnScrollBarVisibilityChanged),
 			IsValidScrollBarVisibility);
 
 	/// <summary>Gets or sets the horizontal scroll bar visibility.</summary>
 	public ScrollBarVisibility HorizontalScrollBarVisibility
 	{
 		get => (ScrollBarVisibility?)GetValue(HorizontalScrollBarVisibilityProperty)
-		       ?? ScrollBarVisibility.Auto;
+		       ?? ScrollBarVisibility.Disabled;
 		set => SetValue(HorizontalScrollBarVisibilityProperty, value);
 	}
 
@@ -49,14 +49,14 @@ public partial class ScrollViewer : ContentControl
 			nameof(VerticalScrollBarVisibility),
 			typeof(ScrollBarVisibility),
 			typeof(ScrollViewer),
-			new PropertyMetadata(ScrollBarVisibility.Auto, OnScrollBarVisibilityChanged),
+			new PropertyMetadata(ScrollBarVisibility.Visible, OnScrollBarVisibilityChanged),
 			IsValidScrollBarVisibility);
 
 	/// <summary>Gets or sets the vertical scroll bar visibility.</summary>
 	public ScrollBarVisibility VerticalScrollBarVisibility
 	{
 		get => (ScrollBarVisibility?)GetValue(VerticalScrollBarVisibilityProperty)
-		       ?? ScrollBarVisibility.Auto;
+		       ?? ScrollBarVisibility.Visible;
 		set => SetValue(VerticalScrollBarVisibilityProperty, value);
 	}
 
@@ -67,7 +67,7 @@ public partial class ScrollViewer : ContentControl
 	/// </summary>
 	public static ScrollBarVisibility GetHorizontalScrollBarVisibility(DependencyObject element)
 		=> (ScrollBarVisibility)(Require(element).GetValue(HorizontalScrollBarVisibilityProperty)
-			?? ScrollBarVisibility.Auto);
+			?? ScrollBarVisibility.Disabled);
 
 	/// <summary>
 	/// Sets the horizontal scroll bar visibility on <paramref name="element"/>.
@@ -84,7 +84,7 @@ public partial class ScrollViewer : ContentControl
 	/// </summary>
 	public static ScrollBarVisibility GetVerticalScrollBarVisibility(DependencyObject element)
 		=> (ScrollBarVisibility)(Require(element).GetValue(VerticalScrollBarVisibilityProperty)
-			?? ScrollBarVisibility.Auto);
+			?? ScrollBarVisibility.Visible);
 
 	/// <summary>
 	/// Sets the vertical scroll bar visibility on <paramref name="element"/>.
@@ -153,9 +153,13 @@ public partial class ScrollViewer : ContentControl
 	void ApplyScrollPolicy()
 	{
 		if (_scroll == null) return;
-		_scroll.HscrollbarPolicy = ToGtkPolicy(HorizontalScrollBarVisibility);
-		_scroll.VscrollbarPolicy = ToGtkPolicy(VerticalScrollBarVisibility);
+		_scroll.HscrollbarPolicy = ViewerPolicy(HorizontalScrollBarVisibility);
+		_scroll.VscrollbarPolicy = ViewerPolicy(VerticalScrollBarVisibility);
 	}
+
+	// Disabled clips the content to the viewport like WPF; Never would force the window to the content's minimum.
+	static Gtk.PolicyType ViewerPolicy(ScrollBarVisibility v)
+		=> v == ScrollBarVisibility.Disabled ? Gtk.PolicyType.External : ToGtkPolicy(v);
 
 	internal static Gtk.PolicyType ToGtkPolicy(ScrollBarVisibility v) => v switch
 	{

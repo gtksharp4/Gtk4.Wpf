@@ -81,7 +81,7 @@ public class ScrollViewerMeasureTests : WpfGtkTestBase
 	});
 
 	[Fact]
-	public void Padding_is_part_of_the_desired_size_only_through_Margin() => Run(() =>
+	public void Margin_is_part_of_the_desired_size() => Run(() =>
 	{
 		var sv = Viewer(new Border { Width = 300, Height = 200 });
 		sv.Margin = new Thickness(5);

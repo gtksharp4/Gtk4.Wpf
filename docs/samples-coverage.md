@@ -394,12 +394,10 @@ Reported: the BMP/GIF/JPEG/TIFF "Imaging Sample" windows showed no image while t
 frames were always drawn correctly (pixel-verified per codec in Round 65). The fault was window layout.
 
 **Cause.** Each sample sets `Window.Content = ScrollViewer { StackPanel { Image { Stretch.None, Margin 20 } ... } }`
-and never sets Width/Height. Two defects combined:
-
-1. `Window` left a NaN Width/Height at -1, so GTK opened the window at its content's natural size. WPF opens a Manual
-   window at the OS default size (Win32 `CW_USEDEFAULT`).
-2. `ScrollViewer` had no `MeasureOverride`, and `Gtk.ScrolledWindow` does not report its child's natural size, so the
-   window and `SizeToContent` saw about 0 px. The samples opened as a sliver of about 466x122 with a 46 px viewport.
+and never sets Width/Height. `Window` left a NaN Width/Height at -1, so GTK opened the window at its content's natural
+size, about 466x122 with a 46 px viewport. WPF opens a Manual window at the OS default size (Win32 `CW_USEDEFAULT`).
+**The user-visible fix is the Window default size.** The `ScrollViewer` measure below is a separate WPF-correctness
+change that only matters for `SizeToContent` and Auto tracks; `Image.DesiredSize` does not reach the GTK runtime path.
 
 **Why PNG looked fine.** Measured on the sample files (the sliver shows the top 46 px of the first image):
 
@@ -420,9 +418,13 @@ window. All five now behave alike.
 (floored, clamped by Min/Max). GTK honours `SetDefaultSize` alone for this case (measured), so no size request is
 added and the user can still shrink the window. Explicit Width/Height keep the default size plus the size-request pin,
 and an axis sized by `SizeToContent` stays at -1.
-`ScrollViewer.Measure.cs`: WPF `MeasureOverride` (content measured unconstrained on every non-Disabled axis, result
-clamped to the constraint, null content 0x0) and `ScrolledWindow.PropagateNaturalWidth/Height`, so `SizeToContent`
-around a ScrollViewer fits its content (46 px viewport before, 300x200 content now fills it).
+`ScrollViewer.Measure.cs` (Round 68e review fixes): WPF `MeasureOverride` (content measured unconstrained on every
+non-Disabled axis and with the constraint minus chrome on a Disabled one; desired size = content + Padding +
+BorderThickness + a Visible scroll bar, clamped to the constraint). `PropagateNaturalWidth/Height` is on only for an
+axis where the widget does not expand, so `SizeToContent` and Auto tracks fit the content while a Grid star track is
+still split by weight (a blanket propagation gave a ScrollViewer the whole star track). The ScrollViewer defaults are
+now WPF's: HorizontalScrollBarVisibility Disabled, VerticalScrollBarVisibility Visible. A Grid with no definitions
+(one implicit star track) does not propagate, so `SizeToContent` around it does not fit a ScrollViewer's content.
 Round 65 (re-landed, review findings fixed): `Image` measures from the source's DIP size with WPF's Stretch and
 StretchDirection scale factor, and a `Stretch.None` Image is centred in a larger slot like WPF (Gtk.Align.Center; the
 first review had it pinned top-left). Every `ImageSource` has Width/Height (`DrawingImage` from its drawing bounds).
@@ -443,7 +445,7 @@ monitor work area is 1957x1119 here, so the default is 1468x839):
 | ImageBrush | yes | yes | 1468x839 (was 954x561) | n/a | ellipse, button and border fills still solid black |
 | ImageView | yes | yes | 1418x676 (explicit size) | not driven | needs a file picked |
 
-Found, not fixed (outside this lane):
+Found, not fixed (outside this lane; the F1 centring test cannot prove Margin for that reason):
 - **ImageBrush black fills:** its `<Resource>` images are not packaged by the converted build
   (`ResourceStreamLocator`), so the brush has no source and falls back to black. A `Gtk4.Forms.Wpf` build-target gap.
 - **`FrameworkElement.Margin` is never applied to the GTK widget** (`FrameworkElement.GtkLayout.cs` maps only

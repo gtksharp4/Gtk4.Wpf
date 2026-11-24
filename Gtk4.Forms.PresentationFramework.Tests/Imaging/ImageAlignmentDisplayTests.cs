@@ -24,6 +24,8 @@ public class ImageAlignmentDisplayTests : WpfGtkTestBase
 	{
 		using var probe = new ImageDisplayProbe(ImageDisplayFixtures.Quadrant(), scroll: false);
 		Assert.Equal(ImageDisplayFixtures.Size, probe.Image.ActualWidth);
+		// A symmetric Margin(20) leaves the centre unchanged (20 + (560-64)/2 == (600-64)/2) and
+		// Margin is not applied to GTK widgets (docs/samples-coverage.md): this proves centring only.
 		Assert.Equal(20 + (560 - ImageDisplayFixtures.Size) / 2, FirstRedColumn(probe.WindowPixels()));
 	});
 

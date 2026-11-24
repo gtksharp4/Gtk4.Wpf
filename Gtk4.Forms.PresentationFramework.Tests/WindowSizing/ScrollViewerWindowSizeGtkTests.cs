@@ -61,4 +61,19 @@ public class ScrollViewerWindowSizeGtkTests : WpfGtkTestBase
 		}
 		finally { win.Close(); }
 	});
+
+	[Fact]
+	public void The_WPF_defaults_reach_the_GTK_scrolled_window() => Run(() =>
+	{
+		using var gtk = new GtkDispatcherScope();
+		var (sv, win) = Show(new WpfWindow { Width = 400, Height = 300 },
+			new ScrollViewer { Content = new TextBlock { Text = "x" } });
+		try
+		{
+			var sw = (Gtk.ScrolledWindow)sv.Widget;
+			Assert.Equal(Gtk.PolicyType.External, sw.HscrollbarPolicy); // no bar, no minimum-width pin
+			Assert.Equal(Gtk.PolicyType.Always, sw.VscrollbarPolicy);
+		}
+		finally { win.Close(); }
+	});
 }
