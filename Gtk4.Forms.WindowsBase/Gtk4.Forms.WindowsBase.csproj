@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Gtk4.Forms.WindowsBase.Tests" />
-    <InternalsVisibleTo Include="Gtk4.Forms.PresentationFramework" />
-    <InternalsVisibleTo Include="Gtk4.Forms.PresentationFramework.Tests" />
+    <InternalsVisibleTo Include="Gtk4.Forms.WindowsBase.Tests" Key="$(Gtk4FormsPublicKey)" />
+    <InternalsVisibleTo Include="Gtk4.Forms.PresentationFramework" Key="$(Gtk4FormsPublicKey)" />
+    <InternalsVisibleTo Include="Gtk4.Forms.PresentationFramework.Tests" Key="$(Gtk4FormsPublicKey)" />
   </ItemGroup>
 
   <PropertyGroup>

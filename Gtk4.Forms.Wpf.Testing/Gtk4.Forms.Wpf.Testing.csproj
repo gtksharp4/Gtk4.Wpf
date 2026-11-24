@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Gtk4.Forms.Wpf.Testing.Tests" />
+    <InternalsVisibleTo Include="Gtk4.Forms.Wpf.Testing.Tests" Key="$(Gtk4FormsPublicKey)" />
   </ItemGroup>
 
 
