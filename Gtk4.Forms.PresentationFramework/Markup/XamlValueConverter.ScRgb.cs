@@ -37,24 +37,6 @@ static class ScRgbColor
 			v[i + offset] = f;
 		}
 
-		return Color.FromArgb(Alpha(v[0]), Channel(v[1]), Channel(v[2]), Channel(v[3]));
-	}
-
-	static byte Alpha(float a) => ToByte(a);
-
-	static byte Channel(float v)
-	{
-		if (!(v > 0f)) return 0;
-		if (v <= 0.0031308f) return ToByte(v * 12.92f);
-		if (v < 1f) return ToByte(1.055f * (float)Math.Pow(v, 1.0 / 2.4) - 0.055f);
-		return 255;
-	}
-
-	static byte ToByte(float v)
-	{
-		float scaled = v * 255f;
-		if (scaled <= 0f) return 0;
-		if (scaled >= 255f) return 255;
-		return (byte)Math.Round(scaled);
+		return Color.FromScRgb(v[0], v[1], v[2], v[3]);
 	}
 }

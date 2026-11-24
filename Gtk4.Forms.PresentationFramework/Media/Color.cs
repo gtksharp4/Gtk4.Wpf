@@ -16,36 +16,6 @@ public partial struct Color : IEquatable<Color>
 	/// <summary>Blue channel.</summary>
 	public byte B { get; set; }
 
-	// ── Normalized float accessors (WPF compatibility) ───────────────────────
-	// NOTE: WPF's Sc* properties use the linear-light sRGB transfer function.
-	// These accessors perform simple byte↔[0,1] normalization (A/255 and 255*value),
-	// NOT the sRGB⇄linear-light transfer. They are intentionally named Sc* for WPF
-	// source compatibility only. A future phase may add the proper transfer function.
-
-	/// <summary>
-	/// Alpha as a normalized float in [0,1] (byte / 255).
-	/// NOT linear-light scRGB — a future phase will add the sRGB transfer function.
-	/// </summary>
-	public float ScA { get => A / 255f; set => A = (byte)Math.Round(value * 255f); }
-
-	/// <summary>
-	/// Red as a normalized float in [0,1] (byte / 255).
-	/// NOT linear-light scRGB — a future phase will add the sRGB transfer function.
-	/// </summary>
-	public float ScR { get => R / 255f; set => R = (byte)Math.Round(value * 255f); }
-
-	/// <summary>
-	/// Green as a normalized float in [0,1] (byte / 255).
-	/// NOT linear-light scRGB — a future phase will add the sRGB transfer function.
-	/// </summary>
-	public float ScG { get => G / 255f; set => G = (byte)Math.Round(value * 255f); }
-
-	/// <summary>
-	/// Blue as a normalized float in [0,1] (byte / 255).
-	/// NOT linear-light scRGB — a future phase will add the sRGB transfer function.
-	/// </summary>
-	public float ScB { get => B / 255f; set => B = (byte)Math.Round(value * 255f); }
-
 	// ── Factory methods ──────────────────────────────────────────────────────
 
 	/// <summary>Creates an opaque colour from R, G, B bytes.</summary>
@@ -55,19 +25,6 @@ public partial struct Color : IEquatable<Color>
 	/// <summary>Creates a colour from A, R, G, B bytes.</summary>
 	public static Color FromArgb(byte a, byte r, byte g, byte b) =>
 		new Color { A = a, R = r, G = g, B = b };
-
-	/// <summary>
-	/// Creates a colour from normalized float components in [0,1] (each multiplied by 255
-	/// and rounded to a byte). Named <c>FromScRgb</c> for WPF source compatibility;
-	/// this performs byte normalization only, NOT the sRGB⇄linear-light transfer function.
-	/// A future phase will add the proper scRGB conversion.
-	/// </summary>
-	public static Color FromScRgb(float a, float r, float g, float b) =>
-		FromArgb(
-			(byte)Math.Round(a * 255f),
-			(byte)Math.Round(r * 255f),
-			(byte)Math.Round(g * 255f),
-			(byte)Math.Round(b * 255f));
 
 	// ── GTK / Cairo mapping ──────────────────────────────────────────────────
 

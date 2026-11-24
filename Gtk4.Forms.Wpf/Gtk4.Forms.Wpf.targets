@@ -30,4 +30,19 @@
     <Error Condition="'$(_GtkFormsConvertExitCode)' != '0' and '$(_GtkFormsConvertExitCode)' != '10'"
            Text="Gtk4.Forms project conversion failed (converter exit code $(_GtkFormsConvertExitCode))." />
   </Target>
+
+
+  <!--
+    WPF packs a <Resource> into the assembly and resolves a relative URI such as "images\a.png" from there.
+    This layer has no .g.resources, so it looks for the file under the app directory (see
+    ResourceStreamLocator): copy every <Resource> item to the output, keeping its relative path or Link.
+  -->
+  <Target Name="GtkFormsCopyResources" AfterTargets="CopyFilesToOutputDirectory"
+          Condition="'@(Resource)' != '' and '$(SkipGtkFormsConvert)' != 'true'">
+    <ItemGroup>
+      <_GtkFormsResource Include="@(Resource)" Rel="$([MSBuild]::ValueOrDefault('%(Resource.Link)', '%(Resource.RelativeDir)%(Resource.Filename)%(Resource.Extension)'))" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_GtkFormsResource)" DestinationFiles="@(_GtkFormsResource->'$(OutDir)%(Rel)')"
+          SkipUnchangedFiles="true" />
+  </Target>
 </Project>

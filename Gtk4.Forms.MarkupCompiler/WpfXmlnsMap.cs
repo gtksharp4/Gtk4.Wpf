@@ -51,6 +51,7 @@ namespace Gtk4.Forms.MarkupCompiler
 
 			// Animation
 			{ "Storyboard",         "System.Windows.Media.Animation.Storyboard" },
+			{ "ParallelTimeline",   "System.Windows.Media.Animation.ParallelTimeline" },
 			{ "DoubleAnimation",    "System.Windows.Media.Animation.DoubleAnimation" },
 			{ "ColorAnimation",     "System.Windows.Media.Animation.ColorAnimation" },
 			{ "ThicknessAnimation", "System.Windows.Media.Animation.ThicknessAnimation" },
