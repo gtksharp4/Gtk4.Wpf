@@ -53,4 +53,41 @@ public class WindowIconTests : WpfGtkTestBase
 		var gtkWin = (Gtk.Window)win.Widget;
 		Assert.IsType<Gtk.HeaderBar>(gtkWin.Titlebar);
 	});
+
+	static Gtk.GestureClick? FindIconClickController(Gtk.Widget widget)
+	{
+		var controllers = widget.ObserveControllers();
+		if (widget is Gtk.Image)
+		{
+			for (uint i = 0; i < controllers.NItems; i++)
+				if (controllers.GetObject(i) is Gtk.GestureClick { Button: 1 } click)
+					return click;
+		}
+
+		for (var child = widget.FirstChild; child != null; child = child.NextSibling)
+			if (FindIconClickController(child) is { } click)
+				return click;
+		return null;
+	}
+
+	[Fact]
+	public void Double_clicking_the_titlebar_icon_closes_the_window() => Run(() =>
+	{
+		var win = new WpfWindow { Title = "Iconned" };
+		var gtkWin = (Gtk.Window)win.Widget;
+		var headerBar = Assert.IsType<Gtk.HeaderBar>(gtkWin.Titlebar);
+		var click = FindIconClickController(headerBar);
+		Assert.NotNull(click);
+
+		Assert.Equal(1u, click!.Button);
+
+		int closed = 0;
+		win.Closed += (_, _) => closed++;
+
+		win.HandleTitleBarIconPress(1);
+		Assert.Equal(0, closed);
+
+		win.HandleTitleBarIconPress(2);
+		Assert.Equal(1, closed);
+	});
 }

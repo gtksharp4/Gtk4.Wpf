@@ -71,8 +71,18 @@ public partial class Window
 			img.WidthRequest = IconSize;
 			img.HeightRequest = IconSize;
 			img.Visible = true;
+
+			var click = new Gtk.GestureClick { Button = 1 };
+			click.Pressed += (_, e) => HandleTitleBarIconPress(e.NPress);
+			img.AddController(click);
 		}
 		return img;
+	}
+
+	internal void HandleTitleBarIconPress(int nPress)
+	{
+		if (nPress == 2)
+			Close();
 	}
 
 	/// <summary>Loads <paramref name="icon"/> as a scaled image, or null when it has no file.</summary>
