@@ -39,7 +39,7 @@ public class AppearanceGtkTests : WpfGtkTestBase
 			BorderBrush = Brushes.Blue, BorderThickness = new Thickness(2), CornerRadius = new CornerRadius(5),
 			Background = Brushes.Lime,
 		};
-		Assert.IsType<Gtk.Frame>(b.Widget);
+		Assert.IsAssignableFrom<Gtk.Frame>(b.Widget);
 		Assert.Contains("border-width: 2px 2px 2px 2px;", b.AppearanceCss);
 		Assert.Contains("border-style: solid;", b.AppearanceCss);
 		Assert.Contains("border-color: rgba(0,0,255,1);", b.AppearanceCss);

@@ -2858,6 +2858,49 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
 - **Round 63 (lane B) carry-over.** Packaging (EditingExaminerDemo `System.Security.Permissions`, WPFGallery
   `SystemEvents`) is still unstarted. `TextElement.TextEffects`, `FlowDocument.TextEffects` and `TextBlock.TextEffects`
   default to null (not an empty frozen collection). `CommandBinding` still has only `Executed` and `CanExecute`.
+- **Round 70 (lane J) review fixes (VisualBrush / TileBrush).** Measured causes per sample tab: Painting with Visuals
+  (black tiles: the pre-3fb62afe fill painted Cairo's default black, then an empty detached source and a 1-pixel
+  nested tile), Magnifying Glass (the source was never laid out or mapped, and a Canvas/StackPanel painted no tile
+  background), Reflection (DrawingGroup children had no inheritance context; a late `Width`/`Height` binding never
+  reached the widget). Review fixes: **J70-1** detached sources no longer get their own toplevel (it took activation):
+  they sit in a non-targetable, non-focusable overlay layer far outside the app window, no `Present`. **J70-2**
+  `OpacityMask` of a child of a Backdrop panel is pushed around that child's whole render (CSS background and border
+  included). **J70-3** a brush painted inside its own source drops the echo invalidation once two re-renders in a row are
+  pixel-identical (bounded `Changed`); the source link is made at first paint, since an App.xaml resource sets `Visual`
+  before GTK is initialised (GeometryDesignerDemo crashed in the gate). **J70-4** weak leases: the layer goes with the last brush. **J70-5** a detached source is re-measured and
+  re-arranged on every render. **J70-6..11** pixel tests for RelativeTransform, Transform order, Flip modes, grid and
+  reflection flip; Graphene rect owned and freed; device-resolution tile uses the transformed cell axes and caps total
+  pixels; the late-size push only clears a request this code set; lines wrapped. Cross-lane hooks: lane G (Control
+  `Background`) and lane K (`TextBlock.Foreground`) call `BrushPaint.Fill` from a Backdrop snapshot (BrushCss emits
+  nothing for tile brushes); lane I (`Shape.OpacityMask`) is covered under a Backdrop panel and needs a snapshot hook
+only for a Shape that is the window content; lane H `RenderingPainter` reads `VisualBrush.TryGetLiveSurface`.
+- **Round 70 (lane J) review fixes, second pass.** The independent review blocked three regressions. **Host choice:**
+  a detached source is hosted in the toplevel of the window that paints the brush (`BrushPaint.PaintingRoot`, set by
+  every Backdrop snapshot; the active window otherwise), and every render re-checks that the layer is still mapped and
+  re-hosts the source if not; with no window at all (`Shape.PaintTo`, offscreen rendering) the source is mapped by hand
+  under a never-mapped `Fixed` and snapshotted through it, so it still renders. The layer is created from an idle
+  callback, not inside the snapshot (no "snapshot GtkFixed without a current allocation" warning). **Liveness:** the echo
+  is recognised by its cause, not by timing: invalidations during the 100 ms after the brush's own `Changed` are held,
+  then one re-render decides whether the source really changed; a dirty brush always raises `Changed` eventually.
+  **Transforms:** a masked child's mask is filled in the child's own space (`ComputeTransform`), so it turns with a
+  `RenderTransform`. Lane J's gaps unchanged: no `Present`, no extra toplevel.
+- **Round 70 (lane J) review fixes, third pass.** **Liveness:** the echo hold-back now applies only to a brush painted
+  inside its own source (an element of the source holds the brush); every other brush raises `Changed` for each real
+  change, once per loop turn, so an animated source follows every frame. **First paint:** a detached source is always
+  mapped by hand under the never-mapped `Fixed` and captured synchronously, even with a window open, then moved into
+  the painting window's layer in idle, so the first `Shape.PaintTo` shows it and no test depends on leftover windows.
+- **Round 70 (lane J) review fixes, final pass.** **Self-reference storm:** a brush that paints inside its own
+  source through a Style Setter or nested in a `DrawingBrush`/`GeometryDrawing`/`Pen` repainted forever (about 48
+  `Changed`/s idle). The structural check now follows effective Shape/Panel/Border brushes and nested
+  drawings and pens; a storm breaker backs it up: after two consecutive renders whose capture is pixel-identical,
+  `Changed` is held until a re-capture really differs (re-checked once after the frame, so a real change still
+  gets through). The breaker is bypassed while the source's host is not healthy, so a settled brush whose host
+  window closes is re-hosted and follows later changes (`VisualBrushHostingTests.A_settled_brush_*`).
+  - Known gaps (Round 70 lane J): a self-containing brush used as `Border.BorderBrush`, `Control.Background`/
+    `Foreground` or `TextBlock.Foreground` through a Style is caught only by the pixel-identical storm breaker,
+    not the structural check; the breaker re-checks once 100 ms after a change, so under a heavily loaded loop
+    a change GTK has not drawn yet waits for the next source invalidation. `VisualBrush` as a 3D material
+    texture (Graphics/Geometry's `DiffuseMaterial`) is not implemented: that pane stays dark.
 
 ## Phased roadmap (after Phase 0 proves the spine)
 

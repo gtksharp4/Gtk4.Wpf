@@ -34,6 +34,8 @@ public partial class VisualBrush
 	protected override void CloneOverride(Freezable destination, bool currentValueOnly)
 	{
 		base.CloneOverride(destination, currentValueOnly);
-		((VisualBrush)destination).Visual = Visual;
+		var b = (VisualBrush)destination;
+		b.Visual = Visual;
+		b.AutoLayoutContent = AutoLayoutContent;
 	}
 }

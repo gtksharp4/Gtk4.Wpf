@@ -80,7 +80,7 @@ public partial class Border : FrameworkElement
 	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
-		_frame = new Gtk.Frame();
+		_frame = new BackdropFrame();
 		_frame.Label = null; // no title label — pure border
 		if (Child != null)
 			_frame.Child = Child.Widget;

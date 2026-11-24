@@ -33,14 +33,14 @@ public class GtkSmokeTests : WpfGtkTestBase
 	public void Grid_Widget_is_GtkGrid() => Run(() =>
 	{
 		var grid = new WpfGrid();
-		Assert.IsType<Gtk.Grid>(grid.Widget);
+		Assert.IsAssignableFrom<Gtk.Grid>(grid.Widget);
 	});
 
 	[Fact]
 	public void StackPanel_Widget_is_GtkBox() => Run(() =>
 	{
 		var sp = new WpfStackPanel();
-		Assert.IsType<Gtk.Box>(sp.Widget);
+		Assert.IsAssignableFrom<Gtk.Box>(sp.Widget);
 	});
 
 	[Fact]
@@ -73,7 +73,7 @@ public class GtkSmokeTests : WpfGtkTestBase
 
 		Assert.Equal("hi", label.Text);
 		Assert.IsType<Gtk.Window>(gtkWin);
-		Assert.IsType<Gtk.Grid>(gtkGrid);
+		Assert.IsAssignableFrom<Gtk.Grid>(gtkGrid);
 		Assert.IsType<Gtk.Label>(label);
 	});
 

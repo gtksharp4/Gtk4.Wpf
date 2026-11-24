@@ -497,3 +497,26 @@ MergedResources, Matrix, CubeAnimationDemo) and passed on a solo rebuild: conten
   `CommandManager.InvalidateRequerySuggested` there, so the button stays disabled until another requery happens.
   `CommandSampleTests` keeps a workaround test (it requeries itself) and a skipped test,
   `The_button_is_enabled_without_a_manual_requery`, that asserts the correct behaviour. Un-skip it when fixed.
+
+## Round 70 lane J: Graphics/VisualBrush by pixels
+
+`Graphics/VisualBrush` (`WPF-Samples` at the submodule revision) now compiles unmodified in
+`Gtk4.Forms.Wpf.Testing.Tests` (`Samples/VisualBrushSampleTests`) and is checked by pixels on all three tabs:
+
+- **Painting with Visuals**: the 50x50 tile rectangle shows the red 25x25 squares and the tiled text and button, and no
+  black fill.
+- **Magnifying Glass**: after a synthesized `MouseMove` over `magnifiedPanel` the Ellipse moves to mouse+5 and shows
+  the magnified grid; a second move shows text instead. The root cause of the empty interior was
+  `DrawingGroup.Children` items having no inheritance context, so `Visual="{Binding ElementName=magnifiedPanel}"` on
+  the nested `VisualBrush` never resolved.
+- **Reflection**: the lower canvas holds the vertically flipped upper canvas and fades towards the bottom. The lower
+  canvas is sized by `Height`/`Width` bindings that resolve after layout; `FrameworkElement` now re-pushes a late
+  Width/Height to the GTK widget.
+
+Pinned recipe (lane-private feed from this worktree, `Gtk4.Forms.Wpf 1.0.0.26328`, sample copy with only the package
+reference, `<clear/>` nuget.config with `Gtk4.*` mapped to the feed, isolated `globalPackagesFolder`, empty
+`Directory.Build.props`, two builds with `-nodeReuse:false`): VisualBrush builds with 0 warnings and 0 errors and stays
+alive; Win32 reports the app window plus the shared host window, which is a 1 %-opacity, non-interactive window (it
+is `WS_VISIBLE` but not drawn). Gate subset built and smoke-run (about 25 s start-up, alone): Brushes, DrawingBrush,
+ImageBrush, OpacityMasking, 2DTransforms, BindingDPToDP, SimpleBinding all build (0 errors) and stay up with their
+window. The full 198-app gate was not run in this step.

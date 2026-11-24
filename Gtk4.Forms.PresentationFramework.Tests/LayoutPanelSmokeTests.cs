@@ -21,7 +21,7 @@ public class LayoutPanelSmokeTests : WpfGtkTestBase
 	public void Grid_Widget_is_GtkGrid() => Run(() =>
 	{
 		var grid = new WpfGrid();
-		Assert.IsType<Gtk.Grid>(grid.Widget);
+		Assert.IsAssignableFrom<Gtk.Grid>(grid.Widget);
 	});
 
 	[Fact]
@@ -67,7 +67,7 @@ public class LayoutPanelSmokeTests : WpfGtkTestBase
 	public void Canvas_Widget_is_GtkFixed() => Run(() =>
 	{
 		var canvas = new WpfCanvas();
-		Assert.IsType<Gtk.Fixed>(canvas.Widget);
+		Assert.IsAssignableFrom<Gtk.Fixed>(canvas.Widget);
 	});
 
 	[Fact]
@@ -81,7 +81,7 @@ public class LayoutPanelSmokeTests : WpfGtkTestBase
 
 		// Widget is a Gtk.Label (TextBlock backing) and is inside the Fixed.
 		Assert.IsType<Gtk.Label>(tb.Widget);
-		Assert.IsType<Gtk.Fixed>(canvas.Widget);
+		Assert.IsAssignableFrom<Gtk.Fixed>(canvas.Widget);
 	});
 
 	[Fact]

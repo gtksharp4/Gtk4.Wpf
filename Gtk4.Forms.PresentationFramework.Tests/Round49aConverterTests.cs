@@ -96,6 +96,8 @@ public class Round49aConverterTests
 		"System.Windows.Media.Imaging.BitmapSource",
 		// BitmapPalette has no converter in WPF.
 		"System.Windows.Media.Imaging.BitmapPalette",
+		// A Visual is an object reference (VisualBrush.Visual), not a string-convertible value.
+		"System.Windows.Media.Visual",
 	};
 
 	[Fact]

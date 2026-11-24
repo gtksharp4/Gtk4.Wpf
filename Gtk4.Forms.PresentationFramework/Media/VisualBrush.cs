@@ -1,29 +1,32 @@
 namespace System.Windows.Media;
 
 /// <summary>
-/// A brush that fills an area with the content of a <see cref="Visual"/>,
-/// with optional stretching and tiling (inherited from <see cref="TileBrush"/>).
+/// A brush that fills an area with the content of a <see cref="Visual"/>, mapped and tiled like WPF's
+/// <see cref="TileBrush"/> (Viewbox, Viewport, Stretch, Alignment, TileMode, Transform, RelativeTransform, Opacity).
 /// Mirrors <c>System.Windows.Media.VisualBrush</c>.
 /// </summary>
 /// <remarks>
-/// <b>What paints — <see cref="DrawingVisual"/>:</b> when <see cref="Visual"/> is a
-/// <see cref="DrawingVisual"/> with a committed <see cref="DrawingVisual.Drawing"/>,
-/// the recorded commands are replayed via <see cref="DrawingContextRenderer"/> into an
-/// off-screen <see cref="Cairo.ImageSurface"/>, then scaled/tiled according to the
-/// inherited <see cref="TileBrush.Stretch"/> and <see cref="TileBrush.TileMode"/> via
-/// <see cref="StretchMath"/>.
+/// <b>Sources:</b> a <see cref="DrawingVisual"/> replays its recorded commands. A <see cref="UIElement"/> is rendered
+/// from its GTK widget (a <c>Gtk.WidgetPaintable</c> drawn into a cached Cairo surface that is refreshed when the
+/// widget invalidates), see <c>VisualBrush.Source.cs</c>. Content bounds are (0,0,RenderSize).
 /// <para>
-/// <b>No-paint — general <see cref="Visual"/>:</b> for any <see cref="Visual"/> that is
-/// not a <see cref="DrawingVisual"/> (e.g. a live <see cref="UIElement"/>), GTK cannot
-/// snapshot an unrealized or foreign widget into a Cairo surface portably.  In this case
-/// <see cref="ApplyToCairo"/> is a transparent no-op; the object model is fully usable.
+/// <b>Live refresh:</b> the brush raises <c>Changed</c> (one per main-loop turn) when the source widget invalidates,
+/// so bindings, layout, animation and size changes repaint the owner. A brush painted inside its own source returns
+/// the last frame. Changing only the Viewbox keeps the cached source pixels.
 /// </para>
 /// <para>
-/// <b>Headless / no display:</b> constructing a <see cref="VisualBrush"/> and assigning
-/// it to a shape fill is safe without a GTK surface; <see cref="ApplyToCairo"/> is never
-/// called until an actual draw pass occurs.  A null <see cref="Visual"/>, a
-/// <see cref="DrawingVisual"/> with no committed drawing, or zero-size bounds all produce
-/// a no-op paint.
+/// <b>Detached sources:</b> an unparented element is measured to infinity and arranged to its desired size
+/// (<see cref="AutoLayoutContent"/>, again whenever its layout is invalidated), then parked in an invisible,
+/// non-targetable, non-focusable layer inside a mapped application window (<c>DetachedSourceHost</c>: no extra
+/// toplevel, no activation change). The layer goes with the last brush that uses it; with no mapped window the
+/// source paints transparent until one exists.
+/// </para>
+/// <para>
+/// <b>Gaps:</b> descendant overflow is clipped to the render size (WPF uses descendant bounds); the tile raster is
+/// at device scale 1 (no HiDPI factor). A <c>Control</c> Background (BrushCss) and a TextBlock Foreground paint a
+/// VisualBrush as nothing rather than black until those owners call <c>BrushPaint.Fill</c> from a Backdrop snapshot;
+/// a Shape under a native panel is masked by that panel. A source that is not realised or has
+/// no size paints transparent.
 /// </para>
 /// </remarks>
 public partial class VisualBrush : TileBrush
@@ -34,50 +37,44 @@ public partial class VisualBrush : TileBrush
 	/// <summary>Creates a visual brush backed by <paramref name="visual"/>.</summary>
 	public VisualBrush(Visual visual) => Visual = visual;
 
-	/// <summary>
-	/// The visual used as the brush content.
-	/// Only <see cref="DrawingVisual"/> instances with a committed drawing produce
-	/// painted output; all other visual types result in a transparent fill.
-	/// </summary>
-	public Visual? Visual { get; set; }
+	/// <summary>Identifies <see cref="Visual"/>. Default null.</summary>
+	public static readonly DependencyProperty VisualProperty = DependencyProperty.Register(
+		nameof(Visual), typeof(Visual), typeof(VisualBrush), new PropertyMetadata(null));
+
+	/// <summary>Identifies <see cref="AutoLayoutContent"/>. Default true.</summary>
+	public static readonly DependencyProperty AutoLayoutContentProperty = DependencyProperty.Register(
+		nameof(AutoLayoutContent), typeof(bool), typeof(VisualBrush), new PropertyMetadata(true));
+
+	/// <summary>The visual used as the brush content.</summary>
+	public Visual? Visual
+	{
+		get => (Visual?)GetValue(VisualProperty);
+		set => SetValue(VisualProperty, value);
+	}
+
+	/// <summary>Whether an unparented <see cref="UIElement"/> source is measured and arranged to its size.</summary>
+	public bool AutoLayoutContent
+	{
+		get => (bool)GetValue(AutoLayoutContentProperty)!;
+		set => SetValue(AutoLayoutContentProperty, value);
+	}
 
 	/// <inheritdoc/>
 	internal override void ApplyToCairo(Cairo.Context cr, double width, double height)
 	{
-		if (Visual is not DrawingVisual dv) return;  // general Visual: no-paint (see remarks)
-
-		var ctx = dv.Drawing;
-		if (ctx == null || ctx.Commands.Count == 0) return;
-
-		var bounds = DrawingContextRenderer.ComputeBounds(ctx);
-		double sw = bounds.Width;
-		double sh = bounds.Height;
-		if (sw <= 0 || sh <= 0) return;
-		if (width <= 0 || height <= 0) return;
-
-		int iw = (int)Math.Ceiling(sw);
-		int ih = (int)Math.Ceiling(sh);
-		using var surface = new Cairo.ImageSurface(Cairo.Format.Argb32, iw, ih);
-		using (var drawCr = new Cairo.Context(surface))
+		switch (Visual)
 		{
-			drawCr.Translate(-bounds.X, -bounds.Y);
-			DrawingContextRenderer.Render(ctx, drawCr, paintText: true);
+			case DrawingVisual { Drawing: { Commands.Count: > 0 } ctx }:
+				ApplyTile(cr, width, height, DrawingContextRenderer.ComputeBounds(ctx),
+					c => DrawingContextRenderer.Render(ctx, c, paintText: true));
+				break;
+			case UIElement element:
+				ApplyElement(cr, width, height, element);
+				break;
+			default:
+				TileBrush.SetTransparentSource(cr);
+				break;
 		}
-
-		var (dx, dy, dw, dh) = StretchMath.ComputeDestRect(sw, sh, width, height, Stretch);
-
-		using var pat = new Cairo.SurfacePattern(surface);
-		double scaleX = dw / sw;
-		double scaleY = dh / sh;
-		var m = new Cairo.Matrix();
-		m.Scale(1.0 / scaleX, 1.0 / scaleY);
-		m.Translate(-dx / scaleX, -dy / scaleY);
-		pat.Matrix = m;
-
-		pat.Extend = TileMode == TileMode.None ? Cairo.Extend.Pad : Cairo.Extend.Repeat;
-		pat.Filter = Cairo.Filter.Bilinear;
-
-		cr.SetSource(pat);
 	}
 
 	/// <inheritdoc/>

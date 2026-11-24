@@ -65,7 +65,7 @@ public partial class Canvas : Panel
 	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
-		_fixed = new Gtk.Fixed();
+		_fixed = new BackdropFixed();
 		foreach (var child in Children)
 			PlaceChild(child);
 		return _fixed;

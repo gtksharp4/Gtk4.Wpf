@@ -32,7 +32,7 @@ public class DrawingGroup : Drawing
 	DrawingCollection? _children;
 
 	/// <summary>Creates an empty drawing group.</summary>
-	public DrawingGroup() => _watcher = new FreezableChildWatcher(() => OnChanged());
+	public DrawingGroup() => _watcher = new FreezableChildWatcher(() => OnChanged(), this);
 
 	/// <summary>Identifies <see cref="Transform"/>.</summary>
 	public static readonly DependencyProperty TransformProperty = DependencyProperty.Register(
