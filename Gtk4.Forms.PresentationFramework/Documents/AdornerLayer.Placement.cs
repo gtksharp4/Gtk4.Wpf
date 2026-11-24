@@ -10,7 +10,6 @@ public sealed partial class AdornerLayer
 	sealed class Tracker
 	{
 		public Action Reposition = null!;
-		public bool CanTarget;
 
 		public void OnSize(object sender, SizeChangedEventArgs e) => Reposition();
 
@@ -44,7 +43,9 @@ public sealed partial class AdornerLayer
 		var widget = adorner.Widget;
 		widget.Halign = Gtk.Align.Start;
 		widget.Valign = Gtk.Align.Start;
-		var tracker = new Tracker { Reposition = () => Reposition(adorner), CanTarget = widget.CanTarget };
+		var tracker = new Tracker { Reposition = () => Reposition(adorner) };
+		adorner.SuppressCanTarget = true;
+		adorner.RefreshCanTarget();
 		_placed[adorner] = tracker;
 		// Adorners overlay the content; they must never enlarge the window.
 		overlay.AddOverlay(widget);
@@ -63,7 +64,8 @@ public sealed partial class AdornerLayer
 		if (adorned is FrameworkElement fe) fe.SizeChanged -= tracker.OnSize;
 		adorned.LayoutUpdated -= tracker.OnLayout;
 		_gtkOverlay?.RemoveOverlay(adorner.Widget);
-		adorner.Widget.CanTarget = tracker.CanTarget;
+		adorner.SuppressCanTarget = false;
+		adorner.RefreshCanTarget();
 	}
 
 	// Covers the adorned element's border box in overlay coordinates. A placed widget is not pickable (GTK
@@ -74,7 +76,6 @@ public sealed partial class AdornerLayer
 		var overlay = _gtkOverlay;
 		if (overlay == null || !_placed.ContainsKey(adorner)) return;
 		var widget = adorner.Widget;
-		widget.CanTarget = false;
 		var adorned = adorner.AdornedElement;
 		Graphene.Rect? bounds = null;
 		if (adorned.HasBackingWidget && adorned.Widget.IsMapped && adorned.Widget.ComputeBounds(overlay, out var b))
@@ -87,6 +88,6 @@ public sealed partial class AdornerLayer
 		widget.MarginStart = (int)Math.Round(bounds.X);
 		widget.MarginTop = (int)Math.Round(bounds.Y);
 		widget.SetSizeRequest((int)Math.Ceiling(bounds.Width), (int)Math.Ceiling(bounds.Height));
-		widget.Visible = adorner.Visibility == Visibility.Visible;
+		widget.Visible = VisibilityGtkMap.Map(adorner.WidgetVisibility).WidgetVisible;
 	}
 }

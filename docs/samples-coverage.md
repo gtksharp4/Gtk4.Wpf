@@ -384,7 +384,8 @@ MergedResources, Matrix, CubeAnimationDemo) and passed on a solo rebuild: conten
   (lane B territory, MarkupCompiler). With three text columns added in code the headers fill the grid (103, 94 and 56
   px of 253, all `Hexpand`), so star width renders.
 - **PhotoStoreDemo:** a native (OS-level) click on the image reaches `OnMouseDown` (`CropButton` goes from disabled to
-  enabled, `CaptureMouse` and `StartSelection` run). A drag with capture on the adorner was not exercised.
+  enabled, `CaptureMouse` and `StartSelection` run).
+  Capture on a placed adorner re-targets input (unit-tested); no native drag was driven.
 - New walls: none beyond the two above (`DataGrid.Columns` generator gap; WPFGallery `ControlCornerRadius`).
 
 ## Method

@@ -29,7 +29,7 @@ public class DataGridLengthConverter : TypeConverter
 		if (value != null && CanConvertFrom(context, value.GetType()))
 		{
 			var number = Convert.ToDouble(value, culture);
-			if (double.IsNaN(number)) return DataGridLength.Auto;
+			if (double.IsNaN(number)) return Fresh(DataGridLengthUnitType.Auto);
 			if (double.IsInfinity(number)) throw GetConvertFromException(value);
 			return new DataGridLength(number);
 		}
@@ -68,12 +68,17 @@ public class DataGridLengthConverter : TypeConverter
 		}
 	}
 
+	// WPF builds these with NaN desired/display values, unlike the Auto/SizeTo* statics.
+	static DataGridLength Fresh(DataGridLengthUnitType type) => new DataGridLength(1.0, type);
+
 	static DataGridLength FromString(string text, CultureInfo culture)
 	{
 		var s = text.Trim();
-		if (s.Equals("Auto", StringComparison.OrdinalIgnoreCase)) return DataGridLength.Auto;
-		if (s.Equals("SizeToCells", StringComparison.OrdinalIgnoreCase)) return DataGridLength.SizeToCells;
-		if (s.Equals("SizeToHeader", StringComparison.OrdinalIgnoreCase)) return DataGridLength.SizeToHeader;
+		if (s.Equals("Auto", StringComparison.OrdinalIgnoreCase)) return Fresh(DataGridLengthUnitType.Auto);
+		if (s.Equals("SizeToCells", StringComparison.OrdinalIgnoreCase))
+			return Fresh(DataGridLengthUnitType.SizeToCells);
+		if (s.Equals("SizeToHeader", StringComparison.OrdinalIgnoreCase))
+			return Fresh(DataGridLengthUnitType.SizeToHeader);
 		if (s.EndsWith("*", StringComparison.Ordinal))
 		{
 			var weight = s.Substring(0, s.Length - 1).Trim();
@@ -82,7 +87,7 @@ public class DataGridLengthConverter : TypeConverter
 		}
 		// Reuses the WindowsBase length parser (px/in/cm/pt suffixes; FormatException on bad input).
 		var pixels = ConverterParsing.ParseLength(s, culture);
-		return double.IsNaN(pixels) ? DataGridLength.Auto : new DataGridLength(pixels);
+		return double.IsNaN(pixels) ? Fresh(DataGridLengthUnitType.Auto) : new DataGridLength(pixels);
 	}
 
 	static double ParseWeight(string s, string original, CultureInfo culture)

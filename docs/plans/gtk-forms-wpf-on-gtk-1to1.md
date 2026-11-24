@@ -2769,6 +2769,20 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   207 projects build through a lane-private feed and all 191 apps that ran at `17c64167` still run (see
   `samples-coverage.md`, "Round 62 (lane A) gate"). Checks: ExpenseItDemo's `CreateExpenseReportDialogBox` opens and
   `ColumnWidth="*"` reaches the grid; a native click on PhotoStoreDemo's image reaches `OnMouseDown`.
+- **Round 62 (lane A) follow-up.** Reviewer findings verified; fixes failing-first. **b-F3** `Reposition` now takes
+  Visible from `VisibilityGtkMap` (Hidden stays mapped at opacity 0), so Hidden -> Visible shows the adorner again.
+  **b-F2** a `UIElement.SuppressCanTarget` flag makes `ApplyCanTarget` keep a placed adorner untargetable through
+  Visibility/IsHitTestVisible/IsEnabled changes; `Unplace` re-applies the current state instead of a stale snapshot.
+  **b-F5** `AdornerDecorator` layers now reposition on the overlay's frame-clock layout (`AdornerLayer.Frame.cs`), so an
+  adorner hidden while its element was unmapped returns. **c-F2** `DataGridLengthConverter` builds fresh
+  `new DataGridLength(1.0, unit)` values (NaN desired/display, equal to WPF's), not the statics. **c-F4** the Pixel
+  header test now shows the grid, pumps and asserts the header's allocated width. **Capture check (b-F2)**: with a
+  placed (CanTarget=false) adorner, `CaptureMouse()` succeeds and `RaiseMouseMove`/`RaiseMouseButton` on the adorned
+  element are re-targeted to the adorner (`Mouse.GetInputTarget` is managed, independent of the adorner's pick state);
+  tested, not driven by a native drag. **b-F5 test gap kept**: the window-width (centred horizontal move) case stays
+  uncovered; `Window.SizeAllocate` raises no frame layout. Full `PresentationFramework.Tests` at `328b893e`: 6156
+  passed, 0 failed, 3 skipped (6159). Targeted after the fixes (`Adorner`, `DataGrid`, `Window`, `MouseCapture`,
+  `Visibility`): 529 passed, 0 failed.
 - **Round 62 (lane A) carry-over.**
   - `AutomationElementIdentifiers.HeadingLevelProperty` (WPF 4.8+), `AutomationElement.HeadingLevelProperty` and a
     `PeerProvider`/`PropertyCatalog` case are not implemented.
@@ -2787,9 +2801,9 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
     `ScrollContentPresenter` have no implicit adorner layer, where WPF gives each one.
   - Adorner-drawn interactive content is not pickable (placed adorner widgets are `CanTarget=false`). Whether
     `Mouse.Capture`/`CaptureMouse` on an adorner routes events through the window-level controller (as
-    `RubberbandAdorner` does) was not exercised by a drag; only the click path was.
-  - `RepositionAll` runs for the window's implicit layer only: explicit `AdornerDecorator` layers are not
-    repositioned on a frame layout.
+    `RubberbandAdorner` does) is checked at the managed level (see the follow-up); no native drag was driven.
+  - Explicit `AdornerDecorator` layers reposition on the overlay frame layout (follow-up); they are not
+    driven by the window hook.
   - A Pixel `DataGridColumn.Width` is a minimum size request (WPF clips); star weights other than equal are store-only.
 
 ## Phased roadmap (after Phase 0 proves the spine)

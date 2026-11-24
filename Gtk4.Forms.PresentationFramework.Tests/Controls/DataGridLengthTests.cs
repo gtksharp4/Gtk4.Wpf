@@ -127,7 +127,8 @@ public class DataGridLengthTests
 		var c = new DataGridLengthConverter();
 		Assert.Equal(new DataGridLength(7), c.ConvertFrom(null, Inv, 7));
 		Assert.Equal(new DataGridLength(7.5), c.ConvertFrom(null, null, 7.5));
-		Assert.Equal(DataGridLength.Auto, c.ConvertFrom(null, Inv, double.NaN));
+		var auto = new DataGridLength(1.0, DataGridLengthUnitType.Auto);
+		Assert.Equal(auto, c.ConvertFrom(null, Inv, double.NaN));
 	}
 
 	[Fact]

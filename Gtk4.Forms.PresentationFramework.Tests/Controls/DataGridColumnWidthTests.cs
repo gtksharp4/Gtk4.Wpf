@@ -104,10 +104,18 @@ public class DataGridColumnWidthTests : WpfGtkTestBase
 			Header = "A very long column header text", Width = new DataGridLength(10)
 		});
 		grid.ItemsSource = new[] { "x" };
-		_ = grid.Widget;
-		var header = grid._grid!.GetChildAt(0, 0)!;
-		header.Measure(Gtk.Orientation.Horizontal, -1, out _, out var natural, out _, out _);
-		Assert.True(natural > 10);
+		var win = new System.Windows.Window { Width = 600, Height = 300, Content = grid };
+		try
+		{
+			win.Show();
+			GtkPump.For(300);
+			var header = grid._grid!.GetChildAt(0, 0)!;
+			header.Measure(Gtk.Orientation.Horizontal, -1, out _, out var natural, out _, out _);
+			Assert.True(natural > 10);
+			Assert.True(header.Width >= natural, $"header allocated {header.Width}, natural {natural}");
+			Assert.True(header.Width > 10);
+		}
+		finally { win.Close(); }
 	});
 
 	static int WidthRequest(Gtk.Widget widget)
