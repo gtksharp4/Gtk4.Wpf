@@ -52,7 +52,7 @@ public partial class ContentControl : Control
 		if (newContent is UIElement newEl)
 			ContentContainer.Add(newEl.Widget);
 		else if (newContent is string s)
-			ContentLabel.Text = s;
+			ShowContentText(s);
 		else if (newContent != null)
 			ContentLabel.Text = newContent.ToString() ?? string.Empty;
 		else

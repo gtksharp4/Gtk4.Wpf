@@ -613,10 +613,11 @@ Peers and names:
 - `ComboBoxItemAutomationPeer` derives from `SelectorItemAutomationPeer`; WPF uses `ListBoxItemAutomationPeer`.
   `ListBoxItemWrapperAutomationPeer` is internal and sealed; WPF has it public, deriving from
   `FrameworkElementAutomationPeer`. The plan's "Deviations" bullet wrongly calls both "as in WPF".
-- ListBox item names lose underscores: `ContentName` goes through `PeerText.FromContent`, so `"file_name.txt"` becomes
-  `"filename.txt"`. Only `ButtonBase`/`Label` content strips access keys in WPF.
-- `PeerText.RemoveAccessKey` drops every `_`. WPF drops the first marker and turns `__` into `_` (`"a_b_c"` →
-  `"ab_c"`). `PeerNameTests` asserts the non-WPF result.
+- ~~ListBox item names lose underscores~~ Fixed in Round 64 (lane D): `PeerText.FromContentLiteral` for ListBoxItem,
+  ComboBoxItem, TreeViewItem and Expander; the button, label, menu-item, TabItem and GroupBox peers strip access keys
+  (`PeerText.FromContent`, as WPF's `GetNameCore` does).
+- ~~`PeerText.RemoveAccessKey` drops every `_`~~ Fixed in Round 64 (lane D): `AccessKeyParser.RemoveAccessKeyMarker` follows WPF (`"a_b_c"` →
+  `"ab_c"`, `"trailing_"` stays); `PeerNameTests` asserts the WPF result.
 - The GTK label taken from `LabeledBy` is not re-pushed when the labelling element's text changes.
 - Peers are still created eagerly in `ApplyAutomationOnCreated` (documented deviation). The test
   `CreatePeerForElement_caches_and_FromElement_does_not_create` passes only because of call order.

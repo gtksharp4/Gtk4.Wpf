@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -18,6 +19,7 @@ public partial class Window
 	Gtk.HeaderBar? _headerBar;
 	Gtk.Image? _iconImage;
 	Gtk.CssProvider? _iconHoverCssProvider;
+	Gtk.Popover? _iconContextMenu;
 
 	/// <summary>The WPF-compatible window icon, shown in the GTK HeaderBar titlebar.</summary>
 	public static readonly DependencyProperty IconProperty =
@@ -65,6 +67,8 @@ public partial class Window
 
 		if (_iconImage != null)
 		{
+			_iconContextMenu?.Unparent();
+			_iconContextMenu = null;
 			if (_iconHoverCssProvider != null)
 				_iconImage.StyleContext.RemoveProvider(_iconHoverCssProvider);
 			_headerBar.Remove(_iconImage);
@@ -95,6 +99,18 @@ public partial class Window
 			var click = new Gtk.GestureClick { Button = 1 };
 			click.Pressed += (_, e) => HandleTitleBarIconPress(e.NPress);
 			img.AddController(click);
+
+			var contextClick = new Gtk.GestureClick { Button = 3 };
+			contextClick.Pressed += (_, _) => _iconContextMenu?.Popup();
+			img.AddController(contextClick);
+
+			var closeButton = new Gtk.Button
+			{
+				Label = GetCloseWindowMenuLabel(CultureInfo.CurrentUICulture),
+				UseUnderline = false
+			};
+			closeButton.Clicked += (_, _) => HandleTitleBarIconContextMenuClose();
+			_iconContextMenu = new Gtk.Popover { Child = closeButton, Parent = img };
 		}
 		return img;
 	}
@@ -102,8 +118,25 @@ public partial class Window
 	internal void HandleTitleBarIconPress(int nPress)
 	{
 		if (nPress == 2)
-			Close();
+			CloseFromTitleBarIcon();
 	}
+
+	void CloseFromTitleBarIcon() => Close();
+
+	internal void HandleTitleBarIconContextMenuClose() => CloseFromTitleBarIcon();
+
+	internal Gtk.Popover? TitleBarIconContextMenu => _iconContextMenu;
+
+	internal static string GetCloseWindowMenuLabel(CultureInfo culture) =>
+		culture.TwoLetterISOLanguageName switch
+		{
+			"it" => "Chiudi finestra",
+			"fr" => "Fermer la fenêtre",
+			"de" => "Fenster schließen",
+			"es" => "Cerrar ventana",
+			"pt" => "Fechar janela",
+			_ => "Close Window"
+		};
 
 	internal static Gtk.Image? LoadDefaultIconImage()
 	{

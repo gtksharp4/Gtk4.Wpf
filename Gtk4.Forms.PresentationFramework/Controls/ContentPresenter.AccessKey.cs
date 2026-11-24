@@ -13,8 +13,8 @@ public partial class ContentPresenter
 			new FrameworkPropertyMetadata(false, (d, _) => ((ContentPresenter)d).RefreshContent()));
 
 	/// <summary>
-	/// When true, string content is shown with an access key: GTK <c>Label.UseUnderline</c>, so "_File" shows
-	/// "File" with a mnemonic and "__" shows a literal underscore. When false, underscores stay literal.
+	/// When true, string content containing an underscore is hosted in an <see cref="AccessText"/>: "_File" shows
+	/// "File" with an access key and "__" shows a literal underscore. When false, underscores stay literal.
 	/// </summary>
 	public bool RecognizesAccessKey
 	{

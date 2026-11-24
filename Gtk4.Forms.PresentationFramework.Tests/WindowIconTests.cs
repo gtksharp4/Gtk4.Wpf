@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Media;
@@ -101,6 +102,17 @@ public class WindowIconTests : WpfGtkTestBase
 		return null;
 	}
 
+	[Theory]
+	[InlineData("it-IT", "Chiudi finestra")]
+	[InlineData("fr-FR", "Fermer la fenêtre")]
+	[InlineData("de-DE", "Fenster schließen")]
+	[InlineData("es-ES", "Cerrar ventana")]
+	[InlineData("pt-PT", "Fechar janela")]
+	[InlineData("en-US", "Close Window")]
+	[InlineData("ja-JP", "Close Window")]
+	public void Close_window_menu_label_uses_the_requested_language(string cultureName, string expected) =>
+		Assert.Equal(expected, WpfWindow.GetCloseWindowMenuLabel(CultureInfo.GetCultureInfo(cultureName)));
+
 	[Fact]
 	public void Double_clicking_the_titlebar_icon_closes_the_window() => Run(() =>
 	{
@@ -114,10 +126,9 @@ public class WindowIconTests : WpfGtkTestBase
 		var controllers = icon.ObserveControllers();
 		Gtk.GestureClick? click = null;
 		for (uint i = 0; i < controllers.NItems; i++)
-			if (controllers.GetObject(i) is Gtk.GestureClick gesture)
+			if (controllers.GetObject(i) is Gtk.GestureClick gesture && gesture.Button == 1)
 				click = gesture;
 		Assert.NotNull(click);
-		Assert.Equal(1u, click!.Button);
 
 		int closed = 0;
 		win.Closed += (_, _) => closed++;
@@ -126,6 +137,34 @@ public class WindowIconTests : WpfGtkTestBase
 		Assert.Equal(0, closed);
 
 		win.HandleTitleBarIconPress(2);
+		Assert.Equal(1, closed);
+	});
+
+	[Fact]
+	public void Right_clicking_the_titlebar_icon_has_a_close_menu_that_closes_the_window() => Run(() =>
+	{
+		var win = new WpfWindow { Title = "Iconned" };
+		var gtkWin = (Gtk.Window)win.Widget;
+		var headerBar = Assert.IsType<Gtk.HeaderBar>(gtkWin.Titlebar);
+		var icon = FindTitlebarIcon(headerBar);
+		Assert.NotNull(icon);
+
+		var controllers = icon!.ObserveControllers();
+		Gtk.GestureClick? contextClick = null;
+		for (uint i = 0; i < controllers.NItems; i++)
+			if (controllers.GetObject(i) is Gtk.GestureClick gesture && gesture.Button == 3)
+				contextClick = gesture;
+		Assert.NotNull(contextClick);
+
+		var popover = Assert.IsType<Gtk.Popover>(win.TitleBarIconContextMenu);
+		Assert.Same(icon, popover.Parent);
+		var closeButton = Assert.IsType<Gtk.Button>(popover.Child);
+		Assert.Equal(WpfWindow.GetCloseWindowMenuLabel(CultureInfo.CurrentUICulture), closeButton.Label);
+
+		int closed = 0;
+		win.Closed += (_, _) => closed++;
+
+		win.HandleTitleBarIconContextMenuClose();
 		Assert.Equal(1, closed);
 	});
 }

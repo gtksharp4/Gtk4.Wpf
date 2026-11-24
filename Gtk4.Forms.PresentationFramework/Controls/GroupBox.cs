@@ -36,6 +36,8 @@ public partial class GroupBox : HeaderedContentControl
 	{
 		if (_frame != null)
 			ApplyHeader();
+		else
+			AccessKeyBinding.Apply(this, newHeader as string);
 	}
 
 	/// <inheritdoc/>
@@ -51,11 +53,25 @@ public partial class GroupBox : HeaderedContentControl
 		}
 	}
 
+	Gtk.Label? _headerLabel;
+
 	void ApplyHeader()
 	{
 		if (Header is UIElement headerEl)
+		{
+			AccessKeyBinding.Register(this, null);
 			_frame.LabelWidget = headerEl.Widget;
+			_headerLabel = null;
+			return;
+		}
+		_headerLabel ??= new Gtk.Label(string.Empty);
+		if (Header is string text)
+			AccessKeyBinding.SetLabel(_headerLabel, AccessKeyBinding.Apply(this, text));
 		else
-			_frame.Label = Header as string ?? Header?.ToString() ?? string.Empty;
+		{
+			AccessKeyBinding.Register(this, null);
+			_headerLabel.Text = Header?.ToString() ?? string.Empty;
+		}
+		_frame.LabelWidget = _headerLabel;
 	}
 }

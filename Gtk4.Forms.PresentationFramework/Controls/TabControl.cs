@@ -116,7 +116,7 @@ public partial class TabControl : Selector
 	protected override void AddItemWidget(Gtk.Widget w)
 	{
 		var ti = _tabItems.Count > 0 ? _tabItems[_tabItems.Count - 1] : null;
-		var tabLabel = new Gtk.Label(ti?.HeaderText ?? string.Empty);
+		var tabLabel = ti?.CreateTabLabel() ?? new Gtk.Label(string.Empty);
 		_notebook!.AppendPage(w, tabLabel);
 	}
 
