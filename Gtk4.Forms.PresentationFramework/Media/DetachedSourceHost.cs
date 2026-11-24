@@ -86,16 +86,13 @@ static partial class DetachedSourceHost
 		_leases.Add(lease);
 		StartSweeping();
 		if (shared != null) return lease;
-		if (!AnyWindow())
-		{
-			// No window to host it: mapped by hand under a never-mapped parent (GTK draws nothing for a parentless or
-			// unmapped widget), which is enough to render it.
-			Bare.Put(widget, 0, 0);
-			widget.Realize();
-			widget.Map();
-			lease.SelfMapped = true;
-		}
-		else
+		// Mapped by hand under a never-mapped parent (GTK draws nothing for a parentless or unmapped widget), which
+		// is enough to render the first capture synchronously, with or without a window.
+		Bare.Put(widget, 0, 0);
+		widget.Realize();
+		widget.Map();
+		lease.SelfMapped = true;
+		if (AnyWindow())
 		{
 			lease.MovePending = true;
 			var root = painter?.Root as Gtk.Widget;

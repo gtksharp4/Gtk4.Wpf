@@ -2884,6 +2884,11 @@ only for a Shape that is the window content; lane H `RenderingPainter` reads `Vi
   then one re-render decides whether the source really changed; a dirty brush always raises `Changed` eventually.
   **Transforms:** a masked child's mask is filled in the child's own space (`ComputeTransform`), so it turns with a
   `RenderTransform`. Lane J's gaps unchanged: no `Present`, no extra toplevel.
+- **Round 70 (lane J) review fixes, third pass.** **Liveness:** the echo hold-back now applies only to a brush painted
+  inside its own source (an element of the source holds the brush); every other brush raises `Changed` for each real
+  change, once per loop turn, so an animated source follows every frame. **First paint:** a detached source is always
+  mapped by hand under the never-mapped `Fixed` and captured synchronously, even with a window open, then moved into
+  the painting window's layer in idle, so the first `Shape.PaintTo` shows it and no test depends on leftover windows.
 
 ## Phased roadmap (after Phase 0 proves the spine)
 

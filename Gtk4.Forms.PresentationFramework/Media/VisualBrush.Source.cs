@@ -12,6 +12,10 @@ public partial class VisualBrush
 	bool _scheduled;
 	bool _inFlight;
 	bool _missed;
+	// Set when the brush is painted inside its own source, whose owner redraw echoes each Changed back. Only such
+	// a brush is held back; any other follows every change.
+	bool _selfRef;
+	int _changedAt;
 
 	/// <inheritdoc/>
 	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
@@ -29,6 +33,7 @@ public partial class VisualBrush
 		_link = null;
 		_watched = element;
 		_dirty = true;
+		_selfRef = false;
 	}
 
 	// Created on the first paint: a source set while the app is still constructing (App.xaml resources) has no
@@ -43,7 +48,7 @@ public partial class VisualBrush
 	{
 		if (_rendering) return;
 		_dirty = true;
-		if (_inFlight)
+		if (_selfRef && _inFlight)
 		{
 			_missed = true;
 			return;
@@ -53,16 +58,39 @@ public partial class VisualBrush
 		GLib.Idle.Add(GLib.Priority.DefaultIdle, () =>
 		{
 			_scheduled = false;
-			if (!IsFrozen) RaiseChanged();
+			if (!IsFrozen) RaiseOrSettle();
 			return false;
 		});
 	}
 
+	// Once per loop turn, like WPF's per-frame render. An invalidation soon after our own Changed of a brush
+	// that paints inside its source is that Changed echoing back: the hold-back takes over.
+	void RaiseOrSettle()
+	{
+		if (_selfRef) { RaiseChanged(); return; }
+		bool recent = unchecked(Environment.TickCount - _changedAt) < EchoMilliseconds;
+		if (recent && PaintedInsideSource())
+		{
+			_selfRef = true;
+			Hold(true);
+			return;
+		}
+		_changedAt = Environment.TickCount;
+		OnChanged();
+	}
+
 	void RaiseChanged()
 	{
-		_inFlight = true;
-		_missed = false;
+		Hold(false);
 		OnChanged();
+	}
+
+	// Holds back invalidations while the owner redraw our Changed causes is in flight; afterwards a re-render
+	// settles whether the source really changed (Changed again) or not.
+	void Hold(bool missed)
+	{
+		_inFlight = true;
+		_missed = missed;
 		GLib.Timeout.Add(EchoMilliseconds, new GLib.TimeoutHandler(() =>
 		{
 			_inFlight = false;
@@ -72,7 +100,7 @@ public partial class VisualBrush
 		}));
 	}
 
-	// True when the source now renders differently from the cached frame. A source that cannot be captured right
+	// True when the source now renders differently from the cached frame, which is then replaced by the new one. A source that cannot be captured right
 	// now counts as unchanged: a self-containing source would otherwise never settle.
 	bool SourceDiffers()
 	{
@@ -80,7 +108,18 @@ public partial class VisualBrush
 		int w = (int)Math.Ceiling(size.Width), h = (int)Math.Ceiling(size.Height);
 		if (_link == null || w <= 0 || h <= 0) return false;
 		if (_cache == null || w != _cache.Width || h != _cache.Height) return true;
-		using var fresh = Capture(w, h);
-		return fresh != null && Hash(fresh) != _cacheHash;
+		var fresh = Capture(w, h);
+		if (fresh == null) return false;
+		ulong hash = Hash(fresh);
+		if (hash == _cacheHash)
+		{
+			fresh.Dispose();
+			return false;
+		}
+		_cache?.Dispose();
+		_cache = fresh;
+		_cacheHash = hash;
+		_dirty = false;
+		return true;
 	}
 }
