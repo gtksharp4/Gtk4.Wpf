@@ -16,9 +16,11 @@ sealed class ImageDisplayProbe : IDisposable
 	public readonly WpfImage Image;
 	readonly GtkDispatcherScope _gtk = new GtkDispatcherScope();
 
-	public ImageDisplayProbe(ImageSource? source, Stretch stretch = Stretch.None, bool scroll = true)
+	public ImageDisplayProbe(ImageSource? source, Stretch stretch = Stretch.None, bool scroll = true,
+		Action<WpfImage>? configure = null)
 	{
 		Image = new WpfImage { Source = source, Stretch = stretch, Margin = new Thickness(20) };
+		configure?.Invoke(Image);
 		var panel = new StackPanel
 		{
 			Orientation = Orientation.Vertical,

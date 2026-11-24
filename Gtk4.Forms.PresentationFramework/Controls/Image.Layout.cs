@@ -1,5 +1,3 @@
-using System.Windows.Media.Imaging;
-
 namespace System.Windows.Controls;
 
 public partial class Image
@@ -13,9 +11,10 @@ public partial class Image
 	// WPF Image.MeasureArrangeHelper: the source's device-independent size scaled by Stretch/StretchDirection.
 	Size MeasureArrange(Size input)
 	{
-		if (Source is not BitmapSource bitmap)
+		// Every ImageSource sizes itself (DrawingImage from its drawing bounds), as WPF does.
+		if (Source is not { } source)
 			return new Size(0, 0);
-		var natural = new Size(bitmap.Width, bitmap.Height);
+		var natural = new Size(source.Width, source.Height);
 		var scale = ComputeScaleFactor(input, natural, Stretch, StretchDirection);
 		return new Size(natural.Width * scale.Width, natural.Height * scale.Height);
 	}

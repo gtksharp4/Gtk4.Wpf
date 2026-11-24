@@ -84,6 +84,20 @@ public class ImageDisplayLayoutTests : WpfGtkTestBase
 	});
 
 	[Fact]
+	public void A_DrawingImage_measures_its_drawing_size() => Run(() =>
+	{
+		var drawing = new GeometryDrawing(Brushes.Red, null, new RectangleGeometry(new Rect(0, 0, 50, 40)));
+		Assert.Equal(new Size(50, 40), Measure(new DrawingImage(drawing), Stretch.None, Infinite));
+	});
+
+	[Fact]
+	public void An_empty_DrawingImage_and_a_file_source_measure_zero() => Run(() =>
+	{
+		Assert.Equal(new Size(0, 0), Measure(new DrawingImage(), Stretch.None, Infinite));
+		Assert.Equal(new Size(0, 0), Measure(ImageSource.FromFile("missing.png"), Stretch.None, Infinite));
+	});
+
+	[Fact]
 	public void Replacing_the_source_remeasures() => Run(() =>
 	{
 		var img = new WpfImage { Source = Bitmap(10, 10), Stretch = Stretch.None };

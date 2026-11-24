@@ -46,7 +46,8 @@ static class ImageDisplayFixtures
 		_ => throw new ArgumentException(codec),
 	};
 
-	public static string Extension(string codec) => codec == "JPEG" ? "jpg" : codec == "TIFF" ? "tif" : codec.ToLowerInvariant();
+	public static string Extension(string codec) =>
+		codec == "JPEG" ? "jpg" : codec == "TIFF" ? "tif" : codec.ToLowerInvariant();
 
 	public static byte[] Encode(string codec, BitmapSource source)
 	{

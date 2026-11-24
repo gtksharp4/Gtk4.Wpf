@@ -4,7 +4,9 @@ using Xunit;
 
 namespace Gtk4.Forms.PresentationFramework.Tests.Media.Imaging;
 
-/// <summary>An opaque source never converts to alpha 0 (fully transparent) for the formats decoders and samples use.</summary>
+/// <summary>
+/// An opaque source never converts to alpha 0 (fully transparent) for the formats decoders and samples use.
+/// </summary>
 public class PixelConversionDisplayTests
 {
 	static BitmapPalette Palette => new BitmapPalette(new[] { Colors.Red, Colors.Blue, Colors.Green });
@@ -31,7 +33,10 @@ public class PixelConversionDisplayTests
 	public void Opaque_pixels_convert_to_alpha_255(string format, byte[] pixel, int stride)
 	{
 		var member = typeof(PixelFormats).GetMember(format)[0];
-		var f = (PixelFormat)(member is System.Reflection.FieldInfo fi ? fi.GetValue(null)! : ((System.Reflection.PropertyInfo)member).GetValue(null)!);
+		object? value = member is System.Reflection.FieldInfo fi
+			? fi.GetValue(null)
+			: ((System.Reflection.PropertyInfo)member).GetValue(null);
+		var f = (PixelFormat)value!;
 		var palette = format.StartsWith("Indexed") ? Palette : null;
 		var source = BitmapSource.Create(1, 1, 96, 96, f, palette, pixel, stride);
 		byte[] bgra = source.ToBgra32();
