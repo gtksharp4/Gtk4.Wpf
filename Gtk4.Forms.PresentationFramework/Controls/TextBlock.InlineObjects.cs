@@ -35,7 +35,9 @@ public partial class TextBlock
 		{
 			w.Measure(Gtk.Orientation.Horizontal, -1, out _, out int width, out _, out _);
 			w.Measure(Gtk.Orientation.Vertical, width, out _, out int height, out _, out int baseline);
-			return new InlineBox(width, height, child is TextBlock && baseline >= 0 ? baseline : height);
+			var (ox, oy) = HostedOffset(child);
+			height -= oy;
+			return new InlineBox(width - ox, height, child is TextBlock && baseline >= 0 ? baseline - oy : height);
 		}
 		finally
 		{
@@ -101,18 +103,18 @@ public partial class TextBlock
 	// Each child sits at its placeholder's logical rect in the label's layout, shifted by the label's own offsets.
 	void PlaceInlineChildren()
 	{
-		if (_inlineLayer == null || !_label.IsMapped || !_label.ComputeBounds(_inlineOverlay!, out var origin)) return;
+		if (_inlineOverlay == null || !_label.IsMapped || !_label.ComputeBounds(_inlineOverlay, out var origin)) return;
 		_label.GetLayoutOffsets(out int dx, out int dy);
 		var layout = _label.Layout;
 		for (int i = 0; i < _inlineByteIndexes.Length && i < _inlineContainers.Count; i++)
 		{
 			var child = _inlineContainers[i].Child;
-			if (child == null || !child.IsWidgetCreated || !ReferenceEquals(child.Widget.Parent, _inlineLayer)) continue;
+			if (child == null) continue;
+			if (!ReferenceEquals(child.Widget.Parent, _inlineOverlay)) continue;
 			var pos = layout.IndexToPos(_inlineByteIndexes[i]);
-			double x = Math.Round(origin.X + dx + pos.X / (double)PangoScale);
-			double y = Math.Round(origin.Y + dy + pos.Y / (double)PangoScale);
-			_inlineLayer.GetChildPosition(child.Widget, out double cx, out double cy);
-			if (cx != x || cy != y) _inlineLayer.Move(child.Widget, x, y);
+			int x = (int)Math.Round(origin.X + dx + pos.X / (double)PangoScale);
+			int y = (int)Math.Round(origin.Y + dy + pos.Y / (double)PangoScale);
+			PlaceHostedWidget(child, x, y);
 		}
 	}
 

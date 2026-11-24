@@ -2859,6 +2859,34 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `SystemEvents`) is still unstarted. `TextElement.TextEffects`, `FlowDocument.TextEffects` and `TextBlock.TextEffects`
   default to null (not an empty frozen collection). `CommandBinding` still has only `Executed` and `CanExecute`.
 
+- **Round 71 (lane K) track 1 - inline UIElements in TextBlock + KeyFrameAnimation (DONE, merged).**
+  `gf71k/inline-uielements-keyframes`: a `TextBlock` holding `InlineUIContainer`s is rooted in a `Gtk.Overlay`; each
+  container emits U+FFFC with a `Pango.AttrShape` sized to its child, and the child is an overlay child placed at the
+  placeholder (baseline per `Inline.BaselineAlignment`). Root causes by measurement: `InlineUIContainer` was
+  store-only (the nested listing blocks were never rendered), and a second same-property clock of one `Begin` replaced
+  the first, so no nested FontSize animation grew (now layered through `Storyboard.SamePropertyLayering.cs`).
+  `Canvas.Left` key frames were already right (14 sample times and the `Forever` restart match the Bezier math within
+  1 px). Samples: KeyFrameAnimation listing lines are visible and enlarge in turn; the rectangle moves (judged by
+  position).
+- **Round 71 (lane K) review + fixes - DONE.** Applied failing-first. **a-K71-1** the full-size `Gtk.Fixed` layer
+  shadowed the label in GTK picking, so Hyperlinks next to an inline child got no events: hosted children are now
+  overlay children placed by margins and no layer covers the label. Hosted children are no longer gated on
+  `IsWidgetCreated`, which is false for a `Button` (its `_box` is null), so such a child was never placed. **a-K71-2**
+  `FrameworkElement.Parent` of a hosted child is its `InlineUIContainer` (as in WPF and `LogicalTreeHelper`), the
+  TextBlock stays the logical parent for inheritance and loaded. **a-K71-3** the layering helper moved to a new
+  `Storyboard.SamePropertyLayering.cs`; `Storyboard.Binding.cs` (lane H file) keeps a 3-line delta, flagged for lane H
+  at merge. **a-K71-4** new GTK tests: Button hit test beside a link, `Inlines.Remove` unhosting and freeing the
+  placeholder, wrapping to a later line, baseline of a short child, and pixel rows of the listing. **a-K71-6** two
+  lines wrapped. Rejected: a-K71-5 (process: the Progress section is orchestrator-owned during concurrent lanes and
+  the two root causes are recorded above and in `docs/samples-coverage.md`).
+- **Round 71 (lane K) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 new warnings (only the known
+  WPF-Samples-GTK4 HelloWorld error and warnings). Targeted tests (TextBlock, Inline, KeyFrameListing, Storyboard,
+  Hyperlink, NameScope, LogicalTree): 254 passed, 1 skipped. Samples gate: all 207 build-pass projects still build (two
+  with sibling project references needed their parent folder), and the apps that ran still start.
+- **Round 71 (lane K) carry-over.** A container added after the TextBlock widget exists is not hosted;
+  `BaselineAlignment` other than Baseline is stored only; the hosted child is not part of the label's selection;
+  FlowDocument containers stay store-only; DrawingBrush and VisualBrush fills (other lanes).
+
 ## Phased roadmap (after Phase 0 proves the spine)
 
 1. **Core controls, layout, binding.** `StackPanel`/`DockPanel`/`Canvas`/`WrapPanel` with WPF

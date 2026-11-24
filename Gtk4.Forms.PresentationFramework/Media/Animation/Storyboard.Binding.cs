@@ -34,9 +34,7 @@ public partial class Storyboard
 						Trace.WriteLine($"Storyboard: animation of '{childPath?.Path}' skipped: {ex.Message}");
 						continue;
 					}
-					// Clocks of one Begin layer on a property; only the first replaces earlier runs.
-					var hand = bound.Add(resolved) ? handoff : HandoffBehavior.Compose;
-					AnimationStore.Apply(resolved.Item1, resolved.Item2, clock, hand);
+					AnimationStore.Apply(resolved.Item1, resolved.Item2, clock, LayeredHandoff(bound, resolved, handoff));
 					leaves.Add(clock);
 					break;
 			}

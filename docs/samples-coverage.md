@@ -403,12 +403,13 @@ lines were blank. Separately, the storyboard's second FontSize clock per target 
 (`SnapshotAndReplace` per clock), so no nested block ever grew. `Canvas.Left` key frames and splines were already
 right (`KeyFrameCanvasLeftTests`: 14 sample times and the `Forever` restart against the Bezier math, 1 px).
 
-- **Fix.** A `TextBlock` with inline containers is rooted in a `Gtk.Overlay` (label plus a `Gtk.Fixed` layer); inline-free
-  blocks keep the bare `Gtk.Label`. Each container emits U+FFFC with a `Pango.AttrShape` sized to the child; the child
-  widget is placed at the placeholder position. A child size change (FontSize animation) rebuilds the shapes.
-  `Inline.BaselineAlignment` and the `BaselineAlignment` enum were added (Baseline lays out; other values are stored).
-  `Storyboard.Binding.cs` (lane H file, 6 lines, no 3D change): clocks of one `Begin` on one property layer (first
-  replaces earlier runs, the rest compose).
+- **Fix.** A `TextBlock` with inline containers is rooted in a `Gtk.Overlay` (the label; each hosted child is an
+  overlay child placed by its margins, so picks still reach the label and its links); inline-free blocks keep the bare
+  `Gtk.Label`. Each container emits U+FFFC with a `Pango.AttrShape` sized to the child. A child size change (FontSize
+  animation) rebuilds the shapes. `Inline.BaselineAlignment` and the `BaselineAlignment` enum were added (Baseline
+  lays out; other values are stored). `Storyboard.Binding.cs` (lane H file, 3 lines; the layering helper lives in
+  `Storyboard.SamePropertyLayering.cs`): clocks of one `Begin` on one property layer (first replaces earlier runs, the
+  rest compose).
 - **Acceptance (KeyFrameAnimation through the pinned recipe, window screenshots over time).** Every listing line,
   literal and nested, is visible. The first nested line is enlarged at ~3 s, the second at ~8 s, the third at ~14 s,
   and each returns to 12 pt when the next grows. The rectangle (judged by position; its DrawingBrush fill is another

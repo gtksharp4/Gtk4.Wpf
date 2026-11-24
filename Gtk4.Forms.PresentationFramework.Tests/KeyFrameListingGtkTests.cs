@@ -8,7 +8,7 @@ using WpfWindow = System.Windows.Window;
 
 namespace Gtk4.Forms.PresentationFramework.Tests;
 
-/// <summary>The KeyFrameAnimation sample's listing page, compiled from its XAML (xml:space=preserve + nested blocks).</summary>
+/// <summary>The KeyFrameAnimation sample listing page, compiled from its XAML (xml:space=preserve).</summary>
 public class KeyFrameListingGtkTests : WpfGtkTestBase
 {
 	static TextBlock[] Names(KeyFrameListingPage p) => new[]

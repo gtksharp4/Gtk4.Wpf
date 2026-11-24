@@ -93,4 +93,15 @@ public class TextBlockInlineTreeGtkTests : WpfGtkTestBase
 		}
 		finally { win.Close(); }
 	});
+
+	[Fact]
+	public void Parent_of_a_hosted_child_is_its_container_as_in_the_logical_tree() => Run(() =>
+	{
+		var inner = new TextBlock { Text = "XYZ" };
+		var container = new InlineUIContainer(inner);
+		var outer = new TextBlock();
+		outer.Inlines.Add(container);
+		Assert.Same(container, inner.Parent);
+		Assert.Same(LogicalTreeHelper.GetParent(inner), inner.Parent);
+	});
 }

@@ -13,7 +13,6 @@ namespace System.Windows.Controls;
 public partial class TextBlock
 {
 	Gtk.Overlay? _inlineOverlay;
-	Gtk.Fixed? _inlineLayer;
 	readonly List<InlineUIContainer> _inlineContainers = new List<InlineUIContainer>();
 	readonly List<UIElement> _hostedChildren = new List<UIElement>();
 
@@ -41,9 +40,6 @@ public partial class TextBlock
 		CollectContainers(_inlines, found);
 		if (found.Count == 0) return null;
 		_inlineOverlay = new Gtk.Overlay { Child = _label };
-		_inlineLayer = new Gtk.Fixed();
-		_inlineOverlay.AddOverlay(_inlineLayer);
-		_inlineOverlay.SetMeasureOverlay(_inlineLayer, false);
 		_inlineOverlay.AddTickCallback((w, clock) =>
 		{
 			RefreshInlineObjects();
@@ -68,8 +64,11 @@ public partial class TextBlock
 			if (children.Contains(old)) continue;
 			_hostedChildren.Remove(old);
 			old.InlineContainer = null;
-			if (_inlineOverlay != null && old.IsWidgetCreated && ReferenceEquals(old.Widget.Parent, _inlineLayer))
-				_inlineLayer!.Remove(old.Widget);
+			if (_inlineOverlay != null && ReferenceEquals(old.Widget.Parent, _inlineOverlay))
+			{
+				_inlineOverlay.RemoveOverlay(old.Widget);
+				ResetHostedWidget(old);
+			}
 			RemoveLogicalChild(old);
 		}
 		foreach (var c in now)
@@ -84,7 +83,11 @@ public partial class TextBlock
 			}
 			if (_inlineOverlay == null) continue;
 			var w = child.Widget;
-			if (w.Parent == null) _inlineLayer!.Put(w, 0, 0);
+			if (w.Parent != null) continue;
+			w.Halign = Gtk.Align.Start;
+			w.Valign = Gtk.Align.Start;
+			_inlineOverlay.AddOverlay(w);
+			_inlineOverlay.SetMeasureOverlay(w, false);
 		}
 		_inlineContainers.Clear();
 		_inlineContainers.AddRange(now);
