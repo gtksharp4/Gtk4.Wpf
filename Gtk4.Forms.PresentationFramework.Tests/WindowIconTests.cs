@@ -43,6 +43,30 @@ public class WindowIconTests : WpfGtkTestBase
 	}
 
 	[Fact]
+	public void Default_icon_resource_is_extracted_to_a_temporary_file()
+	{
+		string path = WpfWindow.ExtractDefaultIconToTempFile();
+		try
+		{
+			Assert.StartsWith(Path.GetTempPath(), path, StringComparison.OrdinalIgnoreCase);
+			using var resource = typeof(WpfWindow).Assembly.GetManifestResourceStream(
+				"Gtk4.Forms.PresentationFramework.GtkSharp.png");
+			Assert.NotNull(resource);
+			using var expected = new MemoryStream();
+			resource.CopyTo(expected);
+			Assert.Equal(expected.ToArray(), File.ReadAllBytes(path));
+		}
+		finally
+		{
+			File.Delete(path);
+		}
+	}
+
+	[Fact]
+	public void Default_icon_loads_from_the_embedded_resource() => Run(() =>
+		Assert.NotNull(WpfWindow.LoadDefaultIconImage()));
+
+	[Fact]
 	public void BitmapImage_absolute_uri_resolves_to_local_path()
 	{
 		var bmp = new BitmapImage(new Uri("file:///C:/app/logo.png", UriKind.Absolute));
