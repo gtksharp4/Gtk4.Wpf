@@ -6,25 +6,25 @@ static partial class ScenePainter
 
 	/// <summary>
 	/// Maps the cached brush texture through the triangle's texture coordinates with an affine matrix (not
-	/// perspective-correct), clips to the triangle and darkens by the light level.
+	/// perspective-correct) and darkens by the light level.
 	/// </summary>
 	static void PaintTexture(Cairo.Context cr, ScreenPolygon polygon, ShadedLayer layer, TextureCache textures)
 	{
 		if (!TryAffine(polygon, out var matrix)) return;
-		var texture = textures.Get(layer.TextureBrush!);
-		if (texture == null) return;
+		var pattern = textures.Get(layer.TextureBrush!);
+		matrix.Invert();
+		pattern.Matrix = matrix;
+		cr.SetSource(pattern);
 		Path(cr, polygon);
-		cr.Clip();
-		cr.Save();
-		cr.Transform(matrix);
-		using (var pattern = new Cairo.SurfacePattern(texture))
+		if (layer.A >= 1)
 		{
-			pattern.Extend = Cairo.Extend.Pad;
-			pattern.Filter = Cairo.Filter.Bilinear;
-			cr.SetSource(pattern);
+			cr.Fill();
 		}
-		cr.PaintWithAlpha(Clamp(layer.A));
-		cr.Restore();
+		else
+		{
+			cr.Clip();
+			cr.PaintWithAlpha(Clamp(layer.A));
+		}
 		double light = Clamp((layer.LightR + layer.LightG + layer.LightB) / 3);
 		if (light < 1)
 		{
