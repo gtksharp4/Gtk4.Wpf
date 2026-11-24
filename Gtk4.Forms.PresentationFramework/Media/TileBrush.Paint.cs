@@ -25,14 +25,22 @@ public abstract partial class TileBrush
 		int rows = TileMode == TileMode.FlipY || TileMode == TileMode.FlipXY ? 2 : 1;
 		double cellW = map.Viewport.Width * cols;
 		double cellH = map.Viewport.Height * rows;
-		int iw = Math.Max(1, Math.Min(MaxTilePixels, (int)Math.Ceiling(cellW)));
-		int ih = Math.Max(1, Math.Min(MaxTilePixels, (int)Math.Ceiling(cellH)));
+		var cellToUser = Matrix.Identity;
+		cellToUser.Translate(map.Viewport.X, map.Viewport.Y);
+		cellToUser.Append(RelativeToAbsolute(new Rect(0, 0, width, height)));
+		cellToUser.Append(Transform?.Value ?? Matrix.Identity);
+		// Raster at device resolution: the cell's user extent, carried through the CTM scale.
+		double ux = cellW * Math.Sqrt(cellToUser.M11 * cellToUser.M11 + cellToUser.M12 * cellToUser.M12);
+		double uy = cellH * Math.Sqrt(cellToUser.M21 * cellToUser.M21 + cellToUser.M22 * cellToUser.M22);
+		double dx = ux, dy = 0, ex = 0, ey = uy;
+		cr.UserToDeviceDistance(ref dx, ref dy);
+		cr.UserToDeviceDistance(ref ex, ref ey);
+		int iw = Math.Max(1, Math.Min(MaxTilePixels, (int)Math.Ceiling(Math.Sqrt(dx * dx + dy * dy))));
+		int ih = Math.Max(1, Math.Min(MaxTilePixels, (int)Math.Ceiling(Math.Sqrt(ex * ex + ey * ey))));
 
 		var matrix = Matrix.Identity;
 		matrix.Scale(cellW / iw, cellH / ih);
-		matrix.Translate(map.Viewport.X, map.Viewport.Y);
-		matrix.Append(RelativeToAbsolute(new Rect(0, 0, width, height)));
-		matrix.Append(Transform?.Value ?? Matrix.Identity);
+		matrix.Append(cellToUser);
 		if (!matrix.HasInverse)
 		{
 			SetTransparentSource(cr);
