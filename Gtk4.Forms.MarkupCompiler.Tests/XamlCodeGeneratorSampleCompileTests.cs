@@ -58,9 +58,9 @@ public class XamlCodeGeneratorSampleCompileTests
 	// User types the samples define in code-behind files that are not copied here.
 	static readonly Dictionary<string, string> Stubs = new()
 	{
-		["DataTrigger.MainWindow.xaml"] = "namespace DataTrigger { public class Places : System.Collections.ObjectModel.ObservableCollection<object> { } }",
+		["DataTrigger.MainWindow.xaml"] = "namespace DataTrigger { public class Places : System.Collections.ObjectModel.ObservableCollection<object> { } public class Place { } }",
 		["SimpleBinding.MainWindow.xaml"] = "namespace SimpleBinding { public class Person { public string PersonName { get; set; } } }",
-		["IntroToStylingAndTemplating.MainWindow.xaml"] = "namespace IntroToStylingAndTemplating { public class PhotoList { } }",
+		["IntroToStylingAndTemplating.MainWindow.xaml"] = "namespace IntroToStylingAndTemplating { public class PhotoList { } public class Photo { } }",
 		["DataTemplatingIntro.MainWindow.xaml"] = "namespace DataTemplatingIntro { public class Tasks { } "
 			+ "public class TaskListDataTemplateSelector : System.Windows.Controls.DataTemplateSelector { } }",
 		["AlternatingAppearanceOfItems.MainWindow.xaml"] = "namespace AlternatingAppearanceOfItems { "

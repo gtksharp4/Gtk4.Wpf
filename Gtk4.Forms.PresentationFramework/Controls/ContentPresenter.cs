@@ -1,19 +1,12 @@
 namespace System.Windows.Controls;
 
 /// <summary>
-/// Displays a piece of content inside a <see cref="ControlTemplate"/> or other
-/// container. Resolution order:
-/// <list type="number">
-///   <item><see cref="Content"/> is a <see cref="UIElement"/> — hosted directly.</item>
-///   <item><see cref="ContentTemplate"/> is set — its visual tree wraps the item.</item>
-///   <item>Otherwise <see cref="Content"/> is shown as a string in a <see cref="Gtk.Label"/>.</item>
-/// </list>
-/// Backed by a single-child <see cref="Gtk.Box"/> container.
+/// Displays a piece of content inside a <see cref="ControlTemplate"/> or other container. The content is
+/// resolved through <see cref="ContentResolution"/>: a UIElement, the template, the selector, an implicit
+/// DataTemplate, an Inline, then text. Backed by a single-child <see cref="Gtk.Box"/>.
 /// </summary>
 public partial class ContentPresenter : FrameworkElement
 {
-	// ── Content DP ───────────────────────────────────────────────────────────
-
 	/// <summary>The content to present.</summary>
 	public static readonly DependencyProperty ContentProperty =
 		DependencyProperty.Register(
@@ -34,34 +27,13 @@ public partial class ContentPresenter : FrameworkElement
 		set => SetValue(ContentProperty, value);
 	}
 
-	/// <summary>
-	/// Gets or sets the name of the templated parent property this presenter takes its content from
-	/// (WPF default <c>Content</c>). Store-only: the layer does not auto-bind presenters to their templated parent.
-	/// </summary>
-	public string ContentSource
-	{
-		get => (string)GetValue(ContentSourceProperty)!;
-		set => SetValue(ContentSourceProperty, value);
-	}
-
-	/// <summary>Identifies the <see cref="ContentSource"/> dependency property.</summary>
-	public static readonly DependencyProperty ContentSourceProperty = DependencyProperty.Register(
-		"ContentSource", typeof(string), typeof(ContentPresenter), new FrameworkPropertyMetadata("Content"));
-
-	// ── ContentTemplate DP ───────────────────────────────────────────────────
-
 	/// <summary>The template used to present a non-UIElement content item.</summary>
 	public static readonly DependencyProperty ContentTemplateProperty =
 		DependencyProperty.Register(
 			nameof(ContentTemplate),
 			typeof(DataTemplate),
 			typeof(ContentPresenter),
-			new PropertyMetadata(null, OnContentTemplateChanged));
-
-	static void OnContentTemplateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-	{
-		((ContentPresenter)d).RefreshContent();
-	}
+			new PropertyMetadata(null, OnContentChanged));
 
 	/// <summary>Gets or sets the content template.</summary>
 	public DataTemplate? ContentTemplate
@@ -70,11 +42,11 @@ public partial class ContentPresenter : FrameworkElement
 		set => SetValue(ContentTemplateProperty, value);
 	}
 
-	// ── GTK backing ──────────────────────────────────────────────────────────
-
 	Gtk.Box? _box;
-	// Tracks the widget currently hosted in _box so we can swap it.
+	// The widget currently hosted in _box, so it can be swapped.
 	Gtk.Widget? _hostedWidget;
+	UIElement? _hostedElement;
+	object? _hostedContent;
 
 	internal override bool IsWidgetCreated => _box != null;
 
@@ -92,57 +64,36 @@ public partial class ContentPresenter : FrameworkElement
 		ApplyContent();
 	}
 
-	// Tracks any UIElement we have parented so we can clear it on swap.
-	UIElement? _hostedElement;
-
 	void ApplyContent()
 	{
-		// Remove previous hosted widget and clear logical parent.
+		EnsureSourceAliases();
+		_implicitSeen = LookUpImplicitTemplate();
 		if (_hostedWidget != null)
 		{
 			_box!.Remove(_hostedWidget);
 			_hostedWidget = null;
 		}
-		if (_hostedElement != null)
-		{
-			_hostedElement.LogicalParent = null;
-			_hostedElement = null;
-		}
-
+		ContentResolution.Release(_hostedElement, _hostedContent);
+		_hostedElement = null;
+		_hostedContent = null;
 		_appliedTemplate = null;
-		var content = Content;
 
-		// 1. Direct UIElement.
-		if (content is UIElement element)
+		var content = Content;
+		var element = ContentResolution.ResolveStructured(
+			this, content, ContentTemplate, ContentTemplateSelector, out var applied);
+		if (element != null)
 		{
-			// D1: wire logical parent so TryFindResource walks the tree.
-			element.LogicalParent = this;
+			_appliedTemplate = applied;
 			_hostedElement = element;
+			_hostedContent = content;
 			_hostedWidget = element.Widget;
 			_box!.Add(_hostedWidget);
 			return;
 		}
 
-		// 2. DataTemplate.
-		if (ContentTemplate != null && ContentTemplate.HasContent)
-		{
-			var visual = ContentTemplate.CreateVisualTreeForItem(content);
-			if (visual != null)
-			{
-				// D1: wire logical parent.
-				visual.LogicalParent = this;
-				_appliedTemplate = ContentTemplate;
-				StampTemplatedParentTree(visual, this);
-				_hostedElement = visual;
-				_hostedWidget = visual.Widget;
-				_box!.Add(_hostedWidget);
-				return;
-			}
-		}
-
-		// 3. String / ToString fallback. A string with '_' hosts an AccessText when RecognizesAccessKey is set
-		// (WPF SelectTemplateForString); otherwise underscores stay literal.
-		if (RecognizesAccessKey && content is string accessText && accessText.IndexOf('_') >= 0)
+		// A string with '_' hosts an AccessText when RecognizesAccessKey is set (WPF SelectTemplateForString).
+		if (RecognizesAccessKey && content is string accessText && accessText.IndexOf('_') >= 0
+			&& string.IsNullOrEmpty(ContentStringFormat))
 		{
 			var access = new AccessText { Text = accessText, LogicalParent = this };
 			_hostedElement = access;
@@ -150,9 +101,8 @@ public partial class ContentPresenter : FrameworkElement
 			_box!.Add(_hostedWidget);
 			return;
 		}
-		var text = content?.ToString() ?? string.Empty;
 		var label = new Gtk.Label(string.Empty);
-		label.Text = text;
+		label.Text = ContentResolution.ToText(content, ContentStringFormat);
 		_hostedWidget = label;
 		_box!.Add(_hostedWidget);
 	}

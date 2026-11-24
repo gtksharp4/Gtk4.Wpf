@@ -25,7 +25,15 @@ public partial class CheckBox : ToggleButton
 	{
 		_check = new Gtk.CheckButton { Active = IsChecked == true, UseUnderline = true, Label = AccessLabel(Content) };
 		_check.Toggled += (s, e) => GtkToggled(_check.Active);
+		PresentAtCreation();
 		return _check;
+	}
+
+	internal override bool GtkWidgetReady => _check != null;
+
+	internal override void SetGtkChild(Gtk.Widget? child)
+	{
+		if (_check != null) _check.Child = child!;
 	}
 
 	internal override bool RaisesClickOnToggled(bool active) => true;

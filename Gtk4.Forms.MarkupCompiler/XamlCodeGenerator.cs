@@ -1150,6 +1150,9 @@ namespace Gtk4.Forms.MarkupCompiler
 					case "DataTrigger":
 						EmitDataTriggerToCollection(w, ch, trigVar, styleVar, receiver);
 						break;
+					case "MultiDataTrigger":
+						EmitMultiDataTriggerToCollection(w, ch, trigVar, styleVar, receiver);
+						break;
 					case "MultiTrigger":
 						EmitMultiTriggerToCollection(w, ch, xNs, trigVar, styleVar, receiver, ref counter);
 						break;
@@ -1196,9 +1199,8 @@ namespace Gtk4.Forms.MarkupCompiler
 			if (IsBindingExpression(bindingAttr, out string bInit))
 				bindingExpr = bInit;
 			w.Line($"var {trigVar} = new System.Windows.DataTrigger {{ Binding = {bindingExpr}, Value = \"{EscapeString(valAttr)}\" }};");
-			foreach (XElement setter in el.Elements())
+			foreach (XElement setter in TriggerSetters(el, "DataTrigger"))
 			{
-				if (setter.Name.LocalName != "Setter") continue;
 				string p = (string)setter.Attribute("Property") ?? string.Empty;
 				string vExpr = SetterValueExpression(w, setter, receiver);
 				w.Line($"{trigVar}.Setters.Add(new System.Windows.Setter {{ PropertyName = \"{EscapeString(p)}\", Value = {vExpr} }});");

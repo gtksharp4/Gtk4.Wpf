@@ -4,7 +4,7 @@ namespace System.Windows.Controls;
 /// Base class for controls that have a <see cref="Header"/> and a <see cref="ContentControl.Content"/>.
 /// Used by <see cref="Expander"/>, <see cref="GroupBox"/>, and <see cref="TabItem"/>.
 /// </summary>
-public class HeaderedContentControl : ContentControl
+public partial class HeaderedContentControl : ContentControl
 {
 	// ── Header DP ────────────────────────────────────────────────────────────
 
@@ -18,6 +18,7 @@ public class HeaderedContentControl : ContentControl
 
 	static void OnHeaderChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
+		((HeaderedContentControl)d).SetValue(_hasHeaderKey, e.NewValue != null);
 		((HeaderedContentControl)d).OnHeaderChanged(e.OldValue, e.NewValue);
 	}
 

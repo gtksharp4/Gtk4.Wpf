@@ -19,8 +19,8 @@ internal static class ComboBoxItemText
 				return prop.GetValue(item)?.ToString() ?? string.Empty;
 		}
 		if (item is ComboBoxItem cbi)
-			return cbi.Content?.ToString() ?? string.Empty;
-		return item.ToString() ?? string.Empty;
+			return ContentResolution.ToText(cbi.Content, cbi.ContentStringFormat);
+		return ContentResolution.ToText(item, null);
 	}
 
 	/// <summary>Index of the first text equal to <paramref name="text"/>, or -1.</summary>

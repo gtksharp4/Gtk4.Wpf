@@ -18,8 +18,7 @@ public partial class GroupBox : HeaderedContentControl
 	{
 		_frame = new Gtk.Frame();
 		ApplyHeader();
-		if (Content is UIElement child)
-			_frame.Child = child.Widget;
+		RefreshPresentation();
 		return _frame;
 	}
 
@@ -40,37 +39,29 @@ public partial class GroupBox : HeaderedContentControl
 			AccessKeyBinding.Apply(this, newHeader as string);
 	}
 
-	/// <inheritdoc/>
-	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
-	{
-		base.OnPropertyChanged(e);
-		if (e.Property == ContentProperty && _frame != null)
-		{
-			if (e.OldValue is UIElement old && _frame.Child != null)
-				_frame.Child = null;
-			if (e.NewValue is UIElement newEl)
-				_frame.Child = newEl.Widget;
-		}
-	}
+	internal override bool PresentationReady => _frame != null;
+
+	internal override void SetChildWidget(Gtk.Widget? child) => _frame.Child = child!;
 
 	Gtk.Label? _headerLabel;
 
 	void ApplyHeader()
 	{
-		if (Header is UIElement headerEl)
+		var headerWidget = ResolveHeaderWidget();
+		if (headerWidget != null)
 		{
 			AccessKeyBinding.Register(this, null);
-			_frame.LabelWidget = headerEl.Widget;
+			_frame.LabelWidget = headerWidget;
 			_headerLabel = null;
 			return;
 		}
 		_headerLabel ??= new Gtk.Label(string.Empty);
-		if (Header is string text)
-			AccessKeyBinding.SetLabel(_headerLabel, AccessKeyBinding.Apply(this, text));
+		if (HeaderIsAccessText)
+			AccessKeyBinding.SetLabel(_headerLabel, AccessKeyBinding.Apply(this, (string)Header!));
 		else
 		{
 			AccessKeyBinding.Register(this, null);
-			_headerLabel.Text = Header?.ToString() ?? string.Empty;
+			_headerLabel.Text = HeaderTextProjection;
 		}
 		_frame.LabelWidget = _headerLabel;
 	}

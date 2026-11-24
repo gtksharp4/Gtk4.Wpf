@@ -138,6 +138,36 @@ and all 23 showed one when re-run alone with a 30 s wait (cold start, not a hang
 Not verified: that the key letter is underlined while Alt is held (GTK shows it, WPF's keyboard cues do the same; no
 screenshot with Alt held was taken).
 
+**Round 72 (lane F) WPF content model, no row changed.** User-reported differences: `ContentControlStyle` showed the
+type name in a `Label` and an empty `Button`, `Concepts` showed `System.Windows.Controls.TextBlock` in Expander headers
+and `System.Windows.Documents.Hyperlink` in list items, and `DataTrigger` showed `DataTrigger.Place` rows. One shared
+`ContentResolution` now follows WPF's `ContentPresenter` order (element, template, selector, implicit `DataType`
+template, `Inline` in a `TextBlock`, text) for the content of every `ContentControl` and the header of every headered
+control and DataGrid column. Measured with the pinned recipe on a pack from the worktree (`gf72f/content-resolution`):
+
+- **Gate.** All 207 projects that built before still build (0 errors), and all 194 apps that ran still run. In the run
+  pass 7 apps had no window at 10 s (cold start); each was alive with a window when re-run alone for 25 s.
+- ContentControlStyle: the `Label` hosts the styled `ContentControl` ("Hello" on the red area), the `Template1` text
+  shows on LightBlue, and `btn2` shows its wrapped `TextBlock` text. The ellipse is drawn as a square (shapes: another
+  lane).
+- Concepts: Expander headers read "Animation", "Controls", "Databinding"; list items show their underlined links;
+  clicking "Animate Height Sample" navigates `frame2` (found by `TargetName`) to the compiled page.
+- DataTrigger: Name and State columns from the implicit template, WA rows in red, Portland OR on cyan. This also needed
+  the compiler to emit `MultiDataTrigger` and to register a key-less `ListBoxItem` style under its type.
+
+Known gaps, recorded here instead of the plan doc:
+
+- `TextBlock` has no link activation of its own. `HyperlinkActivation` (Controls/HyperlinkActivation.cs) attaches a
+  capture-phase click and the `activate-link` signal to the label of every `TextBlock` it creates for an `Inline`
+  content, because a `GtkListBox` claims the click sequence and denies the label's own link gesture. Lane K should own
+  this for every `TextBlock` and then delete that class.
+- `ComboBox` items live in a `Gtk.DropDown` string model: element and template visuals are not shown in the popup. Only
+  the closed-selection text follows the new string rules.
+- `MenuItem` headers go through GTK popover menu items, which are text only: an element header shows its `Text`.
+- An implicit template for a string content is not looked up when the widget is created (the plain GTK label path is
+  kept); it applies on a later content change.
+- `XmlNode` data types are not matched by the implicit template lookup.
+
 **Fail→pass: 7 apps.**
 
 | Change | Apps (run result) |
