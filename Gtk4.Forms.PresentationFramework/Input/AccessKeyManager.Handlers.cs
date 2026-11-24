@@ -38,19 +38,20 @@ public sealed partial class AccessKeyManager
 
 	static void OnTabItem(object sender, AccessKeyPressedEventArgs e)
 	{
-		if (!Open(e)) return;
-		var tab = (TabItem)sender;
-		e.Target = tab;
-		if (!tab.IsSelected) e.Scope = tab;
+		if (Open(e)) e.Target = (TabItem)sender;
 	}
 
-	// An open submenu is itself the scope for a key raised on it; any other menu item is a target unless
-	// the mouse is captured by something that is not a menu.
+	// An open submenu is the scope for a key raised on it or bubbling up from an item inside it (WPF's
+	// isScope); any other menu item is a target unless the mouse is captured by something that is not a menu.
 	static void OnMenuItem(object sender, AccessKeyPressedEventArgs e)
 	{
-		if (!Open(e)) return;
+		if (e.Handled || e.Scope != null) return;
 		var item = (MenuItem)sender;
-		if (item.IsSubmenuOpen && ReferenceEquals(e.OriginalSource, item))
+		if (e.Target != null)
+		{
+			if (!ReferenceEquals(e.Target, item) && item.IsSubmenuOpen) e.Scope = item;
+		}
+		else if (item.IsSubmenuOpen && ReferenceEquals(e.OriginalSource, item))
 			e.Scope = item;
 		else if (Mouse.Captured == null || Mouse.Captured is Menu || Mouse.Captured is ContextMenu)
 			e.Target = item;

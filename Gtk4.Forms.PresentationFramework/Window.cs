@@ -73,6 +73,7 @@ public partial class Window : ContentControl
 		_window.CloseRequest += OnCloseRequest;
 		AttachAcceleratorController(_window);
 		AttachAccessKeyController(_window);
+		DisableGtkMnemonics(_window);
 		return _window;
 	}
 

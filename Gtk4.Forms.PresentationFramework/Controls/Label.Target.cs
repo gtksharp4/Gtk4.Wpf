@@ -7,8 +7,8 @@ public partial class Label
 		DependencyProperty.Register(nameof(Target), typeof(UIElement), typeof(Label), new PropertyMetadata(null));
 
 	/// <summary>
-	/// Gets or sets the element that receives focus when the label's access key is pressed.
-	/// Stored only; GTK has no label mnemonic target relationship for arbitrary elements.
+	/// Gets or sets the element that receives focus when the label's access key is pressed (through
+	/// <see cref="Input.AccessKeyManager"/>).
 	/// </summary>
 	public UIElement? Target
 	{

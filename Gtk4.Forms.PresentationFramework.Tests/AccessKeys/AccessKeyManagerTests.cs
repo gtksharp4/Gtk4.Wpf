@@ -29,7 +29,9 @@ public class AccessKeyManagerTests : AccessKeyTestBase
 	{
 		var button = new Button();
 		Assert.Throws<ArgumentException>(() => AccessKeyManager.Register("ab", button));
-		Assert.Throws<ArgumentException>(() => AccessKeyManager.Register("", button));
+		AccessKeyManager.Register("", button);
+		AccessKeyManager.Unregister("", button);
+		Assert.False(AccessKeyManager.IsKeyRegistered(new object(), ""));
 		Assert.Throws<ArgumentNullException>(() => AccessKeyManager.Register(null!, button));
 		Assert.Throws<ArgumentNullException>(() => AccessKeyManager.Register("a", null!));
 		Assert.Throws<ArgumentException>(() => AccessKeyManager.Unregister("ab", button));
@@ -66,7 +68,7 @@ public class AccessKeyManagerTests : AccessKeyTestBase
 		enabled.Click += (_, _) => clicks++;
 		disabled.Click += (_, _) => clicks += 100;
 		hidden.Click += (_, _) => clicks += 1000;
-		Assert.True(AccessKeyManager.ProcessKey(window, "G", false));
+		Assert.False(AccessKeyManager.ProcessKey(window, "G", false)); // one match: LastMatch
 		Assert.Equal(1, clicks);
 		enabled.IsEnabled = false;
 		Assert.False(AccessKeyManager.IsKeyRegistered(window, "G"));
@@ -114,7 +116,7 @@ public class AccessKeyManagerTests : AccessKeyTestBase
 		target.Click += (_, _) => clicks++;
 		AccessKeyManager.AddAccessKeyPressedHandler(host, (_, e) => e.Target = target);
 		AccessKeyManager.Register("z", host);
-		Assert.True(AccessKeyManager.ProcessKey(window, "Z", false));
+		Assert.False(AccessKeyManager.ProcessKey(window, "Z", false));
 		Assert.Equal(1, clicks);
 		AccessKeyManager.Unregister("z", host);
 		window.Close();

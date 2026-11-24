@@ -136,10 +136,10 @@ public class AccessKeyDisplayTests : AccessKeyTestBase
 	{
 		var access = new AccessText { Text = "_Open" };
 		var window = Show(access);
-		Assert.True(AccessKeyManager.IsKeyRegistered(window, "O"));
+		Assert.True(AccessKeyManager.HasRegistrationIn(window, "O"));
 		access.Text = "_Save";
-		Assert.False(AccessKeyManager.IsKeyRegistered(window, "O"));
-		Assert.True(AccessKeyManager.IsKeyRegistered(window, "S"));
+		Assert.False(AccessKeyManager.HasRegistrationIn(window, "O"));
+		Assert.True(AccessKeyManager.HasRegistrationIn(window, "S"));
 		Assert.Equal(string.Empty, new AccessText().Text);
 		Assert.Equal(TextWrapping.NoWrap, access.TextWrapping);
 		Assert.Equal(TextTrimming.None, access.TextTrimming);

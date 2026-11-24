@@ -22,7 +22,9 @@ static class AccessKeyBinding
 		return AccessKeyParser.ToGtkMnemonic(text);
 	}
 
-	/// <summary>Shows GTK mnemonic text on a label. <c>Text</c> resets UseUnderline, so it is set again after.</summary>
+	/// <summary>
+	/// Shows GTK mnemonic text on a label. <c>Text</c> resets UseUnderline, so it is set again after.
+	/// </summary>
 	internal static void SetLabel(Gtk.Label label, string mnemonic)
 	{
 		label.Text = mnemonic;

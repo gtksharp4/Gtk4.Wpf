@@ -3,7 +3,9 @@ namespace System.Windows.Input;
 /// <summary>Represents the method that handles <see cref="AccessKeyManager.AccessKeyPressedEvent"/>.</summary>
 public delegate void AccessKeyPressedEventHandler(object sender, AccessKeyPressedEventArgs e);
 
-/// <summary>Data for <see cref="AccessKeyManager.AccessKeyPressedEvent"/>: handlers name the element to invoke.</summary>
+/// <summary>
+/// Data for <see cref="AccessKeyManager.AccessKeyPressedEvent"/>: handlers name the element to invoke.
+/// </summary>
 public class AccessKeyPressedEventArgs : RoutedEventArgs
 {
 	/// <summary>Creates args with no key.</summary>

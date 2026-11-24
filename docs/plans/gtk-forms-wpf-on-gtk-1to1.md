@@ -2729,6 +2729,41 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
 - **Round 61 (lane C) carry-over.** Packaging (EditingExaminerDemo, WPFGallery `SystemEvents`) is unstarted. Keyed
   elements that are unbuildable and not referenced by a `{StaticResource}` get no `Resources` entry (a later
   `FindResource` for them throws as in WPF for a missing key); `XmlDataProvider.XmlNamespaceManager` is still not built.
+- **Round 64 (lane D) track 1 - access-keys (DONE, merged).** `gf64d/access-keys`: WPF mnemonic rules for string
+  content shown through `RecognizesAccessKey` (Button, RepeatButton, ToggleButton, CheckBox, RadioButton, Label,
+  MenuItem/GroupBox/Expander/TabItem headers): `_Open` shows `Open` with O as the key, `__Open` shows `_Open`, `Open_`
+  and `A__B` follow WPF, only the first marker counts (`AccessKeyParser`, GTK markup escapes every literal `_`). Public
+  `AccessText`, `AccessKeyManager`, `AccessKeyEventArgs`, `UIElement.OnAccessKey`; Alt+key activation goes through
+  the window's key handling (Click and Command, toggle, check, open menu, Label.Target focus). TextBlock, TextBox,
+  ListBoxItem and ToolTip keep underscores literal. Samples with `_` in Content/Header (menus in Sample Applications)
+  render like WPF.
+- **Round 64 (lane D) review (Opus) + fixes - DONE.** Applied failing-first where a test could pin it. **D-F1**
+  `ProcessKey` no longer treats a registration in another window as "multiple" (an Alt+key in the second window of two
+  clicked nothing). **D-F2** the TabItem and GroupBox peers strip the marker from a string `Header` (WPF
+  `GetNameCore`); Expander, ListBoxItem, ComboBoxItem and TreeViewItem stay literal. **D-F3** internal
+  `ProcessKeyForScope` returns `NoMatch/LastMatch/MoreMatches`; public `ProcessKey` is true only for `MoreMatches`.
+  **D-F4** candidates are narrowed to the scope of the focused sender (an open submenu is its own scope, as in WPF's
+  `MenuItem.OnAccessKeyPressed`), so `o` in an open `_File` menu clicks `_Open` and not a window button. **D-F5**
+  `IsKeyRegistered` raises AccessKeyPressed (a Label without Target is not registered); the window still swallows a key
+  that has a live registration so GTK never moves focus for it. **D-F6** GTK's mnemonic matcher (the window's
+  capture-phase shortcut controller) is set to an unreachable modifier (`HyperMask`), so GTK only draws the
+  underline and WPF owns activation. No real key event can be injected (GtkSharp4 binds no GDK event constructor), so
+  the test asserts every window shortcut controller carries that modifier. **D-F7** `Normalize` copies WPF (`""` is
+  accepted); keyvals map through `gdk_keyval_to_unicode` (P/Invoke, Latin-1 fallback) in one helper shared by Window
+  and UIElement (Cyrillic `0x6cf` gives "o" and activates `_ok`). **D-F8, CI-4** long lines wrapped, `Label.Target`
+  doc reworded. Rejected in triage: CI-1 and CI-2 (already fixed in the merge; the TabItem/GroupBox part is D-F2), CI-3
+  (ContentPresenter hosts AccessText only when `RecognizesAccessKey` and the text has `_`; the GTK double-fire risk is
+  D-F6), CI-5 (the peer's access key is the normalized key, as in WPF `GetAccessKeyCore`; untestable until
+  `AutomationProperties.AccessKey` exists, lane A).
+- **Round 64 (lane D) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. Targeted
+  `PresentationFramework.Tests` `AccessKeys`/`PeerName`/`ContentPresenterAccessKey` 85 passed; input, menu, tab,
+  group box, peers, default-button and label tests 264 passed. Samples gate: all 204 projects that built at `17c64167` build
+  through a lane-private feed (two builds each), and all 191 apps that ran still run (125 with a window in a crowded
+  first pass; the 66 without a window handle re-checked alone: 64 showed one within 20 s, Concepts and Brushes alone
+  for 40 s; none exited).
+- **Round 64 (lane D) carry-over.** GTK's own Alt-held underline cue may no longer appear because its mnemonic
+  matcher is disabled (not verified visually). A real Alt+key event is untested for lack of an injection path.
+  `AutomationProperties.AccessKey` and `GetAccessKeyCore` text await lane A.
 
 ## Phased roadmap (after Phase 0 proves the spine)
 

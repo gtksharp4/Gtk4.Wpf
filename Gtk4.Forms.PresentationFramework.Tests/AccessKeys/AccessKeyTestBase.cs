@@ -5,7 +5,9 @@ using Gtk4.Forms.PresentationFramework.Tests.Lifecycle;
 
 namespace Gtk4.Forms.PresentationFramework.Tests.AccessKeys;
 
-/// <summary>Shows windows for access-key tests and closes them all afterwards, so keys never leak between tests.</summary>
+/// <summary>
+/// Shows windows for access-key tests and closes them all afterwards, so keys never leak between tests.
+/// </summary>
 public abstract class AccessKeyTestBase : WpfGtkTestBase, IDisposable
 {
 	readonly List<Window> _windows = new();

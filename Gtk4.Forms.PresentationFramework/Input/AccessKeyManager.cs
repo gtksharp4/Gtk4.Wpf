@@ -42,7 +42,9 @@ public sealed partial class AccessKeyManager
 	}
 
 	/// <summary>Registers <paramref name="element"/> for <paramref name="key"/>.</summary>
-	/// <exception cref="ArgumentNullException"><paramref name="key"/> or <paramref name="element"/> is null.</exception>
+	/// <exception cref="ArgumentNullException">
+	/// <paramref name="key"/> or <paramref name="element"/> is null.
+	/// </exception>
 	/// <exception cref="ArgumentException"><paramref name="key"/> is not exactly one text element.</exception>
 	public static void Register(string key, IInputElement element)
 	{
@@ -71,12 +73,28 @@ public sealed partial class AccessKeyManager
 		}
 	}
 
-	/// <summary>Whether a targetable element in <paramref name="scope"/> is registered for <paramref name="key"/>.</summary>
-	/// <remarks>WPF also answers for elements in the scope that are not targetable; this layer does not.</remarks>
+	/// <summary>
+	/// Whether an element in <paramref name="scope"/> is registered for <paramref name="key"/> and names a
+	/// targetable target when asked (a Label without a Target is not registered in WPF terms).
+	/// </summary>
 	public static bool IsKeyRegistered(object scope, string key)
 	{
 		key = Normalize(key);
 		foreach (var element in Alive(key))
+		{
+			if (!IsTargetable(element) || !ReferenceEquals(ScopeOf(element), scope)) continue;
+			var args = new AccessKeyPressedEventArgs(key);
+			element.RaiseEvent(args);
+			if (args.Target != null && IsTargetable(args.Target)) return true;
+		}
+		return false;
+	}
+
+	// Any live targetable registration in the scope, whether or not it names a target: the window swallows
+	// the key then, so GTK never moves focus for it.
+	internal static bool HasRegistrationIn(object scope, string key)
+	{
+		foreach (var element in Alive(Normalize(key)))
 			if (IsTargetable(element) && ReferenceEquals(ScopeOf(element), scope))
 				return true;
 		return false;
@@ -91,10 +109,10 @@ public sealed partial class AccessKeyManager
 	static string Normalize(string key)
 	{
 		if (key == null) throw new ArgumentNullException(nameof(key));
-		key = key.ToUpperInvariant();
-		if (new StringInfo(key).LengthInTextElements != 1)
+		string first = StringInfo.GetNextTextElement(key);
+		if (key != first)
 			throw new ArgumentException("The key must be exactly one Unicode character.", nameof(key));
-		return key;
+		return first.ToUpperInvariant();
 	}
 
 	// Live registrations for a normalized key, in registration order; dead references are purged.

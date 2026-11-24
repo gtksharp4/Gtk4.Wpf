@@ -6,7 +6,9 @@ public partial class TabItem
 {
 	Gtk.Label? _tabLabel;
 
-	/// <summary>Builds the tab-strip label: a string header recognizes access keys, any other header is literal.</summary>
+	/// <summary>
+	/// Builds the tab-strip label: a string header recognizes access keys, any other header is literal.
+	/// </summary>
 	internal Gtk.Label CreateTabLabel()
 	{
 		_tabLabel = new Gtk.Label(string.Empty);

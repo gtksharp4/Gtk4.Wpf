@@ -73,7 +73,8 @@ public class AccessKeyActivationTests : AccessKeyTestBase
 		Assert.True(Alt(window, KeyN));
 		GtkPump.For(100);
 		Assert.True(box.IsKeyboardFocused);
-		Assert.False(Alt(window, 'o'));
+		Assert.True(Alt(window, 'o')); // swallowed: registered, but names no target
+		Assert.True(box.IsKeyboardFocused);
 		window.Close();
 	});
 

@@ -7,13 +7,14 @@ namespace System.Windows.Automation.Peers;
 static class PeerText
 {
 	/// <summary>
-	/// The name of a content object where WPF strips access keys (button, label and menu item peers): string
-	/// content has its marker removed (<c>_OK</c> becomes <c>OK</c>, <c>__</c> becomes <c>_</c>), else its plain text.
+	/// The name of a content object where WPF strips access keys (button, label, menu item, tab item and group
+	/// box peers): string content has its marker removed (<c>_OK</c> becomes <c>OK</c>, <c>__</c> becomes
+	/// <c>_</c>), else its plain text.
 	/// </summary>
 	internal static string FromContent(object? content) =>
 		content is string s ? AccessKeyParser.RemoveAccessKeyMarker(s) : Plain(content);
 
-	/// <summary>The name of a content object where WPF keeps underscores (list, combo, tree, tab, expander, group).</summary>
+	/// <summary>The name of a content object where WPF keeps underscores (list, combo, tree, expander).</summary>
 	internal static string FromContentLiteral(object? content) => Plain(content);
 
 	/// <summary>The text a content object shows: a <see cref="TextBlock"/>'s text, found through wrappers.</summary>

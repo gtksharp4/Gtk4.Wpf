@@ -52,7 +52,7 @@ sealed class TabItemWrapperAutomationPeer : FrameworkElementAutomationPeer
 
 	protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.TabItem;
 
-	internal override string ContentName() => PeerText.FromContentLiteral(((TabItem)Owner).Header);
+	internal override string ContentName() => PeerText.FromContent(((TabItem)Owner).Header);
 
 	// The page box is not the tab; GTK's notebook owns the tab role.
 	internal override Gtk.AccessibleRole? AccessibleRole => null;

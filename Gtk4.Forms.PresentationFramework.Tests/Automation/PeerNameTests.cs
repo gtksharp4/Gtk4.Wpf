@@ -57,7 +57,9 @@ public class PeerNameTests : WpfGtkTestBase
 		Assert.Equal("file_name.txt", NameOf(new ListBoxItem { Content = "file_name.txt" }));
 		Assert.Equal("a_b", NameOf(new ComboBoxItem { Content = "a_b" }));
 		Assert.Equal("a_b", NameOf(new TreeViewItem { Header = "a_b" }));
-		Assert.Equal("_Tab", NameOf(new TabItem { Header = "_Tab" }));
+		Assert.Equal("Tab", NameOf(new TabItem { Header = "_Tab" }));
+		Assert.Equal("Group", NameOf(new GroupBox { Header = "_Group" }));
+		Assert.Equal("_Exp", NameOf(new Expander { Header = "_Exp" }));
 		Assert.Equal("Open", NameOf(new MenuItem { Header = "_Open" }));
 	});
 

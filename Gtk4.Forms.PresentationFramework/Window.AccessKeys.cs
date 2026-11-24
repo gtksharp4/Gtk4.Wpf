@@ -4,9 +4,9 @@ using System.Windows.Input;
 namespace System.Windows;
 
 // Access keys (WPF's PostProcessInput on unhandled TextInput / SystemText). Alt+key is taken in the capture
-// phase so GTK's own mnemonic activation never fires a second Click; a plain key fires only when the
-// focused element leaves its TextInput unhandled (CoreCompatibilityPreferences.IsAltKeyRequiredInAccessKeyDefaultScope
-// is false by default).
+// phase and GTK's own mnemonic matching is switched off (Window.AccessKeys.Mnemonics.cs), so a key never
+// activates twice; a plain key fires only when the focused element leaves its TextInput unhandled
+// (CoreCompatibilityPreferences.IsAltKeyRequiredInAccessKeyDefaultScope is false by default).
 public partial class Window
 {
 	internal Gtk.EventControllerKey? _accessKeyController;
@@ -33,8 +33,9 @@ public partial class Window
 		var mods = GdkKeyMap.FromGdkModifier(state);
 		if ((mods & (ModifierKeys.Control | ModifierKeys.Windows)) != 0) return false;
 		bool alt = (mods & ModifierKeys.Alt) != 0;
-		if (!alt && FocusedHere() != null) return false;
-		return ProcessAccessKey(KeyvalToText(keyval));
+		var focused = FocusedHere();
+		if (!alt && focused != null) return false;
+		return ProcessAccessKey(GdkKeyText.FromKeyval(keyval), focused as UIElement ?? InnermostOpenSubmenu());
 	}
 
 	void OnAccessKeyTextInput(object sender, TextCompositionEventArgs e)
@@ -42,26 +43,36 @@ public partial class Window
 		if (e.Handled) return;
 		if ((Keyboard.Modifiers & (ModifierKeys.Alt | ModifierKeys.Control | ModifierKeys.Windows)) != 0) return;
 		if (ConsumesText(e.OriginalSource)) return;
-		if (ProcessAccessKey(e.Text)) e.Handled = true;
+		if (ProcessAccessKey(e.Text, e.OriginalSource as UIElement)) e.Handled = true;
 	}
 
-	bool ProcessAccessKey(string? text)
+	// A registered key is swallowed even when it yields no target, so GTK never moves focus for it.
+	bool ProcessAccessKey(string? text, UIElement? sender)
 	{
 		if (string.IsNullOrEmpty(text) || new System.Globalization.StringInfo(text!).LengthInTextElements != 1)
 			return false;
-		if (!AccessKeyManager.IsKeyRegistered(this, text!)) return false;
-		return AccessKeyManager.ProcessKey(this, text!, false);
+		var result = AccessKeyManager.ProcessKeyForScope(this, text!, false, sender);
+		return result != ProcessKeyResult.NoMatch || AccessKeyManager.HasRegistrationIn(this, text!);
 	}
 
 	// A text editor consumes plain letters; WPF's TextBox handles TextInput itself, this layer's does not.
 	static bool ConsumesText(object? source) =>
 		source is TextBox or PasswordBox or RichTextBox or ComboBox { IsEditable: true };
 
-	static string? KeyvalToText(uint keyval)
+	// The deepest open submenu holds the keyboard when nothing else is focused.
+	MenuItem? InnermostOpenSubmenu()
 	{
-		if (keyval >= 0x01000000) keyval -= 0x01000000;
-		else if (keyval >= 0xff00) return null;
-		if (keyval < 0x20 || keyval > 0x10ffff || (keyval >= 0xd800 && keyval <= 0xdfff)) return null;
-		return char.ConvertFromUtf32((int)keyval);
+		MenuItem? found = null;
+		void Visit(DependencyObject node)
+		{
+			foreach (var child in LogicalTreeHelper.GetChildren(node))
+			{
+				if (child is not DependencyObject d) continue;
+				if (d is MenuItem { IsSubmenuOpen: true } item) found = item;
+				Visit(d);
+			}
+		}
+		Visit(this);
+		return found;
 	}
 }

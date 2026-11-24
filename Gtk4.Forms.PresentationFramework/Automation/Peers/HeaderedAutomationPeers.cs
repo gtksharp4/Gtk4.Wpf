@@ -63,7 +63,7 @@ public class GroupBoxAutomationPeer : FrameworkElementAutomationPeer
 
 	protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Group;
 
-	internal override string ContentName() => PeerText.FromContentLiteral(((GroupBox)Owner).Header);
+	internal override string ContentName() => PeerText.FromContent(((GroupBox)Owner).Header);
 }
 
 /// <summary>The automation peer of a <see cref="StatusBar"/>.</summary>
