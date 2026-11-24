@@ -99,7 +99,7 @@ public partial class Window
 			nameof(SizeToContent),
 			typeof(SizeToContent),
 			typeof(Window),
-			new PropertyMetadata(SizeToContent.Manual, (d, _) => (d as Window)?.RefreshScrollViewers()));
+			new PropertyMetadata(SizeToContent.Manual));
 
 	/// <summary>
 	/// Gets or sets whether the window auto-sizes to fit its content.

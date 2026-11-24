@@ -42,25 +42,4 @@ public partial class ScrollViewer
 			Math.Min(content.Width + extraW, constraint.Width),
 			Math.Min(content.Height + extraH, constraint.Height));
 	}
-
-	// Gtk.ScrolledWindow reports its child's natural size only when asked to; without it a ScrollViewer is about
-	// 0 px for SizeToContent. Gtk.Grid hands every child its natural size before sharing the expand space, so a
-	// propagating ScrollViewer in a star track would take the whole track (WPF splits star tracks by weight).
-	// WPF itself sizes to content only where the hosting Window measures with an infinite constraint, i.e. on an
-	// axis its SizeToContent includes, so propagation is on exactly there.
-	void ApplyNaturalSizePropagation()
-	{
-		Loaded += (_, _) => UpdateNaturalSizePropagation();
-		UpdateNaturalSizePropagation();
-	}
-
-	internal void UpdateNaturalSizePropagation()
-	{
-		UIElement? p = LogicalParent;
-		while (p != null && p is not Window)
-			p = p.LogicalParent;
-		var stc = (p as Window)?.SizeToContent ?? SizeToContent.Manual;
-		_scroll.PropagateNaturalWidth = stc == SizeToContent.Width || stc == SizeToContent.WidthAndHeight;
-		_scroll.PropagateNaturalHeight = stc == SizeToContent.Height || stc == SizeToContent.WidthAndHeight;
-	}
 }

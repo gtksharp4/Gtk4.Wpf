@@ -6,7 +6,7 @@ using WpfWindow = System.Windows.Window;
 
 namespace Gtk4.Forms.PresentationFramework.Tests.WindowSizing;
 
-/// <summary>A window around a ScrollViewer sizes from the content (SizeToContent) or the default (Manual).</summary>
+/// <summary>A window around a ScrollViewer opens at the default size; a ScrollViewer never grows the window.</summary>
 public class ScrollViewerWindowSizeGtkTests : WpfGtkTestBase
 {
 	static (ScrollViewer sv, WpfWindow win) Show(WpfWindow win, ScrollViewer sv)
@@ -18,15 +18,28 @@ public class ScrollViewerWindowSizeGtkTests : WpfGtkTestBase
 	}
 
 	[Fact]
-	public void SizeToContent_with_a_ScrollViewer_opens_at_the_content_size() => Run(() =>
+	public void SizeToContent_with_an_explicit_Height_keeps_the_ScrollViewer_at_that_height() => Run(() =>
 	{
 		using var gtk = new GtkDispatcherScope();
 		var (sv, win) = Show(new WpfWindow { SizeToContent = SizeToContent.WidthAndHeight },
-			new ScrollViewer { Content = new Border { Width = 300, Height = 200 } });
+			new ScrollViewer { Height = 200, Content = new Border { Width = 300, Height = 2000 } });
 		try
 		{
-			Assert.InRange(sv.Widget.Width, 295, 420);
-			Assert.InRange(sv.Widget.Height, 195, 260);
+			Assert.InRange(sv.Widget.Height, 199, 201);
+			Assert.True(win.Widget.Height <= SystemParameters.WorkArea.Height, $"{win.Widget.Height}");
+		}
+		finally { win.Close(); }
+	});
+
+	[Fact]
+	public void SizeToContent_with_a_MaxHeight_window_stays_within_the_MaxHeight() => Run(() =>
+	{
+		using var gtk = new GtkDispatcherScope();
+		var (sv, win) = Show(new WpfWindow { SizeToContent = SizeToContent.WidthAndHeight, MaxHeight = 500 },
+			new ScrollViewer { Content = new Border { Width = 300, Height = 3000 } });
+		try
+		{
+			Assert.True(win.Widget.Height <= 500, $"{win.Widget.Height}");
 		}
 		finally { win.Close(); }
 	});

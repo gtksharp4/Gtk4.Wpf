@@ -9,7 +9,7 @@ namespace Gtk4.Forms.PresentationFramework.Tests.WindowSizing;
 
 /// <summary>
 /// WPF Grid splits the space by star weight whatever a child's desired size is; a ScrollViewer around big
-/// content must not take a whole star track, however it is wrapped (R68E-1).
+/// content must not take a whole star track, however it is wrapped.
 /// </summary>
 public class ScrollViewerGridStarGtkTests : WpfGtkTestBase
 {
@@ -73,44 +73,4 @@ public class ScrollViewerGridStarGtkTests : WpfGtkTestBase
 		Assert.InRange(Split(how, columns), 0.4, 0.6);
 	});
 
-	[Theory]
-	[InlineData(false)]
-	[InlineData(true)]
-	public void SizeToContent_still_sizes_to_the_content(bool wrapped) => Run(() =>
-	{
-		using var gtk = new GtkDispatcherScope();
-		var sv = new ScrollViewer { Content = new Border { Width = 300, Height = 200 } };
-		var win = new WpfWindow
-		{
-			SizeToContent = SizeToContent.WidthAndHeight,
-			Content = wrapped ? new Border { Child = sv } : sv,
-		};
-		win.Show();
-		GtkPump.For(300);
-		try
-		{
-			Assert.InRange(sv.Widget.Width, 295, 420);
-			Assert.InRange(sv.Widget.Height, 195, 260);
-		}
-		finally { win.Close(); }
-	});
-
-	[Fact]
-	public void Propagation_follows_SizeToContent_changes() => Run(() =>
-	{
-		using var gtk = new GtkDispatcherScope();
-		var sv = new ScrollViewer { Content = new Border { Width = 300, Height = 200 } };
-		var win = new WpfWindow { Width = 400, Height = 300, Content = sv };
-		win.Show();
-		GtkPump.For(200);
-		try
-		{
-			var sw = (Gtk.ScrolledWindow)sv.Widget;
-			Assert.False(sw.PropagateNaturalWidth || sw.PropagateNaturalHeight);
-			win.SizeToContent = SizeToContent.Height;
-			Assert.False(sw.PropagateNaturalWidth);
-			Assert.True(sw.PropagateNaturalHeight);
-		}
-		finally { win.Close(); }
-	});
 }
