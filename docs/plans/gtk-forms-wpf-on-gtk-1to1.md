@@ -2730,6 +2730,53 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   elements that are unbuildable and not referenced by a `{StaticResource}` get no `Resources` entry (a later
   `FindResource` for them throws as in WPF for a missing key); `XmlDataProvider.XmlNamespaceManager` is still not built.
 
+- **Round 62 (lane A) track 1 - automation attached properties (DONE, merged).** `gf62a/automation-attached-properties`:
+  `AutomationProperties.HeadingLevel` (`AutomationHeadingLevel`), `ItemStatus` and `AcceleratorKey` with WPF's
+  registration and validation, read by `UIElementAutomationPeer`'s `GetHeadingLevelCore`, `GetItemStatusCore` and
+  `GetAcceleratorKeyCore`; a menu item falls back to `InputGestureText`; the accelerator key is pushed to GTK
+  `KeyShortcuts`. Samples: DataBindingDemo fail→runs, ExpenseItDemo's automation wall gone, WPFGallery's
+  `HeadingLevel` wall gone (it now builds and hits the run-time `ControlCornerRadius` wall).
+- **Round 62 (lane A) track 3 - window adorner layer (DONE, merged).** `gf62b/window-adorner-layer`: `Window` owns an
+  implicit adorner layer hosted in a `Gtk.Overlay` around the content, so `AdornerLayer.GetAdornerLayer` finds a layer
+  for any element in a window. Samples: PhotoStoreDemo crash→runs.
+- **Round 62 (lane A) track 4 - controls tail IV (DONE, merged).** `gf62c/datagrid-length`: `DataGridLength`,
+  `DataGridLengthUnitType`, `DataGridLengthConverter`, `DataGrid.ColumnWidth` and a `DataGridLength`-typed
+  `DataGridColumn.Width`. Samples: ExpenseItDemo fail→runs (with track 1).
+- **Round 62 (lane A) review + fixes - DONE.** Verified findings applied failing-first. **a-F1**
+  `MenuItemAutomationPeer.AffectsAccessible` includes `InputGestureText`, so a later change re-pushes `KeyShortcuts`
+  (an explicit `AcceleratorKey` still wins). **a-F2** the automation tests assert the peer defaults, null rejection for
+  both string properties, and observe pushes through a new internal `PeerAccessible.Spy` seam (fails if
+  `SyncKeyShortcuts` is removed). **b-F1** `Reposition` uses `ComputeBounds(overlay)` (border box in overlay
+  coordinates) instead of `ComputePoint(main)`; the placement tests assert bounds equality, including an element inside
+  a padded, bordered `Border`. **b-F2** a placed adorner widget is `CanTarget=false` (restored on unplace), so picks
+  over the adorned element reach it (PhotoStoreDemo's image `MouseDown` runs). **b-F3** an adorned element that is
+  unmapped, collapsed or widget-less hides the adorner and leaves its geometry alone; it returns, respecting the
+  adorner's own `Visibility`. **b-F4** the "does not grow the content" test can now fail (a 5000x5000 adorner widget;
+  it fails with `SetMeasureOverlay(widget, true)`). **b-F5** `Window.OnFrameLayout` calls
+  `ImplicitAdornerLayer.RepositionAll()`; the test moves the adorned element by a GTK-only size request on a sibling,
+  because a direct `Window.SizeAllocate` raises no frame-clock layout (nothing runs to observe it). **b-F6**
+  `WindowAdornerLayerTests` split, tree pins in `WindowAdornerLayerTreeTests`. **c-F1** `DataGridLength.ToString()` is
+  culture-invariant. **c-F2** `_unitValue` is the value except for Auto (1.0), as dotnet/wpf; the statics are
+  constructed as `(AutoValue, unit, 0d, 0d)` as in the source (so `new DataGridLength(1, SizeToHeader) !=
+  DataGridLength.SizeToHeader`). Spec mismatch flagged: the lane brief said the content-sized units normalise to 1.0;
+  dotnet/wpf normalises only Auto. **c-F3** an infinite number converts with `NotSupportedException`. **c-F4** the
+  `ApplyColumnWidths` comment now says a Pixel width is a header-only minimum size request; a test pins that a long
+  header widens a Pixel(10) column. **c-F6** the column-width test pumps and asserts data-row `Hexpand`, also after a
+  `ColumnWidth` change (fails without the cell loop).
+- **Round 62 (lane A) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. Targeted
+  `PresentationFramework.Tests` (`Adorner`, `Automation`, `DataGrid`, `Window`, `MenuItem`): 683 tests, 0 failed; the
+  suites run in full at integrate. Samples gate: all
+  207 projects build through a lane-private feed and all 191 apps that ran at `17c64167` still run (see
+  `samples-coverage.md`, "Round 62 (lane A) gate"). Checks: ExpenseItDemo's `CreateExpenseReportDialogBox` opens and
+  `ColumnWidth="*"` reaches the grid; a native click on PhotoStoreDemo's image reaches `OnMouseDown`.
+- **Round 62 (lane A) follow-up.** Reviewer findings verified; fixes failing-first. **b-F3** `Reposition` now takes
+  Visible from `VisibilityGtkMap` (Hidden stays mapped at opacity 0), so Hidden -> Visible shows the adorner again.
+  **b-F2** a `UIElement.SuppressCanTarget` flag makes `ApplyCanTarget` keep a placed adorner untargetable through
+  Visibility/IsHitTestVisible/IsEnabled changes; `Unplace` re-applies the current state instead of a stale snapshot.
+  **b-F5** `AdornerDecorator` layers now reposition on the overlay's frame-clock layout (`AdornerLayer.Frame.cs`), so an
+  adorner hidden while its element was unmapped returns. **c-F2** `DataGridLengthConverter` builds fresh
+  `new DataGridLength(1.0, unit)` values (NaN desired/display, equal to WPF's), not the statics. **c-F4** the Pixel
+  header test now shows the grid, pumps and asserts the header's allocated width. **Capture check (b-F2)**: with a
   placed (CanTarget=false) adorner, `CaptureMouse()` succeeds and `RaiseMouseMove`/`RaiseMouseButton` on the adorned
   element are re-targeted to the adorner (`Mouse.GetInputTarget` is managed, independent of the adorner's pick state);
   tested, not driven by a native drag. **b-F5 test gap kept**: the window-width (centred horizontal move) case stays
@@ -2811,6 +2858,51 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
 - **Round 63 (lane B) carry-over.** Packaging (EditingExaminerDemo `System.Security.Permissions`, WPFGallery
   `SystemEvents`) is still unstarted. `TextElement.TextEffects`, `FlowDocument.TextEffects` and `TextBlock.TextEffects`
   default to null (not an empty frozen collection). `CommandBinding` still has only `Executed` and `CanExecute`.
+- **Round 66 (lane G) track 1 - control brushes over the GTK theme (DONE, merged).** `gf66g/control-brushes-flow-pages`:
+  FlowDocumentProperties showed white captions on the light theme face because the theme paints a `Gtk.Button` with
+  `background-image`/`box-shadow`, which covers a plain `background-color` (confirmed by snapshot pixels of a shown
+  Button with `Background=Blue`). Control Background/BorderBrush/BorderThickness now go on the node that paints the face
+  with `background-image: none` and no theme shadow; check/radio indicators, the dropdown button and other inner nodes
+  take a provider on the child widget; Aero2 `:hover`/`:active`/`:checked`/`:disabled` faces are emulated for
+  Button/RepeatButton/ToggleButton. Controls with no brush keep the pure theme (no provider). Samples evidence: the
+  FlowDocumentProperties buttons paint blue with white captions.
+- **Round 66 (lane G) track 2 - paginated FlowDocumentPageViewer layout (DONE, merged).** Same branch: a block-aware
+  page meter (`FlowDocumentPageMeter`) lays the document out per page and column from PageWidth/PageHeight (or the viewer
+  area), Min/Max, PagePadding, ColumnWidth/ColumnGap/IsColumnWidthFlexible and ColumnRule; text wraps to the column with
+  Pango, paragraph margins collapse as in WPF, and the paginator counts pages with the same meter. Samples evidence:
+  in FlowDocumentProperties the text wraps inside the page, and the ColumnWidth, ColumnGap, PageWidth, PagePadding,
+  FontSize and TextAlignment buttons change the page as in WPF.
+- **Round 66 (lane G) review + fixes - DONE.** Applied failing-first (the new tests failed before each product change).
+  **g-F1** non-flexible columns keep ColumnGap and leave the unused width on the right (PTS `GetColumnsInfo`); 200/10 on
+  650 gives column x 0/210/420, flexible still widens to 210. **g-F2** the check/radio face rule names `check, radio`
+  (GTK 4 names the indicator `radio` once a Group is set), so a grouped RadioButton paints Background. **g-F3** the
+  Aero2 state faces apply only to Button, RepeatButton and ToggleButton (not CheckBox/RadioButton); MenuItem and
+  DataGridColumnHeader, which sit on a `Gtk.Button` but whose templates have no such triggers, keep their Background
+  when disabled. **g-F4** an empty `<Paragraph/>` formats as one blank line (one pitch) between the collapsed margins, so
+  P1 to P2 is pitch + 3 line heights; only non-paragraph blocks without content collapse through. **g-F5** `Block.Margin`
+  defaults to auto (NaN sides) as in WPF; only NaN sides resolve to a line height above and below for Paragraph, List and
+  Table (zero for other blocks), so `Margin="0"` removes the spacing. **g-F6** a multiline TextBox paints its
+  `textview, text` nodes and an editable ComboBox its entry and dropdown button, through a second child provider
+  (`AppearanceExtraTarget`); the scrolled-window frame around the TextBox keeps the theme. **g-F7** the viewer clears the
+  old document's paginator Viewport when its document changes or becomes null, so printing paginates at 816x1056 again.
+  **g-F8** over-long lines wrapped, no behaviour change.
+- **Round 66 (lane G) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. Targeted tests
+  (the suites run in full at integrate): `PresentationFramework.Tests` filtered to Appearance, Flow*, Documents,
+  DataGrid, MenuItem, ComboBox, TextBox, RadioButton, Block and Paragraph 921 (920 passed, 1 skipped, 0 failed); 14 test
+  cases (13 methods) added (6 pixel or rule tests, 6 page-layout tests, 1 viewer theory with 2 cases), 1 replaced (the old one-line-height pin), 1 updated (Block.Margin
+  default). Samples gate: all 204 projects that built at the last
+  run build through a lane-private feed (two builds each; CustomApplicationClass needs its sibling client built first),
+  and all 191 apps that ran still run (114 in a crowded first pass; the 77 without a window handle re-checked alone for
+  25 s one at a time: all alive with a window).
+- **Round 66 (lane G) follow-up.** The auto `Block.Margin` default (NaN sides) leaked into `XamlWriter` output
+  (`<Paragraph Margin="NaN,NaN,NaN,NaN" />`) because `Thickness.Equals` is false for NaN. The writer's CLR-property
+  comparison now treats equal `Thickness` strings as equal, so a default Paragraph writes no Margin (test
+  `Default_Paragraph_writes_no_Margin`, failing first). `WindowsBase` is untouched; WPF's NaN-aware Thickness equality
+  stays a cross-lane item. The totals line above now counts 14 test cases in 13 methods.
+- **Round 66 (lane G) carry-over.** Hover and pressed fades and the focus rectangle of Aero2 are not reproduced; the
+  scrolled-window frame of a multiline TextBox is not recoloured; ImageBrush/VisualBrush/DrawingBrush backgrounds on
+  controls are store-only. FlowDocumentPageViewer still lays tables, lists and floaters out as one text block and does
+  not apply widows/orphans, KeepTogether or KeepWithNext; Zoom is stored, not applied.
 
 ## Phased roadmap (after Phase 0 proves the spine)
 
@@ -2858,48 +2950,3 @@ Approve **Phase 0 only** first: the `WindowsBase` property-system subset + the f
 is small, fully testable, and settles every architectural unknown (xmlns binding, the compiler fork,
 the hybrid bridge, the drop-in). Only after it runs a real one-window WPF app unmodified on two OSes
 is it worth committing to the multi-phase build toward 1:1.
-  `AutomationProperties.HeadingLevel` (`AutomationHeadingLevel`), `ItemStatus` and `AcceleratorKey` with WPF's
-  registration and validation, read by `UIElementAutomationPeer`'s `GetHeadingLevelCore`, `GetItemStatusCore` and
-  `GetAcceleratorKeyCore`; a menu item falls back to `InputGestureText`; the accelerator key is pushed to GTK
-  `KeyShortcuts`. Samples: DataBindingDemo fail→runs, ExpenseItDemo's automation wall gone, WPFGallery's
-  `HeadingLevel` wall gone (it now builds and hits the run-time `ControlCornerRadius` wall).
-- **Round 62 (lane A) track 3 - window adorner layer (DONE, merged).** `gf62b/window-adorner-layer`: `Window` owns an
-  implicit adorner layer hosted in a `Gtk.Overlay` around the content, so `AdornerLayer.GetAdornerLayer` finds a layer
-  for any element in a window. Samples: PhotoStoreDemo crash→runs.
-- **Round 62 (lane A) track 4 - controls tail IV (DONE, merged).** `gf62c/datagrid-length`: `DataGridLength`,
-  `DataGridLengthUnitType`, `DataGridLengthConverter`, `DataGrid.ColumnWidth` and a `DataGridLength`-typed
-  `DataGridColumn.Width`. Samples: ExpenseItDemo fail→runs (with track 1).
-- **Round 62 (lane A) review + fixes - DONE.** Verified findings applied failing-first. **a-F1**
-  `MenuItemAutomationPeer.AffectsAccessible` includes `InputGestureText`, so a later change re-pushes `KeyShortcuts`
-  (an explicit `AcceleratorKey` still wins). **a-F2** the automation tests assert the peer defaults, null rejection for
-  both string properties, and observe pushes through a new internal `PeerAccessible.Spy` seam (fails if
-  `SyncKeyShortcuts` is removed). **b-F1** `Reposition` uses `ComputeBounds(overlay)` (border box in overlay
-  coordinates) instead of `ComputePoint(main)`; the placement tests assert bounds equality, including an element inside
-  a padded, bordered `Border`. **b-F2** a placed adorner widget is `CanTarget=false` (restored on unplace), so picks
-  over the adorned element reach it (PhotoStoreDemo's image `MouseDown` runs). **b-F3** an adorned element that is
-  unmapped, collapsed or widget-less hides the adorner and leaves its geometry alone; it returns, respecting the
-  adorner's own `Visibility`. **b-F4** the "does not grow the content" test can now fail (a 5000x5000 adorner widget;
-  it fails with `SetMeasureOverlay(widget, true)`). **b-F5** `Window.OnFrameLayout` calls
-  `ImplicitAdornerLayer.RepositionAll()`; the test moves the adorned element by a GTK-only size request on a sibling,
-  because a direct `Window.SizeAllocate` raises no frame-clock layout (nothing runs to observe it). **b-F6**
-  `WindowAdornerLayerTests` split, tree pins in `WindowAdornerLayerTreeTests`. **c-F1** `DataGridLength.ToString()` is
-  culture-invariant. **c-F2** `_unitValue` is the value except for Auto (1.0), as dotnet/wpf; the statics are
-  constructed as `(AutoValue, unit, 0d, 0d)` as in the source (so `new DataGridLength(1, SizeToHeader) !=
-  DataGridLength.SizeToHeader`). Spec mismatch flagged: the lane brief said the content-sized units normalise to 1.0;
-  dotnet/wpf normalises only Auto. **c-F3** an infinite number converts with `NotSupportedException`. **c-F4** the
-  `ApplyColumnWidths` comment now says a Pixel width is a header-only minimum size request; a test pins that a long
-  header widens a Pixel(10) column. **c-F6** the column-width test pumps and asserts data-row `Hexpand`, also after a
-  `ColumnWidth` change (fails without the cell loop).
-- **Round 62 (lane A) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. Targeted
-  `PresentationFramework.Tests` (`Adorner`, `Automation`, `DataGrid`, `Window`, `MenuItem`): 683 tests, 0 failed; the
-  suites run in full at integrate. Samples gate: all
-  207 projects build through a lane-private feed and all 191 apps that ran at `17c64167` still run (see
-  `samples-coverage.md`, "Round 62 (lane A) gate"). Checks: ExpenseItDemo's `CreateExpenseReportDialogBox` opens and
-  `ColumnWidth="*"` reaches the grid; a native click on PhotoStoreDemo's image reaches `OnMouseDown`.
-- **Round 62 (lane A) follow-up.** Reviewer findings verified; fixes failing-first. **b-F3** `Reposition` now takes
-  Visible from `VisibilityGtkMap` (Hidden stays mapped at opacity 0), so Hidden -> Visible shows the adorner again.
-  **b-F2** a `UIElement.SuppressCanTarget` flag makes `ApplyCanTarget` keep a placed adorner untargetable through
-  Visibility/IsHitTestVisible/IsEnabled changes; `Unplace` re-applies the current state instead of a stale snapshot.
-  **b-F5** `AdornerDecorator` layers now reposition on the overlay's frame-clock layout (`AdornerLayer.Frame.cs`), so an
-  adorner hidden while its element was unmapped returns. **c-F2** `DataGridLengthConverter` builds fresh
-  `new DataGridLength(1.0, unit)` values (NaN desired/display, equal to WPF's), not the statics. **c-F4** the Pixel
