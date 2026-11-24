@@ -80,7 +80,7 @@ public abstract partial class Shape : FrameworkElement, IDisposable
 	protected override Gtk.Widget CreateWidget()
 	{
 		_area = new Gtk.DrawingArea();
-		_area.DrawFunc = OnDraw;
+		_area.DrawFunc = CairoDrawFunc.Wrap(OnDraw);
 		return _area;
 	}
 
@@ -96,7 +96,7 @@ public abstract partial class Shape : FrameworkElement, IDisposable
 
 	// ── Draw callback ─────────────────────────────────────────────────────────
 
-	void OnDraw(Gtk.DrawingArea area, Cairo.Context cr, int width, int height)
+	void OnDraw(Cairo.Context cr, int width, int height)
 	{
 		if (width <= 0 || height <= 0) return;
 		PaintShape(cr, width, height);

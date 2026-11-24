@@ -187,11 +187,16 @@ and GIFEncoderAndDecoder. CustomAnimation was missing from the first log and run
 `DataBindingToStringFomat.exe`, which the first pass did not find; it runs. All are recorded as `runs`, as in earlier
 reports.
 
-Two apps write heavy stderr while running. Neither is a crash, but both are worth a look (track 6):
+Round 63b (rendering hygiene) fixed both stderr sources. Measured through the lane-private package, one app at a time:
 
-- Per-FrameAnimation and ParticlesDemo print "Cairo.Context is leaking, programmer is missing a call to Dispose" 248
-  and 189 times in 15 s. That is GtkSharp's finalizer warning for an undisposed `Cairo.Context`. Not root-caused.
-- ParticlesDemo also logs `Gsk-WARNING: drawing failure for render node GskTransformNode: out of memory` (6 times).
+- "Cairo.Context is leaking": GtkSharp's `DrawingArea.DrawFunc` wrapper creates a `Cairo.Context` per draw and never
+  disposes it. Every DrawFunc in the layer now disposes its context in a `finally` (`Media/CairoDrawFunc.cs`).
+  Per-FrameAnimation went from 254 in 15 s (before, same machine) to 0 in two runs. ParticlesDemo went from 153-293 in
+  15-20 s to 0 in 9 runs.
+- `Gsk-WARNING ... out of memory`: Viewport3D painted textured triangles whose texel-to-pixel area scale fell below
+  1e-8 (a particle dying to nearly zero size). Cairo cannot represent the inverse pattern matrix and the compositor
+  rejects the frame. Such triangles are now skipped. Before: up to 128 warnings per 20 s run, in most runs; after: 0 in
+  4 runs of 20 s.
 
 ## API demand
 
@@ -388,6 +393,29 @@ Deliberately not next:
 - Legacy (non-SDK) csproj conversion: 21 projects. That is a converter feature, not a layer gap. It would also remove
   the `GtkFormsXamlRegistration` artefact from the symbol ranking.
 
+## Round 62 (lane A) gate
+
+Measured on `lane/a` (Round 62 tracks 1, 3 and 4 with their review fixes), package `1.0.0.26327` from a lane-private
+pinned feed. All 204 projects that built at `17c64167` plus DataBindingDemo, ExpenseItDemo and WPFGallery were built
+twice each (the first build converts). 4 of the first builds failed once with no error text (MousePointer,
+MergedResources, Matrix, CubeAnimationDemo) and passed on a solo rebuild: contention, not the layer.
+
+- **207 of 207 projects build** (+3). All 191 apps that ran at `17c64167` still run, with one visible top-level window each (26
+  had no window handle in the crowded first pass and were re-checked alone for 20 s: all alive with a window).
+- **DataBindingDemo: fail→runs.** **ExpenseItDemo: fail→runs** (it builds and its dialog opens). **PhotoStoreDemo:
+  crash→runs.** **WPFGallery: fail→builds, then crashes** on the expected wall: `InvalidOperationException: Resource
+  with key 'ControlCornerRadius' not found` (`MainWindow.g.cs:34`).
+- Portable apps: 201 of 204 build and 194 run. Three of the six apps that failed at `17c64167` now build;
+  EditingExaminerDemo and the two System.Xaml/BAML tools still fail.
+- **ExpenseItDemo, `CreateExpenseReportDialogBox`:** the dialog opens, and `ColumnWidth="*"` reaches the grid
+  (`ColumnWidth=*`). The grid has **no columns**: the generator does not emit the `DataGrid.Columns` property element
+  (lane B territory, MarkupCompiler). With three text columns added in code the headers fill the grid (103, 94 and 56
+  px of 253, all `Hexpand`), so star width renders.
+- **PhotoStoreDemo:** a native (OS-level) click on the image reaches `OnMouseDown` (`CropButton` goes from disabled to
+  enabled, `CaptureMouse` and `StartSelection` run).
+  Capture on a placed adorner re-targets input (unit-tested); no native drag was driven.
+- New walls: none beyond the two above (`DataGrid.Columns` generator gap; WPFGallery `ControlCornerRadius`).
+
 ## Method
 
 - **Source.** The local `WPF-Samples` tree (`00f39dbb`), split into six category batches:
@@ -483,6 +511,7 @@ Deliberately not next:
 | 2026-11-22 | `270cdb7e` + `gf58c/startup-generator-sweep-2` | 1.0.0.26326 | **yes** | 172 / 204 | 167 | Lane C gate (as reported then: 176 + AnimationExamples build, 165 + Geometry, KeySplineAnimations run); no regressions |
 | 2026-11-23 | `85493c8b` | 1.0.0.26327 | **yes** | 191 / 204 | 182 | Rounds 56–58 (second three-lane batch); full re-measure; 9 crash, 0 hang; no regressions |
 | 2026-11-23 | `17c64167` | 1.0.0.26327 | **yes** | **198 / 204** | **191** | Rounds 59–61 (third three-lane batch); full re-measure; 7 crash, 0 hang; no regressions |
+| 2026-11-24 | `lane/a` (Round 62 lane A) | 1.0.0.26327 | **yes** | 201 / 204 portable (207 / 207 built projects) | 194 | Lane A gate; DataBindingDemo, ExpenseItDemo build and run, PhotoStoreDemo runs, WPFGallery builds then crashes; no regressions |
 
 ## Known layer defects found by the UI tests
 

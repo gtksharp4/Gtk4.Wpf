@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 
@@ -12,8 +13,8 @@ public partial class DataGrid
 		_containersDirty = true;
 		if (e.Action == NotifyCollectionChangedAction.Reset)
 		{
-			foreach (var old in _ownedColumns)
-				if (_autoColumns == null || !_autoColumns.Contains(old)) old.DataGridOwner = null;
+			foreach (var old in _ownedColumns.ToArray())
+				if (_autoColumns == null || !_autoColumns.Contains(old)) Disown(old);
 			_ownedColumns.RemoveAll(c => _autoColumns == null || !_autoColumns.Contains(c));
 			foreach (var column in Columns) Own(column);
 			return;
@@ -27,12 +28,14 @@ public partial class DataGrid
 	void Own(DataGridColumn column)
 	{
 		column.DataGridOwner = this;
+		column.CoerceValue(DataGridColumn.WidthProperty);
 		if (!_ownedColumns.Contains(column)) _ownedColumns.Add(column);
 	}
 
 	void Disown(DataGridColumn column)
 	{
 		column.DataGridOwner = null;
+		column.CoerceValue(DataGridColumn.WidthProperty);
 		_ownedColumns.Remove(column);
 	}
 

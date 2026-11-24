@@ -42,9 +42,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Gtk4.Forms.PresentationFramework.Tests" />
-    <InternalsVisibleTo Include="Gtk4.Forms.Wpf.Testing" />
-    <InternalsVisibleTo Include="Gtk4.Forms.Wpf.Testing.Tests" />
+    <InternalsVisibleTo Include="Gtk4.Forms.PresentationFramework.Tests" Key="$(Gtk4FormsPublicKey)" />
+    <InternalsVisibleTo Include="Gtk4.Forms.Wpf.Testing" Key="$(Gtk4FormsPublicKey)" />
+    <InternalsVisibleTo Include="Gtk4.Forms.Wpf.Testing.Tests" Key="$(Gtk4FormsPublicKey)" />
   </ItemGroup>
 
   <ItemGroup>

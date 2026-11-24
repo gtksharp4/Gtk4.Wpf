@@ -74,6 +74,7 @@ public partial class Window : ContentControl
 		AttachAcceleratorController(_window);
 		AttachAccessKeyController(_window);
 		DisableGtkMnemonics(_window);
+		_window.Child = CreateContentOverlay();
 		return _window;
 	}
 
@@ -110,12 +111,12 @@ public partial class Window : ContentControl
 		var win = (Gtk.Window)Widget;
 
 		// Guard against double-add: OnPropertyChanged already parents the content widget
-		// when Content is set after the window exists. Only add it here if it has not yet
-		// been added (i.e. Content was set before Show() materialised the backing window).
+		// when Content is set after the window exists. Only set it here if it has not yet
+		// been set (i.e. Content was set before Show() materialised the backing window).
 		if (Content is UIElement contentElement
-		    && !ReferenceEquals(win.Child, contentElement.Widget))
+		    && !ReferenceEquals(_contentOverlay!.Child, contentElement.Widget))
 		{
-			win.Add(contentElement.Widget);
+			_contentOverlay.Child = contentElement.Widget;
 		}
 
 		// Apply startup location before presenting (GTK4 has no Move() — currently a no-op).
@@ -186,12 +187,7 @@ public partial class Window : ContentControl
 			return;
 		// When Content changes after Show() has been called, re-parent the widget.
 		if (_window != null)
-		{
-			if (e.OldValue is UIElement old)
-				_window.Remove(old.Widget);
-			if (e.NewValue is UIElement newEl)
-				_window.Add(newEl.Widget);
-		}
+			SetOverlayContent(e.NewValue);
 		// WPF Window.OnContentChanged: every Content change re-arms ContentRendered.
 		OnContentChangedForRender();
 	}

@@ -24,23 +24,6 @@ public abstract partial class DataGridColumn : DependencyObject
 		set => SetValue(HeaderProperty, value);
 	}
 
-	// ── Width DP ─────────────────────────────────────────────────────────────
-
-	/// <summary>Column width in device-independent units. 0 = auto.</summary>
-	public static readonly DependencyProperty WidthProperty =
-		DependencyProperty.Register(
-			nameof(Width),
-			typeof(double),
-			typeof(DataGridColumn),
-			new PropertyMetadata(0.0));
-
-	/// <summary>Gets or sets the column width (0 = auto).</summary>
-	public double Width
-	{
-		get => (double?)GetValue(WidthProperty) ?? 0.0;
-		set => SetValue(WidthProperty, value);
-	}
-
 	/// <summary>Returns the string value to display for <paramref name="item"/>.</summary>
 	internal abstract string GetCellText(object? item);
 }

@@ -2769,6 +2769,135 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `_Other` Label) no longer marks TextInput handled nor swallows the Alt+key press, as in WPF; the swallow was only
   there for GTK mnemonics, which D-F6 disabled.
 
+- **Round 62 (lane A) track 1 - automation attached properties (DONE, merged).** `gf62a/automation-attached-properties`:
+  `AutomationProperties.HeadingLevel` (`AutomationHeadingLevel`), `ItemStatus` and `AcceleratorKey` with WPF's
+  registration and validation, read by `UIElementAutomationPeer`'s `GetHeadingLevelCore`, `GetItemStatusCore` and
+  `GetAcceleratorKeyCore`; a menu item falls back to `InputGestureText`; the accelerator key is pushed to GTK
+  `KeyShortcuts`. Samples: DataBindingDemo fail→runs, ExpenseItDemo's automation wall gone, WPFGallery's
+  `HeadingLevel` wall gone (it now builds and hits the run-time `ControlCornerRadius` wall).
+- **Round 62 (lane A) track 3 - window adorner layer (DONE, merged).** `gf62b/window-adorner-layer`: `Window` owns an
+  implicit adorner layer hosted in a `Gtk.Overlay` around the content, so `AdornerLayer.GetAdornerLayer` finds a layer
+  for any element in a window. Samples: PhotoStoreDemo crash→runs.
+- **Round 62 (lane A) track 4 - controls tail IV (DONE, merged).** `gf62c/datagrid-length`: `DataGridLength`,
+  `DataGridLengthUnitType`, `DataGridLengthConverter`, `DataGrid.ColumnWidth` and a `DataGridLength`-typed
+  `DataGridColumn.Width`. Samples: ExpenseItDemo fail→runs (with track 1).
+- **Round 62 (lane A) review + fixes - DONE.** Verified findings applied failing-first. **a-F1**
+  `MenuItemAutomationPeer.AffectsAccessible` includes `InputGestureText`, so a later change re-pushes `KeyShortcuts`
+  (an explicit `AcceleratorKey` still wins). **a-F2** the automation tests assert the peer defaults, null rejection for
+  both string properties, and observe pushes through a new internal `PeerAccessible.Spy` seam (fails if
+  `SyncKeyShortcuts` is removed). **b-F1** `Reposition` uses `ComputeBounds(overlay)` (border box in overlay
+  coordinates) instead of `ComputePoint(main)`; the placement tests assert bounds equality, including an element inside
+  a padded, bordered `Border`. **b-F2** a placed adorner widget is `CanTarget=false` (restored on unplace), so picks
+  over the adorned element reach it (PhotoStoreDemo's image `MouseDown` runs). **b-F3** an adorned element that is
+  unmapped, collapsed or widget-less hides the adorner and leaves its geometry alone; it returns, respecting the
+  adorner's own `Visibility`. **b-F4** the "does not grow the content" test can now fail (a 5000x5000 adorner widget;
+  it fails with `SetMeasureOverlay(widget, true)`). **b-F5** `Window.OnFrameLayout` calls
+  `ImplicitAdornerLayer.RepositionAll()`; the test moves the adorned element by a GTK-only size request on a sibling,
+  because a direct `Window.SizeAllocate` raises no frame-clock layout (nothing runs to observe it). **b-F6**
+  `WindowAdornerLayerTests` split, tree pins in `WindowAdornerLayerTreeTests`. **c-F1** `DataGridLength.ToString()` is
+  culture-invariant. **c-F2** `_unitValue` is the value except for Auto (1.0), as dotnet/wpf; the statics are
+  constructed as `(AutoValue, unit, 0d, 0d)` as in the source (so `new DataGridLength(1, SizeToHeader) !=
+  DataGridLength.SizeToHeader`). Spec mismatch flagged: the lane brief said the content-sized units normalise to 1.0;
+  dotnet/wpf normalises only Auto. **c-F3** an infinite number converts with `NotSupportedException`. **c-F4** the
+  `ApplyColumnWidths` comment now says a Pixel width is a header-only minimum size request; a test pins that a long
+  header widens a Pixel(10) column. **c-F6** the column-width test pumps and asserts data-row `Hexpand`, also after a
+  `ColumnWidth` change (fails without the cell loop).
+- **Round 62 (lane A) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. Targeted
+  `PresentationFramework.Tests` (`Adorner`, `Automation`, `DataGrid`, `Window`, `MenuItem`): 683 tests, 0 failed; the
+  suites run in full at integrate. Samples gate: all
+  207 projects build through a lane-private feed and all 191 apps that ran at `17c64167` still run (see
+  `samples-coverage.md`, "Round 62 (lane A) gate"). Checks: ExpenseItDemo's `CreateExpenseReportDialogBox` opens and
+  `ColumnWidth="*"` reaches the grid; a native click on PhotoStoreDemo's image reaches `OnMouseDown`.
+- **Round 62 (lane A) follow-up.** Reviewer findings verified; fixes failing-first. **b-F3** `Reposition` now takes
+  Visible from `VisibilityGtkMap` (Hidden stays mapped at opacity 0), so Hidden -> Visible shows the adorner again.
+  **b-F2** a `UIElement.SuppressCanTarget` flag makes `ApplyCanTarget` keep a placed adorner untargetable through
+  Visibility/IsHitTestVisible/IsEnabled changes; `Unplace` re-applies the current state instead of a stale snapshot.
+  **b-F5** `AdornerDecorator` layers now reposition on the overlay's frame-clock layout (`AdornerLayer.Frame.cs`), so an
+  adorner hidden while its element was unmapped returns. **c-F2** `DataGridLengthConverter` builds fresh
+  `new DataGridLength(1.0, unit)` values (NaN desired/display, equal to WPF's), not the statics. **c-F4** the Pixel
+  header test now shows the grid, pumps and asserts the header's allocated width. **Capture check (b-F2)**: with a
+  placed (CanTarget=false) adorner, `CaptureMouse()` succeeds and `RaiseMouseMove`/`RaiseMouseButton` on the adorned
+  element are re-targeted to the adorner (`Mouse.GetInputTarget` is managed, independent of the adorner's pick state);
+  tested, not driven by a native drag. **b-F5 test gap kept**: the window-width (centred horizontal move) case stays
+  uncovered; `Window.SizeAllocate` raises no frame layout. Full `PresentationFramework.Tests` at `328b893e`: 6156
+  passed, 0 failed, 3 skipped (6159). Targeted after the fixes (`Adorner`, `DataGrid`, `Window`, `MouseCapture`,
+  `Visibility`): 529 passed, 0 failed.
+- **Round 62 (lane A) carry-over.**
+  - `AutomationElementIdentifiers.HeadingLevelProperty` (WPF 4.8+), `AutomationElement.HeadingLevelProperty` and a
+    `PeerProvider`/`PropertyCatalog` case are not implemented.
+  - Hand-off to lane B: `XamlValueConverter` has no `[TypeConverter]` fallback, so `DataGridLength` registers itself in
+    its static constructor. That is safe on dependency-property paths (the DP field initialiser touches
+    `DataGridLength` first), but type-only paths miss it: `ConvertByType(typeof(DataGridLength), "*")` before first
+    use returns the raw string, and so do `XamlObjectBuilder.Members` for non-DP members,
+    `XamlValueConverter.TextConversion` and `XamlObjectWriter.Values`. Lane B should register `DataGridLength` in
+    `RegisterBuiltIns` and add `System.Windows.Controls.DataGridLength` to `ConverterBackedStructs` (the drift test
+    mirrors it), or add a general `TypeDescriptor` fallback. `[TypeConverter]` types in the `ThemeMode` style have the
+    same gap.
+  - The generator does not emit `DataGrid.Columns` (a property element), so ExpenseItDemo's dialog grid has no columns
+    (lane B).
+  - Window's implicit adorner layer is store-only with respect to the visual tree: `VisualTreeHelper.GetChild(window,
+    0)` is still the content, where WPF's template has `Border > AdornerDecorator`. Popups and
+    `ScrollContentPresenter` have no implicit adorner layer, where WPF gives each one.
+  - Adorner-drawn interactive content is not pickable (placed adorner widgets are `CanTarget=false`). Whether
+    `Mouse.Capture`/`CaptureMouse` on an adorner routes events through the window-level controller (as
+    `RubberbandAdorner` does) is checked at the managed level (see the follow-up); no native drag was driven.
+  - Explicit `AdornerDecorator` layers reposition on the overlay frame layout (follow-up); they are not
+    driven by the window hook.
+  - A Pixel `DataGridColumn.Width` is a minimum size request (WPF clips); star weights other than equal are store-only.
+- **Round 63 (lane B) track 2 - startup and generator sweep IV (DONE, merged).** `gf63b/startup-generator-sweep-4`
+  (`2ca1bdb8`): an object-typed attribute literal stays a string (SlidePuzzleDemo `Tag="1"`), `TextBlock.TextEffects`
+  with names registered inside `TextEffect.Transform` (AnimationExamples), `CommandBindings`, inline styles,
+  `UIElement.OpacityMask`, `Int32RectConverter`/`PixelFormatConverter` (mirrored in `ConverterBackedStructs`), and the
+  most common 'Skipped property element' cases. The `gf39/xaml-content-model` idea stays the compile-checked corpus
+  test of Round 61 (the branch is not rebased).
+- **Round 63 (lane B) track 5 - packaging: NOT merged.** `gf63b/packaging-permissions` delivered nothing (Round 61's
+  attempt was BLOCKed before any commit, and this one did not ship either), so there is nothing to merge:
+  EditingExaminerDemo's `System.Security.Permissions` dependency (verify the net10.0 reference assembly,
+  SYSLIB0003 staying a warning, pin it, nuspec test) and the WPFGallery `SystemEvents` leftovers stay open lane work,
+  not a defect in the merged code.
+- **Round 63 (lane B) track 6 - rendering hygiene (DONE, merged).** `gf63b/rendering-hygiene` (`a0e4d8cb`): the
+  DrawFunc `Cairo.Context` is disposed deterministically on the GTK thread (the 'Cairo.Context is leaking' finalizer
+  warnings of Per-FrameAnimation and ParticlesDemo), and textures scaled below `MinTextureScale` are not applied (the
+  Gsk 'out of memory' frame failures of ParticlesDemo).
+- **Round 63 (lane B) review + fixes - DONE.** Applied failing-first. **a-F1** the TextEffects generator emits
+  `if (x.TextEffects == null) x.TextEffects = new TextEffectCollection();` once per property element before the first
+  `Add`: `TextElement.TextEffects` and `FlowDocument.TextEffects` default to null, so `<Run.TextEffects>` threw
+  `NullReferenceException` in `InitializeComponent`. **a-F4** `TextBlock.TextEffects` is a plain
+  `GetValue` (nullable): the old first-read `SetValue` made a local value that shadowed a Style setter and invalidated
+  the visual. Remaining deviation: the default is null, not WPF's empty frozen collection. **a-F2** unsupported
+  attributes on a `CommandBinding` child (`PreviewExecuted`, `PreviewCanExecute`) are reported as `Skipped attribute
+  <name> on CommandBinding: not available in the layer`; the supported handlers stay wired. **a-F3** run-time tests:
+  the generated code is compiled and run, so `Tag="1"` is a string and `FindName("TextEffectRotateTransform")` returns
+  the `RotateTransform`; the object key frame test is text-only plus AssertCompiles (the layer has no
+  `ObjectAnimationUsingKeyFrames`/`DiscreteObjectKeyFrame`, so the generator drops that animation and the literal rule
+  cannot reach it, before and after the sweep);
+  mutation-checked (reverting the object-literal rule turns the first red). **a-F6** `Int32Rect` 'Empty' is compared
+  ordinally as in WPF ('empty' is a `FormatException`); `FormatException` for token counts and unknown pixel formats is
+  this layer's convention (WPF throws `InvalidOperationException` / `ArgumentException`, the latter from memory).
+  **c-N2** a degenerate texture on a triangle with at least 1 px² of screen area falls back to the solid colour instead
+  of painting nothing. **c-N1** the sub-pixel replay theory is renamed `_smoke`: the cairo image replay always reports
+  Success. **c-N3** test leaks fixed (`ImageSurface` disposed; `Graphene.Rect.Alloc` instead of a never-freed
+  `AllocHGlobal`). **c-N4** the `MinTextureScale` remark is corrected and says the 1e-8 threshold is empirical.
+  **CI-2** `Packed_nuspec_declares_SystemEvents_10x_in_every_dependency_group`. Rejected in triage: a-F5 (not a
+  defect: the `ComboBox` `CreateWidget` guard prevents a stack overflow and `UIElement.OpacityMask` matches WPF; both
+  sit outside Track 2's ownership, so integrate should check them for conflicts), CI-1 (already done: the imaging
+  converters are registered and mirrored), CI-3 (outside the lane: `Data/**`, `XmlDataProvider`,
+  `FlowDocument.TextEffectsProperty` identity, `SystemEvents` off Windows; the a-F1 guard removes the crash), CI-4
+  (`gf39/xaml-content-model` is superseded by `GeneratorContentModelCorpusTests`; only integrate may delete it).
+- **Round 63 (lane B) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. Targeted tests (the
+  suites run in full at integrate): `MarkupCompiler.Tests` `GeneratorSweep4*` 42 passed; `PresentationFramework.Tests`
+  `TextBlockTextEffects`/`Viewport3DDegenerate`/`CairoDrawFunc`/`XamlValueConverterImaging`/`Round49aConverter` 56
+  passed; `ProjectConverter.Tests` `PackedNuspec` 2 passed.
+  Samples gate: all 204 projects that built at `17c64167` build through a lane-private pinned feed (two builds each),
+  and all 191 apps that ran still run and stay up for 10 s (20 with no window handle at 10 s re-checked alone for 20 s:
+  all alive with a window; OpacityMasking needed 35 s and shows its window). A first pass packed a stale MarkupCompiler
+  (a mutation-check build left in `bin`) and showed a false 2DTransforms failure (`Text = 0`); re-packed from a clean
+  solution build it passes.
+- **Round 63 (lane B) follow-up.** The Run/Paragraph TextEffects guard is now checked by running generated  `InitializeComponent` (the hand-written null-guard test is removed); the object key frame test is documented as  text-only; the Viewport3D degenerate-texture test is renamed to match the corrected MinTextureScale wording; two  over-long test lines are wrapped. The MarkupCompiler run-time tests load the layer assemblies in the default load  context; the Linux and macOS CI legs still have to confirm they need no display.
+- **Round 63 (lane B) carry-over.** Packaging (EditingExaminerDemo `System.Security.Permissions`, WPFGallery
+  `SystemEvents`) is still unstarted. `TextElement.TextEffects`, `FlowDocument.TextEffects` and `TextBlock.TextEffects`
+  default to null (not an empty frozen collection). `CommandBinding` still has only `Executed` and `CanExecute`.
+
 ## Phased roadmap (after Phase 0 proves the spine)
 
 1. **Core controls, layout, binding.** `StackPanel`/`DockPanel`/`Canvas`/`WrapPanel` with WPF
