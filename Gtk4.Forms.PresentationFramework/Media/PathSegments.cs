@@ -12,6 +12,16 @@ namespace System.Windows.Media;
 /// </summary>
 public abstract class PathSegment
 {
+	internal Action? Changed;
+
+	/// <summary>Stores <paramref name="value"/> and raises <see cref="Changed"/> when it differs.</summary>
+	internal void Set<T>(ref T field, T value)
+	{
+		if (EqualityComparer<T>.Default.Equals(field, value)) return;
+		field = value;
+		Changed?.Invoke();
+	}
+
 	/// <summary>Appends this segment to the current open path in <paramref name="cr"/>.</summary>
 	internal abstract void AddToPath(Cairo.Context cr);
 }
@@ -32,10 +42,12 @@ public class LineSegment : PathSegment
 	}
 
 	/// <summary>The end point of the line.</summary>
-	public System.Windows.Point Point { get; set; }
+	public System.Windows.Point Point { get => _point; set => Set(ref _point, value); }
+	System.Windows.Point _point;
 
 	/// <summary>Whether the segment contributes to the stroke.</summary>
-	public bool IsStroked { get; set; } = true;
+	public bool IsStroked { get => _isStroked; set => Set(ref _isStroked, value); }
+	bool _isStroked = true;
 
 	/// <inheritdoc/>
 	internal override void AddToPath(Cairo.Context cr) =>
@@ -59,13 +71,17 @@ public class BezierSegment : PathSegment
 	}
 
 	/// <summary>First control point.</summary>
-	public System.Windows.Point Point1 { get; set; }
+	public System.Windows.Point Point1 { get => _point1; set => Set(ref _point1, value); }
+	System.Windows.Point _point1;
 	/// <summary>Second control point.</summary>
-	public System.Windows.Point Point2 { get; set; }
+	public System.Windows.Point Point2 { get => _point2; set => Set(ref _point2, value); }
+	System.Windows.Point _point2;
 	/// <summary>End point.</summary>
-	public System.Windows.Point Point3 { get; set; }
+	public System.Windows.Point Point3 { get => _point3; set => Set(ref _point3, value); }
+	System.Windows.Point _point3;
 	/// <summary>Whether the segment contributes to the stroke.</summary>
-	public bool IsStroked { get; set; } = true;
+	public bool IsStroked { get => _isStroked; set => Set(ref _isStroked, value); }
+	bool _isStroked = true;
 
 	/// <inheritdoc/>
 	internal override void AddToPath(Cairo.Context cr) =>
@@ -90,11 +106,14 @@ public class QuadraticBezierSegment : PathSegment
 	}
 
 	/// <summary>The control point.</summary>
-	public System.Windows.Point Point1 { get; set; }
+	public System.Windows.Point Point1 { get => _point1; set => Set(ref _point1, value); }
+	System.Windows.Point _point1;
 	/// <summary>The end point.</summary>
-	public System.Windows.Point Point2 { get; set; }
+	public System.Windows.Point Point2 { get => _point2; set => Set(ref _point2, value); }
+	System.Windows.Point _point2;
 	/// <summary>Whether the segment contributes to the stroke.</summary>
-	public bool IsStroked { get; set; } = true;
+	public bool IsStroked { get => _isStroked; set => Set(ref _isStroked, value); }
+	bool _isStroked = true;
 
 	/// <inheritdoc/>
 	internal override void AddToPath(Cairo.Context cr)

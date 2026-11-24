@@ -4,7 +4,7 @@ namespace System.Windows.Media;
 /// Describes how a stroke is painted: brush + thickness.
 /// Mirrors <c>System.Windows.Media.Pen</c>.
 /// </summary>
-public class Pen
+public partial class Pen
 {
 	/// <summary>Creates a default pen (null brush, 1-unit thickness).</summary>
 	public Pen() { }
