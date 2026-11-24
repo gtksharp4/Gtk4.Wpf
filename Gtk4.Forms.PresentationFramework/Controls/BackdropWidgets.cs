@@ -7,28 +7,31 @@ namespace System.Windows.Controls;
 // ElementCssStyle would take for a user-given one (and its #name selector would never match), so each
 // constructor restores a Gtk* default name.
 
-sealed class BackdropBox : Gtk.Box
+sealed class BackdropBox : Gtk.Box, IBackdrop
 {
-	internal BackdropBox(Gtk.Orientation orientation, int spacing) : base(orientation, spacing) { Name = "GtkBackdropBox"; }
+	internal BackdropBox(Gtk.Orientation orientation, int spacing) : base(orientation, spacing)
+	{
+		Name = "GtkBackdropBox";
+	}
 
 	protected override void OnSnapshot(Gtk.Snapshot snapshot) => BrushPaint.Snapshot(this, snapshot, base.OnSnapshot);
 }
 
-sealed class BackdropFixed : Gtk.Fixed
+sealed class BackdropFixed : Gtk.Fixed, IBackdrop
 {
 	internal BackdropFixed() { Name = "GtkBackdropFixed"; }
 
 	protected override void OnSnapshot(Gtk.Snapshot snapshot) => BrushPaint.Snapshot(this, snapshot, base.OnSnapshot);
 }
 
-sealed class BackdropGrid : Gtk.Grid
+sealed class BackdropGrid : Gtk.Grid, IBackdrop
 {
 	internal BackdropGrid() { Name = "GtkBackdropGrid"; }
 
 	protected override void OnSnapshot(Gtk.Snapshot snapshot) => BrushPaint.Snapshot(this, snapshot, base.OnSnapshot);
 }
 
-sealed class BackdropFrame : Gtk.Frame
+sealed class BackdropFrame : Gtk.Frame, IBackdrop
 {
 	internal BackdropFrame() { Name = "GtkBackdropFrame"; }
 

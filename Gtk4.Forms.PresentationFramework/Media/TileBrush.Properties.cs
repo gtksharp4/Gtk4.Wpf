@@ -61,7 +61,8 @@ public abstract partial class TileBrush
 		set => SetValue(TileModeProperty, value);
 	}
 
-	/// <summary>Position and size of the base tile, relative to the fill area or absolute per <see cref="ViewportUnits"/>.</summary>
+	/// <summary>Position and size of the base tile: relative to the fill area or absolute per
+	/// <see cref="ViewportUnits"/>.</summary>
 	public Rect Viewport
 	{
 		get => (Rect)GetValue(ViewportProperty)!;
@@ -75,7 +76,8 @@ public abstract partial class TileBrush
 		set => SetValue(ViewportUnitsProperty, value);
 	}
 
-	/// <summary>Portion of the content shown in the tile, relative to the content bounds or absolute per <see cref="ViewboxUnits"/>.</summary>
+	/// <summary>Portion of the content shown in the tile: relative to the content bounds or absolute per
+	/// <see cref="ViewboxUnits"/>.</summary>
 	public Rect Viewbox
 	{
 		get => (Rect)GetValue(ViewboxProperty)!;

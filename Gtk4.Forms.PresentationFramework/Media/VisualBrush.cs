@@ -16,14 +16,16 @@ namespace System.Windows.Media;
 /// </para>
 /// <para>
 /// <b>Detached sources:</b> an unparented element is measured to infinity and arranged to its desired size
-/// (<see cref="AutoLayoutContent"/>), then mapped inside one shared, near-transparent, non-interactive host window
-/// (<c>DetachedSourceHost</c>, not a WPF window) that is released with the last brush.
+/// (<see cref="AutoLayoutContent"/>, again whenever its layout is invalidated), then parked in an invisible,
+/// non-targetable, non-focusable layer inside a mapped application window (<c>DetachedSourceHost</c>: no extra
+/// toplevel, no activation change). The layer goes with the last brush that uses it; with no mapped window the
+/// source paints transparent until one exists.
 /// </para>
 /// <para>
 /// <b>Gaps:</b> descendant overflow is clipped to the render size (WPF uses descendant bounds); the tile raster is
 /// at device scale 1 (no HiDPI factor). A <c>Control</c> Background (BrushCss) and a TextBlock Foreground paint a
 /// VisualBrush as nothing rather than black until those owners call <c>BrushPaint.Fill</c> from a Backdrop snapshot;
-/// <c>Shape.OpacityMask</c> is store-only until Shape gets the same snapshot hook. A source that is not realised or has
+/// a Shape under a native panel is masked by that panel. A source that is not realised or has
 /// no size paints transparent.
 /// </para>
 /// </remarks>
@@ -50,7 +52,7 @@ public partial class VisualBrush : TileBrush
 		set => SetValue(VisualProperty, value);
 	}
 
-	/// <summary>Whether an unparented <see cref="UIElement"/> source is measured and arranged to its desired size.</summary>
+	/// <summary>Whether an unparented <see cref="UIElement"/> source is measured and arranged to its size.</summary>
 	public bool AutoLayoutContent
 	{
 		get => (bool)GetValue(AutoLayoutContentProperty)!;

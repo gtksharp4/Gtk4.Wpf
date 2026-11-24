@@ -2858,6 +2858,22 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
 - **Round 63 (lane B) carry-over.** Packaging (EditingExaminerDemo `System.Security.Permissions`, WPFGallery
   `SystemEvents`) is still unstarted. `TextElement.TextEffects`, `FlowDocument.TextEffects` and `TextBlock.TextEffects`
   default to null (not an empty frozen collection). `CommandBinding` still has only `Executed` and `CanExecute`.
+- **Round 70 (lane J) review fixes (VisualBrush / TileBrush).** Measured causes per sample tab: Painting with Visuals
+  (black tiles: the pre-3fb62afe fill painted Cairo's default black, then an empty detached source and a 1-pixel
+  nested tile), Magnifying Glass (the source was never laid out or mapped, and a Canvas/StackPanel painted no tile
+  background), Reflection (DrawingGroup children had no inheritance context; a late `Width`/`Height` binding never
+  reached the widget). Review fixes: **J70-1** detached sources no longer get their own toplevel (it took activation):
+  they sit in a non-targetable, non-focusable overlay layer far outside the app window, no `Present`. **J70-2**
+  `OpacityMask` of a child of a Backdrop panel is pushed around that child's whole render (CSS background and border
+  included). **J70-3** a brush painted inside its own source drops the echo invalidation once two re-renders in a row are
+  pixel-identical (bounded `Changed`); the source link is made at first paint, since an App.xaml resource sets `Visual`
+  before GTK is initialised (GeometryDesignerDemo crashed in the gate). **J70-4** weak leases: the layer goes with the last brush. **J70-5** a detached source is re-measured and
+  re-arranged on every render. **J70-6..11** pixel tests for RelativeTransform, Transform order, Flip modes, grid and
+  reflection flip; Graphene rect owned and freed; device-resolution tile uses the transformed cell axes and caps total
+  pixels; the late-size push only clears a request this code set; lines wrapped. Cross-lane hooks: lane G (Control
+  `Background`) and lane K (`TextBlock.Foreground`) call `BrushPaint.Fill` from a Backdrop snapshot (BrushCss emits
+  nothing for tile brushes); lane I (`Shape.OpacityMask`) is covered under a Backdrop panel and needs a snapshot hook
+  only for a Shape that is the window content; lane H `RenderingPainter` reads `VisualBrush.TryGetLiveSurface`.
 
 ## Phased roadmap (after Phase 0 proves the spine)
 

@@ -8,9 +8,9 @@ public abstract partial class UIElement
 	/// Identifies the <see cref="OpacityMask"/> dependency property (default null).
 	/// <para>
 	/// The mask is applied in the GTK snapshot of the native containers (StackPanel, DockPanel, Grid, Canvas,
-	/// Border): the mask brush (solid, gradient or tile) is painted over the element bounds and the element
-	/// content (background and children) is drawn through its alpha. Gaps: stock widgets (controls, text) and
-	/// Shapes draw without the snapshot override, so the mask is stored but not applied there.
+	/// Border): a mask on any child of those panels (panels, controls and shapes alike) is pushed around the
+	/// child's whole render, CSS background and border included. A masked element under any other parent (a
+	/// window's content) masks its content only, not its CSS background or border.
 	/// </para>
 	/// </summary>
 	public static readonly DependencyProperty OpacityMaskProperty = DependencyProperty.Register(

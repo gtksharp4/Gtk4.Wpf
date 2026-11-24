@@ -1,3 +1,4 @@
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shapes;
@@ -46,12 +47,37 @@ public class VisualBrushSampleTests : WpfUiTest<global::VisualBrush.App>
 		using var snapshot = new Gtk.Snapshot();
 		paintable.Snapshot(snapshot, w, h);
 		using var node = snapshot.FreeToNode();
-		if (node == null) throw new System.InvalidOperationException($"no render node for {element.GetType().Name} {w}x{h} mapped={widget.IsMapped}");
+		if (node == null) return new Shot(new Cairo.ImageSurface(Cairo.Format.Argb32, Math.Max(1, w), Math.Max(1, h)));
 		var surface = new Cairo.ImageSurface(Cairo.Format.Argb32, w, h);
 		using var cr = new Cairo.Context(surface);
 		node.Draw(cr);
 		return new Shot(surface);
 	});
+
+	// The element as its parent draws it (parent-applied OpacityMask included), cropped to the element's bounds.
+	Shot CaptureWithin(UIElement container, UIElement element) => App.Invoke(() =>
+	{
+		using var full = Capture(container).Surface;
+		element.Widget.ComputeBounds(container.Widget, out var b);
+		int w = (int)Math.Ceiling(b.Width), h = (int)Math.Ceiling(b.Height);
+		var crop = new Cairo.ImageSurface(Cairo.Format.Argb32, w, h);
+		using var cr = new Cairo.Context(crop);
+		cr.SetSourceSurface(full, -(int)Math.Round(b.X), -(int)Math.Round(b.Y));
+		cr.Paint();
+		return new Shot(crop);
+	});
+
+	// A parent snapshot taken right after another can come back empty; retry with a pause until it has content.
+	Shot CapturePainted(UIElement container, UIElement element)
+	{
+		var shot = CaptureWithin(container, element);
+		for (int i = 0; i < 30 && shot.Count(p => p.A > 40) <= 1000; i++)
+		{
+			System.Threading.Thread.Sleep(300);
+			shot = CaptureWithin(container, element);
+		}
+		return shot;
+	}
 
 	Page SelectTab(int index)
 	{
@@ -120,7 +146,7 @@ public class VisualBrushSampleTests : WpfUiTest<global::VisualBrush.App>
 		System.Threading.Thread.Sleep(700);
 		App.Invoke(() => Assert.True(lower.Background is System.Windows.Media.VisualBrush { Visual: not null } && lower.OpacityMask != null,
 			$"bg={lower.Background?.GetType().Name} visual={(lower.Background as System.Windows.Media.VisualBrush)?.Visual} mask={lower.OpacityMask}"));
-		var shot = Capture(lower);
+		var shot = CapturePainted((StackPanel)page.Content, lower);
 		int h = shot.Surface.Height;
 		int visibleTop = shot.Count(p => p.A > 40);
 		Assert.True(visibleTop > 1000, "the reflection is empty");
@@ -131,7 +157,66 @@ public class VisualBrushSampleTests : WpfUiTest<global::VisualBrush.App>
 			bottomAlpha += shot.At(x, h - 3).A;
 		}
 		Assert.True(topAlpha > bottomAlpha, $"no fade: top {topAlpha}, bottom {bottomAlpha}");
-		// The TextBox sits near the bottom of the source, so mirrored it is near the top of the reflection.
+		// The TextBox sits near the bottom of the source, so mirrored it is near the top of the reflection, and the
+		// lorem text (near the top of the source) would sit under the faded half. An unflipped reflection would put
+		// full-width text lines at the top instead.
+		int wide = 0, box = 0;
+		for (int y = 0; y < 150; y++)
+			for (int x = 0; x < shot.Surface.Width; x++)
+			{
+				var p = shot.At(x, y);
+				if (x >= 220 && p.A >= 60 && p.R * 255 / p.A < 90 && p.G * 255 / p.A < 90 && p.B * 255 / p.A < 90) wide++;
+				if (x is < 75 or >= 200 || y is < 10 or >= 70) continue;
+				var bg = shot.At(60, y);
+				if (Math.Abs(p.R - bg.R) + Math.Abs(p.G - bg.G) + Math.Abs(p.B - bg.B) > 40) box++;
+			}
+		Assert.True(wide < 40, $"the reflection is not flipped: {wide} dark pixels on the right of the top half");
+		Assert.True(box > 15, $"the mirrored TextBox is missing near the top: {box}");
 		Assert.NotNull(upper);
+	}
+
+	[WpfUiFact]
+	public void The_95_by_35_tile_repeats_at_its_period()
+	{
+		var page = SelectTab(0);
+		var rect = App.Invoke(() => (Rectangle)((StackPanel)((StackPanel)page.Content).Children[2]).Children[0]);
+		App.Invoke(() => Assert.True(rect.Fill is System.Windows.Media.VisualBrush { Viewport.Width: 95, Viewport.Height: 35 }));
+		var shot = Capture(rect);
+		int ink = shot.Count(p => p.A > 60 && p.R < 140 && p.G < 140 && p.B < 140);
+		Assert.True(ink > 100, $"the 95x35 tile has no text: {ink}");
+		int mismatched = 0, compared = 0;
+		for (int y = 5; y < 70; y++)
+			for (int x = 5; x < 50; x++)
+			{
+				compared++;
+				if (shot.At(x, y) != shot.At(x + 95, y + 35)) mismatched++;
+			}
+		Assert.True(mismatched < compared / 50, $"the tile does not repeat every 95x35 pixels: {mismatched}/{compared}");
+	}
+
+	[WpfUiFact]
+	public void The_page_background_paints_the_faint_text_tiles()
+	{
+		var page = SelectTab(0);
+		var root = App.Invoke(() => (StackPanel)page.Content);
+		var shot = Capture(root);
+		int faint = shot.Count(p => p.A is > 4 and < 45);
+		Assert.True(faint > 300, $"the 0.1-opacity text tiles are missing: {faint}");
+	}
+
+	[WpfUiFact]
+	public void Painting_the_tabs_never_adds_a_window_or_steals_activation()
+	{
+		App.Invoke(() => Viewer.Activate());
+		App.WaitUntil(() => App.Invoke(() => Viewer.IsActive), description: "app window active");
+		var gtkWindow = App.Invoke(() => (Gtk.Window)Viewer.Widget);
+		bool OthersActive() => App.Invoke(() => Gtk.Window.ListToplevels().Any(w => w != gtkWindow && w.IsActive));
+		int before = App.Invoke(() => Gtk.Window.ListToplevels().Count(w => w.IsVisible));
+		for (int tab = 0; tab < 3; tab++)
+		{
+			SelectTab(tab);
+			Assert.False(OthersActive(), $"tab {tab}: another toplevel took activation");
+		}
+		App.Invoke(() => Assert.Equal(before, Gtk.Window.ListToplevels().Count(w => w.IsVisible)));
 	}
 }

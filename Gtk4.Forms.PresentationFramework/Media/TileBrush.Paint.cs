@@ -2,7 +2,7 @@ namespace System.Windows.Media;
 
 public abstract partial class TileBrush
 {
-	const int MaxTilePixels = 8192;
+	const double MaxTilePixels = 4096.0 * 4096.0;
 
 	/// <summary>Sets an explicit transparent source, so a degenerate brush never paints Cairo's default black.</summary>
 	internal static void SetTransparentSource(Cairo.Context cr) => cr.SetSourceRGBA(0, 0, 0, 0);
@@ -29,14 +29,15 @@ public abstract partial class TileBrush
 		cellToUser.Translate(map.Viewport.X, map.Viewport.Y);
 		cellToUser.Append(RelativeToAbsolute(new Rect(0, 0, width, height)));
 		cellToUser.Append(Transform?.Value ?? Matrix.Identity);
-		// Raster at device resolution: the cell's user extent, carried through the CTM scale.
-		double ux = cellW * Math.Sqrt(cellToUser.M11 * cellToUser.M11 + cellToUser.M12 * cellToUser.M12);
-		double uy = cellH * Math.Sqrt(cellToUser.M21 * cellToUser.M21 + cellToUser.M22 * cellToUser.M22);
-		double dx = ux, dy = 0, ex = 0, ey = uy;
-		cr.UserToDeviceDistance(ref dx, ref dy);
-		cr.UserToDeviceDistance(ref ex, ref ey);
-		int iw = Math.Max(1, Math.Min(MaxTilePixels, (int)Math.Ceiling(Math.Sqrt(dx * dx + dy * dy))));
-		int ih = Math.Max(1, Math.Min(MaxTilePixels, (int)Math.Ceiling(Math.Sqrt(ex * ex + ey * ey))));
+		// Raster at device resolution: the cell's own axes (after the brush transforms), carried through the CTM.
+		double ax = cellW * cellToUser.M11, ay = cellW * cellToUser.M12;
+		double bx = cellH * cellToUser.M21, by = cellH * cellToUser.M22;
+		cr.UserToDeviceDistance(ref ax, ref ay);
+		cr.UserToDeviceDistance(ref bx, ref by);
+		double pw = Math.Max(1, Math.Sqrt(ax * ax + ay * ay)), ph = Math.Max(1, Math.Sqrt(bx * bx + by * by));
+		double shrink = Math.Min(1, Math.Sqrt(MaxTilePixels / (pw * ph)));
+		int iw = Math.Max(1, (int)Math.Ceiling(pw * shrink));
+		int ih = Math.Max(1, (int)Math.Ceiling(ph * shrink));
 
 		var matrix = Matrix.Identity;
 		matrix.Scale(cellW / iw, cellH / ih);
@@ -74,7 +75,8 @@ public abstract partial class TileBrush
 		return m;
 	}
 
-	void PaintTiles(Cairo.Context tc, TileMapping map, int cols, int rows, double kx, double ky, Action<Cairo.Context> draw)
+	void PaintTiles(Cairo.Context tc, TileMapping map, int cols, int rows, double kx, double ky,
+		Action<Cairo.Context> draw)
 	{
 		double opacity = Opacity;
 		bool group = opacity < 1;

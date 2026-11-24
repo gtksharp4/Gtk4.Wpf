@@ -91,15 +91,22 @@ public class VisualBrushLiveTests : WpfGtkTestBase
 	[Fact]
 	public void An_unparented_element_is_laid_out_and_painted() => Run(() =>
 	{
-		var source = new Border { Width = 60, Height = 60, Background = Brushes.Red };
-		var brush = new VisualBrush(source);
-		var rect = new Rectangle { Fill = brush };
-		bool changed = false;
-		brush.Changed += (_, _) => changed = true;
-		Sample(rect, 50, 50);
-		Assert.True(GtkPump.Until(() => changed, 3000));
-		GtkPump.For(800);
-		var p = Sample(rect, 50, 50);
-		Assert.True(p.R > 200 && p.B < 50 && p.A > 200, p.ToString());
+		var win = new WpfWindow { Content = new StackPanel(), Width = 300, Height = 300 };
+		win.Show();
+		GtkPump.For(300);
+		try
+		{
+			var source = new Border { Width = 60, Height = 60, Background = Brushes.Red };
+			var brush = new VisualBrush(source);
+			var rect = new Rectangle { Fill = brush };
+			bool changed = false;
+			brush.Changed += (_, _) => changed = true;
+			Sample(rect, 50, 50);
+			Assert.True(GtkPump.Until(() => changed, 3000));
+			GtkPump.For(800);
+			var p = Sample(rect, 50, 50);
+			Assert.True(p.R > 200 && p.B < 50 && p.A > 200, p.ToString());
+		}
+		finally { win.Close(); }
 	});
 }
