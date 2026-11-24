@@ -23,8 +23,21 @@ static class BrushPaint
 			_ => null,
 		}) as TileBrush;
 
+	[ThreadStatic] static Gtk.Widget? _paintingRoot;
+
+	/// <summary>The toplevel whose Backdrop container is being snapshotted: the window that paints its brushes.</summary>
+	internal static Gtk.Widget? PaintingRoot => _paintingRoot;
+
 	/// <summary>Draws the element's background and children through <paramref name="stock"/>, masked if asked.</summary>
 	internal static void Snapshot(Gtk.Widget widget, Gtk.Snapshot snapshot, Action<Gtk.Snapshot> stock)
+	{
+		var previous = _paintingRoot;
+		_paintingRoot = widget.Root as Gtk.Widget ?? previous;
+		try { SnapshotCore(widget, snapshot, stock); }
+		finally { _paintingRoot = previous; }
+	}
+
+	static void SnapshotCore(Gtk.Widget widget, Gtk.Snapshot snapshot, Action<Gtk.Snapshot> stock)
 	{
 		var owner = UIElement.OwnerOf(widget);
 		var background = owner == null ? null : TileBackground(owner);
@@ -62,17 +75,34 @@ static class BrushPaint
 		for (var c = parent.FirstChild; c != null; c = c.NextSibling)
 		{
 			var mask = UIElement.OwnerOf(c)?.OpacityMask;
-			if (mask == null || !c.ComputeBounds(parent, out var b) || b.Width <= 0 || b.Height <= 0)
+			if (mask == null || !c.ComputeBounds(c, out var own) || own.Width <= 0 || own.Height <= 0 ||
+				!c.ComputeTransform(parent, out var matrix) || !c.ComputeBounds(parent, out var bounds))
 			{
 				parent.SnapshotChild(c, snapshot);
 				continue;
 			}
+			// The mask lives in the child's own space, so it turns and scales with its RenderTransform.
 			snapshot.PushMask(Gsk.MaskMode.Alpha);
-			Fill(snapshot, b.X, b.Y, (int)Math.Ceiling(b.Width), (int)Math.Ceiling(b.Height), mask);
+			FillInChildSpace(snapshot, bounds, matrix, own, mask);
 			snapshot.Pop();
 			parent.SnapshotChild(c, snapshot);
 			snapshot.Pop();
 		}
+	}
+
+	// Fills the brush over the child's own w x h box, mapped into the parent's space by the child's transform.
+	static void FillInChildSpace(
+		Gtk.Snapshot snapshot, Graphene.Rect bounds, Graphene.Matrix m, Graphene.Rect own, Brush brush)
+	{
+		using var cr = snapshot.AppendCairo(bounds);
+		cr.Transform(new Cairo.Matrix(m.GetValue(0, 0), m.GetValue(0, 1), m.GetValue(1, 0), m.GetValue(1, 1),
+			m.GetValue(3, 0), m.GetValue(3, 1)));
+		int w = (int)Math.Ceiling(own.Width), h = (int)Math.Ceiling(own.Height);
+		cr.Translate(own.X, own.Y);
+		cr.Rectangle(0, 0, w, h);
+		cr.Clip();
+		brush.ApplyToCairo(cr, w, h);
+		cr.Paint();
 	}
 
 	internal static void Fill(Gtk.Snapshot snapshot, float x, float y, int w, int h, Brush brush)

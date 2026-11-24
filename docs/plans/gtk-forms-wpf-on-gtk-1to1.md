@@ -2873,7 +2873,17 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   pixels; the late-size push only clears a request this code set; lines wrapped. Cross-lane hooks: lane G (Control
   `Background`) and lane K (`TextBlock.Foreground`) call `BrushPaint.Fill` from a Backdrop snapshot (BrushCss emits
   nothing for tile brushes); lane I (`Shape.OpacityMask`) is covered under a Backdrop panel and needs a snapshot hook
-  only for a Shape that is the window content; lane H `RenderingPainter` reads `VisualBrush.TryGetLiveSurface`.
+only for a Shape that is the window content; lane H `RenderingPainter` reads `VisualBrush.TryGetLiveSurface`.
+- **Round 70 (lane J) review fixes, second pass.** The independent review blocked three regressions. **Host choice:**
+  a detached source is hosted in the toplevel of the window that paints the brush (`BrushPaint.PaintingRoot`, set by
+  every Backdrop snapshot; the active window otherwise), and every render re-checks that the layer is still mapped and
+  re-hosts the source if not; with no window at all (`Shape.PaintTo`, offscreen rendering) the source is mapped by hand
+  under a never-mapped `Fixed` and snapshotted through it, so it still renders. The layer is created from an idle
+  callback, not inside the snapshot (no "snapshot GtkFixed without a current allocation" warning). **Liveness:** the echo
+  is recognised by its cause, not by timing: invalidations during the 100 ms after the brush's own `Changed` are held,
+  then one re-render decides whether the source really changed; a dirty brush always raises `Changed` eventually.
+  **Transforms:** a masked child's mask is filled in the child's own space (`ComputeTransform`), so it turns with a
+  `RenderTransform`. Lane J's gaps unchanged: no `Present`, no extra toplevel.
 
 ## Phased roadmap (after Phase 0 proves the spine)
 
