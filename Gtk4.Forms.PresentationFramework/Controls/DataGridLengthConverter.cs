@@ -29,7 +29,9 @@ public class DataGridLengthConverter : TypeConverter
 		if (value != null && CanConvertFrom(context, value.GetType()))
 		{
 			var number = Convert.ToDouble(value, culture);
-			return double.IsNaN(number) ? DataGridLength.Auto : new DataGridLength(number);
+			if (double.IsNaN(number)) return DataGridLength.Auto;
+			if (double.IsInfinity(number)) throw GetConvertFromException(value);
+			return new DataGridLength(number);
 		}
 		throw GetConvertFromException(value);
 	}

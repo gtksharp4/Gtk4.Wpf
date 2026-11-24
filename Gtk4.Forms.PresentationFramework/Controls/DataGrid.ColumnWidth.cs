@@ -50,7 +50,9 @@ public partial class DataGrid
 	}
 
 	// GTK Grid shares spare width equally, so star weights other than equal are store-only, and
-	// SizeToCells and SizeToHeader both map to natural size.
+	// SizeToCells and SizeToHeader both map to natural size. A Pixel width is a minimum size request on the
+	// header widget only (cells just get Hexpand off); a GTK request is a minimum, so wider header or cell
+	// content makes the column wider, where WPF clips to the exact width.
 	internal void ApplyColumnWidths()
 	{
 		if (_grid == null) return;

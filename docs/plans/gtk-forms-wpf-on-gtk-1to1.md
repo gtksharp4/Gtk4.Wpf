@@ -2730,6 +2730,68 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   elements that are unbuildable and not referenced by a `{StaticResource}` get no `Resources` entry (a later
   `FindResource` for them throws as in WPF for a missing key); `XmlDataProvider.XmlNamespaceManager` is still not built.
 
+- **Round 62 (lane A) track 1 - automation attached properties (DONE, merged).** `gf62a/automation-attached-properties`:
+  `AutomationProperties.HeadingLevel` (`AutomationHeadingLevel`), `ItemStatus` and `AcceleratorKey` with WPF's
+  registration and validation, read by `UIElementAutomationPeer`'s `GetHeadingLevelCore`, `GetItemStatusCore` and
+  `GetAcceleratorKeyCore`; a menu item falls back to `InputGestureText`; the accelerator key is pushed to GTK
+  `KeyShortcuts`. Samples: DataBindingDemo fail→runs, ExpenseItDemo's automation wall gone, WPFGallery's
+  `HeadingLevel` wall gone (it now builds and hits the run-time `ControlCornerRadius` wall).
+- **Round 62 (lane A) track 3 - window adorner layer (DONE, merged).** `gf62b/window-adorner-layer`: `Window` owns an
+  implicit adorner layer hosted in a `Gtk.Overlay` around the content, so `AdornerLayer.GetAdornerLayer` finds a layer
+  for any element in a window. Samples: PhotoStoreDemo crash→runs.
+- **Round 62 (lane A) track 4 - controls tail IV (DONE, merged).** `gf62c/datagrid-length`: `DataGridLength`,
+  `DataGridLengthUnitType`, `DataGridLengthConverter`, `DataGrid.ColumnWidth` and a `DataGridLength`-typed
+  `DataGridColumn.Width`. Samples: ExpenseItDemo fail→runs (with track 1).
+- **Round 62 (lane A) review + fixes - DONE.** Verified findings applied failing-first. **a-F1**
+  `MenuItemAutomationPeer.AffectsAccessible` includes `InputGestureText`, so a later change re-pushes `KeyShortcuts`
+  (an explicit `AcceleratorKey` still wins). **a-F2** the automation tests assert the peer defaults, null rejection for
+  both string properties, and observe pushes through a new internal `PeerAccessible.Spy` seam (fails if
+  `SyncKeyShortcuts` is removed). **b-F1** `Reposition` uses `ComputeBounds(overlay)` (border box in overlay
+  coordinates) instead of `ComputePoint(main)`; the placement tests assert bounds equality, including an element inside
+  a padded, bordered `Border`. **b-F2** a placed adorner widget is `CanTarget=false` (restored on unplace), so picks
+  over the adorned element reach it (PhotoStoreDemo's image `MouseDown` runs). **b-F3** an adorned element that is
+  unmapped, collapsed or widget-less hides the adorner and leaves its geometry alone; it returns, respecting the
+  adorner's own `Visibility`. **b-F4** the "does not grow the content" test can now fail (a 5000x5000 adorner widget;
+  it fails with `SetMeasureOverlay(widget, true)`). **b-F5** `Window.OnFrameLayout` calls
+  `ImplicitAdornerLayer.RepositionAll()`; the test moves the adorned element by a GTK-only size request on a sibling,
+  because a direct `Window.SizeAllocate` raises no frame-clock layout (nothing runs to observe it). **b-F6**
+  `WindowAdornerLayerTests` split, tree pins in `WindowAdornerLayerTreeTests`. **c-F1** `DataGridLength.ToString()` is
+  culture-invariant. **c-F2** `_unitValue` is the value except for Auto (1.0), as dotnet/wpf; the statics are
+  constructed as `(AutoValue, unit, 0d, 0d)` as in the source (so `new DataGridLength(1, SizeToHeader) !=
+  DataGridLength.SizeToHeader`). Spec mismatch flagged: the lane brief said the content-sized units normalise to 1.0;
+  dotnet/wpf normalises only Auto. **c-F3** an infinite number converts with `NotSupportedException`. **c-F4** the
+  `ApplyColumnWidths` comment now says a Pixel width is a header-only minimum size request; a test pins that a long
+  header widens a Pixel(10) column. **c-F6** the column-width test pumps and asserts data-row `Hexpand`, also after a
+  `ColumnWidth` change (fails without the cell loop).
+- **Round 62 (lane A) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. Targeted
+  `PresentationFramework.Tests` (`Adorner`, `Automation`, `DataGrid`, `Window`, `MenuItem`): 683 tests, 0 failed; the
+  suites run in full at integrate. Samples gate: all
+  207 projects build through a lane-private feed and all 191 apps that ran at `17c64167` still run (see
+  `samples-coverage.md`, "Round 62 (lane A) gate"). Checks: ExpenseItDemo's `CreateExpenseReportDialogBox` opens and
+  `ColumnWidth="*"` reaches the grid; a native click on PhotoStoreDemo's image reaches `OnMouseDown`.
+- **Round 62 (lane A) carry-over.**
+  - `AutomationElementIdentifiers.HeadingLevelProperty` (WPF 4.8+), `AutomationElement.HeadingLevelProperty` and a
+    `PeerProvider`/`PropertyCatalog` case are not implemented.
+  - Hand-off to lane B: `XamlValueConverter` has no `[TypeConverter]` fallback, so `DataGridLength` registers itself in
+    its static constructor. That is safe on dependency-property paths (the DP field initialiser touches
+    `DataGridLength` first), but type-only paths miss it: `ConvertByType(typeof(DataGridLength), "*")` before first
+    use returns the raw string, and so do `XamlObjectBuilder.Members` for non-DP members,
+    `XamlValueConverter.TextConversion` and `XamlObjectWriter.Values`. Lane B should register `DataGridLength` in
+    `RegisterBuiltIns` and add `System.Windows.Controls.DataGridLength` to `ConverterBackedStructs` (the drift test
+    mirrors it), or add a general `TypeDescriptor` fallback. `[TypeConverter]` types in the `ThemeMode` style have the
+    same gap.
+  - The generator does not emit `DataGrid.Columns` (a property element), so ExpenseItDemo's dialog grid has no columns
+    (lane B).
+  - Window's implicit adorner layer is store-only with respect to the visual tree: `VisualTreeHelper.GetChild(window,
+    0)` is still the content, where WPF's template has `Border > AdornerDecorator`. Popups and
+    `ScrollContentPresenter` have no implicit adorner layer, where WPF gives each one.
+  - Adorner-drawn interactive content is not pickable (placed adorner widgets are `CanTarget=false`). Whether
+    `Mouse.Capture`/`CaptureMouse` on an adorner routes events through the window-level controller (as
+    `RubberbandAdorner` does) was not exercised by a drag; only the click path was.
+  - `RepositionAll` runs for the window's implicit layer only: explicit `AdornerDecorator` layers are not
+    repositioned on a frame layout.
+  - A Pixel `DataGridColumn.Width` is a minimum size request (WPF clips); star weights other than equal are store-only.
+
 ## Phased roadmap (after Phase 0 proves the spine)
 
 1. **Core controls, layout, binding.** `StackPanel`/`DockPanel`/`Canvas`/`WrapPanel` with WPF

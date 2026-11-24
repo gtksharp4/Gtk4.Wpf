@@ -92,6 +92,7 @@ public class MenuItemAutomationPeer : FrameworkElementAutomationPeer, IInvokePro
 
 	internal override bool AffectsAccessible(DependencyProperty property) =>
 		property == MenuItem.IsCheckedProperty || property == MenuItem.IsCheckableProperty
+		|| property == MenuItem.InputGestureTextProperty
 		|| base.AffectsAccessible(property);
 
 	internal override void PushState(Gtk.Widget widget)

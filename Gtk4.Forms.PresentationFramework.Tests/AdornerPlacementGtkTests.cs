@@ -6,21 +6,13 @@ using Gtk4.Forms.PresentationFramework.Tests.Lifecycle;
 using Xunit;
 using WpfWindow = System.Windows.Window;
 using static Gtk4.Forms.PresentationFramework.Tests.WindowAdornerLayerTests;
+using static Gtk4.Forms.PresentationFramework.Tests.AdornerPlacementBoundsGtkTests;
 
 namespace Gtk4.Forms.PresentationFramework.Tests;
 
 /// <summary>Adorner widgets are overlay children placed over the adorned element.</summary>
 public class AdornerPlacementGtkTests : WpfGtkTestBase
 {
-	static (int x, int y) Origin(UIElement el, Gtk.Widget main)
-	{
-		var p = new Graphene.Point();
-		p.X = 0;
-		p.Y = 0;
-		Assert.True(el.Widget.ComputePoint(main, p, out var to));
-		return ((int)Math.Round(to.X), (int)Math.Round(to.Y));
-	}
-
 	[Fact]
 	public void Adorner_added_after_show_is_placed_over_adorned_element() => Run(() =>
 	{
@@ -33,14 +25,10 @@ public class AdornerPlacementGtkTests : WpfGtkTestBase
 			GtkPump.For(100);
 			var overlay = OverlayOf(win);
 			Assert.Same(overlay, adorner.Widget.Parent);
-			var (x, y) = Origin(target, overlay.Child);
-			Assert.True(y >= 40);
-			Assert.Equal(x, adorner.Widget.MarginStart);
-			Assert.Equal(y, adorner.Widget.MarginTop);
+			AssertCovers(overlay, target, adorner);
+			Assert.True(adorner.Widget.MarginTop >= 40);
 			Assert.Equal(Gtk.Align.Start, adorner.Widget.Halign);
 			Assert.Equal(Gtk.Align.Start, adorner.Widget.Valign);
-			Assert.Equal((int)Math.Ceiling(target.ActualWidth), adorner.Widget.WidthRequest);
-			Assert.Equal((int)Math.Ceiling(target.ActualHeight), adorner.Widget.HeightRequest);
 			Assert.False(overlay.GetMeasureOverlay(adorner.Widget));
 		}
 		finally { win.Close(); }
@@ -57,10 +45,7 @@ public class AdornerPlacementGtkTests : WpfGtkTestBase
 		try
 		{
 			ShowAndLayout(win, target);
-			var (x, y) = Origin(target, overlay.Child);
-			Assert.Equal(x, adorner.Widget.MarginStart);
-			Assert.Equal(y, adorner.Widget.MarginTop);
-			Assert.Equal((int)Math.Ceiling(target.ActualHeight), adorner.Widget.HeightRequest);
+			AssertCovers(overlay, target, adorner);
 		}
 		finally { win.Close(); }
 	});
@@ -118,9 +103,8 @@ public class AdornerPlacementGtkTests : WpfGtkTestBase
 			spacer.Widget.SetSizeRequest(-1, 90);
 			GtkPump.For(300);
 			layer.Update(target);
-			var (_, y) = Origin(target, overlay.Child);
-			Assert.True(y > before);
-			Assert.Equal(y, adorner.Widget.MarginTop);
+			Assert.True(adorner.Widget.MarginTop > before);
+			AssertCovers(overlay, target, adorner);
 		}
 		finally { win.Close(); }
 	});
@@ -137,22 +121,6 @@ public class AdornerPlacementGtkTests : WpfGtkTestBase
 			GtkPump.For(100);
 			spacer.Widget.SetSizeRequest(-1, 90);
 			GtkState.Require(() => adorner.Widget.HeightRequest == 90, "adorner height follows", spacer);
-		}
-		finally { win.Close(); }
-	});
-
-	[Fact]
-	public void Adorner_does_not_grow_the_window_content() => Run(() =>
-	{
-		var (win, panel, target, _) = Build();
-		try
-		{
-			ShowAndLayout(win, target);
-			double before = panel.ActualHeight;
-			var big = new Border { Width = 5000, Height = 5000 };
-			AdornerLayer.GetAdornerLayer(target)!.Add(new WidgetAdorner(big));
-			GtkPump.For(100);
-			Assert.Equal(before, panel.ActualHeight);
 		}
 		finally { win.Close(); }
 	});

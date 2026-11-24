@@ -94,10 +94,15 @@ public class AutomationPropertiesItemsTests : WpfGtkTestBase
 	}
 
 	[Fact]
-	public void Validation_rejects_null_only_for_strings()
+	public void Validation_rejects_null_and_accepts_strings_for_both_string_properties()
 	{
-		Assert.False(AutomationProperties.AcceleratorKeyProperty.ValidateValueCallback!(null!));
-		Assert.True(AutomationProperties.ItemStatusProperty.ValidateValueCallback!(""));
+		foreach (var dp in new[] { AutomationProperties.AcceleratorKeyProperty, AutomationProperties.ItemStatusProperty })
+		{
+			Assert.Throws<ArgumentException>(() => new Stub().SetValue(dp, null));
+			var e = new Stub();
+			e.SetValue(dp, "text");
+			Assert.Equal("text", e.GetValue(dp));
+		}
 	}
 
 	[Fact]
@@ -107,6 +112,7 @@ public class AutomationPropertiesItemsTests : WpfGtkTestBase
 		var peer = new UIElementAutomationPeer(e);
 		Assert.Equal(string.Empty, peer.GetAcceleratorKey());
 		Assert.Equal(AutomationHeadingLevel.None, peer.GetHeadingLevel());
+		Assert.Equal(string.Empty, peer.GetItemStatus());
 		AutomationProperties.SetAcceleratorKey(e, "Ctrl+K");
 		AutomationProperties.SetItemStatus(e, "Done");
 		AutomationProperties.SetHeadingLevel(e, AutomationHeadingLevel.Level2);
@@ -186,15 +192,5 @@ public class AutomationPropertiesItemsTests : WpfGtkTestBase
 		var b = (Button)XamlReader.Parse("<Button " + XamlReaderTests.Ns + "><Button.Style><Style TargetType=\"Button\">"
 			+ "<Setter Property=\"AutomationProperties.HeadingLevel\" Value=\"Level2\"/></Style></Button.Style></Button>");
 		Assert.Equal(AutomationHeadingLevel.Level2, AutomationProperties.GetHeadingLevel(b));
-	});
-
-	[Fact]
-	public void KeyShortcuts_push_before_and_after_realize_does_not_throw() => Run(() =>
-	{
-		var btn = new Button();
-		AutomationProperties.SetAcceleratorKey(btn, "Ctrl+Shift+C");
-		Assert.Null(Record.Exception(() => _ = btn.Widget));
-		Assert.Null(Record.Exception(() => AutomationProperties.SetAcceleratorKey(btn, "Ctrl+D")));
-		Assert.Null(Record.Exception(() => btn.ClearValue(AutomationProperties.AcceleratorKeyProperty)));
 	});
 }

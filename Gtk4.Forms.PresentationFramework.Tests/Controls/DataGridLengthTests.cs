@@ -45,15 +45,13 @@ public class DataGridLengthTests
 	public void Undefined_unit_type_throws() =>
 		Assert.Throws<ArgumentException>(() => new DataGridLength(1, (DataGridLengthUnitType)9));
 
-	[Theory]
-	[InlineData(DataGridLengthUnitType.Auto)]
-	[InlineData(DataGridLengthUnitType.SizeToCells)]
-	[InlineData(DataGridLengthUnitType.SizeToHeader)]
-	public void Content_sized_units_normalise_value_to_one(DataGridLengthUnitType type)
+	[Fact]
+	public void Only_Auto_normalises_value_to_one()
 	{
-		var l = new DataGridLength(42, type);
-		Assert.Equal(1.0, l.Value);
-		Assert.Equal(type, l.UnitType);
+		Assert.Equal(1.0, new DataGridLength(42, DataGridLengthUnitType.Auto).Value);
+		Assert.Equal(42, new DataGridLength(42, DataGridLengthUnitType.SizeToCells).Value);
+		Assert.Equal(42, new DataGridLength(42, DataGridLengthUnitType.SizeToHeader).Value);
+		Assert.True(new DataGridLength(3, DataGridLengthUnitType.SizeToHeader) != DataGridLength.SizeToHeader);
 	}
 
 	[Fact]

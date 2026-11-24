@@ -1,5 +1,6 @@
 using System;
 using System.Windows.Controls;
+using Gtk4.Forms.PresentationFramework.Tests.Lifecycle;
 using Xunit;
 
 namespace Gtk4.Forms.PresentationFramework.Tests.Controls;
@@ -75,16 +76,38 @@ public class DataGridColumnWidthTests : WpfGtkTestBase
 		grid.Columns.Add(new DataGridTextColumn { Header = "C", Width = DataGridLength.Auto });
 		grid.ItemsSource = new[] { "x" };
 		_ = grid.Widget;
+		GtkPump.For(100);
 		var native = grid._grid!;
 		Assert.True(native.GetChildAt(0, 0)!.Hexpand);
 		Assert.False(native.GetChildAt(1, 0)!.Hexpand);
 		Assert.False(native.GetChildAt(2, 0)!.Hexpand);
+		Assert.True(native.GetChildAt(0, 1)!.Hexpand);
+		Assert.False(native.GetChildAt(1, 1)!.Hexpand);
 		Assert.Equal(120, WidthRequest(native.GetChildAt(1, 0)!));
 		pixel.Width = DataGridLength.Auto;
 		Assert.Equal(-1, WidthRequest(native.GetChildAt(1, 0)!));
 		grid.Columns[2].ClearValue(DataGridColumn.WidthProperty);
 		grid.ColumnWidth = Star(1);
+		GtkPump.For(100);
 		Assert.True(native.GetChildAt(2, 0)!.Hexpand);
+		Assert.True(native.GetChildAt(2, 1)!.Hexpand);
+		Assert.False(native.GetChildAt(1, 1)!.Hexpand);
+	});
+
+	// Pins the documented gap: a pixel width is a minimum request, so a long header widens the column.
+	[Fact]
+	public void Pixel_width_is_a_minimum_a_long_header_widens_the_column() => Run(() =>
+	{
+		var grid = new DataGrid { AutoGenerateColumns = false };
+		grid.Columns.Add(new DataGridTextColumn
+		{
+			Header = "A very long column header text", Width = new DataGridLength(10)
+		});
+		grid.ItemsSource = new[] { "x" };
+		_ = grid.Widget;
+		var header = grid._grid!.GetChildAt(0, 0)!;
+		header.Measure(Gtk.Orientation.Horizontal, -1, out _, out var natural, out _, out _);
+		Assert.True(natural > 10);
 	});
 
 	static int WidthRequest(Gtk.Widget widget)

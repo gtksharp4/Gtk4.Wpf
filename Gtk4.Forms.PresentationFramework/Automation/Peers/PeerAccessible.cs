@@ -6,17 +6,26 @@ namespace System.Windows.Automation.Peers;
 /// </summary>
 static partial class PeerAccessible
 {
+	/// <summary>Test seam: sees every property push and reset (a reset reports a null value).</summary>
+	internal static Action<Gtk.Widget, Gtk.AccessibleProperty, object?>? Spy;
+
 	internal static void SetProperty(Gtk.Widget widget, Gtk.AccessibleProperty property, string value) =>
-		Gtk.AccessibleExtensions.UpdateProperty(widget, new[] { property }, new[] { new GLib.Value(value) });
+		Update(widget, property, new GLib.Value(value), value);
 
 	internal static void SetProperty(Gtk.Widget widget, Gtk.AccessibleProperty property, bool value) =>
-		Gtk.AccessibleExtensions.UpdateProperty(widget, new[] { property }, new[] { new GLib.Value(value) });
+		Update(widget, property, new GLib.Value(value), value);
 
 	internal static void SetProperty(Gtk.Widget widget, Gtk.AccessibleProperty property, int value) =>
-		Gtk.AccessibleExtensions.UpdateProperty(widget, new[] { property }, new[] { new GLib.Value(value) });
+		Update(widget, property, new GLib.Value(value), value);
 
 	internal static void SetProperty(Gtk.Widget widget, Gtk.AccessibleProperty property, double value) =>
-		Gtk.AccessibleExtensions.UpdateProperty(widget, new[] { property }, new[] { new GLib.Value(value) });
+		Update(widget, property, new GLib.Value(value), value);
+
+	static void Update(Gtk.Widget widget, Gtk.AccessibleProperty property, GLib.Value value, object boxed)
+	{
+		Spy?.Invoke(widget, property, boxed);
+		Gtk.AccessibleExtensions.UpdateProperty(widget, new[] { property }, new[] { value });
+	}
 
 	internal static void SetState(Gtk.Widget widget, Gtk.AccessibleState state, bool value) =>
 		UpdateState(widget, state, value ? 1 : 0);

@@ -19,15 +19,15 @@ public struct DataGridLength : IEquatable<DataGridLength>
 	}
 
 	/// <summary>Sizes from the cell and header content.</summary>
-	public static readonly DataGridLength Auto = new DataGridLength(AutoValue, DataGridLengthUnitType.Auto);
+	public static readonly DataGridLength Auto = new DataGridLength(AutoValue, DataGridLengthUnitType.Auto, 0d, 0d);
 
 	/// <summary>Sizes from the cell content.</summary>
 	public static readonly DataGridLength SizeToCells =
-		new DataGridLength(AutoValue, DataGridLengthUnitType.SizeToCells);
+		new DataGridLength(AutoValue, DataGridLengthUnitType.SizeToCells, 0d, 0d);
 
 	/// <summary>Sizes from the header content.</summary>
 	public static readonly DataGridLength SizeToHeader =
-		new DataGridLength(AutoValue, DataGridLengthUnitType.SizeToHeader);
+		new DataGridLength(AutoValue, DataGridLengthUnitType.SizeToHeader, 0d, 0d);
 
 	readonly double _unitValue;
 	readonly DataGridLengthUnitType _unitType;
@@ -55,8 +55,7 @@ public struct DataGridLength : IEquatable<DataGridLength>
 			throw new ArgumentException("DataGridLength display value must not be infinite.", nameof(displayValue));
 		if (type < DataGridLengthUnitType.Auto || type > DataGridLengthUnitType.Star)
 			throw new ArgumentException("Undefined DataGridLengthUnitType.", nameof(type));
-		var absoluteOrStar = type == DataGridLengthUnitType.Pixel || type == DataGridLengthUnitType.Star;
-		_unitValue = absoluteOrStar ? value : AutoValue;
+		_unitValue = type == DataGridLengthUnitType.Auto ? AutoValue : value;
 		_unitType = type;
 		_desiredValue = desiredValue;
 		_displayValue = displayValue;
@@ -77,7 +76,7 @@ public struct DataGridLength : IEquatable<DataGridLength>
 	/// <summary>True for a SizeToHeader length.</summary>
 	public bool IsSizeToHeader => _unitType == DataGridLengthUnitType.SizeToHeader;
 
-	/// <summary>The value, in pixels or star weight; 1.0 for the content-sized units.</summary>
+	/// <summary>The value, in pixels or star weight; 1.0 for Auto.</summary>
 	public double Value => _unitValue;
 
 	/// <summary>The unit type.</summary>
@@ -116,7 +115,7 @@ public struct DataGridLength : IEquatable<DataGridLength>
 	}
 
 	/// <inheritdoc/>
-	public override string ToString() => DataGridLengthConverter.ConvertToString(this, CultureInfo.CurrentCulture);
+	public override string ToString() => DataGridLengthConverter.ConvertToString(this, CultureInfo.InvariantCulture);
 
 	static bool SameDouble(double a, double b) => a == b || (double.IsNaN(a) && double.IsNaN(b));
 

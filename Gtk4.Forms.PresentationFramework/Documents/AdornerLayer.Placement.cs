@@ -10,6 +10,7 @@ public sealed partial class AdornerLayer
 	sealed class Tracker
 	{
 		public Action Reposition = null!;
+		public bool CanTarget;
 
 		public void OnSize(object sender, SizeChangedEventArgs e) => Reposition();
 
@@ -29,6 +30,13 @@ public sealed partial class AdornerLayer
 			Unplace(adorner);
 	}
 
+	/// <summary>Repositions every placed adorner; catches GTK moves that raise no WPF layout event.</summary>
+	internal void RepositionAll()
+	{
+		foreach (var adorner in new List<Adorner>(_placed.Keys))
+			Reposition(adorner);
+	}
+
 	void Place(Adorner adorner)
 	{
 		var overlay = _gtkOverlay;
@@ -36,7 +44,7 @@ public sealed partial class AdornerLayer
 		var widget = adorner.Widget;
 		widget.Halign = Gtk.Align.Start;
 		widget.Valign = Gtk.Align.Start;
-		var tracker = new Tracker { Reposition = () => Reposition(adorner) };
+		var tracker = new Tracker { Reposition = () => Reposition(adorner), CanTarget = widget.CanTarget };
 		_placed[adorner] = tracker;
 		// Adorners overlay the content; they must never enlarge the window.
 		overlay.AddOverlay(widget);
@@ -55,32 +63,30 @@ public sealed partial class AdornerLayer
 		if (adorned is FrameworkElement fe) fe.SizeChanged -= tracker.OnSize;
 		adorned.LayoutUpdated -= tracker.OnLayout;
 		_gtkOverlay?.RemoveOverlay(adorner.Widget);
+		adorner.Widget.CanTarget = tracker.CanTarget;
 	}
 
-	// Covers the adorned element: margin = its origin in the overlay's main child, size = its extent.
+	// Covers the adorned element's border box in overlay coordinates. A placed widget is not pickable (GTK
+	// would route every pick over the adorned element to it), so adorner-drawn interactive content is a gap.
+	// An adorned element that is unmapped or has no widget hides the adorner and leaves its geometry alone.
 	void Reposition(Adorner adorner)
 	{
 		var overlay = _gtkOverlay;
 		if (overlay == null || !_placed.ContainsKey(adorner)) return;
 		var widget = adorner.Widget;
+		widget.CanTarget = false;
 		var adorned = adorner.AdornedElement;
-		int x = 0, y = 0;
-		var main = overlay.Child;
-		if (main != null && adorned.HasBackingWidget && adorned.Widget.IsMapped && main.IsMapped)
+		Graphene.Rect? bounds = null;
+		if (adorned.HasBackingWidget && adorned.Widget.IsMapped && adorned.Widget.ComputeBounds(overlay, out var b))
+			bounds = b;
+		if (bounds == null)
 		{
-			var origin = new Graphene.Point();
-			origin.X = 0;
-			origin.Y = 0;
-			var ok = adorned.Widget.ComputePoint(main, origin, out var to);
-			if (ok)
-			{
-				x = (int)Math.Round(to.X);
-				y = (int)Math.Round(to.Y);
-			}
+			widget.Visible = false;
+			return;
 		}
-		var size = adorned.RenderSize;
-		widget.MarginStart = x;
-		widget.MarginTop = y;
-		widget.SetSizeRequest((int)Math.Ceiling(size.Width), (int)Math.Ceiling(size.Height));
+		widget.MarginStart = (int)Math.Round(bounds.X);
+		widget.MarginTop = (int)Math.Round(bounds.Y);
+		widget.SetSizeRequest((int)Math.Ceiling(bounds.Width), (int)Math.Ceiling(bounds.Height));
+		widget.Visible = adorner.Visibility == Visibility.Visible;
 	}
 }
