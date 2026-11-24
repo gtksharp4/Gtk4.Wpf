@@ -7,10 +7,11 @@ namespace Gtk4.Forms.PresentationFramework.Tests.Imaging;
 /// <summary>WPF arranges a Stretch-aligned Stretch.None Image centred in a larger slot (alignment offset).</summary>
 public class ImageAlignmentDisplayTests : WpfGtkTestBase
 {
-	static int FirstRedColumn(WidgetPixels p)
+	// Rows from firstRow down: the titlebar above holds the default window icon, which has red pixels.
+	static int FirstRedColumn(WidgetPixels p, int firstRow)
 	{
 		for (int x = 0; x < p.Width; x++)
-			for (int y = 0; y < p.Height; y++)
+			for (int y = firstRow; y < p.Height; y++)
 			{
 				var (b, g, r, a) = p.At(x, y);
 				if (a == 255 && r > 200 && g < 60 && b < 60)
@@ -26,7 +27,8 @@ public class ImageAlignmentDisplayTests : WpfGtkTestBase
 		Assert.Equal(ImageDisplayFixtures.Size, probe.Image.ActualWidth);
 		// A symmetric Margin(20) leaves the centre unchanged (20 + (560-64)/2 == (600-64)/2) and
 		// Margin is not applied to GTK widgets (docs/samples-coverage.md): this proves centring only.
-		Assert.Equal(20 + (560 - ImageDisplayFixtures.Size) / 2, FirstRedColumn(probe.WindowPixels()));
+		int titlebar = ((Gtk.Window)probe.Window.Widget).Titlebar!.Height;
+		Assert.Equal(20 + (560 - ImageDisplayFixtures.Size) / 2, FirstRedColumn(probe.WindowPixels(), titlebar));
 	});
 
 	[Fact]
