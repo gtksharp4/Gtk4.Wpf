@@ -192,7 +192,7 @@ public class ControlGtkSmokeTests : WpfGtkTestBase
 	public void Border_Widget_is_GtkFrame() => Run(() =>
 	{
 		var b = new WpfBorder();
-		Assert.IsType<Gtk.Frame>(b.Widget);
+		Assert.IsAssignableFrom<Gtk.Frame>(b.Widget);
 	});
 
 	[Fact]

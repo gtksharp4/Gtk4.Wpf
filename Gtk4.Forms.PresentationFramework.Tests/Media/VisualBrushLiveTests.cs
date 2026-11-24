@@ -55,4 +55,51 @@ public class VisualBrushLiveTests : WpfGtkTestBase
 		}
 		finally { win.Close(); }
 	});
+
+	static (byte R, byte G, byte B, byte A) Sample(Rectangle rect, int x, int y)
+	{
+		using var surface = new Cairo.ImageSurface(Cairo.Format.Argb32, 100, 100);
+		using (var cr = new Cairo.Context(surface))
+			rect.PaintTo(cr, 100, 100);
+		return PixelAt(surface, x, y);
+	}
+
+	[Fact]
+	public void Changing_the_source_background_raises_Changed_and_repaints() => Run(() =>
+	{
+		var source = new Border { Width = 100, Height = 100, Background = Brushes.Red };
+		var host = new StackPanel();
+		host.Children.Add(source);
+		var win = new WpfWindow { Content = host, Width = 300, Height = 300 };
+		try
+		{
+			win.Show();
+			GtkPump.For(300);
+			var brush = new VisualBrush(source);
+			var rect = new Rectangle { Fill = brush };
+			Assert.True(Sample(rect, 50, 50).R > 200);
+			bool changed = false;
+			brush.Changed += (_, _) => changed = true;
+			source.Background = Brushes.Blue;
+			Assert.True(GtkPump.Until(() => changed, 2000));
+			var p = Sample(rect, 50, 50);
+			Assert.True(p.B > 200 && p.R < 50, p.ToString());
+		}
+		finally { win.Close(); }
+	});
+
+	[Fact]
+	public void An_unparented_element_is_laid_out_and_painted() => Run(() =>
+	{
+		var source = new Border { Width = 60, Height = 60, Background = Brushes.Red };
+		var brush = new VisualBrush(source);
+		var rect = new Rectangle { Fill = brush };
+		bool changed = false;
+		brush.Changed += (_, _) => changed = true;
+		Sample(rect, 50, 50);
+		Assert.True(GtkPump.Until(() => changed, 3000));
+		GtkPump.For(800);
+		var p = Sample(rect, 50, 50);
+		Assert.True(p.R > 200 && p.B < 50 && p.A > 200, p.ToString());
+	});
 }

@@ -34,7 +34,7 @@ public partial class StackPanel : Panel
 	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
-		_box = new Gtk.Box(ToGtk(Orientation), 0);
+		_box = new BackdropBox(ToGtk(Orientation), 0);
 		// Pack any children added before the widget was created.
 		foreach (var child in Children)
 			_box.Add(child.Widget);

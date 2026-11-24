@@ -83,7 +83,7 @@ public partial class DockPanel : Panel
 	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
-		_outerBox = new Gtk.Box(Gtk.Orientation.Vertical, 0);
+		_outerBox = new BackdropBox(Gtk.Orientation.Vertical, 0);
 		_innerBox = new Gtk.Box(Gtk.Orientation.Horizontal, 0);
 		_fillSlot = new Gtk.Box(Gtk.Orientation.Vertical, 0);
 		_fillSlot.Hexpand = true;

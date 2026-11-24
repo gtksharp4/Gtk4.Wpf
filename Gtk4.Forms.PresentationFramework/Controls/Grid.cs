@@ -74,7 +74,7 @@ public partial class Grid : Panel
 	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
-		_grid = new Gtk.Grid();
+		_grid = new BackdropGrid();
 		_grid.RowHomogeneous = false;
 		_grid.ColumnHomogeneous = false;
 		foreach (var child in Children)
