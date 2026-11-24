@@ -4,37 +4,6 @@ using System.Windows.Shapes;
 
 namespace System.Windows.Media;
 
-// ── PathFigure ────────────────────────────────────────────────────────────
-
-/// <summary>
-/// A sub-path within a <see cref="PathGeometry"/>: a start point and a list of segments.
-/// Mirrors <c>System.Windows.Media.PathFigure</c>.
-/// </summary>
-public class PathFigure
-{
-	/// <summary>Start point of this figure.</summary>
-	public System.Windows.Point StartPoint { get; set; }
-
-	/// <summary>Whether the figure is closed (last point joined to first).</summary>
-	public bool IsClosed { get; set; }
-
-	/// <summary>Whether the figure contributes to the fill area.</summary>
-	public bool IsFilled { get; set; } = true;
-
-	/// <summary>The segments that make up this figure.</summary>
-	public IList<PathSegment> Segments { get; } = new List<PathSegment>();
-
-	/// <summary>Adds this figure's path to <paramref name="cr"/>.</summary>
-	internal void BuildPath(Cairo.Context cr)
-	{
-		cr.MoveTo(StartPoint.X, StartPoint.Y);
-		foreach (var seg in Segments)
-			seg.AddToPath(cr);
-		if (IsClosed)
-			cr.ClosePath();
-	}
-}
-
 // ── PathGeometry ─────────────────────────────────────────────────────────
 
 /// <summary>
@@ -44,17 +13,34 @@ public class PathFigure
 public partial class PathGeometry : Geometry
 {
 	/// <summary>Creates an empty path geometry.</summary>
-	public PathGeometry() { }
+	public PathGeometry() => Hook(_figures);
 
 	/// <summary>Creates a path geometry pre-populated with <paramref name="figures"/>.</summary>
 	public PathGeometry(IEnumerable<PathFigure> figures)
 	{
+		Hook(_figures);
 		foreach (var f in figures)
 			Figures.Add(f);
 	}
 
-	/// <summary>The collection of path figures.</summary>
-	public PathFigureCollection Figures { get; set; } = new PathFigureCollection();
+	PathFigureCollection _figures = new PathFigureCollection();
+
+	/// <summary>The collection of path figures; adding, removing or editing a figure raises <c>Changed</c>.</summary>
+	public PathFigureCollection Figures
+	{
+		get => _figures;
+		set
+		{
+			ThrowIfFrozen();
+			if (value == null) throw new ArgumentNullException(nameof(value));
+			_figures.Changed = null;
+			_figures = value;
+			Hook(value);
+			OnChanged();
+		}
+	}
+
+	void Hook(PathFigureCollection figures) => figures.Changed = () => OnChanged();
 
 	/// <inheritdoc/>
 	public override System.Windows.Rect Bounds

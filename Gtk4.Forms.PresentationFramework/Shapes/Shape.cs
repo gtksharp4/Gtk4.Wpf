@@ -88,6 +88,7 @@ public abstract partial class Shape : FrameworkElement, IDisposable
 	{
 		_area = new Gtk.DrawingArea();
 		_area.DrawFunc = OnDraw;
+		InstallNaturalLayout(_area);
 		SyncNaturalSize();
 		return _area;
 	}
@@ -118,6 +119,8 @@ public abstract partial class Shape : FrameworkElement, IDisposable
 	{
 		cr.Save();
 		ApplyClip(cr);
+		cr.Rectangle(0, 0, width, height);
+		cr.Clip();
 
 		BuildStretchedPath(cr, width, height);
 

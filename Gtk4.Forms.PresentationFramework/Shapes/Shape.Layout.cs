@@ -86,24 +86,33 @@ public abstract partial class Shape
 	}
 
 	/// <inheritdoc/>
-	protected override Size ArrangeOverride(Size finalSize)
-	{
-		UpdateStretchMatrix(finalSize);
-		return finalSize;
-	}
+	protected override Size ArrangeOverride(Size finalSize) => UpdateStretchMatrix(finalSize);
 
-	/// <summary>Recomputes <see cref="StretchMatrix"/> for an arranged (or painted) size.</summary>
-	internal void UpdateStretchMatrix(Size size)
+	/// <summary>
+	/// Recomputes <see cref="StretchMatrix"/> for an arranged (or painted) size and returns the stretched size.
+	/// WPF aligns a smaller stretched size inside the slot (Stretch acts like Center); the GTK allocation is fixed,
+	/// so that offset is folded into the matrix translate.
+	/// </summary>
+	internal Size UpdateStretchMatrix(Size size)
 	{
 		var geometry = GetDefiningGeometry();
 		if (Stretch == Stretch.None || !UsesStretchMatrix || geometry == null)
 		{
 			_stretchMatrix = Matrix.Identity;
-			return;
+			return size;
 		}
-		GetStretchedRenderSizeAndSetStretchMatrix(
-			Stretch, GetStrokeThickness(), size, geometry.GetTransformedBounds(), out _stretchMatrix);
+		var stretched = GetStretchedRenderSizeAndSetStretchMatrix(
+			Stretch, GetStrokeThickness(), size, geometry.GetTransformedBounds(), out var m);
+		_stretchMatrix = new Matrix(m.M11, m.M12, m.M21, m.M22,
+			m.OffsetX + AlignOffset(size.Width - stretched.Width, HorizontalAlignment == HorizontalAlignment.Left,
+				HorizontalAlignment == HorizontalAlignment.Right),
+			m.OffsetY + AlignOffset(size.Height - stretched.Height, VerticalAlignment == VerticalAlignment.Top,
+				VerticalAlignment == VerticalAlignment.Bottom));
+		return stretched;
 	}
+
+	/// <summary>WPF ComputeAlignmentOffset: 0 on overflow or start, all the free space at the end, else half.</summary>
+	static double AlignOffset(double free, bool start, bool end) => free <= 0 || start ? 0 : end ? free : free / 2;
 
 	/// <summary>Builds the render path with the stretch matrix applied to the geometry only (not the pen).</summary>
 	void BuildStretchedPath(Cairo.Context cr, int width, int height)
@@ -120,16 +129,4 @@ public abstract partial class Shape
 		BuildShapePath(cr, width, height);
 		cr.Matrix = saved;
 	}
-
-	/// <summary>Sets the drawing area's content request: the natural size for Stretch.None, else none.</summary>
-	internal void SyncNaturalSize()
-	{
-		if (_area == null) return;
-		var size = Stretch == Stretch.None ? GetNaturalSize() : new Size(0, 0);
-		_area.ContentWidth = ToRequest(size.Width);
-		_area.ContentHeight = ToRequest(size.Height);
-	}
-
-	static int ToRequest(double value) =>
-		double.IsNaN(value) || value <= 0 ? 0 : (int)Math.Min(Math.Ceiling(value - 1e-6), 100000);
 }

@@ -2805,6 +2805,12 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   - Explicit `AdornerDecorator` layers reposition on the overlay frame layout (follow-up); they are not
     driven by the window hook.
   - A Pixel `DataGridColumn.Width` is a minimum size request (WPF clips); star weights other than equal are store-only.
+- **Round 69 (lane I) review fixes.** Shape natural size is now a GTK *natural* request only (custom layout, minimum 0), so a
+  `Stretch.None` shape larger than its slot is allocated the slot and clipped, and an explicit `Width`/`Height` wins. `Transform`
+  no longer resets the fill rule (matrix save/restore, not `Save`/`Restore`). `Shape.ArrangeOverride` returns the stretched size
+  and the alignment offset is folded into the stretch matrix. `PathFigureCollection`/`PathSegmentCollection`/segment edits raise
+  `Changed`. The `Points` getter no longer creates a local value. Limit: Grid fixed column widths are not enforced by the
+  Gtk.Grid backing, so a wide shape in a fixed column still takes the free space like an Auto column.
 
 ## Phased roadmap (after Phase 0 proves the spine)
 

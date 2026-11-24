@@ -23,20 +23,12 @@ public class Polyline : Shape
 			(d, _) => ((Shape)d).RedrawShape()));
 
 	EventHandler? _pointsChanged;
+	PointCollection? _defaultPoints;
 
-	/// <summary>The vertices. Never null: an empty collection is created on first read.</summary>
+	/// <summary>The vertices. Never null: with no value set, a per-instance empty default (not a local value).</summary>
 	public PointCollection Points
 	{
-		get
-		{
-			var points = (PointCollection?)GetValue(PointsProperty);
-			if (points == null)
-			{
-				points = new PointCollection();
-				SetValue(PointsProperty, points);
-			}
-			return points;
-		}
+		get => (PointCollection?)GetValue(PointsProperty) ?? (_defaultPoints ??= CreateDefaultPoints());
 		set => SetValue(PointsProperty, value);
 	}
 
@@ -45,6 +37,13 @@ public class Polyline : Shape
 	{
 		get => (FillRule)GetValue(FillRuleProperty)!;
 		set => SetValue(FillRuleProperty, value);
+	}
+
+	PointCollection CreateDefaultPoints()
+	{
+		var points = new PointCollection();
+		points.Changed += (_, _) => OnMeasureAffected();
+		return points;
 	}
 
 	static void OnPointsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -57,5 +56,6 @@ public class Polyline : Shape
 	}
 
 	internal override Geometry? GetDefiningGeometry() =>
-		PointsGeometry.Create((PointCollection?)GetValue(PointsProperty), FillRule, closed: false);
+		PointsGeometry.Create((PointCollection?)GetValue(PointsProperty) ?? _defaultPoints, FillRule,
+			closed: false);
 }

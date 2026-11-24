@@ -79,10 +79,11 @@ public abstract partial class Geometry
 			BuildPath(cr);
 			return;
 		}
-		cr.Save();
+		// Matrix save/restore, not Save/Restore: the latter would reset the fill rule BuildPath sets.
+		var saved = cr.Matrix;
 		cr.Transform(new Cairo.Matrix(m.M11, m.M12, m.M21, m.M22, m.OffsetX, m.OffsetY));
 		BuildPath(cr);
-		cr.Restore();
+		cr.Matrix = saved;
 	}
 
 	static Cairo.LineCap CairoCap(Pen pen)
