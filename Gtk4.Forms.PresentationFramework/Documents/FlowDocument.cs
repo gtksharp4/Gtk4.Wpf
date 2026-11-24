@@ -15,7 +15,17 @@ public partial class FlowDocument
 	public BlockCollection Blocks { get; }
 
 	/// <summary>Default text alignment, or <c>null</c> to inherit.</summary>
-	public TextAlignment? TextAlignment { get; set; }
+	public TextAlignment? TextAlignment
+	{
+		get => _textAlignment;
+		set
+		{
+			_textAlignment = value;
+			ContentChanged?.Invoke();
+		}
+	}
+
+	TextAlignment? _textAlignment;
 
 	/// <summary>Padding around the page content.</summary>
 	public Thickness PagePadding
@@ -28,7 +38,8 @@ public partial class FlowDocument
 		}
 	}
 
-	Thickness _pagePadding;
+	// WPF default: every side auto (NaN), resolved to one line height when the page is laid out.
+	Thickness _pagePadding = new Thickness(double.NaN);
 
 	/// <summary>
 	/// Builds a Pango markup string for the entire document.
