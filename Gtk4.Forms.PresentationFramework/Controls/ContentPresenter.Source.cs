@@ -24,7 +24,7 @@ public partial class ContentPresenter
 	// unless they are set locally.
 	void EnsureSourceAliases()
 	{
-		if (_aliased || TemplatedParent == null) return;
+		if (_aliased || !InControlTemplate()) return;
 		var source = ContentSource;
 		if (string.IsNullOrEmpty(source)) return;
 		_aliased = true;
@@ -32,6 +32,20 @@ public partial class ContentPresenter
 		Alias(ContentTemplateProperty, source + "Template");
 		Alias(ContentTemplateSelectorProperty, source + "TemplateSelector");
 		Alias(ContentStringFormatProperty, source + "StringFormat");
+	}
+
+	// Only a presenter in a ControlTemplate aliases; one a DataTemplate produced (its TemplatedParent is the host
+	// that applied the template) must not, or it would present its owner's own content endlessly.
+	bool InControlTemplate() =>
+		TemplatedParent is Control owner && owner.TemplateRootInternal is { } root && InTemplateTree(root);
+
+	bool InTemplateTree(UIElement node)
+	{
+		if (ReferenceEquals(node, this)) return true;
+		if (node is ContentPresenter) return false;
+		foreach (var child in node.VisualChildren)
+			if (InTemplateTree(child)) return true;
+		return false;
 	}
 
 	void Alias(DependencyProperty target, string path)

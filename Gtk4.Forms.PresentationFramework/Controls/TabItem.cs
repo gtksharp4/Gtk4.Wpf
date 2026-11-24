@@ -26,7 +26,12 @@ public partial class TabItem : HeaderedContentControl
 
 	internal override bool PresentationReady => _tabBox != null;
 
-	internal override void HostElement(Gtk.Widget widget) => _tabBox!.Add(widget);
+	internal override void HostElement(Gtk.Widget widget)
+	{
+		if (_textLabel != null) _tabBox!.Remove(_textLabel);
+		_textLabel = null;
+		_tabBox!.Add(widget);
+	}
 
 	internal override void UnhostElement(Gtk.Widget widget) => _tabBox!.Remove(widget);
 

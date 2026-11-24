@@ -107,7 +107,7 @@ public partial class TabControl : Selector
 	/// <inheritdoc/>
 	protected override UIElement GetContainerForItem(object? item)
 	{
-		var ti = item as TabItem ?? new TabItem { Header = item is UIElement ? item.ToString() : item, Content = item, ContentTemplate = ItemTemplate };
+		var ti = item as TabItem ?? CreateTabFor(item);
 		_tabItems.Add(ti);
 		return ti;
 	}

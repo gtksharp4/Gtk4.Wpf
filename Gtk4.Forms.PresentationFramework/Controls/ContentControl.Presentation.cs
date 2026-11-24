@@ -34,6 +34,7 @@ public partial class ContentControl
 	internal void RefreshPresentation()
 	{
 		if (!PresentationReady || _templateHosted != null) return;
+		_implicitSeen = LookUpImplicitTemplate();
 		var content = Content;
 		if (_hosted != null)
 		{
@@ -63,12 +64,20 @@ public partial class ContentControl
 			ShowText(ContentResolution.ToText(content, ContentStringFormat));
 	}
 
-	internal override void OnLogicalParentChangedResources()
+	// The implicit template the last presentation used; a resource scope change only matters if the lookup differs.
+	DataTemplate? _implicitSeen;
+
+	DataTemplate? LookUpImplicitTemplate() =>
+		Content is null or UIElement || ContentTemplate != null || ContentTemplateSelector != null
+			? null
+			: FindTemplateResource(this, Content);
+
+	internal override void OnResourceScopeRefreshed()
 	{
-		base.OnLogicalParentChangedResources();
-		// An implicit DataTemplate may only be found once the control is in the tree.
-		if (PresentationReady && Content != null && Content is not UIElement && ContentTemplate == null)
-			RefreshPresentation();
+		base.OnResourceScopeRefreshed();
+		// A removed control keeps what it shows; an attached one re-chooses only when the lookup changed.
+		if (!PresentationReady || LogicalParent == null || _templateHosted != null) return;
+		if (!ReferenceEquals(LookUpImplicitTemplate(), _implicitSeen)) RefreshPresentation();
 	}
 
 	/// <inheritdoc/>

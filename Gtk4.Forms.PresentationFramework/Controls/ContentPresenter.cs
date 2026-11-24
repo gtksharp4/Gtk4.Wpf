@@ -67,6 +67,7 @@ public partial class ContentPresenter : FrameworkElement
 	void ApplyContent()
 	{
 		EnsureSourceAliases();
+		_implicitSeen = LookUpImplicitTemplate();
 		if (_hostedWidget != null)
 		{
 			_box!.Remove(_hostedWidget);

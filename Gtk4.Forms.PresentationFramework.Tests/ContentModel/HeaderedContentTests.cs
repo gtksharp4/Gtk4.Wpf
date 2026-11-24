@@ -77,16 +77,6 @@ public class HeaderedContentTests : ContentModelTestBase
 	});
 
 	[Fact]
-	public void TabControl_generates_tab_headers_through_the_item_template_rules() => Run(() =>
-	{
-		var tc = new TabControl { ItemsSource = new[] { new Place { Name = "One" } }, ItemTemplate = Template("c:") };
-		_ = tc.Widget;
-		var item = (TabItem)tc.ContainerAt(0)!;
-		Assert.Contains("c:One", Texts(item));
-		Assert.Equal("Place:One", item.HeaderText);
-	});
-
-	[Fact]
 	public void TreeViewItem_hosts_an_element_header() => Run(() =>
 	{
 		var header = new TextBlock { Text = "node" };

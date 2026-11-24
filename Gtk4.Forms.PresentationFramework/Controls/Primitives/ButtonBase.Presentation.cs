@@ -24,7 +24,21 @@ public abstract partial class ButtonBase
 
 	internal override bool RecognizesAccessKeyInContent => true;
 
-	internal override void HostElement(Gtk.Widget widget) => SetGtkChild(widget);
+	internal override void HostElement(Gtk.Widget widget)
+	{
+		// The string's access key leaves with the string (WPF: the AccessText that registered it is gone).
+		AccessKeyBinding.Register(this, null);
+		SetGtkChild(widget);
+	}
+
+	/// <inheritdoc/>
+	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+	{
+		base.OnPropertyChanged(e);
+		// Before the widget exists nothing presents the string yet, so register its key right away.
+		if (e.Property == ContentProperty && !GtkWidgetReady)
+			AccessLabel(e.NewValue);
+	}
 
 	internal override void UnhostElement(Gtk.Widget widget) => SetGtkChild(null);
 

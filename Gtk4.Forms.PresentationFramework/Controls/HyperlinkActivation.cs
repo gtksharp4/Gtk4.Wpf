@@ -11,6 +11,8 @@ internal static class HyperlinkActivation
 	/// <remarks>
 	/// A GtkListBox claims the click sequence for row selection, which denies the label's own link gesture, so
 	/// a capture-phase click on the label activates the link under the pointer first.
+	/// A Hyperlink without NavigateUri is drawn without an href, so GTK cannot activate it; a Click-only link needs
+	/// the inline model (lane K) to emit one.
 	/// </remarks>
 	internal static void Attach(TextBlock block)
 	{

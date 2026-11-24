@@ -9,11 +9,11 @@ public abstract class TemplateKey : ResourceKey
 	/// <summary>The kind of template a key identifies.</summary>
 	protected enum TemplateType
 	{
-		/// <summary>A table template.</summary>
-		TableTemplate,
-
 		/// <summary>A data template.</summary>
 		DataTemplate,
+
+		/// <summary>A table template.</summary>
+		TableTemplate,
 	}
 
 	readonly TemplateType _templateType;
@@ -50,7 +50,7 @@ public abstract class TemplateKey : ResourceKey
 }
 
 /// <summary>The resource key of an implicit <see cref="Controls.DataTemplate"/>.</summary>
-public sealed class DataTemplateKey : TemplateKey
+public class DataTemplateKey : TemplateKey
 {
 	/// <summary>Creates a key with no data type.</summary>
 	public DataTemplateKey() : base(TemplateType.DataTemplate) { }

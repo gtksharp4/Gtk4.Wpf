@@ -25,6 +25,9 @@ public abstract class ContentModelTestBase : WpfGtkTestBase
 		return all;
 	}
 
+	protected static List<string> Texts(Gtk.Widget widget) =>
+		Descendants(widget).OfType<Gtk.Label>().Select(l => l.Text).Where(t => t.Length > 0).ToList();
+
 	protected static List<string> Texts(UIElement element) =>
 		Descendants(element.Widget).OfType<Gtk.Label>().Select(l => l.Text).Where(t => t.Length > 0).ToList();
 
