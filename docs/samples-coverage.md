@@ -115,6 +115,29 @@ and Tools (2). The 7 non-runners are spread over six categories (see Crashes).
 Each move is attributed by elimination: the named change removed every blocker that `4fd5749d` recorded for the app.
 Nothing was bisected. Per-row attribution is in the JSON (`unblockedBy`).
 
+**Round 64 (lane D) access keys, no row changed.** A user-reported difference: `_` in `Button.Content` or
+`MenuItem.Header` showed literally. Content and headers of Button, RepeatButton, ToggleButton, CheckBox, RadioButton,
+Label, MenuItem, GroupBox, Expander and TabItem now follow WPF's `AccessText` rules (`_Open` shows `Open` with key O,
+`__Open` shows `_Open`, `Open_` and `A__B` as in WPF). Gate, recipe from Method with a lane-private feed packed from
+the lane branch (`1.0.0.26328`): all 204 apps and libraries with `build=pass` still build (two builds each, 0 errors),
+and all 191 with `run=runs` still start and stay up with a window; 23 showed no window within 10 s in the first pass
+and all 23 showed one when re-run alone with a 30 s wait (cold start, not a hang).
+
+| Target sample | Status | Underscore strings |
+|---|---|---|
+| Windows/DialogBox | builds, runs (screen grab shows the `File` menu header without the underscore) | `_File`, `_Open`, `_Print`, `_Exit` |
+| Sample Applications/FontDialog | builds, runs | `_Font family`, `_Size:`, `_Typeface:`, `F_ormat` |
+| Windows/WindowActivationAndDeactivation | builds, runs | `_File`, `_Edit`, `_Exit` |
+| Documents/Fixed Documents/DocumentMerge | builds, runs | `_File`, `_Open` |
+| Documents/Annotations/AnnotationsStyling | builds, runs | in `defaultstickynotestyle.xaml` |
+| Sample Applications/ExpenseIt/ExpenseItDemo | still fails: `AutomationProperties.AcceleratorKeyProperty` (another lane) | not checked |
+| Documents/Fixed Documents/DocumentStructure | still fails: XAML parse error in `fixedpage1_structure.xaml` | not checked |
+| Tools/BamlReflector | still fails: `System.Windows.Baml2006` missing | not checked |
+| Graphics/Brushes/SampleViewer | not a project in the coverage list | not checked |
+
+Not verified: that the key letter is underlined while Alt is held (GTK shows it, WPF's keyboard cues do the same; no
+screenshot with Alt held was taken).
+
 **Fail→pass: 7 apps.**
 
 | Change | Apps (run result) |

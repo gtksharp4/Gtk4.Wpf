@@ -27,10 +27,14 @@ public partial class Label : ContentControl
 	protected override Gtk.Widget CreateWidget()
 	{
 		_box = new Gtk.Box(Gtk.Orientation.Horizontal, 0);
-		_label = new Gtk.Label(Content as string ?? Content?.ToString() ?? string.Empty)
+		_label = new Gtk.Label(string.Empty)
 		{
 			Xalign = 0f
 		};
+		if (Content is string text)
+			AccessKeyBinding.SetLabel(_label, AccessKeyBinding.Apply(this, text));
+		else
+			_label.Text = Content?.ToString() ?? string.Empty;
 		_box.Add(_label);
 		return _box;
 	}

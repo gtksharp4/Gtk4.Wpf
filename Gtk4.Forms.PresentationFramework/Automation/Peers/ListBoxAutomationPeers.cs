@@ -59,7 +59,7 @@ sealed class ListBoxItemWrapperAutomationPeer : FrameworkElementAutomationPeer
 
 	protected override string GetClassNameCore() => Owner.GetType().Name;
 
-	internal override string ContentName() => PeerText.FromContent(((ListBoxItem)Owner).Content);
+	internal override string ContentName() => PeerText.FromContentLiteral(((ListBoxItem)Owner).Content);
 
 	protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.ListItem;
 

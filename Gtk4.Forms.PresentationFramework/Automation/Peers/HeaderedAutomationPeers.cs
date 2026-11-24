@@ -19,7 +19,7 @@ public class ExpanderAutomationPeer : FrameworkElementAutomationPeer, IExpandCol
 
 	protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Group;
 
-	internal override string ContentName() => PeerText.FromContent(Expander.Header);
+	internal override string ContentName() => PeerText.FromContentLiteral(Expander.Header);
 
 	ExpandCollapseState IExpandCollapseProvider.ExpandCollapseState =>
 		Expander.IsExpanded ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed;
@@ -63,7 +63,7 @@ public class GroupBoxAutomationPeer : FrameworkElementAutomationPeer
 
 	protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Group;
 
-	internal override string ContentName() => PeerText.FromContent(((GroupBox)Owner).Header);
+	internal override string ContentName() => PeerText.FromContentLiteral(((GroupBox)Owner).Header);
 }
 
 /// <summary>The automation peer of a <see cref="StatusBar"/>.</summary>

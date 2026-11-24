@@ -64,8 +64,8 @@ public class RepeatButton : ButtonBase
 	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
-		_button = new Gtk.Button();
-		_button.Label = (Content as string) ?? string.Empty;
+		_button = new Gtk.Button { UseUnderline = true };
+		_button.Label = AccessLabel(Content);
 
 		var pressCtrl = new Gtk.GestureClick();
 		pressCtrl.Button = 1; // primary
@@ -114,8 +114,11 @@ public class RepeatButton : ButtonBase
 	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
 	{
 		base.OnPropertyChanged(e);
-		if (e.Property == ContentProperty && _button != null && e.NewValue is string s)
-			_button.Label = s;
+		if (e.Property == ContentProperty)
+		{
+			var label = AccessLabel(e.NewValue);
+			if (_button != null && e.NewValue is string) _button.Label = label;
+		}
 	}
 
 	/// <inheritdoc/>
