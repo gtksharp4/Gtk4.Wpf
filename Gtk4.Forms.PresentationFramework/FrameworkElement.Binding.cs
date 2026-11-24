@@ -12,6 +12,7 @@ public partial class FrameworkElement
 	{
 		base.OnPropertyChanged(e);
 		TargetChangeTracker.Dispatch(this, e);
+		SyncLayoutToWidget(e);
 		OnAutomationPropertyChanged(e);
 	}
 
