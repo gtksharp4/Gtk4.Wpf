@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Globalization;
-using System.Windows.Markup;
 
 namespace System.Windows.Controls;
 
@@ -9,14 +8,6 @@ namespace System.Windows.Controls;
 public struct DataGridLength : IEquatable<DataGridLength>
 {
 	const double AutoValue = 1.0;
-
-	static DataGridLength()
-	{
-		// The DP markup path has no TypeConverter fallback and the registry belongs to XamlValueConverter,
-		// so the text form is registered here, before any DP that defaults to a DataGridLength is read.
-		XamlValueConverter.Register<DataGridLength>(
-			s => (DataGridLength)new DataGridLengthConverter().ConvertFromString(null, CultureInfo.InvariantCulture, s)!);
-	}
 
 	/// <summary>Sizes from the cell and header content.</summary>
 	public static readonly DataGridLength Auto = new DataGridLength(AutoValue, DataGridLengthUnitType.Auto, 0d, 0d);
