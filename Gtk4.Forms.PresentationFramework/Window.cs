@@ -80,29 +80,12 @@ public partial class Window : ContentControl
 
 	/// <summary>
 	/// A window's <see cref="FrameworkElement.Width"/>/<see cref="FrameworkElement.Height"/>
-	/// is its initial on-screen extent, not a minimum-size request, so set the GTK top-level
-	/// default size instead of a size request. When <see cref="SizeToContent"/> suppresses a
-	/// dimension, that axis is left at -1 so GTK sizes it to the content's natural extent.
+	/// is its initial on-screen extent, not a minimum-size request. See Window.DefaultSize.cs.
 	/// </summary>
 	protected override void ApplyExplicitSize(Gtk.Widget widget)
 	{
-		var stc = SizeToContent;
-		int w = (stc == SizeToContent.Width || stc == SizeToContent.WidthAndHeight || double.IsNaN(Width))
-			? -1
-			: (int)Math.Round(Width);
-		int h = (stc == SizeToContent.Height || stc == SizeToContent.WidthAndHeight || double.IsNaN(Height))
-			? -1
-			: (int)Math.Round(Height);
-		if ((w > 0 || h > 0) && widget is Gtk.Window gtkWin)
-		{
-			// SetDefaultSize is the WPF-equivalent (initial size, resizable), but the
-			// GTK4 Windows backend ignores it for a resizable top-level and realises the
-			// window at its content's natural size. A size request is honoured, so it is
-			// used to pin the window to its WPF Width/Height. Trade-off: the window cannot
-			// then be resized below Width/Height (WPF allows that); acceptable for Phase-0.
-			gtkWin.SetDefaultSize(w, h);
-			gtkWin.SetSizeRequest(w, h);
-		}
+		if (widget is Gtk.Window gtkWin)
+			ApplyWindowSize(gtkWin);
 	}
 
 	/// <summary>Parents the content, applies the start location and presents the GTK window.</summary>

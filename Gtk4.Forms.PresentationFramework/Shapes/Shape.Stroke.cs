@@ -68,7 +68,7 @@ public abstract partial class Shape
 	/// </summary>
 	public static readonly DependencyProperty StrokeStartLineCapProperty =
 		DependencyProperty.Register(nameof(StrokeStartLineCap), typeof(PenLineCap), typeof(Shape),
-			new PropertyMetadata(PenLineCap.Flat, (d, _) => ((Shape)d).QueueRedraw()));
+			new FrameworkPropertyMetadata(PenLineCap.Flat, MeasureAndRender, MeasureChanged));
 
 	/// <summary>Gets or sets the start line cap.</summary>
 	public PenLineCap StrokeStartLineCap
@@ -90,7 +90,7 @@ public abstract partial class Shape
 	/// </summary>
 	public static readonly DependencyProperty StrokeEndLineCapProperty =
 		DependencyProperty.Register(nameof(StrokeEndLineCap), typeof(PenLineCap), typeof(Shape),
-			new PropertyMetadata(PenLineCap.Flat, (d, _) => ((Shape)d).QueueRedraw()));
+			new FrameworkPropertyMetadata(PenLineCap.Flat, MeasureAndRender, MeasureChanged));
 
 	/// <summary>Gets or sets the end line cap.</summary>
 	public PenLineCap StrokeEndLineCap
@@ -104,7 +104,7 @@ public abstract partial class Shape
 	/// <summary>How path segments join at vertices.</summary>
 	public static readonly DependencyProperty StrokeLineJoinProperty =
 		DependencyProperty.Register(nameof(StrokeLineJoin), typeof(PenLineJoin), typeof(Shape),
-			new PropertyMetadata(PenLineJoin.Miter, (d, _) => ((Shape)d).QueueRedraw()));
+			new FrameworkPropertyMetadata(PenLineJoin.Miter, MeasureAndRender, MeasureChanged));
 
 	/// <summary>Gets or sets the line join style.</summary>
 	public PenLineJoin StrokeLineJoin
@@ -122,7 +122,7 @@ public abstract partial class Shape
 	/// </summary>
 	public static readonly DependencyProperty StrokeMiterLimitProperty =
 		DependencyProperty.Register(nameof(StrokeMiterLimit), typeof(double), typeof(Shape),
-			new PropertyMetadata(10.0, (d, _) => ((Shape)d).QueueRedraw()));
+			new FrameworkPropertyMetadata(10.0, MeasureAndRender, MeasureChanged));
 
 	/// <summary>Gets or sets the miter limit.</summary>
 	public double StrokeMiterLimit

@@ -9,56 +9,53 @@ namespace System.Windows.Shapes;
 /// </summary>
 public class Polygon : Shape
 {
-	/// <summary>The vertices of the polygon.</summary>
-	public PointCollection Points { get; set; } = new PointCollection();
+	/// <summary>Identifies <see cref="Points"/>.</summary>
+	public static readonly DependencyProperty PointsProperty = DependencyProperty.Register(
+		nameof(Points), typeof(PointCollection), typeof(Polygon),
+		new FrameworkPropertyMetadata(null,
+			FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender,
+			OnPointsChanged));
 
-	/// <summary>Fill rule applied when filling the polygon.</summary>
-	public FillRule FillRule { get; set; } = FillRule.EvenOdd;
+	/// <summary>Identifies <see cref="FillRule"/>.</summary>
+	public static readonly DependencyProperty FillRuleProperty = DependencyProperty.Register(
+		nameof(FillRule), typeof(FillRule), typeof(Polygon),
+		new FrameworkPropertyMetadata(FillRule.EvenOdd, FrameworkPropertyMetadataOptions.AffectsRender,
+			(d, _) => ((Shape)d).RedrawShape()));
 
-	/// <inheritdoc/>
-	protected override void BuildShapePath(Cairo.Context cr, int width, int height)
+	EventHandler? _pointsChanged;
+	PointCollection? _defaultPoints;
+
+	/// <summary>The vertices. Never null: with no value set, a per-instance empty default (not a local value).</summary>
+	public PointCollection Points
 	{
-		if (Points == null || Points.Count < 2) return;
-		cr.FillRule = FillRule == FillRule.Nonzero
-			? Cairo.FillRule.Winding
-			: Cairo.FillRule.EvenOdd;
-		cr.MoveTo(Points[0].X, Points[0].Y);
-		for (int i = 1; i < Points.Count; i++)
-			cr.LineTo(Points[i].X, Points[i].Y);
-		cr.ClosePath();
+		get => (PointCollection?)GetValue(PointsProperty) ?? (_defaultPoints ??= CreateDefaultPoints());
+		set => SetValue(PointsProperty, value);
 	}
-}
 
-/// <summary>
-/// Draws an open polyline through a collection of points.
-/// Mirrors <c>System.Windows.Shapes.Polyline</c>.
-/// </summary>
-public class Polyline : Shape
-{
-	/// <summary>The vertices of the polyline.</summary>
-	public PointCollection Points { get; set; } = new PointCollection();
-
-	/// <summary>Fill rule applied when filling the polyline.</summary>
-	public FillRule FillRule { get; set; } = FillRule.EvenOdd;
-
-	/// <inheritdoc/>
-	protected override void BuildShapePath(Cairo.Context cr, int width, int height)
+	/// <summary>Fill rule applied when filling the shape.</summary>
+	public FillRule FillRule
 	{
-		if (Points == null || Points.Count < 2) return;
-		cr.FillRule = FillRule == FillRule.Nonzero
-			? Cairo.FillRule.Winding
-			: Cairo.FillRule.EvenOdd;
-		cr.MoveTo(Points[0].X, Points[0].Y);
-		for (int i = 1; i < Points.Count; i++)
-			cr.LineTo(Points[i].X, Points[i].Y);
+		get => (FillRule)GetValue(FillRuleProperty)!;
+		set => SetValue(FillRuleProperty, value);
 	}
-}
 
-/// <summary>WPF fill-rule enumeration.</summary>
-public enum FillRule
-{
-	/// <summary>Even-odd fill rule.</summary>
-	EvenOdd,
-	/// <summary>Non-zero winding fill rule.</summary>
-	Nonzero,
+	PointCollection CreateDefaultPoints()
+	{
+		var points = new PointCollection();
+		points.Changed += (_, _) => OnMeasureAffected();
+		return points;
+	}
+
+	static void OnPointsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		var shape = (Polygon)d;
+		shape._pointsChanged ??= (_, _) => shape.OnMeasureAffected();
+		if (e.OldValue is PointCollection old) old.Changed -= shape._pointsChanged;
+		if (e.NewValue is PointCollection added) added.Changed += shape._pointsChanged;
+		shape.OnMeasureAffected();
+	}
+
+	internal override Geometry? GetDefiningGeometry() =>
+		PointsGeometry.Create((PointCollection?)GetValue(PointsProperty) ?? _defaultPoints, FillRule,
+			closed: true);
 }

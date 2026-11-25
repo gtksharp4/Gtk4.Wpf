@@ -29,6 +29,12 @@ public class DrawingImage : ImageSource
 		}
 	}
 
+	/// <summary>The drawing's bounds width (0 for no drawing or empty bounds).</summary>
+	public override double Width => _drawing == null || _drawing.Bounds.IsEmpty ? 0 : _drawing.Bounds.Width;
+
+	/// <summary>The drawing's bounds height (0 for no drawing or empty bounds).</summary>
+	public override double Height => _drawing == null || _drawing.Bounds.IsEmpty ? 0 : _drawing.Bounds.Height;
+
 	/// <summary>Creates an unfrozen, independent copy of this image.</summary>
 	public new DrawingImage Clone() => (DrawingImage)base.Clone();
 
