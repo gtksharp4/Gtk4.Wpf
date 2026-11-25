@@ -5,7 +5,7 @@ namespace System.Windows.Controls;
 /// (e.g. <see cref="ToolBar"/>, <see cref="TreeViewItem"/>).
 /// Extends <see cref="ItemsControl"/> with a single <see cref="Header"/> DP.
 /// </summary>
-public abstract class HeaderedItemsControl : ItemsControl
+public abstract partial class HeaderedItemsControl : ItemsControl
 {
 	// ── Header DP ────────────────────────────────────────────────────────────
 
@@ -19,6 +19,7 @@ public abstract class HeaderedItemsControl : ItemsControl
 
 	static void OnHeaderChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
+		((HeaderedItemsControl)d).SetValue(_hasHeaderKey, e.NewValue != null);
 		((HeaderedItemsControl)d).OnHeaderChanged(e.OldValue, e.NewValue);
 	}
 
@@ -35,5 +36,5 @@ public abstract class HeaderedItemsControl : ItemsControl
 	protected virtual void OnHeaderChanged(object? oldHeader, object? newHeader) { }
 
 	/// <summary>Returns the header as a plain string (used for GTK labels).</summary>
-	protected string HeaderText => Header as string ?? Header?.ToString() ?? string.Empty;
+	protected string HeaderText => ContentResolution.ToText(Header, HeaderStringFormat);
 }

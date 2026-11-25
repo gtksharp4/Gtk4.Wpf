@@ -54,11 +54,10 @@ public partial class Expander : HeaderedContentControl
 	protected override Gtk.Widget CreateWidget()
 	{
 		_expander = new Gtk.Expander(null) { UseUnderline = true };
-		_expander.Label = HeaderMnemonic();
+		ApplyHeader();
 		_expander.Expanded = IsExpanded;
-		if (Content is UIElement child)
-			_expander.Child = child.Widget;
 		_expander.AddNotification("expanded", OnGtkNotifyExpanded);
+		RefreshPresentation();
 		return _expander;
 	}
 
@@ -73,30 +72,31 @@ public partial class Expander : HeaderedContentControl
 	/// <inheritdoc/>
 	protected override void OnHeaderChanged(object? oldHeader, object? newHeader)
 	{
-		var mnemonic = HeaderMnemonic();
-		if (_expander != null)
-			_expander.Label = mnemonic;
+		if (_expander != null) ApplyHeader();
 	}
 
-	/// <inheritdoc/>
-	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+	void ApplyHeader()
 	{
-		base.OnPropertyChanged(e);
-		if (e.Property == ContentProperty && _expander != null)
+		var widget = ResolveHeaderWidget();
+		if (widget == null)
+			_expander.Label = HeaderMnemonic();
+		else
 		{
-			if (e.OldValue is UIElement old && _expander.Child != null)
-				_expander.Child = null;
-			if (e.NewValue is UIElement newEl)
-				_expander.Child = newEl.Widget;
+			AccessKeyBinding.Register(this, null);
+			_expander.LabelWidget = widget;
 		}
 	}
 
-	string HeaderText => Header as string ?? Header?.ToString() ?? string.Empty;
+	internal override bool PresentationReady => _expander != null;
+
+	internal override void SetChildWidget(Gtk.Widget? child) => _expander.Child = child!;
+
+	string HeaderText => HeaderTextProjection;
 
 	// A string header recognizes access keys (WPF: the header ToggleButton's presenter); other headers are literal.
 	string HeaderMnemonic()
 	{
-		if (Header is string text) return AccessKeyBinding.Apply(this, text);
+		if (HeaderIsAccessText) return AccessKeyBinding.Apply(this, (string)Header!);
 		AccessKeyBinding.Register(this, null);
 		return HeaderText.Replace("_", "__");
 	}

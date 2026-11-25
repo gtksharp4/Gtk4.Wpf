@@ -1,5 +1,14 @@
 # Plan — `Gtk4.Forms`: run **unmodified WPF** on the Gtk4.Forms GTK engine (aim 1:1)
 
+  needs a managed-measure-driven window size.
+# Plan — `Gtk4.Forms`: run **unmodified WPF** on the Gtk4.Forms GTK engine (aim 1:1)
+
+  needs a managed-measure-driven window size.
+# Plan — `Gtk4.Forms`: run **unmodified WPF** on the Gtk4.Forms GTK engine (aim 1:1)
+
+  needs a managed-measure-driven window size.
+# Plan — `Gtk4.Forms`: run **unmodified WPF** on the Gtk4.Forms GTK engine (aim 1:1)
+
 **Goal.** An existing WPF application — its `System.Windows.*` code, its WPF XAML (the
 `…/winfx/2006/xaml/presentation` namespace), its `App.xaml`/`Window.xaml` — compiles and runs on
 **Windows, Linux and macOS** against a GTK-backed compatibility layer, with **no namespace changes

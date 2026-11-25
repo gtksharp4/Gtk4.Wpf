@@ -38,6 +38,10 @@ public partial class Hyperlink : Span
 	{
 		Click?.Invoke(this, new RoutedEventArgs());
 		if (NavigateUri != null)
-			RaiseEvent(new RequestNavigateEventArgs(NavigateUri, TargetName));
+		{
+			var args = new RequestNavigateEventArgs(NavigateUri, TargetName);
+			RaiseEvent(args);
+			if (!args.Handled) NavigateDefault(args);
+		}
 	}
 }

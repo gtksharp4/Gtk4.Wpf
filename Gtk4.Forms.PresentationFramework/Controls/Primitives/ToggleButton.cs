@@ -27,11 +27,12 @@ public partial class ToggleButton : ButtonBase
 		_toggle.Active = IsChecked == true;
 		_toggle.Toggled += (s, e) => GtkToggled(_toggle.Active);
 		_toggle.Clicked += (s, e) => GtkClicked();
+		PresentAtCreation();
 		return _toggle;
 	}
 
 	/// <summary>Pushes the string content to the GTK widget (subclasses with another widget override).</summary>
-	internal virtual void SetGtkLabel(string mnemonic)
+	internal override void SetGtkLabel(string mnemonic)
 	{
 		if (_toggle != null) _toggle.Label = mnemonic;
 	}
@@ -88,14 +89,10 @@ public partial class ToggleButton : ButtonBase
 		base.OnClick();
 	}
 
-	/// <inheritdoc/>
-	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+	internal override bool GtkWidgetReady => _toggle != null;
+
+	internal override void SetGtkChild(Gtk.Widget? child)
 	{
-		base.OnPropertyChanged(e);
-		if (e.Property == ContentProperty)
-		{
-			var label = AccessLabel(e.NewValue);
-			if (e.NewValue is string) SetGtkLabel(label);
-		}
+		if (_toggle != null) _toggle.Child = child!;
 	}
 }

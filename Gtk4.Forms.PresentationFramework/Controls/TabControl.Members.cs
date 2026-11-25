@@ -33,6 +33,8 @@ public partial class TabControl
 	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
 	{
 		base.OnPropertyChanged(e);
+		if (HasContentTemplating && (e.Property == SelectedIndexProperty || e.Property == SelectedItemProperty))
+			RefreshTabContent();
 		if (e.Property != SelectedItemProperty) return;
 		if (e.OldValue is TabItem old) old.SetValue(TabItem.IsSelectedProperty, false);
 		if (e.NewValue is TabItem item) item.SetValue(TabItem.IsSelectedProperty, true);

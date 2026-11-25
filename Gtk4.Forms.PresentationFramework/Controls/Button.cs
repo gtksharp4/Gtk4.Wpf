@@ -23,17 +23,19 @@ public partial class Button : ButtonBase
 		_button = new Gtk.Button { UseUnderline = true };
 		_button.Label = AccessLabel(Content);
 		_button.Clicked += (s, e) => OnClick();
+		PresentAtCreation();
 		return _button;
 	}
 
-	/// <inheritdoc/>
-	protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+	internal override bool GtkWidgetReady => _button != null;
+
+	internal override void SetGtkLabel(string mnemonic)
 	{
-		base.OnPropertyChanged(e);
-		if (e.Property == ContentProperty)
-		{
-			var label = AccessLabel(e.NewValue);
-			if (_button != null && e.NewValue is string) _button.Label = label;
-		}
+		if (_button != null) _button.Label = mnemonic;
+	}
+
+	internal override void SetGtkChild(Gtk.Widget? child)
+	{
+		if (_button != null) _button.Child = child!;
 	}
 }

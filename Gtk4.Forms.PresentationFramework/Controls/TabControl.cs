@@ -107,7 +107,7 @@ public partial class TabControl : Selector
 	/// <inheritdoc/>
 	protected override UIElement GetContainerForItem(object? item)
 	{
-		var ti = item as TabItem ?? new TabItem { Header = item?.ToString() ?? string.Empty, Content = item };
+		var ti = item as TabItem ?? CreateTabFor(item);
 		_tabItems.Add(ti);
 		return ti;
 	}
@@ -116,7 +116,7 @@ public partial class TabControl : Selector
 	protected override void AddItemWidget(Gtk.Widget w)
 	{
 		var ti = _tabItems.Count > 0 ? _tabItems[_tabItems.Count - 1] : null;
-		var tabLabel = ti?.CreateTabLabel() ?? new Gtk.Label(string.Empty);
+		var tabLabel = ti?.CreateTabWidget() ?? new Gtk.Label(string.Empty);
 		_notebook!.AppendPage(w, tabLabel);
 	}
 

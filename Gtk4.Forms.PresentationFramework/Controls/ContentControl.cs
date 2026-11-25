@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Markup;
 
 namespace System.Windows.Controls;
@@ -36,27 +34,17 @@ public partial class ContentControl : Control
 
 	void UpdateContent(object? oldContent, object? newContent)
 	{
-		// Always update the logical parent (pure, no GTK needed).
+		if (PresentationReady)
+		{
+			RefreshPresentation();
+			return;
+		}
+
+		// No widget yet: only the logical parent is kept current.
 		if (oldContent is UIElement oldElement)
 			oldElement.LogicalParent = null;
-
 		if (newContent is UIElement newElement)
 			newElement.LogicalParent = this;
-
-		// Only touch GTK widgets when the backing widget has been created.
-		if (!IsWidgetCreated) return;
-
-		if (oldContent is UIElement oldEl)
-			ContentContainer.Remove(oldEl.Widget);
-
-		if (newContent is UIElement newEl)
-			ContentContainer.Add(newEl.Widget);
-		else if (newContent is string s)
-			ShowContentText(s);
-		else if (newContent != null)
-			ContentLabel.Text = newContent.ToString() ?? string.Empty;
-		else
-			ContentLabel.Text = string.Empty;
 	}
 
 	/// <summary>True when <see cref="Widget"/> has been materialised (GTK objects are live).</summary>
@@ -86,10 +74,8 @@ public partial class ContentControl : Control
 		_box = new Gtk.Box(Gtk.Orientation.Vertical, 0);
 		_label = new Gtk.Label(string.Empty);
 		_box.Add(_label);
+		RefreshPresentation();
+		ApplyTemplateRoot();
 		return _box;
 	}
-
-	/// <inheritdoc/>
-	internal override IEnumerable<UIElement> VisualChildren =>
-		Content is UIElement child ? new[] { child } : Enumerable.Empty<UIElement>();
 }

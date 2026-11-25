@@ -44,16 +44,7 @@ public partial class ListBoxItem : ContentControl
 	{
 		_row = new Gtk.ListBoxRow();
 
-		if (UsesPresenter)
-			_row.Child = CreatePresenter().Widget;
-		else if (Content is UIElement el)
-			_row.Child = el.Widget;
-		else
-		{
-			var label = new Gtk.Label(Content?.ToString() ?? string.Empty);
-			_row.Child = label;
-		}
-
+		_row.Child = CreatePresenter().Widget;
 		return _row;
 	}
 }

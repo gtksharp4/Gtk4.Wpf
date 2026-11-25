@@ -33,9 +33,9 @@ public partial class Label : ContentControl
 		};
 		if (Content is string text)
 			AccessKeyBinding.SetLabel(_label, AccessKeyBinding.Apply(this, text));
-		else
-			_label.Text = Content?.ToString() ?? string.Empty;
 		_box.Add(_label);
+		RefreshPresentation();
+		ApplyTemplateRoot();
 		return _box;
 	}
 }
