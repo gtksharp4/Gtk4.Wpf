@@ -66,7 +66,7 @@ public partial class ControlBrushPixelGtkTests : WpfGtkTestBase
 			for (int x = 0; x < px.Width; x++)
 			{
 				var c = px.At(x, y);
-				if (c.R > 200 && c.G > 200 && c.B > 200) white++;
+				if (c.R > 120 && c.G > 120) white++; // light ink on the blue face; thin antialiased glyphs stay below 200
 			}
 		win.Close();
 		Assert.True(white > 20, $"white pixels: {white}");

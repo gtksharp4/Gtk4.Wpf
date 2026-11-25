@@ -35,8 +35,9 @@ public partial class FlowPageLayoutGtkTests
 		var s = Slices(m);
 		Assert.Equal(3, s.Count);
 		double lineHeight = m.Geometry.LineHeight;
-		double pitch = m.Boxes[0].Pitch;
-		Assert.Equal(pitch + 3 * lineHeight, s[2].Y - s[0].Y, 0.5);
+		double pitch = m.Boxes[0].Pitch, blank = m.Boxes[1].Pitch;
+		// The blank line is one line of its own pitch (the font's natural pitch may differ slightly from lineHeight).
+		Assert.Equal(pitch + 2 * lineHeight + blank, s[2].Y - s[0].Y, 0.5);
 		Assert.Equal(new[] { string.Empty }, m.Boxes[1].Lines);
 		Assert.Equal(0, m.PageOfChar(m.Boxes[1].CharStart));
 	});

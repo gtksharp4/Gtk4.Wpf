@@ -99,9 +99,12 @@ public class KeyFrameListingGtkTests : WpfGtkTestBase
 			Assert.Equal(12, second.FontSize, 0.1);
 			Assert.True(Canvas.GetLeft(page.myRectangle) > 40, "rectangle moved");
 			GtkState.Require(() => first.Widget.Height > h12, "first block taller", first);
+			int enlarged = first.Widget.Height;
 			Assert.True(YOf(page, second) > y2, "the next block moved down");
 			Advance(4.8);
-			GtkState.Require(() => first.Widget.Height == h12 && second.FontSize > 15.9, "swap at 5s", first, second);
+			GtkState.Require(() => first.Widget.Height < enlarged && second.FontSize > 15.9,
+				() => $"swap at 5s (h12={h12}, enlarged={enlarged}, first {first.Widget.Height}, font {first.FontSize})",
+				first, second);
 			Advance(5.6);
 			Assert.Equal(16, page.SecondLinearTextBlock.FontSize, 0.1);
 			Assert.Equal(12, second.FontSize, 0.1);

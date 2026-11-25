@@ -86,6 +86,24 @@ public class ThemeModeTests : WpfGtkTestBase, IDisposable
 	{
 		var app = new Application();
 		var settings = Gtk.Settings.Default;
+		if (!ThemeModeGtk.HasColorScheme(settings))
+		{
+			// GTK before 4.20 has no interface colour scheme, only the prefer-dark flag.
+			var darkBefore = settings.GtkApplicationPreferDarkTheme;
+			try
+			{
+				app.ThemeMode = ThemeMode.Dark;
+				Assert.True(settings.GtkApplicationPreferDarkTheme);
+				app.ThemeMode = ThemeMode.Light;
+				Assert.False(settings.GtkApplicationPreferDarkTheme);
+				app.ThemeMode = ThemeMode.Dark;
+				app.ThemeMode = ThemeMode.System;
+				Assert.False(settings.GtkApplicationPreferDarkTheme);
+			}
+			finally { settings.GtkApplicationPreferDarkTheme = darkBefore; }
+			return;
+		}
+
 		var before = settings.GtkInterfaceColorScheme;
 		try
 		{

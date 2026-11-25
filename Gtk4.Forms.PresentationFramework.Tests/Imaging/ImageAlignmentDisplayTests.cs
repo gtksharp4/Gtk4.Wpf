@@ -28,7 +28,12 @@ public class ImageAlignmentDisplayTests : WpfGtkTestBase
 		// A symmetric Margin(20) leaves the centre unchanged (20 + (560-64)/2 == (600-64)/2) and
 		// Margin is not applied to GTK widgets (docs/samples-coverage.md): this proves centring only.
 		int titlebar = ((Gtk.Window)probe.Window.Widget).Titlebar!.Height;
-		Assert.Equal(20 + (560 - ImageDisplayFixtures.Size) / 2, FirstRedColumn(probe.WindowPixels(), titlebar));
+		// The slot is the window widget (600 wide minus any solid client-side border GTK draws without a
+		// compositor), so derive the centre from the widget and check the ink lands at the picture's left edge.
+		var window = probe.Window.Widget;
+		Assert.True(probe.Image.Widget.ComputeBounds(window, out var bounds));
+		Assert.Equal((window.Width - ImageDisplayFixtures.Size) / 2.0, bounds.X, 1.0);
+		Assert.Equal(bounds.X, FirstRedColumn(probe.WindowPixels(), titlebar), 1.0);
 	});
 
 	[Fact]
