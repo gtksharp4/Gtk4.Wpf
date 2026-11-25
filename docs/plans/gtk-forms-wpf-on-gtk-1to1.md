@@ -3092,9 +3092,11 @@ only for a Shape that is the window content; lane H `RenderingPainter` reads `Vi
   WPF-Samples-GTK4 HelloWorld error and warnings). Targeted tests (TextBlock, Inline, KeyFrameListing, Storyboard,
   Hyperlink, NameScope, LogicalTree): 254 passed, 1 skipped. Samples gate: all 207 build-pass projects still build (two
   with sibling project references needed their parent folder), and the apps that ran still start.
-- **Round 71 (lane K) carry-over.** (A container added after the TextBlock widget exists is now hosted: the root
-  is promoted to the overlay in place, see the cleanup pass.) `BaselineAlignment` other than Baseline is stored only; the hosted child is not part of the label's selection;
-  FlowDocument containers stay store-only; DrawingBrush and VisualBrush fills (other lanes).
+- **Round 71 (lane K) carry-over.** A container added after the TextBlock widget exists is not hosted (a
+  root-widget swap was tried in the cleanup pass and reverted: it left visibility/enabled/opacity on the old root
+  and reordered WrapPanel children). `BaselineAlignment` other than Baseline is stored only; the hosted child is
+  not part of the label's selection; FlowDocument containers stay store-only; DrawingBrush and VisualBrush fills
+  (other lanes).
 
 ## Phased roadmap (after Phase 0 proves the spine)
 
@@ -3144,8 +3146,8 @@ the hybrid bridge, the drop-in). Only after it runs a real one-window WPF app un
 is it worth committing to the multi-phase build toward 1:1.
 
 - **Round 68 (lane E) review fixes.** *(First pass: its natural-size propagation was later removed entirely, see the
-  third pass below; the other items stand.)* R68E-1 `ScrollViewer` no longer propagates its natural size on every axis (it
-  broke Grid star rows): only on an axis where the widget does not expand. R68E-2 desired size adds Padding
+  third pass below; the other items stand.)* R68E-1 `ScrollViewer` no longer propagates its natural size on every
+  axis (it broke Grid star rows): only on an axis where the widget does not expand. R68E-2 desired size adds Padding
   and a Visible scroll bar (no BorderThickness). R68E-3 defaults are WPF's (Disabled / Visible). R68E-4 the F1 test
   notes Margin is not mapped; docs now say the Window default size is the user-visible imaging fix. Grid star weights
   other than equal are not proportional on GTK (pre-existing, outside this lane). See `samples-coverage.md`.
@@ -3173,8 +3175,9 @@ is it worth committing to the multi-phase build toward 1:1.
 - VisualBrush self-reference via BorderBrush/Control/TextBlock brushes relies on the pixel storm breaker.
 - A Click-only Hyperlink without NavigateUri is unsupported.
 - BaselineAlignment other than Baseline and FlowDocument InlineUIContainers are store-only.
+- An InlineUIContainer added to a TextBlock after its widget exists is not hosted.
 - macOS/Linux GTK runs were not measured in this programme.
 
-Cleanup pass (branch `gf73/cleanup`): button pixel tests no longer depend on the pointer position; a late-added
-`InlineUIContainer` is hosted; `Thickness` equality treats NaN as equal (WPF); the adorner frame-layout test is a real
-regression test.
+Cleanup pass (branch `gf73/cleanup`): button pixel tests no longer depend on the pointer position; `Thickness`
+equality treats NaN as equal (WPF); the adorner frame-layout test is a real regression test. The late-added
+`InlineUIContainer` fix was reverted (see Round 71 lane K carry-over).
