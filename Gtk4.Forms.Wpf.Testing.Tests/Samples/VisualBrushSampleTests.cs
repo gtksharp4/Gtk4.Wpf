@@ -163,6 +163,7 @@ public class VisualBrushSampleTests : WpfUiTest<global::VisualBrush.App>
 		// font, so only the rows above the mirrored text are checked for text-free ink.
 		double textHeight = App.Invoke(() => ((TextBlock)upper.Children[0]).ActualHeight);
 		int clearRows = (int)Math.Min(150, 260 - textHeight);
+		Assert.True(clearRows > 20, $"too few text-free rows to check the flip ({clearRows})");
 		int wide = 0;
 		for (int y = 0; y < clearRows; y++)
 			for (int x = 220; x < shot.Surface.Width; x++)
@@ -219,7 +220,7 @@ public class VisualBrushSampleTests : WpfUiTest<global::VisualBrush.App>
 		App.Invoke(() => Viewer.Activate());
 		App.WaitUntil(() => App.Invoke(() => Viewer.IsActive), description: "app window active");
 		var gtkWindow = App.Invoke(() => (Gtk.Window)Viewer.Widget);
-		bool OthersActive() => App.Invoke(() => Gtk.Window.ListToplevels().Any(w => w != gtkWindow && w.IsActive));
+		bool OthersActive() => App.Invoke(() => Gtk.Window.ListToplevels().Any(w => w != gtkWindow && w.IsVisible && w.IsActive));
 		string Describe() => App.Invoke(() => string.Join("; ", Gtk.Window.ListToplevels()
 			.Select(w => $"{w.GetType().Name} '{w.Title}' active={w.IsActive} visible={w.IsVisible} app={w == gtkWindow}")));
 		int before = App.Invoke(() => Gtk.Window.ListToplevels().Count(w => w.IsVisible));
@@ -227,6 +228,7 @@ public class VisualBrushSampleTests : WpfUiTest<global::VisualBrush.App>
 		{
 			SelectTab(tab);
 			Assert.False(OthersActive(), $"tab {tab}: another toplevel took activation: " + Describe());
+			Assert.True(App.Invoke(() => gtkWindow.IsActive), $"tab {tab}: the app window lost activation: " + Describe());
 		}
 		App.Invoke(() => Assert.Equal(before, Gtk.Window.ListToplevels().Count(w => w.IsVisible)));
 	}
