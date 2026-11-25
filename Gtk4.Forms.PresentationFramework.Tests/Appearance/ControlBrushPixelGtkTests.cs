@@ -15,8 +15,10 @@ namespace Gtk4.Forms.PresentationFramework.Tests.Appearance;
 /// </summary>
 public partial class ControlBrushPixelGtkTests : WpfGtkTestBase
 {
+	// A widget that cannot be targeted never takes the :hover face, wherever the real pointer rests.
 	static (Window Win, WidgetPixels Px) Show(FrameworkElement el)
 	{
+		el.IsHitTestVisible = false;
 		var win = new Window { Content = el, Width = 300, Height = 200 };
 		win.Show();
 		GtkPump.Until(() => el.Widget.IsMapped && el.Widget.Width > 0);
@@ -34,6 +36,7 @@ public partial class ControlBrushPixelGtkTests : WpfGtkTestBase
 
 	static Window Host(FrameworkElement el)
 	{
+		el.IsHitTestVisible = false;
 		var win = new Window { Content = el, Width = 300, Height = 200 };
 		win.Show();
 		GtkPump.Until(() => el.Widget.IsMapped && el.Widget.Width > 0);
