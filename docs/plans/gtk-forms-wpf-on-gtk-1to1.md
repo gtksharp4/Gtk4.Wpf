@@ -2708,14 +2708,15 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   converter-backed struct goes through `ConvertByType`, an attribute-less instantiable object is `new`ed, and anything
   else gets no entry plus `Skipped resource <Name> (line N)`. **a-F4** `RenderOptions` cache-invalidation thresholds
   default to 0.707 and 1.414 as WPF. **a-F5** `UnwrapExplicitCollections` detaches the nodes before re-parenting, so
-  their line info survives. **a-F6** the unit-suffix test used a plain `double` (`ArcSegment.RotationAngle`), which WPF's
-  `DoubleConverter` rejects; it is now `Infinity` routed through the converter. **a-F7** the Grid shorthand applies to
-  Grid subclasses, including project types through their declared base. Rejected in triage: CI-1 (already fixed:
-  `IsNamingAttribute` gates `NameScopes` and the generator; the `Timeline` regression it caused is a-F1), CI-2 (already
-  fixed: keyed elements with attributes are built, `Keyed_element_with_attributes_in_a_dictionary_is_built_not_stringified`;
-  the string fallback is a-F3), CI-3 (already fixed: `RenderOptions` exists and the generator emits `Set*`; the default
-  mismatch is a-F4; `VisualBrush.Visual={Binding}` is lane B), CI-4 (already fixed: the `CommandConverters` remark points
-  to the resolver-taking overload).
+  their line info survives. **a-F6** the unit-suffix test used a plain `double` (`ArcSegment.RotationAngle`), which
+  WPF's `DoubleConverter` rejects; it is now `Infinity` routed through the converter. **a-F7** the Grid shorthand
+  applies to Grid subclasses, including project types through their declared base. Rejected in triage: CI-1 (already
+  fixed: `IsNamingAttribute` gates `NameScopes` and the generator; the `Timeline` regression it caused is a-F1), CI-2
+  (already fixed: keyed elements with attributes are built,
+  `Keyed_element_with_attributes_in_a_dictionary_is_built_not_stringified`; the string fallback is a-F3), CI-3 (already
+  fixed: `RenderOptions` exists and the generator emits `Set*`; the default mismatch is a-F4;
+  `VisualBrush.Visual={Binding}` is lane B), CI-4 (already fixed: the `CommandConverters` remark points to the
+  resolver-taking overload).
 - **Round 61 (lane C) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. Targeted tests (the
   suites run in full at integrate): `MarkupCompiler.Tests` 716 (715 passed, 1 skipped, 0 failed);
   `PresentationFramework.Tests` `RenderOptions`/`Timeline`/`Storyboard` 88 passed; 13 test methods added, 7 updated
@@ -2738,8 +2739,8 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
 - **Round 61 (lane C) carry-over.** Packaging (EditingExaminerDemo, WPFGallery `SystemEvents`) is unstarted. Keyed
   elements that are unbuildable and not referenced by a `{StaticResource}` get no `Resources` entry (a later
   `FindResource` for them throws as in WPF for a missing key); `XmlDataProvider.XmlNamespaceManager` is still not built.
-- **Round 67 (lane H) track 1 - HexSphereDemo (DONE, merged).** `gf67h/hexsphere-3d`: the "3D Materials Demo" showed a black
-  window and its button did nothing. Measured causes: `<Resource>` images were not copied beside the exe, so every
+- **Round 67 (lane H) track 1 - HexSphereDemo (DONE, merged).** `gf67h/hexsphere-3d`: the "3D Materials Demo" showed a
+  black window and its button did nothing. Measured causes: `<Resource>` images were not copied beside the exe, so every
   relative `ImageBrush` URI failed; the storyboard's `ParallelTimeline` children were never generated; sc#
   `GradientStop` colours used the wrong sRGB transfer (`Color.FromScRgb`). Fixed with a per-brush texture cache on the
   software `Viewport3D`, an empty-brush fallback (an unloadable brush paints nothing), `Resource` copy to the output and
@@ -2796,10 +2797,10 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   `AutomationProperties.AccessKey` exists, lane A).
 - **Round 64 (lane D) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. Targeted
   `PresentationFramework.Tests` `AccessKeys`/`PeerName`/`ContentPresenterAccessKey` 85 passed; input, menu, tab,
-  group box, peers, default-button and label tests 264 passed. Samples gate: all 204 projects that built at `17c64167` build
-  through a lane-private feed (two builds each), and all 191 apps that ran still run (125 with a window in a crowded
-  first pass; the 66 without a window handle re-checked alone: 64 showed one within 20 s, Concepts and Brushes alone
-  for 40 s; none exited).
+  group box, peers, default-button and label tests 264 passed. Samples gate: all 204 projects that built at `17c64167`
+  build through a lane-private feed (two builds each), and all 191 apps that ran still run (125 with a window in a
+  crowded first pass; the 66 without a window handle re-checked alone: 64 showed one within 20 s, Concepts and Brushes
+  alone for 40 s; none exited).
 - **Round 64 (lane D) carry-over.** GTK's own Alt-held underline cue may no longer appear because its mnemonic
   matcher is disabled (not verified visually). A real Alt+key event is untested for lack of an injection path.
   `AutomationProperties.AccessKey` and `GetAccessKeyCore` text await lane A.
@@ -2860,7 +2861,10 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   tested, not driven by a native drag. **b-F5 test gap kept**: the window-width (centred horizontal move) case stays
   uncovered; `Window.SizeAllocate` raises no frame layout. Full `PresentationFramework.Tests` at `328b893e`: 6156
   passed, 0 failed, 3 skipped (6159). Targeted after the fixes (`Adorner`, `DataGrid`, `Window`, `MouseCapture`,
-  `Visibility`): 529 passed, 0 failed.
+  `Visibility`): 529 passed, 0 failed. **Cleanup pass (b-F5 regression test):** the old test passed even without
+  the hook because LayoutUpdated/SizeChanged also reposition; the new test hides and shows the adorned widget at the
+  GTK level only (no WPF event) and fails with the `HookFrameLayout` call removed (verified, then restored). Full
+  `PresentationFramework.Tests` after the cleanup pass: 6741 passed, 0 failed, 4 skipped (6745).
 - **Round 62 (lane A) carry-over.**
   - `AutomationElementIdentifiers.HeadingLevelProperty` (WPF 4.8+), `AutomationElement.HeadingLevelProperty` and a
     `PeerProvider`/`PropertyCatalog` case are not implemented.
@@ -2932,7 +2936,11 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   all alive with a window; OpacityMasking needed 35 s and shows its window). A first pass packed a stale MarkupCompiler
   (a mutation-check build left in `bin`) and showed a false 2DTransforms failure (`Text = 0`); re-packed from a clean
   solution build it passes.
-- **Round 63 (lane B) follow-up.** The Run/Paragraph TextEffects guard is now checked by running generated  `InitializeComponent` (the hand-written null-guard test is removed); the object key frame test is documented as  text-only; the Viewport3D degenerate-texture test is renamed to match the corrected MinTextureScale wording; two  over-long test lines are wrapped. The MarkupCompiler run-time tests load the layer assemblies in the default load  context; the Linux and macOS CI legs still have to confirm they need no display.
+- **Round 63 (lane B) follow-up.** The Run/Paragraph TextEffects guard is now checked by running generated
+  `InitializeComponent` (the hand-written null-guard test is removed); the object key frame test is documented as
+  text-only; the Viewport3D degenerate-texture test is renamed to match the corrected MinTextureScale wording; two
+  over-long test lines are wrapped. The MarkupCompiler run-time tests load the layer assemblies in the default load
+  context; the Linux and macOS CI legs still have to confirm they need no display.
 - **Round 63 (lane B) carry-over.** Packaging (EditingExaminerDemo `System.Security.Permissions`, WPFGallery
   `SystemEvents`) is still unstarted. `TextElement.TextEffects`, `FlowDocument.TextEffects` and `TextBlock.TextEffects`
   default to null (not an empty frozen collection). `CommandBinding` still has only `Executed` and `CanExecute`.
@@ -2945,30 +2953,30 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   Button/RepeatButton/ToggleButton. Controls with no brush keep the pure theme (no provider). Samples evidence: the
   FlowDocumentProperties buttons paint blue with white captions.
 - **Round 66 (lane G) track 2 - paginated FlowDocumentPageViewer layout (DONE, merged).** Same branch: a block-aware
-  page meter (`FlowDocumentPageMeter`) lays the document out per page and column from PageWidth/PageHeight (or the viewer
-  area), Min/Max, PagePadding, ColumnWidth/ColumnGap/IsColumnWidthFlexible and ColumnRule; text wraps to the column with
-  Pango, paragraph margins collapse as in WPF, and the paginator counts pages with the same meter. Samples evidence:
-  in FlowDocumentProperties the text wraps inside the page, and the ColumnWidth, ColumnGap, PageWidth, PagePadding,
-  FontSize and TextAlignment buttons change the page as in WPF.
+  page meter (`FlowDocumentPageMeter`) lays the document out per page and column from PageWidth/PageHeight (or the
+  viewer area), Min/Max, PagePadding, ColumnWidth/ColumnGap/IsColumnWidthFlexible and ColumnRule; text wraps to the
+  column with Pango, paragraph margins collapse as in WPF, and the paginator counts pages with the same meter. Samples
+  evidence: in FlowDocumentProperties the text wraps inside the page, and the ColumnWidth, ColumnGap, PageWidth,
+  PagePadding, FontSize and TextAlignment buttons change the page as in WPF.
 - **Round 66 (lane G) review + fixes - DONE.** Applied failing-first (the new tests failed before each product change).
   **g-F1** non-flexible columns keep ColumnGap and leave the unused width on the right (PTS `GetColumnsInfo`); 200/10 on
   650 gives column x 0/210/420, flexible still widens to 210. **g-F2** the check/radio face rule names `check, radio`
   (GTK 4 names the indicator `radio` once a Group is set), so a grouped RadioButton paints Background. **g-F3** the
   Aero2 state faces apply only to Button, RepeatButton and ToggleButton (not CheckBox/RadioButton); MenuItem and
   DataGridColumnHeader, which sit on a `Gtk.Button` but whose templates have no such triggers, keep their Background
-  when disabled. **g-F4** an empty `<Paragraph/>` formats as one blank line (one pitch) between the collapsed margins, so
-  P1 to P2 is pitch + 3 line heights; only non-paragraph blocks without content collapse through. **g-F5** `Block.Margin`
-  defaults to auto (NaN sides) as in WPF; only NaN sides resolve to a line height above and below for Paragraph, List and
-  Table (zero for other blocks), so `Margin="0"` removes the spacing. **g-F6** a multiline TextBox paints its
-  `textview, text` nodes and an editable ComboBox its entry and dropdown button, through a second child provider
-  (`AppearanceExtraTarget`); the scrolled-window frame around the TextBox keeps the theme. **g-F7** the viewer clears the
-  old document's paginator Viewport when its document changes or becomes null, so printing paginates at 816x1056 again.
-  **g-F8** over-long lines wrapped, no behaviour change.
+  when disabled. **g-F4** an empty `<Paragraph/>` formats as one blank line (one pitch) between the collapsed margins,
+  so P1 to P2 is pitch + 3 line heights; only non-paragraph blocks without content collapse through. **g-F5**
+  `Block.Margin` defaults to auto (NaN sides) as in WPF; only NaN sides resolve to a line height above and below for
+  Paragraph, List and Table (zero for other blocks), so `Margin="0"` removes the spacing. **g-F6** a multiline TextBox
+  paints its `textview, text` nodes and an editable ComboBox its entry and dropdown button, through a second child
+  provider (`AppearanceExtraTarget`); the scrolled-window frame around the TextBox keeps the theme. **g-F7** the viewer
+  clears the old document's paginator Viewport when its document changes or becomes null, so printing paginates at
+  816x1056 again. **g-F8** over-long lines wrapped, no behaviour change.
 - **Round 66 (lane G) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. Targeted tests
   (the suites run in full at integrate): `PresentationFramework.Tests` filtered to Appearance, Flow*, Documents,
   DataGrid, MenuItem, ComboBox, TextBox, RadioButton, Block and Paragraph 921 (920 passed, 1 skipped, 0 failed); 14 test
-  cases (13 methods) added (6 pixel or rule tests, 6 page-layout tests, 1 viewer theory with 2 cases), 1 replaced (the old one-line-height pin), 1 updated (Block.Margin
-  default). Samples gate: all 204 projects that built at the last
+  cases (13 methods) added (6 pixel or rule tests, 6 page-layout tests, 1 viewer theory with 2 cases), 1 replaced (the
+  old one-line-height pin), 1 updated (Block.Margin default). Samples gate: all 204 projects that built at the last
   run build through a lane-private feed (two builds each; CustomApplicationClass needs its sibling client built first),
   and all 191 apps that ran still run (114 in a crowded first pass; the 77 without a window handle re-checked alone for
   25 s one at a time: all alive with a window).
@@ -2981,29 +2989,33 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   scrolled-window frame of a multiline TextBox is not recoloured; ImageBrush/VisualBrush/DrawingBrush backgrounds on
   controls are store-only. FlowDocumentPageViewer still lays tables, lists and floaters out as one text block and does
   not apply widows/orphans, KeepTogether or KeepWithNext; Zoom is stored, not applied.
-- **Round 69 (lane I) review fixes.** Shape natural size is now a GTK *natural* request only (custom layout, minimum 0), so a
-  `Stretch.None` shape larger than its slot is allocated the slot and clipped, and an explicit `Width`/`Height` wins. `Transform`
-  no longer resets the fill rule (matrix save/restore, not `Save`/`Restore`). `Shape.ArrangeOverride` returns the stretched size
-  and the alignment offset is folded into the stretch matrix. `PathFigureCollection`/`PathSegmentCollection`/segment edits raise
-  `Changed`. The `Points` getter no longer creates a local value. Limit: Grid fixed column widths are not enforced by the
-  Gtk.Grid backing, so a wide shape in a fixed column still takes the free space like an Auto column.
+- **Round 69 (lane I) review fixes.** Shape natural size is now a GTK *natural* request only (custom layout, minimum 0),
+  so a `Stretch.None` shape larger than its slot is allocated the slot and clipped, and an explicit `Width`/`Height`
+  wins. `Transform` no longer resets the fill rule (matrix save/restore, not `Save`/`Restore`). `Shape.ArrangeOverride`
+  returns the stretched size and the alignment offset is folded into the stretch matrix.
+  `PathFigureCollection`/`PathSegmentCollection`/segment edits raise `Changed`. The `Points` getter no longer creates a
+  local value. Limit: Grid fixed column widths are not enforced by the Gtk.Grid backing, so a wide shape in a fixed
+  column still takes the free space like an Auto column.
   - Known gaps (Round 69 lane I): a large `Stretch.None` shape in a FIXED-size slot still squeezes its siblings, because
     GTK lets a child's natural size beat the container's fixed size in `Gtk.Grid`/`Gtk.Box`. Measured in a 300 px window
     (branch vs WPF): fixed 100 px column + `1*` column, Line `X2=400`: line 298, star column 2 vs WPF line `ActualWidth`
-    about 400 clipped to 100 visible, star column 200 (main: 0 and 300, invisible); fixed 50 px row + `1*` row, Path 200x200: height 200, star row 53 vs WPF 50 and 250 (main: 0
-    and 253); `Border Width=100` holding a Line `X2=400` beside a `Border Width=100` in a horizontal `StackPanel`:
-    first Border 200 wide vs WPF 100 (main: 100). Long `TextBlock`s behave the same on main. Follow-up: enforce fixed
-    track/explicit sizes as maximums for children (benefits Shape and TextBlock). Target test:
-    `ShapeSlotTests.Stretch_None_line_in_a_fixed_100px_column_...` (skipped).
-  - Known gap: a shape with `Stretch != None` and a non-`Stretch` alignment reports natural size 0 in GTK (as on main), so
-    e.g. a Uniform polygon with `VerticalAlignment=Center` in a 50x100 Border is allocated 48x0 and draws nothing (WPF: 50x50),
-    and a `Stretch=Fill` Line with `HorizontalAlignment=Left` in a 300 px StackPanel is 0x0 (WPF: about 300). The managed
-    alignment-matrix rows are `Managed_layout_*` tests; the `Stretch` alignment case is covered on real GTK.
-  - Known gap: on real GTK a `Stretch != None` shape keeps the slot as its `ActualWidth`/`ActualHeight` and the alignment
-    offset is folded into the stretch matrix; WPF's `RenderSize` is the stretched size (50x50 for the Uniform polygon in a
-    50x100 Border) and `ArrangeCore` applies the offset. Pixels match; the reported actual size does not.
-- **Round 69 (lane I) review fixes (pass 2).** Test and doc only: fixed-track and explicit-size limits recorded above, the
-  Uniform alignment rows renamed `Managed_layout_*`, a real-GTK Uniform-in-Border test, and the fixed-column target test skipped.
+    about 400 clipped to 100 visible, star column 200 (main: 0 and 300, invisible); fixed 50 px row + `1*` row, Path
+    200x200: height 200, star row 53 vs WPF 50 and 250 (main: 0 and 253); `Border Width=100` holding a Line `X2=400`
+    beside a `Border Width=100` in a horizontal `StackPanel`: first Border 200 wide vs WPF 100 (main: 100). Long
+    `TextBlock`s behave the same on main. Follow-up: enforce fixed track/explicit sizes as maximums for children
+    (benefits Shape and TextBlock). Target test: `ShapeSlotTests.Stretch_None_line_in_a_fixed_100px_column_...`
+    (skipped).
+  - Known gap: a shape with `Stretch != None` and a non-`Stretch` alignment reports natural size 0 in GTK (as on main),
+    so e.g. a Uniform polygon with `VerticalAlignment=Center` in a 50x100 Border is allocated 48x0 and draws nothing
+    (WPF: 50x50), and a `Stretch=Fill` Line with `HorizontalAlignment=Left` in a 300 px StackPanel is 0x0 (WPF: about
+    300). The managed alignment-matrix rows are `Managed_layout_*` tests; the `Stretch` alignment case is covered on
+    real GTK.
+  - Known gap: on real GTK a `Stretch != None` shape keeps the slot as its `ActualWidth`/`ActualHeight` and the
+    alignment offset is folded into the stretch matrix; WPF's `RenderSize` is the stretched size (50x50 for the Uniform
+    polygon in a 50x100 Border) and `ArrangeCore` applies the offset. Pixels match; the reported actual size does not.
+- **Round 69 (lane I) review fixes (pass 2).** Test and doc only: fixed-track and explicit-size limits recorded above,
+  the Uniform alignment rows renamed `Managed_layout_*`, a real-GTK Uniform-in-Border test, and the fixed-column target
+  test skipped.
 - **Round 70 (lane J) review fixes (VisualBrush / TileBrush).** Measured causes per sample tab: Painting with Visuals
   (black tiles: the pre-3fb62afe fill painted Cairo's default black, then an empty detached source and a 1-pixel
   nested tile), Magnifying Glass (the source was never laid out or mapped, and a Canvas/StackPanel painted no tile
@@ -3011,23 +3023,24 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
   reached the widget). Review fixes: **J70-1** detached sources no longer get their own toplevel (it took activation):
   they sit in a non-targetable, non-focusable overlay layer far outside the app window, no `Present`. **J70-2**
   `OpacityMask` of a child of a Backdrop panel is pushed around that child's whole render (CSS background and border
-  included). **J70-3** a brush painted inside its own source drops the echo invalidation once two re-renders in a row are
-  pixel-identical (bounded `Changed`); the source link is made at first paint, since an App.xaml resource sets `Visual`
-  before GTK is initialised (GeometryDesignerDemo crashed in the gate). **J70-4** weak leases: the layer goes with the last brush. **J70-5** a detached source is re-measured and
-  re-arranged on every render. **J70-6..11** pixel tests for RelativeTransform, Transform order, Flip modes, grid and
-  reflection flip; Graphene rect owned and freed; device-resolution tile uses the transformed cell axes and caps total
-  pixels; the late-size push only clears a request this code set; lines wrapped. Cross-lane hooks: lane G (Control
-  `Background`) and lane K (`TextBlock.Foreground`) call `BrushPaint.Fill` from a Backdrop snapshot (BrushCss emits
-  nothing for tile brushes); lane I (`Shape.OpacityMask`) is covered under a Backdrop panel and needs a snapshot hook
+  included). **J70-3** a brush painted inside its own source drops the echo invalidation once two re-renders in a row
+  are pixel-identical (bounded `Changed`); the source link is made at first paint, since an App.xaml resource sets
+  `Visual` before GTK is initialised (GeometryDesignerDemo crashed in the gate). **J70-4** weak leases: the layer goes
+  with the last brush. **J70-5** a detached source is re-measured and re-arranged on every render. **J70-6..11** pixel
+  tests for RelativeTransform, Transform order, Flip modes, grid and reflection flip; Graphene rect owned and freed;
+  device-resolution tile uses the transformed cell axes and caps total pixels; the late-size push only clears a request
+  this code set; lines wrapped. Cross-lane hooks: lane G (Control `Background`) and lane K (`TextBlock.Foreground`) call
+  `BrushPaint.Fill` from a Backdrop snapshot (BrushCss emits nothing for tile brushes); lane I (`Shape.OpacityMask`) is
+  covered under a Backdrop panel and needs a snapshot hook
 only for a Shape that is the window content; lane H `RenderingPainter` reads `VisualBrush.TryGetLiveSurface`.
 - **Round 70 (lane J) review fixes, second pass.** The independent review blocked three regressions. **Host choice:**
   a detached source is hosted in the toplevel of the window that paints the brush (`BrushPaint.PaintingRoot`, set by
   every Backdrop snapshot; the active window otherwise), and every render re-checks that the layer is still mapped and
   re-hosts the source if not; with no window at all (`Shape.PaintTo`, offscreen rendering) the source is mapped by hand
   under a never-mapped `Fixed` and snapshotted through it, so it still renders. The layer is created from an idle
-  callback, not inside the snapshot (no "snapshot GtkFixed without a current allocation" warning). **Liveness:** the echo
-  is recognised by its cause, not by timing: invalidations during the 100 ms after the brush's own `Changed` are held,
-  then one re-render decides whether the source really changed; a dirty brush always raises `Changed` eventually.
+  callback, not inside the snapshot (no "snapshot GtkFixed without a current allocation" warning). **Liveness:** the
+  echo is recognised by its cause, not by timing: invalidations during the 100 ms after the brush's own `Changed` are
+  held, then one re-render decides whether the source really changed; a dirty brush always raises `Changed` eventually.
   **Transforms:** a masked child's mask is filled in the child's own space (`ComputeTransform`), so it turns with a
   `RenderTransform`. Lane J's gaps unchanged: no `Present`, no extra toplevel.
 - **Round 70 (lane J) review fixes, third pass.** **Liveness:** the echo hold-back now applies only to a brush painted
@@ -3079,8 +3092,8 @@ only for a Shape that is the window content; lane H `RenderingPainter` reads `Vi
   WPF-Samples-GTK4 HelloWorld error and warnings). Targeted tests (TextBlock, Inline, KeyFrameListing, Storyboard,
   Hyperlink, NameScope, LogicalTree): 254 passed, 1 skipped. Samples gate: all 207 build-pass projects still build (two
   with sibling project references needed their parent folder), and the apps that ran still start.
-- **Round 71 (lane K) carry-over.** A container added after the TextBlock widget exists is not hosted;
-  `BaselineAlignment` other than Baseline is stored only; the hosted child is not part of the label's selection;
+- **Round 71 (lane K) carry-over.** (A container added after the TextBlock widget exists is now hosted: the root
+  is promoted to the overlay in place, see the cleanup pass.) `BaselineAlignment` other than Baseline is stored only; the hosted child is not part of the label's selection;
   FlowDocument containers stay store-only; DrawingBrush and VisualBrush fills (other lanes).
 
 ## Phased roadmap (after Phase 0 proves the spine)
@@ -3130,11 +3143,12 @@ is small, fully testable, and settles every architectural unknown (xmlns binding
 the hybrid bridge, the drop-in). Only after it runs a real one-window WPF app unmodified on two OSes
 is it worth committing to the multi-phase build toward 1:1.
 
-- **Round 68 (lane E) review fixes.** R68E-1 `ScrollViewer` no longer propagates its natural size on every axis (it
+- **Round 68 (lane E) review fixes.** *(First pass: its natural-size propagation was later removed entirely, see the
+  third pass below; the other items stand.)* R68E-1 `ScrollViewer` no longer propagates its natural size on every axis (it
   broke Grid star rows): only on an axis where the widget does not expand. R68E-2 desired size adds Padding
-  and a Visible scroll bar (no BorderThickness). R68E-3 defaults are WPF's (Disabled / Visible). R68E-4 the F1 test notes
-  Margin is not mapped; docs now say the Window default size is the user-visible imaging fix. Grid star weights other
-  than equal are not proportional on GTK (pre-existing, outside this lane). See `samples-coverage.md`.
+  and a Visible scroll bar (no BorderThickness). R68E-3 defaults are WPF's (Disabled / Visible). R68E-4 the F1 test
+  notes Margin is not mapped; docs now say the Window default size is the user-visible imaging fix. Grid star weights
+  other than equal are not proportional on GTK (pre-existing, outside this lane). See `samples-coverage.md`.
 - **Round 68 (lane E) review fixes (second pass).** `ScrollViewer` natural-size propagation is now on only on an axis
   its hosting Window sizes to content (`SizeToContent` Width/Height/WidthAndHeight, where WPF measures with an infinite
   constraint); everywhere else, including wrapped in Border/StackPanel inside a Grid star track, it is off as on main.
@@ -3142,7 +3156,25 @@ is it worth committing to the multi-phase build toward 1:1.
   gone. `BorderThickness` no longer adds to the desired size (the WPF default template has no Border). An Auto bar that
   the content overflows is shown and its size added (WPF MeasureOverride remeasure).
 - **Round 68 (lane E) review fixes (third pass).** ScrollViewer natural-size propagation to GTK is removed entirely
-  (PropagateNaturalWidth/Height stay false as on main); three attempts each regressed star rows, wrapped ScrollViewers or
-  Height/MaxHeight under SizeToContent. Kept: the Window default size, Image centring, the WPF ScrollViewer measure and
-  defaults. Known gap: SizeToContent around a ScrollViewer does not size to its content (same as before Round 68);
+  (PropagateNaturalWidth/Height stay false as on main); three attempts each regressed star rows, wrapped ScrollViewers
+  or Height/MaxHeight under SizeToContent. Kept: the Window default size, Image centring, the WPF ScrollViewer measure
+  and defaults. Known gap: SizeToContent around a ScrollViewer does not size to its content (same as before Round 68);
   needs a managed-measure-driven window size.
+
+## Known gaps (end of the Round 62-72 programme)
+
+- SizeToContent around a ScrollViewer does not size to its content.
+- Window Min/MaxHeight/Width do not cap an axis SizeToContent sizes.
+- Fixed Grid tracks and explicit parent sizes do not cap a child's natural size (Shape, TextBlock).
+- Stretch != None shapes report the slot as ActualWidth/Height.
+- External http(s) links in Frame/NavigationWindow raise NavigationFailed and stay (WPF hosts web content).
+- DrawingBrush rendering is not implemented beyond what exists (DrawingBrush fills).
+- VisualBrush as a 3D material is not rendered (Graphics/Geometry 3D pane stays dark).
+- VisualBrush self-reference via BorderBrush/Control/TextBlock brushes relies on the pixel storm breaker.
+- A Click-only Hyperlink without NavigateUri is unsupported.
+- BaselineAlignment other than Baseline and FlowDocument InlineUIContainers are store-only.
+- macOS/Linux GTK runs were not measured in this programme.
+
+Cleanup pass (branch `gf73/cleanup`): button pixel tests no longer depend on the pointer position; a late-added
+`InlineUIContainer` is hosted; `Thickness` equality treats NaN as equal (WPF); the adorner frame-layout test is a real
+regression test.
