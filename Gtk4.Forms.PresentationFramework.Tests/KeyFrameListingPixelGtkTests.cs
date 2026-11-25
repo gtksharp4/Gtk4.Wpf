@@ -37,6 +37,11 @@ public class KeyFrameListingPixelGtkTests : WpfGtkTestBase
 			int stride = data.Length / texture.Height;
 			int Ink(int x0, int y0, int x1, int y1)
 			{
+				// The texture starts at the node bounds, which need not be the widget origin.
+				x0 -= (int)node.Bounds.X;
+				x1 -= (int)node.Bounds.X;
+				y0 -= (int)node.Bounds.Y;
+				y1 -= (int)node.Bounds.Y;
 				x0 = Math.Max(0, x0);
 				y0 = Math.Max(0, y0);
 				x1 = Math.Min(texture.Width, x1);

@@ -26,7 +26,7 @@ public class ScrollViewerWindowSizeGtkTests : WpfGtkTestBase
 		try
 		{
 			Assert.InRange(sv.Widget.Height, 199, 201);
-			Assert.True(win.Widget.Height <= SystemParameters.WorkArea.Height, $"{win.Widget.Height}");
+			Assert.True(WindowExtent.Of(win).H <= SystemParameters.WorkArea.Height, $"{WindowExtent.Of(win).H}");
 		}
 		finally { win.Close(); }
 	});
@@ -39,7 +39,7 @@ public class ScrollViewerWindowSizeGtkTests : WpfGtkTestBase
 			new ScrollViewer { Content = new Border { Width = 300, Height = 3000 } });
 		try
 		{
-			Assert.True(win.Widget.Height <= 500, $"{win.Widget.Height}");
+			Assert.True(WindowExtent.Of(win).H <= 500, $"{WindowExtent.Of(win).H}");
 		}
 		finally { win.Close(); }
 	});
@@ -52,7 +52,7 @@ public class ScrollViewerWindowSizeGtkTests : WpfGtkTestBase
 		try
 		{
 			double expected = System.Math.Floor(SystemParameters.WorkArea.Height * 3 / 4);
-			Assert.InRange(win.Widget.Height, expected - 1, expected + 1);
+			Assert.InRange(WindowExtent.Of(win).H, expected - 1, expected + 1);
 			var adj = ((Gtk.ScrolledWindow)sv.Widget).Vadjustment;
 			Assert.True(adj.Upper > adj.PageSize, $"upper {adj.Upper} page {adj.PageSize}");
 			Assert.True(sv.Widget.Height < 2000);
@@ -68,8 +68,8 @@ public class ScrollViewerWindowSizeGtkTests : WpfGtkTestBase
 			new ScrollViewer { Content = new Border { Width = 2000, Height = 2000 } });
 		try
 		{
-			Assert.InRange(win.Widget.Width, 399, 401);
-			Assert.InRange(win.Widget.Height, 299, 301);
+			Assert.InRange(WindowExtent.Of(win).W, 399, 401);
+			Assert.InRange(WindowExtent.Of(win).H, 299, 301);
 			Assert.True(sv.Widget.Width <= 400 && sv.Widget.Height <= 300);
 		}
 		finally { win.Close(); }

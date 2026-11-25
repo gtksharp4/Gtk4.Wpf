@@ -18,7 +18,7 @@ public class WindowDefaultSizeGtkTests : WpfGtkTestBase
 	{
 		win.Show();
 		GtkPump.For(300);
-		return (win.Widget.Width, win.Widget.Height);
+		return WindowExtent.Of(win);
 	}
 
 	static Border Tiny() => new Border { Width = 40, Height = 30 };
