@@ -135,6 +135,7 @@ public class WindowIconTests : WpfGtkTestBase
 
 		win.HandleTitleBarIconPress(1);
 		Assert.Equal(0, closed);
+		Assert.True(win.TitleBarIconContextMenu!.Visible);
 
 		win.HandleTitleBarIconPress(2);
 		Assert.Equal(1, closed);

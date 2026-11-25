@@ -119,6 +119,8 @@ public partial class Window
 	{
 		if (nPress == 2)
 			CloseFromTitleBarIcon();
+		else if (nPress == 1)
+			_iconContextMenu?.Popup();
 	}
 
 	void CloseFromTitleBarIcon() => Close();
