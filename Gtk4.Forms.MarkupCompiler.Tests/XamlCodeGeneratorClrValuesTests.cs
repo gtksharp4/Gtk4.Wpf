@@ -42,12 +42,13 @@ public class XamlCodeGeneratorClrValuesTests
 			Gen(@"<LinearGradientBrush StartPoint=""1,2"" />"));
 
 	[Theory]
-	[InlineData("0", ".TileMode = (global::System.Windows.Media.TileMode)(0);")]
-	[InlineData("tile", ".TileMode = global::System.Windows.Media.TileMode.Tile;")]
-	[InlineData("flipx", ".TileMode = global::System.Windows.Media.TileMode.FlipX;")]
-	[InlineData("Bogus", ".TileMode = \"Bogus\";")]
+	[InlineData("0", ".MappingMode = (global::System.Windows.Media.BrushMappingMode)(0);")]
+	[InlineData("absolute", ".MappingMode = global::System.Windows.Media.BrushMappingMode.Absolute;")]
+	[InlineData("relativetoboundingbox",
+		".MappingMode = global::System.Windows.Media.BrushMappingMode.RelativeToBoundingBox;")]
+	[InlineData("Bogus", ".MappingMode = \"Bogus\";")]
 	public void Enum_values_accept_numbers_and_any_case(string value, string expected)
-		=> Assert.Contains(expected, Gen($@"<DrawingBrush TileMode=""{value}"" />"));
+		=> Assert.Contains(expected, Gen($@"<LinearGradientBrush MappingMode=""{value}"" />"));
 
 	[Fact]
 	public void Flags_enum_values_are_resolved_per_member()

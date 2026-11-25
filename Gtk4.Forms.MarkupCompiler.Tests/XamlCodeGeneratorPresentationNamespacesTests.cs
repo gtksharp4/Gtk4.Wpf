@@ -49,9 +49,9 @@ public class XamlCodeGeneratorPresentationNamespacesTests
 		string code = gen.Generate($@"<Window x:Class=""MyApp.MainWindow"" xmlns=""{Pres}""
 	xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
 	<Window.Resources><Style x:Key=""s"" TargetType=""Border""><Setter Property=""Background""><Setter.Value>
-	<DrawingBrush Viewport=""0,0,10,10"" TileMode=""Tile"" /></Setter.Value></Setter></Style></Window.Resources>
+	<LinearGradientBrush EndPoint=""0,10"" MappingMode=""Absolute"" /></Setter.Value></Setter></Style></Window.Resources>
 </Window>", out _);
-		Assert.Contains("ConvertByType(typeof(global::System.Windows.Rect), \"0,0,10,10\")", code);
-		Assert.Contains(".TileMode = global::System.Windows.Media.TileMode.Tile;", code);
+		Assert.Contains("ConvertByType(typeof(global::System.Windows.Point), \"0,10\")", code);
+		Assert.Contains(".MappingMode = global::System.Windows.Media.BrushMappingMode.Absolute;", code);
 	}
 }
