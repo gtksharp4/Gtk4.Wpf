@@ -70,10 +70,15 @@ static class Program
 	{
 		var watchdog = new Thread(() =>
 			{
-				if (finished.Wait(TimeSpan.FromSeconds(WatchdogSeconds))) return;
-				Console.Error.WriteLine(
-					$"MacRunner STALL: the GTK test run made no progress for {WatchdogSeconds}s.");
-				Environment.Exit(3);
+				// Each GTK test is one thread-0 work item, so a hang shows as no item starting or ending for the
+				// limit; the suite as a whole may run longer than that on a slow runner.
+				while (!finished.Wait(TimeSpan.FromSeconds(10)))
+				{
+					if (WpfGtkThreadBridge.IdleMilliseconds < WatchdogSeconds * 1000L) continue;
+					Console.Error.WriteLine(
+						$"MacRunner STALL: the GTK test run made no progress for {WatchdogSeconds}s.");
+					Environment.Exit(3);
+				}
 			})
 			{ IsBackground = true, Name = "watchdog" };
 		watchdog.Start();
