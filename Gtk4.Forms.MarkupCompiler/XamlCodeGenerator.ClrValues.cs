@@ -21,7 +21,7 @@ namespace Gtk4.Forms.MarkupCompiler
 			"System.Windows.Media.Media3D.Size3D", "System.Windows.Media.Media3D.Point4D",
 			"System.Windows.Media.Media3D.Quaternion", "System.Windows.Media.Media3D.Matrix3D",
 			"System.Windows.Media.Media3D.Rect3D", "System.Windows.Media.Animation.KeyTime",
-			"System.Windows.Int32Rect", "System.Windows.Media.PixelFormat",
+			"System.Windows.Int32Rect", "System.Windows.Media.PixelFormat", "System.Windows.Controls.DataGridLength",
 		};
 
 		// Reference types with a built-in converter that CLR (non-DP) properties of exactly that type use.
