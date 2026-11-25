@@ -26,8 +26,12 @@ public struct Thickness : IEquatable<Thickness>
 	}
 
 	/// <inheritdoc/>
+	// As in WPF, NaN components compare equal to NaN.
 	public bool Equals(Thickness other) =>
-		Left == other.Left && Top == other.Top && Right == other.Right && Bottom == other.Bottom;
+		SideEquals(Left, other.Left) && SideEquals(Top, other.Top) &&
+		SideEquals(Right, other.Right) && SideEquals(Bottom, other.Bottom);
+
+	static bool SideEquals(double a, double b) => a == b || (double.IsNaN(a) && double.IsNaN(b));
 	/// <inheritdoc/>
 	public override bool Equals(object? obj) => obj is Thickness t && Equals(t);
 	/// <inheritdoc/>
