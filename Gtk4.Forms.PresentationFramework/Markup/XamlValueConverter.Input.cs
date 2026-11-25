@@ -14,6 +14,9 @@ public static partial class XamlValueConverter
 		Register<Cursor>(ParseCursor);
 		Register<char>(ParseChar);
 		Register<DateTime>(raw => DateTime.Parse(raw, System.Globalization.CultureInfo.InvariantCulture));
+		Register<System.Windows.Controls.DataGridLength>(raw => (System.Windows.Controls.DataGridLength)
+			new System.Windows.Controls.DataGridLengthConverter().ConvertFromString(
+				null, System.Globalization.CultureInfo.InvariantCulture, raw)!);
 	}
 
 	// WPF CharConverter: exactly one character.

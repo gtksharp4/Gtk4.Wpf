@@ -44,6 +44,8 @@ public class BackdropPaintTests : WpfGtkTestBase
 		try
 		{
 			win.Show();
+			GtkState.Require(() => panel.IsWidgetCreated && panel.Widget.IsMapped && panel.Widget.Width > 0
+				&& panel.Widget.Height > 0, "panel allocated", panel);
 			GtkPump.For(400);
 			using var s = Render(panel.Widget);
 			check(s);

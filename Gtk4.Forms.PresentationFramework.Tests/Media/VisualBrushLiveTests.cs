@@ -42,6 +42,8 @@ public class VisualBrushLiveTests : WpfGtkTestBase
 		try
 		{
 			win.Show();
+			GtkState.Require(() => source.IsWidgetCreated && source.Widget.IsMapped && source.Widget.Width > 0,
+				"source allocated", source);
 			GtkPump.For(300);
 			source.UpdateLayout();
 			var rect = new Rectangle { Fill = new VisualBrush(source) };
@@ -74,6 +76,8 @@ public class VisualBrushLiveTests : WpfGtkTestBase
 		try
 		{
 			win.Show();
+			GtkState.Require(() => source.IsWidgetCreated && source.Widget.IsMapped && source.Widget.Width > 0,
+				"source allocated", source);
 			GtkPump.For(300);
 			var brush = new VisualBrush(source);
 			var rect = new Rectangle { Fill = brush };

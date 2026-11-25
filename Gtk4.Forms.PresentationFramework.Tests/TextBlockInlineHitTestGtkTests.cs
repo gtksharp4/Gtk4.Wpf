@@ -44,7 +44,10 @@ public class TextBlockInlineHitTestGtkTests : WpfGtkTestBase
 			label.GetLayoutOffsets(out int dx, out int dy);
 			int index = Encoding.UTF8.GetByteCount((label.Text ?? "").Substring(0, label.Text!.IndexOf("link")));
 			var pos = label.Layout.IndexToPos(index + 1);
-			double x = origin.X + dx + pos.X / 1024.0 + 2, y = origin.Y + dy + (pos.Y + pos.Height / 2) / 1024.0;
+			// Aim just above the line baseline: where the glyphs are, whatever box a backend reports for the run.
+			double x = origin.X + dx + pos.X / 1024.0 + 2;
+			double y = origin.Y + dy
+				+ System.Windows.Controls.TextBlock.LineBaseline(label.Layout, index + 1) / 1024.0 - 3;
 			var tp = overlay.Pick(x, y, Gtk.PickFlags.Default);
 			Assert.True(IsOrInside(tp, label), $"text pick reaches the label: {tp?.GetType().Name} at {x},{y}");
 
