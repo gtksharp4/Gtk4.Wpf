@@ -98,6 +98,30 @@ public class AdornerPlacementStateGtkTests : WpfGtkTestBase
 	});
 
 	[Fact]
+	public void Decorator_layer_frame_layout_returns_an_adorner_after_a_GTK_only_show() => Run(() =>
+	{
+		var (_, panel, target, _) = Build();
+		var decorator = new AdornerDecorator { Child = panel };
+		var win = new WpfWindow { Width = 400, Height = 300, Content = decorator };
+		try
+		{
+			ShowAndLayout(win, target);
+			var adorner = new WidgetAdorner(target);
+			decorator.AdornerLayer.Add(adorner);
+			GtkPump.For(150);
+			// No WPF event (LayoutUpdated, SizeChanged) fires for a widget-level hide/show; only the frame layout can
+			// bring the adorner back.
+			target.Widget.Visible = false;
+			decorator.AdornerLayer.RepositionAll();
+			Assert.False(adorner.Widget.Visible);
+			target.Widget.Visible = true;
+			GtkPump.Until(() => adorner.Widget.Visible);
+			Assert.True(adorner.Widget.Visible);
+		}
+		finally { win.Close(); }
+	});
+
+	[Fact]
 	public void Placed_adorner_keeps_mouse_capture_and_receives_retargeted_input() => Run(() =>
 	{
 		var (win, _, target, _) = Build();
