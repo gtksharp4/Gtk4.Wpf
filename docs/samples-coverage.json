@@ -1,24 +1,24 @@
 {
 	"schema": "gtk4forms-wpf-samples-coverage/3",
-	"mainSha": "17c641677c8b7793e669f8c87c4711bb9e56cd15",
-	"packageVersion": "1.0.0.26327",
-	"date": "2026-11-23",
-	"source": "microsoft/WPF-Samples (local copy under WPF-Samples/ at 00f39dbbcb35151d9f035f8a6fc00410f1b99a1c), each project copied and built in isolation under .claude/samples-remeasure-r61/batchN",
+	"mainSha": "f678058f60de863827a1b973f2026f26ebf0f9cf",
+	"packageVersion": "1.0.0.26329",
+	"date": "2026-11-25",
+	"source": "microsoft/WPF-Samples (local copy under WPF-Samples/ at 00f39dbbcb35151d9f035f8a6fc00410f1b99a1c), each project copied and built in isolation under .claude/samples-remeasure-r72/batchN",
 	"feed": {
 		"pinned": true,
-		"nugetConfig": "globalPackagesFolder = .claude/samples-remeasure-r61/.nuget-packages (started empty); fallbackPackageFolders cleared; packageSources cleared, then the pinned local feed (C:\\Temp\\Gtk.Forms\\.claude\\samples-remeasure-r61\\feed) and nuget.org; packageSourceMapping: Gtk4.* -> local feed only, * -> nuget.org",
+		"nugetConfig": "globalPackagesFolder = .claude/samples-remeasure-r72/.nuget-packages (started empty); fallbackPackageFolders cleared; packageSources cleared, then the pinned local feed (C:TempGtk.Forms.claudesamples-remeasure-r72\feed) and nuget.org; packageSourceMapping: Gtk4.* -> local feed only, * -> nuget.org",
 		"why": "nuget.org publishes Gtk4.Forms.* 1.0.0.26321 and later, the same date-based versions that local packs produce, so an unpinned restore may resolve a published package instead of the local build",
 		"sha256": {
-			"gtk4.forms.wpf.1.0.0.26327.nupkg": "db803c7742fd8d4833e6a0263852bf984154720294c233fe5f7a2dcc10d65874",
-			"gtk4.forms.presentationframework.1.0.0.26327.nupkg": "02b53da7525a36f500f4c0d00ad4519c09220b65345e3ef8cd05a8d3f0f92b4f",
-			"gtk4.forms.windowsbase.1.0.0.26327.nupkg": "29c308206371d216a286e6a88702f00235e912e6974c103c56e466966454704f",
-			"gtk4.forms.markupcompiler.1.0.0.26327.nupkg": "e6f75573357642f0e2af405653ac6f34bf14f7f0f83918f78eba810c53bae8d7"
+			"gtk4.forms.wpf.1.0.0.26329.nupkg": "6035c9507d9f75d85b37cf5112ba040aa8771e33552c239007f4f1d4dacfde21",
+			"gtk4.forms.presentationframework.1.0.0.26329.nupkg": "bcffce118e4def9cb5c74bb4f801f46b35d4fcc73b4791c124fce3b445ac6311",
+			"gtk4.forms.windowsbase.1.0.0.26329.nupkg": "2f0030c421fa0f214dabbe545ef59890d0784a8431d53b2c2a5b3f045537dd06",
+			"gtk4.forms.markupcompiler.1.0.0.26329.nupkg": "26e4b72c27aad90a155250a97d8eabeb14a8c2e459038a4e46654fa94c5e0ea4"
 		},
-		"verified": "probe (Getting Started/HelloWorld, copied to samples-remeasure-r61/probe, the recipe nuget.config with globalPackagesFolder pointed at an empty probe cache): build 1 exit 1 (converter, \"re-run the build\"), build 2 exit 0 with 0 warnings and 0 errors; all four cached gtk4.forms.* nupkgs hash-equal the feed's; every gtk4.forms.* .nupkg.metadata source is the scratch feed; project.assets.json packageFolders = the probe cache only, no fallbackFolders, sources = library-packs (SDK-implicit), the feed and nuget.org; gtksharp4 4.22.4.26327 from nuget.org; smoke: 10 s run alive with 1 visible unowned window (first at t=8 s, cold start), alone for 20 s alive with 1 window from t=1 s, 0 bytes of stderr both times. Batches 1-4 and 6 re-checked the cached Gtk4.Forms.Wpf hash (db803c77…5874) against the feed. The four full hashes above were re-computed for this report from the feed and the shared batch cache, and match"
+		"verified": "probe (Getting Started/HelloWorld, copied to samples-remeasure-r72/probe, the recipe nuget.config with globalPackagesFolder pointed at an empty probe cache): build 1 exit 1 (converter exit 10, \"re-run the build\"; csproj now net10.0 without UseWpf), build 2 exit 0 with 0 warnings and 0 errors; all four cached gtk4.forms.* nupkgs hash-equal the feed's; every gtk4.forms.* .nupkg.metadata source is the scratch feed; project.assets.json packageFolders = the probe cache only, no fallbackFolders, sources = the feed, nuget.org and library-packs (SDK-implicit); gtksharp4 4.22.4.26327 from nuget.org; smoke: first 10 s run alive with 0 windows (cold start), alone for 20 s alive with 1 visible unowned window from 3 s, a second 10 s run with 1 window from 1 s, 0 bytes of stderr each time. All six batches re-checked the cached Gtk4.Forms.Wpf hash (6035c950...fde21) against the feed. The four full hashes above were re-computed for this report from the feed and the shared batch cache, and match; every shared-cache .nupkg.metadata source is the feed"
 	},
 	"previousRun": {
-		"commit": "4fd5749d",
-		"mainSha": "85493c8bb2200bda4e3efd1cc73c9caaf1920939",
+		"commit": "88c92780",
+		"mainSha": "17c641677c8b7793e669f8c87c4711bb9e56cd15",
 		"packageVersion": "1.0.0.26327",
 		"date": "2026-11-23",
 		"pinned": true
@@ -121,7 +121,7 @@
 		},
 		{
 			"date": "2026-11-23",
-			"report": "this",
+			"report": "88c92780",
 			"mainSha": "17c641677c8b7793e669f8c87c4711bb9e56cd15",
 			"packageVersion": "1.0.0.26327",
 			"portableApps": 204,
@@ -129,25 +129,39 @@
 			"portableRun": 191,
 			"pinned": true,
 			"note": "Rounds 59-61 (third three-lane batch: lane A controls/freezable tail III and the .NET 9 surface, lane B documents/imaging tail and binding engine, lane C startup and generator sweep III); full re-measure of all 252 csproj"
+		},
+		{
+			"date": "2026-11-25",
+			"report": "this",
+			"mainSha": "f678058f60de863827a1b973f2026f26ebf0f9cf",
+			"packageVersion": "1.0.0.26329",
+			"portableApps": 204,
+			"portableBuild": 201,
+			"portableRun": 195,
+			"pinned": true,
+			"note": "Rounds 62-72 programme (lanes A, B, D, E, F, G, H, I, J, K) and the cleanup pass; full re-measure of all 252 csproj (batch 3 rebuilt for this report after its first logs were deleted)"
 		}
 	],
 	"fields": {
 		"build": "strict recipe: add Gtk4.Forms.Wpf PackageReference, build (converts, exit 10), build again; pass = \"Build succeeded\" and \"0 Error(s)\" in the final log; not-built = legacy non-SDK csproj (built by this run as .NET Framework, see legacyBuild) or native project",
-		"run": "runs = alive with a visible unowned top-level window (about 10 s smoke run, Windows; no-window cases re-run alone for 20 s); crash = unhandled exception or exit before/after a window; hang = alive, no window; skipped = library; not-run = did not build",
+		"run": "runs = alive with a visible unowned top-level window (about 10 s smoke run, Windows; no-window cases re-run alone for 20 s); crash = unhandled exception or exit before/after a window; hang = alive, no window; exits = a console app that ran to completion without an exception; skipped = library; not-run = did not build",
 		"windowsOnly": "verified classification carried over from the earlier runs (WinForms, Win32/HWND interop, UIA client, COM/ActiveX, WinRT, System.Speech, OLE DB, per-monitor DPI by design, native C++); unchanged in this run (the batches' own regex flags were not used)",
-		"errorCodes": "distinct error codes of the final build log (batch1 logs/<path>.b2.log, batch2 <Category>__<Name>.build2.log, batch3 _logs/<Name>.build2.log, batch4 <path>.build2.log, batch5 logs/<Name>.build2.log, batch6-logs/<path>.build2.log), re-parsed uniformly for all six batches (a markup-compiler XAML parse error has no code and is listed under xamlErrors only)",
+		"errorCodes": "distinct error codes of the final build log (batch1-keep/<path>.b2.txt, batch2/logs/<Name>.build2.log, batch3/_logs/<path>.b2.log, batch4/logs/<Name>.build2.log, batch5/_logs/<Name>.build2.log, batch6-logs/<Name>.build2.log under .claude/samples-remeasure-r72), re-parsed uniformly for all six batches (a markup-compiler XAML parse error has no code and is listed under xamlErrors only)",
 		"missingTypes": "CS0246/CS0234/CS0400/CS1069 type or namespace names (CS0234 and CS1069 as Namespace.Name)",
 		"missingMembers": "CS1061/CS0117 Type.Member, CS0103 names, CS1955 non-invocable members, CS0200 read-only members, CS0115 overrides and CS0534 abstract members, re-parsed from the final log",
 		"xamlErrors": "errors located in generated *.g.cs files or in XAML (deduplicated by code and message, at most 12); includes real layer gaps surfaced through generated code, see the report for the classification",
 		"blockerThemes": "classification of the final-build errors, assigned per project for the failing portable projects (windows for Windows-only failures); a ranking aid for Next rounds",
-		"previous": "the same project in report 4fd5749d (main 85493c8b, Rounds 56-58, pinned, full re-measure)",
-		"change": "fail->pass / pass->fail / <run>-><run> / unchanged, relative to 4fd5749d",
-		"unblockedBy": "the Round 59-61 change that removed the 4fd5749d blocker (attributed by elimination from the previous errors, not bisected)",
+		"previous": "the same project in report 88c92780 (main 17c64167, Rounds 59-61, pinned, full re-measure); not the HEAD copy of this file, which carried 4 rows edited by the Round 62 lane A gate (round62LaneAGate)",
+		"change": "fail->pass / pass->fail / <run>-><run> / unchanged, relative to 88c92780",
+		"unblockedBy": "the Round 62-72 change that removed the 88c92780 blocker (attributed by elimination from the previous errors, not bisected)",
 		"regression": "investigated cause of a pass->fail or runs->crash/hang (none in this run)",
 		"measured": "false only for the 4 native C++ projects, which are not in this run's csproj inventory and are carried over",
 		"note": "measurement caveats for this row (windows-only disagreement, manual rebuild)",
 		"legacyBuild": "legacy csproj only: the .NET Framework build this run attempted (not a measurement of the layer)",
-		"runCause": "cause of a crash, from the run stderr and a check of the sample and layer source"
+		"runCause": "cause of a crash, from the run stderr and a check of the sample and layer source",
+		"runNote": "how the run result was established when the batch record was incomplete (no window at 10 s, lost record, solo re-run for this report)",
+		"round62LaneAGate": "the Round 62 lane A gate result that HEAD carried for this row before this re-measure",
+		"cs2002": "number of CS2002 warnings (a generated .g.cs specified twice) in the final log, when non-zero"
 	},
 	"summary": {
 		"projects": 256,
@@ -158,28 +172,28 @@
 		"windowsOnlyApps": 39,
 		"windowsOnlyProjects": 46,
 		"portableApps": 204,
-		"portableBuild": 198,
-		"portableRun": 191,
-		"portableCrash": 7,
+		"portableBuild": 201,
+		"portableRun": 195,
+		"portableCrash": 6,
 		"portableHang": 0,
-		"portableFail": 6,
+		"portableFail": 3,
 		"portableNotBuilt": 0,
-		"allBuild": 204,
-		"movedFailToPass": 7,
+		"allBuild": 207,
+		"movedFailToPass": 3,
 		"movedFailToPassLibraries": 0,
-		"movedCrashHangToRuns": 4,
+		"movedCrashHangToRuns": 2,
 		"regressedPassToFail": 0,
 		"regressedRunsToCrashHang": 0,
-		"portableCS2002Builds": 35,
-		"allCS2002Builds": 35,
+		"portableCS2002Builds": 34,
+		"allCS2002Builds": 34,
 		"legacyNotBuilt": 21,
 		"previous": {
-			"report": "4fd5749d",
-			"mainSha": "85493c8bb2200bda4e3efd1cc73c9caaf1920939",
+			"report": "88c92780",
+			"mainSha": "17c641677c8b7793e669f8c87c4711bb9e56cd15",
 			"portableApps": 204,
-			"portableBuild": 191,
-			"portableRun": 182,
-			"portableCrash": 9,
+			"portableBuild": 198,
+			"portableRun": 191,
+			"portableCrash": 7,
 			"portableHang": 0,
 			"pinned": true
 		},
@@ -189,13 +203,6 @@
 			"portableBuild": 0,
 			"portableRun": 0,
 			"pinned": false
-		},
-		"aggregatedBatchTotals": {
-			"projects": 208,
-			"portableApps": 175,
-			"portableBuild": 170,
-			"portableRun": 165,
-			"note": "the orchestrator's aggregate: it had no rows from batch 5 (44 csproj: Globalization and Localization, Windows, Accessibility, Element Tree, PerMonitorDPI, whose logs and run records exist), used the batches' own regex windowsOnly flags, and took batch 4's first-window result for AppCompat-Quirks; superseded by the re-parse above"
 		}
 	},
 	"projects": [
@@ -286,7 +293,8 @@
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
-				"errorCodes": []
+				"errorCodes": [],
+				"legacyBuild": "fail"
 			},
 			"change": "unchanged"
 		},
@@ -298,7 +306,7 @@
 			"legacyCsproj": false,
 			"batch": 5,
 			"build": "pass",
-			"run": "hang",
+			"run": "exits",
 			"errorCodes": [],
 			"missingTypes": [],
 			"missingMembers": [],
@@ -309,11 +317,11 @@
 			"measured": true,
 			"previous": {
 				"build": "pass",
-				"run": "crash",
+				"run": "hang",
 				"errorCodes": []
 			},
-			"change": "crash->hang",
-			"note": "Windows-only console app; batch 5 saw it alive with no window (waiting on the console) where earlier runners saw it exit. Not in the portable denominator"
+			"change": "hang->exits",
+			"runNote": "Windows-only console app: prints its UI Automation message and exits on its own (stdin is null, it calls Console.ReadLine); not a crash. Recorded as hang in 88c92780"
 		},
 		{
 			"project": "Accessibility/Highlighter/Highlighter.csproj",
@@ -334,6 +342,7 @@
 			"legacyBuild": {
 				"build": "pass",
 				"errorCodes": [],
+				"firstError": "",
 				"run": "runs"
 			},
 			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild",
@@ -341,7 +350,8 @@
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
-				"errorCodes": []
+				"errorCodes": [],
+				"legacyBuild": "pass"
 			},
 			"change": "unchanged"
 		},
@@ -373,7 +383,8 @@
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
-				"errorCodes": []
+				"errorCodes": [],
+				"legacyBuild": "fail"
 			},
 			"change": "unchanged"
 		},
@@ -440,7 +451,8 @@
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
-				"errorCodes": []
+				"errorCodes": [],
+				"legacyBuild": "fail"
 			},
 			"change": "unchanged"
 		},
@@ -496,7 +508,8 @@
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
-				"errorCodes": []
+				"errorCodes": [],
+				"legacyBuild": "fail"
 			},
 			"change": "unchanged"
 		},
@@ -588,6 +601,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 6,
 			"measured": true,
 			"previous": {
 				"build": "pass",
@@ -595,7 +609,8 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"runCause": "InvalidOperationException: Cannot find the element named 'TextEffectRotateTransform' to animate 'CenterX' (Storyboard.ResolveTarget). The Round 58 BindingOperations wall is gone (Round 60 lane B non-element targets). TextBlock has no TextEffects property in the layer, so the MarkupCompiler skips <TextBlock.TextEffects> (\"Skipped property element TextBlock.TextEffects\", 4 files) and the named RotateTransform inside TextEffect.Transform is never created or registered"
+			"unblockedBy": "Round 63 lane B startup-generator-sweep-4 (2ca1bdb8, merged 20f220ff): TextBlock.TextEffects with names registered inside TextEffect.Transform removed the 'TextEffectRotateTransform' wall; the app now crashes on the next wall",
+			"runCause": "Further in: InvalidCastException (String to Frame) at SampleViewer.cs:54. InteractiveAnimationsExample.PageLoaded sets IsChecked on a RadioButton inside a Page hosted in a Frame; its Checked event bubbles to SampleViewer's RadioButton.Checked handler with args.Source still the inner RadioButton (string content), so (Frame)theButton.Content fails. In WPF the page in a Frame is not a logical child, so Source is adjusted to the outer RadioButton at that boundary (cause inferred from the stack, not verified on WPF)"
 		},
 		{
 			"project": "Animation/AnimationTiming/AnimationTiming.csproj",
@@ -641,6 +656,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "pass",
@@ -699,7 +715,8 @@
 				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "unchanged"
+			"change": "unchanged",
+			"runNote": "no window in the first 10 s run under parallel load; the batch re-ran it alone for 20 s and it showed a window"
 		},
 		{
 			"project": "Animation/LocalAnimations/LocalAnimations.csproj",
@@ -715,9 +732,7 @@
 			"missingMembers": [],
 			"xamlErrors": [],
 			"firstError": "",
-			"warnings": [
-				"CS2002"
-			],
+			"warnings": [],
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
@@ -797,14 +812,11 @@
 			"blockerThemes": [],
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS1061"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 61 lane C startup-generator-sweep-3 (63570ce1, merged 414525fe, reviewed 6a01d4af): content property of a project-local type (MagnitismCanvas : Canvas -> Children)"
+			"change": "unchanged"
 		},
 		{
 			"project": "Animation/PropertyAnimation/PropertyAnimation.csproj",
@@ -924,7 +936,8 @@
 				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "unchanged"
+			"change": "unchanged",
+			"runNote": "no window in the first 10 s run under parallel load; the batch re-ran it alone for 20 s and it showed a window"
 		},
 		{
 			"project": "Application Management/CustomApplication/CustomApplicationClient/CustomApplicationClient.csproj",
@@ -974,7 +987,8 @@
 				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "unchanged"
+			"change": "unchanged",
+			"runNote": "no window in the first 10 s run under parallel load; the batch re-ran it alone for 20 s and it showed a window"
 		},
 		{
 			"project": "Application Management/ExceptionHandlingSecondaryWorkerThread/ExceptionHandlingSecondaryWorkerThread.csproj",
@@ -1054,7 +1068,8 @@
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
-				"errorCodes": []
+				"errorCodes": [],
+				"legacyBuild": "fail"
 			},
 			"change": "unchanged"
 		},
@@ -1181,8 +1196,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"runCause": "NullReferenceException in the sample's PopulateAppContextInformation (MainWindow.xaml.cs:197, from Window_Loaded; it reflects over WPF-internal AppContext switch types); a window shows at 0.5 s, then the app exits. Not worth chasing. The batch runner recorded runs because it stops at the first window; a solo 20 s re-run confirmed the crash",
-			"note": "Batch 4 recorded runs (its runner stops at the first window); the solo 20 s re-run shows the window, then the unchanged NullReferenceException exit. Recorded as crash"
+			"runCause": "NullReferenceException in the sample's MainWindow.PopulateAppContextInformation (MainWindow.xaml.cs:197, from Window_Loaded); it reflects over WPF-internal AppContext switch types. No window at 10 s; both solo 20 s re-runs crashed"
 		},
 		{
 			"project": "Data Binding/ADODataSet/ADODataSet.csproj",
@@ -1212,7 +1226,8 @@
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
-				"errorCodes": []
+				"errorCodes": [],
+				"legacyBuild": "fail"
 			},
 			"change": "unchanged"
 		},
@@ -1234,6 +1249,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "pass",
@@ -1264,7 +1280,8 @@
 				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "unchanged"
+			"change": "unchanged",
+			"runNote": "no window in the batch 10 s run; rebuilt and run alone for this report: a window at 11 s (cold start)"
 		},
 		{
 			"project": "Data Binding/BindingToMethod/BindingToMethod.csproj",
@@ -1284,6 +1301,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 8,
 			"measured": true,
 			"previous": {
 				"build": "pass",
@@ -1314,7 +1332,8 @@
 				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "unchanged"
+			"change": "unchanged",
+			"runNote": "no window in the first 10 s run under parallel load; the batch re-ran it alone for 20 s and it showed a window"
 		},
 		{
 			"project": "Data Binding/BusinessLayerValidation/BusinessLayerValidation.csproj",
@@ -1382,13 +1401,15 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "pass",
 				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "unchanged"
+			"change": "unchanged",
+			"runNote": "no window in the first 10 s run under parallel load; the batch re-ran it alone for 20 s and it showed a window"
 		},
 		{
 			"project": "Data Binding/CollectionViewSource/CollectionViewSource.csproj",
@@ -1408,6 +1429,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "pass",
@@ -1434,6 +1456,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "pass",
@@ -1460,6 +1483,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "pass",
@@ -1510,6 +1534,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "pass",
@@ -1536,13 +1561,15 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "pass",
 				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "unchanged"
+			"change": "unchanged",
+			"runNote": "rebuilt and run alone for this report: a window from 2 s, 0 bytes of stderr"
 		},
 		{
 			"project": "Data Binding/DirectionalBinding/DirectionalBinding.csproj",
@@ -1586,6 +1613,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 6,
 			"measured": true,
 			"previous": {
 				"build": "pass",
@@ -1636,6 +1664,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "pass",
@@ -1662,6 +1691,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "pass",
@@ -1688,6 +1718,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "pass",
@@ -1738,6 +1769,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "pass",
@@ -1788,6 +1820,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "pass",
@@ -1838,6 +1871,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "pass",
@@ -1888,13 +1922,15 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 6,
 			"measured": true,
 			"previous": {
 				"build": "pass",
 				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "unchanged"
+			"change": "unchanged",
+			"runNote": "no window in the first 10 s run under parallel load; the batch re-ran it alone for 20 s and it showed a window"
 		},
 		{
 			"project": "Data Binding/ValidateItemsInItemsControl/ValidateItemsInItemsControl.csproj",
@@ -1914,6 +1950,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "pass",
@@ -1989,11 +2026,10 @@
 			"measured": true,
 			"previous": {
 				"build": "pass",
-				"run": "crash",
+				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "crash->runs",
-			"unblockedBy": "Round 61 lane C startup-generator-sweep-3 (63570ce1, merged 414525fe, reviewed 6a01d4af): prefixed clr-namespace Type.Member commands (CommandConverter)"
+			"change": "unchanged"
 		},
 		{
 			"project": "Documents/Annotations/AnnotationsStyling/AnnotationsStyling.csproj",
@@ -2014,14 +2050,14 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "pass",
 				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "unchanged",
-			"note": "Builds and runs since Round 58 lane C (InkCanvas shell, InkCanvasEditingMode)"
+			"change": "unchanged"
 		},
 		{
 			"project": "Documents/Fixed Documents/DocumentMerge/DocumentMerge.csproj",
@@ -2041,17 +2077,14 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0234",
-					"CS0246"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 60 lane B documents-imaging-tail (re-applied gf57b: af71a13f, 40de56af, eed18bd9; merged 8c49c8e7, reviewed e99d8776): FixedDocument/FixedDocumentSequence/FixedPage/PageContent/DocumentReference, XpsDocument read/write"
+			"change": "unchanged"
 		},
 		{
 			"project": "Documents/Fixed Documents/DocumentSerialization/DocumentSerialization.csproj",
@@ -2089,6 +2122,7 @@
 			"blockerThemes": [
 				"windows"
 			],
+			"cs2002": 8,
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -2115,7 +2149,7 @@
 			"xamlErrors": [
 				"fixedpage1_structure.xaml: XAML parse error: '<', hexadecimal value 0x3C, is an invalid attribute character. Line 6, position 3."
 			],
-			"firstError": "fixedpage1_structure.xaml:  XAML parse error: '<', hexadecimal value 0x3C, is an invalid attribute character. Line 6, position 3.",
+			"firstError": "fixedpage1_structure.xaml: XAML parse error: '<', hexadecimal value 0x3C, is an invalid attribute character. Line 6, position 3.",
 			"warnings": [],
 			"blockerThemes": [
 				"windows"
@@ -2510,7 +2544,8 @@
 				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "unchanged"
+			"change": "unchanged",
+			"runNote": "no window in the first 10 s run under parallel load; the batch re-ran it alone for 20 s and it showed a window"
 		},
 		{
 			"project": "Drag and Drop/DragDropTextOps/DragDropTextOps.csproj",
@@ -2992,7 +3027,8 @@
 				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "unchanged"
+			"change": "unchanged",
+			"runNote": "no window in the batch 10 s run; for this report rebuilt and run alone: no window in a first 20 s run, a window from 1 s in a second 20 s run (Gtk-WARNING measure lines only). Slow or flaky first-window detection, as in the Round 68 gate, not a hang"
 		},
 		{
 			"project": "Getting Started/ControlsAndLayout/ControlsAndLayout/ControlsAndLayout.csproj",
@@ -3137,7 +3173,8 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"runCause": "InvalidOperationException: Resource with key 'CustomNavWindowStyle' not found (MainWindow.g.cs:20). MainWindow.xaml uses Style=\"{StaticResource CustomNavWindowStyle}\", a key defined nowhere in the sample, so WPF rejects it too: a sample defect, not a layer gap (Round 58 fixed the two earlier generator causes)"
+			"runCause": "InvalidOperationException: Resource with key 'CustomNavWindowStyle' not found, in InitializeComponent. The key is defined nowhere in the sample, so WPF rejects it too: a defect in the sample",
+			"runNote": "rebuilt and run alone twice for this report: both crash with the same exception before a window"
 		},
 		{
 			"project": "Globalization and Localization/BAML Loc/LocApp/LocApp.csproj",
@@ -3330,7 +3367,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"runCause": "MissingManifestResourceException for LocalizationResources.data.stringtable.resources: the sample ships only an en-US satellite and no neutral resource"
+			"runCause": "TargetInvocationException wrapping MissingManifestResourceException for LocalizationResources.data.stringtable.resources; the sample ships only an en-US satellite and no neutral resource"
 		},
 		{
 			"project": "Globalization and Localization/LTRRTL/LTRRTL.csproj",
@@ -3500,7 +3537,8 @@
 				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "unchanged"
+			"change": "unchanged",
+			"runNote": "no window in the first 10 s run under parallel load; the batch re-ran it alone for 20 s and it showed a window"
 		},
 		{
 			"project": "Graphics/AITCodec/cpp/aitcodec.vcxproj",
@@ -3519,13 +3557,13 @@
 			"warnings": [],
 			"blockerThemes": [],
 			"measured": false,
+			"note": "native C++ project; not in the csproj inventory, carried over",
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
 				"errorCodes": []
 			},
-			"change": "unchanged",
-			"note": "native C++ project; not in the csproj inventory, carried over"
+			"change": "unchanged"
 		},
 		{
 			"project": "Graphics/BitmapEffectsGallery/BitmapEffectsGallery.csproj",
@@ -3622,11 +3660,10 @@
 			"measured": true,
 			"previous": {
 				"build": "pass",
-				"run": "crash",
+				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "crash->runs",
-			"unblockedBy": "Round 61 lane C startup-generator-sweep-3 (63570ce1, merged 414525fe, reviewed 6a01d4af): length units (12pt) in Thickness parsing"
+			"change": "unchanged"
 		},
 		{
 			"project": "Graphics/ClipRegion/ClipRegion.csproj",
@@ -3698,7 +3735,8 @@
 				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "unchanged"
+			"change": "unchanged",
+			"runNote": "no window in the first 10 s run under parallel load; the batch re-ran it alone for 20 s and it showed a window"
 		},
 		{
 			"project": "Graphics/DrawingBrush/DrawingBrush.csproj",
@@ -3892,7 +3930,8 @@
 				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "unchanged"
+			"change": "unchanged",
+			"runNote": "no window in the first 10 s run under parallel load; the batch re-ran it alone for 20 s and it showed a window"
 		},
 		{
 			"project": "Graphics/PNGEncoderAndDecoder/PNGEncoderAndDecoder.csproj",
@@ -4109,7 +4148,7 @@
 				"errorCodes": []
 			},
 			"change": "unchanged",
-			"runCause": "NotSupportedException: JPEG XR (WDP) has no encoder in the GTK runtime (deliberate: gdk-pixbuf/GdkTexture have no JPEG XR codec)"
+			"runCause": "NotSupportedException: JPEG XR (WDP) has no encoder in the GTK runtime (deliberate: no JPEG XR codec in gdk-pixbuf/GdkTexture)"
 		},
 		{
 			"project": "Input and Commands/CaptureUnCaptureMouse/CaptureUnCaptureMouse.csproj",
@@ -4375,7 +4414,8 @@
 				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "unchanged"
+			"change": "unchanged",
+			"runNote": "no window in the first 10 s run under parallel load; the batch re-ran it alone for 20 s and it showed a window"
 		},
 		{
 			"project": "Input and Commands/KeyStrokeCounter/KeyStrokeCounter.csproj",
@@ -4525,7 +4565,8 @@
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
-				"errorCodes": []
+				"errorCodes": [],
+				"legacyBuild": "fail"
 			},
 			"change": "unchanged"
 		},
@@ -4557,7 +4598,8 @@
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
-				"errorCodes": []
+				"errorCodes": [],
+				"legacyBuild": "fail"
 			},
 			"change": "unchanged"
 		},
@@ -4582,14 +4624,15 @@
 				"errorCodes": [
 					"MSB3644"
 				],
-				"firstError": "Microsoft.Common.CurrentVersion.targets: MSB3644 The reference assemblies for .NETFramework,Version=v4.0 were not found. To resolve this, install the Developer Pack (SDK/Targeting Pack) for this framework version or retarget your application. You can download .NET Framework Developer Packs at https://aka.ms/msbuild/developerpacks"
+				"firstError": "Microsoft.Common.CurrentVersion.targets: MSB3644 The reference assemblies for .NETFramework,Version=v4.0 were not found. To resolve this, install the Developer Pack (SDK/Targeting Pack) for this framework version or retarget your application. You can download .NET Framework Developer Packs at htt..."
 			},
 			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild",
 			"measured": true,
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
-				"errorCodes": []
+				"errorCodes": [],
+				"legacyBuild": "fail"
 			},
 			"change": "unchanged"
 		},
@@ -4614,14 +4657,15 @@
 				"errorCodes": [
 					"MSB3644"
 				],
-				"firstError": "Microsoft.Common.CurrentVersion.targets: MSB3644 The reference assemblies for .NETFramework,Version=v4.0 were not found. To resolve this, install the Developer Pack (SDK/Targeting Pack) for this framework version or retarget your application. You can download .NET Framework Developer Packs at https://aka.ms/msbuild/developerpacks"
+				"firstError": "Microsoft.Common.CurrentVersion.targets: MSB3644 The reference assemblies for .NETFramework,Version=v4.0 were not found. To resolve this, install the Developer Pack (SDK/Targeting Pack) for this framework version or retarget your application. You can download .NET Framework Developer Packs at htt..."
 			},
 			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild",
 			"measured": true,
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
-				"errorCodes": []
+				"errorCodes": [],
+				"legacyBuild": "fail"
 			},
 			"change": "unchanged"
 		},
@@ -4685,7 +4729,8 @@
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
-				"errorCodes": []
+				"errorCodes": [],
+				"legacyBuild": "fail"
 			},
 			"change": "unchanged"
 		},
@@ -4764,17 +4809,17 @@
 			"legacyBuild": {
 				"build": "fail",
 				"errorCodes": [
-					"MSB3822",
-					"MSB3823"
+					"MSB3644"
 				],
-				"firstError": "Microsoft.Common.CurrentVersion.targets: MSB3823 Non-string resources require the property GenerateResourceUsePreserializedResources to be set to true."
+				"firstError": "Microsoft.Common.CurrentVersion.targets: MSB3644 The reference assemblies for .NETFramework,Version=v3.0 were not found. To resolve this, install the Developer Pack (SDK/Targeting Pack) for this framework version or retarget your application. You can download .NET Framework Developer Packs at htt..."
 			},
 			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild",
 			"measured": true,
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
-				"errorCodes": []
+				"errorCodes": [],
+				"legacyBuild": "fail"
 			},
 			"change": "unchanged"
 		},
@@ -4795,13 +4840,13 @@
 			"warnings": [],
 			"blockerThemes": [],
 			"measured": false,
+			"note": "native C++ project; not in the csproj inventory, carried over",
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
 				"errorCodes": []
 			},
-			"change": "unchanged",
-			"note": "native C++ project; not in the csproj inventory, carried over"
+			"change": "unchanged"
 		},
 		{
 			"project": "Migration and Interoperability/HWNDInWPF/wpfapplication1/wpfapplication1.csproj",
@@ -4862,7 +4907,8 @@
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
-				"errorCodes": []
+				"errorCodes": [],
+				"legacyBuild": "fail"
 			},
 			"change": "unchanged"
 		},
@@ -4930,7 +4976,8 @@
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
-				"errorCodes": []
+				"errorCodes": [],
+				"legacyBuild": "fail"
 			},
 			"change": "unchanged"
 		},
@@ -4951,13 +4998,13 @@
 			"warnings": [],
 			"blockerThemes": [],
 			"measured": false,
+			"note": "native C++ project; not in the csproj inventory, carried over",
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
 				"errorCodes": []
 			},
-			"change": "unchanged",
-			"note": "native C++ project; not in the csproj inventory, carried over"
+			"change": "unchanged"
 		},
 		{
 			"project": "Migration and Interoperability/Win32Clock/wpfclock/wpfclock.csproj",
@@ -5000,13 +5047,13 @@
 			"warnings": [],
 			"blockerThemes": [],
 			"measured": false,
+			"note": "native C++ project; not in the csproj inventory, carried over",
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
 				"errorCodes": []
 			},
-			"change": "unchanged",
-			"note": "native C++ project; not in the csproj inventory, carried over"
+			"change": "unchanged"
 		},
 		{
 			"project": "Migration and Interoperability/WindowsFormsHostingWpfControl/FormsApp/FormsApp.csproj",
@@ -5029,14 +5076,15 @@
 				"errorCodes": [
 					"NU1201"
 				],
-				"firstError": "FormsApp.csproj: NU1201 Project WPFControls is not compatible with net472 (.NETFramework,Version=v4.7.2). Project WPFControls supports: net10.0 (.NETCoreApp,Version=v10.0)"
+				"firstError": "FormsApp.csproj: NU1201 Project WPFControls is not compatible with net472 (.NETFramework,Version=v4.7.2). Project WPFControls supports: net10.0-windows7.0 (.NETCoreApp,Version=v10.0)"
 			},
 			"note": "legacy non-SDK csproj: the converter leaves it on .NET Framework 4.x; recorded as not-built, the attempt is under legacyBuild",
 			"measured": true,
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
-				"errorCodes": []
+				"errorCodes": [],
+				"legacyBuild": "fail"
 			},
 			"change": "unchanged"
 		},
@@ -5167,7 +5215,8 @@
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
-				"errorCodes": []
+				"errorCodes": [],
+				"legacyBuild": "fail"
 			},
 			"change": "unchanged"
 		},
@@ -5199,7 +5248,8 @@
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
-				"errorCodes": []
+				"errorCodes": [],
+				"legacyBuild": "fail"
 			},
 			"change": "unchanged"
 		},
@@ -5231,7 +5281,8 @@
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
-				"errorCodes": []
+				"errorCodes": [],
+				"legacyBuild": "fail"
 			},
 			"change": "unchanged"
 		},
@@ -5250,7 +5301,7 @@
 			"missingTypes": [],
 			"missingMembers": [],
 			"xamlErrors": [],
-			"firstError": "Microsoft.PackageDependencyResolution.targets: NETSDK1005 Assets file 'C:\\Temp\\Gtk.Forms\\.claude\\samples-remeasure-r61\\batch3\\Migration and Interoperability\\WPFWithWFAndDatabinding\\obj\\project.assets.json' doesn't have a target for 'net10.0-windows'. Ensure that restore has run and that you have included 'net10.0-windows' in the TargetFrameworks for your project.",
+			"firstError": "Microsoft.PackageDependencyResolution.targets: NETSDK1005 Assets file 'C:\\Temp\\Gtk.Forms\\.claude\\samples-remeasure-r72\\batch3\\Migration and Interoperability\\WPFWithWFAndDatabinding\\obj\\project.assets.json' doesn't have a target for 'net10.0-windows'. Ensure that restore has run and that you have ...",
 			"warnings": [
 				"NU1902",
 				"NU1903"
@@ -5346,7 +5397,6 @@
 				"CS0246"
 			],
 			"missingTypes": [
-				"BaselineAlignment",
 				"CultureSpecificCharacterBufferRange",
 				"DpiScale",
 				"System.Windows.Media.TextFormatting",
@@ -5356,7 +5406,7 @@
 				"TextRunProperties",
 				"TextRunTypographyProperties",
 				"TextSource",
-				"TextSpan"
+				"TextSpan<>"
 			],
 			"missingMembers": [],
 			"xamlErrors": [],
@@ -5367,6 +5417,7 @@
 			"blockerThemes": [
 				"windows"
 			],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -5406,7 +5457,8 @@
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
-				"errorCodes": []
+				"errorCodes": [],
+				"legacyBuild": "fail"
 			},
 			"change": "unchanged"
 		},
@@ -5452,13 +5504,15 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "pass",
 				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "unchanged"
+			"change": "unchanged",
+			"runNote": "no window in the first 10 s run under parallel load; the batch re-ran it alone for 20 s and it showed a window"
 		},
 		{
 			"project": "Properties/RestoringDefaultValues/RestoringDefaultValues.csproj",
@@ -5679,7 +5733,8 @@
 				]
 			},
 			"change": "fail->pass",
-			"round62LaneA": "Round 62 lane A: builds and runs (AutomationProperties HeadingLevel/ItemStatus)"
+			"round62LaneAGate": "Round 62 lane A: builds and runs (AutomationProperties HeadingLevel/ItemStatus)",
+			"unblockedBy": "Round 62 lane A automation-attached-properties (merged c24ce59e): AutomationProperties.HeadingLevel and ItemStatus"
 		},
 		{
 			"project": "Sample Applications/DropShadow/DropShadow.csproj",
@@ -5787,11 +5842,14 @@
 				"build": "fail",
 				"run": "not-run",
 				"errorCodes": [
-					"CS0246"
+					"CS0117",
+					"CS1061"
 				]
 			},
 			"change": "fail->pass",
-			"round62LaneA": "Round 62 lane A: builds and runs. The generator does not emit DataGrid.Columns (property element), so CreateExpenseReportDialogBox shows an empty grid; ColumnWidth=* is applied"
+			"round62LaneAGate": "Round 62 lane A: builds and runs. The generator does not emit DataGrid.Columns (property element), so CreateExpenseReportDialogBox shows an empty grid; ColumnWidth=* is applied",
+			"unblockedBy": "Round 62 lane A automation-attached-properties (c24ce59e, AutomationProperties.AcceleratorKey) + controls tail IV (a3120799, DataGridLength and DataGrid.ColumnWidth)",
+			"note": "The generator skips the DataGrid.Columns property element, so CreateExpenseReportDialogBox shows a grid without columns (run checks start-up only)"
 		},
 		{
 			"project": "Sample Applications/FontDialog/FontDialogDemo.csproj",
@@ -5811,18 +5869,14 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 6,
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0103",
-					"CS0123",
-					"CS1061"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 59 lane A controls-freezable-tail-3 (dab570ca, merged e6d32fbe, reviewed 903a78b6): TextBlock.ContentStart/ContentEnd, routed TextBox.SelectionChanged; + Round 60 lane B documents-imaging-tail (re-applied gf57b: af71a13f, 40de56af, eed18bd9; merged 8c49c8e7, reviewed e99d8776): freezable TextDecorationCollection"
+			"change": "unchanged"
 		},
 		{
 			"project": "Sample Applications/GeometryDesignerDemo/GeometryDesignerDemo.csproj",
@@ -5867,6 +5921,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "pass",
@@ -5894,11 +5949,10 @@
 			"measured": true,
 			"previous": {
 				"build": "pass",
-				"run": "crash",
+				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "crash->runs",
-			"unblockedBy": "Round 61 lane C startup-generator-sweep-3 (63570ce1, merged 414525fe, reviewed 6a01d4af): base-qualified property elements (GradientBrush.GradientStops), nested ModelVisual3D.Content"
+			"change": "unchanged"
 		},
 		{
 			"project": "Sample Applications/HtmlToXamlDemo/HtmlToXamlDemo.csproj",
@@ -5918,6 +5972,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "pass",
@@ -5944,6 +5999,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "pass",
@@ -5970,16 +6026,14 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS1061"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 60 lane B documents-imaging-tail (re-applied gf57b: af71a13f, 40de56af, eed18bd9; merged 8c49c8e7, reviewed e99d8776): freezable ImageSource (RenderTargetBitmap.Freeze)"
+			"change": "unchanged"
 		},
 		{
 			"project": "Sample Applications/PhotoFlipperDemo/PhotoFlipperDemo.csproj",
@@ -6000,11 +6054,10 @@
 			"measured": true,
 			"previous": {
 				"build": "pass",
-				"run": "crash",
+				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "crash->runs",
-			"unblockedBy": "Round 61 lane C startup-generator-sweep-3 (63570ce1, merged 414525fe, reviewed 6a01d4af): explicit-collection property elements (Viewport3D.Children)"
+			"change": "unchanged"
 		},
 		{
 			"project": "Sample Applications/PhotoStoreDemo/PhotoStoreDemo.csproj",
@@ -6024,17 +6077,16 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0246"
-				]
+				"build": "pass",
+				"run": "crash",
+				"errorCodes": []
 			},
 			"change": "crash->runs",
-			"unblockedBy": "Round 60 lane B documents-imaging-tail (re-applied gf57b: af71a13f, 40de56af, eed18bd9; merged 8c49c8e7, reviewed e99d8776): the imaging bitmap family; builds, then crashes (see runCause)",
-			"round62LaneA": "Round 62 lane A: window implicit adorner layer; a native click on the image reaches OnMouseDown (CropButton enabled)"
+			"round62LaneAGate": "Round 62 lane A: window implicit adorner layer; a native click on the image reaches OnMouseDown (CropButton enabled)",
+			"unblockedBy": "Round 62 lane A window-adorner-layer (merged 06a239df): Window owns an implicit adorner layer, so AdornerLayer.GetAdornerLayer finds one"
 		},
 		{
 			"project": "Sample Applications/PhotoViewerDemo/PhotoViewerDemo.csproj",
@@ -6054,16 +6106,15 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 8,
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0246"
-				]
+				"build": "pass",
+				"run": "runs",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 60 lane B documents-imaging-tail (re-applied gf57b: af71a13f, 40de56af, eed18bd9; merged 8c49c8e7, reviewed e99d8776): CachedBitmap, CroppedBitmap, FormatConvertedBitmap, TransformedBitmap"
+			"change": "unchanged",
+			"runNote": "run record lost to a progress-file write error in the batch; re-run alone for 20 s: alive with a window from 1 s"
 		},
 		{
 			"project": "Sample Applications/SlidePuzzleDemo/SlidePuzzleDemo.csproj",
@@ -6073,7 +6124,7 @@
 			"legacyCsproj": false,
 			"batch": 3,
 			"build": "pass",
-			"run": "crash",
+			"run": "runs",
 			"errorCodes": [],
 			"missingTypes": [],
 			"missingMembers": [],
@@ -6084,18 +6135,16 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 14,
 			"measured": true,
 			"previous": {
-				"build": "fail",
-				"run": "not-run",
-				"errorCodes": [
-					"CS0117",
-					"CS1061"
-				]
+				"build": "pass",
+				"run": "crash",
+				"errorCodes": []
 			},
-			"change": "fail->pass",
-			"unblockedBy": "Round 60 lane B documents-imaging-tail (re-applied gf57b: af71a13f, 40de56af, eed18bd9; merged 8c49c8e7, reviewed e99d8776): DocumentViewerBase.IsMasterPage; + Round 59 lane A controls-freezable-tail-3 (dab570ca, merged e6d32fbe, reviewed 903a78b6): typed SolidColorBrush.Clone(); builds, then crashes (see runCause)",
-			"runCause": "InvalidCastException (Int32 to String) at Puzzle.cs:207, (string)item.Tag in a SelectionChanged handler: the MarkupCompiler emits Tag=\"1\" as __e59.Tag = 1 (Puzzle.g.cs:105). WPF keeps an attribute literal for an object-typed property as a string"
+			"change": "crash->runs",
+			"unblockedBy": "Round 63 lane B startup-generator-sweep-4 (2ca1bdb8, merged 20f220ff): an attribute literal for an object-typed property stays a string (Tag=\"1\")",
+			"runNote": "run record lost to a progress-file write error in the batch; re-run alone for 20 s: alive with a window from 1 s, 0 bytes of stderr"
 		},
 		{
 			"project": "Sample Applications/StickyNotesDemo/StickyNotesDemo.csproj",
@@ -6156,13 +6205,15 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "pass",
 				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "unchanged"
+			"change": "unchanged",
+			"runNote": "run record lost to a progress-file write error in the batch; re-run alone for 20 s: alive with a window from 1 s"
 		},
 		{
 			"project": "Sample Applications/WPFGallery/WPFGallery.csproj",
@@ -6200,15 +6251,12 @@
 				"build": "fail",
 				"run": "not-run",
 				"errorCodes": [
-					"CS0103",
-					"CS0117",
-					"CS0200",
-					"CS1061"
+					"CS0117"
 				]
 			},
 			"change": "fail->pass",
-			"note": "The .NET 9 WPF surface wall (about 25 members) is gone (Round 59 lane A), and so are the Grid shorthand and ControlExample content-property errors (Round 61 lane C). Only AutomationProperties.HeadingLevel is left (10 errors, CS0117); expect a further wall at run time",
-			"runCause": "InvalidOperationException: Resource with key ControlCornerRadius not found (MainWindow.g.cs:34), the run-time wall behind HeadingLevel"
+			"unblockedBy": "Round 62 lane A automation-attached-properties (merged c24ce59e): AutomationProperties.HeadingLevel; builds, then crashes (see runCause)",
+			"runCause": "InvalidOperationException: Resource with key 'ControlCornerRadius' not found (MainWindow.g.cs:34). App.xaml merges pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.xaml, the .NET 9 Fluent theme dictionary, which the layer does not supply"
 		},
 		{
 			"project": "Speech and Media/MediaGallery/MediaGallery.csproj",
@@ -6264,7 +6312,8 @@
 			"previous": {
 				"build": "not-built",
 				"run": "not-run",
-				"errorCodes": []
+				"errorCodes": [],
+				"legacyBuild": "fail"
 			},
 			"change": "unchanged"
 		},
@@ -6286,6 +6335,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 8,
 			"measured": true,
 			"previous": {
 				"build": "pass",
@@ -6316,7 +6366,8 @@
 				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "unchanged"
+			"change": "unchanged",
+			"runNote": "no window in the batch 10 s run; rebuilt and run alone for this report: a window from 2 s"
 		},
 		{
 			"project": "Styles & Templates/EventTriggers/EventTriggers.csproj",
@@ -6340,7 +6391,8 @@
 				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "unchanged"
+			"change": "unchanged",
+			"runNote": "no window in the first 10 s run under parallel load; the batch re-ran it alone for 20 s and it showed a window"
 		},
 		{
 			"project": "Styles & Templates/FindingElementsInTemplates/FindingElementsInTemplates.csproj",
@@ -6671,6 +6723,7 @@
 			"blockerThemes": [
 				"windows"
 			],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "fail",
@@ -6703,13 +6756,15 @@
 				"CS8625"
 			],
 			"blockerThemes": [],
+			"cs2002": 4,
 			"measured": true,
 			"previous": {
 				"build": "pass",
 				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "unchanged"
+			"change": "unchanged",
+			"runNote": "no window in the first 10 s run under parallel load; the batch re-ran it alone for 20 s and it showed a window"
 		},
 		{
 			"project": "Windows/CustomWindowUI/CustomWindowUI.csproj",
@@ -6861,7 +6916,7 @@
 				"System.Windows.Interop"
 			],
 			"missingMembers": [
-				"MainWindow.OnClosing"
+				"MainWindow.OnClosing(CancelEventArgs)"
 			],
 			"xamlErrors": [],
 			"firstError": "MainWindow.cs: CS0234 The type or namespace name 'Interop' does not exist in the namespace 'System.Windows' (are you missing an assembly reference?)",
@@ -6974,7 +7029,8 @@
 				"run": "runs",
 				"errorCodes": []
 			},
-			"change": "unchanged"
+			"change": "unchanged",
+			"runNote": "no window in the first 10 s run under parallel load; the batch re-ran it alone for 20 s and it showed a window"
 		},
 		{
 			"project": "Windows/Wizard/Wizard.csproj",
@@ -6994,6 +7050,7 @@
 				"CS2002"
 			],
 			"blockerThemes": [],
+			"cs2002": 14,
 			"measured": true,
 			"previous": {
 				"build": "pass",

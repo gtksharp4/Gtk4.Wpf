@@ -1,433 +1,365 @@
 # WPF samples coverage
 
-Measured 2026-11-23 on `main` at `17c641677c8b7793e669f8c87c4711bb9e56cd15` (Rounds 59–61, the third three-lane batch:
-lane A controls and freezable tail III plus the .NET 9 WPF surface; lane B the documents/imaging tail, re-applied from
-`gf57b`, plus the binding engine's non-element targets; lane C startup and generator sweep III; each with its review
-fixes and follow-ups). The package is `Gtk4.Forms.Wpf 1.0.0.26327` from a **pinned** local feed. The samples are the
-official `microsoft/WPF-Samples` at `00f39dbb` (256 projects: 243 apps, 9 libraries and 4 native C++ projects). All
-252 csproj were rebuilt and every built app was smoke-run. Per-project results are in
-[`samples-coverage.json`](samples-coverage.json). Each row also holds its result in report `4fd5749d` (main
-`85493c8b`, Rounds 56–58), under `previous`.
+Measured 2026-11-25 on `main` at `f678058f60de863827a1b973f2026f26ebf0f9cf`. This closes the Round 62–72 programme:
+
+- Round 62 (lane A): automation attached properties, the Window adorner layer and `DataGridLength`.
+- Round 63 (lane B): generator sweep IV and rendering hygiene.
+- Round 64 (lane D): WPF access keys and CheckBox/RadioButton caption labels.
+- Round 66 (lane G): control brushes over the GTK theme and `FlowDocumentPageViewer` pagination.
+- Round 67 (lane H): HexSphereDemo's 3D textures, gradient and rotate storyboard.
+- Round 68 (lane E): the Window default size, WPF `ScrollViewer` measure and defaults, and `Image` layout.
+- Round 69 (lane I): WPF `Shape` layout.
+- Round 70 (lane J): `VisualBrush`/`TileBrush` 2D painting and `OpacityMask`.
+- Round 71 (lane K): inline UIElements in `TextBlock` and KeyFrameAnimation.
+- Round 72 (lane F): WPF content resolution, implicit DataTemplates, `TabControl` templates and `Hyperlink` navigation.
+- The final cleanup pass (`gf73/cleanup`).
+
+The package is `Gtk4.Forms.Wpf 1.0.0.26329` from a **pinned** local feed. The samples are the official
+`microsoft/WPF-Samples` at `00f39dbb`: 256 projects, of which 243 are apps, 9 are libraries and 4 are native C++
+projects. All 252 csproj were rebuilt, and every built app was smoke-run. Per-project results are in
+[`samples-coverage.json`](samples-coverage.json). Each row also holds its result in report `88c92780` (main
+`17c64167`, Rounds 59–61, the last full re-measure) under `previous`.
 
 ## Headline
 
-**198 of 204 portable official WPF sample apps build unmodified, and 191 run.** That is up from 191 / 182 in report
-`4fd5749d` (+7 build, +9 run), and from 0 / 0 in report `fedd13c8` (2026-11-19).
+**201 of 204 portable official WPF sample apps build unmodified, and 195 run.** In report `88c92780` it was 198 build
+and 191 run (+3 build, +4 run). In report `fedd13c8` (2026-11-19) it was 0 and 0.
 
-- **7 apps moved fail→pass**: 5 run and 2 crash at startup. **4 built apps moved crash→runs** (Brushes, HexSphereDemo,
-  PhotoFlipperDemo, AnnotatedDocumentViewer), all four that the Round 58 report put on generator sweep III.
+- **3 apps moved fail→pass.** DataBindingDemo and ExpenseItDemo build and run. WPFGallery builds, then crashes at
+  startup on the next wall: the .NET 9 Fluent theme dictionary.
+- **2 built apps moved crash→runs:** PhotoStoreDemo (Window adorner layer) and SlidePuzzleDemo (object-typed literals
+  stay strings). AnimationExamples still crashes, but on a later wall.
 - **No regressions.** No project went pass→fail, and no app went runs→crash/hang.
-- **No hangs.** 7 apps build but do not run, and all 7 crash. 2 are new builds that hit a second wall (PhotoStoreDemo,
-  SlidePuzzleDemo). AnimationExamples crashes further in. The other 4 are known and are deliberate, out of scope or
-  defects in the sample.
-- **6 portable apps still fail to build.** Three of them (DataBindingDemo, WPFGallery, ExpenseItDemo) now fail only or
-  mainly on `AutomationProperties` attached properties. One is a one-line packaging fix (EditingExaminerDemo), and two
-  are System.Xaml/BAML tooling that is deliberately not next.
-- 204 projects build in all: the 198 portable apps, the libraries CustomApplicationClient, wpfclock,
-  HostingWpfUserControlInWf, WPFControls and EditBoxControlLibrary, and the Windows-only console app FocusTracker.
-- By lane:
-  - Round 60 lane B (documents/imaging tail, `8c49c8e7`): 6 fail→pass (DocumentMerge, PhotoViewerDemo, ParticlesDemo,
-    PhotoStoreDemo, and with lane A FontDialogDemo and SlidePuzzleDemo). The binding-engine half (`64479593`) moved
-    AnimationExamples past its Round 58 crash.
-  - Round 61 lane C (generator sweep III, `414525fe`): Per-FrameAnimation fail→pass and all 4 crash→runs. It also
-    removed WPFGallery's Grid shorthand and `ControlExample` content errors.
-  - Round 59 lane A (controls/freezable tail III `e6d32fbe`, .NET 9 surface `997d7515`): with lane B, FontDialogDemo and
-    SlidePuzzleDemo. It removed WPFGallery's whole .NET 9 wall (about 25 members) and ExpenseItDemo's `DataGridCell`
-    wall. Both apps still fail, on the next wall.
+- **No hangs.** 6 portable apps build but do not run, and all 6 crash:
+  - WPFGallery is a new build.
+  - AnimationExamples crashes further in.
+  - The other 4 are known, and each is deliberate or a defect in the sample.
+- **3 portable apps still fail to build.** EditingExaminerDemo needs a packaging change plus a small documents tail.
+  BamlReflector and LocBaml are System.Xaml/BAML tooling, which is deliberately not next.
+- **207 projects build in all.** That is the 201 portable apps, five libraries (CustomApplicationClient, wpfclock,
+  HostingWpfUserControlInWf, WPFControls and EditBoxControlLibrary) and the Windows-only console app FocusTracker.
+- **The count is close to its ceiling.** At most 1 more build and 2 more runs can come from layer work (see Next
+  rounds). Everything else left is Windows-only, a defect in the sample, or deliberately out of scope. Most of the
+  programme's work was fidelity: what the running apps look like and do.
 
 ### Corrections to the raw batch data
 
-The final build log of each of the 252 csproj was re-parsed uniformly. Run results come from the batches' per-app run
-records. Every crash and every app that moved was re-run alone (see Method). The top 15 missing symbols were checked
-against the `Gtk4.Forms.*` source.
+Every csproj's final build log was re-parsed uniformly. The run results come from the batches' per-app run records.
+For this report, every crash, every app that moved and every app whose re-run evidence existed only in a batch note
+was re-run alone (see Method). The top 15 missing symbols were checked against the `Gtk4.Forms.*` source.
 
-- **The aggregated totals were wrong.** They said 208 projects, 175 portable apps, 170 build and 165 run. The
-  per-project data gives 252 / 204 / 198 / 191.
-  - **Batch 5 was missing from the aggregate** (its batch note is empty). Its 44 csproj (Globalization and
-    Localization, Windows, Accessibility, Element Tree, PerMonitorDPI) all have final logs and run records under
-    `samples-remeasure-r61/batch5`. They were parsed like every other batch: 29 portable apps, 29 build, 28 run
-    (LocalizationResources crashes, as before).
-  - The aggregate again used the batches' own regex `windowsOnly` flags. As in every earlier report, the verified
-    classification is carried over unchanged, so the denominator stays 204.
-- **AppCompat-Quirks is a crash, not a run.** Batch 4's runner stops at the first window, and this app shows its
-  window at 0.5 s and then exits on its known `NullReferenceException`. A solo 20 s re-run confirmed the crash.
-- **Batch 3's note undercounted.** It reported 17 builds (13 apps) and 14 smoke-run apps. Its own `builds.json` and the
-  logs give 21 builds: 17 apps and 4 libraries. All 17 apps have run records (15 run, 2 crash).
-- **FocusTracker** (Windows-only console app) was alive with no window in batch 5, where earlier runners saw it exit. It
-  is recorded as `hang` and is not in the portable denominator.
+- **The aggregated denominator was wrong.** The aggregate said 208 portable apps, with 201 building and 195 running. It
+  used the batches' own regex `windowsOnly` flags. As in every earlier report, the verified classification is carried
+  over unchanged, so the denominator stays 204. The numerators are the same: 201 and 195.
+- **Batch 3 was rebuilt for this report.** Its scratch, including all logs, had been deleted. Its note also
+  undercounted: it gave 23 builds and 20 failures. The 43 batch-3 csproj (Sample Applications, Migration and
+  Interoperability) were rebuilt from fresh copies with the same recipe and feed:
+  - 24 build: 20 apps and 4 libraries. 19 apps run and 1 crashes (WPFGallery).
+  - The batch's progress file lost five records to a write lock (an observer held the file open). The build results
+    of those five come from their logs.
+  - PhotoViewerDemo, SlidePuzzleDemo and VideoViewerDemo were re-run alone for 20 s, and each showed a window from 1 s.
+  - WPFGallery was re-run alone and crashed the same way.
+- **Batch 2's "38 runs, 1 unreconciled" is 39 runs.** Its `smoke.txt` holds all 41 built apps. 35 had a window
+  within 10 s. KeySplineAnimations, 2DTransforms, CustomBitmapEffect and OpacityMasking showed one when re-run alone
+  for 20 s, which makes 39 runs. AnimationExamples and
+  WDPEncoderAndDecoder crash.
+- **Batch 1's "Grid ColumnDefinitions gap" is not a layer gap.** The message `Skipped element ColumnDefinition in
+  Grid.ColumnDefinitions` appears only in ADODataSet. That is a legacy csproj built against .NET Framework, where the
+  generator cannot resolve the layer's types. No portable log has it.
+- **FocusTracker exits; it does not hang.** It is a Windows-only console app that prints its UI Automation message and
+  ends, because stdin is null and it calls `Console.ReadLine`. The run value is `exits` (it was `hang` in `88c92780`).
+  It is outside the denominator.
 - **Top-15 symbol check** (the aggregated `topMissing` ranking):
-  - Windows-only, dropped from the ranking: `System.Windows.Forms` (10 with batch 5), `Form` (6),
-    `System.Windows.Interop` (3), `Windows`, `TypedEventHandler<,>`, `InputPane` and `InputPaneVisibilityEventArgs` (2
-    each: the WinRT TouchKeyboard pair, legacy csproj files).
-  - `System.Drawing.Bitmap` (`CS1069`): only StickyNotesDemo, which is Windows-only. The aggregate's second example,
-    WPFGallery, is wrong: its final log has no `System.Drawing` error.
-  - Artefact: `System.Windows.Markup.GtkFormsXamlRegistration` and `…Attribute` (7 each with batch 5). The attribute
-    exists (`Gtk4.Forms.PresentationFramework/Markup/GtkFormsXamlRegistry.cs:13`). All 7 hits are legacy csproj files
+  - **Artefact:** `System.Windows.Markup.GtkFormsXamlRegistration` and `…Attribute` (7 each). The attribute exists
+    (`Gtk4.Forms.PresentationFramework/Markup/GtkFormsXamlRegistry.cs:13`). All 7 hits are legacy csproj files
     built against .NET Framework with the layer's generated `.g.cs`. This is a converter limit, not a layer gap.
-  - Real gaps, absent from `main`:
-    - `AutomationProperties.HeadingLevelProperty` and `SetHeadingLevel` (2, DataBindingDemo and WPFGallery).
-      `AutomationProperties` declares only `Name`, `HelpText`, `AutomationId`, `LabeledBy`, `IsRequiredForForm` and
-      `LiveSetting` (`Automation/AutomationProperties*.cs`). The peer side already has `GetHeadingLevelCore`,
-      `GetItemStatusCore` and `GetAcceleratorKeyCore` (`Automation/Peers/AutomationPeer.Core.cs`), returning defaults.
-    - `System.Xaml`, `System.Windows.Baml2006`, `Baml2006Reader` (2 each: BamlReflector and the library BamlTools).
-      Deliberately not next.
+  - **Windows-only, dropped from the ranking:**
+    - `System.Windows.Forms` (6) and its namespace form (4), and `Form` (6).
+    - `System.Windows.Interop` (2).
+    - The WinRT TouchKeyboard pair, both legacy csproj files: `Windows`, `TypedEventHandler<,>`, `InputPane` and
+      `InputPaneVisibilityEventArgs` (2 each).
+    - `DpiScale` (2: FormattedTextExample and ImageScaling). This is absent from the layer, but PerMonitorDPI is
+      per-monitor DPI by design and is classified Windows-only.
+  - **Real gaps, absent from `main`, and deliberately not next:** `System.Xaml`, `System.Windows.Baml2006`,
+    `Baml2006Reader`, `IXamlLineInfoConsumer` and `NamespaceDeclaration` (2 each: BamlReflector and the library
+    BamlTools). No `namespace System.Xaml` or `Baml2006Reader` exists in the layer.
 
 ## Per category
 
-These are portable apps on the strict recipe. Δ is the change since `4fd5749d`.
+These are portable apps on the strict recipe. Δ is the change since `88c92780`.
 
 | Category | Projects | Windows-only apps | Portable apps | Build | Δ | Run | Δ |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | Accessibility | 12 | 10 | 2 | 2 | 0 | 2 | 0 |
-| Animation | 11 | 0 | 11 | 11 | +1 | 10 | +1 |
+| Animation | 11 | 0 | 11 | 11 | 0 | 10 | 0 |
 | Application Management | 10 | 1 | 8 | 8 | 0 | 8 | 0 |
 | Clipboard | 2 | 0 | 2 | 2 | 0 | 2 | 0 |
 | Compatibility | 1 | 0 | 1 | 1 | 0 | 0 | 0 |
 | Data Binding | 31 | 1 | 30 | 30 | 0 | 30 | 0 |
-| Documents | 17 | 2 | 15 | 15 | +1 | 15 | +2 |
+| Documents | 17 | 2 | 15 | 15 | 0 | 15 | 0 |
 | Drag and Drop | 6 | 0 | 6 | 6 | 0 | 6 | 0 |
 | Element Tree | 2 | 0 | 2 | 2 | 0 | 2 | 0 |
 | Elements | 10 | 0 | 10 | 10 | 0 | 10 | 0 |
 | Events | 4 | 0 | 4 | 4 | 0 | 4 | 0 |
 | Getting Started | 8 | 0 | 8 | 8 | 0 | 7 | 0 |
 | Globalization and Localization | 14 | 0 | 14 | 14 | 0 | 13 | 0 |
-| Graphics | 26 | 0 | 25 | 25 | 0 | 24 | +1 |
+| Graphics | 26 | 0 | 25 | 25 | 0 | 24 | 0 |
 | Input and Commands | 18 | 1 | 16 | 16 | 0 | 16 | 0 |
 | Migration and Interoperability | 23 | 15 | 0 | 0 | 0 | 0 | 0 |
 | PerMonitorDPI | 4 | 4 | 0 | 0 | 0 | 0 | 0 |
 | Properties | 3 | 0 | 3 | 3 | 0 | 3 | 0 |
 | Resources | 3 | 0 | 3 | 3 | 0 | 3 | 0 |
-| Sample Applications | 23 | 1 | 21 | 17 | +5 | 15 | +5 |
+| Sample Applications | 23 | 1 | 21 | 20 | +3 | 19 | +4 |
 | Speech and Media | 2 | 1 | 1 | 1 | 0 | 1 | 0 |
 | Styles & Templates | 5 | 0 | 5 | 5 | 0 | 5 | 0 |
 | Threading | 3 | 0 | 3 | 3 | 0 | 3 | 0 |
 | Tools | 3 | 0 | 2 | 0 | 0 | 0 | 0 |
 | Visual Layer | 3 | 1 | 2 | 2 | 0 | 2 | 0 |
 | Windows | 12 | 2 | 10 | 10 | 0 | 10 | 0 |
-| **Total** | **256** | **39** | **204** | **198** | **+7** | **191** | **+9** |
+| **Total** | **256** | **39** | **204** | **201** | **+3** | **195** | **+4** |
 
-Seventeen categories are now complete for their portable apps (every one builds and runs); Documents joined them in
-this round, and Animation lacks only AnimationExamples. The remaining build failures are in Sample Applications (4)
-and Tools (2). The 7 non-runners are spread over six categories (see Crashes).
+17 categories are complete for their portable apps: every app builds and runs. In the rest:
+
+- The build failures are in Sample Applications (EditingExaminerDemo) and Tools (2).
+- The 6 non-runners are each in a different category: Animation, Compatibility, Getting Started, Globalization and
+  Localization, Graphics and Sample Applications.
 
 ## What moved
 
-Each move is attributed by elimination: the named change removed every blocker that `4fd5749d` recorded for the app.
-Nothing was bisected. Per-row attribution is in the JSON (`unblockedBy`).
+Each count move is attributed by elimination: the named change removed every blocker that `88c92780` recorded for
+the app. Nothing was bisected. Per-row attribution is in the JSON (`unblockedBy`).
 
-**Round 64 (lane D) access keys, no row changed.** A user-reported difference: `_` in `Button.Content` or
-`MenuItem.Header` showed literally. Content and headers of Button, RepeatButton, ToggleButton, CheckBox, RadioButton,
-Label, MenuItem, GroupBox, Expander and TabItem now follow WPF's `AccessText` rules (`_Open` shows `Open` with key O,
-`__Open` shows `_Open`, `Open_` and `A__B` as in WPF). Gate, recipe from Method with a lane-private feed packed from
-the lane branch (`1.0.0.26328`): all 204 apps and libraries with `build=pass` still build (two builds each, 0 errors),
-and all 191 with `run=runs` still start and stay up with a window; 23 showed no window within 10 s in the first pass
-and all 23 showed one when re-run alone with a 30 s wait (cold start, not a hang).
-
-| Target sample | Status | Underscore strings |
-|---|---|---|
-| Windows/DialogBox | builds, runs (screen grab shows the `File` menu header without the underscore) | `_File`, `_Open`, `_Print`, `_Exit` |
-| Sample Applications/FontDialog | builds, runs | `_Font family`, `_Size:`, `_Typeface:`, `F_ormat` |
-| Windows/WindowActivationAndDeactivation | builds, runs | `_File`, `_Edit`, `_Exit` |
-| Documents/Fixed Documents/DocumentMerge | builds, runs | `_File`, `_Open` |
-| Documents/Annotations/AnnotationsStyling | builds, runs | in `defaultstickynotestyle.xaml` |
-| Sample Applications/ExpenseIt/ExpenseItDemo | still fails: `AutomationProperties.AcceleratorKeyProperty` (another lane) | not checked |
-| Documents/Fixed Documents/DocumentStructure | still fails: XAML parse error in `fixedpage1_structure.xaml` | not checked |
-| Tools/BamlReflector | still fails: `System.Windows.Baml2006` missing | not checked |
-| Graphics/Brushes/SampleViewer | not a project in the coverage list | not checked |
-
-Not verified: that the key letter is underlined while Alt is held (GTK shows it, WPF's keyboard cues do the same; no
-screenshot with Alt held was taken).
-
-**Round 72 (lane F) WPF content model, no row changed.** User-reported differences: `ContentControlStyle` showed the
-type name in a `Label` and an empty `Button`, `Concepts` showed `System.Windows.Controls.TextBlock` in Expander headers
-and `System.Windows.Documents.Hyperlink` in list items, and `DataTrigger` showed `DataTrigger.Place` rows. One shared
-`ContentResolution` now follows WPF's `ContentPresenter` order (element, template, selector, implicit `DataType`
-template, `Inline` in a `TextBlock`, text) for the content of every `ContentControl` and the header of every headered
-control and DataGrid column. Measured with the pinned recipe on a pack from the worktree (`gf72f/content-resolution`):
-
-- **Gate.** All 207 projects that built before still build (0 errors), and all 194 apps that ran still run. In the run
-  pass 7 apps had no window at 10 s (cold start); each was alive with a window when re-run alone for 25 s.
-- ContentControlStyle: the `Label` hosts the styled `ContentControl` ("Hello" on the red area), the `Template1` text
-  shows on LightBlue, and `btn2` shows its wrapped `TextBlock` text. The ellipse is drawn as a square (shapes: another
-  lane).
-- Concepts: Expander headers read "Animation", "Controls", "Databinding"; list items show their underlined links;
-  clicking "Animate Height Sample" navigates `frame2` (found by `TargetName`) to the compiled page.
-- DataTrigger: Name and State columns from the implicit template, WA rows in red, Portland OR on cyan. This also needed
-  the compiler to emit `MultiDataTrigger` and to register a key-less `ListBoxItem` style under its type.
-
-Known gaps, recorded here instead of the plan doc:
-
-- `TextBlock` has no link activation of its own. `HyperlinkActivation` (Controls/HyperlinkActivation.cs) attaches a
-  capture-phase click and the `activate-link` signal to the label of every `TextBlock` it creates for an `Inline`
-  content, because a `GtkListBox` claims the click sequence and denies the label's own link gesture. Lane K should own
-  this for every `TextBlock` and then delete that class.
-- `ComboBox` items live in a `Gtk.DropDown` string model: element and template visuals are not shown in the popup. Only
-  the closed-selection text follows the new string rules.
-- `MenuItem` headers go through GTK popover menu items, which are text only: an element header shows its `Text`.
-- An implicit template for a string content is not looked up when the widget is created (the plain GTK label path is
-  kept); it applies on a later content change.
-- `XmlNode` data types are not matched by the implicit template lookup.
-
-**Fail→pass: 7 apps.**
+**Fail→pass: 3 apps.**
 
 | Change | Apps (run result) |
 |---|---|
-| Round 60 lane B documents-imaging-tail (`8c49c8e7`, reviewed `e99d8776`): Fixed documents, `Glyphs` and XPS read/write (`eed18bd9`) | DocumentMerge (runs) |
-| Round 60 lane B: freezable `ImageSource` and the `CachedBitmap`/`CroppedBitmap`/`FormatConvertedBitmap`/`TransformedBitmap` family (`af71a13f`) | PhotoViewerDemo, ParticlesDemo (run); PhotoStoreDemo (crash) |
-| Round 59 lane A controls-freezable-tail-3 (`dab570ca`, merged `e6d32fbe`): `TextBlock.ContentStart`/`ContentEnd`, routed `TextBox.SelectionChanged`, typed brush clones; + Round 60 lane B freezable `TextDecorationCollection` and `DocumentViewerBase.IsMasterPage` (`40de56af`) | FontDialogDemo (runs); SlidePuzzleDemo (crash) |
-| Round 61 lane C startup-generator-sweep-3 (`63570ce1`, merged `414525fe`, reviewed `6a01d4af`): content property of a project-local type | Per-FrameAnimation (runs) |
+| Round 62 lane A automation attached properties (merged `c24ce59e`): `AutomationProperties.HeadingLevel`, `ItemStatus`, `AcceleratorKey` and the `UIElementAutomationPeer` reads | DataBindingDemo (runs); WPFGallery (crash, see Crashes) |
+| Round 62 lane A automation (`c24ce59e`) + controls tail IV (`a3120799`): `DataGridLength`, `DataGridLengthConverter`, `DataGrid.ColumnWidth` | ExpenseItDemo (runs) |
 
-**Crash→runs: 4 apps, all from Round 61 lane C startup-generator-sweep-3.** These are the four the Round 58 report
-listed under track 1.
+**Crash→runs: 2 apps.**
 
-- Brushes: length units (`12pt`) in `Thickness` parsing.
-- HexSphereDemo: base-qualified property elements (`GradientBrush.GradientStops`) and nested `ModelVisual3D.Content`.
-- PhotoFlipperDemo: explicit-collection property elements (`Viewport3D.Children`).
-- AnnotatedDocumentViewer: prefixed clr-namespace `Type.Member` commands in `CommandConverter`.
+- PhotoStoreDemo: Round 62 lane A window adorner layer (`06a239df`). `Window` owns an implicit adorner layer, so
+  `AdornerLayer.GetAdornerLayer` finds one.
+- SlidePuzzleDemo: Round 63 lane B generator sweep IV (`20f220ff`). `Tag="1"` on an `object`-typed property stays a
+  string.
 
 **Moved blockers in apps that still fail or crash.**
 
-- WPFGallery: the .NET 9 surface wall is gone (`ThemeMode`, the `SystemColors` accent keys, the new `MessageBoxButton`
-  values, `GetResourceStream`, `ItemsPanel`, `ToolTipService.ToolTipProperty`, `IsFocusScope`, `RecognizesAccessKey`,
-  `RequestNavigateEventArgs.Handled`, `Window.IsActive`; Round 59 lane A). So are the Grid shorthand and
-  `ControlExample.Content` (Round 61 lane C). The only build errors left are 10 `CS0117` on
-  `AutomationProperties.HeadingLevel`. Expect another wall at run time.
-- ExpenseItDemo: `DataGridCell` and `DataGridCellsPresenter` are gone (Round 59 lane A). It now needs
-  `AutomationProperties.AcceleratorKey` and `DataGrid.ColumnWidth` (a `DataGridLength`, emitted from `ColumnWidth="*"`).
-- AnimationExamples (crash): the `BindingOperations` wall is gone (Round 60 lane B non-element targets). It now stops on
-  "Cannot find the element named 'TextEffectRotateTransform'" (see Crashes).
-- Unchanged: DataBindingDemo (`AutomationProperties.HeadingLevel`/`ItemStatus`), EditingExaminerDemo
-  (`PermissionSet`; the packaging track was not taken), BamlReflector and LocBaml.
+- AnimationExamples: the `TextEffectRotateTransform` wall is gone, because Round 63 lane B added
+  `TextBlock.TextEffects` and registers the names inside `TextEffect.Transform`. It now stops on a routed-event
+  `Source` cast (see Crashes).
+- WPFGallery: the build wall is gone (`AutomationProperties.HeadingLevel`). At run time it needs the Fluent theme
+  dictionary.
+- EditingExaminerDemo is unchanged (`PermissionSet`).
 
-**Error landscape.** Counted as portable failing apps per code, `4fd5749d` → now:
+**User-reported samples.** Each status is from this measurement. "Runs" means the app starts and stays up with its
+window. The visual and behavioural evidence comes from each lane's own gate (pixel tests, screen grabs) and was not
+re-checked here.
 
-- Down: `CS0246` 7 → 3, `CS1061` 5 → 1, `CS0234` 3 → 2.
-- Gone: `CS0103` (2), `CS0123` (FontDialogDemo's `SelectionChanged`) and `CS0200` (WPFGallery's Grid shorthand).
-- Flat: `CS0117` 3 (now all `AutomationProperties`).
-- `CS2002` (a generated `.g.cs` specified twice) is a warning in 35 of 198 portable builds (29 of 191 before).
+| Sample | Round (merge) | What changed | Status now |
+|---|---|---|---|
+| CheckBox/RadioButton text | 64 lane D (`1b914771`) | A string `Content` becomes the `Gtk.CheckButton` label through the access-key parser, so the caption shows next to the indicator. 66 lane G then painted the indicators with the control brushes | Every portable app that uses them builds and runs; not inspected one by one |
+| Access keys in menus/buttons | 64 lane D (`1b914771`) | WPF `AccessText` rules for Button, RepeatButton, ToggleButton, CheckBox, RadioButton, Label and the MenuItem/GroupBox/Expander/TabItem headers (`_Open` shows `Open` with key O, and `__` shows `_`). Alt+key activation goes through the window | DialogBox, FontDialogDemo, WindowActivationAndDeactivation, DocumentMerge and AnnotationsStyling build and run |
+| BMP/GIF/JPEG/PNG/TIFF imaging samples | 68 lane E (`7d676dea`), Round 65 re-land | An unsized `Manual` window opens at 3/4 of the work area, as WPF's `CW_USEDEFAULT` window does, not at the content's 466x122 natural size. `Image` measures from the source's DIP size | All five run, with a window at 2 s. WDPEncoderAndDecoder still crashes (no JPEG XR codec) |
+| ContentControlStyle | 72 lane F (`0d305896`) | `Label` content shows the styled `ContentControl`, and `btn2` shows its wrapped `TextBlock`. Earlier it showed the type name and an empty button | Runs. Re-run alone for this report: window at 2 s |
+| Concepts (Expander headers, ListBox hyperlinks) | 72 lane F (`0d305896`) | Expander headers read "Animation", "Controls", "Databinding". List items show their links, and clicking one navigates `frame2` | Runs, with a slow first window. Re-run alone: no window in the first 20 s, then one from 1 s in a second run (as in the Round 68 gate) |
+| FlowDocumentProperties | 66 lane G (`3ffb6b79`) | Button brushes override the GTK theme face (blue with white captions). A block-aware page meter lays out pages and columns from PageWidth/Height, PagePadding and the Column* properties | Runs, window at 3 s; stderr has GTK min-height warnings (1 KB) |
+| HexSphereDemo | 67 lane H (`aec1ac36`) | Textured spheres, the radial gradient backdrop and the "Image 1 animate" spin. `<Resource>` images are copied to the output, `ParallelTimeline` children are generated, `Color.FromScRgb` matches WPF | Runs, window at 3 s, 0 bytes of stderr |
+| DataTrigger | 72 lane F (`0d305896`) | Implicit `DataType` templates; Name and State columns; WA rows in red and Portland OR on cyan (needed `MultiDataTrigger` and a key-less `ListBoxItem` style) | Runs. Re-run alone: window at 2 s, 0 bytes of stderr |
+| Graphics/Geometry | 69 lane I (`5cd4fe7f`), 70 lane J (`2f6122af`) | Shape natural size, stretch matrix, clipping, EvenOdd under transforms, live `PathGeometry` changes | Runs, window at 4 s. **Open:** the 3D pane stays dark (a `VisualBrush` 3D material is not rendered), and the combining-geometries page is empty (see the next row). stderr has 207 `gdk-frame-clock: layout continuously requested` and 48 "snapshot without a current allocation" lines in 10 s |
+| ↳ Geometry, combining page | — | 4 `<Path.Data>` property elements holding a `CombinedGeometry` are skipped: `CombinedGeometry` does not exist in the layer | Found by this report, not scheduled |
+| ShapesGallery | 69 lane I (`5cd4fe7f`) | WPF `Shape` layout, as above | Runs (first window at 10 s under load), 0 bytes of stderr |
+| VisualBrush | 70 lane J (`2f6122af`) | Live `VisualBrush` sources hosted in the owner's window; `TileBrush` tiling; `OpacityMask` in element space. Pixel-tested on all three tabs | Runs, window at 3 s, 0 bytes of stderr |
+| KeyFrameAnimation | 71 lane K (`c47d09d8`) | `InlineUIContainer` children of a `TextBlock` are hosted, so the listing lines show. Same-property clocks of one `Begin` compose, so the nested lines enlarge in turn | Runs, window at 4 s. stderr has 4 `GtkLabel ... must not decrease below min` lines (the FontSize animation) |
+
+**Rendering hygiene (Round 63 lane B, `3a6b5e64`).** In this run, Per-FrameAnimation and ParticlesDemo wrote 0 bytes
+of stderr. The `Cairo.Context is leaking` and `Gsk ... out of memory` warnings that the last report measured are gone.
+
+**Error landscape.** Counted as portable failing apps per code, `88c92780` → now:
+
+- `CS0117`: 3 → 0, all `AutomationProperties`.
+- `CS1061`: 1 → 0 (`DataGrid.ColumnWidth`).
+- `CS0246`: 3 → 3, unchanged (`PermissionSet`, BAML tooling).
+- `CS0234`: 2 → 2, unchanged (`System.Xaml`, `Markup.Localizer`).
+
+`CS2002` (a generated `.g.cs` specified twice) is a warning in 34 of 201 portable builds (35 of 198 before). Every
+build-2 warning comes from sample code or from this duplicate-item pattern, except one generator-side warning:
+`CS0649` in 15 projects. That is 34 fields, all in generated `.g.cs` files: an `x:Name` on a `BeginStoryboard` is
+declared as a field and never assigned (see XAML generator errors).
 
 ## Regressions
 
-None. No project went pass→fail, and no app went runs→crash/hang, so no app needed a solo re-run to separate noise.
-Every crash and every app that moved was still re-run alone (see Method).
+None. No project went pass→fail, and no app went runs→crash/hang.
 
-Some apps showed no window in their first 10 s run under parallel load (five other batches were running), then showed
-one when re-run alone for 20 s: BindingToMethod, Concepts, AddingEventHandler, FindingSourceElement, Brushes, Converter
-and GIFEncoderAndDecoder. CustomAnimation was missing from the first log and runs alone. BindingToStringFomat's exe is
-`DataBindingToStringFomat.exe`, which the first pass did not find; it runs. All are recorded as `runs`, as in earlier
-reports.
+Some apps showed no window in their first 10 s run under parallel load (six batches ran at once), then showed one when
+re-run alone for 20 s. All of these are recorded as `runs`, as in earlier reports:
 
-Round 63b (rendering hygiene) fixed both stderr sources. Measured through the lane-private package, one app at a time:
+- Batch 1: BindingDPToDP, BindValidation, CollectionBinding, ValidateItemSample and Concepts.
+- Batch 2: KeySplineAnimations, 2DTransforms, CustomBitmapEffect and OpacityMasking.
+- Batch 4: FontProperties, DragDropDataFormats, DragDropEvents, DragDropOpenTextFile and KeyboardKey.
+- Batch 5: CommonDialog and WindowSizingOrder.
+- Batch 6: CustomApplicationClass, ExceptionHandlingSecondaryUIThread, CustomClassesWithDP, ContentControlStyle and
+  EventTriggers.
 
-- "Cairo.Context is leaking": GtkSharp's `DrawingArea.DrawFunc` wrapper creates a `Cairo.Context` per draw and never
-  disposes it. Every DrawFunc in the layer now disposes its context in a `finally` (`Media/CairoDrawFunc.cs`).
-  Per-FrameAnimation went from 254 in 15 s (before, same machine) to 0 in two runs. ParticlesDemo went from 153-293 in
-  15-20 s to 0 in 9 runs.
-- `Gsk-WARNING ... out of memory`: Viewport3D painted textured triangles whose texel-to-pixel area scale fell below
-  1e-8 (a particle dying to nearly zero size). Cairo cannot represent the inverse pattern matrix and the compositor
-  rejects the frame. Such triangles are now skipped. Before: up to 128 warnings per 20 s run, in most runs; after: 0 in
-  4 runs of 20 s.
+For batches 1 and 6, the solo re-run result survives only in the batch note. So BindingDPToDP, Concepts and
+ContentControlStyle were rebuilt and re-run alone for this report, and all three show a window. BindingDPToDP's
+appeared at 11 s, a cold start.
 
 ## API demand
 
-The counts are failing portable apps (6). Windows-only and legacy-csproj demand is excluded. "Apps" is the number of
-failing portable apps whose errors touch the theme (`blockerThemes`). "Only" is the number whose every recorded blocker
-is in the theme.
+The counts are failing portable apps (3). Windows-only and legacy-csproj demand is excluded.
+
+- "Apps" is the number of failing portable apps whose errors touch the theme (`blockerThemes`).
+- "Only" is the number of apps whose every recorded blocker is in the theme.
 
 | Theme | Symbols (apps) | Apps | Only |
 |---|---|---:|---:|
-| Automation attached properties | `AutomationProperties.HeadingLevel` (DataBindingDemo, WPFGallery), `ItemStatus` (DataBindingDemo), `AcceleratorKey` (ExpenseItDemo) | 3 | 2 |
-| System.Xaml/BAML tooling | `System.Xaml` (`XamlSchemaContext`, `XamlType`, `Baml2006Reader`, …), `System.Windows.Markup.Localizer` (BamlReflector, LocBaml) | 2 | 2 |
+| System.Xaml/BAML tooling | `System.Xaml` (`XamlSchemaContext`, `XamlType`, `XamlReader`/`XamlWriter`, `Baml2006Reader`, …) and `System.Windows.Markup.Localizer` (BamlReflector, LocBaml) | 2 | 2 |
 | Code access security | `PermissionSet`/`PermissionSetAttribute` (EditingExaminerDemo; on .NET these come from the `System.Security.Permissions` package, not WPF) | 1 | 1 |
-| Controls tail | `DataGrid.ColumnWidth` and `DataGridLength` (ExpenseItDemo) | 1 | 0 |
 
-Run-time demand (built apps that crash on a layer or generator gap):
+EditingExaminerDemo has a second wall behind its first. The held branch `gf63b/packaging-permissions` adds the
+package, and its commit message records that the app then fails on `Floater`, `AnchoredBlock`, `ParserContext` and
+`HeadingLevel`. `HeadingLevel` has landed since (Round 62). `Floater`, `AnchoredBlock` and `ParserContext` are still
+absent from `main` (checked: `XamlReader.cs` documents that it has no `ParserContext` overload). The sample uses
+`AnchoredBlock`/`Floater` in `TreeViewhelper.cs:98-101` and `new ParserContext { BaseUri = … }` in
+`XamlHelper.cs:88`.
+
+Run-time demand (built apps that crash on a layer gap):
 
 | Theme | Gap (app) |
 |---|---|
-| XAML generator | An attribute literal for an `object`-typed property is emitted typed (`Tag="1"` → `Tag = 1`) (SlidePuzzleDemo) |
-| Text effects | `TextBlock.TextEffects` is missing, so `<TextBlock.TextEffects>` is skipped and the names inside are never registered (AnimationExamples) |
-| Adorners | `AdornerLayer.GetAdornerLayer` finds no layer inside a `Window`, which in WPF always has one through its template (PhotoStoreDemo) |
+| Fluent theme | `pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.xaml` is merged in `App.xaml`, and its keys (`ControlCornerRadius` first) are not supplied (WPFGallery) |
+| Routed events | `RoutedEventArgs.Source` is not adjusted where a `Page` in a `Frame` meets the outer logical tree (AnimationExamples) |
+
+Fidelity demand, in apps that already run (not counted in the headline):
+
+| Theme | Gap (apps) |
+|---|---|
+| Generator property elements | `DataGrid.Columns` (ExpenseItDemo, ExpenseItIntro), `ListView.View` (BindingToStringFomat, EditingCollections, WPFGallery), `ListBox.GroupStyle`/`ItemsControl.GroupStyle` (CollectionViewSource, DataBindingDemo, AlternatingAppearanceOfItems, Grouping), `ListBox.ItemsSource` and `TextBlock.Text` (Concepts, CompositeCollections, PriorityBinding), `*.RenderTransform`, `*.InputBindings`, `InkCanvas.*`, `ItemsPanel`, `LinearGradientBrush.GradientStops` |
+| Geometry | `CombinedGeometry` is missing (Geometry's combining page); `ImageDrawing` is missing (DrawingBrush) |
+| Bitmap effects | `BitmapEffect` property elements (BitmapEffectsGallery, Brushes): obsolete in WPF, rendered as no-ops there since .NET 4.0 |
 
 ## Crashes (built, did not run)
 
 | Sample | Cause |
 |---|---|
-| SlidePuzzleDemo | **New build.** `InvalidCastException` (Int32 to String) at `Puzzle.cs:207`, `(string)item.Tag` in a `SelectionChanged` handler. The MarkupCompiler emits `<ComboBoxItem Tag="1">` as `__e59.Tag = 1;` (`Puzzle.g.cs:105`). WPF keeps an attribute literal for an `object`-typed property as a string. |
-| PhotoStoreDemo | **New build.** `NullReferenceException` in `MainWindow.WindowLoaded` (`MainWindow.cs:38`): `AdornerLayer.GetAdornerLayer(CurrentPhoto)` returns null. `GetAdornerLayer` (`Documents/AdornerLayer.cs:88`) finds only an explicit `AdornerDecorator` ancestor. WPF's `Window` template supplies one, so every element in a window has a layer. |
-| AnimationExamples | Further in: `InvalidOperationException: Cannot find the element named 'TextEffectRotateTransform' to animate 'CenterX'` (`Storyboard.ResolveTarget`). `TextBlock` has no `TextEffects` property in the layer (only `FlowDocument` has one), so the MarkupCompiler skips `<TextBlock.TextEffects>` in four files and the named `RotateTransform` inside `TextEffect.Transform` is never created. |
-| ExpenseItIntro | Unchanged: `Resource with key 'CustomNavWindowStyle' not found`. The key is defined nowhere in the sample, so WPF rejects it too. A defect in the sample. |
+| WPFGallery | **New build.** `InvalidOperationException: Resource with key 'ControlCornerRadius' not found` (`MainWindow.g.cs:34`, a `StaticResource` in a `Border.CornerRadius` setter). `App.xaml` merges the .NET 9 Fluent theme dictionary (`PresentationFramework.Fluent;component/Themes/Fluent.xaml`), which the layer does not supply. Expect more walls behind it (the Round 62 gate predicted this one). |
+| AnimationExamples | **Further in.** `InvalidCastException` (String to `Frame`) at `SampleViewer.cs:54`. `InteractiveAnimationsExample.PageLoaded` (line 112) sets `IsChecked` on a RadioButton inside a `Page` hosted in a `Frame`. Its `Checked` event bubbles to `SampleViewer`'s `RadioButton.Checked` handler with `args.Source` still the inner RadioButton (string content), so `(Frame)theButton.Content` fails. In WPF a navigated page is not a logical child of the `Frame`, so the source is adjusted at that boundary to the outer RadioButton, whose content is the `Frame`. Inferred from the stack and the WPF source-adjustment rule; not run on WPF. |
+| ExpenseItIntro | Unchanged: `Resource with key 'CustomNavWindowStyle' not found`. The key is defined nowhere in the sample, so WPF rejects it too. A defect in the sample (re-run alone twice for this report). |
 | WDPEncoderAndDecoder | Unchanged: `NotSupportedException: JPEG XR (WDP) has no encoder in the GTK runtime`. Deliberate: gdk-pixbuf/GdkTexture have no JPEG XR codec. |
-| AppCompat-Quirks | Unchanged: a window shows at 0.5 s, then a `NullReferenceException` in the sample's `PopulateAppContextInformation` (`MainWindow.xaml.cs:197`, it reflects over WPF-internal AppContext switch types) exits the app. Not worth chasing. |
+| AppCompat-Quirks | Unchanged: there is no window at 10 s, and two solo 20 s runs both crash with a `NullReferenceException` in the sample's `PopulateAppContextInformation` (`MainWindow.xaml.cs:197`, from `Window_Loaded`). It reflects over WPF-internal AppContext switch types. Not worth chasing. |
 | LocalizationResources | Unchanged: `MissingManifestResourceException` for `LocalizationResources.data.stringtable.resources`. The sample ships only an en-US satellite and no neutral resource. |
 
-Two of the three layer crashes are MarkupCompiler work (track 2 below); PhotoStoreDemo is adorner work (track 3).
+Two crashes are layer work: WPFGallery is track 1 below and AnimationExamples is track 2. The other four are out of
+scope.
 
 ## XAML generator errors
 
-No portable app fails to build on a generator error any more. The remaining generator-side causes are at run time or
-in Windows-only and legacy projects. Per-project messages are in the JSON (`xamlErrors`).
+No portable app fails to build on a generator error. Per-project messages are in the JSON (`xamlErrors`).
 
-1. **Typed literals for `object` properties** (SlidePuzzleDemo, crash). `Tag="1"` becomes an `int`. The literal should
-   stay a string unless the property type asks for a conversion.
-2. **Skipped `TextBlock.TextEffects`** (AnimationExamples, crash). This needs the layer property first; the generator
-   then has to emit the `TextEffect` collection and register the names inside `TextEffect.Transform`.
-3. **Not generator bugs, though surfaced in `.g.cs`:** `AutomationProperties.HeadingLevel` (DataBindingDemo,
-   WPFGallery), `AutomationProperties.AcceleratorKey` and `DataGrid.ColumnWidth` (ExpenseItDemo). All are missing layer
-   members.
-4. **Outside the denominator:** the legacy-csproj `GtkFormsXamlRegistration` artefact (HostingWfInWpfWithXaml,
-   PropertyMappingWithWfh, WpfLayoutHostingWfWithXaml and 4 more), and DocumentStructure, whose
-   `fixedpage1_structure.xaml` is malformed XML in the sample (`xmlns:my="clr-namespace:MyCompany.MyProduct` has no
-   closing quote); that app is Windows-only.
+1. **Outside the denominator.**
+   - The legacy-csproj `GtkFormsXamlRegistration` artefact: HostingWfInWpfWithXaml, PropertyMappingWithWfh,
+     WpfLayoutHostingWfWithXaml, ADODataSet, UsingSpeech, WinFormsHostScaling and SingleInstanceDetection.
+   - DocumentStructure, whose `fixedpage1_structure.xaml` is malformed XML in the sample:
+     `xmlns:my="clr-namespace:MyCompany.MyProduct` has no closing quote. That app is Windows-only.
+2. **Named `BeginStoryboard` fields are never assigned** (`CS0649`, 34 fields in 15 projects: AnimationExamples,
+   AnimationTiming, KeyFrameAnimation, KeySplineAnimations, OpacityAnimation, PathAnimations and others). The field is
+   declared from `x:Name`, but `InitializeComponent` does not set it. Code that reads the field gets null. XAML
+   `BeginStoryboardName` references resolve through the name scope and are not affected (not re-checked per sample).
 
-**"Skipped property element" backlog.** These are MSBuild messages, not errors, but they are a silent-drop risk at
-run time. The 205 final logs that build hold 81 distinct messages in 32 projects (121 in 39 across 198 builds in
-`4fd5749d`). The largest groups (projects):
+**"Skipped property element" backlog.** These are MSBuild messages, not errors, but they are a silent-drop risk at run
+time. The 207 passing final logs hold 59 distinct messages in 25 projects. In `88c92780` there were 81 in 32 projects
+over 205 logs, and the drop comes from Round 63 lane B. The groups that cover more than one project:
 
-- `Rectangle.OpacityMask` (4), `Window.CommandBindings` (4), `VisualBrush` attribute `Visual` (4, "not available in
-  the layer").
-- `ListBox.GroupStyle`, `ListBox.ItemsSource`, `ListView.View`, `ItemsControl.ItemContainerStyle`, `TextBlock.Text`,
-  `Path.Data`, `Canvas.OpacityMask`, `StackPanel.CommandBindings` and `Window.DataContext` (2 each).
-- `TextBlock.TextEffects` (1 project, 4 files: AnimationExamples, the crash above).
+- `ListBox.GroupStyle` (3), `ListView.View` (3).
+- `ListBox.ItemsSource`, `TextBlock.Text`, `DataGrid.Columns` and `Path.Data` (2 each).
 
-Fixed since `4fd5749d` (Round 61 lane C): length units, base-qualified and explicit-collection property elements,
-prefixed commands, user-type content properties, Grid definition shorthand (also on Grid subclasses), the plain `Name`
-rule, `RenderOptions` defaults, `Timeline` runtime names and keyed resources no longer stringified.
-
-## Media3D: known gaps against WPF
-
-These come from Round 54 lane B (`gf54b/media3d`). They are documented, not fixed:
-
-- Hidden surfaces use a back-to-front sort of whole triangles (painter's algorithm), not a per-pixel z-buffer.
-- Lighting is flat per triangle, with Blinn-Phong specular. Brush textures use a per-triangle affine mapping, not a
-  perspective-correct one.
-- `Paced` key times are treated as `Uniform`. `ParallelTimeline.SlipBehavior` is stored only.
-- Typed 3D animations (`Rotation3DAnimation`, `Point3DAnimation`, `Vector3DAnimation`, `QuaternionAnimation`) are
-  deferred.
-- `MeshGeometry3D.TextureCoordinates` is a plain list: editing it in place does not repaint.
-- The generated-code path now emits an explicit `Viewport3D.Children` and nested `ModelVisual3D.Content` too
-  (Round 61), so PhotoFlipperDemo and HexSphereDemo run.
-- Round 67 lane H (HexSphereDemo, user report "black window, nothing happens"): the demo now renders and animates.
-  The spheres are textured, the radial gradient shows behind them, and "Image 1 animate" spins them. Causes:
-  - A material brush with no paint source (a texture that did not load) was painted with cairo's default opaque
-    black source. It now paints nothing, as an empty brush is transparent in WPF.
-  - The sample's `<Resource>` images were never copied to the output, so the texture file did not exist. The
-    `Gtk4.Forms.Wpf` targets now copy `<Resource>` items beside the app (`GtkFormsCopyResources`).
-  - The generator dropped `ParallelTimeline` children, so `RotateStoryboard` was an empty storyboard.
-  - Brushes are rasterised once per paint pass (not once per triangle), and `Color.FromScRgb` matches WPF.
-  - `EmissiveMaterial` keeps painting Over when it is the first layer and additive after that. The WPF docs do not
-    settle whether a lone emissive layer is additive, and in WPF the model is lit into its own buffer before it is
-    composited over the 2D background, so a backdrop would not show through either way. Not changed.
-  - Texture mapping is still affine. On the 16x16 spheres the triangles are small, and the only visible artefacts
-    are thin wedges at the poles, so perspective-correct mapping was not added.
-  - On Linux the markup path `images\roundcornersheet.png` does not match the `Images` folder (case). The fix
-    belongs to `ImageSourceLocation` (lane E) and was not made here.
-
-Carry-overs that are still open:
-
-- (Closed in Round 67 lane H: `Color.FromScRgb` and `ScR`/`ScG`/`ScB` now use the sRGB transfer, with the byte rounding of WPF. WPF also keeps the float values it was given; `Color` stores only bytes, so a read-back is the byte's linear value.)
-- `ScrollBar` is still on `Control`, not `RangeBase` (`Controls/Primitives/ScrollBar.cs:16`, re-checked).
-- `SystemParameters` `*Key` objects do not resolve through `DynamicResource` (carried over, not re-checked).
-- `Int32RectConverter` and `PixelFormatConverter` are still unregistered; `Int32Rect`, `PixelFormat` and
-  `BitmapPalette` stay on the audited unconverted list (`Round49aConverterTests`). No sample sets them from text.
+Each of the rest is in a single project: `*.RenderTransform`, `*.InputBindings`, `*.BitmapEffect`, `InkCanvas.Strokes`/
+`DefaultDrawingAttributes`, `ItemsPanel`, `CollectionViewSource.SortDescriptions`, `SpellCheck.CustomDictionaries`,
+`LinearGradientBrush.GradientStops`, and the user-type elements `FireworkEffect.Child`, `SonicEffect.Child`,
+`ExpenseReport.LineItems`, `HeaderTile.Source` and `ControlExample.XamlCode`. Two elements are not in the layer at
+all: `ImageDrawing` and the `PreviewCanExecute` attribute on `CommandBinding`.
 
 ## Next rounds
 
-These are ranked by portable samples unblocked. "Only" means samples whose sole recorded blocker is the track. The
-compiler reports nearly all errors in one pass, but a later phase (generated code, a second wall at run time) can
-still hold an app back. Treat "only" as an upper bound for build and an estimate for run. Done in full, the six
-tracks would take the count to at most 202 build and about 197 run.
+These are ranked by portable samples unblocked. "Only" means samples whose sole recorded blocker is the track. A later
+phase (a second wall at run time) can still hold an app back, so treat the counts as upper bounds.
 
-**The automation exclusion is lifted.** The Round 56–58 reports kept `AutomationProperties.HeadingLevel`/`ItemStatus`
-out of the lanes because `docs/plans/ui-automation.md` owned `Automation/**`. That plan records Phases 1–5 as done, so
-its "parity scout must not pick" rule no longer applies. Its open follow-ups touch `Automation/Peers/**` and the
-client, so track 1 keeps to the attached properties and the default `Get*Core` reads.
+The count is close to its ceiling. Done in full, the three count-moving tracks would take it to at most 202 build and
+197 run. Tracks 4–6 move no count: they are fidelity and converter work, ranked by the apps they touch.
 
-1. **Automation attached properties: 2 only, 1 involved.**
-   - Only: DataBindingDemo (`HeadingLevel`, `ItemStatus`) and WPFGallery (`HeadingLevel`; expect a run-time wall
-     behind it).
-   - Involved: ExpenseItDemo (`AcceleratorKey`; it also needs track 4).
-   - Add `HeadingLevel` (`AutomationHeadingLevel` already exists in `Peers/PeerEnums.cs`), `ItemStatus` and
-     `AcceleratorKey` as attached properties. Make `UIElementAutomationPeer`'s `GetHeadingLevelCore`,
-     `GetItemStatusCore` and `GetAcceleratorKeyCore` read them, as WPF does.
-   - Owns: `Automation/AutomationProperties*.cs` (new partials preferred) and the three `Get*Core` overrides in
-     `Automation/Peers/UIElementAutomationPeer*.cs`. Not `Controls/DataGrid.Automation.cs` (track 4).
-2. **Startup and generator sweep IV: 2 crash→runs.**
-   - Runs: SlidePuzzleDemo (keep `object`-typed attribute literals as strings) and AnimationExamples (add
-     `TextBlock.TextEffects`, emit the `TextEffect` collection, register names inside `TextEffect.Transform`).
-   - Also: work down the "Skipped property element" backlog, starting with `*.OpacityMask`, `*.CommandBindings`,
-     `ListBox.GroupStyle`/`ItemsSource` and `ListView.View`, and register `Int32RectConverter`/`PixelFormatConverter`
-     (the Round 60 lane B hand-off) if it stays cheap.
-   - Fold `gf39/xaml-content-model` in as a test-only change (the compile-checked generator test); the backlog is its
-     regression corpus.
-   - Gate: all 204 building projects, plus the 7 non-runners.
-   - Owns: `Gtk4.Forms.MarkupCompiler/**` and `Gtk4.Forms.MarkupCompiler.Tests/**`,
-     `Gtk4.Forms.WindowsBase/Markup/XamlValueConverter*.cs`, `Gtk4.Forms.PresentationFramework/Markup/**` except
-     `NonElementBinding.cs`, and a new additive `Controls/TextBlock.TextEffects.cs` (no other `TextBlock*.cs` edits).
-3. **Window adorner layer: 1 crash→runs.**
-   - Runs: PhotoStoreDemo. Give `Window` (and any other root that has a template layer in WPF) an implicit
-     `AdornerDecorator`, so `AdornerLayer.GetAdornerLayer` finds a layer for every element in a window. Expect a
-     further wall in the sample's `RubberbandAdorner` crop path.
-   - Check every caller of `GetAdornerLayer` (validation error templates, drag adorners) for behaviour changes when a
-     layer appears where there was none.
-   - Owns: `Documents/Adorner*.cs` and the window content hosting in `Window*.cs`.
-4. **Controls tail IV: 0 only, 1 involved.**
-   - Involved: ExpenseItDemo (`DataGrid.ColumnWidth` as a `DataGridLength`, with its converter for `"*"`, `"Auto"`,
-     `SizeToHeader` and pixel values; also needs track 1).
-   - Owns: `Controls/DataGrid*.cs` (including `DataGrid.Automation.cs`) and new `Controls/DataGridLength*.cs`. The
-     XAML converter registration belongs to track 2's `XamlValueConverter*.cs`. Hand it over as a note, or use a
-     `[TypeConverter]` on `DataGridLength`, which needs no generator change.
-5. **Packaging: 1 only.**
-   - Only: EditingExaminerDemo. Add `System.Security.Permissions` as a `Gtk4.Forms.Wpf` dependency for
-     `PermissionSet`/`PermissionSetAttribute`, as Round 58 did with `Microsoft.Win32.SystemEvents`. Unchanged from the
-     Round 58 plan; Round 61 did not take it.
-   - Check first: that the package's `net10.0` reference assembly carries both types, and that `SYSLIB0003` stays a
-     warning in the consumer.
-   - Owns: `Gtk4.Forms.Wpf/Gtk4.Forms.Wpf.csproj` and its package tests.
-6. **Rendering hygiene: 0 samples (both apps already run).**
-   - Find the undisposed `Cairo.Context` behind the GtkSharp finalizer warnings in Per-FrameAnimation and ParticlesDemo
-     (per-frame `OnRender`/`DrawingContext` paths and the `RenderTargetBitmap` surface), and the `GskTransformNode` "out
-     of memory" failures in ParticlesDemo.
-   - Owns: `Media/DrawingContextRenderer*.cs`, `Media/Imaging/RenderTargetBitmap.cs`, `Media/DrawingBrush.cs`,
-     `Media/VisualBrush.cs`, `Controls/Viewport3D.cs`, and the `OnRender` draw hookup in `UIElement*.cs`
-     (rendering partials only).
+**Excluded by decision:** the DrawingBrush rendering lane was not run (user decision), and it is not proposed again
+here.
+
+1. **Fluent theme dictionary: 1 crash→runs (WPFGallery), upper bound.**
+   - Supply `PresentationFramework.Fluent;component/Themes/Fluent.xaml` (and its Light/Dark variants if the sample
+     asks for them) as a layer resource dictionary, starting with the keys WPFGallery reads: `ControlCornerRadius`
+     first. Then iterate wall by wall.
+   - Owns: new `Themes/Fluent/**`; the `PresentationFramework.Fluent` pack-URI case in `Resources/ResourceStreamLocator.cs`;
+     `Themes/ThemeManager.cs`.
+2. **Routed-event source adjustment: 1 crash→runs (AnimationExamples).**
+   - Adjust `RoutedEventArgs.Source` where the route crosses a logical-tree boundary (a navigated `Page` in a `Frame`),
+     as WPF does. Check WPF's rule (`RoutedEventArgs.Source` re-targeting along the logical tree) before coding. Expect
+     no other wall: the next frames in the sample are plain storyboards.
+   - Gate: every Data Binding, Events and Input and Commands app, because they all route events.
+   - Owns: `Gtk4.Forms.WindowsBase/RoutedEventHost*.cs`, `Gtk4.Forms.WindowsBase/RoutedEventArgs.cs`,
+     `Controls/Frame*.cs`, `Navigation/**`.
+3. **Packaging and documents tail: 1 fail→pass (EditingExaminerDemo), upper bound.**
+   - Rebase `gf63b/packaging-permissions` (`28737070`): it adds `System.Security.Permissions` as a `Gtk4.Forms.Wpf`
+     dependency and pins the package dependencies.
+   - Then add `AnchoredBlock`, `Floater` and `ParserContext`, with `XamlReader.Load(Stream, ParserContext)` (`BaseUri`).
+   - Check first: that `SYSLIB0003` stays a warning in the consumer.
+   - Owns: `Gtk4.Forms.Wpf/Gtk4.Forms.Wpf.csproj` and its package tests; new `Documents/AnchoredBlock.cs` and
+     `Documents/Floater.cs`; new `Markup/ParserContext.cs`; `Markup/XamlReader.cs`.
+4. **Generator sweep V (fidelity): 0 count, 25 projects with skipped elements, 15 with unassigned fields.**
+   - `DataGrid.Columns` (ExpenseItDemo shows a grid with no columns), `ListView.View`, `*.GroupStyle`,
+     `ListBox.ItemsSource`, `TextBlock.Text` and `Path.Data`, with a new `CombinedGeometry` for the Geometry sample.
+   - Then `*.RenderTransform`, `*.InputBindings` and `ItemsPanel`, and assign named `BeginStoryboard` fields.
+   - Fold `gf39/xaml-content-model` in as a test-only change (the compile-checked corpus); the backlog is its corpus.
+   - Owns: `Gtk4.Forms.MarkupCompiler/**`, `Gtk4.Forms.MarkupCompiler.Tests/**`,
+     `Gtk4.Forms.WindowsBase/Markup/XamlValueConverter*.cs`, `Gtk4.Forms.PresentationFramework/Markup/**` (except
+     `ParserContext.cs` and `XamlReader.cs`, which belong to track 3), and new `Media/CombinedGeometry*.cs`.
+5. **Window and layout sizing (fidelity): 0 count.**
+   - The known sizing gaps:
+     - `SizeToContent` around a `ScrollViewer`.
+     - Min/Max not capping a `SizeToContent` axis.
+     - Fixed Grid tracks and explicit parent sizes not capping a child's natural size.
+     - `Stretch != None` shapes reporting the slot as `ActualWidth`/`ActualHeight`.
+   - The GTK layout loop behind Geometry's 207 and GeometryDesignerDemo's `gdk-frame-clock: layout continuously
+     requested` lines, and the measure warnings in Concepts, ContentControlStyle, DragDropEvents (215 KB of stderr in
+     20 s) and FlowDocumentProperties.
+   - Owns: `Window.DefaultSize.cs` and the `SizeToContent` code of `Window.cs` (move it to a new `Window.SizeToContent.cs`
+     partial first), `Controls/ScrollViewer*.cs`, `Controls/Grid.cs` and `Controls/Grid.Layout.cs`,
+     `FrameworkElement.GtkLayout.cs`, and `Shapes/Shape.Layout.cs`/`Shape.NaturalLayout.cs`.
+6. **Legacy (non-SDK) csproj conversion: 0 portable (21 projects, all Windows-only).**
+   - Convert old-style csproj files (`ToolsVersion`, `Microsoft.CSharp.targets`, `TargetFrameworkVersion v4.x`) to SDK
+     style, or refuse them with a clear message. Today the converter says "Already converted" and the build compiles
+     the layer's `.g.cs` against .NET Framework. This also removes the `GtkFormsXamlRegistration` artefact (7) from the
+     symbol ranking and the `NU1201` sibling-reference failures.
+   - Owns: `Gtk4.Forms.Wpf.ProjectConverter/**` and its tests, and `Gtk4.Forms.Wpf/build/**` and
+     `buildTransitive/**`.
 
 **Lanes (three in parallel, two tracks each, file-disjoint):**
 
 | Lane | Tracks | Only | Boundary to watch |
 |---|---|---:|---|
-| A | 1 (automation attached properties) + 4 (controls tail IV) | 2, and ExpenseItDemo needs both | Track 1 owns `Automation/AutomationProperties*.cs` and the `UIElementAutomationPeer` `Get*Core` reads. Track 4 owns `Controls/DataGrid*.cs`, `DataGrid.Automation.cs` included. Together they finish ExpenseItDemo |
-| B | 3 (window adorner layer) + 6 (rendering hygiene) | 1 crash→runs | Track 3 owns `Documents/Adorner*.cs` and `Window*.cs`. Track 6 owns the `Media/` renderers, `RenderTargetBitmap.cs`, `Viewport3D.cs` and the `OnRender` hookup. Neither touches `Documents/` outside `Adorner*.cs` |
-| C | 2 (generator sweep IV) + 5 (packaging) | 2 crash→runs, and 1 | Track 2 owns `Gtk4.Forms.MarkupCompiler/**`, `Markup/**` minus `NonElementBinding.cs`, `XamlValueConverter*.cs` and the new `TextBlock.TextEffects.cs`. Track 5 owns only the `Gtk4.Forms.Wpf` package project |
+| A | 1 (Fluent theme) + 5 (window and layout sizing) | 1 crash→runs | Track 1 owns `Themes/**` and `ResourceStreamLocator.cs`. Track 5 owns `Window.DefaultSize.cs` and the new `Window.SizeToContent.cs`, `ScrollViewer*.cs`, `Grid.cs`/`Grid.Layout.cs`, `FrameworkElement.GtkLayout.cs` and the two `Shape` layout partials. A Fluent `CornerRadius` must not reach for layout code |
+| B | 2 (routed-event source) + 3 (packaging and documents tail) | 1 crash→runs, 1 fail→pass | Track 2 owns `RoutedEventHost*.cs`, `RoutedEventArgs.cs`, `Frame*.cs` and `Navigation/**`. Track 3 owns the `Gtk4.Forms.Wpf` csproj, the two new `Documents/` files, `Markup/ParserContext.cs` and `Markup/XamlReader.cs` |
+| C | 4 (generator sweep V) + 6 (legacy csproj conversion) | 0 | Track 4 owns `Gtk4.Forms.MarkupCompiler/**`, `Markup/**` minus the two track-3 files, `XamlValueConverter*.cs` and `CombinedGeometry*.cs`. Track 6 owns `Gtk4.Forms.Wpf.ProjectConverter/**` and the package's `build/`/`buildTransitive/` targets, not the csproj |
 
 Held branches:
 
-- **`gf52b/content-bindings-sweep`: merged** (`b25bc71e`, before `270cdb7e`). The branch ref is gone. Nothing to do.
-- **`gf46/input-focus` (held, 6 commits, 227 behind): 0 samples.** Every Input and Commands app builds and runs. What
-  remains is focus-transaction behaviour, owned by the focus-behaviour design. `FocusManager.IsFocusScope` and
-  `GetFocusScope` landed on `main` in Round 59 (`a99dfb4b`), so a rework must start from `main`'s
-  `Input/FocusManager*.cs`, not from the branch. It is not in the lanes.
-- **`gf39/xaml-content-model` (held, 3 commits, 280 behind): 0 samples on its own.** Fold it into track 2 as a
-  test-only change.
-- **`gf57b/documents-imaging-tail` (4 commits, 82 behind): superseded.** Round 60 lane B re-applied 3 of its 4 commits
-  and dropped `06cd79ce` on purpose (see below). Delete the ref.
-- **`gf53a/visual-layer-input` (1 commit, 122 behind): superseded.** Its commit landed through
-  `gf56a/visual-layer-input`. Delete the ref after confirming that nothing unique remains on it.
-
-**Round 60 (lane B) hand-offs, status.**
-
-- Done: ParticlesDemo's `x:Name` inside a `Model3D` tree (it runs), DocumentMerge (runs), FontDialogDemo (runs), and
-  SlidePuzzleDemo's typed `SolidColorBrush.Clone()` (it builds; the next wall is track 2).
-- Open: AnimationExamples' `TextEffect.Transform` name (track 2), PhotoStoreDemo's `AdornerLayer` (track 3),
-  `Int32RectConverter`/`PixelFormatConverter` (track 2, optional).
-- Known documents/imaging gaps (not scheduled, not re-checked): `DocumentPageView` does not paint a `FixedPage`;
-  `TransformedBitmap` handles only 90-degree rotations and scales; the derived bitmaps do not follow later pixel
-  changes in their `Source`; XPS resource-dictionary parts are copied verbatim; `Brushes.*` returns new unfrozen
-  instances.
-- Binding engine gaps (not scheduled, not re-checked): a freezable shared by several holders has no inheritance
-  context, and a single-segment path to a non-dependency property of an element source is read once.
-- Rejected in the Round 60 triage: the null-owner `InvalidOperationException` in `TextTreeEdit.Split.cs`. `main`'s
-  detached-`List` fix (`2f4a566d`) covers it, so `06cd79ce` has no genuine delta to port.
+- **`gf63b/packaging-permissions` (1 commit `28737070`, 114 behind): take it into track 3.**
+  - The plan doc says the Round 63 packaging track "delivered nothing". The ref does carry one commit: the dependency,
+    pinned package dependencies and nuspec tests (45 tests, by its message; not re-run here).
+  - Its message also records EditingExaminerDemo's second wall (see API demand).
+  - Rebase it on `main` and re-gate it. Do not merge it as is.
+- **`gf46/input-focus` (6 commits, 342 behind): 0 samples.** Every Input and Commands app builds and runs. What remains
+  is focus-transaction behaviour, owned by the focus-behaviour design. A rework must start from `main`'s
+  `Input/FocusManager*.cs` (`IsFocusScope`/`GetFocusScope` landed in Round 59), not from the branch. It is not in the
+  lanes.
+- **`gf39/xaml-content-model` (3 commits, 395 behind): 0 samples on its own.** Fold it into track 4 as a test-only
+  change. Do not rebase the product commits.
 
 Deliberately not next:
 
@@ -435,131 +367,58 @@ Deliberately not next:
 - System.Xaml/BAML tooling (LocBaml, BamlReflector/BamlTools).
 - AppCompat-Quirks (WPF-internal AppContext switches), LocalizationResources (the sample ships no neutral resource) and
   ExpenseItIntro (the sample references an undefined resource key).
-- Legacy (non-SDK) csproj conversion: 21 projects. That is a converter feature, not a layer gap. It would also remove
-  the `GtkFormsXamlRegistration` artefact from the symbol ranking.
+- DrawingBrush rendering (user decision, see Known gaps).
 
-## Round 62 (lane A) gate
+## Known gaps
 
-Measured on `lane/a` (Round 62 tracks 1, 3 and 4 with their review fixes), package `1.0.0.26327` from a lane-private
-pinned feed. All 204 projects that built at `17c64167` plus DataBindingDemo, ExpenseItDemo and WPFGallery were built
-twice each (the first build converts). 4 of the first builds failed once with no error text (MousePointer,
-MergedResources, Matrix, CubeAnimationDemo) and passed on a solo rebuild: contention, not the layer.
+From the end of the Round 62–72 programme (`docs/plans/gtk-forms-wpf-on-gtk-1to1.md`, "Known gaps"):
 
-- **207 of 207 projects build** (+3). All 191 apps that ran at `17c64167` still run, with one visible top-level window each (26
-  had no window handle in the crowded first pass and were re-checked alone for 20 s: all alive with a window).
-- **DataBindingDemo: fail→runs.** **ExpenseItDemo: fail→runs** (it builds and its dialog opens). **PhotoStoreDemo:
-  crash→runs.** **WPFGallery: fail→builds, then crashes** on the expected wall: `InvalidOperationException: Resource
-  with key 'ControlCornerRadius' not found` (`MainWindow.g.cs:34`).
-- Portable apps: 201 of 204 build and 194 run. Three of the six apps that failed at `17c64167` now build;
-  EditingExaminerDemo and the two System.Xaml/BAML tools still fail.
-- **ExpenseItDemo, `CreateExpenseReportDialogBox`:** the dialog opens, and `ColumnWidth="*"` reaches the grid
-  (`ColumnWidth=*`). The grid has **no columns**: the generator does not emit the `DataGrid.Columns` property element
-  (lane B territory, MarkupCompiler). With three text columns added in code the headers fill the grid (103, 94 and 56
-  px of 253, all `Hexpand`), so star width renders.
-- **PhotoStoreDemo:** a native (OS-level) click on the image reaches `OnMouseDown` (`CropButton` goes from disabled to
-  enabled, `CaptureMouse` and `StartSelection` run).
-  Capture on a placed adorner re-targets input (unit-tested); no native drag was driven.
-- New walls: none beyond the two above (`DataGrid.Columns` generator gap; WPFGallery `ControlCornerRadius`).
+- SizeToContent around a ScrollViewer does not size to its content.
+- Window Min/MaxHeight/Width do not cap an axis SizeToContent sizes.
+- Fixed Grid tracks and explicit parent sizes do not cap a child's natural size (Shape, TextBlock).
+- Stretch != None shapes report the slot as ActualWidth/Height.
+- External http(s) links in Frame/NavigationWindow raise NavigationFailed and stay (WPF hosts web content).
+- DrawingBrush rendering is not implemented beyond what exists (DrawingBrush fills).
+- VisualBrush as a 3D material is not rendered (Graphics/Geometry 3D pane stays dark).
+- VisualBrush self-reference via BorderBrush/Control/TextBlock brushes relies on the pixel storm breaker.
+- A Click-only Hyperlink without NavigateUri is unsupported.
+- BaselineAlignment other than Baseline and FlowDocument InlineUIContainers are store-only.
+- An InlineUIContainer added to a TextBlock after its widget exists is not hosted.
+- macOS/Linux GTK runs were not measured in this programme.
+- **DrawingBrush rendering lane not run (user decision).**
 
-## Round 71k (lane K) gate: KeyFrameAnimation, inline UIElements in TextBlock
+Found by this report:
 
-Measured on `gf71k/inline-uielements-keyframes` over `lane/k`, package `1.0.0.26328` from a lane-private pinned feed.
+- `CombinedGeometry` and `ImageDrawing` are missing (Graphics/Geometry, DrawingBrush).
+- Named `BeginStoryboard` fields stay null (`CS0649` in 15 projects).
+- `RoutedEventArgs.Source` is not adjusted at a `Frame`/`Page` boundary (AnimationExamples).
 
-Root causes (by measurement): the generator already wrapped each nested `TextBlock` in an `InlineUIContainer` and
-registered its name, but `InlineUIContainer` was store-only (no Pango text, no widget parent), so the five listing
-lines were blank. Separately, the storyboard's second FontSize clock per target replaced the first
-(`SnapshotAndReplace` per clock), so no nested block ever grew. `Canvas.Left` key frames and splines were already
-right (`KeyFrameCanvasLeftTests`: 14 sample times and the `Forever` restart against the Bezier math, 1 px).
+Still open from earlier reports (re-checked where noted):
 
-- **Fix.** A `TextBlock` with inline containers is rooted in a `Gtk.Overlay` (the label; each hosted child is an
-  overlay child placed by its margins, so picks still reach the label and its links); inline-free blocks keep the bare
-  `Gtk.Label`. Each container emits U+FFFC with a `Pango.AttrShape` sized to the child. A child size change (FontSize
-  animation) rebuilds the shapes. `Inline.BaselineAlignment` and the `BaselineAlignment` enum were added (Baseline
-  lays out; other values are stored). `Storyboard.Binding.cs` (lane H file, 3 lines; the layering helper lives in
-  `Storyboard.SamePropertyLayering.cs`): clocks of one `Begin` on one property layer (first replaces earlier runs, the
-  rest compose).
-- **Acceptance (KeyFrameAnimation through the pinned recipe, window screenshots over time).** Every listing line,
-  literal and nested, is visible. The first nested line is enlarged at ~3 s, the second at ~8 s, the third at ~14 s,
-  and each returns to 12 pt when the next grows. The rectangle (judged by position; its DrawingBrush fill is another
-  lane) moved from the left edge to ~484 px of the 600 px canvas by 8 s and back to ~250 px at 14 s.
-- **Samples gate.** All 207 projects that built at `17c64167` build twice (first build converts) with 0 errors. All 194
-  apps that ran still run with a visible window; 3 (DragDropObjects, Concepts, HtmlToXamlDemo) showed no window in the
-  serial pass and each ran with one when re-run alone.
-- **Known gaps.** A container added after the TextBlock widget exists is not hosted; `BaselineAlignment` other than
-  Baseline is stored only; the child is not part of the label's selection; FlowDocument containers stay store-only.
-
-## Imaging samples show the whole image (Rounds 65e and 68e)
-
-Reported: the BMP/GIF/JPEG/TIFF "Imaging Sample" windows showed no image while the PNG one worked. The decoded
-frames were always drawn correctly (pixel-verified per codec in Round 65). The fault was window layout.
-
-**Cause.** Each sample sets `Window.Content = ScrollViewer { StackPanel { Image { Stretch.None, Margin 20 } ... } }`
-and never sets Width/Height. `Window` left a NaN Width/Height at -1, so GTK opened the window at its content's natural
-size, about 466x122 with a 46 px viewport. WPF opens a Manual window at the OS default size (Win32 `CW_USEDEFAULT`).
-**The user-visible fix is the Window default size.** The `ScrollViewer` measure below is a separate WPF-correctness
-change that only matters for `SizeToContent` and Auto tracks; `Image.DesiredSize` does not reach the GTK runtime path.
-
-**Why PNG looked fine.** Measured on the sample files (the sliver shows the top 46 px of the first image):
-
-| Sample image | Pixels | DPI | DIP size | Decode | Top 46 rows |
-|---|---|---|---|---|---|
-| tulipfarm.bmp | 640x480 | 96.01 | 639.92x479.94 | 102 ms | pale sky, sd 1.2 (236-241 of 255) |
-| tulipfarm.gif | 640x480 | 96 | 640x480 | 63 ms | pale sky, sd 2.0 |
-| tulipfarm.jpg | 640x480 | 96 | 640x480 | 209 ms | pale sky, sd 1.2 |
-| tulipfarm.tif | 480x360 | 96 | 480x360 | 56 ms | pale sky, sd 1.3 |
-| smiley.png | 75x75 | 95.99 | 75.01x75.01 | 8 ms | the face, sd 54 (1-254) |
-
-Decode time and DPI play no part. The PNG sample's image is a 75 px smiley, so the sliver still shows most of its face.
-The other four open on a tulip photo whose top 46 rows are an almost uniform pale lavender sky, which reads as an empty
-window. All five now behave alike.
-
-**Fix (Round 68e).**
-`Window.DefaultSize.cs`: an axis that is NaN under `SizeToContent.Manual` opens at 3/4 of the primary monitor work area
-(floored, clamped by Min/Max). GTK honours `SetDefaultSize` alone for this case (measured), so no size request is
-added and the user can still shrink the window. Explicit Width/Height keep the default size plus the size-request pin,
-and an axis sized by `SizeToContent` stays at -1.
-`ScrollViewer.Measure.cs` (Round 68e review fixes): WPF `MeasureOverride` (content measured unconstrained on every
-non-Disabled axis and with the constraint minus chrome on a Disabled one; desired size = content + Padding +
-a Visible scroll bar, never BorderThickness, clamped to the constraint). `PropagateNaturalWidth/Height` stay false as
-on main (three attempts at propagation regressed star rows, wrapped viewers or Height/MaxHeight). Known gap:
-`SizeToContent` around a ScrollViewer does not size to its content (same as before Round 68); needs a
-managed-measure-driven window size. The ScrollViewer defaults are now WPF's: Horizontal Disabled, Vertical Visible.
-Round 65 (re-landed, review findings fixed): `Image` measures from the source's DIP size with WPF's Stretch and
-StretchDirection scale factor, and a `Stretch.None` Image is centred in a larger slot like WPF (Gtk.Align.Center; the
-first review had it pinned top-left). Every `ImageSource` has Width/Height (`DrawingImage` from its drawing bounds).
-The `Image.DesiredSize` change is WPF-correct but does not reach the GTK runtime path, so it is not part of this fix.
-
-**Run results** (pinned recipe, lane feed, `Gtk4.Forms.Wpf 1.0.0.26328`; running window screen-captured; the primary
-monitor work area is 1957x1119 here, so the default is 1468x839):
-
-| Sample | Builds | Runs | Window | Whole first image visible | Note |
-|---|---|---|---|---|---|
-| BMPEncoderAndDecoder | yes | yes | 1468x839 (was 466x122) | yes, 640x480 centred | second image scrolls |
-| GIFEncoderAndDecoder | yes | yes | 1468x839 (was 458x122) | yes | same |
-| JPEGEncoderAndDecoder | yes | yes | 1468x839 (was 467x122) | yes | same |
-| PNGEncoderAndDecoder | yes | yes | 1468x839 (was 465x122) | yes | both smileys and the author text |
-| TIFFEncoderAndDecoder | yes | yes | 1468x839 (was 463x122) | yes, 480x360 | both images and the text |
-| WDPEncoderAndDecoder | yes | crashes | none | no | JPEG XR has no GTK codec: `NotSupportedException` (documented) |
-| BitmapMetadata | yes | yes | 1468x839 (was 437x276) | yes | smiley and its description |
-| ImageBrush | yes | yes | 1468x839 (was 954x561) | n/a | ellipse, button and border fills still solid black |
-| ImageView | yes | yes | 1418x676 (explicit size) | not driven | needs a file picked |
-
-Found, not fixed (outside this lane; the F1 centring test cannot prove Margin for that reason):
-- **ImageBrush black fills:** its `<Resource>` images are not packaged by the converted build
-  (`ResourceStreamLocator`), so the brush has no source and falls back to black. A `Gtk4.Forms.Wpf` build-target gap.
-- **`FrameworkElement.Margin` is never applied to the GTK widget** (`FrameworkElement.GtkLayout.cs` maps only
-  Width/Height and alignment). The samples' `Margin = 20` on each Image is therefore absent: the images sit flush
-  against each other and the title bar. A shared-layout defect for another lane.
-- A Disabled ScrollViewer axis (`PolicyType.Never`) propagates the content's minimum, so a window narrower than the
-  content cannot hold it, where WPF clips. Existing behaviour, unchanged.
-
-**Gate** (Round 68e; `Gtk4.Forms.Wpf 1.0.0.26328` packed from the branch into a lane-private feed, each sample built twice
-with only the package reference): all 204 `build=pass` projects still build (0 errors), and all 192 apps marked
-`run=runs` in `samples-coverage.json` still start and stay up. In the first 10 s pass 139 showed a window and 53 did not
-while other lanes loaded the machine; re-run alone for 20 s, 52 of the 53 showed one. The last, Concepts, showed none
-in 20 s and 25 s runs and a window after 3 s in a 60 s run (no exception), so it is a slow or flaky detection, not a
-regression. WDPEncoderAndDecoder still crashes with the documented `NotSupportedException`. The gate proves start-up
-only: no sample beyond the nine above was inspected for content that depended on the window fitting its content.
+- **No command requery after `Loaded`.** `HandlingEventOnCommandUsingCode` adds its button and `CommandBinding` in
+  `Loaded`, and the button stays disabled until another requery. `CommandSampleTests.The_button_is_enabled_without_a_manual_requery`
+  is still skipped (re-checked).
+- `ScrollBar` is still on `Control`, not `RangeBase` (`Controls/Primitives/ScrollBar.cs:16`, re-checked).
+- Media3D:
+  - Painter's-algorithm triangle sort, not a z-buffer.
+  - Flat lighting per triangle.
+  - Affine texture mapping.
+  - `Paced` key times are treated as `Uniform`.
+  - Typed 3D animations are deferred.
+  - `MeshGeometry3D.TextureCoordinates` edits do not repaint.
+- Round 72 content model:
+  - `ComboBox` popup items are strings (`Gtk.DropDown` model).
+  - `MenuItem` element headers show their `Text`.
+  - An implicit template for a string content applies only on a later content change.
+  - `XmlNode` data types are not matched.
+- Round 66: Aero2 hover/pressed fades and the focus rectangle are not reproduced. `FlowDocumentPageViewer` lays out
+  tables, lists and floaters as one block, and Zoom is stored only.
+- Round 62:
+  - Window's implicit adorner layer is not in `VisualTreeHelper`.
+  - Popups and `ScrollContentPresenter` have no implicit adorner layer.
+  - Adorner content is not pickable.
+  - A Pixel `DataGridColumn.Width` is a minimum.
+- `SystemParameters` `*Key` objects do not resolve through `DynamicResource` (not re-checked).
 
 ## Method
 
@@ -571,69 +430,83 @@ only: no sample beyond the nine above was inspected for content that depended on
   5. Globalization and Localization, Windows, Accessibility, Element Tree, PerMonitorDPI.
   6. Application Management, Elements, Properties, Resources, Styles & Templates, Threading, Tools.
 
-  Each batch was copied under `.claude/samples-remeasure-r61/batchN` without `bin`/`obj`, `NuGet.config` or
+  Each batch was copied under `.claude/samples-remeasure-r72/batchN` without `bin`/`obj`, `NuGet.config` or
   `global.json`. The scratch root has empty `Directory.Build.props`/`.targets`, so `TreatWarningsAsErrors` was off. No
   original or tracked file was modified: `git status` is clean in the worktree and in `WPF-Samples`.
-  - Batches 1, 2, 3 and 4 each discarded or repeated a first pass that had a script bug (log paths, exe filter,
-    PowerShell precedence that skipped the `PackageReference`). Only the clean runs are used.
-- **Layer build.** `dotnet build Gtk4.Wpf.sln -c Debug -nodeReuse:false`: 0 errors, 3 warnings. Every product and test
-  project is warning-clean. The 3 warnings come from GitInfo inside the WPF-Samples `HelloWorld.csproj` that the
-  solution includes (`MSB3073` exit 128, "Could not retrieve last commit", "GitInfo.txt is outside repository"),
-  because `WPF-Samples` is a separate nested git repo. They are environmental, but strictly the solution build is not
-  warning-free. `dotnet pack <proj> -c Debug --no-build -o <feed>` for WindowsBase, PresentationFramework,
-  MarkupCompiler and Wpf: no warnings or errors.
-- **Feed, pinned.** The version is date-based and equal to the Round 58 one (1.0.0.26327) with different bytes, so
-  pinning is required. `samples-remeasure-r61/nuget.config` sets the following:
-  - An isolated `globalPackagesFolder` (`samples-remeasure-r61/.nuget-packages`, which started empty) and cleared
+  - Batches 1–4 each discarded a first pass that had a script bug (execution policy, PowerShell `-replace` precedence
+    that skipped the `PackageReference`, path tags, a duplicated launch). Only the clean runs are used. In batch 2, a
+    few csproj had been converted by the killed first pass, so their build 1 exited 0 ("already converted"). Their
+    build 2 ran from fresh `bin`/`obj`.
+  - Batch 3 was rebuilt for this report from fresh copies (script `tools/batch3r.ps1`). Its logs are kept under
+    `batch3/_logs`.
+- **Layer build.** `dotnet build` of `layer.slnf` (`Gtk4.Wpf.sln` without the `WPF-Samples-GTK4` HelloWorld entry, whose
+  known `MSB3202`/converter failure belongs to the user's tree) with `-nodeReuse:false`: 0 errors, 3 warnings. The 3
+  warnings are the known GitInfo warnings from `WPF-Samples\Getting Started\HelloWorld` (`MSB3073` exit 128, "Could not
+  retrieve last commit", "GitInfo.txt is outside repository"), because `WPF-Samples` is a nested git repo. Every
+  product and test project is warning-clean. `dotnet pack --no-build` produced the four packages; the only message is
+  the "missing a readme" notice for `Gtk4.Forms.Wpf`.
+- **Feed, pinned.** `samples-remeasure-r72/nuget.config` sets the following:
+  - An isolated `globalPackagesFolder` (`samples-remeasure-r72/.nuget-packages`, which started empty) and cleared
     `fallbackPackageFolders`.
-  - Cleared `packageSources`, then the pinned feed (`samples-remeasure-r61/feed`) and nuget.org.
+  - Cleared `packageSources`, then the pinned feed (`samples-remeasure-r72/feed`) and nuget.org.
   - `packageSourceMapping` that maps `Gtk4.*` to the local feed only. Everything else, including `GtkSharp4`, maps to
     nuget.org.
   - Why: nuget.org publishes `Gtk4.Forms.*` with the same date-based versions as local packs.
 - **Pinning proven by a probe.** Getting Started/HelloWorld was built with the recipe `nuget.config`, but with
   `globalPackagesFolder` pointed at an empty probe cache, so the shared cache stayed untouched.
-  - Build 1 exited 1, as expected, with the converter's "re-run the build". Build 2 exited 0 with 0 warnings and 0
-    errors.
-  - The cached SHA-256 values equal the feed's. They were re-computed for this report from the feed and the shared
-    batch cache:
-    - `Gtk4.Forms.Wpf` `db803c7742fd8d4833e6a0263852bf984154720294c233fe5f7a2dcc10d65874`
-    - `PresentationFramework` `02b53da7525a36f500f4c0d00ad4519c09220b65345e3ef8cd05a8d3f0f92b4f`
-    - `WindowsBase` `29c308206371d216a286e6a88702f00235e912e6974c103c56e466966454704f`
-    - `MarkupCompiler` `e6f75573357642f0e2af405653ac6f34bf14f7f0f83918f78eba810c53bae8d7`
-  - Every `gtk4.forms.*` `.nupkg.metadata` source is the scratch feed.
-  - `project.assets.json` lists only the isolated probe cache as a package folder and no fallback folders. Its sources
-    are the feed, nuget.org and the SDK-implicit `library-packs`.
+  - Build 1 exited 1, as expected: the converter exited 10 with "re-run the build", and the csproj became `net10.0`
+    without `UseWpf`. Build 2 exited 0 with 0 warnings and 0 errors.
+  - The cached SHA-256 values equal the feed's. They were re-computed for this report from the feed and from the shared
+    batch cache, and all four match:
+    - `Gtk4.Forms.Wpf` `6035c9507d9f75d85b37cf5112ba040aa8771e33552c239007f4f1d4dacfde21`
+    - `PresentationFramework` `bcffce118e4def9cb5c74bb4f801f46b35d4fcc73b4791c124fce3b445ac6311`
+    - `WindowsBase` `2f0030c421fa0f214dabbe545ef59890d0784a8431d53b2c2a5b3f045537dd06`
+    - `MarkupCompiler` `26e4b72c27aad90a155250a97d8eabeb14a8c2e459038a4e46654fa94c5e0ea4`
+  - Every `gtk4.forms.*` `.nupkg.metadata` source is the scratch feed, in the probe cache and in the shared cache.
+  - `project.assets.json` lists only the probe cache as a package folder and no fallback folders. Its sources are the
+    feed, nuget.org and the SDK-implicit `library-packs`.
   - `gtksharp4 4.22.4.26327` came from nuget.org.
-  - Smoke: the 10 s run was alive with 1 visible unowned top-level window (first seen at 8 s, cold start) and 0 bytes
-    of stderr. Alone for 20 s it was alive with 1 window from 1 s and 0 bytes of stderr.
-  - The probe directory, its cache and its logs were deleted afterwards. Batches 1–4 and 6 re-checked the cached
+  - Smoke: the first 10 s run was alive with 0 windows (cold start). Alone for 20 s it was alive with 1 visible unowned
+    window from 3 s. A second 10 s run had 1 window from 1 s. All three had 0 bytes of stderr.
+  - The probe directory, its cache and its logs were deleted afterwards. All six batches re-checked the cached
     `Gtk4.Forms.Wpf` hash.
 - **Recipe (strict).**
-  1. Add a `PackageReference` to `Gtk4.Forms.Wpf 1.0.0.26327`.
+  1. Add a `PackageReference` to `Gtk4.Forms.Wpf 1.0.0.26329`.
   2. Build once with `-nodeReuse:false`. The converter rewrites the csproj and stops.
   3. Build again. This result is recorded.
-  - Nothing else is changed. Original csproj files are kept beside the copies (`*.csproj.orig`).
+  - Nothing else is changed. The original csproj files are kept beside the copies (`*.csproj.orig`).
 - **Pass/fail.** Pass means `Build succeeded` and `0 Error(s)` in the final build log. Codes, symbols and messages were
-  re-parsed uniformly from the final logs of all six batches (252 logs, one per csproj; UTF-16 and UTF-8). In batch 5,
-  38 of 44 build-1 logs carry the converter's "re-run the build"; the 6 without it are the legacy csproj files.
+  re-parsed uniformly from the 252 final logs (UTF-16 and UTF-8).
 - **Run.** Each app that built got a smoke run on Windows of about 10 s, with the GTK runtime
-  (`%LOCALAPPDATA%\Gtk\4.22.4\bin`) on `PATH`.
+  (`%LOCALAPPDATA%\Gtk\4.22.4\bin`) on `PATH`. Each process was killed by its own PID.
   - "Runs" means alive with a visible, unowned top-level window (`EnumWindows`).
   - "Crash" means an unhandled exception, or an exit with or without a window.
   - "Hang" means alive with no window and no exception.
   - Apps with no window at 10 s were re-run alone for 20 s.
-  - Every built app has a per-app run record (batch 1 `smoke-*.txt`, batch 2 `run.10.txt`/`run.20.txt`, batch 3
-    `smoke.json`/`smoke2.json`, batch 4 `results.json`, batch 5 `run.results`, batch 6 `batch6-results.json`).
-  - For this report, every crash and every app that moved (13 apps) was re-run alone for 15–20 s, polling every
-    0.5 s, and killed by its own PID. This caught AppCompat-Quirks (see Corrections). The other runners stop at the
-    first window, so a crash after the first window can still hide in a `runs` row that was not re-run.
-  - The run proves nothing about visual or behavioural correctness.
+  - The run records:
+    - batch 1: `batch1-keep/batch1-summary.txt`
+    - batch 2: `batch2/logs/smoke.txt` and `*.smoke20.*`
+    - batch 3: `batch3/_progress.txt` and `_progress2.txt`
+    - batch 4: `batch4/smoke10_all.txt` and `smoke20*.txt`
+    - batch 5: `batch5-results.json` and `_logs/*.run2.*`
+    - batch 6: `batch6-logs/run.txt`
+  - Re-run alone for this report, in a separate `verify` copy built with the same recipe:
+    - BindingDPToDP, Concepts, ContentControlStyle, DataTrigger and ExpenseItIntro, for 20 s each.
+    - PhotoViewerDemo, SlidePuzzleDemo, VideoViewerDemo and WPFGallery (batch 3).
+    - The batches' own solo runs covered AppCompat-Quirks (twice), WDPEncoderAndDecoder, AnimationExamples and
+      LocalizationResources.
+  - The runners stop at about 10–20 s, so a crash after the first window can still hide in a `runs` row.
+  - The run proves nothing about visual or behavioural correctness. That evidence lives in the lane gates cited in
+    What moved.
 - **Windows-only.** The verified classification of the earlier reports, unchanged.
 - **Limits.**
   - Only Windows was measured.
   - Legacy csproj files are not converted: 21 projects.
   - Moves are attributed by elimination, not bisected.
-  - `blockerThemes` is assigned per project for the 7 failing portable projects (6 apps and the library BamlTools).
+  - `blockerThemes` is assigned per project for the 4 failing portable projects: 3 apps and the library BamlTools.
+  - The baseline is report `88c92780`, the last full re-measure. `HEAD`'s copy of the JSON carried 4 rows edited by the
+    Round 62 lane A gate (DataBindingDemo, ExpenseItDemo, PhotoStoreDemo, WPFGallery). This run confirms all four, and
+    the gate text is kept as `round62LaneAGate`.
 
 ## History
 
@@ -655,36 +528,6 @@ only: no sample beyond the nine above was inspected for content that depended on
 | 2026-11-22 | `466055e3` | 1.0.0.26326 | **yes** | 171 / 204 | 165 | Rounds 53–55 (first three-lane batch) + `gf52b` merge; full re-measure; 6 crash, 0 hang; no regressions |
 | 2026-11-22 | `270cdb7e` + `gf58c/startup-generator-sweep-2` | 1.0.0.26326 | **yes** | 172 / 204 | 167 | Lane C gate (as reported then: 176 + AnimationExamples build, 165 + Geometry, KeySplineAnimations run); no regressions |
 | 2026-11-23 | `85493c8b` | 1.0.0.26327 | **yes** | 191 / 204 | 182 | Rounds 56–58 (second three-lane batch); full re-measure; 9 crash, 0 hang; no regressions |
-| 2026-11-23 | `17c64167` | 1.0.0.26327 | **yes** | **198 / 204** | **191** | Rounds 59–61 (third three-lane batch); full re-measure; 7 crash, 0 hang; no regressions |
+| 2026-11-23 | `17c64167` | 1.0.0.26327 | **yes** | 198 / 204 | 191 | Rounds 59–61 (third three-lane batch); full re-measure; 7 crash, 0 hang; no regressions |
 | 2026-11-24 | `lane/a` (Round 62 lane A) | 1.0.0.26327 | **yes** | 201 / 204 portable (207 / 207 built projects) | 194 | Lane A gate; DataBindingDemo, ExpenseItDemo build and run, PhotoStoreDemo runs, WPFGallery builds then crashes; no regressions |
-
-## Known layer defects found by the UI tests
-
-- **No command requery after `Loaded`.** `HandlingEventOnCommandUsingCode` adds its button and `CommandBinding` in
-  `Loaded`. WPF re-queries commands afterwards, so the button is enabled. The layer calls nothing like
-  `CommandManager.InvalidateRequerySuggested` there, so the button stays disabled until another requery happens.
-  `CommandSampleTests` keeps a workaround test (it requeries itself) and a skipped test,
-  `The_button_is_enabled_without_a_manual_requery`, that asserts the correct behaviour. Un-skip it when fixed.
-
-## Round 70 lane J: Graphics/VisualBrush by pixels
-
-`Graphics/VisualBrush` (`WPF-Samples` at the submodule revision) now compiles unmodified in
-`Gtk4.Forms.Wpf.Testing.Tests` (`Samples/VisualBrushSampleTests`) and is checked by pixels on all three tabs:
-
-- **Painting with Visuals**: the 50x50 tile rectangle shows the red 25x25 squares and the tiled text and button, and no
-  black fill.
-- **Magnifying Glass**: after a synthesized `MouseMove` over `magnifiedPanel` the Ellipse moves to mouse+5 and shows
-  the magnified grid; a second move shows text instead. The root cause of the empty interior was
-  `DrawingGroup.Children` items having no inheritance context, so `Visual="{Binding ElementName=magnifiedPanel}"` on
-  the nested `VisualBrush` never resolved.
-- **Reflection**: the lower canvas holds the vertically flipped upper canvas and fades towards the bottom. The lower
-  canvas is sized by `Height`/`Width` bindings that resolve after layout; `FrameworkElement` now re-pushes a late
-  Width/Height to the GTK widget.
-
-Pinned recipe (lane-private feed from this worktree, `Gtk4.Forms.Wpf 1.0.0.26328`, sample copy with only the package
-reference, `<clear/>` nuget.config with `Gtk4.*` mapped to the feed, isolated `globalPackagesFolder`, empty
-`Directory.Build.props`, two builds with `-nodeReuse:false`): VisualBrush builds with 0 warnings and 0 errors and stays
-alive; Win32 reports the app window plus the shared host window, which is a 1 %-opacity, non-interactive window (it
-is `WS_VISIBLE` but not drawn). Gate subset built and smoke-run (about 25 s start-up, alone): Brushes, DrawingBrush,
-ImageBrush, OpacityMasking, 2DTransforms, BindingDPToDP, SimpleBinding all build (0 errors) and stay up with their
-window. The full 198-app gate was not run in this step.
+| 2026-11-25 | `f678058f` | 1.0.0.26329 | **yes** | **201 / 204** | **195** | Rounds 62–72 programme + cleanup; full re-measure; 6 crash, 0 hang; no regressions |
