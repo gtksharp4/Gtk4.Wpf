@@ -65,7 +65,8 @@ public class KeyFrameListingPixelGtkTests : WpfGtkTestBase
 				var pos = layout.IndexToPos(line.StartIndex);
 				int top = (int)(origin.Y + dy + pos.Y / 1024.0), bottom = top + (int)Math.Ceiling(pos.Height / 1024.0);
 				literal++;
-				Assert.True(Ink(0, top, w, bottom) >= 20, $"literal row {i} [{text.Trim()}] y {top}-{bottom} is blank");
+				Assert.True(Ink(0, top, w, bottom) >= 20, $"literal row {i} [{text.Trim()}] y {top}-{bottom} is blank; widget {w}x{h}, texture "
+					+ $"{texture.Width}x{texture.Height}, bounds {node.Bounds.X},{node.Bounds.Y} {node.Bounds.Width}x{node.Bounds.Height}");
 			}
 			Assert.True(literal >= 6, $"{literal} literal rows");
 			var nested = new[] { first, page.FirstSplineTextBlock, page.SecondLinearTextBlock,

@@ -29,7 +29,9 @@ public class AccessKeyDisplayTests : AccessKeyTestBase
 		label.Text = AccessKeyParser.ToGtkMnemonic(wpf);
 		label.UseUnderline = true;
 		Assert.Equal(shown, label.Text);
-		Assert.Equal(key == (char)0 ? VoidSymbol : key, label.MnemonicKeyval);
+		// "No mnemonic" is GDK_KEY_VoidSymbol on GTK 4.22 and 0 on older GTK 4.
+		if (key == (char)0) Assert.True(label.MnemonicKeyval is VoidSymbol or 0);
+		else Assert.Equal(key, label.MnemonicKeyval);
 	});
 
 	[Theory]

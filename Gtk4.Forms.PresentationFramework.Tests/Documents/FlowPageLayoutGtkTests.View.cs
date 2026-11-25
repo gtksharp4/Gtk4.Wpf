@@ -32,9 +32,13 @@ public partial class FlowPageLayoutGtkTests
 		doc.PagePadding = new Thickness(60, 50, 20, 20);
 		var (win, _, px) = Show(doc);
 		int firstInkRow = -1, firstInkCol = int.MaxValue;
-		for (int y = 0; y < px.Height && firstInkRow < 0; y++)
+		for (int y = 0; y < px.Height; y++)
 			for (int x = 0; x < px.Width; x++)
-				if (px.At(x, y).R < 128) { firstInkRow = y; firstInkCol = Math.Min(firstInkCol, x); }
+				if (px.At(x, y).R < 128)
+				{
+					if (firstInkRow < 0) firstInkRow = y;
+					firstInkCol = Math.Min(firstInkCol, x); // all rows: an ascender can top the cap-height H
+				}
 		win.Close();
 		Assert.True(firstInkRow >= 50, $"first ink row {firstInkRow}");
 		Assert.True(firstInkCol >= 59 && firstInkCol <= 75, $"first ink column {firstInkCol}");
@@ -56,7 +60,8 @@ public partial class FlowPageLayoutGtkTests
 	[Fact]
 	public void NextPage_draws_different_text_and_the_page_count_matches_the_paginator() => Run(() =>
 	{
-		var doc = Doc(Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long);
+		// Distinct paragraphs: identical ones can paginate into pixel-identical pages with a different font pitch.
+		var doc = Doc(Enumerable.Range(1, 12).Select(i => $"Paragraph {i}. {Long}").ToArray());
 		var (win, viewer, first) = Show(doc);
 		var paginator = (FlowDocumentPaginator)((IDocumentPaginatorSource)doc).DocumentPaginator;
 		Assert.True(viewer.PageCount > 1);
