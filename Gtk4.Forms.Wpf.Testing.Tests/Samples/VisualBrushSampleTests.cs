@@ -158,19 +158,28 @@ public class VisualBrushSampleTests : WpfUiTest<global::VisualBrush.App>
 		}
 		Assert.True(topAlpha > bottomAlpha, $"no fade: top {topAlpha}, bottom {bottomAlpha}");
 		// The TextBox sits near the bottom of the source, so mirrored it is near the top of the reflection, and the
-		// lorem text (near the top of the source) would sit under the faded half. An unflipped reflection would put
-		// full-width text lines at the top instead.
-		int wide = 0, box = 0;
-		for (int y = 0; y < 150; y++)
-			for (int x = 0; x < shot.Surface.Width; x++)
+		// lorem text (starting at y 40 of the source) is mirrored to end at y 260, below the visible half. An
+		// unflipped reflection would put full-width text lines at the top instead. The text height depends on the
+		// font, so only the rows above the mirrored text are checked for text-free ink.
+		double textHeight = App.Invoke(() => ((TextBlock)upper.Children[0]).ActualHeight);
+		int clearRows = (int)Math.Min(150, 260 - textHeight);
+		int wide = 0;
+		for (int y = 0; y < clearRows; y++)
+			for (int x = 220; x < shot.Surface.Width; x++)
 			{
 				var p = shot.At(x, y);
-				if (x >= 220 && p.A >= 60 && p.R * 255 / p.A < 90 && p.G * 255 / p.A < 90 && p.B * 255 / p.A < 90) wide++;
-				if (x is < 75 or >= 200 || y is < 10 or >= 70) continue;
+				if (p.A >= 60 && p.R * 255 / p.A < 90 && p.G * 255 / p.A < 90 && p.B * 255 / p.A < 90) wide++;
+			}
+		Assert.True(wide < 40, $"the reflection is not flipped: {wide} dark pixels on the right of the top "
+			+ $"{clearRows} rows (text height {textHeight})");
+		int box = 0;
+		for (int y = 10; y < 70; y++)
+			for (int x = 75; x < 200; x++)
+			{
+				var p = shot.At(x, y);
 				var bg = shot.At(60, y);
 				if (Math.Abs(p.R - bg.R) + Math.Abs(p.G - bg.G) + Math.Abs(p.B - bg.B) > 40) box++;
 			}
-		Assert.True(wide < 40, $"the reflection is not flipped: {wide} dark pixels on the right of the top half");
 		Assert.True(box > 15, $"the mirrored TextBox is missing near the top: {box}");
 		Assert.NotNull(upper);
 	}
@@ -211,11 +220,13 @@ public class VisualBrushSampleTests : WpfUiTest<global::VisualBrush.App>
 		App.WaitUntil(() => App.Invoke(() => Viewer.IsActive), description: "app window active");
 		var gtkWindow = App.Invoke(() => (Gtk.Window)Viewer.Widget);
 		bool OthersActive() => App.Invoke(() => Gtk.Window.ListToplevels().Any(w => w != gtkWindow && w.IsActive));
+		string Describe() => App.Invoke(() => string.Join("; ", Gtk.Window.ListToplevels()
+			.Select(w => $"{w.GetType().Name} '{w.Title}' active={w.IsActive} visible={w.IsVisible} app={w == gtkWindow}")));
 		int before = App.Invoke(() => Gtk.Window.ListToplevels().Count(w => w.IsVisible));
 		for (int tab = 0; tab < 3; tab++)
 		{
 			SelectTab(tab);
-			Assert.False(OthersActive(), $"tab {tab}: another toplevel took activation");
+			Assert.False(OthersActive(), $"tab {tab}: another toplevel took activation: " + Describe());
 		}
 		App.Invoke(() => Assert.Equal(before, Gtk.Window.ListToplevels().Count(w => w.IsVisible)));
 	}
