@@ -37,24 +37,30 @@ public class ArcSegment : PathSegment
 	}
 
 	/// <summary>The end point of the arc.</summary>
-	public System.Windows.Point Point { get; set; }
+	public System.Windows.Point Point { get => _point; set => Set(ref _point, value); }
+	System.Windows.Point _point;
 
 	/// <summary>
 	/// The radii of the ellipse: <c>Width</c> = rx, <c>Height</c> = ry.
 	/// </summary>
-	public System.Windows.Size Size { get; set; }
+	public System.Windows.Size Size { get => _size; set => Set(ref _size, value); }
+	System.Windows.Size _size;
 
 	/// <summary>Rotation of the ellipse's x-axis in degrees.</summary>
-	public double RotationAngle { get; set; }
+	public double RotationAngle { get => _rotationAngle; set => Set(ref _rotationAngle, value); }
+	double _rotationAngle;
 
 	/// <summary>Whether to use the larger of the two possible arc sweeps.</summary>
-	public bool IsLargeArc { get; set; }
+	public bool IsLargeArc { get => _isLargeArc; set => Set(ref _isLargeArc, value); }
+	bool _isLargeArc;
 
 	/// <summary>Direction in which the arc is drawn.</summary>
-	public SweepDirection SweepDirection { get; set; } = SweepDirection.Counterclockwise;
+	public SweepDirection SweepDirection { get => _sweepDirection; set => Set(ref _sweepDirection, value); }
+	SweepDirection _sweepDirection = SweepDirection.Counterclockwise;
 
 	/// <summary>Whether the segment contributes to the stroke.</summary>
-	public bool IsStroked { get; set; } = true;
+	public bool IsStroked { get => _isStroked; set => Set(ref _isStroked, value); }
+	bool _isStroked = true;
 
 	/// <inheritdoc/>
 	internal override void AddToPath(Cairo.Context cr)

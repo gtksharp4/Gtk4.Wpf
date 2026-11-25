@@ -18,7 +18,7 @@ public partial class FlowDocument
 		if (PaginationProperties.Affects(this, e.Property)) ContentChanged?.Invoke();
 		if (e.Property == BackgroundProperty || e.Property == FontStyleProperty || e.Property == FontWeightProperty
 			|| e.Property == FontFamilyProperty || e.Property == FontSizeProperty
-			|| e.Property == FlowDirectionProperty)
+			|| e.Property == FlowDirectionProperty || e.Property == ColumnRuleBrushProperty)
 			RaiseViewChanged();
 	}
 

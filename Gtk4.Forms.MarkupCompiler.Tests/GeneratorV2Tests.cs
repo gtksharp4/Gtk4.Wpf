@@ -30,9 +30,10 @@ public class GeneratorV2Tests : GeneratorV2TestBase
 	public void G2_PointCollection_goes_through_the_runtime_converter()
 	{
 		string code = Gen($@"<Page x:Class=""A.P"" {Head}><Polygon Points=""0,0 10,0 5,8""/></Page>");
-		Assert.Contains(".Points = (global::System.Windows.Shapes.PointCollection)System.Windows.Markup" +
-			".XamlValueConverter.ConvertByType(typeof(global::System.Windows.Shapes.PointCollection), " +
-			"\"0,0 10,0 5,8\");", code);
+		// Polygon.Points is a dependency property, so the value goes through the DP converter.
+		Assert.Contains(".SetValue(System.Windows.Shapes.Polygon.PointsProperty, " +
+			"System.Windows.Markup.XamlValueConverter.Convert(typeof(System.Windows.Shapes.Polygon), " +
+			"System.Windows.Shapes.Polygon.PointsProperty, \"0,0 10,0 5,8\"));", code);
 		AssertCompiles(code, PageStub);
 	}
 

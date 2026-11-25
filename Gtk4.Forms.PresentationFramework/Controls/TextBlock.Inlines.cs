@@ -19,6 +19,15 @@ public partial class TextBlock
 	/// <summary>Re-renders after an inline hosted here changed its content.</summary>
 	internal void OnInlineContentChanged() => OnInlinesChanged();
 
+	/// <summary>Re-renders after a Span inside this block was edited; the pointer mirror is left alone.</summary>
+	internal void OnSpanContentChanged()
+	{
+		bool was = _pointerSync;
+		_pointerSync = true;
+		try { OnInlinesChanged(); }
+		finally { _pointerSync = was; }
+	}
+
 	// Guard flags to prevent feedback loops between Text DP and Inlines.
 	bool _settingFromText;
 	bool _settingFromInlines;

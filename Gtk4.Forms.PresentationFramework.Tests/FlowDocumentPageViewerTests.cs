@@ -1,13 +1,40 @@
 using System;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
+using Gtk4.Forms.PresentationFramework.Tests.Lifecycle;
 using Xunit;
 
 namespace Gtk4.Forms.PresentationFramework.Tests;
 
 public class FlowDocumentPageViewerTests : WpfGtkTestBase
 {
+	static void AssertDefaultPaginatorSize(FlowDocument doc, double width, double height)
+	{
+		var size = ((IDocumentPaginatorSource)doc).DocumentPaginator.PageSize;
+		Assert.Equal(width, size.Width);
+		Assert.Equal(height, size.Height);
+	}
+
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public void Replaced_or_cleared_document_paginates_at_the_default_page_size_again(bool toNull) => Run(() =>
+	{
+		var docA = new FlowDocument(new Paragraph(new Run("a")));
+		var viewer = new FlowDocumentPageViewer { Document = docA };
+		var win = new Window { Content = viewer, Width = 600, Height = 400 };
+		win.Show();
+		GtkPump.Until(() => viewer.Widget.IsMapped && viewer.PageWidget!.Width > 0);
+		GtkPump.For(250);
+		Assert.NotEqual(816, ((IDocumentPaginatorSource)docA).DocumentPaginator.PageSize.Width);
+		viewer.Document = toNull ? null : new FlowDocument(new Paragraph(new Run("b")));
+		GtkPump.For(100);
+		win.Close();
+		AssertDefaultPaginatorSize(docA, 816, 1056);
+	});
+
 	[Fact]
 	public void Defaults_match_wpf() => Run(() =>
 	{

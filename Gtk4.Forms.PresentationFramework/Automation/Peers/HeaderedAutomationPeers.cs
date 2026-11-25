@@ -19,7 +19,7 @@ public class ExpanderAutomationPeer : FrameworkElementAutomationPeer, IExpandCol
 
 	protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Group;
 
-	internal override string ContentName() => PeerText.FromContent(Expander.Header);
+	internal override string ContentName() => PeerText.FromContentLiteral(Expander.Header);
 
 	ExpandCollapseState IExpandCollapseProvider.ExpandCollapseState =>
 		Expander.IsExpanded ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed;

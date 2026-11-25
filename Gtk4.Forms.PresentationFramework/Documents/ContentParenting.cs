@@ -20,8 +20,15 @@ static class ContentParenting
 	/// </summary>
 	internal static void Changed(DependencyObject? owner)
 	{
+		// A Span edited inside a TextBlock: the label has to be rebuilt (the TextBlock's own collection has Changed).
+		bool fromContent = owner is Inline;
 		for (var e = owner; e != null; e = (e as FrameworkContentElement)?.Parent)
 		{
+			if (fromContent && e is Controls.TextBlock tb)
+			{
+				tb.OnSpanContentChanged();
+				return;
+			}
 			if (!(e is FlowDocument doc)) continue;
 			doc.NotifyContentEdited();
 			return;

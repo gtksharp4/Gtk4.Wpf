@@ -2,5 +2,7 @@
   <PropertyGroup>
     <!-- Opt-out: set to 'true' to skip the automatic csproj rewrite. -->
     <SkipGtkFormsConvert Condition="'$(SkipGtkFormsConvert)'==''">false</SkipGtkFormsConvert>
+    <!-- Opt-out: set to 'true' to stop copying <Resource> files to the output. -->
+    <SkipGtkFormsCopyResources Condition="'$(SkipGtkFormsCopyResources)'==''">false</SkipGtkFormsCopyResources>
   </PropertyGroup>
 </Project>

@@ -63,10 +63,10 @@ public abstract partial class BitmapSource : ImageSource
 	}
 
 	/// <summary>Width in device-independent units (<c>PixelWidth * 96 / DpiX</c>; 96 when DpiX <= 0).</summary>
-	public virtual double Width => PixelWidth * 96d / (DpiX > 0 ? DpiX : 96d);
+	public override double Width => PixelWidth * 96d / (DpiX > 0 ? DpiX : 96d);
 
 	/// <summary>Height in device-independent units (<c>PixelHeight * 96 / DpiY</c>; 96 when DpiY <= 0).</summary>
-	public virtual double Height => PixelHeight * 96d / (DpiY > 0 ? DpiY : 96d);
+	public override double Height => PixelHeight * 96d / (DpiY > 0 ? DpiY : 96d);
 
 	/// <summary>Computes lazily derived members (size, format, pixels) before they are read.</summary>
 	internal void EnsureRealized() => RealizeLazily();

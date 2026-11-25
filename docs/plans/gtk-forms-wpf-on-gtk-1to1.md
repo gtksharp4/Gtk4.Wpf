@@ -2729,6 +2729,75 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
 - **Round 61 (lane C) carry-over.** Packaging (EditingExaminerDemo, WPFGallery `SystemEvents`) is unstarted. Keyed
   elements that are unbuildable and not referenced by a `{StaticResource}` get no `Resources` entry (a later
   `FindResource` for them throws as in WPF for a missing key); `XmlDataProvider.XmlNamespaceManager` is still not built.
+- **Round 67 (lane H) track 1 - HexSphereDemo (DONE, merged).** `gf67h/hexsphere-3d`: the "3D Materials Demo" showed a black
+  window and its button did nothing. Measured causes: `<Resource>` images were not copied beside the exe, so every
+  relative `ImageBrush` URI failed; the storyboard's `ParallelTimeline` children were never generated; sc#
+  `GradientStop` colours used the wrong sRGB transfer (`Color.FromScRgb`). Fixed with a per-brush texture cache on the
+  software `Viewport3D`, an empty-brush fallback (an unloadable brush paints nothing), `Resource` copy to the output and
+  the gradient CSS test. Samples evidence: the sample builds and runs through the packed layer.
+- **Round 67 (lane H) review + fixes - DONE.** Applied failing-first. **A-H67-1** `GtkFormsCopyResources` was gated on
+  `SkipGtkFormsConvert`, so already-converted projects (exactly those that set it) lost their `<Resource>` files: it
+  now depends on `SkipGtkFormsCopyResources` (default false, in `Gtk4.Forms.Wpf.props`) and registers its copies in
+  `FileWrites` so `dotnet clean` removes them (3 MSBuild tests in `ResourceCopyTargetTests`). **A-H67-2** the
+  texture darkening filled the whole polygon with `rgba(0,0,0,1-light)` whatever the texture's alpha, so an unloaded
+  image or transparent texels darkened the backdrop under any light below white. It now masks the cached pattern, so a
+  texel's colour is scaled and its alpha kept; the earlier clip no longer leaks (`Save`/`Restore`). Tests: missing or
+  null brush under `#808080` ambient leaves the backdrop exact (the old code painted `rgb(0,144,0)`), and a half
+  transparent PNG stays transparent on its left half and about 50% red on its right. **A-H67-3** a new test maps a
+  10-strip mesh with a shared brush and asserts red above and blue below at several columns, compared with a single
+  quad; scaling `TextureSize` by 3 makes it fail.
+- **Round 67 (lane H) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. 7 new tests
+  (4 in `Viewport3DTextureTests`, 3 in `ResourceCopyTargetTests`). Targeted: `PresentationFramework.Tests` Media3D 107
+  passed; `Wpf.ProjectConverter.Tests` 46 passed. Samples gate: 204 build=pass projects built through the packed layer
+  (2 builds each, 0 failures); 191 run=runs apps started and stayed up 10 s (all alive, none exited; 57 showed their
+  window only after a longer wait under load, Concepts re-checked alone at 40 s).
+- **Round 67 (lane H) carry-over.** Textures map affinely, not perspective-correct (see Media3D gaps). Rejected in
+  triage: none.
+- **Round 67 (lane H) follow-up.** Fixed and tested failing-first: the texture darkening painted the texel and then a
+  black mask of alpha `(1-light)*a`, which is exact only for `a` of 0 or 1 (a half-opacity brush darkened the backdrop
+  share to 0.375 instead of 0.5). The texel is now darkened inside a group (`Atop` keeps its alpha) and the group is
+  composited once with the layer's operator and alpha. New test: brush `Opacity=0.5` under `#808080` ambient (old code
+  G=96, now about 127); the no-pixels theory now covers ambient and no-light. Docs: CLAUDE.md describes
+  `ProjectConverter.Tests` as 46 tests that include nested `dotnet build` MSBuild tests.
+- **Round 64 (lane D) track 1 - access-keys (DONE, merged).** `gf64d/access-keys`: WPF mnemonic rules for string
+  content shown through `RecognizesAccessKey` (Button, RepeatButton, ToggleButton, CheckBox, RadioButton, Label,
+  MenuItem/GroupBox/Expander/TabItem headers): `_Open` shows `Open` with O as the key, `__Open` shows `_Open`, `Open_`
+  and `A__B` follow WPF, only the first marker counts (`AccessKeyParser`, GTK markup escapes every literal `_`). Public
+  `AccessText`, `AccessKeyManager`, `AccessKeyEventArgs`, `UIElement.OnAccessKey`; Alt+key activation goes through
+  the window's key handling (Click and Command, toggle, check, open menu, Label.Target focus). TextBlock, TextBox,
+  ListBoxItem and ToolTip keep underscores literal. Samples with `_` in Content/Header (menus in Sample Applications)
+  render like WPF.
+- **Round 64 (lane D) review (Opus) + fixes - DONE.** Applied failing-first where a test could pin it. **D-F1**
+  `ProcessKey` no longer treats a registration in another window as "multiple" (an Alt+key in the second window of two
+  clicked nothing). **D-F2** the TabItem and GroupBox peers strip the marker from a string `Header` (WPF
+  `GetNameCore`); Expander, ListBoxItem, ComboBoxItem and TreeViewItem stay literal. **D-F3** internal
+  `ProcessKeyForScope` returns `NoMatch/LastMatch/MoreMatches`; public `ProcessKey` is true only for `MoreMatches`.
+  **D-F4** candidates are narrowed to the scope of the focused sender (an open submenu is its own scope, as in WPF's
+  `MenuItem.OnAccessKeyPressed`), so `o` in an open `_File` menu clicks `_Open` and not a window button. **D-F5**
+  `IsKeyRegistered` raises AccessKeyPressed (a Label without Target is not registered); only a matched key is
+  handled (see the Round 64 follow-up). **D-F6** GTK's mnemonic matcher (the window's
+  capture-phase shortcut controller) is set to an unreachable modifier (`HyperMask`), so GTK only draws the
+  underline and WPF owns activation. No real key event can be injected (GtkSharp4 binds no GDK event constructor), so
+  the test asserts every window shortcut controller carries that modifier. **D-F7** `Normalize` copies WPF (`""` is
+  accepted); keyvals map through `gdk_keyval_to_unicode` (P/Invoke, Latin-1 fallback) in one helper shared by Window
+  and UIElement (Cyrillic U+043E "о" activates `_ok`). **D-F8, CI-4** long lines wrapped, `Label.Target`
+  doc reworded. Rejected in triage: CI-1 and CI-2 (already fixed in the merge; the TabItem/GroupBox part is D-F2), CI-3
+  (ContentPresenter hosts AccessText only when `RecognizesAccessKey` and the text has `_`; the GTK double-fire risk is
+  D-F6), CI-5 (the peer's access key is the normalized key, as in WPF `GetAccessKeyCore`; untestable until
+  `AutomationProperties.AccessKey` exists, lane A).
+- **Round 64 (lane D) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. Targeted
+  `PresentationFramework.Tests` `AccessKeys`/`PeerName`/`ContentPresenterAccessKey` 85 passed; input, menu, tab,
+  group box, peers, default-button and label tests 264 passed. Samples gate: all 204 projects that built at `17c64167` build
+  through a lane-private feed (two builds each), and all 191 apps that ran still run (125 with a window in a crowded
+  first pass; the 66 without a window handle re-checked alone: 64 showed one within 20 s, Concepts and Brushes alone
+  for 40 s; none exited).
+- **Round 64 (lane D) carry-over.** GTK's own Alt-held underline cue may no longer appear because its mnemonic
+  matcher is disabled (not verified visually). A real Alt+key event is untested for lack of an injection path.
+  `AutomationProperties.AccessKey` and `GetAccessKeyCore` text await lane A.
+- **Round 64 (lane D) follow-up.** The D-F7 note now names the Cyrillic letter U+043E (it had been written with Latin
+  bytes). `Window.ProcessAccessKey` returns only `result != NoMatch`, so a registered key with no target (a lone
+  `_Other` Label) no longer marks TextInput handled nor swallows the Alt+key press, as in WPF; the swallow was only
+  there for GTK mnemonics, which D-F6 disabled.
 
 - **Round 62 (lane A) track 1 - automation attached properties (DONE, merged).** `gf62a/automation-attached-properties`:
   `AutomationProperties.HeadingLevel` (`AutomationHeadingLevel`), `ItemStatus` and `AcceleratorKey` with WPF's
@@ -2858,6 +2927,74 @@ Phase 0 = `WindowsBase` property system (subset) + the forked markup compiler (m
 - **Round 63 (lane B) carry-over.** Packaging (EditingExaminerDemo `System.Security.Permissions`, WPFGallery
   `SystemEvents`) is still unstarted. `TextElement.TextEffects`, `FlowDocument.TextEffects` and `TextBlock.TextEffects`
   default to null (not an empty frozen collection). `CommandBinding` still has only `Executed` and `CanExecute`.
+- **Round 66 (lane G) track 1 - control brushes over the GTK theme (DONE, merged).** `gf66g/control-brushes-flow-pages`:
+  FlowDocumentProperties showed white captions on the light theme face because the theme paints a `Gtk.Button` with
+  `background-image`/`box-shadow`, which covers a plain `background-color` (confirmed by snapshot pixels of a shown
+  Button with `Background=Blue`). Control Background/BorderBrush/BorderThickness now go on the node that paints the face
+  with `background-image: none` and no theme shadow; check/radio indicators, the dropdown button and other inner nodes
+  take a provider on the child widget; Aero2 `:hover`/`:active`/`:checked`/`:disabled` faces are emulated for
+  Button/RepeatButton/ToggleButton. Controls with no brush keep the pure theme (no provider). Samples evidence: the
+  FlowDocumentProperties buttons paint blue with white captions.
+- **Round 66 (lane G) track 2 - paginated FlowDocumentPageViewer layout (DONE, merged).** Same branch: a block-aware
+  page meter (`FlowDocumentPageMeter`) lays the document out per page and column from PageWidth/PageHeight (or the viewer
+  area), Min/Max, PagePadding, ColumnWidth/ColumnGap/IsColumnWidthFlexible and ColumnRule; text wraps to the column with
+  Pango, paragraph margins collapse as in WPF, and the paginator counts pages with the same meter. Samples evidence:
+  in FlowDocumentProperties the text wraps inside the page, and the ColumnWidth, ColumnGap, PageWidth, PagePadding,
+  FontSize and TextAlignment buttons change the page as in WPF.
+- **Round 66 (lane G) review + fixes - DONE.** Applied failing-first (the new tests failed before each product change).
+  **g-F1** non-flexible columns keep ColumnGap and leave the unused width on the right (PTS `GetColumnsInfo`); 200/10 on
+  650 gives column x 0/210/420, flexible still widens to 210. **g-F2** the check/radio face rule names `check, radio`
+  (GTK 4 names the indicator `radio` once a Group is set), so a grouped RadioButton paints Background. **g-F3** the
+  Aero2 state faces apply only to Button, RepeatButton and ToggleButton (not CheckBox/RadioButton); MenuItem and
+  DataGridColumnHeader, which sit on a `Gtk.Button` but whose templates have no such triggers, keep their Background
+  when disabled. **g-F4** an empty `<Paragraph/>` formats as one blank line (one pitch) between the collapsed margins, so
+  P1 to P2 is pitch + 3 line heights; only non-paragraph blocks without content collapse through. **g-F5** `Block.Margin`
+  defaults to auto (NaN sides) as in WPF; only NaN sides resolve to a line height above and below for Paragraph, List and
+  Table (zero for other blocks), so `Margin="0"` removes the spacing. **g-F6** a multiline TextBox paints its
+  `textview, text` nodes and an editable ComboBox its entry and dropdown button, through a second child provider
+  (`AppearanceExtraTarget`); the scrolled-window frame around the TextBox keeps the theme. **g-F7** the viewer clears the
+  old document's paginator Viewport when its document changes or becomes null, so printing paginates at 816x1056 again.
+  **g-F8** over-long lines wrapped, no behaviour change.
+- **Round 66 (lane G) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 warnings, 0 errors. Targeted tests
+  (the suites run in full at integrate): `PresentationFramework.Tests` filtered to Appearance, Flow*, Documents,
+  DataGrid, MenuItem, ComboBox, TextBox, RadioButton, Block and Paragraph 921 (920 passed, 1 skipped, 0 failed); 14 test
+  cases (13 methods) added (6 pixel or rule tests, 6 page-layout tests, 1 viewer theory with 2 cases), 1 replaced (the old one-line-height pin), 1 updated (Block.Margin
+  default). Samples gate: all 204 projects that built at the last
+  run build through a lane-private feed (two builds each; CustomApplicationClass needs its sibling client built first),
+  and all 191 apps that ran still run (114 in a crowded first pass; the 77 without a window handle re-checked alone for
+  25 s one at a time: all alive with a window).
+- **Round 66 (lane G) follow-up.** The auto `Block.Margin` default (NaN sides) leaked into `XamlWriter` output
+  (`<Paragraph Margin="NaN,NaN,NaN,NaN" />`) because `Thickness.Equals` is false for NaN. The writer's CLR-property
+  comparison now treats equal `Thickness` strings as equal, so a default Paragraph writes no Margin (test
+  `Default_Paragraph_writes_no_Margin`, failing first). `WindowsBase` is untouched; WPF's NaN-aware Thickness equality
+  stays a cross-lane item. The totals line above now counts 14 test cases in 13 methods.
+- **Round 66 (lane G) carry-over.** Hover and pressed fades and the focus rectangle of Aero2 are not reproduced; the
+  scrolled-window frame of a multiline TextBox is not recoloured; ImageBrush/VisualBrush/DrawingBrush backgrounds on
+  controls are store-only. FlowDocumentPageViewer still lays tables, lists and floaters out as one text block and does
+  not apply widows/orphans, KeepTogether or KeepWithNext; Zoom is stored, not applied.
+- **Round 69 (lane I) review fixes.** Shape natural size is now a GTK *natural* request only (custom layout, minimum 0), so a
+  `Stretch.None` shape larger than its slot is allocated the slot and clipped, and an explicit `Width`/`Height` wins. `Transform`
+  no longer resets the fill rule (matrix save/restore, not `Save`/`Restore`). `Shape.ArrangeOverride` returns the stretched size
+  and the alignment offset is folded into the stretch matrix. `PathFigureCollection`/`PathSegmentCollection`/segment edits raise
+  `Changed`. The `Points` getter no longer creates a local value. Limit: Grid fixed column widths are not enforced by the
+  Gtk.Grid backing, so a wide shape in a fixed column still takes the free space like an Auto column.
+  - Known gaps (Round 69 lane I): a large `Stretch.None` shape in a FIXED-size slot still squeezes its siblings, because
+    GTK lets a child's natural size beat the container's fixed size in `Gtk.Grid`/`Gtk.Box`. Measured in a 300 px window
+    (branch vs WPF): fixed 100 px column + `1*` column, Line `X2=400`: line 298, star column 2 vs WPF line `ActualWidth`
+    about 400 clipped to 100 visible, star column 200 (main: 0 and 300, invisible); fixed 50 px row + `1*` row, Path 200x200: height 200, star row 53 vs WPF 50 and 250 (main: 0
+    and 253); `Border Width=100` holding a Line `X2=400` beside a `Border Width=100` in a horizontal `StackPanel`:
+    first Border 200 wide vs WPF 100 (main: 100). Long `TextBlock`s behave the same on main. Follow-up: enforce fixed
+    track/explicit sizes as maximums for children (benefits Shape and TextBlock). Target test:
+    `ShapeSlotTests.Stretch_None_line_in_a_fixed_100px_column_...` (skipped).
+  - Known gap: a shape with `Stretch != None` and a non-`Stretch` alignment reports natural size 0 in GTK (as on main), so
+    e.g. a Uniform polygon with `VerticalAlignment=Center` in a 50x100 Border is allocated 48x0 and draws nothing (WPF: 50x50),
+    and a `Stretch=Fill` Line with `HorizontalAlignment=Left` in a 300 px StackPanel is 0x0 (WPF: about 300). The managed
+    alignment-matrix rows are `Managed_layout_*` tests; the `Stretch` alignment case is covered on real GTK.
+  - Known gap: on real GTK a `Stretch != None` shape keeps the slot as its `ActualWidth`/`ActualHeight` and the alignment
+    offset is folded into the stretch matrix; WPF's `RenderSize` is the stretched size (50x50 for the Uniform polygon in a
+    50x100 Border) and `ArrangeCore` applies the offset. Pixels match; the reported actual size does not.
+- **Round 69 (lane I) review fixes (pass 2).** Test and doc only: fixed-track and explicit-size limits recorded above, the
+  Uniform alignment rows renamed `Managed_layout_*`, a real-GTK Uniform-in-Border test, and the fixed-column target test skipped.
 - **Round 70 (lane J) review fixes (VisualBrush / TileBrush).** Measured causes per sample tab: Painting with Visuals
   (black tiles: the pre-3fb62afe fill painted Cairo's default black, then an empty detached source and a 1-pixel
   nested tile), Magnifying Glass (the source was never laid out or mapped, and a Canvas/StackPanel painted no tile
@@ -2901,6 +3038,41 @@ only for a Shape that is the window content; lane H `RenderingPainter` reads `Vi
     not the structural check; the breaker re-checks once 100 ms after a change, so under a heavily loaded loop
     a change GTK has not drawn yet waits for the next source invalidation. `VisualBrush` as a 3D material
     texture (Graphics/Geometry's `DiffuseMaterial`) is not implemented: that pane stays dark.
+
+- **Round 71 (lane K) track 1 - inline UIElements in TextBlock + KeyFrameAnimation (DONE, merged).**
+  `gf71k/inline-uielements-keyframes`: a `TextBlock` holding `InlineUIContainer`s is rooted in a `Gtk.Overlay`; each
+  container emits U+FFFC with a `Pango.AttrShape` sized to its child, and the child is an overlay child placed at the
+  placeholder (baseline per `Inline.BaselineAlignment`). Root causes by measurement: `InlineUIContainer` was
+  store-only (the nested listing blocks were never rendered), and a second same-property clock of one `Begin` replaced
+  the first, so no nested FontSize animation grew (now layered through `Storyboard.SamePropertyLayering.cs`).
+  `Canvas.Left` key frames were already right (14 sample times and the `Forever` restart match the Bezier math within
+  1 px). Samples: KeyFrameAnimation listing lines are visible and enlarge in turn; the rectangle moves (judged by
+  position).
+- **Round 71 (lane K) review + fixes - DONE.** Applied failing-first. **a-K71-1** the full-size `Gtk.Fixed` layer
+  shadowed the label in GTK picking, so Hyperlinks next to an inline child got no events: hosted children are now
+  overlay children placed by margins and no layer covers the label. Hosted children are no longer gated on
+  `IsWidgetCreated`, which is false for a `Button` (its `_box` is null), so such a child was never placed. **a-K71-2**
+  `FrameworkElement.Parent` of a hosted child is its `InlineUIContainer` (as in WPF and `LogicalTreeHelper`), the
+  TextBlock stays the logical parent for inheritance and loaded. **a-K71-3** the layering helper moved to a new
+  `Storyboard.SamePropertyLayering.cs`; `Storyboard.Binding.cs` (lane H file) keeps a 3-line delta, flagged for lane H
+  at merge. **a-K71-4** new GTK tests: Button hit test beside a link, `Inlines.Remove` unhosting and freeing the
+  placeholder, wrapping to a later line, baseline of a short child, and pixel rows of the listing. **a-K71-6** two
+  lines wrapped. Rejected: a-K71-5 (process: the Progress section is orchestrator-owned during concurrent lanes and
+  the two root causes are recorded above and in `docs/samples-coverage.md`).
+- **Round 71 (lane K) follow-up.** Applied failing-first where a test can see it. The listing pixel test now checks
+  every literal layout row (extents from the label's Pango lines) and every nested block's bounds, so a blank middle
+  fails it. The `Inlines.Remove` test compares layout widths before and after. The wrapping test checks the child ends
+  before the following run, and an unused local was dropped. An unhosted child gets its previous
+  `Halign`/`Valign` back (it used to stretch). A label-rooted nested TextBlock keeps padding in its margins; one that
+  hosts children keeps it on its inner label, so the placement no longer adds it twice. Over-length lines and a
+  whitespace-only line were fixed.
+- **Round 71 (lane K) totals.** `dotnet build Gtk4.Wpf.sln -nodeReuse:false` 0 new warnings (only the known
+  WPF-Samples-GTK4 HelloWorld error and warnings). Targeted tests (TextBlock, Inline, KeyFrameListing, Storyboard,
+  Hyperlink, NameScope, LogicalTree): 254 passed, 1 skipped. Samples gate: all 207 build-pass projects still build (two
+  with sibling project references needed their parent folder), and the apps that ran still start.
+- **Round 71 (lane K) carry-over.** A container added after the TextBlock widget exists is not hosted;
+  `BaselineAlignment` other than Baseline is stored only; the hosted child is not part of the label's selection;
+  FlowDocument containers stay store-only; DrawingBrush and VisualBrush fills (other lanes).
 
 ## Phased roadmap (after Phase 0 proves the spine)
 
@@ -2948,3 +3120,20 @@ Approve **Phase 0 only** first: the `WindowsBase` property-system subset + the f
 is small, fully testable, and settles every architectural unknown (xmlns binding, the compiler fork,
 the hybrid bridge, the drop-in). Only after it runs a real one-window WPF app unmodified on two OSes
 is it worth committing to the multi-phase build toward 1:1.
+
+- **Round 68 (lane E) review fixes.** R68E-1 `ScrollViewer` no longer propagates its natural size on every axis (it
+  broke Grid star rows): only on an axis where the widget does not expand. R68E-2 desired size adds Padding
+  and a Visible scroll bar (no BorderThickness). R68E-3 defaults are WPF's (Disabled / Visible). R68E-4 the F1 test notes
+  Margin is not mapped; docs now say the Window default size is the user-visible imaging fix. Grid star weights other
+  than equal are not proportional on GTK (pre-existing, outside this lane). See `samples-coverage.md`.
+- **Round 68 (lane E) review fixes (second pass).** `ScrollViewer` natural-size propagation is now on only on an axis
+  its hosting Window sizes to content (`SizeToContent` Width/Height/WidthAndHeight, where WPF measures with an infinite
+  constraint); everywhere else, including wrapped in Border/StackPanel inside a Grid star track, it is off as on main.
+  Re-evaluated at creation, on Loaded, at Window show and when `SizeToContent` changes; the hexpand/vexpand heuristic is
+  gone. `BorderThickness` no longer adds to the desired size (the WPF default template has no Border). An Auto bar that
+  the content overflows is shown and its size added (WPF MeasureOverride remeasure).
+- **Round 68 (lane E) review fixes (third pass).** ScrollViewer natural-size propagation to GTK is removed entirely
+  (PropagateNaturalWidth/Height stay false as on main); three attempts each regressed star rows, wrapped ScrollViewers or
+  Height/MaxHeight under SizeToContent. Kept: the Window default size, Image centring, the WPF ScrollViewer measure and
+  defaults. Known gap: SizeToContent around a ScrollViewer does not size to its content (same as before Round 68);
+  needs a managed-measure-driven window size.

@@ -10,6 +10,7 @@ public abstract partial class FrameworkElement
 	{
 		get
 		{
+			if (InlineContainer != null) return InlineContainer;
 			DependencyObject? parent = LogicalParent;
 			if (parent is FrameworkElement { ParentOfChildren: { } stand }) parent = stand;
 			return parent != null && ReferenceEquals(parent, TemplatedParent) ? null : parent;
