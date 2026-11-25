@@ -7,8 +7,8 @@ namespace System.Windows.Controls;
 /// <summary>
 /// Hosts the UIElements of <see cref="InlineUIContainer"/>s. With containers present at widget creation the root
 /// widget is a <see cref="Gtk.Overlay"/> (label as main child, one overlay child per element); otherwise it stays
-/// the plain label. A container added after a label-rooted widget exists promotes the root to the overlay in place
-/// (<see cref="PromoteToInlineHost"/>); FlowDocument containers stay store-only.
+/// the plain label. Gap: a container added after a label-rooted widget exists is not hosted (the root cannot be
+/// swapped under its GTK parent), and FlowDocument containers stay store-only.
 /// </summary>
 public partial class TextBlock
 {
@@ -41,8 +41,13 @@ public partial class TextBlock
 		var found = new List<InlineUIContainer>();
 		CollectContainers(_inlines, found);
 		if (found.Count == 0) return null;
-		_inlineOverlay = NewInlineOverlay();
-		_inlineOverlay.Child = _label;
+		_inlineOverlay = new Gtk.Overlay { Child = _label };
+		_inlineOverlay.AddTickCallback((w, clock) =>
+		{
+			RefreshInlineObjects();
+			PlaceInlineChildren();
+			return true;
+		});
 		return _inlineOverlay;
 	}
 
@@ -52,7 +57,6 @@ public partial class TextBlock
 		if (_inlineContainers.Count == 0 && _hostedChildren.Count == 0 && _inlines.Count == 0) return;
 		var now = new List<InlineUIContainer>();
 		CollectContainers(_inlines, now);
-		if (_inlineOverlay == null && now.Count > 0 && HasBackingWidget && _label != null) PromoteToInlineHost();
 		var children = new List<UIElement>();
 		foreach (var c in now)
 			if (c.Child != null && !ReferenceEquals(c.Child, this) && !children.Contains(c.Child))
