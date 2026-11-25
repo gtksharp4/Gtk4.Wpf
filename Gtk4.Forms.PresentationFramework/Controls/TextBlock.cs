@@ -108,9 +108,10 @@ public partial class TextBlock : FrameworkElement
 	protected override Gtk.Widget CreateWidget()
 	{
 		_label = new Gtk.Label(string.Empty);
+		var host = CreateInlineHost();
 		ApplyLayoutToLabel();
 		ApplyToLabel();
-		return _label;
+		return host ?? _label;
 	}
 
 	/// <summary>
@@ -120,7 +121,14 @@ public partial class TextBlock : FrameworkElement
 	void ApplyToLabel()
 	{
 		SyncPointerHost();
+		SyncInlineChildren();
 		if (_label == null) return;
+		ApplyLabelContent();
+		ApplyInlineObjects();
+	}
+
+	void ApplyLabelContent()
+	{
 		if (_inlines.Count == 0)
 		{
 			_label.UseMarkup = false;
