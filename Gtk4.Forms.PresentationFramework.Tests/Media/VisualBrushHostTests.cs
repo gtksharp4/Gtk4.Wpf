@@ -73,6 +73,8 @@ public class VisualBrushHostTests : WpfGtkTestBase
 			var brush = new VisualBrush(source);
 			source.Children.Add(new Rectangle { Width = 50, Height = 50, Fill = brush });
 			((StackPanel)win.Content!).Children.Add(source);
+			GtkState.Require(() => source.IsWidgetCreated && source.Widget.IsMapped && source.Widget.Width > 0,
+				"source allocated", source);
 			GtkPump.For(1200);
 			int changed = 0;
 			brush.Changed += (_, _) => changed++;

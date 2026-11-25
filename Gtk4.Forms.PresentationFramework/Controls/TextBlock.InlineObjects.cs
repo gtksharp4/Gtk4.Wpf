@@ -113,9 +113,26 @@ public partial class TextBlock
 			if (!ReferenceEquals(child.Widget.Parent, _inlineOverlay)) continue;
 			var pos = layout.IndexToPos(_inlineByteIndexes[i]);
 			int x = (int)Math.Round(origin.X + dx + pos.X / (double)PangoScale);
-			int y = (int)Math.Round(origin.Y + dy + pos.Y / (double)PangoScale);
+			int y = (int)Math.Round(origin.Y + dy + (LineBaseline(layout, _inlineByteIndexes[i])
+				- _inlineBoxes[i].Baseline * PangoScale) / (double)PangoScale);
 			PlaceHostedWidget(child, x, y);
 		}
+	}
+
+	// The baseline of the line holding a byte index, in Pango units. Not derived from the placeholder's own rect:
+	// backends differ in whether IndexToPos reports the shape rect or the whole line box.
+	internal static int LineBaseline(Pango.Layout layout, int byteIndex)
+	{
+		using var iter = layout.Iter;
+		int baseline;
+		do
+		{
+			var line = iter.LineReadonly;
+			baseline = iter.Baseline;
+			if (byteIndex < line.StartIndex + line.Length) break;
+		}
+		while (iter.NextLine());
+		return baseline;
 	}
 
 	/// <summary>Test seam: the x of the text before and after placeholder <paramref name="index"/>.</summary>
