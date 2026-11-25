@@ -219,7 +219,7 @@ public class VisualBrushSampleTests : WpfUiTest<global::VisualBrush.App>
 		App.Invoke(() => Viewer.Activate());
 		App.WaitUntil(() => App.Invoke(() => Viewer.IsActive), description: "app window active");
 		var gtkWindow = App.Invoke(() => (Gtk.Window)Viewer.Widget);
-		bool OthersActive() => App.Invoke(() => Gtk.Window.ListToplevels().Any(w => w != gtkWindow && w.IsActive));
+		bool OthersActive() => App.Invoke(() => Gtk.Window.ListToplevels().Any(w => w != gtkWindow && w.IsVisible && w.IsActive));
 		string Describe() => App.Invoke(() => string.Join("; ", Gtk.Window.ListToplevels()
 			.Select(w => $"{w.GetType().Name} '{w.Title}' active={w.IsActive} visible={w.IsVisible} app={w == gtkWindow}")));
 		int before = App.Invoke(() => Gtk.Window.ListToplevels().Count(w => w.IsVisible));
