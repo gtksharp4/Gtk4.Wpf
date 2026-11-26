@@ -8,6 +8,19 @@ namespace Gtk4.PresentationFramework.Tests.Controls;
 
 public class WindowChromeTemplatePartTests : WpfGtkTestBase
 {
+	static readonly System.Collections.Generic.List<Window> _shown = new();
+
+	// Closes the windows Build opened, on the GTK thread, so they do not pile up for later tests.
+	void Closing(System.Action body) => Run(() =>
+	{
+		try { body(); }
+		finally
+		{
+			foreach (var shown in _shown) shown.Close();
+			_shown.Clear();
+		}
+	});
+
 	class Chip : Control
 	{
 	}
@@ -42,6 +55,7 @@ public class WindowChromeTemplatePartTests : WpfGtkTestBase
 		var w = new Window { Content = chip, Width = 300, Height = 200 };
 		WindowChrome.SetWindowChrome(w, new WindowChrome { CaptionHeight = 100 });
 		w.Show();
+		_shown.Add(w);
 		return (w, chip, part!);
 	}
 
@@ -53,7 +67,7 @@ public class WindowChromeTemplatePartTests : WpfGtkTestBase
 	}
 
 	[Fact]
-	public void A_template_part_takes_the_templated_controls_flag() => Run(() =>
+	public void A_template_part_takes_the_templated_controls_flag() => Closing(() =>
 	{
 		var (w, chip, part) = Build(true);
 		Assert.Same(chip, part.TemplatedParent);
@@ -61,42 +75,42 @@ public class WindowChromeTemplatePartTests : WpfGtkTestBase
 	});
 
 	[Fact]
-	public void A_template_part_without_the_flag_is_not_hit_test_visible() => Run(() =>
+	public void A_template_part_without_the_flag_is_not_hit_test_visible() => Closing(() =>
 	{
 		var (w, _, part) = Build(false);
 		Assert.False(AtPart(w, part));
 	});
 
 	[Fact]
-	public void An_explicit_false_on_a_part_is_kept() => Run(() =>
+	public void An_explicit_false_on_a_part_is_kept() => Closing(() =>
 	{
 		var (w, _, part) = Build(true, false);
 		Assert.False(AtPart(w, part));
 	});
 
 	[Fact]
-	public void A_style_set_true_on_a_part_of_an_unflagged_control_counts() => Run(() =>
+	public void A_style_set_true_on_a_part_of_an_unflagged_control_counts() => Closing(() =>
 	{
 		var (w, _, part) = Build(false, styleValue: true);
 		Assert.True(AtPart(w, part));
 	});
 
 	[Fact]
-	public void A_style_set_false_on_a_part_of_a_flagged_control_counts() => Run(() =>
+	public void A_style_set_false_on_a_part_of_a_flagged_control_counts() => Closing(() =>
 	{
 		var (w, _, part) = Build(true, styleValue: false);
 		Assert.False(AtPart(w, part));
 	});
 
 	[Fact]
-	public void A_part_without_a_value_takes_its_in_template_ancestor() => Run(() =>
+	public void A_part_without_a_value_takes_its_in_template_ancestor() => Closing(() =>
 	{
 		var (w, _, part) = Build(false, borderValue: true);
 		Assert.True(AtPart(w, part));
 	});
 
 	[Fact]
-	public void A_press_over_a_flagged_template_part_does_not_drag_but_plain_chrome_does() => Run(() =>
+	public void A_press_over_a_flagged_template_part_does_not_drag_but_plain_chrome_does() => Closing(() =>
 	{
 		var (w, _, part) = Build(true);
 		Assert.True(GtkPump.Until(() => part.Widget.IsMapped && part.Widget.Width > 0));
