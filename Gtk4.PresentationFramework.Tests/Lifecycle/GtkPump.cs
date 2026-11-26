@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows.Threading;
 
 namespace Gtk4.PresentationFramework.Tests.Lifecycle;
@@ -17,10 +18,27 @@ static class GtkPump
 		try
 		{
 			while (!condition() && sw.ElapsedMilliseconds < timeoutMs)
+			{
+				long start = sw.ElapsedMilliseconds;
 				Gtk.Application.RunIteration(true);
+				ReportStall(sw.ElapsedMilliseconds - start);
+			}
 		}
 		finally { GLib.Source.Remove(wake); }
 		return condition();
+	}
+
+	// The wake-up source bounds an iteration to ~10 ms, so a long one means the loop itself was blocked; the
+	// caller frame names the test (the macOS runner shows multi-second stalls).
+	static void ReportStall(long ms)
+	{
+		if (ms < 1000) return;
+		var caller = new StackTrace().GetFrames()
+			.Select(f => f.GetMethod())
+			.FirstOrDefault(m => m?.DeclaringType != null && m.DeclaringType != typeof(GtkPump)
+				&& m.DeclaringType.Assembly == typeof(GtkPump).Assembly);
+		Console.Error.WriteLine($"GtkPump STALL: one main-loop iteration took {ms} ms, in "
+			+ $"{caller?.DeclaringType?.FullName}.{caller?.Name}");
 	}
 
 	/// <summary>Iterates the main loop for roughly <paramref name="ms"/> milliseconds.</summary>
