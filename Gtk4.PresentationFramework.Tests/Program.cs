@@ -34,7 +34,6 @@ static class Program
 
 	static int RunOnThreadZero(string[] args)
 	{
-		MacActivity.Begin();
 		WpfGtkThreadBridge.Queue = new BlockingCollection<Action>();
 
 		int exit = 0;
