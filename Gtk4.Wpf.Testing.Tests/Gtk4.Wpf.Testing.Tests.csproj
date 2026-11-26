@@ -40,6 +40,10 @@
     <Samples>..\WPF-Samples\</Samples>
   </PropertyGroup>
   <ItemGroup>
+    <!-- Turns App Nap off for the macOS thread-0 runner; shared with the PresentationFramework tests. -->
+    <Compile Include="..\Gtk4.PresentationFramework.Tests\MacActivity.cs" Link="MacActivity.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Page Include="$(Samples)Data Binding\SimpleBinding\MainWindow.xaml" />
     <Compile Include="$(Samples)Data Binding\SimpleBinding\MainWindow.cs;$(Samples)Data Binding\SimpleBinding\Person.cs" />
 

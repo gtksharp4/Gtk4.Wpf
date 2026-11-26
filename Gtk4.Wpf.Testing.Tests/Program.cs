@@ -23,6 +23,7 @@ static class Program
 		if (!threadZero)
 			return global::Xunit.Runner.InProc.SystemConsole.ConsoleRunner.Run(args).GetAwaiter().GetResult();
 
+		MacActivity.Begin();
 		return GtkThread.RunOnCurrentThread(() =>
 			global::Xunit.Runner.InProc.SystemConsole.ConsoleRunner.Run(args).GetAwaiter().GetResult());
 	}
