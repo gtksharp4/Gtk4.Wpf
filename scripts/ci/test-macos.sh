@@ -26,18 +26,18 @@ dotnet build Gtk4.Wpf.CrossPlatform.slnf -c Debug -p:GeneratePackageOnBuild=fals
 # The logic suites (WindowsBase DP/dispatcher, MarkupCompiler XAML->code, Wpf.ProjectConverter) need
 # no GTK runtime.
 echo "== WindowsBase unit tests =="
-run_annotated "macOS WindowsBase.Tests" dotnet test Gtk4.Forms.WindowsBase.Tests -c Debug --no-build --logger trx
+run_annotated "macOS WindowsBase.Tests" dotnet test Gtk4.WindowsBase.Tests -c Debug --no-build --logger trx
 
 echo "== MarkupCompiler unit tests =="
-run_annotated "macOS MarkupCompiler.Tests" dotnet test Gtk4.Forms.MarkupCompiler.Tests -c Debug --no-build --logger trx
+run_annotated "macOS MarkupCompiler.Tests" dotnet test Gtk4.MarkupCompiler.Tests -c Debug --no-build --logger trx
 
 # PackedNuspecTests inspects the real package; the build above runs with GeneratePackageOnBuild off.
-echo "== pack Gtk4.Forms.Wpf =="
-dotnet pack Gtk4.Forms.Wpf/Gtk4.Forms.Wpf.csproj -c Debug --no-build
+echo "== pack Gtk4.Wpf =="
+dotnet pack Gtk4.Wpf/Gtk4.Wpf.csproj -c Debug --no-build
 
 echo "== Wpf.ProjectConverter unit tests =="
 run_annotated "macOS ProjectConverter.Tests" \
-	dotnet test Gtk4.Forms.Wpf.ProjectConverter.Tests -c Debug --no-build --logger trx
+	dotnet test Gtk4.Wpf.ProjectConverter.Tests -c Debug --no-build --logger trx
 
 echo "== install the GTK 4 runtime via Homebrew =="
 brew install gtk4 >/dev/null
@@ -48,7 +48,7 @@ pkg-config --modversion gtk4 2>/dev/null || true
 # preserved): overriding it before the build drops the dirs the SDK compiler needs. XF_GTK_MAC_RUNNER
 # selects the thread-0 path in Program.cs; XF_GTK_REQUIRE_NATIVE turns "no GTK runtime" into a failure.
 echo "== PresentationFramework tests (real GTK 4 widgets, thread-0 runner over Quartz) =="
-GTK_DLL="Gtk4.Forms.PresentationFramework.Tests/bin/Debug/net10.0/Gtk4.Forms.PresentationFramework.Tests.dll"
+GTK_DLL="Gtk4.PresentationFramework.Tests/bin/Debug/net10.0/Gtk4.PresentationFramework.Tests.dll"
 # -verbose prints STARTING/FINISHED per test, so a native Quartz crash names the test it died on.
 # A function, not `env VAR=... cmd`: SIP strips DYLD_* when a protected binary such as /usr/bin/env
 # starts, so the variable would never reach dotnet.
@@ -61,7 +61,7 @@ run_annotated "macOS PresentationFramework.Tests" run_gtk_tests
 
 # Same thread-0 runner for the UI driver tests: Program.cs hands thread 0 to GtkThread.RunOnCurrentThread.
 echo "== Wpf.Testing tests (UI driver, thread-0 runner over Quartz) =="
-UI_DLL="Gtk4.Forms.Wpf.Testing.Tests/bin/Debug/net10.0/Gtk4.Forms.Wpf.Testing.Tests.dll"
+UI_DLL="Gtk4.Wpf.Testing.Tests/bin/Debug/net10.0/Gtk4.Wpf.Testing.Tests.dll"
 run_ui_tests() {
 	DYLD_FALLBACK_LIBRARY_PATH="$GTK_PREFIX/lib:/usr/local/lib:/usr/lib:/lib" \
 		XF_GTK_MAC_RUNNER=1 XF_GTK_REQUIRE_NATIVE=1 \

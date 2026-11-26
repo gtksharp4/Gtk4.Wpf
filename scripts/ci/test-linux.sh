@@ -34,18 +34,18 @@ dotnet build Gtk4.Wpf.CrossPlatform.slnf -c Debug -p:GeneratePackageOnBuild=fals
 # The logic suites (WindowsBase DP/dispatcher, MarkupCompiler XAML->code, Wpf.ProjectConverter) need
 # no GTK runtime or display.
 echo "== WindowsBase unit tests =="
-run_annotated "Linux WindowsBase.Tests" dotnet test Gtk4.Forms.WindowsBase.Tests -c Debug --no-build --logger trx
+run_annotated "Linux WindowsBase.Tests" dotnet test Gtk4.WindowsBase.Tests -c Debug --no-build --logger trx
 
 echo "== MarkupCompiler unit tests =="
-run_annotated "Linux MarkupCompiler.Tests" dotnet test Gtk4.Forms.MarkupCompiler.Tests -c Debug --no-build --logger trx
+run_annotated "Linux MarkupCompiler.Tests" dotnet test Gtk4.MarkupCompiler.Tests -c Debug --no-build --logger trx
 
 # PackedNuspecTests inspects the real package; the build above runs with GeneratePackageOnBuild off.
-echo "== pack Gtk4.Forms.Wpf =="
-dotnet pack Gtk4.Forms.Wpf/Gtk4.Forms.Wpf.csproj -c Debug --no-build
+echo "== pack Gtk4.Wpf =="
+dotnet pack Gtk4.Wpf/Gtk4.Wpf.csproj -c Debug --no-build
 
 echo "== Wpf.ProjectConverter unit tests =="
 run_annotated "Linux ProjectConverter.Tests" \
-	dotnet test Gtk4.Forms.Wpf.ProjectConverter.Tests -c Debug --no-build --logger trx
+	dotnet test Gtk4.Wpf.ProjectConverter.Tests -c Debug --no-build --logger trx
 
 # XF_GTK_REQUIRE_NATIVE turns "no display / no GTK runtime" from a skip into a failure: both are
 # installed above, so an unusable environment means the apt or Xvfb step silently broke.
@@ -53,7 +53,7 @@ echo "== PresentationFramework tests (real GTK 4 widgets, headless under Xvfb) =
 run_gtk_tests() {
   GDK_BACKEND=x11 XF_GTK_REQUIRE_NATIVE=1 GSETTINGS_BACKEND=memory \
     xvfb-run -a --server-args="-screen 0 1280x1024x24" \
-      dotnet test Gtk4.Forms.PresentationFramework.Tests -c Debug --no-build --logger trx
+      dotnet test Gtk4.PresentationFramework.Tests -c Debug --no-build --logger trx
 }
 run_annotated "Linux PresentationFramework.Tests" run_gtk_tests
 
@@ -62,6 +62,6 @@ echo "== Wpf.Testing tests (UI driver over real GTK 4 widgets and official sampl
 run_ui_tests() {
   GDK_BACKEND=x11 XF_GTK_REQUIRE_NATIVE=1 GSETTINGS_BACKEND=memory \
     xvfb-run -a --server-args="-screen 0 1280x1024x24" \
-      dotnet test Gtk4.Forms.Wpf.Testing.Tests -c Debug --no-build --logger trx
+      dotnet test Gtk4.Wpf.Testing.Tests -c Debug --no-build --logger trx
 }
 run_annotated "Linux Wpf.Testing.Tests" run_ui_tests

@@ -1,0 +1,14 @@
+<ResourceDictionary x:Class="Gtk4.PresentationFramework.Tests.XamlBacked.DeferredDictionary"
+		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<Style x:Key="Unused" TargetType="Button">
+		<Setter Property="FocusVisualStyle" Value="{StaticResource NoSuchKey}"/>
+	</Style>
+	<Style x:Key="Forward" TargetType="Button">
+		<Setter Property="FocusVisualStyle" Value="{StaticResource Later}"/>
+	</Style>
+	<Style x:Key="Later"/>
+	<Style x:Key="Unshared" x:Shared="False" TargetType="Button">
+		<Setter Property="FocusVisualStyle" Value="{StaticResource Later}"/>
+	</Style>
+</ResourceDictionary>

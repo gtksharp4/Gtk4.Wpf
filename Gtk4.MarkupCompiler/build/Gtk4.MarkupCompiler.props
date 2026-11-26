@@ -1,0 +1,37 @@
+<Project>
+  <!--
+    NuGet auto-import entry point (.props half).
+    Sets the task-assembly location so the .targets UsingTask resolves correctly both when
+    consumed from the package (build/netstandard2.0/) and in-tree (via a ProjectReference).
+  -->
+  <PropertyGroup>
+    <!-- Default: packaged layout — task DLL lives next to this file under netstandard2.0/. -->
+    <_GFMarkupCompilerTasksDir
+        Condition="'$(_GFMarkupCompilerTasksDir)' == ''">$(MSBuildThisFileDirectory)netstandard2.0\</_GFMarkupCompilerTasksDir>
+    <!-- Guard against double-import. -->
+    <_GFMarkupCompilerPropsImported>true</_GFMarkupCompilerPropsImported>
+  </PropertyGroup>
+
+  <!--
+    Default WPF XAML build items, mirroring the WindowsDesktop SDK convention so a converted
+    WPF app builds with no csproj edits: App.xaml (the Application root, by WPF's own naming
+    convention) becomes the ApplicationDefinition; every other .xaml becomes a Page. Opt out
+    with EnableDefaultXamlItems=false to declare @(ApplicationDefinition)/@(Page) by hand
+    (as the in-tree Gtk4.WpfSample does).
+
+    Dormant while the project is still WPF (UseWPF/UseWindowsForms set): on that FIRST build the
+    WindowsDesktop SDK already adds its own default Page/ApplicationDefinition items, so emitting
+    ours too would fail with NETSDK1022 (duplicate items) before Gtk4.Wpf's converter even
+    runs. The converter strips UseWPF; on the next build (plain Microsoft.NET.Sdk, which has no
+    default Page items) these become the only XAML items and the markup compiler consumes them.
+  -->
+  <PropertyGroup>
+    <EnableDefaultXamlItems Condition="'$(EnableDefaultXamlItems)' == ''">true</EnableDefaultXamlItems>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(EnableDefaultXamlItems)' == 'true' and '$(UseWPF)' != 'true' and '$(UseWindowsForms)' != 'true'">
+    <ApplicationDefinition Include="App.xaml"
+                           Condition="Exists('$(MSBuildProjectDirectory)/App.xaml')" />
+    <Page Include="**/*.xaml"
+          Exclude="App.xaml;$(BaseOutputPath)/**;$(BaseIntermediateOutputPath)/**;$(DefaultItemExcludes)" />
+  </ItemGroup>
+</Project>

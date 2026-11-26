@@ -1,9 +1,0 @@
-<ResourceDictionary x:Class="Gtk4.Forms.PresentationFramework.Tests.XamlBacked.StyledDictionary"
-		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-		xmlns:local="clr-namespace:Gtk4.Forms.PresentationFramework.Tests.XamlBacked">
-	<local:TagConverter x:Key="tagConverter"/>
-	<Style x:Key="Tagged" TargetType="{x:Type Button}">
-		<Setter Property="Content" Value="{Binding Path=Width, RelativeSource={RelativeSource Self}, Converter={StaticResource tagConverter}}"/>
-	</Style>
-</ResourceDictionary>

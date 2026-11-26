@@ -1,5 +1,0 @@
-<Canvas x:Class="Gtk4.Forms.PresentationFramework.Tests.XamlBacked.RegisteredCanvas"
-		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-	<Button x:Name="Inner"/>
-</Canvas>

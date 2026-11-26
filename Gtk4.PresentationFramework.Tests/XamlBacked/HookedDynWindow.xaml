@@ -1,0 +1,13 @@
+<Window x:Class="Gtk4.PresentationFramework.Tests.XamlBacked.HookedDynWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Gtk4.PresentationFramework.Tests.XamlBacked"
+        Title="HookedDynWindow" Width="200" Height="100">
+	<Grid>
+		<Grid.Resources>
+			<x:String x:Key="ka">alpha</x:String>
+			<x:String x:Key="kb">beta</x:String>
+		</Grid.Resources>
+		<local:HookedPane x:Name="Pane" A="{DynamicResource ka}" B="{DynamicResource kb}"/>
+	</Grid>
+</Window>
