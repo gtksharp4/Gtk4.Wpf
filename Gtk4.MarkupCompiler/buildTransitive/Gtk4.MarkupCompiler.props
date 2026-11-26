@@ -1,0 +1,10 @@
+<Project>
+  <!--
+    NuGet auto-import entry point for an INDIRECT PackageReference (consumers reach this package
+    transitively via Gtk4.Wpf). NuGet applies build/ only to a direct reference and
+    buildTransitive/ to an indirect one, so this forwards to the build/ assets to deliver the
+    markup compiler + default XAML items downstream. NuGet selects exactly one of the two folders
+    per package, so build/ and buildTransitive/ are never both imported.
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)../build/Gtk4.MarkupCompiler.props" />
+</Project>

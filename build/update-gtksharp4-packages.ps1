@@ -11,7 +11,7 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 
-# The closure Gtk4.Forms actually restores: GtkSharp4 and its transitive wrapper dependencies.
+# The closure Gtk4.Wpf actually restores: GtkSharp4 and its transitive wrapper dependencies.
 # The workload, Ref/Runtime/Sdk/Template/Manifest packages and the optional bindings (Adwaita,
 # WebkitGtk, GtkSource, JavaScriptCore) are deliberately excluded - the backend does not reference
 # them.

@@ -1,8 +1,0 @@
-<UserControl x:Class="Gtk4.Forms.PresentationFramework.Tests.XamlBacked.SampleUserControl"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-	<StackPanel>
-		<TextBlock x:Name="Caption" Text="inside"/>
-		<Button x:Name="Action" Content="go"/>
-	</StackPanel>
-</UserControl>

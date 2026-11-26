@@ -2,19 +2,19 @@
   "solution": {
     "path": "Gtk4.Wpf.sln",
     "projects": [
-      "Gtk4.Forms.WindowsBase\\Gtk4.Forms.WindowsBase.csproj",
-      "Gtk4.Forms.WindowsBase.Tests\\Gtk4.Forms.WindowsBase.Tests.csproj",
-      "Gtk4.Forms.MarkupCompiler\\Gtk4.Forms.MarkupCompiler.csproj",
-      "Gtk4.Forms.MarkupCompiler.Tests\\Gtk4.Forms.MarkupCompiler.Tests.csproj",
-      "Gtk4.Forms.PresentationFramework\\Gtk4.Forms.PresentationFramework.csproj",
-      "Gtk4.Forms.PresentationFramework.Tests\\Gtk4.Forms.PresentationFramework.Tests.csproj",
-      "Gtk4.Forms.Wpf.Testing\\Gtk4.Forms.Wpf.Testing.csproj",
-      "Gtk4.Forms.Wpf.Testing.Tests\\Gtk4.Forms.Wpf.Testing.Tests.csproj",
-      "Gtk4.Forms.Wpf.ProjectConverter\\Gtk4.Forms.Wpf.ProjectConverter.csproj",
-      "Gtk4.Forms.Wpf.ProjectConverter.Tests\\Gtk4.Forms.Wpf.ProjectConverter.Tests.csproj",
-      "Gtk4.Forms.Wpf\\Gtk4.Forms.Wpf.csproj",
-      "Gtk4.Forms.WpfSample\\Gtk4.Forms.WpfSample.csproj",
-      "Gtk4.Forms.Integration.Tests\\Gtk4.Forms.Integration.Tests.csproj"
+      "Gtk4.WindowsBase\\Gtk4.WindowsBase.csproj",
+      "Gtk4.WindowsBase.Tests\\Gtk4.WindowsBase.Tests.csproj",
+      "Gtk4.MarkupCompiler\\Gtk4.MarkupCompiler.csproj",
+      "Gtk4.MarkupCompiler.Tests\\Gtk4.MarkupCompiler.Tests.csproj",
+      "Gtk4.PresentationFramework\\Gtk4.PresentationFramework.csproj",
+      "Gtk4.PresentationFramework.Tests\\Gtk4.PresentationFramework.Tests.csproj",
+      "Gtk4.Wpf.Testing\\Gtk4.Wpf.Testing.csproj",
+      "Gtk4.Wpf.Testing.Tests\\Gtk4.Wpf.Testing.Tests.csproj",
+      "Gtk4.Wpf.ProjectConverter\\Gtk4.Wpf.ProjectConverter.csproj",
+      "Gtk4.Wpf.ProjectConverter.Tests\\Gtk4.Wpf.ProjectConverter.Tests.csproj",
+      "Gtk4.Wpf\\Gtk4.Wpf.csproj",
+      "Gtk4.WpfSample\\Gtk4.WpfSample.csproj",
+      "Gtk4.Integration.Tests\\Gtk4.Integration.Tests.csproj"
     ]
   }
 }

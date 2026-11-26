@@ -1,0 +1,53 @@
+<Project>
+  <!--
+    GtkFormsConvertProject — runs before the first build after the consumer adds this package.
+    Strips <UseWPF>/<UseWindowsForms> and collapses the TFM to net10.0 (OutputType is left as-is,
+    so a WPF app keeps its WinExe). The entry point comes from the ApplicationDefinition compiled
+    by the MarkupCompiler.
+
+    The converter rewrites the consumer .csproj on disk. This build, however, was already
+    evaluated as a WPF project (UseWPF=true pulls in the WindowsDesktop SDK), so its WPF
+    markup-compile pass would spin up a *_wpftmp.csproj that re-reads the now-converted .csproj
+    and fail with the cryptic "MSB4057: _CompileTemporaryAssembly does not exist". To avoid that,
+    the converter returns exit code 10 when it actually changed the project; we stop this build
+    cleanly with an actionable message. The next build re-evaluates the converted (non-WPF)
+    project and compiles against Gtk4.Wpf. Exit 0 = already converted → build proceeds.
+
+    Skipped during design-time builds (IDE IntelliSense) and when the consumer sets
+    SkipGtkFormsConvert=true (opt-out for projects that have already been converted).
+
+    NuGet auto-imports build/$(PackageId).props and build/$(PackageId).targets in the direct
+    consumer; buildTransitive/ copies ensure the same assets reach transitive consumers.
+  -->
+  <Target Name="GtkFormsConvertProject" BeforeTargets="BeforeBuild"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(SkipGtkFormsConvert)' != 'true'">
+    <Exec Command='dotnet "$(MSBuildThisFileDirectory)../tools/Gtk4.Wpf.ProjectConverter.dll" --convert-project "$(MSBuildProjectFullPath)"'
+          ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="_GtkFormsConvertExitCode" />
+    </Exec>
+    <Error Condition="'$(_GtkFormsConvertExitCode)' == '10'"
+           Text="Gtk4.Wpf converted '$(MSBuildProjectName)' from WPF to the Gtk4.Wpf compatibility layer. This build was evaluated as a WPF project; re-run the build to compile the converted project." />
+    <Error Condition="'$(_GtkFormsConvertExitCode)' != '0' and '$(_GtkFormsConvertExitCode)' != '10'"
+           Text="Gtk4.Wpf project conversion failed (converter exit code $(_GtkFormsConvertExitCode))." />
+  </Target>
+
+
+  <!--
+    WPF packs a <Resource> into the assembly and resolves a relative URI such as "images\a.png" from there.
+    This layer has no .g.resources, so it looks for the file under the app directory (see
+    ResourceStreamLocator): copy every <Resource> item to the output, keeping its relative path or Link.
+    Independent of SkipGtkFormsConvert (already-converted projects still need their files); opt out with
+    SkipGtkFormsCopyResources=true. The copies are registered in FileWrites so `dotnet clean` removes them.
+  -->
+  <Target Name="GtkFormsCopyResources" AfterTargets="CopyFilesToOutputDirectory"
+          Condition="'@(Resource)' != '' and '$(SkipGtkFormsCopyResources)' != 'true'">
+    <ItemGroup>
+      <_GtkFormsResource Include="@(Resource)" Rel="$([MSBuild]::ValueOrDefault('%(Resource.Link)', '%(Resource.RelativeDir)%(Resource.Filename)%(Resource.Extension)'))" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_GtkFormsResource)" DestinationFiles="@(_GtkFormsResource->'$(OutDir)%(Rel)')"
+          SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <FileWrites Include="@(_GtkFormsResource->'$(OutDir)%(Rel)')" />
+    </ItemGroup>
+  </Target>
+</Project>

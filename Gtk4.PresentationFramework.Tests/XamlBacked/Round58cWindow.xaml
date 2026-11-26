@@ -1,0 +1,48 @@
+<Window x:Class="Gtk4.PresentationFramework.Tests.XamlBacked.Round58cWindow"
+		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		Title="Round58cWindow">
+	<Canvas x:Name="Pane">
+		<Canvas.Resources>
+			<Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}"/>
+		</Canvas.Resources>
+		<Border x:Name="Src" Width="40" Height="5"/>
+		<Path>
+			<Path.Data>
+				<LineGeometry>
+					<LineGeometry.Transform>
+						<TranslateTransform x:Name="Shift" X="1"/>
+					</LineGeometry.Transform>
+				</LineGeometry>
+			</Path.Data>
+		</Path>
+		<Viewport3D x:Name="View">
+			<Viewport3D.Camera>
+				<PerspectiveCamera Position="0,0,5" LookDirection="0,0,-1" UpDirection="0,1,0"/>
+			</Viewport3D.Camera>
+			<ModelVisual3D>
+				<ModelVisual3D.Content>
+					<GeometryModel3D>
+						<GeometryModel3D.Geometry>
+							<MeshGeometry3D x:Name="Mesh" Positions="0,0,0 1,0,0 0,1,0" TriangleIndices="0 1 2"/>
+						</GeometryModel3D.Geometry>
+					</GeometryModel3D>
+				</ModelVisual3D.Content>
+			</ModelVisual3D>
+		</Viewport3D>
+		<Canvas.Triggers>
+			<EventTrigger RoutedEvent="Canvas.Loaded">
+				<BeginStoryboard>
+					<Storyboard>
+						<DoubleAnimationUsingKeyFrames Storyboard.TargetName="Shift" Storyboard.TargetProperty="X">
+							<DiscreteDoubleKeyFrame Value="2" KeyTime="0:0:0"/>
+							<LinearDoubleKeyFrame Value="10" KeyTime="0:0:1"/>
+						</DoubleAnimationUsingKeyFrames>
+						<DoubleAnimation Storyboard.TargetName="Src" Storyboard.TargetProperty="Height"
+								From="0" To="{Binding ElementName=Src, Path=Width}" Duration="0:0:1"/>
+					</Storyboard>
+				</BeginStoryboard>
+			</EventTrigger>
+		</Canvas.Triggers>
+	</Canvas>
+</Window>

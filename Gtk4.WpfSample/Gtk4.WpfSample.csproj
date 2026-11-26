@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Phase-0 proof (blocking check B1): an UNMODIFIED WPF project shape — Window/App in the
+    presentation XAML namespace, Page/ApplicationDefinition build items, x:Class code-behind calling
+    InitializeComponent — compiles against the Gtk4.Wpf types with no XAML or namespace edits. The
+    markup compiler generates InitializeComponent from the untouched .xaml at build time.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <!-- These .xaml files are WPF build items, not default compile/none items. -->
+    <EnableDefaultXamlItems>false</EnableDefaultXamlItems>
+    <!-- In-tree: point the markup-compiler UsingTask at the freshly built task assembly. -->
+    <_GFMarkupCompilerTasksDir>$(MSBuildThisFileDirectory)..\Gtk4.MarkupCompiler\bin\$(Configuration)\netstandard2.0\</_GFMarkupCompilerTasksDir>
+    <_GFMarkupCompilerUseTaskHost>true</_GFMarkupCompilerUseTaskHost>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml" />
+    <Page Include="MainWindow.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gtk4.WindowsBase\Gtk4.WindowsBase.csproj" />
+    <ProjectReference Include="..\Gtk4.PresentationFramework\Gtk4.PresentationFramework.csproj" />
+    <!-- Build-order only: the markup-compiler task assembly must exist before CoreCompile. -->
+    <ProjectReference Include="..\Gtk4.MarkupCompiler\Gtk4.MarkupCompiler.csproj"
+                      ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- The markup compiler: generates InitializeComponent from the WPF XAML before CoreCompile. -->
+  <Import Project="..\Gtk4.MarkupCompiler\build\Gtk4.MarkupCompiler.targets" />
+
+</Project>

@@ -19,7 +19,7 @@ $env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
 # process"). Building one consumer with -maxcpucount:1 installs it once; the solution build below
 # then finds it present and skips the download, so there is nothing to race on.
 Write-Host '== warm up the gvsbuild GTK 4 runtime (serial, avoids the parallel download race) =='
-dotnet build Gtk4.Forms.PresentationFramework/Gtk4.Forms.PresentationFramework.csproj -c Debug -maxcpucount:1 -p:GeneratePackageOnBuild=false
+dotnet build Gtk4.PresentationFramework/Gtk4.PresentationFramework.csproj -c Debug -maxcpucount:1 -p:GeneratePackageOnBuild=false
 if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
 Write-Host '== build (Debug; installs the gvsbuild GTK 4 runtime via GtkSharp4.targets) =='
@@ -34,29 +34,29 @@ $env:XF_GTK_REQUIRE_NATIVE = '1'
 # The logic suites (WindowsBase DP/dispatcher, MarkupCompiler XAML->code, Wpf.ProjectConverter) need
 # no GTK runtime or display.
 Write-Host '== WindowsBase unit tests =='
-dotnet test Gtk4.Forms.WindowsBase.Tests -c Debug --no-build --logger trx
+dotnet test Gtk4.WindowsBase.Tests -c Debug --no-build --logger trx
 if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
 Write-Host '== MarkupCompiler unit tests =='
-dotnet test Gtk4.Forms.MarkupCompiler.Tests -c Debug --no-build --logger trx
+dotnet test Gtk4.MarkupCompiler.Tests -c Debug --no-build --logger trx
 if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
 # PackedNuspecTests inspects the real package; the build above runs with GeneratePackageOnBuild off.
-Write-Host '== pack Gtk4.Forms.Wpf =='
-dotnet pack Gtk4.Forms.Wpf/Gtk4.Forms.Wpf.csproj -c Debug --no-build
+Write-Host '== pack Gtk4.Wpf =='
+dotnet pack Gtk4.Wpf/Gtk4.Wpf.csproj -c Debug --no-build
 if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
 Write-Host '== Wpf.ProjectConverter unit tests =='
-dotnet test Gtk4.Forms.Wpf.ProjectConverter.Tests -c Debug --no-build --logger trx
+dotnet test Gtk4.Wpf.ProjectConverter.Tests -c Debug --no-build --logger trx
 if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
 # PresentationFramework hosts the real-GTK-4 renderer smoke tests; WpfGtkFixture runs them on an STA
 # GTK thread (see header).
 Write-Host '== PresentationFramework tests (real GTK 4 widgets, STA GTK thread) =='
-dotnet test Gtk4.Forms.PresentationFramework.Tests -c Debug --no-build --logger trx
+dotnet test Gtk4.PresentationFramework.Tests -c Debug --no-build --logger trx
 if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
 # The UI test driver and the sample UI tests: the same GTK thread setup, driven through UI Automation.
 Write-Host '== Wpf.Testing tests (UI driver over real GTK 4 widgets and official samples) =='
-dotnet test Gtk4.Forms.Wpf.Testing.Tests -c Debug --no-build --logger trx
+dotnet test Gtk4.Wpf.Testing.Tests -c Debug --no-build --logger trx
 exit $LASTEXITCODE

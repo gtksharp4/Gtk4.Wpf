@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Gtk4.MarkupCompiler</AssemblyName>
+    <RootNamespace>Gtk4.MarkupCompiler</RootNamespace>
+    <PackageId>Gtk4.MarkupCompiler</PackageId>
+    <Description>Build-time WPF XAML markup compiler for the Gtk4.Wpf compatibility layer.</Description>
+    <!-- Packable (restored transitively via Gtk4.Wpf); stable 4-part Version avoids NU5104. -->
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <IsPackable>true</IsPackable>
+    <Version>$(VersionPrefix).$(VersionSuffix)</Version>
+    <PackageOutputPath>$(XFPackageOutputPath)</PackageOutputPath>
+    <!-- Task assemblies bind against MSBuild's API but must not ship MSBuild next to them. -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <!--
+      Packaged as an MSBuild task package, not a library:
+        - IncludeBuildOutput=false keeps the task DLL out of lib/, so consumers get no
+          compile-time reference to it (it is a build-time task only).
+        - build/ props+targets are what NuGet auto-imports for a direct PackageReference;
+          buildTransitive/ forwarders deliver the same to indirect consumers (reached via
+          Gtk4.Wpf). The task DLL is packed under build/netstandard2.0/, exactly where
+          the props' _GFMarkupCompilerTasksDir default looks ($(MSBuildThisFileDirectory)<tfm>/).
+        - SuppressDependenciesWhenPacking drops the Microsoft.Build.* API refs (ExcludeAssets
+          =runtime already) from the nuspec; they are provided by the build host, not shipped.
+        - IncludeSymbols=false: with nothing in lib/, an empty .snupkg would fail NU5017.
+    -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <IncludeSymbols>false</IncludeSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Gtk4.MarkupCompiler.Tests" Key="$(Gtk4FormsPublicKey)" />
+  </ItemGroup>
+
+  <!--
+    Build wiring + default XAML items (build/), and the transitive forwarders (buildTransitive/).
+    File names already equal $(PackageId), so NuGet auto-imports build/$(PackageId).props|.targets.
+  -->
+  <ItemGroup>
+    <!-- Forward slashes: on Linux/macOS a backslash PackagePath is not a separator (NU5129). -->
+    <None Include="build/Gtk4.MarkupCompiler.props"   Pack="true" PackagePath="build/" />
+    <None Include="build/Gtk4.MarkupCompiler.targets" Pack="true" PackagePath="build/" />
+    <None Include="buildTransitive/Gtk4.MarkupCompiler.props"   Pack="true" PackagePath="buildTransitive/" />
+    <None Include="buildTransitive/Gtk4.MarkupCompiler.targets" Pack="true" PackagePath="buildTransitive/" />
+  </ItemGroup>
+
+  <!--
+    Pack the task assembly under build/<tfm>/ (where the props' UsingTask resolves it). Runs after
+    the build output exists. The task has no extra runtime deps: Microsoft.Build.* use
+    ExcludeAssets=runtime, so only Gtk4.MarkupCompiler.dll ships.
+  -->
+  <Target Name="_PackMarkupCompilerTask" BeforeTargets="_GetPackageFiles">
+    <ItemGroup>
+      <None Include="$(OutputPath)Gtk4.MarkupCompiler.dll"
+            Pack="true" PackagePath="build/$(TargetFramework)/" Visible="false" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <!-- MSBuild task assemblies: reference-only (ExcludeAssets="runtime"), host supplies them at runtime. -->
+    <PackageReference Include="Microsoft.Build.Framework"
+                      Version="17.14.28"
+                      ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core"
+                      Version="17.14.28"
+                      ExcludeAssets="runtime" />
+  </ItemGroup>
+
+</Project>
