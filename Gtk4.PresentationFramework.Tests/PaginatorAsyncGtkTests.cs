@@ -23,7 +23,8 @@ public class PaginatorAsyncGtkTests : WpfGtkTestBase
 		using (new GtkDispatcherScope()) body();
 	});
 
-	static void Drain() => GtkPump.For(150);
+	// Waits for the posted completion rather than a fixed time, which a slow runner can outlast.
+	static void Drain(Func<bool> done) => GtkPump.Until(done);
 
 	[Fact]
 	public void GetPageAsync_completes_later_with_the_page_and_state() => Hosted(() =>
@@ -33,7 +34,7 @@ public class PaginatorAsyncGtkTests : WpfGtkTestBase
 		paginator.GetPageCompleted += (s, e) => done = e;
 		paginator.GetPageAsync(0, "state");
 		Assert.Null(done);
-		Drain();
+		Drain(() => done != null);
 		Assert.NotNull(done);
 		Assert.Equal("state", done!.UserState);
 		Assert.NotNull(done.DocumentPage);
@@ -46,7 +47,7 @@ public class PaginatorAsyncGtkTests : WpfGtkTestBase
 		object? state = null;
 		paginator.GetPageCompleted += (s, e) => state = e.UserState;
 		paginator.GetPageAsync(0);
-		Drain();
+		Drain(() => state != null);
 		Assert.Same(paginator, state);
 	});
 
@@ -58,7 +59,7 @@ public class PaginatorAsyncGtkTests : WpfGtkTestBase
 		paginator.GetPageCompleted += (s, e) => done = e;
 		paginator.GetPageAsync(0, "x");
 		paginator.CancelAsync("x");
-		Drain();
+		Drain(() => done != null);
 		Assert.True(done!.Cancelled);
 	});
 
@@ -71,7 +72,7 @@ public class PaginatorAsyncGtkTests : WpfGtkTestBase
 		AsyncCompletedEventArgs? done = null;
 		paginator.ComputePageCountCompleted += (s, e) => done = e;
 		paginator.ComputePageCountAsync();
-		Drain();
+		Drain(() => done != null);
 		Assert.NotNull(done);
 		Assert.True(paginator.IsPageCountValid);
 	});
@@ -84,7 +85,7 @@ public class PaginatorAsyncGtkTests : WpfGtkTestBase
 		paginator.PaginationCompleted += (s, e) => completed = true;
 		paginator.PageSize = new Size(300, 300);
 		Assert.False(paginator.IsPageCountValid);
-		Drain();
+		Drain(() => completed);
 		Assert.True(completed);
 		Assert.True(paginator.IsPageCountValid);
 	});
@@ -96,7 +97,7 @@ public class PaginatorAsyncGtkTests : WpfGtkTestBase
 		GetPageNumberCompletedEventArgs? done = null;
 		paginator.GetPageNumberCompleted += (s, e) => done = e;
 		paginator.GetPageNumberAsync(ContentPosition.Missing);
-		Drain();
+		Drain(() => done != null);
 		Assert.Equal(0, done!.PageNumber);
 	});
 }
