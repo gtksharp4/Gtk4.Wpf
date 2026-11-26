@@ -39,6 +39,11 @@ echo "== Wpf.ProjectConverter unit tests =="
 run_annotated "macOS ProjectConverter.Tests" \
 	dotnet test Gtk4.Wpf.ProjectConverter.Tests -c Debug --no-build --logger trx
 
+# The test process is never frontmost on the runner, so App Nap may throttle its timers: single main-loop
+# iterations blocked for up to 33 s, even in a test with no window (GtkPump STALL lines). Opt out for all apps.
+echo "== disable App Nap =="
+defaults write NSGlobalDomain NSAppSleepDisabled -bool YES
+
 echo "== install the GTK 4 runtime via Homebrew =="
 brew install gtk4 >/dev/null
 GTK_PREFIX="$(brew --prefix)"
