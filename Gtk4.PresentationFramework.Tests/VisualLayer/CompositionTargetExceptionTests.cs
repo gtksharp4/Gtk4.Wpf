@@ -22,7 +22,11 @@ public class CompositionTargetExceptionTests : WpfGtkTestBase
 		dispatcher.UnhandledException += onUnhandled;
 		CompositionTarget.Rendering += bad;
 		CompositionTarget.Rendering += good;
-		try { Assert.True(GtkPump.Until(() => order.Count >= 4, 4000)); }
+		try
+		{
+			Assert.True(GtkPump.Until(() => order.Count >= 4, 4000),
+				$"order [{string.Join(", ", order)}], handled [{string.Join(", ", seen.ConvertAll(e => e.Message))}]");
+		}
 		finally
 		{
 			CompositionTarget.Rendering -= bad;
