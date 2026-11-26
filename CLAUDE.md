@@ -101,6 +101,10 @@ Known intermittent: on the macOS runner GTK occasionally never allocates a newly
 inactive), so `TextGapsTests.TextBox_wrapping_without_AcceptsReturn_is_content_sized_in_a_StackPanel` times out.
 It passed on re-run (run 44899539173). Treat a repeat as real.
 
+The macOS CI job does not gate (`continue-on-error`): on the hosted runner the test process freezes for up to ~30 s at
+a time, with App Nap off (measured by the `GtkPump STALL` lines, ~135 per run), so a different time-bounded test
+fails each run. Read its failures against the stall lines before treating one as a regression.
+
 CI is `.github/workflows/build-and-test.yml` (Windows, Linux, macOS); per-OS logic lives in
 `scripts/ci/test-{windows,linux,macos}`.
 
