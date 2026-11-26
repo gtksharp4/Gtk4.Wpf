@@ -51,7 +51,11 @@ public class ThreadMarshalTests : UiaTestBase
 		});
 		thread.Start();
 		// Every UIA read is a round trip to the GTK thread; a slow runner can need more than 10 s for the walk.
-		Assert.True(GtkPump.Until(() => !thread.IsAlive, 30000), "the client call never completed");
+		bool done = GtkPump.Until(() => !thread.IsAlive, 30000);
+		// A worker left running would drive the next test's windows from another thread (a segfault on macOS),
+		// so keep pumping its marshalled calls until it ends before failing.
+		bool late = !done && GtkPump.Until(() => !thread.IsAlive, 120000);
+		Assert.True(done, late ? "the client call took longer than 30 s" : "the client call never completed");
 		thread.Join();
 		if (error != null) throw new Exception("worker failed", error);
 	}
