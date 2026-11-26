@@ -44,6 +44,9 @@ public class TextBlockInlineBaselineGtkTests : WpfGtkTestBase
 		try
 		{
 			Assert.True(outer.InlineFirstLineHeight >= 30, $"line height {outer.InlineFirstLineHeight}");
+			// The child is placed by a later layout pass, which a slow runner may not have run yet.
+			GtkPump.Until(() => inner.Widget.ComputeBounds(outer.Widget, out var r)
+				&& System.Math.Abs(outer.InlineLabelBaseline - (r.Y + r.Height)) <= 1.0, 3000);
 			Assert.True(inner.Widget.ComputeBounds(outer.Widget, out var b));
 			Assert.Equal(outer.InlineLabelBaseline, b.Y + b.Height, 1.0);
 		}

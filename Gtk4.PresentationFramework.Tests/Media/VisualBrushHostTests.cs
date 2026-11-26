@@ -46,6 +46,8 @@ public class VisualBrushHostTests : WpfGtkTestBase
 		var win = Open();
 		try
 		{
+			// Without a window manager (Xvfb) a shown window is not always activated on its own; ask for it.
+			win.Activate();
 			Assert.True(GtkPump.Until(() => win.IsActive, 3000), "the window never became active");
 			int toplevels = VisibleToplevels();
 			var source = new Border { Width = 40, Height = 40, Background = Brushes.Red };

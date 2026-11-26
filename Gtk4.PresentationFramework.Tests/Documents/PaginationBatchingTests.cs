@@ -102,6 +102,8 @@ public class PaginationBatchingTests : WpfGtkTestBase
 			using (new GtkDispatcherScope())
 			{
 				edit();
+				// Wait for the deferred batch, then keep pumping so a second one would still be counted.
+				GtkPump.Until(() => changed > before);
 				GtkPump.For(100);
 			}
 			Assert.Equal(before + 1, changed);
@@ -154,6 +156,7 @@ public class PaginationBatchingTests : WpfGtkTestBase
 			GtkPump.For(100);
 			baseline = viewer.Refreshes;
 			for (int i = 0; i < 50; i++) doc.Blocks.Add(new Paragraph(new Run("paragraph " + i)));
+			GtkPump.Until(() => viewer.Refreshes > baseline);
 			GtkPump.For(150);
 		}
 		Assert.Equal(baseline + 1, viewer.Refreshes);
