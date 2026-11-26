@@ -1,4 +1,4 @@
-# Gtk4.Forms — WPF on GTK 4 #
+# Gtk4.Wpf — WPF on GTK 4 #
 
 Run an **unmodified WPF** application — its `System.Windows.*` code and WPF XAML, with **no namespace
 or XAML changes** — as a native desktop app on **Windows, Linux and macOS**, powered by a GTK 4
@@ -12,27 +12,27 @@ repository is now solely the WPF-on-GTK compatibility layer.
 
 ## How it works
 
-1. Add **one** `PackageReference` to `Gtk4.Forms.Wpf` to an existing WPF project.
+1. Add **one** `PackageReference` to `Gtk4.Wpf` to an existing WPF project.
 2. On the first build, the package's converter rewrites the `.csproj` (removes `UseWPF`, collapses
    `net*-windows` to `net10.0`) and stops with a message to re-run.
 3. The second build compiles the **unchanged** `System.Windows.*` code and WPF XAML against the
-   Gtk4.Forms reimplementation and produces a GTK 4 desktop app.
+   Gtk4.Wpf reimplementation and produces a GTK 4 desktop app.
 
 No source edits. The `[STAThread] Main` is generated from `App.xaml` by the markup compiler.
 
 ## Packages
 
-Published under the `Gtk4.Forms.` prefix. The GTK backend binds **GtkSharp 4 (GTK 4.22)**, which also
+Published under the `Gtk4.` prefix. The GTK backend binds **GtkSharp 4 (GTK 4.22)**, which also
 carries the native GTK 4 runtime (see [Native GTK 4 runtime](#native-gtk-4-runtime)).
 
 | Package id | TFM | Role |
 | --- | --- | --- |
-| `Gtk4.Forms.Wpf` | net10.0 | **The drop-in.** One `PackageReference` converts and runs a WPF app. Pulls in the three below + the converter. |
-| `Gtk4.Forms.WindowsBase` | netstandard2.0 | `DependencyObject`/`DependencyProperty` + routed-event property system (`namespace System.Windows`). |
-| `Gtk4.Forms.PresentationFramework` | net10.0 | `UIElement`→`Window`/controls, binding engine, themes — rendered on GtkSharp 4 (`namespace System.Windows`). |
-| `Gtk4.Forms.MarkupCompiler` | netstandard2.0 | Build-time MSBuild task: generates `InitializeComponent` from the untouched WPF XAML. |
+| `Gtk4.Wpf` | net10.0 | **The drop-in.** One `PackageReference` converts and runs a WPF app. Pulls in the three below + the converter. |
+| `Gtk4.WindowsBase` | netstandard2.0 | `DependencyObject`/`DependencyProperty` + routed-event property system (`namespace System.Windows`). |
+| `Gtk4.PresentationFramework` | net10.0 | `UIElement`→`Window`/controls, binding engine, themes — rendered on GtkSharp 4 (`namespace System.Windows`). |
+| `Gtk4.MarkupCompiler` | netstandard2.0 | Build-time MSBuild task: generates `InitializeComponent` from the untouched WPF XAML. |
 
-`Gtk4.Forms.PresentationFramework` references `Gtk4.Forms.WindowsBase`; the layer depends on **no**
+`Gtk4.PresentationFramework` references `Gtk4.WindowsBase`; the layer depends on **no**
 external WPF or `Microsoft.WindowsDesktop` SDK.
 
 ## Build
@@ -55,11 +55,11 @@ Five suites, all **xUnit v3 on `net10.0`**, run with `dotnet test`:
 
 | Project | Approx. tests | GTK? | Covers |
 | --- | --- | --- | --- |
-| `Gtk4.Forms.WindowsBase.Tests` | ~83 | no | DP / routed-event / property system |
-| `Gtk4.Forms.MarkupCompiler.Tests` | ~173 | no | XAML → code generation |
-| `Gtk4.Forms.Wpf.ProjectConverter.Tests` | ~15 | no | csproj rewrite |
-| `Gtk4.Forms.PresentationFramework.Tests` | ~1,290 | **yes** | controls, binding, themes on **real GTK 4 widgets** |
-| `Gtk4.Forms.Integration.Tests` | few | yes | end-to-end: convert + build + run the embedded WPF sample (Windows-only, not in CI) |
+| `Gtk4.WindowsBase.Tests` | ~83 | no | DP / routed-event / property system |
+| `Gtk4.MarkupCompiler.Tests` | ~173 | no | XAML → code generation |
+| `Gtk4.Wpf.ProjectConverter.Tests` | ~15 | no | csproj rewrite |
+| `Gtk4.PresentationFramework.Tests` | ~1,290 | **yes** | controls, binding, themes on **real GTK 4 widgets** |
+| `Gtk4.Integration.Tests` | few | yes | end-to-end: convert + build + run the embedded WPF sample (Windows-only, not in CI) |
 
 ```powershell
 dotnet test Gtk4.Wpf.sln
@@ -70,7 +70,7 @@ thread (the GDK Win32 backend requires it) and needs no display. On **Linux** it
 
 ```bash
 xvfb-run -a --server-args="-screen 0 1280x1024x24" env GDK_BACKEND=x11 \
-  dotnet test Gtk4.Forms.PresentationFramework.Tests
+  dotnet test Gtk4.PresentationFramework.Tests
 ```
 
 On **macOS** GTK's Quartz backend requires thread 0, so the test assembly is executed directly. CI is
@@ -94,7 +94,7 @@ the wrapper `nupkg`s are vendored under `build/gtksharp4-packages/` (feed `GtkSh
 ## Getting started
 
 See [`docs/article-wpf-to-gtk4-forms.md`](docs/article-wpf-to-gtk4-forms.md) for a full
-WPF-to-Gtk4.Forms port walkthrough, and the `Gtk4.Forms.WpfSample` project for a runnable,
+WPF-to-Gtk4.Wpf port walkthrough, and the `Gtk4.WpfSample` project for a runnable,
 **unmodified-WPF** app that compiles through the layer:
 
 ```csharp
@@ -119,4 +119,4 @@ namespace WpfSample
 ## Contributing
 
 - [How to Contribute](.github/CONTRIBUTING.md)
-- Bugs: [GitHub Issues](https://github.com/pieroviano/Gtk4.Forms/issues)
+- Bugs: [GitHub Issues](https://github.com/pieroviano/Gtk4.Wpf/issues)

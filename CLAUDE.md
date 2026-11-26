@@ -15,7 +15,7 @@ full Xamarin.Forms→GTK 4 port. That port has been **removed** — the reposito
 WPF-on-GTK layer. Branch/history notes for the earlier prune live under `docs/plans/`.
 
 **Solution:** `Gtk4.Wpf.sln` is the only solution in the tree, with 13 projects (7 product + 6
-test). Project/package names use the `Gtk4.Forms.*` prefix; the reimplemented WPF types keep their
+test). Project/package names use the `Gtk4.*` prefix; the reimplemented WPF types keep their
 `System.Windows.*` namespaces (that identity is the whole point — it is what lets WPF code compile
 unchanged).
 
@@ -23,15 +23,15 @@ unchanged).
 
 | Project | Assembly | TFM | Role |
 |---|---|---|---|
-| `Gtk4.Forms.WindowsBase` | `Gtk4.Forms.WindowsBase` (`namespace System.Windows`) | netstandard2.0 | The `DependencyObject`/`DependencyProperty` property system + routed events. No GTK dependency. |
-| `Gtk4.Forms.PresentationFramework` | `Gtk4.Forms.PresentationFramework` (`namespace System.Windows`) | net10.0 (+ net10.0-windows on Windows) | `UIElement`→`Window`/controls, the binding engine, the control set, themes — rendered on GtkSharp 4. |
-| `Gtk4.Forms.MarkupCompiler` | `Gtk4.Forms.MarkupCompiler` | netstandard2.0 | Build-time MSBuild task: generates `InitializeComponent` from the untouched WPF XAML, System.Xaml-free. `[assembly: XmlnsDefinition]` makes the WPF xmlns resolve to our types. |
-| `Gtk4.Forms.Wpf.ProjectConverter` | `Gtk4.Forms.Wpf.ProjectConverter` | net10.0 (Exe) | Pure, idempotent, minimal-diff csproj rewrite: strip `UseWPF`/`UseWindowsForms`, collapse `net*-windows`→`net10.0` (OutputType left as-is). |
-| `Gtk4.Forms.Wpf` | package `Gtk4.Forms.Wpf` | net10.0 | The one-package drop-in. References the four above; its `build/`+`buildTransitive/` props+targets run the converter; it packs the converter DLL into `tools/`. |
-| `Gtk4.Forms.WpfSample` | app (Exe) | net10.0 | An **unmodified WPF** app (`App : System.Windows.Application`, WPF XAML) compiled through the layer as the end-to-end proof. Its `[STAThread] Main` is generated from `App.xaml` by the MarkupCompiler. |
-| `Gtk4.Forms.Wpf.Testing` | package `Gtk4.Forms.Wpf.Testing` | net10.0 | UI test driver (xUnit v3): `WpfAppHost` runs an app in the test process on the GTK thread, `By` locators, waits that pump the loop, semantic actions over UI Automation, routed `Input`, GTK-snapshot screenshots and failure evidence. References PresentationFramework only; tests live in `Gtk4.Forms.Wpf.Testing.Tests`. |
+| `Gtk4.WindowsBase` | `Gtk4.WindowsBase` (`namespace System.Windows`) | netstandard2.0 | The `DependencyObject`/`DependencyProperty` property system + routed events. No GTK dependency. |
+| `Gtk4.PresentationFramework` | `Gtk4.PresentationFramework` (`namespace System.Windows`) | net10.0 (+ net10.0-windows on Windows) | `UIElement`→`Window`/controls, the binding engine, the control set, themes — rendered on GtkSharp 4. |
+| `Gtk4.MarkupCompiler` | `Gtk4.MarkupCompiler` | netstandard2.0 | Build-time MSBuild task: generates `InitializeComponent` from the untouched WPF XAML, System.Xaml-free. `[assembly: XmlnsDefinition]` makes the WPF xmlns resolve to our types. |
+| `Gtk4.Wpf.ProjectConverter` | `Gtk4.Wpf.ProjectConverter` | net10.0 (Exe) | Pure, idempotent, minimal-diff csproj rewrite: strip `UseWPF`/`UseWindowsForms`, collapse `net*-windows`→`net10.0` (OutputType left as-is). |
+| `Gtk4.Wpf` | package `Gtk4.Wpf` | net10.0 | The one-package drop-in. References the four above; its `build/`+`buildTransitive/` props+targets run the converter; it packs the converter DLL into `tools/`. |
+| `Gtk4.WpfSample` | app (Exe) | net10.0 | An **unmodified WPF** app (`App : System.Windows.Application`, WPF XAML) compiled through the layer as the end-to-end proof. Its `[STAThread] Main` is generated from `App.xaml` by the MarkupCompiler. |
+| `Gtk4.Wpf.Testing` | package `Gtk4.Wpf.Testing` | net10.0 | UI test driver (xUnit v3): `WpfAppHost` runs an app in the test process on the GTK thread, `By` locators, waits that pump the loop, semantic actions over UI Automation, routed `Input`, GTK-snapshot screenshots and failure evidence. References PresentationFramework only; tests live in `Gtk4.Wpf.Testing.Tests`. |
 
-`Gtk4.Forms.PresentationFramework` references `Gtk4.Forms.WindowsBase`; everything else references
+`Gtk4.PresentationFramework` references `Gtk4.WindowsBase`; everything else references
 only within this set. There is no dependency on any external WPF or `Microsoft.WindowsDesktop` SDK.
 
 ## Build
@@ -50,7 +50,7 @@ it up serially to avoid a parallel-download race (see below).
 
 Build-wide settings live in `Directory.Build.props` / `Environment.Build.props`:
 - **`TreatWarningsAsErrors=true` for every project** — a new warning breaks the build.
-- **Strong-name signing**: every `Gtk4.Forms.*` project is signed with the repo-root `sign-key.snk` (public key
+- **Strong-name signing**: every `Gtk4.*` project is signed with the repo-root `sign-key.snk` (public key
   token `a5ab967c088e8330`). Each `InternalsVisibleTo` must carry `Key="$(Gtk4FormsPublicKey)"`, or the signed
   friend loses access. Projects outside the prefix (user-app stand-ins, WPF-Samples) stay unsigned.
 - `UseOSSpecificOutputPaths=true` redirects output to `bin-wsl/` / `obj-wsl/`, so a Windows build
@@ -63,27 +63,27 @@ Six suites, all **xUnit v3 on `net10.0`**, run with `dotnet test`:
 
 | Project | Tests | GTK? | Covers |
 |---|---|---|---|
-| `Gtk4.Forms.WindowsBase.Tests` | ~83 | no | DP / routed-event / property system |
-| `Gtk4.Forms.MarkupCompiler.Tests` | ~173 | no | XAML → `InitializeComponent` code generation |
-| `Gtk4.Forms.Wpf.ProjectConverter.Tests` | ~46 | no GTK | csproj rewrite, plus MSBuild target tests that spawn a nested `dotnet build` (needs a working SDK on PATH) |
-| `Gtk4.Forms.PresentationFramework.Tests` | ~1399 | **yes** | controls, binding, themes — on **real GTK 4 widgets** |
-| `Gtk4.Forms.Wpf.Testing.Tests` | ~50 | **yes** | the driver itself, plus UI tests of `Gtk4.Forms.WpfSample` and five official WPF-Samples compiled in process (SimpleBinding, MasterDetail, DirectionalBinding, HandlingEventOnCommandUsingCode, MousePointer) |
-| `Gtk4.Forms.Integration.Tests` | few | yes | end-to-end: add `Gtk4.Forms.Wpf` to the embedded WPF sample, build (converts), run, detect the window |
+| `Gtk4.WindowsBase.Tests` | ~83 | no | DP / routed-event / property system |
+| `Gtk4.MarkupCompiler.Tests` | ~173 | no | XAML → `InitializeComponent` code generation |
+| `Gtk4.Wpf.ProjectConverter.Tests` | ~46 | no GTK | csproj rewrite, plus MSBuild target tests that spawn a nested `dotnet build` (needs a working SDK on PATH) |
+| `Gtk4.PresentationFramework.Tests` | ~1399 | **yes** | controls, binding, themes — on **real GTK 4 widgets** |
+| `Gtk4.Wpf.Testing.Tests` | ~50 | **yes** | the driver itself, plus UI tests of `Gtk4.WpfSample` and five official WPF-Samples compiled in process (SimpleBinding, MasterDetail, DirectionalBinding, HandlingEventOnCommandUsingCode, MousePointer) |
+| `Gtk4.Integration.Tests` | few | yes | end-to-end: add `Gtk4.Wpf` to the embedded WPF sample, build (converts), run, detect the window |
 
 ```powershell
 dotnet test Gtk4.Wpf.sln                              # everything
-dotnet test Gtk4.Forms.WindowsBase.Tests --no-build
-dotnet test Gtk4.Forms.PresentationFramework.Tests --no-build
+dotnet test Gtk4.WindowsBase.Tests --no-build
+dotnet test Gtk4.PresentationFramework.Tests --no-build
 ```
 
 The first three suites need no GTK runtime or display (the converter suite needs an SDK on PATH). `PresentationFramework.Tests`
-drives real GTK 4 widgets. `Integration.Tests` needs the `Gtk4.Forms.Wpf` package already packed in
+drives real GTK 4 widgets. `Integration.Tests` needs the `Gtk4.Wpf` package already packed in
 the repo `Packages/` feed and the native GTK runtime; its window detection is Windows-only and it is
 **not** part of CI.
 
 ### GTK renderer tests
 
-`Gtk4.Forms.PresentationFramework.Tests` is an `Exe` with a custom `Program.cs`, and `WpfGtkFixture`
+`Gtk4.PresentationFramework.Tests` is an `Exe` with a custom `Program.cs`, and `WpfGtkFixture`
 owns the single thread GTK is initialised on. GTK 4 is thread-sensitive per OS:
 
 - **Windows** — the GDK Win32 backend calls `OleInitialize`, which needs **STA**. `WpfGtkFixture`
@@ -106,36 +106,36 @@ CI is `.github/workflows/build-and-test.yml` (Windows, Linux, macOS); per-OS log
 
 ## Drop-in conversion
 
-`Gtk4.Forms.Wpf` makes an existing WPF project run on GTK by adding one `PackageReference`:
+`Gtk4.Wpf` makes an existing WPF project run on GTK by adding one `PackageReference`:
 
-1. NuGet auto-imports `build/Gtk4.Forms.Wpf.{props,targets}` (and `buildTransitive/` copies for
+1. NuGet auto-imports `build/Gtk4.Wpf.{props,targets}` (and `buildTransitive/` copies for
    transitive consumers).
-2. The `GtkFormsConvertProject` target runs `Gtk4.Forms.Wpf.ProjectConverter` (packed under
+2. The `GtkFormsConvertProject` target runs `Gtk4.Wpf.ProjectConverter` (packed under
    `tools/`) at `BeforeBuild`, rewriting the consumer `.csproj` on disk.
 3. Because that build was already evaluated as a WPF project (the WindowsDesktop SDK), the converter
    **returns exit code 10 when it changed the project** and the target stops this build with an
    actionable message. The **next** build re-evaluates the converted (non-WPF) project and compiles
-   against `Gtk4.Forms`. Exit 0 = already converted → build proceeds. (`SkipGtkFormsConvert=true`
+   against `Gtk4.Wpf`. Exit 0 = already converted → build proceeds. (`SkipGtkFormsConvert=true`
    opts out of the rewrite only; design-time/IntelliSense builds are skipped. `<Resource>` files are
    copied to the output either way; `SkipGtkFormsCopyResources=true` opts out of that.)
 
 The csproj rewrite is a **one-time conversion** — a build target cannot retarget the build in
-progress, so the first build rewrites and the second is clean. `Gtk4.Forms.Integration.Tests` proves
+progress, so the first build rewrites and the second is clean. `Gtk4.Integration.Tests` proves
 the whole loop end-to-end against the embedded sample.
 
 ## Architecture
 
-- **`Gtk4.Forms.WindowsBase`** (`namespace System.Windows`, netstandard2.0) is the property engine:
+- **`Gtk4.WindowsBase`** (`namespace System.Windows`, netstandard2.0) is the property engine:
   `DependencyObject`/`DependencyProperty` (value precedence, coercion, change callbacks), the routed
   event system, and `Dispatcher`. No GTK.
-- **`Gtk4.Forms.PresentationFramework`** (`namespace System.Windows`) builds the visual tree on top:
+- **`Gtk4.PresentationFramework`** (`namespace System.Windows`) builds the visual tree on top:
   `UIElement`→`FrameworkElement`→controls, `Window`, layout/measurement, the binding engine, default
   styles/`ControlTemplate`s and theming (`System.Windows.Themes`), and the GtkSharp 4 rendering.
   Each WPF control is backed by a GTK 4 widget (e.g. `TextBox`→`Gtk.Entry`, `ComboBox`→`Gtk.DropDown`
   + `Gtk.StringList`, `Border`→`Gtk.Frame`). GTK 4-native widgets are preferred over the deprecated
   GTK 3 compat shims (`[Obsolete]` in GtkSharp4), which `TreatWarningsAsErrors` would otherwise
   reject.
-- **`Gtk4.Forms.MarkupCompiler`** is the build-time half of XAML: a System.Xaml-free MSBuild task
+- **`Gtk4.MarkupCompiler`** is the build-time half of XAML: a System.Xaml-free MSBuild task
   that generates the `InitializeComponent` + `x:Name` partial class (and, for `App.xaml`, the
   `[STAThread] Main`) from the untouched presentation-namespace XAML.
 
