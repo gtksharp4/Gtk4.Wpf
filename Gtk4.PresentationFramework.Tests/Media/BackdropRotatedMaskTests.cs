@@ -31,6 +31,8 @@ public class BackdropRotatedMaskTests : WpfGtkTestBase
 		try
 		{
 			win.Show();
+			// A slow runner can leave the window unallocated past a fixed wait: the snapshot is then null.
+			Assert.True(GtkPump.Until(() => panel.Widget.IsMapped && panel.Widget.Width > 0), "panel never allocated");
 			GtkPump.For(400);
 			using var paintable = new Gtk.WidgetPaintable(panel.Widget);
 			using var snapshot = new Gtk.Snapshot();
