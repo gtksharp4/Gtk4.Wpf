@@ -39,7 +39,7 @@ public partial class ControlBrushPixelGtkTests : WpfGtkTestBase
 		el.IsHitTestVisible = false;
 		var win = new Window { Content = el, Width = 300, Height = 200 };
 		win.Show();
-		GtkPump.Until(() => el.Widget.IsMapped && el.Widget.Width > 0);
+		Assert.True(GtkPump.Until(() => el.Widget.IsMapped && el.Widget.Width > 0), "control never allocated");
 		return win;
 	}
 

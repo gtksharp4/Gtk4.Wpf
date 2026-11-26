@@ -69,9 +69,9 @@ public class AccessKeyScopeTests : AccessKeyTestBase
 		GtkPump.Until(() => two.IsVisible);
 		two.Click += (_, _) => clicks++;
 		one.Focus();
-		GtkPump.For(100);
+		Assert.True(GtkPump.Until(() => one.IsKeyboardFocused), "one never took focus");
 		Assert.True(AccessKeyManager.ProcessKey(window, "G", false));
-		GtkPump.For(50);
+		GtkPump.Until(() => two.IsKeyboardFocused);
 		Assert.True(two.IsKeyboardFocused);
 		Assert.Equal(1, clicks);
 		window.Close();
@@ -88,7 +88,7 @@ public class AccessKeyScopeTests : AccessKeyTestBase
 		open.Click += (_, _) => menuClicks++;
 		button.Click += (_, _) => buttonClicks++;
 		file.IsSubmenuOpen = true;
-		GtkPump.For(100);
+		Assert.True(GtkPump.Until(() => file.IsSubmenuShown), "submenu never shown");
 		open.DispatchGtkKeyPressed(KeyO, 0, 1);
 		Assert.Equal(1, menuClicks);
 		Assert.Equal(0, buttonClicks);
@@ -114,7 +114,7 @@ public class AccessKeyScopeTests : AccessKeyTestBase
 		var box = new TextBox();
 		var window = Show(Stack(other, box));
 		box.Focus();
-		GtkPump.For(100);
+		Assert.True(GtkPump.Until(() => box.IsKeyboardFocused), "box never took focus");
 		Assert.False(Alt(window, KeyO));
 		Assert.True(box.IsKeyboardFocused);
 		window.Close();

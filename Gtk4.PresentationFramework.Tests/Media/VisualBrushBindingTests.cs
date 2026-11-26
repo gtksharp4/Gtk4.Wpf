@@ -33,7 +33,7 @@ public class VisualBrushBindingTests : WpfGtkTestBase
 		try
 		{
 			win.Show();
-			GtkPump.For(300);
+			GtkPump.Until(() => ReferenceEquals(brush.Visual, panel));
 			Assert.Same(panel, brush.Visual);
 		}
 		finally { win.Close(); }

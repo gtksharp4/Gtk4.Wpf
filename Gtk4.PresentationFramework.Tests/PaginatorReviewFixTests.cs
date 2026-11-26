@@ -100,7 +100,8 @@ public class PaginatorReviewFixTests : WpfGtkTestBase
 		{
 			paginator.GetPageAsync(0);
 			paginator.GetPageAsync(1);
-			GtkPump.For(150);
+			GtkPump.Until(() => results.Count >= 2);
+			GtkPump.For(50);
 		}
 		Assert.Equal(2, results.Count);
 		Assert.All(results, e => Assert.False(e.Cancelled));
@@ -119,7 +120,8 @@ public class PaginatorReviewFixTests : WpfGtkTestBase
 			paginator.GetPageAsync(0, "a");
 			paginator.GetPageAsync(0, "b");
 			paginator.CancelAsync("a");
-			GtkPump.For(150);
+			GtkPump.Until(() => results.Count >= 3);
+			GtkPump.For(50);
 		}
 		Assert.Equal(3, results.Count);
 		Assert.Equal(2, results.FindAll(e => e.Cancelled).Count);

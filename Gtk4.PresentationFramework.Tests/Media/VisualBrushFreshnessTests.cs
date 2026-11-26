@@ -22,6 +22,7 @@ public class VisualBrushFreshnessTests : WpfGtkTestBase
 		var panel = new StackPanel();
 		var win = new WpfWindow { Content = panel, Width = 200, Height = 200 };
 		win.Show();
+		Assert.True(GtkPump.Until(() => panel.Widget.IsMapped && panel.Widget.Width > 0), "window never allocated");
 		GtkPump.For(500);
 		try
 		{
@@ -54,6 +55,7 @@ public class VisualBrushFreshnessTests : WpfGtkTestBase
 	{
 		var win = new WpfWindow { Content = new StackPanel(), Width = 200, Height = 200 };
 		win.Show();
+		Assert.True(GtkPump.Until(() => win.Widget.IsMapped), "window never mapped");
 		GtkPump.For(500);
 		try
 		{

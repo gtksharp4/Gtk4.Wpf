@@ -22,7 +22,7 @@ public class AdornerPlacementGtkTests : WpfGtkTestBase
 			ShowAndLayout(win, target);
 			var adorner = new WidgetAdorner(target);
 			AdornerLayer.GetAdornerLayer(target)!.Add(adorner);
-			GtkPump.For(100);
+			GtkPump.Until(() => Covers(OverlayOf(win), target, adorner));
 			var overlay = OverlayOf(win);
 			Assert.Same(overlay, adorner.Widget.Parent);
 			AssertCovers(overlay, target, adorner);
@@ -97,11 +97,11 @@ public class AdornerPlacementGtkTests : WpfGtkTestBase
 			var layer = AdornerLayer.GetAdornerLayer(target)!;
 			var adorner = new WidgetAdorner(target);
 			layer.Add(adorner);
-			GtkPump.For(100);
+			Assert.True(GtkPump.Until(() => Covers(OverlayOf(win), target, adorner)), "adorner never placed");
 			var overlay = OverlayOf(win);
 			int before = adorner.Widget.MarginTop;
 			spacer.Widget.SetSizeRequest(-1, 90);
-			GtkPump.For(300);
+			GtkPump.Until(() => spacer.Widget.Height >= 90);
 			layer.Update(target);
 			Assert.True(adorner.Widget.MarginTop > before);
 			AssertCovers(overlay, target, adorner);
@@ -118,7 +118,7 @@ public class AdornerPlacementGtkTests : WpfGtkTestBase
 			ShowAndLayout(win, target);
 			var adorner = new WidgetAdorner(spacer);
 			AdornerLayer.GetAdornerLayer(spacer)!.Add(adorner);
-			GtkPump.For(100);
+			Assert.True(GtkPump.Until(() => Covers(OverlayOf(win), spacer, adorner)), "adorner never placed");
 			spacer.Widget.SetSizeRequest(-1, 90);
 			GtkState.Require(() => adorner.Widget.HeightRequest == 90, "adorner height follows", spacer);
 		}

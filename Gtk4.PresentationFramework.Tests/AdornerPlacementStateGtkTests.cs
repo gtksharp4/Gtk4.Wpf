@@ -21,13 +21,15 @@ public class AdornerPlacementStateGtkTests : WpfGtkTestBase
 			ShowAndLayout(win, target);
 			var adorner = new WidgetAdorner(target);
 			AdornerLayer.GetAdornerLayer(target)!.Add(adorner);
-			GtkPump.For(150);
+			Assert.True(GtkPump.Until(
+				() => AdornerPlacementBoundsGtkTests.Covers(OverlayOf(win), target, adorner)),
+				"adorner never placed");
 			adorner.Visibility = Visibility.Hidden;
-			GtkPump.For(150);
+			GtkPump.Until(() => adorner.Widget.Opacity == 0.0);
 			Assert.True(adorner.Widget.Visible);
 			Assert.Equal(0.0, adorner.Widget.Opacity);
 			adorner.Visibility = Visibility.Visible;
-			GtkPump.For(150);
+			GtkPump.Until(() => adorner.Widget.Opacity == 1.0);
 			Assert.True(adorner.Widget.Visible);
 			Assert.Equal(1.0, adorner.Widget.Opacity);
 		}
@@ -43,7 +45,9 @@ public class AdornerPlacementStateGtkTests : WpfGtkTestBase
 			ShowAndLayout(win, target);
 			var adorner = new WidgetAdorner(target);
 			AdornerLayer.GetAdornerLayer(target)!.Add(adorner);
-			GtkPump.For(150);
+			Assert.True(GtkPump.Until(
+				() => AdornerPlacementBoundsGtkTests.Covers(OverlayOf(win), target, adorner)),
+				"adorner never placed");
 			adorner.Visibility = Visibility.Hidden;
 			adorner.Visibility = Visibility.Visible;
 			Assert.False(adorner.Widget.CanTarget);
@@ -83,14 +87,15 @@ public class AdornerPlacementStateGtkTests : WpfGtkTestBase
 			ShowAndLayout(win, target);
 			var adorner = new WidgetAdorner(target);
 			decorator.AdornerLayer.Add(adorner);
-			GtkPump.For(150);
+			GtkPump.Until(() => adorner.Widget.Visible
+				&& AdornerPlacementBoundsGtkTests.Covers((Gtk.Overlay)decorator.Widget, target, adorner));
 			Assert.True(adorner.Widget.Visible);
 			target.Visibility = Visibility.Collapsed;
-			GtkPump.For(300);
+			GtkPump.Until(() => !adorner.Widget.Visible);
 			target.Visibility = Visibility.Visible;
 			GtkPump.Until(() => adorner.Widget.Visible);
 			Assert.True(adorner.Widget.Visible);
-			GtkPump.For(150);
+			GtkPump.Until(() => AdornerPlacementBoundsGtkTests.Covers((Gtk.Overlay)decorator.Widget, target, adorner));
 			AdornerPlacementBoundsGtkTests.AssertCovers(
 				(Gtk.Overlay)decorator.Widget, target, adorner);
 		}
@@ -108,7 +113,9 @@ public class AdornerPlacementStateGtkTests : WpfGtkTestBase
 			ShowAndLayout(win, target);
 			var adorner = new WidgetAdorner(target);
 			decorator.AdornerLayer.Add(adorner);
-			GtkPump.For(150);
+			Assert.True(GtkPump.Until(
+				() => AdornerPlacementBoundsGtkTests.Covers((Gtk.Overlay)decorator.Widget, target, adorner)),
+				"adorner never placed");
 			// No WPF event (LayoutUpdated, SizeChanged) fires for a widget-level hide/show; only the frame layout can
 			// bring the adorner back.
 			target.Widget.Visible = false;
@@ -130,7 +137,9 @@ public class AdornerPlacementStateGtkTests : WpfGtkTestBase
 			ShowAndLayout(win, target);
 			var adorner = new WidgetAdorner(target);
 			AdornerLayer.GetAdornerLayer(target)!.Add(adorner);
-			GtkPump.For(150);
+			Assert.True(GtkPump.Until(
+				() => AdornerPlacementBoundsGtkTests.Covers(OverlayOf(win), target, adorner)),
+				"adorner never placed");
 			int moves = 0, ups = 0;
 			adorner.MouseMove += (_, _) => moves++;
 			adorner.MouseUp += (_, _) => ups++;

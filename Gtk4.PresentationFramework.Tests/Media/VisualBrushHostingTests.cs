@@ -27,6 +27,7 @@ public class VisualBrushHostingTests : WpfGtkTestBase
 	{
 		var win = new WpfWindow { Content = new StackPanel(), Width = 300, Height = 300 };
 		win.Show();
+		Assert.True(GtkPump.Until(() => win.Widget.IsMapped), "window never mapped");
 		GtkPump.For(300);
 		return win;
 	}

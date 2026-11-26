@@ -38,7 +38,7 @@ public class TextBlockInlineLayoutGtkTests : WpfGtkTestBase
 			var label = (Gtk.Label)((Gtk.Overlay)outer.Widget).Child!;
 			label.Layout.GetPixelSize(out int before, out _);
 			outer.Inlines.Remove(container);
-			GtkPump.For(300);
+			GtkPump.Until(() => inner.Widget.Parent == null && !(label.Text ?? "").Contains('￼'));
 			Assert.Null(inner.Widget.Parent);
 			Assert.Null(inner.Parent);
 			Assert.Null(LogicalTreeHelper.GetParent(inner));
@@ -103,7 +103,7 @@ public class TextBlockInlineLayoutGtkTests : WpfGtkTestBase
 		{
 			Assert.Equal(Gtk.Align.Start, inner.Widget.Halign);
 			outer.Inlines.Remove(container);
-			GtkPump.For(200);
+			GtkPump.Until(() => inner.Widget.Halign == Gtk.Align.End);
 			Assert.Equal(Gtk.Align.End, inner.Widget.Halign);
 			Assert.Equal(Gtk.Align.Center, inner.Widget.Valign);
 		}

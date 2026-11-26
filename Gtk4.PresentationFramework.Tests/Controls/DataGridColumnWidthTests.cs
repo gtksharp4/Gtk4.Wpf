@@ -108,7 +108,7 @@ public class DataGridColumnWidthTests : WpfGtkTestBase
 		try
 		{
 			win.Show();
-			GtkPump.For(300);
+			Assert.True(GtkPump.Until(() => grid._grid?.GetChildAt(0, 0) is { Width: > 0 }), "header never allocated");
 			var header = grid._grid!.GetChildAt(0, 0)!;
 			header.Measure(Gtk.Orientation.Horizontal, -1, out _, out var natural, out _, out _);
 			Assert.True(natural > 10);

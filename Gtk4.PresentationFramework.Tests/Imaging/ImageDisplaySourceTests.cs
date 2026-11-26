@@ -46,7 +46,7 @@ public class ImageDisplaySourceTests : WpfGtkTestBase
 		try
 		{
 			using var probe = new ImageDisplayProbe(new BitmapImage(new Uri(name, UriKind.Relative)));
-			GtkPumpFor(100);
+			Lifecycle.GtkPump.Until(() => probe.Image.ActualWidth == ImageDisplayFixtures.Size);
 			Assert.Equal(ImageDisplayFixtures.Size, probe.Image.ActualWidth);
 			ImageDisplayFixtures.AssertQuadrants(probe.ImagePixels(), 0);
 		}
@@ -71,13 +71,15 @@ public class ImageDisplaySourceTests : WpfGtkTestBase
 	{
 		using var probe = new ImageDisplayProbe(null);
 		probe.Image.Source = ImageDisplayFixtures.Quadrant();
-		GtkPumpFor(200);
+		Lifecycle.GtkPump.Until(
+			() => probe.Image.ActualWidth == ImageDisplayFixtures.Size && probe.Image.Widget.IsMapped);
 		Assert.Equal(ImageDisplayFixtures.Size, probe.Image.ActualWidth);
 		ImageDisplayFixtures.AssertQuadrants(probe.ImagePixels(), 0);
 
 		var red = BitmapSource.Create(32, 32, 96, 96, PixelFormats.Bgr32, null, RedPixels(32), 128);
 		probe.Image.Source = red;
-		GtkPumpFor(200);
+		Lifecycle.GtkPump.Until(
+			() => probe.Image.ActualWidth == 32 && Centre(probe) == ((byte)0, (byte)0, (byte)255, (byte)255));
 		Assert.Equal(32, probe.Image.ActualWidth);
 		Assert.Equal(((byte)0, (byte)0, (byte)255, (byte)255), Centre(probe));
 	});
@@ -89,8 +91,6 @@ public class ImageDisplaySourceTests : WpfGtkTestBase
 			px[i + 2] = 255;
 		return px;
 	}
-
-	static void GtkPumpFor(int ms) => Lifecycle.GtkPump.For(ms);
 
 	[Theory]
 	[InlineData(Stretch.Uniform)]

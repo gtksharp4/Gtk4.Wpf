@@ -92,7 +92,8 @@ public class AccessKeyManagerTests : AccessKeyTestBase
 		for (int i = 0; i < 4; i++)
 		{
 			Assert.True(AccessKeyManager.ProcessKey(window, "g", false));
-			GtkPump.For(50);
+			GtkPump.Until(() => (one.IsKeyboardFocused ^ two.IsKeyboardFocused)
+				&& (seen.Count == 0 || !seen[^1].IsKeyboardFocused));
 			Assert.True(one.IsKeyboardFocused ^ two.IsKeyboardFocused);
 			seen.Add(one.IsKeyboardFocused ? one : two);
 		}

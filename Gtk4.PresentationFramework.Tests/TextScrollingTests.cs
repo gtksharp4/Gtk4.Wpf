@@ -97,7 +97,7 @@ public class TextScrollingTests : WpfGtkTestBase
 		};
 		var win = new Window { Content = log };
 		win.Show();
-		GtkPump.For(100);
+		GtkPump.Until(() => log.Widget.IsMapped && log.Widget.Height > 0);
 		for (int i = 0; i < 200; i++) log.AppendText("line " + i + "\n");
 		log.ScrollToEnd();
 		var adj = Scrolled(log).Vadjustment;

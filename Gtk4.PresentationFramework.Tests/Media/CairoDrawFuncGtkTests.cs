@@ -53,8 +53,9 @@ public class CairoDrawFuncGtkTests : WpfGtkTestBase
 			GtkPump.Until(() => seen.Count > 0);
 			for (int i = 0; i < Frames; i++)
 			{
+				int painted = seen.Count;
 				invalidate();
-				GtkPump.For(20);
+				GtkPump.Until(() => seen.Count > painted, 1000);
 			}
 		}
 		finally

@@ -64,14 +64,14 @@ public class BringIntoViewTests : WpfGtkTestBase
 		var viewer = new FlowDocumentPageViewer { Document = doc };
 		var window = new Window { Content = viewer };
 		window.Show();
-		GtkPump.For(100);
+		GtkPump.Until(() => viewer.PageCount > 1);
 		Assert.True(viewer.PageCount > 1);
 		Assert.Equal(1, viewer.MasterPageNumber);
 		last.BringIntoView();
-		GtkPump.For(50);
+		GtkPump.Until(() => viewer.MasterPageNumber == viewer.PageCount);
 		Assert.Equal(viewer.PageCount, viewer.MasterPageNumber);
 		((Run)((Paragraph)doc.Blocks[0]).Inlines[0]).BringIntoView();
-		GtkPump.For(50);
+		GtkPump.Until(() => viewer.MasterPageNumber == 1);
 		Assert.Equal(1, viewer.MasterPageNumber);
 		window.Close();
 	});

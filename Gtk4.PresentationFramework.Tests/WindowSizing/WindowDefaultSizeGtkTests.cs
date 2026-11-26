@@ -17,6 +17,7 @@ public class WindowDefaultSizeGtkTests : WpfGtkTestBase
 	static (int W, int H) Open(WpfWindow win)
 	{
 		win.Show();
+		GtkPump.Until(() => win.Widget.IsMapped && WindowExtent.Of(win).H > 0);
 		GtkPump.For(300);
 		return WindowExtent.Of(win);
 	}

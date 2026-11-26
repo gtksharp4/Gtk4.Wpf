@@ -20,7 +20,7 @@ public class ContextMenuSharedTests : WpfGtkTestBase
 		panel.Children.Add(second);
 		var win = new WpfWindow { Content = panel };
 		win.Show();
-		GtkPump.For(100);
+		Assert.True(GtkPump.Until(() => first.Widget.IsMapped && second.Widget.IsMapped), "buttons never mapped");
 
 		menu.Open(first.Widget);
 		Assert.Equal(first.Widget.Handle, menu.GtkPopover!.Parent!.Handle);

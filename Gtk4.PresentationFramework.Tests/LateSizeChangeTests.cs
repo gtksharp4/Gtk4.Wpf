@@ -20,10 +20,10 @@ public class LateSizeChangeTests : WpfGtkTestBase
 		try
 		{
 			win.Show();
-			GtkPump.For(300);
+			Assert.True(GtkPump.Until(() => canvas.ActualWidth == 50), "canvas never laid out");
 			canvas.Width = 123;
 			canvas.Height = 45;
-			GtkPump.For(300);
+			GtkPump.Until(() => canvas.ActualWidth == 123 && canvas.ActualHeight == 45);
 			Assert.Equal(123, canvas.ActualWidth);
 			Assert.Equal(45, canvas.ActualHeight);
 		}
@@ -44,12 +44,12 @@ public class LateSizeChangeTests : WpfGtkTestBase
 		try
 		{
 			win.Show();
-			GtkPump.For(300);
+			Assert.True(GtkPump.Until(() => source.ActualWidth == 90), "source never laid out");
 			mirror.SetBinding(FrameworkElement.WidthProperty,
 				new Binding { Path = new PropertyPath("(Canvas.ActualWidth)"), ElementName = "src" });
 			mirror.SetBinding(FrameworkElement.HeightProperty,
 				new Binding { Path = new PropertyPath("(Canvas.ActualHeight)"), ElementName = "src" });
-			GtkPump.For(300);
+			GtkPump.Until(() => mirror.ActualWidth == 90 && mirror.ActualHeight == 60);
 			Assert.Equal(90, mirror.ActualWidth);
 			Assert.Equal(60, mirror.ActualHeight);
 		}

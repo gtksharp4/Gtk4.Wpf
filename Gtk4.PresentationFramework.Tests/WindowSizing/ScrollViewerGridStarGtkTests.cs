@@ -50,6 +50,8 @@ public class ScrollViewerGridStarGtkTests : WpfGtkTestBase
 		grid.Children.Add(tb);
 		var win = new WpfWindow { Width = 600, Height = 400, Content = grid };
 		win.Show();
+		GtkPump.Until(
+			() => top.Widget.Width > 0 && top.Widget.Height > 0 && tb.Widget.Width > 0 && tb.Widget.Height > 0);
 		GtkPump.For(400);
 		try
 		{

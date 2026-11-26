@@ -37,7 +37,8 @@ public class PaginationBatchingTests : WpfGtkTestBase
 		{
 			for (int i = 0; i < 50; i++) doc.Blocks.Add(new Paragraph(new Run("paragraph " + i)));
 			Assert.Equal(0, changed);
-			GtkPump.For(150);
+			GtkPump.Until(() => changed > 0 && completed > 0);
+			GtkPump.For(100);
 		}
 		Assert.Equal(1, changed);
 		Assert.Equal(1, completed);
@@ -137,9 +138,11 @@ public class PaginationBatchingTests : WpfGtkTestBase
 			GtkPump.For(100);
 			Assert.Equal(0, changed);
 			run.FontSize = 40;
+			GtkPump.Until(() => changed >= 1);
 			GtkPump.For(100);
 			Assert.Equal(1, changed);
 			doc.PageWidth = 300;
+			GtkPump.Until(() => changed >= 2);
 			GtkPump.For(100);
 			Assert.Equal(2, changed);
 		}

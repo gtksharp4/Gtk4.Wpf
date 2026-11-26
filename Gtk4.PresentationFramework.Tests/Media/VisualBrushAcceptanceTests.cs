@@ -40,6 +40,7 @@ public class VisualBrushAcceptanceTests : WpfGtkTestBase
 		try
 		{
 			win.Show();
+			Assert.True(GtkPump.Until(() => source.Widget.IsMapped && source.Widget.Width > 0), "source never allocated");
 			GtkPump.For(300);
 			source.UpdateLayout();
 			body(source, win);
@@ -140,7 +141,7 @@ public class VisualBrushAcceptanceTests : WpfGtkTestBase
 		try
 		{
 			win.Show();
-			GtkPump.For(200);
+			GtkPump.Until(() => panel.Widget.IsMapped && !ElementCssStyle.IsUnnamed(panel.Widget.Name));
 			Assert.False(ElementCssStyle.IsUnnamed(panel.Widget.Name), panel.Widget.Name);
 			Assert.True(ElementCssStyle.IsUnnamed("GtkBackdropBox"));
 		}

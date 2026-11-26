@@ -71,7 +71,7 @@ public class AccessKeyActivationTests : AccessKeyTestBase
 		var orphan = new Label { Content = "_Other" };
 		var window = Show(Stack(named, box, orphan));
 		Assert.True(Alt(window, KeyN));
-		GtkPump.For(100);
+		GtkPump.Until(() => box.IsKeyboardFocused);
 		Assert.True(box.IsKeyboardFocused);
 		Assert.False(Alt(window, 'o')); // no target: no match, so the key is not swallowed
 		Assert.True(box.IsKeyboardFocused);
@@ -105,7 +105,7 @@ public class AccessKeyActivationTests : AccessKeyTestBase
 		int clicks = 0;
 		button.Click += (_, _) => clicks++;
 		box.Focus();
-		GtkPump.For(100);
+		Assert.True(GtkPump.Until(() => box.IsKeyboardFocused), "box never took focus");
 		box.DispatchGtkKeyPressed(KeyO, 0, 1);
 		Assert.Equal(0, clicks);
 		Assert.True(Alt(window, KeyO));
@@ -122,7 +122,7 @@ public class AccessKeyActivationTests : AccessKeyTestBase
 		int clicks = 0;
 		button.Click += (_, _) => clicks++;
 		other.Focus();
-		GtkPump.For(100);
+		Assert.True(GtkPump.Until(() => other.IsKeyboardFocused), "other never took focus");
 		other.DispatchGtkKeyPressed(KeyO, 0, 1);
 		Assert.Equal(1, clicks);
 		window.Close();
@@ -137,7 +137,7 @@ public class AccessKeyActivationTests : AccessKeyTestBase
 		int seen = 0;
 		window.AddHandler(UIElement.TextInputEvent, new TextCompositionEventHandler((_, _) => seen++));
 		other.Focus();
-		GtkPump.For(100);
+		Assert.True(GtkPump.Until(() => other.IsKeyboardFocused), "other never took focus");
 		other.DispatchGtkKeyPressed('o', 0, 1);
 		Assert.Equal(1, seen);
 		window.Close();
@@ -156,7 +156,7 @@ public class AccessKeyActivationTests : AccessKeyTestBase
 		open.Click += (_, _) => clicks++;
 		Assert.False(Alt(window, KeyO));
 		Assert.True(Alt(window, KeyF));
-		GtkPump.For(100);
+		Assert.True(GtkPump.Until(() => file.IsSubmenuShown), "submenu never shown");
 		Assert.True(file.IsSubmenuOpen);
 		file.DispatchGtkKeyPressed(KeyO, 0, 1);
 		Assert.Equal(1, clicks);

@@ -149,6 +149,7 @@ public class ShapeReviewFixTests : WpfGtkTestBase
 				line.X2 = 90 + i * 10;
 				GtkPump.For(100);
 			}
+			GtkPump.Until(() => line.ActualWidth >= 99);
 			Assert.True(line.ActualWidth >= 99);
 		}
 		finally { window.Close(); }

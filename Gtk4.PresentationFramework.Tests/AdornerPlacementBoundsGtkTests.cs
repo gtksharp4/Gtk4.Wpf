@@ -40,6 +40,11 @@ public class AdornerPlacementBoundsGtkTests : WpfGtkTestBase
 		Assert.InRange(a.Height, t.Height - 1, t.Height + 1);
 	}
 
+	internal static bool Covers(Gtk.Overlay overlay, UIElement target, Adorner adorner) =>
+		target.Widget.ComputeBounds(overlay, out var t) && adorner.Widget.ComputeBounds(overlay, out var a)
+		&& Math.Abs(a.X - t.X) <= 1 && Math.Abs(a.Y - t.Y) <= 1
+		&& Math.Abs(a.Width - t.Width) <= 1 && Math.Abs(a.Height - t.Height) <= 1;
+
 	[Fact]
 	public void Adorner_covers_the_border_box_of_an_element_inside_border_and_padding() => Run(() =>
 	{
@@ -53,7 +58,7 @@ public class AdornerPlacementBoundsGtkTests : WpfGtkTestBase
 			ShowAndLayout(win, button);
 			var adorner = new WidgetAdorner(button);
 			AdornerLayer.GetAdornerLayer(button)!.Add(adorner);
-			GtkPump.For(150);
+			GtkPump.Until(() => Covers(OverlayOf(win), button, adorner));
 			AssertCovers(OverlayOf(win), button, adorner);
 		}
 		finally { win.Close(); }
@@ -69,7 +74,7 @@ public class AdornerPlacementBoundsGtkTests : WpfGtkTestBase
 			ShowAndLayout(win, button);
 			var adorner = new WidgetAdorner(button);
 			AdornerLayer.GetAdornerLayer(button)!.Add(adorner);
-			GtkPump.For(150);
+			Assert.True(GtkPump.Until(() => Covers(OverlayOf(win), button, adorner)), "adorner never placed");
 			var overlay = OverlayOf(win);
 			var b = BoundsIn(button.Widget, overlay);
 			var hit = overlay.Pick(b.X + b.Width / 2, b.Y + b.Height / 2, Gtk.PickFlags.Default);
@@ -103,7 +108,7 @@ public class AdornerPlacementBoundsGtkTests : WpfGtkTestBase
 			ShowAndLayout(win, target);
 			var adorner = new WidgetAdorner(target);
 			AdornerLayer.GetAdornerLayer(target)!.Add(adorner);
-			GtkPump.For(150);
+			GtkPump.Until(() => adorner.Widget.Visible && Covers(OverlayOf(win), target, adorner));
 			Assert.True(adorner.Widget.Visible);
 			target.Visibility = Visibility.Collapsed;
 			GtkPump.Until(() => !adorner.Widget.Visible);
@@ -111,7 +116,7 @@ public class AdornerPlacementBoundsGtkTests : WpfGtkTestBase
 			target.Visibility = Visibility.Visible;
 			GtkPump.Until(() => adorner.Widget.Visible);
 			Assert.True(adorner.Widget.Visible);
-			GtkPump.For(100);
+			GtkPump.Until(() => Covers(OverlayOf(win), target, adorner));
 			AssertCovers(OverlayOf(win), target, adorner);
 		}
 		finally { win.Close(); }
@@ -130,6 +135,7 @@ public class AdornerPlacementBoundsGtkTests : WpfGtkTestBase
 			var adorner = new HugeAdorner(target);
 			AdornerLayer.GetAdornerLayer(target)!.Add(adorner);
 			adorner.Widget.SetSizeRequest(5000, 5000);
+			Assert.True(GtkPump.Until(() => adorner.Widget.IsMapped), "adorner never mapped");
 			GtkPump.For(200);
 			Assert.Equal(w, overlay.Width);
 			Assert.Equal(h, overlay.Height);
@@ -147,12 +153,12 @@ public class AdornerPlacementBoundsGtkTests : WpfGtkTestBase
 			ShowAndLayout(win, target);
 			var adorner = new WidgetAdorner(target);
 			AdornerLayer.GetAdornerLayer(target)!.Add(adorner);
-			GtkPump.For(150);
+			Assert.True(GtkPump.Until(() => Covers(OverlayOf(win), target, adorner)), "adorner never placed");
 			var overlay = OverlayOf(win);
 			double y0 = BoundsIn(target.Widget, overlay).Y;
 			// A GTK-only move: no WPF SizeChanged or LayoutUpdated is raised for the adorned element.
 			spacer.Widget.SetSizeRequest(-1, 90);
-			GtkPump.For(300);
+			GtkPump.Until(() => spacer.Widget.Height >= 90 && Covers(overlay, target, adorner));
 			double y1 = BoundsIn(target.Widget, overlay).Y;
 			Assert.True(y1 > y0 + 10, $"target moved {y0} -> {y1}");
 			Assert.InRange(BoundsIn(adorner.Widget, overlay).Y, y1 - 1, y1 + 1);

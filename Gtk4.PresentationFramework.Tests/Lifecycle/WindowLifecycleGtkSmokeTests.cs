@@ -98,6 +98,7 @@ public class WindowLifecycleGtkSmokeTests : WpfGtkTestBase
 		child.Unloaded += (_, _) => log.Add("Unloaded:child");
 
 		win.Close();
+		GtkPump.Until(() => log.Count >= 3);
 		GtkPump.For(50);
 
 		Assert.Equal(new[] { "Closed", "Unloaded:window", "Unloaded:child" }, log);

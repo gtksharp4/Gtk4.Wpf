@@ -33,6 +33,7 @@ public class DocumentsReviewFixTests : WpfGtkTestBase
 		int views = 0;
 		doc.ViewChanged += () => views++;
 		doc.FontSize = 20;
+		GtkPump.Until(() => views > 0);
 		GtkPump.For(100);
 		Assert.InRange(views, 1, 1);
 	});
@@ -49,6 +50,7 @@ public class DocumentsReviewFixTests : WpfGtkTestBase
 		var paragraph = new Paragraph();
 		for (int i = 0; i < 10; i++) paragraph.Inlines.Add(new Run("r" + i));
 		doc.Blocks.Add(paragraph);
+		GtkPump.Until(() => views > 0);
 		GtkPump.For(100);
 		Assert.InRange(views, 1, 1);
 	});

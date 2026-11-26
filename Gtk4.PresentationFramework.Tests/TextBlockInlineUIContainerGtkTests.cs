@@ -86,7 +86,8 @@ public class TextBlockInlineUIContainerGtkTests : WpfGtkTestBase
 			double after12 = outer.InlineObjectEdges(0).After;
 			inner.FontSize = 36;
 			GtkState.Require(() => inner.Widget.Height > h12, "child grew", outer, inner);
-			GtkPump.For(400);
+			GtkPump.Until(() => inner.Widget.Width > w12 && outer.Widget.Height > outerH12
+				&& outer.InlineObjectEdges(0).After > after12);
 			Assert.True(inner.Widget.Width > w12);
 			Assert.True(outer.Widget.Height > outerH12, "outer TextBlock grew with the child");
 			Assert.True(outer.InlineObjectEdges(0).After > after12, "following text moved right");

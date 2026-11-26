@@ -27,7 +27,7 @@ public class FlowDocumentPageViewerTests : WpfGtkTestBase
 		var win = new Window { Content = viewer, Width = 600, Height = 400 };
 		win.Show();
 		GtkPump.Until(() => viewer.Widget.IsMapped && viewer.PageWidget!.Width > 0);
-		GtkPump.For(250);
+		GtkPump.Until(() => ((IDocumentPaginatorSource)docA).DocumentPaginator.PageSize.Width != 816);
 		Assert.NotEqual(816, ((IDocumentPaginatorSource)docA).DocumentPaginator.PageSize.Width);
 		viewer.Document = toNull ? null : new FlowDocument(new Paragraph(new Run("b")));
 		GtkPump.For(100);

@@ -67,12 +67,16 @@ public partial class FlowPageLayoutGtkTests
 		Assert.True(viewer.PageCount > 1);
 		Assert.Equal(paginator.PageCount, viewer.PageCount);
 		viewer.NextPage();
-		GtkPump.For(300);
-		var second = WidgetPixels.Capture(viewer.PageWidget!);
-		bool differs = false;
-		for (int y = 0; y < first.Height && !differs; y += 2)
-			for (int x = 0; x < first.Width; x += 2)
-				if (first.At(x, y) != second.At(x, y)) { differs = true; break; }
+		bool Differs()
+		{
+			var second = WidgetPixels.Capture(viewer.PageWidget!);
+			if (second.Width != first.Width || second.Height != first.Height) return false;
+			for (int y = 0; y < first.Height; y += 2)
+				for (int x = 0; x < first.Width; x += 2)
+					if (first.At(x, y) != second.At(x, y)) return true;
+			return false;
+		}
+		bool differs = GtkPump.Until(Differs);
 		Assert.Equal(2, viewer.MasterPageNumber);
 		win.Close();
 		Assert.True(differs);

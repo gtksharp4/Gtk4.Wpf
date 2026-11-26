@@ -29,6 +29,7 @@ public class VisualBrushHostTests : WpfGtkTestBase
 	{
 		var win = new WpfWindow { Content = new StackPanel(), Width = 300, Height = 300 };
 		win.Show();
+		Assert.True(GtkPump.Until(() => win.Widget.IsMapped), "window never mapped");
 		GtkPump.For(300);
 		return win;
 	}
@@ -56,7 +57,7 @@ public class VisualBrushHostTests : WpfGtkTestBase
 			GtkPump.For(600);
 			Sample(rect, 10, 10);
 			source.Background = Brushes.Blue;
-			GtkPump.For(600);
+			GtkPump.Until(() => { var q = Sample(rect, 10, 10); return q.B > 200 && q.R < 50; });
 			var p = Sample(rect, 10, 10);
 			Assert.True(p.B > 200 && p.R < 50, p.ToString());
 			Assert.True(win.IsActive, "the window lost activation");
@@ -129,12 +130,13 @@ public class VisualBrushHostTests : WpfGtkTestBase
 			var brush = Corner(first);
 			var rect = new Rectangle { Fill = brush };
 			Sample(rect, 5, 5);
-			GtkPump.For(400);
+			GtkPump.Until(() => DetachedSourceHost.IsHosted(first.Widget));
 			Assert.True(DetachedSourceHost.IsHosted(first.Widget));
 			var second = new Border { Width = 30, Height = 30, Background = Brushes.Blue };
 			brush.Visual = second;
 			Sample(rect, 5, 5);
-			GtkPump.For(400);
+			GtkPump.Until(() => DetachedSourceHost.IsHosted(second.Widget) && !DetachedSourceHost.IsHosted(first.Widget)
+				&& Sample(rect, 5, 5).B > 200);
 			Assert.True(DetachedSourceHost.IsHosted(second.Widget));
 			Assert.False(DetachedSourceHost.IsHosted(first.Widget));
 			var p = Sample(rect, 5, 5);
@@ -178,9 +180,7 @@ public class VisualBrushHostTests : WpfGtkTestBase
 			GtkPump.For(500);
 			Assert.Equal(0, Sample(rect, 70, 10).A);
 			source.Width = 80;
-			GtkPump.For(500);
-			Sample(rect, 70, 10);
-			GtkPump.For(300);
+			GtkPump.Until(() => { var q = Sample(rect, 70, 10); return q.R > 200 && q.B < 50 && q.A > 200; });
 			var p = Sample(rect, 70, 10);
 			Assert.True(p.R > 200 && p.B < 50 && p.A > 200, p.ToString());
 		}

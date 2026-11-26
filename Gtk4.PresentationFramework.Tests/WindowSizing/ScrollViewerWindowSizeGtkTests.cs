@@ -13,6 +13,7 @@ public class ScrollViewerWindowSizeGtkTests : WpfGtkTestBase
 	{
 		win.Content = sv;
 		win.Show();
+		GtkPump.Until(() => sv.Widget.IsMapped && sv.Widget.Height > 0);
 		GtkPump.For(300);
 		return (sv, win);
 	}
