@@ -13,8 +13,9 @@ static class GtkPump
 	{
 		WpfGtkFixture.Instance.AssertOnGtkThread();
 		var sw = Stopwatch.StartNew();
-		// A periodic wake-up source so RunIteration(true) never blocks past the deadline.
-		uint wake = GLib.Timeout.Add(10, new GLib.TimeoutHandler(() => true));
+		// A periodic wake-up source so RunIteration(true) never blocks past the deadline, below every app priority
+		// (SystemIdle is Low) so that, when iterations run late, it never starves idle work or redraws.
+		uint wake = GLib.Timeout.Add(10, new GLib.TimeoutHandler(() => true), (int)GLib.Priority.Low + 1);
 		try
 		{
 			while (!condition() && sw.ElapsedMilliseconds < timeoutMs)

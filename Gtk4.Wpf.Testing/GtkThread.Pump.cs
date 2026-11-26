@@ -47,8 +47,9 @@ public static partial class GtkThread
 	{
 		AssertOnGtkThread();
 		var clock = Stopwatch.StartNew();
-		// A periodic source keeps RunIteration(true) from blocking past the deadline.
-		uint wake = GLib.Timeout.Add(10, new GLib.TimeoutHandler(() => true));
+		// A periodic source keeps RunIteration(true) from blocking past the deadline. It sits below every app
+		// priority (SystemIdle is Low) so that, when iterations run late, it never starves idle work or redraws.
+		uint wake = GLib.Timeout.Add(10, new GLib.TimeoutHandler(() => true), (int)GLib.Priority.Low + 1);
 		try
 		{
 			while (!condition() && clock.Elapsed < timeout)
