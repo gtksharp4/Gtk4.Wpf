@@ -106,12 +106,14 @@ public class VisualBrushHostTests : WpfGtkTestBase
 		{
 			var (weak, source) = PaintAndForget();
 			Assert.True(DetachedSourceHost.IsHosted(source.Widget), "the source is not hosted");
-			for (int i = 0; i < 3; i++)
+			// Callbacks still queued on a stalled loop can hold the brush, so collect between iterations until
+			// it goes; a real leak still fails below.
+			GtkPump.Until(() =>
 			{
 				GC.Collect();
 				GC.WaitForPendingFinalizers();
-				GtkPump.For(100);
-			}
+				return !weak.IsAlive;
+			});
 			DetachedSourceHost.Sweep();
 			Assert.False(weak.IsAlive, "the brush is still referenced");
 			Assert.False(DetachedSourceHost.IsHosted(source.Widget), "the source is still hosted");
