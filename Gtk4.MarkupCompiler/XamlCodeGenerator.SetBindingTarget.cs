@@ -20,6 +20,13 @@ namespace Gtk4.MarkupCompiler
 
 		string ParentFqType(XElement el) => el.Parent == null ? null : ResolveType(el.Parent);
 
+		// A property that holds a Binding object (DataGridTextColumn.Binding) takes the binding, it is not bound.
+		bool IsBindingValuedProperty(string fqType, string prop)
+		{
+			string t = _resolver.GetPropertyType(fqType?.Replace("global::", ""), prop)?.FullName;
+			return t == "System.Windows.Data.Binding" || t == "System.Windows.Data.BindingBase";
+		}
+
 		// The statement binding <paramref name="dp"/> on <paramref name="target"/> (of type fqType) to the binding.
 		string SetBindingLine(string target, string fqType, string dp, string binding)
 		{

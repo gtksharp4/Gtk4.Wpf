@@ -758,6 +758,8 @@ namespace Gtk4.MarkupCompiler
 
 				if (IsTemplateBindingExpression(val, out string tbBindingInit))
 					w.Line(SetBindingLine(varName, fqType, $"{fqType}.{propName}Property", tbBindingInit));
+				else if (IsBindingExpression(val, out string bindingValue) && IsBindingValuedProperty(fqType, propName))
+					w.Line($"{varName}.{propName} = {bindingValue};");
 				else if (IsBindingExpression(val, out string bindingInit))
 					w.Line(SetBindingLine(varName, fqType, $"{fqType}.{propName}Property", bindingInit));
 				else if (MediaResourceTarget(fqType, propName, val) is Type mediaType
@@ -901,6 +903,11 @@ namespace Gtk4.MarkupCompiler
 				{
 					string bVar = $"__b{counter++}";
 					EmitBindingElementInline(w, child, bVar, ref counter);
+					if (IsBindingValuedProperty(ParentFqType(propEl), propName))
+					{
+						w.Line($"{parentVar}.{propName} = {bVar};");
+						return;
+					}
 					w.Line(SetBindingLine(parentVar, ParentFqType(propEl), $"{ownerFqType}.{propName}Property", bVar));
 					return;
 				}
