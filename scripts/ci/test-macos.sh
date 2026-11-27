@@ -57,7 +57,9 @@ run_gtk_tests() {
 		XF_GTK_MAC_RUNNER=1 XF_GTK_REQUIRE_NATIVE=1 \
 		dotnet exec "$GTK_DLL" -verbose
 }
-run_annotated "macOS PresentationFramework.Tests" run_gtk_tests
+# Both GTK suites always run (this job does not gate): a failure in the first must not hide the second.
+gtk_rc=0
+run_annotated "macOS PresentationFramework.Tests" run_gtk_tests || gtk_rc=$?
 
 # Same thread-0 runner for the UI driver tests: Program.cs hands thread 0 to GtkThread.RunOnCurrentThread.
 echo "== Wpf.Testing tests (UI driver, thread-0 runner over Quartz) =="
@@ -67,4 +69,6 @@ run_ui_tests() {
 		XF_GTK_MAC_RUNNER=1 XF_GTK_REQUIRE_NATIVE=1 \
 		dotnet exec "$UI_DLL" -verbose
 }
-run_annotated "macOS Wpf.Testing.Tests" run_ui_tests
+ui_rc=0
+run_annotated "macOS Wpf.Testing.Tests" run_ui_tests || ui_rc=$?
+[ "$gtk_rc" -eq 0 ] && [ "$ui_rc" -eq 0 ]
