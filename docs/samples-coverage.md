@@ -244,7 +244,7 @@ Fidelity demand, in apps that already run (not counted in the headline):
 | Sample | Cause |
 |---|---|
 | WPFGallery | **New build.** `InvalidOperationException: Resource with key 'ControlCornerRadius' not found` (`MainWindow.g.cs:34`, a `StaticResource` in a `Border.CornerRadius` setter). `App.xaml` merges the .NET 9 Fluent theme dictionary (`PresentationFramework.Fluent;component/Themes/Fluent.xaml`), which the layer does not supply. Expect more walls behind it (the Round 62 gate predicted this one). |
-| AnimationExamples | **Further in.** `InvalidCastException` (String to `Frame`) at `SampleViewer.cs:54`. `InteractiveAnimationsExample.PageLoaded` (line 112) sets `IsChecked` on a RadioButton inside a `Page` hosted in a `Frame`. Its `Checked` event bubbles to `SampleViewer`'s `RadioButton.Checked` handler with `args.Source` still the inner RadioButton (string content), so `(Frame)theButton.Content` fails. In WPF a navigated page is not a logical child of the `Frame`, so the source is adjusted at that boundary to the outer RadioButton, whose content is the `Frame`. Inferred from the stack and the WPF source-adjustment rule; not run on WPF. |
+| AnimationExamples | **Further in.** `InvalidCastException` (String to `Frame`) at `SampleViewer.cs:54`. `InteractiveAnimationsExample.PageLoaded` (line 112) sets `IsChecked` on a RadioButton inside a `Page` hosted in a `Frame`. Its `Checked` event bubbles to `SampleViewer`'s `RadioButton.Checked` handler with `args.Source` still the inner RadioButton (string content), so `(Frame)theButton.Content` fails. In WPF a navigated page is not a logical child of the `Frame`, so the source is adjusted at that boundary. *(Corrected in Round 75: `Frame.AdjustEventSource` returns the `Frame` itself, so the outer handler sees the `Frame` as `Source` and the sample's `args.Source is RadioButton` check skips the cast. Fixed in Round 75; not run on WPF.)* |
 | ExpenseItIntro | Unchanged: `Resource with key 'CustomNavWindowStyle' not found`. The key is defined nowhere in the sample, so WPF rejects it too. A defect in the sample (re-run alone twice for this report). |
 | WDPEncoderAndDecoder | Unchanged: `NotSupportedException: JPEG XR (WDP) has no encoder in the GTK runtime`. Deliberate: gdk-pixbuf/GdkTexture have no JPEG XR codec. |
 | AppCompat-Quirks | Unchanged: there is no window at 10 s, and two solo 20 s runs both crash with a `NullReferenceException` in the sample's `PopulateAppContextInformation` (`MainWindow.xaml.cs:197`, from `Window_Loaded`). It reflects over WPF-internal AppContext switch types. Not worth chasing. |
@@ -281,6 +281,23 @@ Each of the rest is in a single project: `*.RenderTransform`, `*.InputBindings`,
 all: `ImageDrawing` and the `PreviewCanExecute` attribute on `CommandBinding`.
 
 ## Next rounds
+
+### Rounds 74-76 (executed 2026-11-27; samples not re-measured)
+
+The six tracks below ran as Round 74 (lane A), Round 75 (lane B) and Round 76 (lane C) and are merged into `main`.
+Details are in `docs/plans/gtk-forms-wpf-on-gtk-1to1.md`, "Rounds 74-76". The counts in this report are still those of
+`f678058f`. The per-app results below come from scratch builds made by the lanes, not from the pinned-feed Method.
+
+| Track | Status | App effect observed (scratch build) | Next wall |
+|---|---|---|---|
+| 1 Fluent theme | partial | WPFGallery passes `ControlCornerRadius` (119 of 124 Fluent keys resolve) | keyed `ItemsPanelTemplate` emitted as `""` (re-check after track 4); a window shown before `Run` needs lazy GTK init; `{}`-escaped `StringFormat` `FormatException` |
+| 2 Routed-event source | done | AnimationExamples ran 25 s with no crash | none seen |
+| 3 Packaging + documents | done | EditingExaminerDemo builds | `WindowLoaded` reflects over the WPF-internal `ComboBox.EditableTextBoxSite` (sample defect class) |
+| 4 Generator sweep V | partial | 45 → 35 skipped-element messages in the corpus | `ListView.View`/`GridView`, `GroupStyle`, `CompositeCollection` need runtime types |
+| 5 Window sizing | partial | Min/Max cap `SizeToContent`; a `ScrollViewer` window content sizes from the managed Measure | a `ScrollViewer` nested in a Grid/StackPanel still gets the GTK natural size; fixed-track capping; `Stretch` shapes `ActualWidth`; the GeometryDesignerDemo layout loop (reproduced, cause not found) |
+| 6 Legacy csproj | done (refuse, exit 20) | — | `SkipGtkFormsConvert=true` bypasses the refusal; legacy siblings reached through a `ProjectReference` are not checked |
+
+The original plan for these rounds follows.
 
 These are ranked by portable samples unblocked. "Only" means samples whose sole recorded blocker is the track. A later
 phase (a second wall at run time) can still hold an app back, so treat the counts as upper bounds.

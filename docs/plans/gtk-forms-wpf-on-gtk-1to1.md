@@ -3088,6 +3088,73 @@ only for a Shape that is the window content; lane H `RenderingPainter` reads `Vi
   and reordered WrapPanel children). `BaselineAlignment` other than Baseline is stored only; the hosted child is
   not part of the label's selection; FlowDocument containers stay store-only; DrawingBrush and VisualBrush fills
   (other lanes).
+- **Rounds 74-76 programme (three lanes, the six tracks of `docs/samples-coverage.md` "Next rounds").** Each lane ran as a
+  Sonnet implementation, an independent Opus review that re-ran the tests and checked WPF semantics, then a Sonnet fix
+  pass, each in its own worktree. The lanes did not overlap on any file and merged without conflicts. The held branches
+  `gf63b/packaging-permissions` and `gf39/xaml-content-model` no longer existed (not local, not on origin), so the
+  packaging work was redone from scratch and the content-model fold-in was dropped.
+- **Round 74 (lane A) track 1 - Fluent theme dictionary (PARTIAL, merged).** `gf74a/fluent-theme-sizing`:
+  `pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.xaml` (plus `Fluent.Light.xaml` and
+  `Fluent.Dark.xaml`) now resolves.
+  - The real dotnet/wpf Fluent XAML (release/10.0, MIT; Light/Dark come from WPF UI, MIT; both are in
+    THIRD-PARTY-NOTICES) is embedded and parsed at run time by `XamlObjectBuilder` in `Themes/Fluent/FluentTheme*.cs`.
+  - `ResourceDictionary.Source` consults `FluentTheme` before the registry. Colours follow `Application.ThemeMode`
+    (`Dark` picks Dark, `None`/`System` pick Light), and setting `ThemeMode` re-themes a merged Fluent dictionary.
+  - The loader is tolerant: an entry the layer cannot build is skipped per entry and listed in `FluentTheme.Skipped`.
+    About 75 entries are skipped, mostly styles for types the layer lacks.
+  - Of the 124 Fluent keys WPFGallery reads, 119 resolve. The analysis is cached per file per process (review A74-2).
+  - WPFGallery gets past `ControlCornerRadius` but still does not show a window. Next walls, measured on a scratch
+    build: (1) a keyed `ItemsPanelTemplate` resource emitted as `""` (`Resources/Templates.xaml:7`), which still needs
+    re-checking after the track 4 `ItemsPanel` work; (2) `App.Main` shows `MainWindow` before `Run`, so
+    `new Gtk.Window()` runs before GTK init (access violation), and a lazy, idempotent `InitGtk` is needed;
+    (3) a `FormatException` in `BindingEngine.ApplyStringFormat` on a `{}`-escaped `StringFormat`.
+- **Round 74 (lane A) track 5 - window sizing (PARTIAL, merged).** The `SizeToContent` property moved into
+  `Window.SizeToContent.cs` (a pure move, from `Window.Chrome.Style.cs`).
+  - Min/Max now clamp an axis that `SizeToContent` sizes. If the content's minimum exceeds the cap, the content is
+    clipped through an External-policy `ScrolledWindow`.
+  - A `SizeToContent` window whose content is a `ScrollViewer` is sized from the managed WPF `Measure`, capped by Max
+    and the work area.
+  - Review A74-1 fixed a regression: the axis `SizeToContent` does not size keeps its default.
+- **Round 75 (lane B) track 2 - routed-event source adjustment (DONE, merged).** WPF's rule (`BuildRouteHelper`,
+  `AdjustEventSource`) is checked against dotnet/wpf: an element may re-target `Source` from itself outwards, and
+  `Frame` returns itself.
+  - Implemented as an internal virtual `DependencyObject.AdjustEventSource` and per-element sources in
+    `RoutedEventHost` bubble/tunnel. `Source` is restored after the route (review B3), and `OriginalSource` is
+    unchanged.
+  - The general logical-descendant rule for template parts is not implemented.
+  - AnimationExamples (scratch build) ran 25 s with no `InvalidCastException`.
+  - **Correction:** the outer handler sees the `Frame` as `Source`, not the outer RadioButton as the coverage report
+    had inferred.
+- **Round 75 (lane B) track 3 - packaging and documents tail (DONE, merged).** `Gtk4.Wpf` depends on
+  `System.Security.Permissions` 10.0.0, with csproj and nuspec tests. `SYSLIB0003` stays a warning in a consumer.
+  - New `AnchoredBlock` and `Floater`, as an object model only: no floating, not in the `TextPointer` tree.
+  - New `ParserContext`, with WPF's surface after review B1: `IUriContext`, a string `XmlSpace`,
+    `ToXmlParserContext`. `XamlReader.Load(Stream, ParserContext)` accepts null (B2), and `BaseUri` reaches
+    `IUriContext` objects.
+  - Extra walls fixed: non-generic `IList` on the text collections, `List.MarkerOffset` and
+    `TextBox.IsReadOnlyCaretVisible`.
+  - EditingExaminerDemo now **builds** (scratch build). It then throws in `WindowLoaded`: it reflects over the
+    WPF-internal `ComboBox.EditableTextBoxSite`.
+- **Round 76 (lane C) track 4 - generator sweep V (PARTIAL, merged).** Now emitted:
+  - `DataGrid.Columns`, with Binding-valued properties such as `DataGridTextColumn.Binding` assigned rather than
+    bound.
+  - `*.InputBindings`. `KeyBinding`/`MouseBinding` keys are resolved at generation time (review C76-1), because
+    `Enum.Parse` mapped digits to the wrong key and threw on aliases.
+  - `*.ItemsPanel` as a factory, a `PriorityBinding` property element, and the `<StaticResource/>` element form on
+    object properties.
+  - Named `BeginStoryboard` fields, now assigned (the `CS0649` cause).
+  - The runtime gains `CombinedGeometry` (Union/Xor by path, Intersect/Exclude by clip; strokes are approximate) and a
+    parameterless `MatrixTransform`.
+  - The corpus went from 45 to 35 skipped messages. `ListView.View`, `*.GroupStyle` and `CompositeCollection` stay
+    skipped because the runtime types do not exist.
+- **Round 76 (lane C) track 6 - legacy csproj (DONE, merged).** Decision: refuse. `LegacyProjectDetector` flags a
+  `<Project>` with no SDK plus a `ToolsVersion`, a `TargetFrameworkVersion` or a classic targets import.
+  - The converter exits 20 with an actionable message and leaves the file untouched. `Gtk4.Wpf.targets` stops the
+    build at `BeforeBuild`, so no `GtkFormsXamlRegistration` artefact is produced.
+  - `SkipGtkFormsConvert=true` still bypasses the refusal (review C76-2, left as is).
+- **Rounds 74-76 totals.** Gate on the merged result: `dotnet build Gtk4.Wpf.sln -nodeReuse:false` and every unit
+  suite (see the merge commit and `docs/samples-coverage.md`, "Rounds 74-76"). Samples were **not** re-measured: the
+  coverage counts are still those of `f678058f`.
 
 ## Phased roadmap (after Phase 0 proves the spine)
 
