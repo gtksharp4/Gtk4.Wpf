@@ -19,7 +19,8 @@ public partial class Window
 	/// <summary>
 	/// Gets or sets whether the window auto-sizes to fit its content.
 	/// When set to anything other than <see cref="SizeToContent.Manual"/>, the
-	/// affected dimension(s) are left at the GTK natural size (no explicit size request),
+	/// affected dimension(s) start at the content size (clamped to Min/Max; sized from the managed Measure
+	/// around a ScrollViewer),
 	/// so the window wraps its content.
 	/// </summary>
 	public SizeToContent SizeToContent
@@ -69,7 +70,12 @@ public partial class Window
 		bool changeW = fitW && (targetW != natW || desired.Width > 0);
 		bool changeH = fitH && (targetH != natH || desired.Height > 0);
 		if (changeW || changeH)
-			win.SetDefaultSize(changeW ? targetW : -1, changeH ? targetH : -1);
+		{
+			// -1 would clear the default ApplyWindowSize gave the axis SizeToContent does not size.
+			int otherW = AxisSize(false, Width, MinWidth, MaxWidth, SystemParameters.WorkArea.Width, out _);
+			int otherH = AxisSize(false, Height, MinHeight, MaxHeight, SystemParameters.WorkArea.Height, out _);
+			win.SetDefaultSize(fitW ? (changeW ? targetW : -1) : otherW, fitH ? (changeH ? targetH : -1) : otherH);
+		}
 	}
 
 	static int Clamp(int natural, double min, double max)

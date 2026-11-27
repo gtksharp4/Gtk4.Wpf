@@ -57,6 +57,26 @@ public class WindowSizeToContentLimitsGtkTests : WpfGtkTestBase
 	});
 
 	[Fact]
+	public void MaxHeight_on_SizeToContent_Height_keeps_the_default_width() => Run(() =>
+	{
+		using var gtk = new GtkDispatcherScope();
+		var win = new WpfWindow
+		{
+			SizeToContent = SizeToContent.Height,
+			MaxHeight = 150,
+			Content = new Border { Width = 200, Height = 600 },
+		};
+		try
+		{
+			var (w, h) = Open(win);
+			Assert.InRange(h, 149, 151);
+			double expected = WpfWindow.DefaultExtent(SystemParameters.WorkArea.Width);
+			Assert.InRange(w, expected - 1, expected + 1);
+		}
+		finally { win.Close(); }
+	});
+
+	[Fact]
 	public void MinWidth_raises_a_SizeToContent_width_above_the_content() => Run(() =>
 	{
 		using var gtk = new GtkDispatcherScope();

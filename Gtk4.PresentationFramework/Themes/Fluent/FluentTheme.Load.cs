@@ -16,8 +16,24 @@ static partial class FluentTheme
 	/// </summary>
 	internal static readonly Dictionary<string, List<string>> Skipped = new Dictionary<string, List<string>>();
 
+	/// <summary>How many times a file's skip analysis ran (once per file per process; reuse does not re-run it).</summary>
+	internal static int AnalysisRuns;
+
+	sealed class Prepared
+	{
+		public XElement Root = null!;
+		public List<KeyValuePair<object, string>> Fonts = null!;
+	}
+
+	static readonly Dictionary<string, Prepared> _prepared = new Dictionary<string, Prepared>();
+
 	static ResourceDictionary Load(string file)
 	{
+		Prepared? prepared;
+		lock (_prepared)
+			_prepared.TryGetValue(file, out prepared);
+		if (prepared != null)
+			return Build(prepared);
 		using Stream stream = typeof(FluentTheme).Assembly.GetManifestResourceStream(Prefix + file)
 			?? throw new IOException("Missing embedded Fluent resource '" + file + "'.");
 		using var reader = XmlReader.Create(stream, new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit });
@@ -30,15 +46,24 @@ static partial class FluentTheme
 		{
 			try
 			{
-				var dictionary = (ResourceDictionary)new XamlObjectBuilder().Build(document.Root!);
-				foreach (var font in fonts) dictionary[font.Key] = font.Value;
+				prepared = new Prepared { Root = document.Root!, Fonts = fonts };
+				var dictionary = Build(prepared);
 				lock (Skipped) Skipped[file] = skipped;
+				lock (_prepared) _prepared[file] = prepared;
+				AnalysisRuns++;
 				return dictionary;
 			}
 			catch (XamlParseException ex) when (Drop(document.Root!, ex, skipped))
 			{
 			}
 		}
+	}
+
+	static ResourceDictionary Build(Prepared prepared)
+	{
+		var dictionary = (ResourceDictionary)new XamlObjectBuilder().Build(prepared.Root);
+		foreach (var font in prepared.Fonts) dictionary[font.Key] = new FontFamily(font.Value);
+		return dictionary;
 	}
 
 	// Removes the top-level entry containing the failing line; false (rethrow) when there is none.
@@ -86,15 +111,15 @@ static partial class FluentTheme
 
 	// <FontFamily x:Key="K">name, name</FontFamily> is text content, which the XAML builder does not take for
 	// FontFamily: those entries are built here.
-	static List<KeyValuePair<object, FontFamily>> TakeFontFamilies(XElement root)
+	static List<KeyValuePair<object, string>> TakeFontFamilies(XElement root)
 	{
 		XNamespace x = "http://schemas.microsoft.com/winfx/2006/xaml";
-		var result = new List<KeyValuePair<object, FontFamily>>();
+		var result = new List<KeyValuePair<object, string>>();
 		foreach (XElement entry in root.Elements().Where(e => e.Name.LocalName == "FontFamily" && !e.HasElements).ToList())
 		{
 			string? key = (string?)entry.Attribute(x + "Key");
 			if (key == null) continue;
-			result.Add(new KeyValuePair<object, FontFamily>(key, new FontFamily(entry.Value.Trim())));
+			result.Add(new KeyValuePair<object, string>(key, entry.Value.Trim()));
 			entry.Remove();
 		}
 		return result;

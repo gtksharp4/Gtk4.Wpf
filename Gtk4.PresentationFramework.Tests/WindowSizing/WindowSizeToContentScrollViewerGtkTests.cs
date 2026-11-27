@@ -39,6 +39,20 @@ public class WindowSizeToContentScrollViewerGtkTests : WpfGtkTestBase
 	});
 
 	[Fact]
+	public void Height_around_a_ScrollViewer_keeps_the_default_width() => Run(() =>
+	{
+		using var gtk = new GtkDispatcherScope();
+		var (sv, win) = Show(new WpfWindow { SizeToContent = SizeToContent.Height },
+			new ScrollViewer { Content = new Border { Width = 300, Height = 380 } });
+		try
+		{
+			double expected = WpfWindow.DefaultExtent(SystemParameters.WorkArea.Width);
+			Assert.InRange(WindowExtent.Of(win).W, expected - 1, expected + 1);
+		}
+		finally { win.Close(); }
+	});
+
+	[Fact]
 	public void Height_around_a_ScrollViewer_keeps_the_explicit_width() => Run(() =>
 	{
 		using var gtk = new GtkDispatcherScope();

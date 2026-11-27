@@ -7,7 +7,7 @@ using System.Windows.Markup;
 namespace System.Windows.Themes;
 
 /// <summary>
-/// The <c>PresentationFramework.Fluent</c> resource dictionaries. The three XAML files are the .NET 9
+/// The <c>PresentationFramework.Fluent</c> resource dictionaries. The three XAML files are the .NET 10 (dotnet/wpf release/10.0)
 /// <c>dotnet/wpf</c> sources, embedded unchanged (MIT): <c>Fluent.xaml</c> (variables, text and control styles)
 /// and the <c>Theme/Light.xaml</c> / <c>Theme/Dark.xaml</c> colour and brush sets. WPF's own
 /// <c>Themes/Fluent.xaml</c> is generated as their union, so a <c>pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.xaml</c>
@@ -15,7 +15,7 @@ namespace System.Windows.Themes;
 /// </summary>
 static partial class FluentTheme
 {
-	const string Assembly_ = "PresentationFramework.Fluent";
+	const string FluentAssemblyName = "PresentationFramework.Fluent";
 	const string Prefix = "Gtk4.PresentationFramework.Themes.Fluent.";
 
 	/// <summary>Whether <paramref name="uri"/> names a Fluent theme dictionary (<c>Themes/Fluent[.Light|.Dark].xaml</c>).</summary>
@@ -23,13 +23,13 @@ static partial class FluentTheme
 	{
 		dark = null;
 		string text = uri.IsAbsoluteUri ? Uri.UnescapeDataString(uri.AbsolutePath) : uri.OriginalString;
-		text = text.Replace((char)92, '/');
+		text = text.Replace('\\', '/');
 		int component = text.IndexOf(";component/", StringComparison.OrdinalIgnoreCase);
 		if (component < 0) return false;
 		string name = text.Substring(0, component).TrimStart('/');
 		int semi = name.IndexOf(';');
 		if (semi >= 0) name = name.Substring(0, semi);
-		if (!string.Equals(name, Assembly_, StringComparison.OrdinalIgnoreCase)) return false;
+		if (!string.Equals(name, FluentAssemblyName, StringComparison.OrdinalIgnoreCase)) return false;
 		switch (text.Substring(component + ";component/".Length).TrimStart('/').ToLowerInvariant())
 		{
 			case "themes/fluent.xaml": return true;
@@ -49,7 +49,6 @@ static partial class FluentTheme
 		result.MergedDictionaries.Add(Load(useDark ? "Dark.xaml" : "Light.xaml"));
 		return result;
 	}
-
 
 	/// <summary>
 	/// Reloads every dictionary under <paramref name="resources"/> whose Source is the mode-following

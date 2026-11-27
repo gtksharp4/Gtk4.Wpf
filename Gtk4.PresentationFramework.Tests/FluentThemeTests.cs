@@ -67,6 +67,43 @@ public class FluentThemeTests : WpfGtkTestBase
 	});
 
 	[Fact]
+	public void The_skip_analysis_runs_once_per_file_not_once_per_load() => Run(() =>
+	{
+		Load();
+		Load(FluentUri.Replace("Fluent.xaml", "Fluent.Dark.xaml"));
+		int runs = FluentTheme.AnalysisRuns;
+		var again = Load();
+		Load(FluentUri.Replace("Fluent.xaml", "Fluent.Dark.xaml"));
+		Load(FluentUri.Replace("Fluent.xaml", "Fluent.Dark.xaml"));
+		Assert.Equal(runs, FluentTheme.AnalysisRuns);
+		Assert.Equal(new CornerRadius(4), again["ControlCornerRadius"]);
+		Assert.Equal("Segoe Fluent Icons, Segoe MDL2 Assets", ((FontFamily)again["SymbolThemeFontFamily"]!).Source);
+	});
+
+	[Fact]
+	public void Setting_ThemeMode_without_changing_Light_or_Dark_keeps_the_merged_dictionary() => Run(() =>
+	{
+		var app = Application.Current ?? new Application();
+		app.ThemeMode = ThemeMode.None;
+		var merged = Load();
+		app.Resources.MergedDictionaries.Add(merged);
+		try
+		{
+			var brush = merged["TextFillColorPrimaryBrush"];
+			app.ThemeMode = ThemeMode.Light;
+			app.ThemeMode = ThemeMode.System;
+			Assert.Same(brush, merged["TextFillColorPrimaryBrush"]);
+			app.ThemeMode = ThemeMode.Dark;
+			Assert.NotSame(brush, merged["TextFillColorPrimaryBrush"]);
+		}
+		finally
+		{
+			app.Resources.MergedDictionaries.Remove(merged);
+			app.ThemeMode = ThemeMode.None;
+		}
+	});
+
+	[Fact]
 	public void Changing_ThemeMode_reloads_a_merged_Fluent_dictionary() => Run(() =>
 	{
 		var app = Application.Current ?? new Application();

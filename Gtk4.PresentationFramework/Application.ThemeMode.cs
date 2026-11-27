@@ -29,9 +29,11 @@ public partial class Application
 			VerifyAccess();
 			if (!ThemeModeGtk.IsValid(value))
 				throw new ArgumentException($"ThemeMode value {value} is invalid. Use None, System, Light or Dark");
+			bool darkChanged = (_themeMode == ThemeMode.Dark) != (value == ThemeMode.Dark);
 			_themeMode = value;
 			ThemeModeGtk.Apply(value);
-			FluentTheme.Retheme(Resources);
+			if (darkChanged)
+				FluentTheme.Retheme(Resources);
 		}
 	}
 }
