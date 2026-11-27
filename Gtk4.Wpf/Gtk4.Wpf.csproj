@@ -50,6 +50,8 @@
 		<PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.0" />
 		<!-- UserPreferenceChangedEventArgs and friends (SystemEvents), also from the WindowsDesktop shared framework. -->
 		<PackageReference Include="Microsoft.Win32.SystemEvents" Version="10.0.0" />
+		<!-- CAS types (SecurityPermission, EnvironmentPermission, ...) from the WindowsDesktop shared framework (PermissionSet, SecurityPermission). -->
+		<PackageReference Include="System.Security.Permissions" Version="10.0.0" />
 	</ItemGroup>
 
 	<!--

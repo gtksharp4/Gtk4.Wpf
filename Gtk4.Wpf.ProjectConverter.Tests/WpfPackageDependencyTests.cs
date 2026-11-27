@@ -39,4 +39,16 @@ public class WpfPackageDependencyTests
 		Assert.Null(reference.Attribute("PrivateAssets"));
 		Assert.Null(reference.Attribute("ExcludeAssets"));
 	}
+
+	[Fact]
+	public void Wpf_package_depends_on_SecurityPermissions_10x_for_every_target_framework()
+	{
+		var reference = Assert.Single(PackageReferences("System.Security.Permissions"));
+
+		Assert.StartsWith("10.", (string)reference.Attribute("Version")!);
+		Assert.Null(reference.Attribute("Condition"));
+		Assert.Null(reference.Parent!.Attribute("Condition"));
+		Assert.Null(reference.Attribute("PrivateAssets"));
+		Assert.Null(reference.Attribute("ExcludeAssets"));
+	}
 }

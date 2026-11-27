@@ -47,6 +47,14 @@ internal sealed partial class XamlObjectBuilder
 		public Type Resolve(string qualifiedTypeName) => _builder.ResolveTypeName(qualifiedTypeName, _scope);
 
 		public object? GetService(Type serviceType) =>
-			serviceType == typeof(IProvideValueTarget) || serviceType == typeof(IXamlTypeResolver) ? this : null;
+			serviceType == typeof(IProvideValueTarget) || serviceType == typeof(IXamlTypeResolver) ? this
+			: serviceType == typeof(IUriContext) ? new UriContext(_builder.BaseUri) : null;
+
+		sealed class UriContext : IUriContext
+		{
+			public UriContext(Uri? baseUri) => BaseUri = baseUri;
+
+			public Uri? BaseUri { get; set; }
+		}
 	}
 }

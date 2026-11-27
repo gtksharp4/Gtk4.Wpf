@@ -111,31 +111,67 @@ public static partial class RoutedEventHost
 
 	static void BubbleEvent(DependencyObject source, RoutedEventArgs e)
 	{
-		var current = source;
-		while (current != null)
+		var chain = BuildChain(source);
+		var sources = ComputeSources(chain, e);
+		var before = e.Source;
+		for (int i = 0; i < chain.Count; i++)
 		{
-			InvokeHandlers(current, source, e);
+			if (sources != null) e.Source = sources[i];
 			// Do NOT break on Handled here: routing continues so that elements with
 			// handledEventsToo=true still receive the event.  InvokeHandlers skips
 			// handlers that did not opt in.
-			current = current.InheritanceParent;
+			InvokeHandlers(chain[i], source, e);
 		}
+		if (sources != null) e.Source = before;
 	}
 
 	static void TunnelEvent(DependencyObject source, RoutedEventArgs e)
 	{
-		// Build the ancestor chain.
-		var chain = new List<DependencyObject>();
-		var current = source;
-		while (current != null) { chain.Add(current); current = current.InheritanceParent; }
+		var chain = BuildChain(source);
+		var sources = ComputeSources(chain, e);
+		var before = e.Source;
 
 		// Invoke from root → source.
 		for (int i = chain.Count - 1; i >= 0; i--)
 		{
+			if (sources != null) e.Source = sources[i];
 			// Like Bubble: keep routing once Handled so handledEventsToo handlers
 			// (instance and class) further down the tunnel are still reached.
 			InvokeHandlers(chain[i], source, e);
 		}
+		if (sources != null) e.Source = before;
+	}
+
+	// The route, source first.
+	static List<DependencyObject> BuildChain(DependencyObject source)
+	{
+		var chain = new List<DependencyObject>();
+		var current = source;
+		while (current != null) { chain.Add(current); current = current.InheritanceParent; }
+		return chain;
+	}
+
+	// WPF EventRoute.AddSource: an element may re-target Source; the new value applies from that element
+	// outwards. Returns null when no element adjusted, else the Source each route item sees.
+	static object?[]? ComputeSources(List<DependencyObject> chain, RoutedEventArgs e)
+	{
+		object?[]? sources = null;
+		var running = e.Source;
+		for (int i = 0; i < chain.Count; i++)
+		{
+			var adjusted = chain[i].AdjustEventSource(e);
+			if (adjusted != null)
+			{
+				if (sources == null)
+				{
+					sources = new object?[chain.Count];
+					for (int j = 0; j < i; j++) sources[j] = running;
+				}
+				running = adjusted;
+			}
+			if (sources != null) sources[i] = running;
+		}
+		return sources;
 	}
 
 	static void InvokeHandlers(DependencyObject element, DependencyObject originalSource, RoutedEventArgs e)
