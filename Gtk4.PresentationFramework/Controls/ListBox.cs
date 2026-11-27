@@ -101,6 +101,7 @@ public partial class ListBox : Selector
 			return own;
 		}
 		var lbi = CreateItemContainer();
+		lbi.IsGeneratedContainer = true;
 		lbi.Content = item;
 		OnContainerCreated(lbi);
 		ConfigurePresenter(lbi, item);
@@ -114,6 +115,13 @@ public partial class ListBox : Selector
 	{
 		AttachPendingHeader(w);
 		_gtkListBox!.Append(w);
+	}
+
+	/// <inheritdoc/>
+	internal override void OnContainerDiscarded(UIElement container)
+	{
+		// A container the control made is gone for good; a ListBoxItem the app supplied may be shown again.
+		if (container is ListBoxItem { IsGeneratedContainer: true } item) item.ReleaseViewPresenter();
 	}
 
 	/// <inheritdoc/>

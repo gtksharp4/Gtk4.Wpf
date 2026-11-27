@@ -28,14 +28,56 @@ public class DataSourceProviderBindingTests : WpfGtkTestBase
 		Assert.IsAssignableFrom<XmlNode>(ic.Items[0]);
 	});
 
+
+	public sealed class Row
+	{
+		public string Data { get; set; } = "row data";
+		public string Name { get; set; } = "n";
+	}
+
+	sealed class RowProvider : DataSourceProvider
+	{
+		public string Marker { get; set; } = "provider";
+
+		public void Set(object? data) => OnQueryFinished(data);
+
+		protected override void QueryData() => OnQueryFinished(new Row());
+	}
+
 	[Fact]
-	public void A_path_naming_a_provider_property_binds_to_the_provider_itself() => Run(() =>
+	public void A_path_is_evaluated_against_the_Data_even_when_the_provider_has_a_property_of_that_name() => Run(() =>
+	{
+		var text = new TextBlock();
+		text.SetBinding(TextBlock.TextProperty, new Binding("Data") { Source = new RowProvider() });
+		var xpath = new TextBlock();
+		xpath.SetBinding(TextBlock.TextProperty, new Binding("Name") { Source = new RowProvider() });
+
+		Assert.Equal("row data", text.Text);
+		Assert.Equal("n", xpath.Text);
+	});
+
+	[Fact]
+	public void BindsDirectlyToSource_evaluates_the_path_against_the_provider() => Run(() =>
 	{
 		var provider = Tasks();
 		var text = new TextBlock();
-		text.SetBinding(TextBlock.TextProperty, new Binding("XPath") { Source = provider });
+		text.SetBinding(TextBlock.TextProperty,
+			new Binding("XPath") { Source = provider, BindsDirectlyToSource = true });
 
 		Assert.Equal("Tasks/Task", text.Text);
+	});
+
+	[Fact]
+	public void A_binding_to_a_provider_follows_a_change_of_its_Data() => Run(() =>
+	{
+		var provider = new RowProvider();
+		var text = new TextBlock();
+		text.SetBinding(TextBlock.TextProperty, new Binding("Name") { Source = provider });
+		Assert.Equal("n", text.Text);
+
+		provider.Set(new Row { Name = "second" });
+
+		Assert.Equal("second", text.Text);
 	});
 
 	[Fact]

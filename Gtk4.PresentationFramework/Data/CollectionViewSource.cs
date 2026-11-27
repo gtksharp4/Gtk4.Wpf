@@ -69,8 +69,10 @@ public partial class CollectionViewSource : DependencyObject
 		new ObservableCollection<GroupDescription>();
 
 	// WPF: an IList gets a ListCollectionView, any other sequence a plain CollectionView.
+	// A CompositeCollection is shown flattened (WPF's CompositeCollectionView).
 	static CollectionView CreateView(IEnumerable source) =>
-		source is IList list ? new ListCollectionView(list) : new CollectionView(source);
+		source is CompositeCollection composite ? new CollectionView(new CompositeFlatSource(composite))
+		: source is IList list ? new ListCollectionView(list) : new CollectionView(source);
 
 	// A CollectionViewSource used as a binding source stands for its view (WPF binds to CollectionViewSource.View).
 	// The source raises no change notification here, so a later Source change is seen on the next resolve only.

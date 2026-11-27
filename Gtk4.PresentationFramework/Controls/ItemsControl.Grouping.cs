@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -39,7 +40,25 @@ public partial class ItemsControl
 	/// <summary>Whether the items are grouped (the view has group descriptions).</summary>
 	public bool IsGrouping => Items.Groups != null;
 
-	void OnGroupStyleChanged(object? sender, NotifyCollectionChangedEventArgs e) => RebuildItems();
+	readonly List<GroupStyle> _watchedStyles = new List<GroupStyle>();
+
+	void OnGroupStyleChanged(object? sender, NotifyCollectionChangedEventArgs e)
+	{
+		// A Reset (Clear) carries no old items, so resubscribe from the collection.
+		foreach (var old in _watchedStyles) old.PropertyChanged -= OnGroupStylePropertyChanged;
+		_watchedStyles.Clear();
+		foreach (var style in _groupStyle!)
+		{
+			// The shared Default is not watched: it would keep every control that uses it alive.
+			if (ReferenceEquals(style, System.Windows.Controls.GroupStyle.Default)) continue;
+			_watchedStyles.Add(style);
+			style.PropertyChanged += OnGroupStylePropertyChanged;
+		}
+		RebuildItems();
+	}
+
+	// A style that is already in use changed: the headers are built again.
+	void OnGroupStylePropertyChanged(object? sender, PropertyChangedEventArgs e) => RebuildItems();
 
 	GroupStyle? ResolveGroupStyle(CollectionViewGroup group)
 	{

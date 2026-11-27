@@ -126,6 +126,35 @@ public class GridViewTests : WpfGtkTestBase
 		Assert.Equal(4, group.Widgets.Length);
 	});
 
+
+	[Fact]
+	public void Discarded_rows_leave_the_column_size_group() => Run(() =>
+	{
+		var view = TwoColumns();
+		var lv = Make(view);
+		var group = view.SizeGroupFor(view.Columns[1]);
+		Assert.Equal(4, group.Widgets.Length);
+
+		lv.ItemsSource = new[] { Items[0] };
+
+		// the header cell plus the one remaining row
+		Assert.Equal(2, group.Widgets.Length);
+	});
+
+	[Fact]
+	public void An_implicit_ListViewItem_style_applies_to_ListView_rows_and_a_ListBoxItem_one_does_not() => Run(() =>
+	{
+		var lv = new ListView { ItemsSource = Items };
+		var viewStyle = new Style(typeof(ListViewItem));
+		viewStyle.Setters.Add(new Setter(FrameworkElement.TagProperty, "view"));
+		var boxStyle = new Style(typeof(ListBoxItem));
+		boxStyle.Setters.Add(new Setter(FrameworkElement.TagProperty, "box"));
+		lv.Resources[typeof(ListViewItem)] = viewStyle;
+		lv.Resources[typeof(ListBoxItem)] = boxStyle;
+		_ = lv.Widget;
+
+		Assert.Equal("view", ((ListViewItem)lv.ContainerAt(0)!).Tag);
+	});
 	[Fact]
 	public void Adding_a_column_after_the_rows_exist_rebuilds_the_header_and_the_rows() => Run(() =>
 	{

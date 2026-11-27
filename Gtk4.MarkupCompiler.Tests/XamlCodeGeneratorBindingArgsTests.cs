@@ -55,6 +55,7 @@ public class XamlCodeGeneratorBindingArgsTests
 	[InlineData("ValidatesOnExceptions")]
 	[InlineData("ValidatesOnNotifyDataErrors")]
 	[InlineData("NotifyOnValidationError")]
+	[InlineData("BindsDirectlyToSource")]
 	public void Validation_flags_emit_bool(string flag)
 	{
 		Assert.Contains(flag + " = true", Gen("{Binding Age, " + flag + "=True}"));

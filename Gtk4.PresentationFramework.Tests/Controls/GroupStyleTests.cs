@@ -115,6 +115,20 @@ public class GroupStyleTests : WpfGtkTestBase
 		Assert.Equal("WA", ((ContentPresenter)ic.GroupHeaders[0]).Content);
 	});
 
+
+	[Fact]
+	public void Setting_HeaderTemplate_on_a_GroupStyle_already_in_use_rebuilds_the_headers() => Run(() =>
+	{
+		var ic = new ItemsControl { ItemsSource = GroupedByState() };
+		var style = new GroupStyle();
+		ic.GroupStyle.Add(style);
+		_ = ic.Widget;
+		int built = 0;
+
+		style.HeaderTemplate = new DataTemplate { ItemFactory = g => { built++; return new TextBlock(); } };
+
+		Assert.Equal(3, built);
+	});
 	[Fact]
 	public void Changing_the_grouping_rebuilds_the_headers() => Run(() =>
 	{

@@ -112,6 +112,9 @@ public partial class ItemsControl : Control
 	/// <summary>Called once a rebuild has repopulated the rows and the selection reconciled itself.</summary>
 	internal virtual void OnItemsRebuildCompleted() { }
 
+	/// <summary>Called for each container a rebuild throws away, before its widget is removed.</summary>
+	internal virtual void OnContainerDiscarded(UIElement container) { }
+
 	void RebuildCore()
 	{
 		OnItemsRebuilt();
@@ -123,6 +126,7 @@ public partial class ItemsControl : Control
 			// D1: clear logical parent when removing.
 			if (container is UIElement uiContainer)
 				uiContainer.LogicalParent = null;
+			OnContainerDiscarded(container);
 			RemoveItemWidget(gw);
 		}
 		_rows.Clear();

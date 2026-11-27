@@ -18,6 +18,7 @@ public class GridViewRowPresenter : FrameworkElement
 	readonly List<(Gtk.SizeGroup Group, Gtk.Widget Widget)> _grouped = new List<(Gtk.SizeGroup, Gtk.Widget)>();
 	Gtk.Box? _box;
 	GridViewColumnCollection? _columns;
+	bool _released;
 
 	/// <summary>Creates a presenter; give it <see cref="Columns"/> and <see cref="Content"/>.</summary>
 	public GridViewRowPresenter()
@@ -61,10 +62,17 @@ public class GridViewRowPresenter : FrameworkElement
 		return _box;
 	}
 
+	/// <summary>Drops the cells for good; the presenter no longer rebuilds.</summary>
+	internal void Release()
+	{
+		_released = true;
+		if (_box != null) Clear();
+	}
+
 	/// <summary>Discards the cells and builds them again from the current columns.</summary>
 	internal void Rebuild()
 	{
-		if (_box == null) return;
+		if (_box == null || _released) return;
 		Clear();
 		Build();
 	}

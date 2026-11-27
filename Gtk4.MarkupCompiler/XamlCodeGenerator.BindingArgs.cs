@@ -25,6 +25,7 @@ namespace Gtk4.MarkupCompiler
 				case "ValidatesOnExceptions":
 				case "ValidatesOnNotifyDataErrors":
 				case "NotifyOnValidationError":
+				case "BindsDirectlyToSource":
 					return bool.TryParse(value.Trim(), out bool b)
 						? name + " = " + (b ? "true" : "false")
 						: null;

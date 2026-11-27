@@ -120,6 +120,6 @@ public class GeneratorSweep6Tests : Sweep3Base
 		object source = P(First(root), "ItemsSource");
 
 		Assert.Equal("CompositeCollection", source.GetType().Name);
-		Assert.Equal(2, P(source, "Count"));
+		Assert.Equal(3, P(source, "Count")); // entries: the container and two items
 	}
 }

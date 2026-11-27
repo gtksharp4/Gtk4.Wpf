@@ -114,6 +114,11 @@ internal static partial class BindingEngine
 
 		void DetachInpc()
 		{
+			if (_watchedProvider != null)
+			{
+				_watchedProvider.DataChanged -= OnProviderDataChanged;
+				_watchedProvider = null;
+			}
 			DetachDpSource(); // BindingEngine.SourceDp.cs
 			DetachViews();
 			_watchViews = false;

@@ -6,10 +6,11 @@ using System.Linq;
 namespace System.Windows.Data;
 
 /// <summary>
-/// A list built from several collections and single items, in order. A <see cref="CollectionContainer"/> entry
-/// contributes the items of its <see cref="CollectionContainer.Collection"/>; any other entry is one item.
-/// Enumeration, <see cref="Count"/> and the indexer see the flattened items. A view over it refreshes when an
-/// entry is added or removed and when a container's collection or its content changes.
+/// A list of entries, in order: each entry is a <see cref="CollectionContainer"/> or a single item, and the list
+/// members (<see cref="Count"/>, the indexer, <see cref="IndexOf"/>, <see cref="Insert"/>) work on those entries,
+/// as in WPF. The flattened items (a container expanded to the items of its
+/// <see cref="CollectionContainer.Collection"/>) are what a view over the list shows: it refreshes when an entry
+/// is added or removed and when a container's collection or its content changes.
 /// </summary>
 public class CompositeCollection : IList, INotifyCollectionChanged
 {
@@ -26,7 +27,11 @@ public class CompositeCollection : IList, INotifyCollectionChanged
 	/// <inheritdoc/>
 	public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
-	IEnumerable<object?> Flatten()
+	/// <summary>Raised when the flattened items may have changed: an entry change or a container change.</summary>
+	internal event EventHandler? FlattenedChanged;
+
+	/// <summary>The items with each container expanded, in order.</summary>
+	internal IEnumerable<object?> Flatten()
 	{
 		foreach (var entry in _entries.ToArray())
 		{
@@ -39,8 +44,8 @@ public class CompositeCollection : IList, INotifyCollectionChanged
 		}
 	}
 
-	/// <summary>Gets the number of items, with each container expanded.</summary>
-	public int Count => Flatten().Count();
+	/// <summary>Gets the number of entries; a <see cref="CollectionContainer"/> counts as one.</summary>
+	public int Count => _entries.Count;
 
 	/// <inheritdoc/>
 	public bool IsFixedSize => false;
@@ -54,52 +59,53 @@ public class CompositeCollection : IList, INotifyCollectionChanged
 	/// <inheritdoc/>
 	public object SyncRoot => this;
 
-	/// <summary>Gets the flattened item at <paramref name="index"/>. The composite cannot be assigned through.</summary>
-	/// <exception cref="NotSupportedException">The setter is used.</exception>
+	/// <summary>Gets or sets the entry at <paramref name="index"/>; setting raises a Replace change.</summary>
 	public object? this[int index]
 	{
-		get => Flatten().ElementAt(index);
-		set => throw new NotSupportedException("A CompositeCollection item cannot be replaced by index.");
+		get => _entries[index];
+		set
+		{
+			var old = _entries[index];
+			_entries[index] = value;
+			Detach(old);
+			Attach(value);
+			Raise(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, value, old, index));
+		}
 	}
 
 	/// <summary>Adds an entry: a <see cref="CollectionContainer"/> or a single item.</summary>
-	/// <returns>The flattened position of the entry's first item.</returns>
+	/// <returns>The index of the entry.</returns>
 	public int Add(object? value)
 	{
-		int position = Count;
+		int index = _entries.Count;
 		_entries.Add(value);
 		Attach(value);
-		RaiseReset();
-		return position;
+		Raise(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, value, index));
+		return index;
 	}
 
-	/// <summary>Inserts an entry at the flattened <paramref name="index"/>, which must fall on an entry boundary.</summary>
+	/// <summary>Inserts an entry at the entry index <paramref name="index"/>.</summary>
 	public void Insert(int index, object? value)
 	{
-		_entries.Insert(EntryIndexAt(index), value);
+		_entries.Insert(index, value);
 		Attach(value);
-		RaiseReset();
+		Raise(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, value, index));
 	}
 
 	/// <summary>Removes the first entry that equals <paramref name="value"/>.</summary>
 	public void Remove(object? value)
 	{
 		int i = _entries.IndexOf(value);
-		if (i < 0) return;
-		_entries.RemoveAt(i);
-		Detach(value);
-		RaiseReset();
+		if (i >= 0) RemoveAt(i);
 	}
 
-	/// <summary>Removes the entry at the flattened <paramref name="index"/>; a container's items go with it.</summary>
+	/// <summary>Removes the entry at <paramref name="index"/>; a container's items go with it.</summary>
 	public void RemoveAt(int index)
 	{
-		int i = EntryIndexAt(index);
-		if (i >= _entries.Count) throw new ArgumentOutOfRangeException(nameof(index));
-		var entry = _entries[i];
-		_entries.RemoveAt(i);
+		var entry = _entries[index];
+		_entries.RemoveAt(index);
 		Detach(entry);
-		RaiseReset();
+		Raise(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, entry, index));
 	}
 
 	/// <summary>Removes every entry.</summary>
@@ -107,51 +113,27 @@ public class CompositeCollection : IList, INotifyCollectionChanged
 	{
 		foreach (var entry in _entries) Detach(entry);
 		_entries.Clear();
-		RaiseReset();
+		Raise(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 	}
 
-	/// <summary>Returns whether the flattened items contain <paramref name="value"/>.</summary>
-	public bool Contains(object? value) => IndexOf(value) >= 0;
+	/// <summary>Returns whether the entries contain <paramref name="value"/>.</summary>
+	public bool Contains(object? value) => _entries.Contains(value);
 
-	/// <summary>Returns the flattened index of <paramref name="value"/>, or -1.</summary>
-	public int IndexOf(object? value)
-	{
-		int i = 0;
-		foreach (var item in Flatten())
-		{
-			if (Equals(item, value)) return i;
-			i++;
-		}
-		return -1;
-	}
+	/// <summary>Returns the entry index of <paramref name="value"/>, or -1.</summary>
+	public int IndexOf(object? value) => _entries.IndexOf(value);
 
 	/// <inheritdoc/>
 	public void CopyTo(Array array, int index)
 	{
-		foreach (var item in Flatten()) array.SetValue(item, index++);
+		foreach (var entry in _entries) array.SetValue(entry, index++);
 	}
 
 	/// <inheritdoc/>
-	public IEnumerator GetEnumerator() => Flatten().GetEnumerator();
+	public IEnumerator GetEnumerator() => _entries.ToArray().GetEnumerator();
 
 	int IList.Add(object? value) => Add(value);
 
 	void IList.Remove(object? value) => Remove(value);
-
-	// The entry that starts at flattened position index; a position inside a container's run is not a boundary.
-	int EntryIndexAt(int index)
-	{
-		if (index < 0) throw new ArgumentOutOfRangeException(nameof(index));
-		int position = 0;
-		for (int i = 0; i < _entries.Count; i++)
-		{
-			if (position == index) return i;
-			position += _entries[i] is CollectionContainer c ? c.ItemCount : 1;
-			if (position > index) throw new NotSupportedException("The index falls inside a CollectionContainer.");
-		}
-		if (position == index) return _entries.Count;
-		throw new ArgumentOutOfRangeException(nameof(index));
-	}
 
 	void Attach(object? entry)
 	{
@@ -163,8 +145,28 @@ public class CompositeCollection : IList, INotifyCollectionChanged
 		if (entry is CollectionContainer c) c.ContentChanged -= OnContainerChanged;
 	}
 
-	void OnContainerChanged(object? sender, EventArgs e) => RaiseReset();
+	void OnContainerChanged(object? sender, EventArgs e) => FlattenedChanged?.Invoke(this, EventArgs.Empty);
 
-	void RaiseReset()
-		=> CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+	void Raise(NotifyCollectionChangedEventArgs args)
+	{
+		CollectionChanged?.Invoke(this, args);
+		FlattenedChanged?.Invoke(this, EventArgs.Empty);
+	}
+}
+
+/// <summary>What a view over a <see cref="CompositeCollection"/> enumerates: the flattened items.</summary>
+sealed class CompositeFlatSource : IEnumerable, INotifyCollectionChanged
+{
+	readonly CompositeCollection _composite;
+
+	internal CompositeFlatSource(CompositeCollection composite)
+	{
+		_composite = composite;
+		composite.FlattenedChanged += (_, _) => CollectionChanged?.Invoke(this,
+			new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+	}
+
+	public event NotifyCollectionChangedEventHandler? CollectionChanged;
+
+	public IEnumerator GetEnumerator() => _composite.Flatten().GetEnumerator();
 }

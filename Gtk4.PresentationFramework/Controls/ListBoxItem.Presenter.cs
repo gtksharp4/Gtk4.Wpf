@@ -14,6 +14,12 @@ public partial class ListBoxItem
 	/// <summary>The view-supplied row presenter, or null when the row uses the content presenter.</summary>
 	internal UIElement? ViewPresenter => _viewPresenter;
 
+	/// <summary>Whether the owning list made this container (rather than the app supplying it as an item).</summary>
+	internal bool IsGeneratedContainer { get; set; }
+
+	/// <summary>Frees the view presenter of a discarded container (its cells leave the column size groups).</summary>
+	internal void ReleaseViewPresenter() => (_viewPresenter as GridViewRowPresenter)?.Release();
+
 	/// <summary>The element that presents the row in place of the content presenter, or null for the default.</summary>
 	internal virtual UIElement? CreateViewPresenter() => null;
 

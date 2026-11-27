@@ -18,16 +18,20 @@ public class CompositeCollectionTests : WpfGtkTestBase
 	}
 
 	[Fact]
-	public void Enumeration_and_Count_flatten_containers_in_order()
+	public void The_list_members_work_on_entries_and_the_flattened_items_are_enumerated_by_a_view()
 	{
-		var composite = Make(new ObservableCollection<string> { "a", "b" }, "single");
+		var first = new ObservableCollection<string> { "a", "b" };
+		var composite = Make(first, "single");
 		composite.Add(new CollectionContainer { Collection = new[] { "c", "d" } });
 
-		Assert.Equal(5, composite.Count);
-		Assert.Equal(new object[] { "a", "b", "single", "c", "d" }, composite.Cast<object>());
-		Assert.Equal("single", composite[2]);
-		Assert.Equal(3, composite.IndexOf("c"));
-		Assert.True(composite.Contains("d"));
+		Assert.Equal(3, composite.Count);
+		Assert.IsType<CollectionContainer>(composite[0]);
+		Assert.Equal("single", composite[1]);
+		Assert.Equal(1, composite.IndexOf("single"));
+		Assert.True(composite.Contains("single"));
+		Assert.False(composite.Contains("d"));
+		Assert.Equal(new object?[] { "a", "b", "single", "c", "d" },
+			CollectionViewSource.GetDefaultView(composite)!.Cast<object>());
 	}
 
 	[Fact]
@@ -35,42 +39,54 @@ public class CompositeCollectionTests : WpfGtkTestBase
 	{
 		var composite = new CompositeCollection { new CollectionContainer(), "x" };
 
-		Assert.Equal(new object[] { "x" }, composite.Cast<object>());
+		Assert.Equal(new object[] { "x" }, CollectionViewSource.GetDefaultView(composite)!.Cast<object>());
 	}
 
 	[Fact]
-	public void The_indexer_cannot_be_assigned()
+	public void The_indexer_replaces_an_entry_and_raises_Replace()
 	{
 		var composite = new CompositeCollection { "x" };
+		NotifyCollectionChangedEventArgs? args = null;
+		((INotifyCollectionChanged)composite).CollectionChanged += (_, e) => args = e;
 
-		Assert.Throws<NotSupportedException>(() => composite[0] = "y");
+		composite[0] = "y";
+
+		Assert.Equal("y", composite[0]);
+		Assert.Equal(NotifyCollectionChangedAction.Replace, args!.Action);
+		Assert.Equal(0, args.NewStartingIndex);
 	}
 
 	[Fact]
-	public void Insert_and_RemoveAt_work_on_entry_boundaries_only()
+	public void Insert_and_RemoveAt_take_entry_indexes()
 	{
 		var composite = Make(new ObservableCollection<string> { "a", "b" }, "s");
 
-		composite.Insert(2, "mid");
-		Assert.Equal(new object[] { "a", "b", "mid", "s" }, composite.Cast<object>());
-		Assert.Throws<NotSupportedException>(() => composite.Insert(1, "bad"));
-		composite.RemoveAt(2);
-		Assert.Equal(new object[] { "a", "b", "s" }, composite.Cast<object>());
+		composite.Insert(1, "mid");
+		Assert.IsType<CollectionContainer>(composite[0]);
+		Assert.Equal(new object?[] { composite[0], "mid", "s" }, composite.Cast<object>());
+		Assert.Equal(new object[] { "a", "b", "mid", "s" },
+			CollectionViewSource.GetDefaultView(composite)!.Cast<object>());
+		composite.RemoveAt(1);
+		Assert.Equal(2, composite.Count);
 	}
 
 	[Fact]
-	public void A_change_in_a_container_collection_or_the_composite_raises_CollectionChanged()
+	public void Entry_changes_raise_Add_and_Remove_at_entry_indexes_and_container_changes_stay_with_the_view()
 	{
 		var source = new ObservableCollection<string> { "a" };
 		var composite = Make(source);
-		int raised = 0;
-		((INotifyCollectionChanged)composite).CollectionChanged += (_, _) => raised++;
+		var seen = new System.Collections.Generic.List<NotifyCollectionChangedEventArgs>();
+		((INotifyCollectionChanged)composite).CollectionChanged += (_, e) => seen.Add(e);
 
-		source.Add("b");
 		composite.Add("c");
 		composite.Remove("c");
+		source.Add("b");
 
-		Assert.Equal(3, raised);
+		Assert.Equal(2, seen.Count);
+		Assert.Equal(NotifyCollectionChangedAction.Add, seen[0].Action);
+		Assert.Equal(1, seen[0].NewStartingIndex);
+		Assert.Equal(NotifyCollectionChangedAction.Remove, seen[1].Action);
+		Assert.Equal(1, seen[1].OldStartingIndex);
 	}
 
 	[Fact]
@@ -82,7 +98,7 @@ public class CompositeCollectionTests : WpfGtkTestBase
 			new Binding { Source = source });
 		var composite = new CompositeCollection { container };
 
-		Assert.Equal(new object[] { "p", "q" }, composite.Cast<object>());
+		Assert.Equal(new object[] { "p", "q" }, CollectionViewSource.GetDefaultView(composite)!.Cast<object>());
 	}
 
 	[Fact]
