@@ -3155,6 +3155,66 @@ only for a Shape that is the window content; lane H `RenderingPainter` reads `Vi
 - **Rounds 74-76 totals.** Gate on the merged result: `dotnet build Gtk4.Wpf.sln -nodeReuse:false` and every unit
   suite (see the merge commit and `docs/samples-coverage.md`, "Rounds 74-76"). Samples were **not** re-measured: the
   coverage counts are still those of `f678058f`.
+- **CI after Rounds 74-76.** The Linux job failed on the new
+  `WindowSizeToContentLimitsGtkTests.The_limits_apply_to_the_SizeToContent_axis_only`: `MaxWidth = 240`, actual
+  246. A GTK window cannot be narrower than its client-side title bar (about 246 px on the Linux runner), so the test
+  now caps at 300 (`da04cbc8`). A one-off `VisualBrushHostTests` activation failure on Xvfb did not repeat.
+- **Rounds 77-79 programme (three lanes, same implement → Opus review → fix shape as 74-76).** These rounds follow up
+  on the walls Rounds 74-76 left.
+- **Round 77 (lane A) - WPFGallery startup, PriorityBinding (merged).**
+  - **GTK initialisation is lazy and idempotent.** `Application.EnsureGtkInitialised`, at the `UIElement.Widget` choke
+    point, in `GtkMessageBoxPresenter` and in `DetachedSourceHost`. Review A77-1 found that the Window-only first
+    version missed the other two. Init is marked done only after the wiring, so a failed init retries (A77-3). A
+    `ThemeMode` set before init is applied when GTK comes up (A77-5). There are seam tests (`Application._gtkInit`),
+    but no process-level test.
+  - **StringFormat.** The generator keeps the XAML quotes (`"'{}{0} Page'"`). The binding engine now unwraps a quoted
+    value that starts with `{}` (a stopgap). The real fix, unquoting in `XamlCodeGenerator.Binding.cs`, is queued.
+  - **PriorityBinding** re-evaluates the children that read the DataContext when it changes.
+  - **WPFGallery** (scratch build, with the keyed-template wall worked around locally): it stays alive 25 s, and the
+    main window "WPF Gallery" exists. Content and navigation are not verified.
+- **Round 78 (lane B) - item views and grouping (merged).**
+  - **Generator:** a keyed `ItemsPanelTemplate` resource is now a real template (WPFGallery's first wall).
+  - **ListView.View with GridView:** new `ViewBase`, `GridView`, `GridViewColumn` (`DisplayMemberBinding`,
+    `CellTemplate`, `HeaderTemplate`), `GridViewColumnHeader` and `GridViewRowPresenter`. The ListView stays a
+    `Gtk.ListBox`: the header is the first non-selectable row, and the column widths are shared through a
+    `Gtk.SizeGroup`, released when containers are discarded (review I2).
+    - Gaps: the header scrolls with the rows, there is no resize or reorder, and `GridViewColumnHeader` derives from
+      `Button`.
+  - **GroupStyle:** group headers on `ItemsControl`/`ListBox`. `GroupItem` exists as a type only (review B1: the
+    `AlternatingAppearanceOfItems` sample-compile tests failed without it), so `ContainerStyle` and `Panel` are stored
+    only.
+  - **CompositeCollection/CollectionContainer:** entry semantics, per WPF (review I1). A `ListBoxItem` item is its own
+    container.
+  - **Data sources:** a binding to a `DataSourceProvider` reads its `Data` (with WPF's `BindsDirectlyToSource`, review
+    I3), and `PropertyGroupDescription("@attr")` groups XML nodes.
+  - The implicit container style now follows the container type (N1). Changes to a `GroupStyle`'s properties rebuild
+    the items (N2).
+  - Corpus skipped-element messages are down to 19 (from 35).
+  - Gates (scratch builds): Grouping shows the "Home"/"Work" headers. CompositeCollections shows the gods and the
+    `ListBoxItem`s. The XML items are blank because `Binding.XPath` and XML-typed implicit DataTemplates do not exist
+    (the next wall for both apps).
+- **Round 79 (lane C) - EditingExaminerDemo, sizing (merged).**
+  - **EditingExaminerDemo:** the editable `ComboBox` now hosts a real WPF `TextBox`, exposed as the internal
+    `EditableTextBoxSite` that the sample reflects over. It is the TextBox's logical parent (C3).
+  - **Explicit-size windows** are clipped, not grown, by larger content. This fixes EditingExaminer's growth loop: 252
+    "layout continuously requested" lines became 0, and the scratch run stays alive. `Window.ContentOverlayOf` unwraps
+    the clip host for VisualBrush detached hosting (review C1, a blocker: 3 VisualBrush tests had failed).
+  - **Shapes:** a `Stretch != None` shape reports its stretched size as `ActualWidth`/`ActualHeight`. A nested
+    `ScrollViewer` under `SizeToContent` requests its managed desired extent, without GTK propagation. A shape's
+    natural request is capped by a fixed Grid track or an explicit parent size, refreshed when the parent's size
+    changes (C2).
+  - Gaps:
+    - GeometryDesignerDemo still grows; a NaN-size window is not clipped, which is a retry now unblocked by C1.
+    - Only `Shape` is capped (not `TextBlock`/`Image`).
+    - A Grid track change after show does not refresh the cap.
+- **Rounds 77-79 totals.** The first gate on the merged result failed: 32 failures in PresentationFramework.Tests.
+  Neither cause showed in the lanes' filtered runs:
+  - The lazy-init tests ran the real `InitGtk`, which turned the animation scheduler's thread check on for every
+    later test (31 failures). The tests now restore it (`AnimationScheduler.GtkStateForTests`).
+  - The new `ViewBase` DP type was missing from the converter audit (1 failure).
+  The second gate passed: build 0 warnings and 0 errors. WindowsBase 316, MarkupCompiler 836 (+1 skipped),
+  ProjectConverter 64, PresentationFramework 6845 (+3 skipped) and Wpf.Testing 72 (+5 skipped), all passed. Samples
+  were not re-measured.
 
 ## Phased roadmap (after Phase 0 proves the spine)
 

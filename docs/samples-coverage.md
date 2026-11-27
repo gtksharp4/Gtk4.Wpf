@@ -282,6 +282,20 @@ all: `ImageDrawing` and the `PreviewCanExecute` attribute on `CommandBinding`.
 
 ## Next rounds
 
+### Rounds 77-79 (executed 2026-11-27; samples not re-measured)
+
+Merged into `main`; details are in the plan, "Rounds 77-79". The per-app results come from scratch builds made by the
+lanes.
+
+| Lane | App effect observed (scratch build) | Next wall |
+|---|---|---|
+| A (R77) WPFGallery startup | Alive 25 s with the main window shown (the keyed-template wall was worked around locally; R78 fixes it) | Content and navigation not verified; the generator keeps the quotes around a `StringFormat` (runtime stopgap only); `IconsPage.xaml:278` `StringFormat` is emitted truncated |
+| B (R78) Item views and grouping | Grouping shows the group headers; CompositeCollections shows its CLR items and `ListBoxItem`s | `Binding.XPath` and XML-typed implicit `DataTemplate`s (Grouping, CompositeCollections); `GroupItem` containers (AlternatingAppearanceOfItems); a fixed GridView header |
+| C (R79) EditingExaminerDemo, sizing | EditingExaminerDemo runs (no exception, stable 850x660 window) | GeometryDesignerDemo still grows (a NaN-size window is not clipped); only `Shape` is capped by fixed tracks |
+
+Next candidates by value: `Binding.XPath` + XML `DataTemplate`s (2 apps); a full re-measure of the samples (none since
+`f678058f`); the generator `StringFormat` unquoting; the NaN-axis clip (GeometryDesignerDemo); `GroupItem` containers.
+
 ### Rounds 74-76 (executed 2026-11-27; samples not re-measured)
 
 The six tracks below ran as Round 74 (lane A), Round 75 (lane B) and Round 76 (lane C) and are merged into `main`.
