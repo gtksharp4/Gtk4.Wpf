@@ -32,10 +32,10 @@ public static partial class GtkThread
 		var clock = Stopwatch.StartNew();
 		bool idle = false;
 		System.Windows.Application.PostToMainLoop(() => idle = true, DispatcherPriority.SystemIdle);
-		if (!PumpHere(() => idle, limit))
+		if (!PumpHere(() => idle, limit, out var stats))
 			throw new WaitTimeoutException(
 				$"The application did not become idle within {limit.TotalSeconds:0.#} s: a source such as a "
-				+ "zero-interval timer is always ready." + Environment.NewLine + "Automation tree:"
+				+ "zero-interval timer is always ready (" + stats + ")." + Environment.NewLine + "Automation tree:"
 				+ Environment.NewLine + TreeDump.Of(System.Windows.Automation.AutomationElement.RootElement));
 		for (int i = 0; i < MaxDrain && clock.Elapsed < limit && GLib.MainContext.Pending(); i++)
 			GLib.MainContext.Iteration(false);
@@ -43,19 +43,31 @@ public static partial class GtkThread
 
 	const int MaxDrain = 1000;
 
-	static bool PumpHere(Func<bool> condition, TimeSpan timeout)
+	static bool PumpHere(Func<bool> condition, TimeSpan timeout) => PumpHere(condition, timeout, out _);
+
+	// stats says how the time went, which tells a loop that is always busy from one whose iterations were frozen.
+	static bool PumpHere(Func<bool> condition, TimeSpan timeout, out string stats)
 	{
 		AssertOnGtkThread();
 		var clock = Stopwatch.StartNew();
+		int iterations = 0;
+		TimeSpan longest = TimeSpan.Zero;
 		// A periodic source keeps RunIteration(true) from blocking past the deadline. It sits below every app
 		// priority (SystemIdle is Low) so that, when iterations run late, it never starves idle work or redraws.
 		uint wake = GLib.Timeout.Add(10, new GLib.TimeoutHandler(() => true), (int)GLib.Priority.Low + 1);
 		try
 		{
 			while (!condition() && clock.Elapsed < timeout)
+			{
+				var start = clock.Elapsed;
 				Gtk.Application.RunIteration(true);
+				iterations++;
+				var took = clock.Elapsed - start;
+				if (took > longest) longest = took;
+			}
 		}
 		finally { GLib.Source.Remove(wake); }
+		stats = $"{iterations} iterations in {clock.Elapsed.TotalSeconds:0.#} s, the longest {longest.TotalMilliseconds:0} ms";
 		return condition();
 	}
 }
