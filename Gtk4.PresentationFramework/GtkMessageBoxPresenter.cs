@@ -28,6 +28,7 @@ sealed class GtkMessageBoxPresenter : IMessageBoxPresenter
 		MessageBoxButton button,
 		MessageBoxImage icon)
 	{
+		Application.EnsureGtkInitialised();
 		var win = new Gtk.Window
 		{
 			Title = caption,

@@ -50,6 +50,13 @@ internal static class AnimationScheduler
 		lock (_lock) { _gtkReady = true; _uiThreadId = Environment.CurrentManagedThreadId; }
 	}
 
+	/// <summary>Test hook: the thread-check state, so a test that drives <c>Application.InitGtk</c> can undo it.</summary>
+	internal static (bool Ready, int UiThreadId) GtkStateForTests
+	{
+		get { lock (_lock) return (_gtkReady, _uiThreadId); }
+		set { lock (_lock) { _gtkReady = value.Ready; _uiThreadId = value.UiThreadId; } }
+	}
+
 	/// <summary>
 	/// Registers <paramref name="clock"/> for GLib-driven ticking.
 	/// When GTK is running (after <see cref="NotifyGtkInitialised"/>), this MUST be

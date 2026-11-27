@@ -58,6 +58,9 @@ internal static partial class BindingEngine
 	/// </summary>
 	internal static string GetEffectiveStringFormat(string fmt)
 	{
+		// The generated code keeps the quotes of StringFormat='{}...'. "'{}" cannot start a valid format, so unwrap it.
+		if (fmt.Length >= 4 && fmt[0] == '\'' && fmt[fmt.Length - 1] == '\'' && fmt[1] == '{' && fmt[2] == '}')
+			fmt = fmt.Substring(1, fmt.Length - 2);
 		if (fmt.StartsWith("{}", StringComparison.Ordinal)) fmt = fmt.Substring(2);
 		return fmt.IndexOf('{') < 0 ? "{0:" + fmt + "}" : fmt;
 	}
