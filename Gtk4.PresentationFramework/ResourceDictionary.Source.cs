@@ -41,7 +41,8 @@ public partial class ResourceDictionary
 	}
 
 	static object? Locate(Uri value) =>
-		GtkFormsXamlRegistry.TryCreate(value, Application.Current?.GetType().Assembly ?? Assembly.GetEntryAssembly());
+		System.Windows.Themes.FluentTheme.TryCreate(value)
+		?? GtkFormsXamlRegistry.TryCreate(value, Application.Current?.GetType().Assembly ?? Assembly.GetEntryAssembly());
 
 	void Apply(Uri value, ResourceDictionary dictionary)
 	{
