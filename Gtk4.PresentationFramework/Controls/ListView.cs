@@ -4,10 +4,10 @@ namespace System.Windows.Controls;
 /// A <see cref="ListBox"/> whose rows can be shaped by a <see cref="View"/>. With a <see cref="GridView"/> the
 /// list shows a header row of column headers above the rows, one cell per column.
 /// <para>
-/// Mapping: the list is still the <see cref="ListBox"/> (a <see cref="Gtk.ListBox"/>, one row per item, so
-/// selection, keyboard and automation are unchanged). The widget is a vertical box of the view's header host and
-/// that list; each <see cref="ListViewItem"/> hosts the view's row presenter instead of a content presenter. The
-/// header is part of the widget, so inside a scroll viewer it scrolls with the rows (WPF keeps it fixed).
+/// Mapping: the widget stays the <see cref="Gtk.ListBox"/> of <see cref="ListBox"/>, with one row per item, so
+/// selection, keyboard and automation are unchanged. The view's header is a first, non-selectable row of that list
+/// and each <see cref="ListViewItem"/> hosts the view's row presenter instead of a content presenter. The header
+/// therefore scrolls with the rows (WPF keeps it fixed).
 /// </para>
 /// </summary>
 public partial class ListView : ListBox
@@ -17,7 +17,7 @@ public partial class ListView : ListBox
 		DependencyProperty.Register(nameof(View), typeof(ViewBase), typeof(ListView),
 			new PropertyMetadata(null, OnViewChanged));
 
-	Gtk.Box? _headerHost;
+	Gtk.ListBoxRow? _headerRow;
 	UIElement? _header;
 
 	/// <summary>The header element of the current view, or null.</summary>
@@ -37,13 +37,8 @@ public partial class ListView : ListBox
 	protected override Gtk.Widget CreateItemsWidget()
 	{
 		var list = base.CreateItemsWidget();
-		list.Vexpand = true;
-		_headerHost = new Gtk.Box(Gtk.Orientation.Vertical, 0);
-		var box = new Gtk.Box(Gtk.Orientation.Vertical, 0);
-		box.Append(_headerHost);
-		box.Append(list);
 		ApplyHeader();
-		return box;
+		return list;
 	}
 
 	/// <inheritdoc/>
@@ -65,16 +60,21 @@ public partial class ListView : ListBox
 
 	void ApplyHeader()
 	{
-		if (_headerHost == null) return;
+		if (_gtkListBox == null) return;
+		if (_headerRow != null)
+		{
+			_gtkListBox.Remove(_headerRow);
+			_headerRow = null;
+		}
 		if (_header != null)
 		{
-			_headerHost.Remove(_header.Widget);
 			_header.LogicalParent = null;
 			_header = null;
 		}
 		_header = View?.CreateHeader();
 		if (_header == null) return;
 		_header.LogicalParent = this;
-		_headerHost.Append(_header.Widget);
+		_headerRow = new Gtk.ListBoxRow { Selectable = false, Activatable = false, Child = _header.Widget };
+		_gtkListBox.Insert(_headerRow, 0);
 	}
 }

@@ -167,6 +167,19 @@ public class GridViewTests : WpfGtkTestBase
 	});
 
 	[Fact]
+	public void The_header_is_a_first_non_selectable_row_of_the_list() => Run(() =>
+	{
+		var lv = Make();
+
+		var rows = Descendants(lv.Widget).OfType<Gtk.ListBoxRow>().ToList();
+		Assert.Equal(4, rows.Count);
+		Assert.False(rows[0].Selectable);
+		Assert.Same(lv.HeaderElement!.Widget, rows[0].Child);
+		Assert.All(rows.Skip(1), r => Assert.True(r.Selectable));
+		Assert.IsType<Gtk.ListBox>(lv.Widget);
+	});
+
+	[Fact]
 	public void Selection_still_maps_rows_to_items() => Run(() =>
 	{
 		var lv = Make();
