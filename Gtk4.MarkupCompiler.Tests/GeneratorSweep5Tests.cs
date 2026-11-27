@@ -88,6 +88,42 @@ public class GeneratorSweep5Tests : Sweep3Base
 		Assert.Contains(Messages(xaml), m => m.StartsWith("Skipped property element Grid.InputBindings"));
 	}
 
+	static string FirstKey(string attrs)
+	{
+		object root = GeneratorSweep4RuntimeTests.Run("<Grid " + Head + " x:Class=\"App.C\"><Grid.InputBindings>"
+			+ "<KeyBinding Command=\"ApplicationCommands.Open\" " + attrs + "/></Grid.InputBindings></Grid>");
+		object b = ((System.Collections.IEnumerable)GeneratorSweep4RuntimeTests.Prop(root, "InputBindings"))
+			.Cast<object>().Single();
+		return GeneratorSweep4RuntimeTests.Prop(GeneratorSweep4RuntimeTests.Prop(b, "Gesture"), "Key").ToString();
+	}
+
+	[Fact]
+	public void A_digit_key_is_the_D_key_not_the_enum_value() =>
+		Assert.Equal("D1", FirstKey("Gesture=\"Ctrl+1\""));
+
+	[Fact]
+	public void A_digit_Key_attribute_is_the_D_key() => Assert.Equal("D5", FirstKey("Key=\"5\""));
+
+	[Fact]
+	public void Key_aliases_resolve_like_KeyConverter()
+	{
+		Assert.Equal("Escape", FirstKey("Key=\"Esc\""));
+		Assert.Equal("Delete", FirstKey("Key=\"Del\""));
+		Assert.Equal("PageUp", FirstKey("Gesture=\"Ctrl+PgUp\""));
+	}
+
+	[Theory]
+	[InlineData("<KeyBinding Command=\"ApplicationCommands.Open\" Key=\"Bogus\"/>")]
+	[InlineData("<KeyBinding Command=\"ApplicationCommands.Open\" Gesture=\"Ctrl+R,Open\"/>")]
+	[InlineData("<MouseBinding Command=\"ApplicationCommands.Open\" MouseAction=\"Bogus\"/>")]
+	public void An_unknown_key_or_mouse_action_is_reported_not_emitted(string binding)
+	{
+		string xaml = Win("<Grid><Grid.InputBindings>" + binding + "</Grid.InputBindings></Grid>");
+
+		Assert.Contains(Messages(xaml), m => m.StartsWith("Skipped property element Grid.InputBindings"));
+		Assert.DoesNotContain("Enum.Parse", Compile(xaml));
+	}
+
 	[Fact]
 	public void Input_bindings_exist_at_run_time_with_their_gestures()
 	{

@@ -9,6 +9,42 @@ namespace Gtk4.MarkupCompiler
 		const string KeyBindingType = "System.Windows.Input.KeyBinding";
 		const string MouseBindingType = "System.Windows.Input.MouseBinding";
 
+		const string KeyType = "System.Windows.Input.Key";
+		const string MouseActionType = "System.Windows.Input.MouseAction";
+
+		static readonly System.Collections.Generic.Dictionary<string, string> KeyAliases =
+			new System.Collections.Generic.Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+		{
+			["CTRL"] = "LeftCtrl", ["CONTROL"] = "LeftCtrl", ["ALT"] = "LeftAlt", ["SHIFT"] = "LeftShift",
+			["ESC"] = "Escape", ["PGUP"] = "PageUp", ["PGDN"] = "PageDown", ["INS"] = "Insert",
+			["DEL"] = "Delete", ["WIN"] = "LWin", ["WINDOWS"] = "LWin", ["BACKSPACE"] = "Back",
+			["BKSP"] = "Back", ["BS"] = "Back", ["ENTER"] = "Return", ["PLUS"] = "OemPlus",
+			["MINUS"] = "OemMinus", ["COMMA"] = "OemComma", ["PERIOD"] = "OemPeriod",
+			["SEMICOLON"] = "OemSemicolon", ["QUESTION"] = "OemQuestion", ["TILDE"] = "OemTilde",
+			["OPENBRACKETS"] = "OemOpenBrackets", ["CLOSEBRACKETS"] = "OemCloseBrackets", ["PIPE"] = "OemPipe",
+			["QUOTES"] = "OemQuotes", ["BACKSLASH"] = "OemBackslash", ["BREAK"] = "Cancel",
+			["PRINTSCREEN"] = "PrintScreen", ["APPS"] = "Apps", ["PAUSE"] = "Pause", ["SCROLLLOCK"] = "Scroll",
+			["NUMLOCK"] = "NumLock",
+		};
+
+		// The member of enum fqEnum named by text (case-insensitive), or null when the enum or member is unknown.
+		string EnumMember(string fqEnum, string text)
+		{
+			string[] names = _resolver.GetEnumMemberNames(fqEnum);
+			return names?.FirstOrDefault(n => string.Equals(n, text, StringComparison.OrdinalIgnoreCase));
+		}
+
+		// Mirrors the layer's KeyConverter at generation time: a digit is D0-D9, a letter is itself, then the
+		// alias table, then an enum name. Null when nothing matches, so the element is reported as skipped.
+		string ResolveKeyName(string text)
+		{
+			text = text.Trim();
+			if (text.Length == 1 && text[0] >= '0' && text[0] <= '9') return EnumMember(KeyType, "D" + text);
+			if (text.Length == 1 && char.IsLetter(text[0])) return EnumMember(KeyType, text);
+			if (KeyAliases.TryGetValue(text, out string alias)) return EnumMember(KeyType, alias);
+			return EnumMember(KeyType, text);
+		}
+
 		// <Window.InputBindings><KeyBinding Command="..." Key="F4" Modifiers="Alt"/> or Gesture="CTRL+R", and
 		// <MouseBinding Command="..." MouseAction="LeftDoubleClick"/>. The layer's bindings take command and
 		// gesture in the constructor, so each one is emitted as an object-creation expression. Anything else
@@ -52,8 +88,9 @@ namespace Gtk4.MarkupCompiler
 					if (!TryParseKeyGesture(gestureText, out key, out modifiers)) return null;
 				}
 				if (key == null || key.IndexOf('{') >= 0 || !TryParseModifiers(modifiers, out string mods)) return null;
-				string gesture = $"(global::System.Windows.Input.Key)global::System.Enum.Parse(" +
-					$"typeof(global::System.Windows.Input.Key), \"{EscapeString(key.Trim())}\", true), {mods}";
+				string keyName = ResolveKeyName(key);
+				if (keyName == null) return null;
+				string gesture = $"global::System.Windows.Input.Key.{keyName}, {mods}";
 				ctor = $"new global::{KeyBindingType}({cmd}, {gesture})";
 			}
 			else
@@ -61,9 +98,10 @@ namespace Gtk4.MarkupCompiler
 				string action = (string)e.Attribute("MouseAction");
 				if (action == null || gestureText != null || action.IndexOf('{') >= 0
 					|| !TryParseModifiers(modifiers, out string mods)) return null;
+				string actionName = EnumMember(MouseActionType, action.Trim());
+				if (actionName == null) return null;
 				ctor = $"new global::{MouseBindingType}({cmd}, new global::System.Windows.Input.MouseGesture(" +
-					$"(global::System.Windows.Input.MouseAction)global::System.Enum.Parse(" +
-					$"typeof(global::System.Windows.Input.MouseAction), \"{EscapeString(action.Trim())}\", true), {mods}))";
+					$"global::{MouseActionType}.{actionName}, {mods}))";
 			}
 			return parameter == null ? ctor : $"{ctor} {{ CommandParameter = \"{EscapeString(parameter)}\" }}";
 		}
