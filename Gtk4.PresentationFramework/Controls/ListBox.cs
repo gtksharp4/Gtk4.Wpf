@@ -92,6 +92,13 @@ public partial class ListBox : Selector
 	/// <inheritdoc/>
 	protected override UIElement GetContainerForItem(object? item)
 	{
+		// A ListBoxItem item is its own container (WPF IsItemItsOwnContainer).
+		if (item is ListBoxItem own)
+		{
+			PrepareContainer(own, item);
+			_containers.Add(own);
+			return own;
+		}
 		var lbi = new ListBoxItem { Content = item };
 		ConfigurePresenter(lbi, item);
 		PrepareContainer(lbi, item);
