@@ -38,6 +38,18 @@ public class RoutedEventSourceAdjustTests
 	}
 
 	[Fact]
+	public void Source_is_restored_after_the_route_completes()
+	{
+		var frame = new Node { Adjusts = true };
+		var inner = new Node { Parent = frame };
+		var args = new RoutedEventArgs(Bubbled);
+
+		inner.RaiseEvent(args);
+
+		Assert.Same(inner, args.Source);
+	}
+
+	[Fact]
 	public void OriginalSource_stays_the_raising_element()
 	{
 		var frame = new Node { Adjusts = true };

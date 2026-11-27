@@ -113,6 +113,7 @@ public static partial class RoutedEventHost
 	{
 		var chain = BuildChain(source);
 		var sources = ComputeSources(chain, e);
+		var before = e.Source;
 		for (int i = 0; i < chain.Count; i++)
 		{
 			if (sources != null) e.Source = sources[i];
@@ -121,12 +122,14 @@ public static partial class RoutedEventHost
 			// handlers that did not opt in.
 			InvokeHandlers(chain[i], source, e);
 		}
+		if (sources != null) e.Source = before;
 	}
 
 	static void TunnelEvent(DependencyObject source, RoutedEventArgs e)
 	{
 		var chain = BuildChain(source);
 		var sources = ComputeSources(chain, e);
+		var before = e.Source;
 
 		// Invoke from root → source.
 		for (int i = chain.Count - 1; i >= 0; i--)
@@ -136,6 +139,7 @@ public static partial class RoutedEventHost
 			// (instance and class) further down the tunnel are still reached.
 			InvokeHandlers(chain[i], source, e);
 		}
+		if (sources != null) e.Source = before;
 	}
 
 	// The route, source first.

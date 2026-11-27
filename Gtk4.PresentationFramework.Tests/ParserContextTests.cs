@@ -34,9 +34,9 @@ public class ParserContextTests : WpfGtkTestBase
 	});
 
 	[Fact]
-	public void A_null_context_or_stream_is_rejected() => Run(() =>
+	public void A_null_context_is_allowed_but_a_null_stream_is_rejected() => Run(() =>
 	{
-		Assert.Throws<ArgumentNullException>(() => XamlReader.Load(Xaml("<Button " + Ns + "/>"), (ParserContext)null!));
+		Assert.NotNull(XamlReader.Load(Xaml("<Button " + Ns + "/>"), null!));
 		Assert.Throws<ArgumentNullException>(() => XamlReader.Load((Stream)null!, new ParserContext()));
 	});
 
@@ -49,11 +49,14 @@ public class ParserContextTests : WpfGtkTestBase
 		};
 
 		var context = new ParserContext(xml);
-		System.Xml.XmlParserContext back = context;
 
 		Assert.Equal(new Uri("file:///x/y/"), context.BaseUri);
 		Assert.Equal("fr-FR", context.XmlLang);
-		Assert.Equal(System.Xml.XmlSpace.Preserve, context.XmlSpace);
-		Assert.Same(xml, back);
+		Assert.Equal("preserve", context.XmlSpace);
+		Assert.IsAssignableFrom<IUriContext>(context);
+		context.BaseUri = new Uri("file:///z/");
+		var back = ParserContext.ToXmlParserContext(context);
+		Assert.Equal("file:///z/", back.BaseURI);
+		Assert.Equal(System.Xml.XmlSpace.Preserve, back.XmlSpace);
 	}
 }

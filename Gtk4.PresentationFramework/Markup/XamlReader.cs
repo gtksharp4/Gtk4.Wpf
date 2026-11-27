@@ -30,8 +30,8 @@ public class XamlReader
 	public static object Load(Stream stream, ParserContext parserContext)
 	{
 		if (stream == null) throw new ArgumentNullException(nameof(stream));
-		if (parserContext == null) throw new ArgumentNullException(nameof(parserContext));
-		using var reader = XmlReader.Create(stream, Settings);
+		parserContext ??= new ParserContext();
+		using var reader = XmlReader.Create(stream, Settings, (XmlParserContext)parserContext);
 		return Load(reader, parserContext.BaseUri);
 	}
 
