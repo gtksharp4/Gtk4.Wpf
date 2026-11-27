@@ -41,6 +41,7 @@ public abstract partial class FrameworkElement : UIElement
 	{
 		BindingEngine.RefreshBindings(this);
 		MultiBindingEngine.RefreshDataContextBindings(this);
+		PriorityBindingEngine.RefreshDataContextBindings(this);
 	}
 
 	/// <summary>Gets or sets the data context.</summary>

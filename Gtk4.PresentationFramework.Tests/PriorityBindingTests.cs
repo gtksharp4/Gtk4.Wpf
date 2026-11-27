@@ -120,4 +120,34 @@ public class PriorityBindingTests
 
 		Assert.IsType<PriorityBindingExpression>(expr);
 	}
+
+	[Fact]
+	public void PriorityBinding_is_re_evaluated_when_the_inherited_DataContext_arrives_later()
+	{
+		var parent = new PriorityElement();
+		var el = new PriorityElement();
+		el.InheritanceParent = parent;
+		var pb = new PriorityBinding { FallbackValue = "fallback" };
+		pb.Bindings.Add(new Binding("Name"));
+		el.SetBinding(PriorityElement.ValueProperty, pb);
+		Assert.Equal("fallback", el.Value);
+
+		parent.DataContext = new SourceVm { Name = "from-context" };
+
+		Assert.Equal("from-context", el.Value);
+	}
+
+	[Fact]
+	public void PriorityBinding_is_re_evaluated_when_the_local_DataContext_is_replaced()
+	{
+		var el = new PriorityElement();
+		var pb = new PriorityBinding { FallbackValue = "fallback" };
+		pb.Bindings.Add(new Binding("Name"));
+		el.SetBinding(PriorityElement.ValueProperty, pb);
+
+		el.DataContext = new SourceVm { Name = "one" };
+		Assert.Equal("one", el.Value);
+		el.DataContext = new SourceVm { Name = "two" };
+		Assert.Equal("two", el.Value);
+	}
 }

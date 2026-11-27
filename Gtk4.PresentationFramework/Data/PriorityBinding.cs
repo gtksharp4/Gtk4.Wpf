@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -40,6 +41,17 @@ internal static class PriorityBindingEngine
 		return expr;
 	}
 
+	/// <summary>
+	/// Re-evaluates the records whose child bindings read the DataContext, so a DataContext inherited or
+	/// set after the binding was created is picked up (WPF re-resolves child sources on a DataContext change).
+	/// </summary>
+	internal static void RefreshDataContextBindings(FrameworkElement target)
+	{
+		if (!_records.TryGetValue(target, out var list)) return;
+		foreach (var r in list.ToArray())
+			if (r.UsesDataContext) r.Activate();
+	}
+
 	internal static void ClearForDp(FrameworkElement target, DependencyProperty dp)
 	{
 		if (!_records.TryGetValue(target, out var list)) return;
@@ -71,6 +83,9 @@ internal static class PriorityBindingEngine
 			new List<(INotifyPropertyChanged, PropertyChangedEventHandler)>();
 
 		internal DependencyProperty TargetProperty => _dp;
+
+		internal bool UsesDataContext => _pb.Bindings.Any(
+			b => b.Source == null && b.ElementName == null && b.RelativeSource == null);
 
 		internal PriorityRecord(
 			FrameworkElement target,
