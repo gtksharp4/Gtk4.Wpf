@@ -19,9 +19,12 @@ public class ApplicationLazyGtkInitTests : WpfGtkTestBase, IDisposable
 	readonly Func<bool> _isOn = System.Windows.Threading.Dispatcher.IsOnDispatcherThread;
 	readonly Func<uint, Func<bool>, uint> _schedule = System.Windows.Threading.DispatcherTimer.ScheduleAction;
 	readonly Action<uint> _remove = System.Windows.Threading.DispatcherTimer.RemoveSourceAction;
+	readonly (bool, int) _scheduler = System.Windows.Media.Animation.AnimationScheduler.GtkStateForTests;
 
 	public void Dispose()
 	{
+		// InitGtk turns on the animation scheduler's thread check; later tests tick clocks from the test thread.
+		System.Windows.Media.Animation.AnimationScheduler.GtkStateForTests = _scheduler;
 		Application._gtkInit = _original;
 		Application.ResetCurrentForTests();
 		// InitGtk wires process-wide dispatcher bridges: undo that, and mark GTK initialised as it really is.
