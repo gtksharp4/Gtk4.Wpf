@@ -139,4 +139,48 @@ public class GeneratorSweep5Tests : Sweep3Base
 		Assert.NotSame(a, b);
 		Assert.Equal("Horizontal", GeneratorSweep4RuntimeTests.Prop(a, "Orientation").ToString());
 	}
+
+	[Fact]
+	public void Named_MatrixTransform_render_transform_is_built_and_registered()
+	{
+		string xaml = Win("<Canvas><Rectangle><Rectangle.RenderTransform><MatrixTransform x:Name=\"M\"/>"
+			+ "</Rectangle.RenderTransform></Rectangle></Canvas>");
+		string code = Compile(xaml);
+
+		Has(code, "new System.Windows.Media.MatrixTransform()");
+		Has(code, "RegisterName(\"M\"");
+		Assert.DoesNotContain(Messages(xaml), m => m.StartsWith("Skipped"));
+	}
+
+	[Fact]
+	public void Combined_geometry_path_data_is_built_with_its_children()
+	{
+		string xaml = Win("<Path Stroke=\"Black\"><Path.Data><CombinedGeometry GeometryCombineMode=\"Exclude\">"
+			+ "<CombinedGeometry.Geometry1><EllipseGeometry RadiusX=\"50\" RadiusY=\"50\" Center=\"75,75\"/>"
+			+ "</CombinedGeometry.Geometry1><CombinedGeometry.Geometry2><EllipseGeometry RadiusX=\"50\""
+			+ " RadiusY=\"50\" Center=\"125,75\"/></CombinedGeometry.Geometry2></CombinedGeometry></Path.Data></Path>");
+		string code = Compile(xaml);
+
+		Has(code, "new System.Windows.Media.CombinedGeometry()");
+		Has(code, "GeometryCombineMode");
+		Has(code, ".Geometry1 = ");
+		Has(code, ".Geometry2 = ");
+		Assert.DoesNotContain(Messages(xaml), m => m.StartsWith("Skipped"));
+	}
+
+	[Fact]
+	public void Combined_geometry_exists_at_run_time_with_its_mode_and_children()
+	{
+		object root = GeneratorSweep4RuntimeTests.Run("<Path " + Head + " x:Class=\"App.C\"><Path.Data>"
+			+ "<CombinedGeometry GeometryCombineMode=\"Xor\"><CombinedGeometry.Geometry1>"
+			+ "<EllipseGeometry RadiusX=\"5\" RadiusY=\"5\"/></CombinedGeometry.Geometry1>"
+			+ "<CombinedGeometry.Geometry2><RectangleGeometry Rect=\"0,0,4,4\"/></CombinedGeometry.Geometry2>"
+			+ "</CombinedGeometry></Path.Data></Path>");
+		object data = GeneratorSweep4RuntimeTests.Prop(root, "Data");
+
+		Assert.Equal("CombinedGeometry", data.GetType().Name);
+		Assert.Equal("Xor", GeneratorSweep4RuntimeTests.Prop(data, "GeometryCombineMode").ToString());
+		Assert.Equal("EllipseGeometry", GeneratorSweep4RuntimeTests.Prop(data, "Geometry1").GetType().Name);
+		Assert.Equal("RectangleGeometry", GeneratorSweep4RuntimeTests.Prop(data, "Geometry2").GetType().Name);
+	}
 }
