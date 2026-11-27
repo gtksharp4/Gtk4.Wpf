@@ -62,7 +62,10 @@ public class ShapeSlotTests : WpfGtkTestBase
 			window.Show();
 			GtkState.Require(() => sibling.ActualWidth > 0, "layout", sibling);
 			GtkPump.For(150);
-			Assert.Equal(200, sibling.ActualWidth, 1);
+			// The star column gets what the 100 px track leaves. Not a fixed 200: without a window manager (Xvfb) GTK
+			// draws a solid client-side border inside the 300 px surface, so the content is narrower (see WindowExtent).
+			Assert.InRange(grid.ActualWidth, 250, 300.5);
+			Assert.Equal(grid.ActualWidth - 100, sibling.ActualWidth, 1);
 		}
 		finally { window.Close(); }
 	});
