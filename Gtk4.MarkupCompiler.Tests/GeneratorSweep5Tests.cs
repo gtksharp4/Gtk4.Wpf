@@ -51,4 +51,60 @@ public class GeneratorSweep5Tests : Sweep3Base
 
 		Assert.Equal(new[] { "Name", "Cost" }, ColumnPaths(root));
 	}
+
+	const string Bindings =
+		"<Grid.InputBindings><KeyBinding Command=\"ApplicationCommands.Open\" Gesture=\"CTRL+R\"/>"
+		+ "<KeyBinding Command=\"ApplicationCommands.Close\" Key=\"F4\" Modifiers=\"Alt\" CommandParameter=\"p\"/>"
+		+ "<MouseBinding Command=\"ApplicationCommands.Open\" MouseAction=\"LeftDoubleClick\"/></Grid.InputBindings>";
+
+	[Fact]
+	public void InputBindings_are_emitted_and_compile()
+	{
+		string xaml = Win("<Grid>" + Bindings + "</Grid>");
+		string code = Compile(xaml);
+
+		Has(code, "InputBindings.Add(new global::System.Windows.Input.KeyBinding(");
+		Has(code, "ModifierKeys.Control");
+		Has(code, "CommandParameter = \"p\"");
+		Has(code, "new global::System.Windows.Input.MouseBinding(");
+		Assert.DoesNotContain(Messages(xaml), m => m.StartsWith("Skipped"));
+	}
+
+	[Fact]
+	public void Window_input_bindings_are_emitted()
+	{
+		string xaml = "<Window " + Head + " x:Class=\"App.C\"><Window.InputBindings>"
+			+ "<KeyBinding Command=\"ApplicationCommands.Open\" Gesture=\"CTRL+R\"/></Window.InputBindings></Window>";
+
+		Has(Compile(xaml), "this.InputBindings.Add(");
+	}
+
+	[Fact]
+	public void An_unknown_gesture_is_still_reported_not_guessed()
+	{
+		string xaml = Win("<Grid><Grid.InputBindings><KeyBinding Command=\"ApplicationCommands.Open\""
+			+ " Gesture=\"Hyper+R\"/></Grid.InputBindings></Grid>");
+
+		Assert.Contains(Messages(xaml), m => m.StartsWith("Skipped property element Grid.InputBindings"));
+	}
+
+	[Fact]
+	public void Input_bindings_exist_at_run_time_with_their_gestures()
+	{
+		object root = GeneratorSweep4RuntimeTests.Run(
+			"<Grid " + Head + " x:Class=\"App.C\">" + Bindings + "</Grid>");
+		var list = ((System.Collections.IEnumerable)GeneratorSweep4RuntimeTests.Prop(root, "InputBindings"))
+			.Cast<object>().ToList();
+
+		Assert.Equal(3, list.Count);
+		object g0 = GeneratorSweep4RuntimeTests.Prop(list[0], "Gesture");
+		Assert.Equal("R", GeneratorSweep4RuntimeTests.Prop(g0, "Key").ToString());
+		Assert.Equal("Control", GeneratorSweep4RuntimeTests.Prop(g0, "Modifiers").ToString());
+		object g1 = GeneratorSweep4RuntimeTests.Prop(list[1], "Gesture");
+		Assert.Equal("F4", GeneratorSweep4RuntimeTests.Prop(g1, "Key").ToString());
+		Assert.Equal("Alt", GeneratorSweep4RuntimeTests.Prop(g1, "Modifiers").ToString());
+		Assert.Equal("p", GeneratorSweep4RuntimeTests.Prop(list[1], "CommandParameter"));
+		Assert.Equal("LeftDoubleClick", GeneratorSweep4RuntimeTests.Prop(
+			GeneratorSweep4RuntimeTests.Prop(list[2], "Gesture"), "MouseAction").ToString());
+	}
 }
