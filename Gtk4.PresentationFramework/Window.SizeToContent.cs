@@ -54,6 +54,11 @@ public partial class Window
 		if (!capW && !capH && !raiseW && !raiseH && !managed)
 			return;
 
+		if (managed)
+		{
+			contentElement!.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+			RequestScrollViewerExtents(contentElement, fitW && !capW, fitH && !capH);
+		}
 		win.Measure(Gtk.Orientation.Horizontal, -1, out int minW, out int natW, out _, out _);
 		var desired = managed ? ManagedExtraSize(contentElement!) : default;
 		if (fitW) natW += (int)Math.Ceiling(desired.Width);
@@ -142,6 +147,33 @@ public partial class Window
 			if (VisualTreeHelper.GetChild(element, i) is UIElement child && HasScrollViewer(child))
 				return true;
 		return false;
+	}
+
+	// GTK allocates a nested scrolled window its natural size, not the content's, and the window's default size
+	// alone does not hand the difference to it (a Box or Grid gives extra space only to expanding children). Each
+	// ScrollViewer therefore requests the extent its managed WPF Measure wants, on an axis the window fits and
+	// does not cap, unless that extent alone would not fit the work area (then it scrolls, as before). An axis the
+	// ScrollViewer sizes explicitly already carries its request.
+	static void RequestScrollViewerExtents(UIElement element, bool fitW, bool fitH)
+	{
+		if (element is ScrollViewer sv)
+		{
+			var d = sv.DesiredSize;
+			int w = fitW && double.IsNaN(sv.Width) && d.Width <= SystemParameters.WorkArea.Width
+				? (int)Math.Ceiling(d.Width) : -1;
+			int h = fitH && double.IsNaN(sv.Height) && d.Height <= SystemParameters.WorkArea.Height
+				? (int)Math.Ceiling(d.Height) : -1;
+			if (w >= 0 || h >= 0)
+			{
+				sv.Widget.GetSizeRequest(out int curW, out int curH);
+				sv.Widget.SetSizeRequest(w >= 0 ? w : curW, h >= 0 ? h : curH);
+			}
+			return;
+		}
+		int count = VisualTreeHelper.GetChildrenCount(element);
+		for (int i = 0; i < count; i++)
+			if (VisualTreeHelper.GetChild(element, i) is UIElement child)
+				RequestScrollViewerExtents(child, fitW, fitH);
 	}
 
 	// How much larger the content's WPF desired size is than GTK's natural size of its widget, per axis.
