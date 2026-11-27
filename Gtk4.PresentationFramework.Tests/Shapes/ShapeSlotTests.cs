@@ -34,12 +34,12 @@ public class ShapeSlotTests : WpfGtkTestBase
 			window.Show();
 			GtkState.Require(() => polygon.ActualWidth > 0, "layout", polygon);
 			GtkPump.For(150);
-			// GTK keeps the slot as the render size (known gap): WPF's RenderSize is 50x50 and ArrangeCore
-			// applies the 25 px offset; here the offset is folded into the stretch matrix instead.
+			// WPF: the shape's RenderSize is the stretched 50x50 and ArrangeCore applies the 25 px offset, which this
+			// layer folds into the stretch matrix because the GTK allocation is the whole 50x100 slot.
 			var m = polygon.StretchMatrix;
 			Assert.Equal(m.M11, m.M22, 0.001);
 			Assert.InRange(polygon.ActualWidth, 40, 50);
-			Assert.Equal((polygon.ActualHeight - polygon.ActualWidth) / 2, m.OffsetY, 1);
+			Assert.Equal(polygon.ActualWidth, polygon.ActualHeight, 0.5);
 			Assert.True(m.OffsetY > 10);
 		}
 		finally { window.Close(); }
