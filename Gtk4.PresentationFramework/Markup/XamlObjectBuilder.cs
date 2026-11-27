@@ -21,6 +21,9 @@ internal sealed partial class XamlObjectBuilder
 	FrameworkElement? _scopeOwner;
 	XElement _ctx = null!;
 
+	/// <summary>The load's base URI (<see cref="ParserContext.BaseUri"/>): given to every created <see cref="IUriContext"/>.</summary>
+	internal Uri? BaseUri { get; set; }
+
 	internal object Build(XElement root)
 	{
 		foreach (XAttribute a in root.Attributes(XName.Get("Ignorable", McNs)))
@@ -42,6 +45,7 @@ internal sealed partial class XamlObjectBuilder
 			if (IsX(el.Name.Namespace)) return BuildXElement(el, target, targetMember);
 			Type type = ResolveType(el.Name.NamespaceName, el.Name.LocalName, el);
 			object instance = Create(type, el);
+			if (BaseUri != null && instance is IUriContext uriContext && uriContext.BaseUri == null) uriContext.BaseUri = BaseUri;
 			if (instance is FrameworkElement fe && _scopeOwner == null) _scopeOwner = fe;
 			_stack.Add(instance);
 			try

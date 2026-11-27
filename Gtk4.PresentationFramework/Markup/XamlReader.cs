@@ -7,7 +7,8 @@ namespace System.Windows.Markup;
 
 /// <summary>
 /// Builds an object graph from loose XAML at runtime, by reflection (no <c>x:Class</c>, no events,
-/// no <c>x:TypeArguments</c>; there is no <c>ParserContext</c> overload).
+/// no <c>x:TypeArguments</c>). A <see cref="ParserContext"/> supplies the base URI given to each
+/// <see cref="IUriContext"/>.
 /// </summary>
 public class XamlReader
 {
@@ -22,7 +23,19 @@ public class XamlReader
 
 	/// <summary>Loads the object tree described by the XAML in <paramref name="reader"/>.</summary>
 	/// <exception cref="XamlParseException">The XAML is malformed or cannot be built.</exception>
-	public static object Load(XmlReader reader)
+	public static object Load(XmlReader reader) => Load(reader, null);
+
+	/// <summary>Loads the XAML in <paramref name="stream"/>, with <paramref name="parserContext"/>.BaseUri as the base URI.</summary>
+	/// <exception cref="XamlParseException">The XAML is malformed or cannot be built.</exception>
+	public static object Load(Stream stream, ParserContext parserContext)
+	{
+		if (stream == null) throw new ArgumentNullException(nameof(stream));
+		if (parserContext == null) throw new ArgumentNullException(nameof(parserContext));
+		using var reader = XmlReader.Create(stream, Settings);
+		return Load(reader, parserContext.BaseUri);
+	}
+
+	static object Load(XmlReader reader, Uri? baseUri)
 	{
 		if (reader == null) throw new ArgumentNullException(nameof(reader));
 		XDocument document;
@@ -34,7 +47,7 @@ public class XamlReader
 		{
 			throw new XamlParseException(ex.Message, ex.LineNumber, ex.LinePosition, ex);
 		}
-		return new XamlObjectBuilder().Build(document.Root!);
+		return new XamlObjectBuilder { BaseUri = baseUri }.Build(document.Root!);
 	}
 
 	/// <summary>Loads the object tree described by the XAML text <paramref name="xamlText"/>.</summary>
