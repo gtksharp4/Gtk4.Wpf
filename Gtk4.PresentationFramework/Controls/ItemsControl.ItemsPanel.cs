@@ -39,10 +39,10 @@ public partial class ItemsControl
 		if (control._defaultBox == null) return;
 		foreach (var (_, widget) in control._rows)
 			control.RemoveDefaultHostItem(widget);
+		control.RemoveGroupHeaders();
 		control.UninstallItemsPanel();
 		control.InstallItemsPanel();
-		foreach (var (_, widget) in control._rows)
-			control.AddDefaultHostItem(widget);
+		control.PlaceRowsInDefaultHost();
 	}
 
 	void InstallItemsPanel()

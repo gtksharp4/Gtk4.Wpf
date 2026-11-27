@@ -85,6 +85,7 @@ public partial class ListBox : Selector
 		_gtkListBox.SelectionMode = ToGtkSelectionMode(SelectionMode);
 		_gtkListBox.RowSelected += OnGtkRowSelected;
 		_gtkListBox.SelectedRowsChanged += OnGtkSelectedRowsChanged;
+		_gtkListBox.HeaderFunc = UpdateRowHeader;
 		return _gtkListBox;
 	}
 
@@ -99,7 +100,11 @@ public partial class ListBox : Selector
 	}
 
 	/// <inheritdoc/>
-	protected override void AddItemWidget(Gtk.Widget w) => _gtkListBox!.Append(w);
+	protected override void AddItemWidget(Gtk.Widget w)
+	{
+		AttachPendingHeader(w);
+		_gtkListBox!.Append(w);
+	}
 
 	/// <inheritdoc/>
 	protected override void RemoveItemWidget(Gtk.Widget w) => _gtkListBox!.Remove(w);

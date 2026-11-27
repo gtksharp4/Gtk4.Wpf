@@ -126,6 +126,7 @@ public partial class ItemsControl : Control
 			RemoveItemWidget(gw);
 		}
 		_rows.Clear();
+		RemoveGroupHeaders();
 
 		PopulateRows();
 	}
@@ -139,6 +140,7 @@ public partial class ItemsControl : Control
 	void PopulateRows()
 	{
 		SetGeneratorStatus(GeneratorStatus.GeneratingContainers);
+		var headerStarts = GroupHeaderStarts();
 		foreach (var item in Items)
 		{
 			var container = GetContainerForItem(item);
@@ -147,6 +149,7 @@ public partial class ItemsControl : Control
 			if (container is UIElement uiContainer)
 				uiContainer.LogicalParent = this;
 			var gw = container.Widget;
+			PlaceGroupHeader(headerStarts, _rows.Count);
 			int idx = _rows.Count;
 			_rows.Add((container, gw));
 			OnContainerAdded(container, idx);
