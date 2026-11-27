@@ -1,3 +1,7 @@
+using System;
+using System.Windows.Controls;
+using System.Windows.Media;
+
 namespace System.Windows;
 
 public partial class Window
@@ -44,21 +48,26 @@ public partial class Window
 		bool capH = fitH && !double.IsPositiveInfinity(MaxHeight);
 		bool raiseW = fitW && MinWidth > 0;
 		bool raiseH = fitH && MinHeight > 0;
-		if (!capW && !capH && !raiseW && !raiseH)
+		var contentElement = Content as UIElement;
+		bool managed = HasScrollViewer(contentElement);
+		if (!capW && !capH && !raiseW && !raiseH && !managed)
 			return;
 
 		win.Measure(Gtk.Orientation.Horizontal, -1, out int minW, out int natW, out _, out _);
-		int targetW = fitW ? Clamp(natW, MinWidth, MaxWidth) : -1;
+		var desired = managed ? ManagedExtraSize(contentElement!) : default;
+		if (fitW) natW += (int)Math.Ceiling(desired.Width);
+		int targetW = fitW ? Clamp(natW, MinWidth, WorkLimit(MaxWidth, managed, SystemParameters.WorkArea.Width)) : -1;
 		win.Measure(Gtk.Orientation.Vertical, fitW ? targetW : -1, out int minH, out int natH, out _, out _);
-		int targetH = fitH ? Clamp(natH, MinHeight, MaxHeight) : -1;
+		if (fitH) natH += (int)Math.Ceiling(desired.Height);
+		int targetH = fitH ? Clamp(natH, MinHeight, WorkLimit(MaxHeight, managed, SystemParameters.WorkArea.Height)) : -1;
 
 		bool clipW = capW && minW > targetW;
 		bool clipH = capH && minH > targetH;
 		if (clipW || clipH)
 			HostInClip(win, clipW, clipH);
 
-		bool changeW = fitW && targetW != natW;
-		bool changeH = fitH && targetH != natH;
+		bool changeW = fitW && (targetW != natW || desired.Width > 0);
+		bool changeH = fitH && (targetH != natH || desired.Height > 0);
 		if (changeW || changeH)
 			win.SetDefaultSize(changeW ? targetW : -1, changeH ? targetH : -1);
 	}
@@ -89,4 +98,32 @@ public partial class Window
 	}
 
 	Gtk.ScrolledWindow? _clipHost;
+
+	// A SizeToContent window grows to the content's WPF desired size, but never past the work area.
+	static double WorkLimit(double max, bool managed, double workArea) =>
+		managed ? Math.Min(max, workArea) : max;
+
+	// GTK's natural size of a scrolled window is not its content's, so a window around a ScrollViewer is
+	// sized from the managed Measure (infinite constraint, as WPF does for SizeToContent).
+	static bool HasScrollViewer(UIElement? element)
+	{
+		if (element == null)
+			return false;
+		if (element is ScrollViewer)
+			return true;
+		int count = VisualTreeHelper.GetChildrenCount(element);
+		for (int i = 0; i < count; i++)
+			if (VisualTreeHelper.GetChild(element, i) is UIElement child && HasScrollViewer(child))
+				return true;
+		return false;
+	}
+
+	// How much larger the content's WPF desired size is than GTK's natural size of its widget, per axis.
+	static Size ManagedExtraSize(UIElement content)
+	{
+		content.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+		content.Widget.Measure(Gtk.Orientation.Horizontal, -1, out _, out int gtkW, out _, out _);
+		content.Widget.Measure(Gtk.Orientation.Vertical, -1, out _, out int gtkH, out _, out _);
+		return new Size(Math.Max(0, content.DesiredSize.Width - gtkW), Math.Max(0, content.DesiredSize.Height - gtkH));
+	}
 }
