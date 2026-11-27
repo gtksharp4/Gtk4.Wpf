@@ -93,13 +93,16 @@ public partial class ListBox : Selector
 	protected override UIElement GetContainerForItem(object? item)
 	{
 		// A ListBoxItem item is its own container (WPF IsItemItsOwnContainer).
-		if (item is ListBoxItem own)
+		if (IsItemItsOwnContainerOverride(item) && item is ListBoxItem own)
 		{
+			OnContainerCreated(own);
 			PrepareContainer(own, item);
 			_containers.Add(own);
 			return own;
 		}
-		var lbi = new ListBoxItem { Content = item };
+		var lbi = CreateItemContainer();
+		lbi.Content = item;
+		OnContainerCreated(lbi);
 		ConfigurePresenter(lbi, item);
 		PrepareContainer(lbi, item);
 		_containers.Add(lbi);

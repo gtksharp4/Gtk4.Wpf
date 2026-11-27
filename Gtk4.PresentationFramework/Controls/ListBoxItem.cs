@@ -44,7 +44,7 @@ public partial class ListBoxItem : ContentControl
 	{
 		_row = new Gtk.ListBoxRow();
 
-		_row.Child = CreatePresenter().Widget;
+		_row.Child = BuildRowContent();
 		return _row;
 	}
 }

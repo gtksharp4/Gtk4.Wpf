@@ -20,4 +20,10 @@ public partial class ListBox
 
 	/// <inheritdoc/>
 	protected override bool IsItemItsOwnContainerOverride(object? item) => item is ListBoxItem;
+
+	/// <summary>Creates the container of a data item; a subclass supplies its own item type.</summary>
+	internal virtual ListBoxItem CreateItemContainer() => new ListBoxItem();
+
+	/// <summary>Called for every container about to be prepared, whether made here or supplied as an item.</summary>
+	internal virtual void OnContainerCreated(ListBoxItem container) { }
 }
