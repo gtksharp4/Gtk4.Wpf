@@ -61,6 +61,7 @@ public partial class Window : ContentControl
 	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
+		Application.EnsureGtkInitialised();
 		_window = new Gtk.Window { Title = Title };
 		// GTK4 removed per-window image icons, so a HeaderBar titlebar hosts the window icon
 		// (see Window.Icon.cs). Installed here so the icon shows from first display.

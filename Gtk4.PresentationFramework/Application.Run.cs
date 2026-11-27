@@ -45,8 +45,25 @@ public partial class Application
 		return code;
 	}
 
+	static bool _gtkInitialised;
+
+	/// <summary>
+	/// Initialises GTK for a window created before <see cref="Run()"/> (WPF allows that). A no-op when GTK is
+	/// already up, through <see cref="InitGtk"/> or because a host initialised it directly.
+	/// </summary>
+	internal static void EnsureGtkInitialised()
+	{
+		if (_gtkInitialised || Gdk.Display.Default != null)
+			return;
+		InitGtk();
+	}
+
+	/// <summary>Idempotent: wires GTK and the dispatcher once per process.</summary>
 	internal static void InitGtk()
 	{
+		if (_gtkInitialised)
+			return;
+		_gtkInitialised = true;
 		Gtk.Application.Init();
 		// Notify the animation scheduler that the GLib event loop is now live.
 		System.Windows.Media.Animation.AnimationScheduler.NotifyGtkInitialised();
