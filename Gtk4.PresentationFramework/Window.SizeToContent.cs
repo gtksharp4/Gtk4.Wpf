@@ -54,6 +54,11 @@ public partial class Window
 		if (!capW && !capH && !raiseW && !raiseH && !managed)
 			return;
 
+		if (managed)
+		{
+			contentElement!.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+			RequestScrollViewerExtents(contentElement, fitW && !capW, fitH && !capH);
+		}
 		win.Measure(Gtk.Orientation.Horizontal, -1, out int minW, out int natW, out _, out _);
 		var desired = managed ? ManagedExtraSize(contentElement!) : default;
 		if (fitW) natW += (int)Math.Ceiling(desired.Width);
@@ -86,6 +91,15 @@ public partial class Window
 		return (int)Math.Round(value);
 	}
 
+	// The content overlay of a window widget, with or without the explicit-size clip host.
+	internal static Gtk.Overlay? ContentOverlayOf(Gtk.Window? win)
+	{
+		var child = win?.Child;
+		if (child is Gtk.ScrolledWindow sw)
+			child = sw.Child is Gtk.Viewport vp ? vp.Child : sw.Child;
+		return child as Gtk.Overlay;
+	}
+
 	void HostInClip(Gtk.Window win, bool clipWidth, bool clipHeight)
 	{
 		if (_contentOverlay == null || ReferenceEquals(win.Child, _clipHost))
@@ -101,6 +115,26 @@ public partial class Window
 		host.Child = _contentOverlay;
 		win.Child = host;
 		_clipHost = host;
+	}
+
+	// WPF never grows a window with an explicit Width/Height to its content (the content is clipped), whereas GTK
+	// raises a window's minimum to its child's. Such an axis is therefore hosted in a scrolled window that does
+	// not propagate the minimum, so a window whose content overflows (a height bound to ActualHeight, a fixed-size
+	// child) keeps its size. A NaN axis keeps GTK's growth.
+	void HostManualAxesInClip(Gtk.Window win)
+	{
+		var stc = SizeToContent;
+		bool manualW = stc != SizeToContent.Width && stc != SizeToContent.WidthAndHeight && !double.IsNaN(Width);
+		bool manualH = stc != SizeToContent.Height && stc != SizeToContent.WidthAndHeight && !double.IsNaN(Height);
+		if (_clipHost != null)
+		{
+			if (manualW) _clipHost.HscrollbarPolicy = Gtk.PolicyType.External;
+			if (manualH) _clipHost.VscrollbarPolicy = Gtk.PolicyType.External;
+			return;
+		}
+		if (!manualW && !manualH)
+			return;
+		HostInClip(win, manualW, manualH);
 	}
 
 	Gtk.ScrolledWindow? _clipHost;
@@ -122,6 +156,33 @@ public partial class Window
 			if (VisualTreeHelper.GetChild(element, i) is UIElement child && HasScrollViewer(child))
 				return true;
 		return false;
+	}
+
+	// GTK allocates a nested scrolled window its natural size, not the content's, and the window's default size
+	// alone does not hand the difference to it (a Box or Grid gives extra space only to expanding children). Each
+	// ScrollViewer therefore requests the extent its managed WPF Measure wants, on an axis the window fits and
+	// does not cap, unless that extent alone would not fit the work area (then it scrolls, as before). An axis the
+	// ScrollViewer sizes explicitly already carries its request.
+	static void RequestScrollViewerExtents(UIElement element, bool fitW, bool fitH)
+	{
+		if (element is ScrollViewer sv)
+		{
+			var d = sv.DesiredSize;
+			int w = fitW && double.IsNaN(sv.Width) && d.Width <= SystemParameters.WorkArea.Width
+				? (int)Math.Ceiling(d.Width) : -1;
+			int h = fitH && double.IsNaN(sv.Height) && d.Height <= SystemParameters.WorkArea.Height
+				? (int)Math.Ceiling(d.Height) : -1;
+			if (w >= 0 || h >= 0)
+			{
+				sv.Widget.GetSizeRequest(out int curW, out int curH);
+				sv.Widget.SetSizeRequest(w >= 0 ? w : curW, h >= 0 ? h : curH);
+			}
+			return;
+		}
+		int count = VisualTreeHelper.GetChildrenCount(element);
+		for (int i = 0; i < count; i++)
+			if (VisualTreeHelper.GetChild(element, i) is UIElement child)
+				RequestScrollViewerExtents(child, fitW, fitH);
 	}
 
 	// How much larger the content's WPF desired size is than GTK's natural size of its widget, per axis.

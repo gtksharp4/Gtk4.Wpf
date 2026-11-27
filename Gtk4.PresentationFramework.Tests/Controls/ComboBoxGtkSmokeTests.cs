@@ -99,4 +99,32 @@ public class ComboBoxGtkSmokeTests : WpfGtkTestBase
 		cb.IsReadOnly = false;
 		Assert.True(entry.IsEditable);
 	});
+
+	[Fact]
+	public void EditableTextBoxSite_is_a_reflection_reachable_TextBox_sharing_the_Entry() => Run(() =>
+	{
+		var cb = new ComboBox { IsEditable = true };
+		var widget = cb.Widget;
+		var site = Assert.IsType<System.Windows.Controls.TextBox>(typeof(ComboBox).GetProperty("EditableTextBoxSite",
+			System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic |
+			System.Reflection.BindingFlags.Public)!.GetValue(cb));
+		Assert.Same(site.Widget, ((Gtk.Box)widget).FirstChild);
+		var changed = 0;
+		site.TextChanged += (_, _) => changed++;
+		cb.Text = "hello";
+		Assert.Equal("hello", site.Text);
+		Assert.True(changed > 0);
+	});
+
+	[Fact]
+	public void EditableTextBoxSite_inherits_FontSize_and_IsEnabled_from_the_ComboBox() => Run(() =>
+	{
+		var cb = new ComboBox { IsEditable = true, FontSize = 30 };
+		_ = cb.Widget;
+		var site = (System.Windows.Controls.TextBox)typeof(ComboBox).GetProperty("EditableTextBoxSite",
+			System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(cb)!;
+		Assert.Equal(30, site.FontSize);
+		cb.IsEnabled = false;
+		Assert.False(site.IsEnabled);
+	});
 }

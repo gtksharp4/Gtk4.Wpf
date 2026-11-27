@@ -31,6 +31,9 @@ internal static class GtkAllocationSync
 			if (!widget.IsMapped)
 				continue;
 			var allocated = BorderBoxSize(widget);
+			// A stretched shape's RenderSize is the stretched size; the rest of its slot is only the alignment offset.
+			if (fe is Shapes.Shape { Stretch: not Media.Stretch.None } shape)
+				allocated = shape.UpdateStretchMatrix(allocated);
 			if (allocated == fe.RenderSize)
 				continue;
 			(changed ??= new()).Add((fe, allocated));
