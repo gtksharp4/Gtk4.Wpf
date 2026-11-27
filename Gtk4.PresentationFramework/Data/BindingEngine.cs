@@ -185,7 +185,19 @@ internal static partial class BindingEngine
 		internal object? GetResolvedSource(DependencyObject target) => ResolveSource(target);
 
 		object? ResolveSource(DependencyObject target) =>
-			CollectionViewSource.UnwrapView(ResolveRawSource(target));
+			CollectionViewSource.UnwrapView(UnwrapProvider(ResolveRawSource(target)));
+
+		// A DataSourceProvider source stands for its Data, unless the path names a property of the provider itself
+		// (ObjectDataProvider.MethodParameters).
+		object? UnwrapProvider(object? raw)
+		{
+			if (raw is not DataSourceProvider provider) return raw;
+			string first = _binding.Path?.Path?.TrimStart('.', '/') ?? string.Empty;
+			int end = 0;
+			while (end < first.Length && (char.IsLetterOrDigit(first[end]) || first[end] == '_')) end++;
+			first = first.Substring(0, end);
+			return first.Length > 0 && provider.GetType().GetProperty(first) != null ? provider : provider.Data;
+		}
 
 		object? ResolveRawSource(DependencyObject target)
 		{
