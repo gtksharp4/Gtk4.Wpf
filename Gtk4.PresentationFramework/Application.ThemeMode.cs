@@ -1,5 +1,6 @@
 #pragma warning disable WPF0001 // layer-internal use of the experimental ThemeMode
 using System.ComponentModel;
+using System.Windows.Themes;
 #if NET8_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
 #endif
@@ -12,8 +13,8 @@ public partial class Application
 
 	/// <summary>
 	/// The application theme. Light/Dark/System/None map to the GTK 4 <c>gtk-interface-color-scheme</c>
-	/// (None and System use the platform default). The Fluent theme dictionaries WPF merges into
-	/// <see cref="Resources"/> do not exist here, so only the GTK colour scheme changes.
+	/// (None and System use the platform default). A merged <c>PresentationFramework.Fluent</c> theme dictionary
+	/// is reloaded for Light or Dark (System and None use Light); ThemeMode itself merges no Fluent dictionary.
 	/// </summary>
 	/// <exception cref="ArgumentException">The value is not None, System, Light or Dark.</exception>
 #if NET8_0_OR_GREATER
@@ -28,8 +29,11 @@ public partial class Application
 			VerifyAccess();
 			if (!ThemeModeGtk.IsValid(value))
 				throw new ArgumentException($"ThemeMode value {value} is invalid. Use None, System, Light or Dark");
+			bool darkChanged = (_themeMode == ThemeMode.Dark) != (value == ThemeMode.Dark);
 			_themeMode = value;
 			ThemeModeGtk.Apply(value);
+			if (darkChanged)
+				FluentTheme.Retheme(Resources);
 		}
 	}
 }

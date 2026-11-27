@@ -50,6 +50,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Gtk4.WindowsBase\Gtk4.WindowsBase.csproj" />
     <EmbeddedResource Include="..\GtkSharp.png" LogicalName="Gtk4.PresentationFramework.GtkSharp.png" />
+    <EmbeddedResource Include="Themes/Fluent/*.xaml" LogicalName="Gtk4.PresentationFramework.Themes.Fluent.%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

@@ -105,6 +105,8 @@ public partial class Window : ContentControl
 		// Apply startup location before presenting (GTK4 has no Move() — currently a no-op).
 		ApplyStartupLocation(win);
 
+		ApplySizeToContentLimits(win);
+
 		// GTK4: Present() maps the window. ShowAll() (GTK3) realises it at the content's
 		// natural size, so it is not used.
 		win.Present();
