@@ -214,4 +214,30 @@ public class GeneratorSweep5Tests : Sweep3Base
 		Assert.Equal("PriorityBindingExpression", expr.GetType().Name);
 		Assert.Equal("defaultvalue", GeneratorSweep4RuntimeTests.Prop(text, "Text"));
 	}
+
+	const string NamedBegin =
+		"<Button x:Name=\"B\"><Button.Triggers><EventTrigger RoutedEvent=\"Button.Click\"><BeginStoryboard"
+		+ " x:Name=\"BS\"><Storyboard><DoubleAnimation Storyboard.TargetName=\"B\""
+		+ " Storyboard.TargetProperty=\"Opacity\" To=\"0\" Duration=\"0:0:1\"/></Storyboard></BeginStoryboard>"
+		+ "</EventTrigger></Button.Triggers></Button>";
+
+	[Fact]
+	public void Named_BeginStoryboard_field_is_assigned_and_registered()
+	{
+		string code = Compile(Win(NamedBegin));
+
+		Has(code, "this.BS = __bs");
+		Has(code, "RegisterName(\"BS\"");
+	}
+
+	[Fact]
+	public void Named_BeginStoryboard_field_is_set_at_run_time()
+	{
+		object root = GeneratorSweep4RuntimeTests.Run("<StackPanel " + Head + " x:Class=\"App.C\">" + NamedBegin
+			+ "</StackPanel>");
+		object field = root.GetType().GetField("BS", System.Reflection.BindingFlags.Instance
+			| System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public)!.GetValue(root)!;
+
+		Assert.Equal("BeginStoryboard", field.GetType().Name);
+	}
 }
