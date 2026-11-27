@@ -62,4 +62,21 @@ public class PackedNuspecTests
 			Assert.StartsWith("10.0.0", ((string)dep.Attribute("version")!).TrimStart('[', '('));
 		}
 	}
+
+	[Fact]
+	public void Packed_nuspec_declares_SecurityPermissions_10x_in_every_dependency_group()
+	{
+		using var zip = ZipFile.OpenRead(LatestNupkg());
+		using var stream = zip.Entries.Single(e => e.FullName.EndsWith(".nuspec")).Open();
+		var groups = XDocument.Load(stream).Descendants().Where(e => e.Name.LocalName == "group").ToList();
+
+		Assert.NotEmpty(groups);
+		foreach (var group in groups)
+		{
+			var dep = group.Elements()
+				.SingleOrDefault(e => (string?)e.Attribute("id") == "System.Security.Permissions");
+			Assert.True(dep != null, $"Missing in group {group.Attribute("targetFramework")}");
+			Assert.StartsWith("10.0.0", ((string)dep.Attribute("version")!).TrimStart('[', '('));
+		}
+	}
 }
