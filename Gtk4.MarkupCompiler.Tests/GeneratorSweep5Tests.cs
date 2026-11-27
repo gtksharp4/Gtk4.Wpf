@@ -240,4 +240,28 @@ public class GeneratorSweep5Tests : Sweep3Base
 
 		Assert.Equal("BeginStoryboard", field.GetType().Name);
 	}
+
+	const string GeometryResource = "<EllipseGeometry x:Key=\"G\" RadiusX=\"3\" RadiusY=\"4\"/>";
+
+	[Fact]
+	public void StaticResource_element_in_Path_Data_is_looked_up_and_cast()
+	{
+		string xaml = Page("<Path><Path.Data><StaticResource ResourceKey=\"G\"/></Path.Data></Path>", GeometryResource);
+		string code = Compile(xaml);
+
+		Has(code, ".Data = (global::System.Windows.Media.Geometry)");
+		Assert.DoesNotContain(Messages(xaml), m => m.StartsWith("Skipped"));
+	}
+
+	[Fact]
+	public void StaticResource_element_in_Path_Data_resolves_the_resource_at_run_time()
+	{
+		string xaml = "<Page " + Head + " x:Class=\"App.C\"><Page.Resources>" + GeometryResource
+			+ "</Page.Resources><Path x:Name=\"P\"><Path.Data><StaticResource ResourceKey=\"G\"/></Path.Data></Path></Page>";
+		object page = GeneratorSweep4RuntimeTests.Run(xaml);
+		object path = page.GetType().GetField("P", System.Reflection.BindingFlags.Instance
+			| System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public)!.GetValue(page)!;
+
+		Assert.Equal(4.0, GeneratorSweep4RuntimeTests.Prop(GeneratorSweep4RuntimeTests.Prop(path, "Data"), "RadiusY"));
+	}
 }

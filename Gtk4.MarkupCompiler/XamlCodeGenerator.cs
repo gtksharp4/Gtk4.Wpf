@@ -962,6 +962,7 @@ namespace Gtk4.MarkupCompiler
 			}
 			if (TryEmitElementMediaProperty(w, propEl, xNs, parentVar, propName, ref counter)) return;
 			if (TryEmitObjectPropertyElement(w, propEl, xNs, parentVar, propName, ref counter)) return;
+			if (TryEmitStaticResourceElement(w, propEl, parentVar, propName)) return;
 			if (TryEmitTextPropertyElement(w, propEl, parentVar, propName)) return;
 			if (!_ignorableNamespaces.Contains(propEl.Name.NamespaceName)) NoteDroppedPropertyElement(propEl);
 		}
