@@ -54,7 +54,7 @@ namespace Gtk4.MarkupCompiler
 		{
 			if (fqType == null) return null;
 			string name = fqType.StartsWith("global::", StringComparison.Ordinal) ? fqType.Substring(8) : fqType;
-			if (name == MediaNs + "GradientStopCollection")
+			if (name == MediaNs + "GradientStopCollection" || name == "System.Windows.Data.CompositeCollection")
 				return new ContentInfo { Name = "", IsCollection = true };
 			if (!_resolver.TypeExists(name) && UserClassExists(name)) return UserContentInfo(name);
 			if (_resolver.TryGetContentProperty(name, out string prop, out bool coll))

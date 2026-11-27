@@ -98,6 +98,8 @@ public class Round49aConverterTests
 		"System.Windows.Media.Imaging.BitmapPalette",
 		// A Visual is an object reference (VisualBrush.Visual), not a string-convertible value.
 		"System.Windows.Media.Visual",
+		// ListView.View: a ViewBase is set as a property element (GridView); WPF has no converter for it.
+		"System.Windows.Controls.ViewBase",
 	};
 
 	[Fact]

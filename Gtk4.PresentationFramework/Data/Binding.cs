@@ -56,6 +56,12 @@ public partial class Binding : BindingBase
 	public string? ElementName { get; set; }
 
 	/// <summary>
+	/// Gets or sets whether the path is evaluated against a <see cref="DataSourceProvider"/> source itself rather
+	/// than against its <see cref="DataSourceProvider.Data"/>. Default is false.
+	/// </summary>
+	public bool BindsDirectlyToSource { get; set; }
+
+	/// <summary>
 	/// Describes the source as a position relative to the target element.
 	/// Supported modes: <see cref="RelativeSourceMode.Self"/>,
 	/// <see cref="RelativeSourceMode.FindAncestor"/> (with <c>AncestorType</c>/

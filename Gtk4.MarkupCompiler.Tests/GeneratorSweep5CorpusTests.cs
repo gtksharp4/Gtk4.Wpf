@@ -36,6 +36,15 @@ public class GeneratorSweep5CorpusTests : Sweep3Base
 			+ "<MouseBinding MouseAction=\"LeftDoubleClick\" Command=\"ApplicationCommands.Open\"/></Grid.InputBindings></Grid>",
 		["ItemsPanel"] =
 			"<ListBox><ListBox.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ListBox.ItemsPanel></ListBox>",
+		["ListViewGridView"] =
+			"<ListView><ListView.View><GridView><GridViewColumn Header=\"N\" DisplayMemberBinding=\"{Binding Name}\"/>"
+			+ "</GridView></ListView.View></ListView>",
+		["GroupStyle"] =
+			"<ListBox><ListBox.GroupStyle><GroupStyle/><x:Static Member=\"GroupStyle.Default\"/></ListBox.GroupStyle>"
+			+ "</ListBox>",
+		["CompositeCollection"] =
+			"<ListBox><ListBox.ItemsSource><CompositeCollection><ListBoxItem>a</ListBoxItem>"
+			+ "</CompositeCollection></ListBox.ItemsSource></ListBox>",
 		["NamedBeginStoryboard"] =
 			"<Button x:Name=\"B\"><Button.Triggers><EventTrigger RoutedEvent=\"Button.Click\"><BeginStoryboard"
 			+ " x:Name=\"BS\"><Storyboard><DoubleAnimation Storyboard.TargetName=\"B\""
@@ -55,15 +64,4 @@ public class GeneratorSweep5CorpusTests : Sweep3Base
 	[MemberData(nameof(Names))]
 	public void Nothing_is_skipped(string name)
 		=> Assert.DoesNotContain(Messages(Doc(name)), m => m.StartsWith("Skipped", System.StringComparison.Ordinal));
-
-	// The layer has no GridView, GroupStyle or CompositeCollection yet: these stay reported, not guessed.
-	[Theory]
-	[InlineData("<ListView><ListView.View><GridView><GridViewColumn Header=\"N\"/></GridView></ListView.View></ListView>",
-		"ListView.View")]
-	[InlineData("<ListBox><ListBox.GroupStyle><GroupStyle/></ListBox.GroupStyle></ListBox>", "ListBox.GroupStyle")]
-	[InlineData("<ListBox><ListBox.ItemsSource><CompositeCollection><ListBoxItem>a</ListBoxItem>"
-		+ "</CompositeCollection></ListBox.ItemsSource></ListBox>", "ListBox.ItemsSource")]
-	public void Types_the_layer_lacks_are_still_reported(string body, string element)
-		=> Assert.Contains(Messages("<Window " + Head + " x:Class=\"App.C\">" + body + "</Window>"),
-			m => m.StartsWith("Skipped property element " + element, System.StringComparison.Ordinal));
 }

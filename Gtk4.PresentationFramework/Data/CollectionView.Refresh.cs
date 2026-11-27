@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -68,6 +69,10 @@ public partial class CollectionView
 				return c != 0 ? c : a.Value.CompareTo(b.Value);
 			});
 
+		// WPF enumerates a grouped view group by group: items of one group are contiguous, groups keep the order
+		// of their first item. Rendering group headers relies on that.
+		if (GroupDescriptions.Count > 0) kept = OrderByGroup(kept);
+
 		foreach (var entry in kept)
 		{
 			_view.Add(entry.Key);
@@ -102,6 +107,29 @@ public partial class CollectionView
 		if (obj == null || string.IsNullOrEmpty(propertyName)) return obj;
 		var prop = obj.GetType().GetProperty(propertyName!, BindingFlags.Public | BindingFlags.Instance);
 		return prop?.GetValue(obj);
+	}
+
+	List<KeyValuePair<object?, int>> OrderByGroup(List<KeyValuePair<object?, int>> entries)
+	{
+		var gd = GroupDescriptions[0];
+		var rank = new Dictionary<string, int>();
+		var keyed = new List<(KeyValuePair<object?, int> Entry, int Rank)>();
+		foreach (var entry in entries)
+		{
+			// A null item has no group key; it is placed after every group.
+			if (entry.Key == null)
+			{
+				keyed.Add((entry, int.MaxValue));
+				continue;
+			}
+			string key = gd.GroupNameFromItem(entry.Key, 0, _culture)?.ToString() ?? string.Empty;
+			if (!rank.TryGetValue(key, out int r)) rank[key] = r = rank.Count;
+			keyed.Add((entry, r));
+		}
+		var result = new List<KeyValuePair<object?, int>>(entries.Count);
+		foreach (var item in keyed.Select((k, i) => (k, i)).OrderBy(t => t.k.Rank).ThenBy(t => t.i))
+			result.Add(item.k.Entry);
+		return result;
 	}
 
 	List<CollectionViewGroup> BuildGroups()

@@ -112,6 +112,9 @@ public partial class ItemsControl : Control
 	/// <summary>Called once a rebuild has repopulated the rows and the selection reconciled itself.</summary>
 	internal virtual void OnItemsRebuildCompleted() { }
 
+	/// <summary>Called for each container a rebuild throws away, before its widget is removed.</summary>
+	internal virtual void OnContainerDiscarded(UIElement container) { }
+
 	void RebuildCore()
 	{
 		OnItemsRebuilt();
@@ -123,9 +126,11 @@ public partial class ItemsControl : Control
 			// D1: clear logical parent when removing.
 			if (container is UIElement uiContainer)
 				uiContainer.LogicalParent = null;
+			OnContainerDiscarded(container);
 			RemoveItemWidget(gw);
 		}
 		_rows.Clear();
+		RemoveGroupHeaders();
 
 		PopulateRows();
 	}
@@ -139,6 +144,7 @@ public partial class ItemsControl : Control
 	void PopulateRows()
 	{
 		SetGeneratorStatus(GeneratorStatus.GeneratingContainers);
+		var headerStarts = GroupHeaderStarts();
 		foreach (var item in Items)
 		{
 			var container = GetContainerForItem(item);
@@ -147,6 +153,7 @@ public partial class ItemsControl : Control
 			if (container is UIElement uiContainer)
 				uiContainer.LogicalParent = this;
 			var gw = container.Widget;
+			PlaceGroupHeader(headerStarts, _rows.Count);
 			int idx = _rows.Count;
 			_rows.Add((container, gw));
 			OnContainerAdded(container, idx);

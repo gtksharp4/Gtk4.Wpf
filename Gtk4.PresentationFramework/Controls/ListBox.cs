@@ -85,13 +85,25 @@ public partial class ListBox : Selector
 		_gtkListBox.SelectionMode = ToGtkSelectionMode(SelectionMode);
 		_gtkListBox.RowSelected += OnGtkRowSelected;
 		_gtkListBox.SelectedRowsChanged += OnGtkSelectedRowsChanged;
+		_gtkListBox.HeaderFunc = UpdateRowHeader;
 		return _gtkListBox;
 	}
 
 	/// <inheritdoc/>
 	protected override UIElement GetContainerForItem(object? item)
 	{
-		var lbi = new ListBoxItem { Content = item };
+		// A ListBoxItem item is its own container (WPF IsItemItsOwnContainer).
+		if (IsItemItsOwnContainerOverride(item) && item is ListBoxItem own)
+		{
+			OnContainerCreated(own);
+			PrepareContainer(own, item);
+			_containers.Add(own);
+			return own;
+		}
+		var lbi = CreateItemContainer();
+		lbi.IsGeneratedContainer = true;
+		lbi.Content = item;
+		OnContainerCreated(lbi);
 		ConfigurePresenter(lbi, item);
 		PrepareContainer(lbi, item);
 		_containers.Add(lbi);
@@ -99,7 +111,18 @@ public partial class ListBox : Selector
 	}
 
 	/// <inheritdoc/>
-	protected override void AddItemWidget(Gtk.Widget w) => _gtkListBox!.Append(w);
+	protected override void AddItemWidget(Gtk.Widget w)
+	{
+		AttachPendingHeader(w);
+		_gtkListBox!.Append(w);
+	}
+
+	/// <inheritdoc/>
+	internal override void OnContainerDiscarded(UIElement container)
+	{
+		// A container the control made is gone for good; a ListBoxItem the app supplied may be shown again.
+		if (container is ListBoxItem { IsGeneratedContainer: true } item) item.ReleaseViewPresenter();
+	}
 
 	/// <inheritdoc/>
 	protected override void RemoveItemWidget(Gtk.Widget w) => _gtkListBox!.Remove(w);

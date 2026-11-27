@@ -64,6 +64,14 @@ namespace Gtk4.MarkupCompiler
 					EmitHierarchicalTemplateInline(w, item, xNs, tmplVar, ownerVar, ref counter);
 					w.Line($"{ownerVar}.Resources[\"{EscapeString(key)}\"] = {tmplVar};");
 				}
+				else if (item.Name.LocalName == "ItemsPanelTemplate"
+					&& item.Name.NamespaceName == WpfXmlnsMap.PresentationNs
+					&& key != null)
+				{
+					string tmplVar = $"__ip{counter++}";
+					EmitItemsPanelTemplateInline(w, item, xNs, tmplVar, ref counter);
+					w.Line($"{ownerVar}.Resources[\"{EscapeString(key)}\"] = {tmplVar};");
+				}
 				else if (item.Name.LocalName == "Storyboard"
 					&& item.Name.NamespaceName == WpfXmlnsMap.PresentationNs
 					&& key != null)

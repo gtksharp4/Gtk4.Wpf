@@ -177,6 +177,19 @@ public class GeneratorSweep5Tests : Sweep3Base
 	}
 
 	[Fact]
+	public void Keyed_ItemsPanelTemplate_resource_is_a_real_template_with_a_factory()
+	{
+		string xaml = Win("<StackPanel><StackPanel.Resources><ItemsPanelTemplate x:Key=\"WrapT\">"
+			+ "<WrapPanel/></ItemsPanelTemplate></StackPanel.Resources>"
+			+ "<ListBox ItemsPanel=\"{StaticResource WrapT}\"/></StackPanel>");
+		string code = Compile(xaml);
+
+		Has(code, "new System.Windows.Controls.ItemsPanelTemplate()");
+		Assert.DoesNotContain("Resources[\"WrapT\"] = \"\"", code);
+		Assert.DoesNotContain(Messages(xaml), m => m.StartsWith("Skipped"));
+	}
+
+	[Fact]
 	public void Named_MatrixTransform_render_transform_is_built_and_registered()
 	{
 		string xaml = Win("<Canvas><Rectangle><Rectangle.RenderTransform><MatrixTransform x:Name=\"M\"/>"

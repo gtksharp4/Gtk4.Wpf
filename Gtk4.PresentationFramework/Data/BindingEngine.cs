@@ -150,7 +150,9 @@ internal static partial class BindingEngine
 				return;
 			}
 
-			var source = ResolveSource(target);
+			var raw = ResolveRawSource(target);
+			WatchProvider(raw);
+			var source = CollectionViewSource.UnwrapView(UnwrapProvider(raw));
 			// PushToTarget handles FallbackValue / TargetNullValue internally (R5).
 			PushToTarget(target, source);
 
@@ -185,7 +187,23 @@ internal static partial class BindingEngine
 		internal object? GetResolvedSource(DependencyObject target) => ResolveSource(target);
 
 		object? ResolveSource(DependencyObject target) =>
-			CollectionViewSource.UnwrapView(ResolveRawSource(target));
+			CollectionViewSource.UnwrapView(UnwrapProvider(ResolveRawSource(target)));
+
+		// A DataSourceProvider source stands for its Data (WPF), unless BindsDirectlyToSource.
+		object? UnwrapProvider(object? raw) =>
+			raw is DataSourceProvider provider && !_binding.BindsDirectlyToSource ? provider.Data : raw;
+
+		DataSourceProvider? _watchedProvider;
+
+		// A change of the provider Data re-resolves the binding.
+		void WatchProvider(object? raw)
+		{
+			if (raw is not DataSourceProvider provider || _binding.BindsDirectlyToSource) return;
+			_watchedProvider = provider;
+			provider.DataChanged += OnProviderDataChanged;
+		}
+
+		void OnProviderDataChanged(object? sender, EventArgs e) => Activate();
 
 		object? ResolveRawSource(DependencyObject target)
 		{

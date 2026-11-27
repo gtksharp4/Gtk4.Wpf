@@ -7,7 +7,8 @@ namespace Gtk4.MarkupCompiler
 	{
 		// Elements and media objects are what EmitElement builds as values; styles, templates and triggers are not.
 		bool IsElementObject(string fq)
-			=> IsMediaObjectType(fq) || _resolver.DerivesFromByName(fq, FrameworkElementType)
+			=> IsMediaObjectType(fq) || IsItemViewObjectType(fq)
+				|| _resolver.DerivesFromByName(fq, FrameworkElementType)
 				|| _resolver.DerivesFromByName(fq, FrameworkContentElementType);
 
 		// <Button.ContextMenu><ContextMenu/></Button.ContextMenu>, <Expander.Header><StackPanel/></Expander.Header>:
@@ -29,6 +30,7 @@ namespace Gtk4.MarkupCompiler
 			if (!add && (children.Count != 1 || !_resolver.IsWritable(fq, prop))) return false;
 			foreach (XElement c in children)
 			{
+				if (add && IsGroupStyleDefault(c, xNs, item)) continue;
 				string cfq = ResolveType(c);
 				if (cfq == null || IsDeferredPropertyChild(c.Name.LocalName) || !_resolver.IsInstantiable(cfq)
 					|| !IsElementObject(cfq) || (IsMediaObjectType(cfq) && !MediaGraphEmittable(c, cfq))
@@ -36,6 +38,11 @@ namespace Gtk4.MarkupCompiler
 			}
 			foreach (XElement c in children)
 			{
+				if (add && IsGroupStyleDefault(c, xNs, item))
+				{
+					w.Line($"{parentVar}.{prop}.Add(global::{GroupStyleType}.Default);");
+					continue;
+				}
 				string cfq = ResolveType(c);
 				string v = $"__e{counter++}";
 				EmitElement(w, c, xNs, v, cfq, ref counter);
