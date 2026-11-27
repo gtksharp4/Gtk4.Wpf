@@ -183,4 +183,35 @@ public class GeneratorSweep5Tests : Sweep3Base
 		Assert.Equal("EllipseGeometry", GeneratorSweep4RuntimeTests.Prop(data, "Geometry1").GetType().Name);
 		Assert.Equal("RectangleGeometry", GeneratorSweep4RuntimeTests.Prop(data, "Geometry2").GetType().Name);
 	}
+
+	const string Priority = "<TextBlock Width=\"100\"><TextBlock.Text><PriorityBinding FallbackValue=\"defaultvalue\">"
+		+ "<Binding Path=\"SlowestDp\" IsAsync=\"True\"/><Binding Path=\"FastDp\"/></PriorityBinding></TextBlock.Text>"
+		+ "</TextBlock>";
+
+	[Fact]
+	public void PriorityBinding_property_element_is_built_and_bound()
+	{
+		string xaml = Win(Priority);
+		string code = Compile(xaml);
+
+		Has(code, "new System.Windows.Data.PriorityBinding()");
+		Has(code, ".FallbackValue = \"defaultvalue\"");
+		Has(code, "Bindings.Add(");
+		Has(code, "TextBlock.TextProperty, __pb");
+		Assert.DoesNotContain(Messages(xaml), m => m.StartsWith("Skipped"));
+	}
+
+	[Fact]
+	public void PriorityBinding_is_bound_and_shows_the_fallback_at_run_time()
+	{
+		object root = GeneratorSweep4RuntimeTests.Run("<StackPanel " + Head + " x:Class=\"App.C\">" + Priority
+			+ "</StackPanel>");
+		object text = ((System.Collections.IEnumerable)GeneratorSweep4RuntimeTests.Prop(root, "Children"))
+			.Cast<object>().First();
+		object dp = text.GetType().GetField("TextProperty")!.GetValue(null)!;
+		object expr = text.GetType().Assembly.GetType("System.Windows.Data.BindingOperations")!
+			.GetMethod("GetBindingExpressionBase")!.Invoke(null, new[] { text, dp })!;
+		Assert.Equal("PriorityBindingExpression", expr.GetType().Name);
+		Assert.Equal("defaultvalue", GeneratorSweep4RuntimeTests.Prop(text, "Text"));
+	}
 }

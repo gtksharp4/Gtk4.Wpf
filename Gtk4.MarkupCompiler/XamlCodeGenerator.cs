@@ -944,6 +944,13 @@ namespace Gtk4.MarkupCompiler
 					w.Line($"{parentVar}.{propName} = {tmplVar};");
 					return;
 				}
+				if (childLocal == "PriorityBinding")
+				{
+					string pbVar = $"__pb{counter++}";
+					EmitPriorityBindingInline(w, child, pbVar, ref counter);
+					w.Line(SetBindingLine(parentVar, ParentFqType(propEl), $"{ownerFqType}.{propName}Property", pbVar));
+					return;
+				}
 				if (childLocal == "MultiBinding")
 				{
 					string mbVar = $"__mb{counter++}";
