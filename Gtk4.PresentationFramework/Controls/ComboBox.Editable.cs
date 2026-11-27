@@ -60,16 +60,19 @@ public partial class ComboBox
 		set => SetValue(TextProperty, value);
 	}
 
-	Gtk.Entry? _entry;
+	TextBox? _editableTextBox;
 	bool _updatingText;
 	bool _syncingEntry;
 
+	/// <summary>The editable text box (WPF template part PART_EditableTextBox); null when not editable.</summary>
+	internal TextBox? EditableTextBoxSite => _editableTextBox;
+
 	Gtk.Widget CreateEditableHost()
 	{
-		_entry = new Gtk.Entry { Text = Text, IsEditable = !IsReadOnly };
-		_entry.Changed += OnEntryChanged;
+		_editableTextBox = new TextBox { Text = Text, IsReadOnly = IsReadOnly };
+		_editableTextBox.TextChanged += OnEntryChanged;
 		var box = new Gtk.Box(Gtk.Orientation.Horizontal, 0);
-		box.Add(_entry);
+		box.Add(_editableTextBox.Widget);
 		box.Add(_dropDown);
 		return box;
 	}
@@ -77,23 +80,23 @@ public partial class ComboBox
 	static void OnIsReadOnlyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
 		var cb = (ComboBox)d;
-		if (cb._entry != null) cb._entry.IsEditable = !(bool)e.NewValue!;
+		if (cb._editableTextBox != null) cb._editableTextBox.IsReadOnly = (bool)e.NewValue!;
 	}
 
-	void OnEntryChanged(object? sender, System.EventArgs e)
+	void OnEntryChanged(object? sender, TextChangedEventArgs e)
 	{
-		if (_syncingEntry || _entry == null) return;
-		SetValue(TextProperty, _entry.Text);
+		if (_syncingEntry || _editableTextBox == null) return;
+		SetValue(TextProperty, _editableTextBox.Text);
 	}
 
 	static void OnTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
 		var cb = (ComboBox)d;
 		var text = (string?)e.NewValue ?? string.Empty;
-		if (cb._entry != null && cb._entry.Text != text)
+		if (cb._editableTextBox != null && cb._editableTextBox.Text != text)
 		{
 			cb._syncingEntry = true;
-			try { cb._entry.Text = text; }
+			try { cb._editableTextBox.Text = text; }
 			finally { cb._syncingEntry = false; }
 		}
 		if (cb._updatingText || !cb.IsTextSearchEnabled) return;
