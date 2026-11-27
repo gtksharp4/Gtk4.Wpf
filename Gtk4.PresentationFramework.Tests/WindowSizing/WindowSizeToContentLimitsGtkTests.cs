@@ -121,13 +121,14 @@ public class WindowSizeToContentLimitsGtkTests : WpfGtkTestBase
 		{
 			SizeToContent = SizeToContent.Width,
 			Height = 300,
-			MaxWidth = 240,
+			// Above the ~246 px minimum width of GTK's client-side title bar on Linux, which no cap can go below.
+			MaxWidth = 300,
 			Content = new Border { Width = 600, Height = 50 },
 		};
 		try
 		{
 			var (w, h) = Open(win);
-			Assert.InRange(w, 239, 241);
+			Assert.InRange(w, 299, 301);
 			Assert.InRange(h, 299, 301);
 		}
 		finally { win.Close(); }
