@@ -103,6 +103,26 @@ public partial class Window
 		_clipHost = host;
 	}
 
+	// WPF never grows a window with an explicit Width/Height to its content (the content is clipped), whereas GTK
+	// raises a window's minimum to its child's. Such an axis is therefore hosted in a scrolled window that does
+	// not propagate the minimum, so a window whose content overflows (a height bound to ActualHeight, a fixed-size
+	// child) keeps its size. A NaN axis keeps GTK's growth.
+	void HostManualAxesInClip(Gtk.Window win)
+	{
+		var stc = SizeToContent;
+		bool manualW = stc != SizeToContent.Width && stc != SizeToContent.WidthAndHeight && !double.IsNaN(Width);
+		bool manualH = stc != SizeToContent.Height && stc != SizeToContent.WidthAndHeight && !double.IsNaN(Height);
+		if (_clipHost != null)
+		{
+			if (manualW) _clipHost.HscrollbarPolicy = Gtk.PolicyType.External;
+			if (manualH) _clipHost.VscrollbarPolicy = Gtk.PolicyType.External;
+			return;
+		}
+		if (!manualW && !manualH)
+			return;
+		HostInClip(win, manualW, manualH);
+	}
+
 	Gtk.ScrolledWindow? _clipHost;
 
 	// A SizeToContent window grows to the content's WPF desired size, but never past the work area.

@@ -106,6 +106,7 @@ public partial class Window : ContentControl
 		ApplyStartupLocation(win);
 
 		ApplySizeToContentLimits(win);
+		HostManualAxesInClip(win);
 
 		// GTK4: Present() maps the window. ShowAll() (GTK3) realises it at the content's
 		// natural size, so it is not used.
