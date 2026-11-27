@@ -63,8 +63,7 @@ public partial class Application
 	{
 		if (_gtkInitialised)
 			return;
-		_gtkInitialised = true;
-		Gtk.Application.Init();
+		_gtkInit();
 		// Notify the animation scheduler that the GLib event loop is now live.
 		System.Windows.Media.Animation.AnimationScheduler.NotifyGtkInitialised();
 		// Wire Dispatcher delegates to the GLib main loop.
@@ -84,7 +83,23 @@ public partial class Application
 			GLib.Timeout.Add(ms, new GLib.TimeoutHandler(() => cb()));
 		Threading.DispatcherTimer.RemoveSourceAction = id => GLib.Source.Remove(id);
 		EnsureGlibExceptionHook();
+		// Set last so a failed init is retried (and fails again with the real error) instead of being skipped.
+		_gtkInitialised = true;
+#pragma warning disable WPF0001 // layer-internal use of the experimental ThemeMode
+		var mode = Current?.ThemeMode ?? ThemeMode.None;
+		if (mode != ThemeMode.None)
+			ThemeModeGtk.Apply(mode);
+#pragma warning restore WPF0001
 	}
+
+	/// <summary>Seam: the native GTK init, replaceable by tests.</summary>
+	internal static Action _gtkInit = Gtk.Application.Init;
+
+	/// <summary>Test hook: forgets that GTK was initialised.</summary>
+	internal static void ResetGtkInitForTests() => _gtkInitialised = false;
+
+	/// <summary>Test hook: records that GTK is up (a host initialised it directly).</summary>
+	internal static void MarkGtkInitialisedForTests() => _gtkInitialised = true;
 
 	/// <summary>The lifecycle without GTK init, so tests can drive it on the fixture thread.</summary>
 	internal int RunCore(string[] args, Window? windowToShow = null)

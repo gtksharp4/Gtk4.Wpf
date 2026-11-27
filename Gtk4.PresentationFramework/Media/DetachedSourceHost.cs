@@ -48,6 +48,7 @@ static partial class DetachedSourceHost
 		{
 			if (_bare != null) return _bare;
 			// Realizing needs a toplevel above the widget; this one is never presented (no surface is shown).
+			Application.EnsureGtkInitialised();
 			_bareWindow = new Gtk.Window { Child = _bare = new Gtk.Fixed() };
 			return _bare;
 		}

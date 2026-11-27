@@ -31,6 +31,7 @@ public abstract partial class UIElement : Media.Visual
 		get
 		{
 			if (_widget != null) return _widget;
+			Application.EnsureGtkInitialised();
 			_widget = CreateWidget();
 			_owners.Remove(_widget);
 			_owners.Add(_widget, this);
