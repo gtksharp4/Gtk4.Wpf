@@ -38,6 +38,9 @@ public abstract partial class Transform : GeneralTransform
 /// </summary>
 public class MatrixTransform : Transform
 {
+	/// <summary>Creates an identity matrix transform.</summary>
+	public MatrixTransform() : this(Matrix.Identity) { }
+
 	/// <summary>Creates a matrix transform.</summary>
 	public MatrixTransform(Matrix matrix) => Matrix = matrix;
 

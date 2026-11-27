@@ -758,6 +758,8 @@ namespace Gtk4.MarkupCompiler
 
 				if (IsTemplateBindingExpression(val, out string tbBindingInit))
 					w.Line(SetBindingLine(varName, fqType, $"{fqType}.{propName}Property", tbBindingInit));
+				else if (IsBindingExpression(val, out string bindingValue) && IsBindingValuedProperty(fqType, propName))
+					w.Line($"{varName}.{propName} = {bindingValue};");
 				else if (IsBindingExpression(val, out string bindingInit))
 					w.Line(SetBindingLine(varName, fqType, $"{fqType}.{propName}Property", bindingInit));
 				else if (MediaResourceTarget(fqType, propName, val) is Type mediaType
@@ -901,6 +903,11 @@ namespace Gtk4.MarkupCompiler
 				{
 					string bVar = $"__b{counter++}";
 					EmitBindingElementInline(w, child, bVar, ref counter);
+					if (IsBindingValuedProperty(ParentFqType(propEl), propName))
+					{
+						w.Line($"{parentVar}.{propName} = {bVar};");
+						return;
+					}
 					w.Line(SetBindingLine(parentVar, ParentFqType(propEl), $"{ownerFqType}.{propName}Property", bVar));
 					return;
 				}
@@ -913,6 +920,13 @@ namespace Gtk4.MarkupCompiler
 				{
 					string tmplVar = $"__ct{counter++}";
 					EmitControlTemplateInline(w, child, xNs, tmplVar, ref counter);
+					w.Line($"{parentVar}.{propName} = {tmplVar};");
+					return;
+				}
+				if (childLocal == "ItemsPanelTemplate" && propName == "ItemsPanel")
+				{
+					string tmplVar = $"__ip{counter++}";
+					EmitItemsPanelTemplateInline(w, child, xNs, tmplVar, ref counter);
 					w.Line($"{parentVar}.{propName} = {tmplVar};");
 					return;
 				}
@@ -930,6 +944,13 @@ namespace Gtk4.MarkupCompiler
 					w.Line($"{parentVar}.{propName} = {tmplVar};");
 					return;
 				}
+				if (childLocal == "PriorityBinding")
+				{
+					string pbVar = $"__pb{counter++}";
+					EmitPriorityBindingInline(w, child, pbVar, ref counter);
+					w.Line(SetBindingLine(parentVar, ParentFqType(propEl), $"{ownerFqType}.{propName}Property", pbVar));
+					return;
+				}
 				if (childLocal == "MultiBinding")
 				{
 					string mbVar = $"__mb{counter++}";
@@ -941,6 +962,7 @@ namespace Gtk4.MarkupCompiler
 			}
 			if (TryEmitElementMediaProperty(w, propEl, xNs, parentVar, propName, ref counter)) return;
 			if (TryEmitObjectPropertyElement(w, propEl, xNs, parentVar, propName, ref counter)) return;
+			if (TryEmitStaticResourceElement(w, propEl, parentVar, propName)) return;
 			if (TryEmitTextPropertyElement(w, propEl, parentVar, propName)) return;
 			if (!_ignorableNamespaces.Contains(propEl.Name.NamespaceName)) NoteDroppedPropertyElement(propEl);
 		}

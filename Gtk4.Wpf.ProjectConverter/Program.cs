@@ -7,6 +7,7 @@ static class Program
 	/// <para>Usage: <c>dotnet Gtk4.Wpf.ProjectConverter.dll --convert-project &lt;path.csproj&gt;</c></para>
 	/// Exit codes: <c>0</c> nothing to do (already converted), <c>10</c> the project was just
 	/// converted (the caller's current build was evaluated as WPF and must be re-run),
+	/// <c>20</c> the project is a legacy non-SDK project and was refused (not modified),
 	/// <c>1</c> bad/missing arguments.
 	/// </summary>
 	static int Main(string[] args)
@@ -24,6 +25,12 @@ static class Program
 			{
 				Console.Error.WriteLine($"Project file not found: {projectPath}");
 				return 1;
+			}
+
+			if (LegacyProjectDetector.IsLegacy(File.ReadAllText(projectPath)))
+			{
+				Console.Error.WriteLine(LegacyProjectDetector.Message(projectPath));
+				return LegacyProjectDetector.RefusedExitCode;
 			}
 
 			var converted = CsprojConverter.TryConvertFile(projectPath);

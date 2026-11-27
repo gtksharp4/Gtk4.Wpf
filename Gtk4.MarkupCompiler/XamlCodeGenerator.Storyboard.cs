@@ -193,6 +193,7 @@ namespace Gtk4.MarkupCompiler
 
 				string bsVar = $"__bs{counter++}";
 				w.Line($"var {bsVar} = new System.Windows.BeginStoryboard();");
+				EmitTimelineName(w, actionEl, xNs, bsVar);
 
 				// Inline <Storyboard> child of <BeginStoryboard>.
 				foreach (XElement sbEl in actionEl.Elements())

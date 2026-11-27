@@ -6,6 +6,8 @@ namespace Gtk4.MarkupCompiler
 	public partial class XamlCodeGenerator
 	{
 		const string GridType = "System.Windows.Controls.Grid";
+		const string DataGridType = "System.Windows.Controls.DataGrid";
+		const string DataGridColumnType = "System.Windows.Controls.DataGridColumn";
 		const string ViewSourceType = "System.Windows.Data.CollectionViewSource";
 
 		// Collection property elements whose items are plain element objects: the item element name, or null.
@@ -14,6 +16,7 @@ namespace Gtk4.MarkupCompiler
 			if (ownerFq == GridType && prop == "RowDefinitions") return "RowDefinition";
 			if (ownerFq == GridType && prop == "ColumnDefinitions") return "ColumnDefinition";
 			if (ownerFq == ViewSourceType && prop == "GroupDescriptions") return "PropertyGroupDescription";
+			if (ownerFq == DataGridType && prop == "Columns") return "DataGridColumn";
 			return null;
 		}
 
@@ -27,7 +30,10 @@ namespace Gtk4.MarkupCompiler
 			foreach (XElement child in pe.Elements())
 			{
 				string fq = ResolveType(child);
-				if (child.Name.LocalName != item || fq == null)
+				bool match = item == "DataGridColumn"
+					? fq != null && _resolver.DerivesFromByName(fq, DataGridColumnType)
+					: child.Name.LocalName == item;
+				if (!match || fq == null)
 				{
 					NoteDropped(child, "element " + child.Name.LocalName + " in " + pe.Name.LocalName);
 					continue;

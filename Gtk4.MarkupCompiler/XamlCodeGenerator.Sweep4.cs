@@ -15,6 +15,7 @@ namespace Gtk4.MarkupCompiler
 			switch (prop)
 			{
 				case "CommandBindings": return TryEmitCommandBindings(w, pe, parentVar);
+				case "InputBindings": return TryEmitInputBindings(w, pe, parentVar);
 				case "TextEffects": return TryEmitTextEffects(w, pe, xNs, parentVar, ref counter);
 				default:
 					return TryEmitStyleProperty(w, pe, xNs, parentVar, prop, ref counter)

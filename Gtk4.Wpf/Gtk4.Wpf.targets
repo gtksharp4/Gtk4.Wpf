@@ -13,6 +13,9 @@
     cleanly with an actionable message. The next build re-evaluates the converted (non-WPF)
     project and compiles against Gtk4.Wpf. Exit 0 = already converted → build proceeds.
 
+    A legacy (non-SDK-style) project is refused with exit code 20: the build stops with an actionable message
+    and the project is not touched (the layer would otherwise be compiled against .NET Framework).
+
     Skipped during design-time builds (IDE IntelliSense) and when the consumer sets
     SkipGtkFormsConvert=true (opt-out for projects that have already been converted).
 
@@ -27,7 +30,9 @@
     </Exec>
     <Error Condition="'$(_GtkFormsConvertExitCode)' == '10'"
            Text="Gtk4.Wpf converted '$(MSBuildProjectName)' from WPF to the Gtk4.Wpf compatibility layer. This build was evaluated as a WPF project; re-run the build to compile the converted project." />
-    <Error Condition="'$(_GtkFormsConvertExitCode)' != '0' and '$(_GtkFormsConvertExitCode)' != '10'"
+    <Error Condition="'$(_GtkFormsConvertExitCode)' == '20'"
+           Text="Gtk4.Wpf cannot convert '$(MSBuildProjectName)': it is a legacy (non-SDK-style) project (ToolsVersion / Microsoft.CSharp.targets import / TargetFrameworkVersion, no Sdk attribute) that targets .NET Framework, so the layer would be compiled against the wrong framework. Convert it to an SDK-style project first (&lt;Project Sdk=&quot;Microsoft.NET.Sdk&quot;&gt; with &lt;TargetFramework&gt;net10.0&lt;/TargetFramework&gt;; the .NET Upgrade Assistant or try-convert can do it), then build again. The project file was not changed." />
+    <Error Condition="'$(_GtkFormsConvertExitCode)' != '0' and '$(_GtkFormsConvertExitCode)' != '10' and '$(_GtkFormsConvertExitCode)' != '20'"
            Text="Gtk4.Wpf project conversion failed (converter exit code $(_GtkFormsConvertExitCode))." />
   </Target>
 

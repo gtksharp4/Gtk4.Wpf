@@ -16,10 +16,10 @@ public class GeneratorSweep4RuntimeTests : Sweep3Base
 
 	static string Root(string body) => "<StackPanel " + Head + " x:Class=\"App.C\">" + body + "</StackPanel>";
 
-	static object Prop(object o, string name) => o.GetType().GetProperty(name)!.GetValue(o)!;
+	internal static object Prop(object o, string name) => o.GetType().GetProperty(name)!.GetValue(o)!;
 
 	// Compiles the generated code with the stub, loads it and runs InitializeComponent on a new App.C.
-	static object Run(string xaml)
+	internal static object Run(string xaml)
 	{
 		string code = Gen(xaml, sources: new[] { Stub });
 		var refs = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator)

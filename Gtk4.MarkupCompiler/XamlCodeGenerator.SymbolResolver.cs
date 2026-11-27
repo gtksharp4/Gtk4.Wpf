@@ -120,6 +120,21 @@ namespace Gtk4.MarkupCompiler
 				ResolveIsDP(key.Item1, key.Item2));
 		}
 
+		/// <summary>The public literal member names of enum <paramref name="typeFullName"/>, or null.</summary>
+		internal string[] GetEnumMemberNames(string typeFullName)
+		{
+			if (!_hasReferences) return null;
+			try
+			{
+				Type t = FindType(typeFullName);
+				if (t == null || !t.IsEnum) return null;
+				return System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Select(
+					System.Linq.Enumerable.Where(t.GetFields(BindingFlags.Public | BindingFlags.Static),
+						f => f.IsLiteral), f => f.Name));
+			}
+			catch { return null; }
+		}
+
 		/// <summary>
 		/// Returns the CLR <see cref="Type"/> of <paramref name="propName"/> on
 		/// <paramref name="typeFullName"/>, or <c>null</c> when the type cannot be found
