@@ -9,7 +9,7 @@ namespace System.Windows.Documents;
 /// <see cref="FlowDocument"/>, a <see cref="Section"/> or a <see cref="TableCell"/>. An owned collection sets the
 /// logical parent of its blocks (a block that already has a parent is re-parented, as before).
 /// </summary>
-public sealed class BlockCollection : IEnumerable<Block>
+public sealed partial class BlockCollection : IEnumerable<Block>
 {
 	readonly List<Block> _items = new List<Block>();
 	readonly DependencyObject? _owner;

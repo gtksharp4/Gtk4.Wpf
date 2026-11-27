@@ -9,7 +9,7 @@ namespace System.Windows.Documents;
 /// <see cref="Controls.TextBlock"/>, <see cref="Paragraph"/> or <see cref="Span"/>. An owned collection
 /// (Paragraph, Span) sets the logical parent of its inlines (an inline that already has a parent is re-parented).
 /// </summary>
-public sealed class InlineCollection : IEnumerable<Inline>
+public sealed partial class InlineCollection : IEnumerable<Inline>
 {
 	readonly List<Inline> _items = new List<Inline>();
 	readonly DependencyObject? _owner;

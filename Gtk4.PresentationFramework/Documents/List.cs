@@ -32,7 +32,7 @@ public enum TextMarkerStyle
 /// A block element that contains an ordered or unordered list of <see cref="ListItem"/>s.
 /// </summary>
 [ContentProperty("ListItems")]
-public class List : Block
+public partial class List : Block
 {
 	/// <summary>The marker style for the list items.</summary>
 	public TextMarkerStyle MarkerStyle { get; set; } = TextMarkerStyle.Disc;
@@ -119,7 +119,7 @@ public class List : Block
 /// <summary>
 /// An ordered collection of <see cref="ListItem"/>s owned by a <see cref="List"/>.
 /// </summary>
-public sealed class ListItemCollection : IEnumerable<ListItem>
+public sealed partial class ListItemCollection : IEnumerable<ListItem>
 {
 	readonly List<ListItem> _items = new List<ListItem>();
 	readonly DependencyObject? _owner;
