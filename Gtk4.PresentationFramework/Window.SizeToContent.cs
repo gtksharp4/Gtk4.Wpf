@@ -91,6 +91,15 @@ public partial class Window
 		return (int)Math.Round(value);
 	}
 
+	// The content overlay of a window widget, with or without the explicit-size clip host.
+	internal static Gtk.Overlay? ContentOverlayOf(Gtk.Window? win)
+	{
+		var child = win?.Child;
+		if (child is Gtk.ScrolledWindow sw)
+			child = sw.Child is Gtk.Viewport vp ? vp.Child : sw.Child;
+		return child as Gtk.Overlay;
+	}
+
 	void HostInClip(Gtk.Window win, bool clipWidth, bool clipHeight)
 	{
 		if (_contentOverlay == null || ReferenceEquals(win.Child, _clipHost))

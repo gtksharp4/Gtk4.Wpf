@@ -67,6 +67,14 @@ public abstract partial class Shape
 	static double ClampRequest(double natural, double explicitSize, double min, double max) =>
 		Math.Max(min, Math.Min(double.IsNaN(explicitSize) ? natural : explicitSize, max));
 
+	// A parent's explicit size caps its shapes' natural request; GTK keeps the cached request, so ask it to re-measure.
+	internal static void RefreshSlotCaps(FrameworkElement parent)
+	{
+		if (parent is Controls.Panel panel)
+			foreach (var child in panel.Children)
+				if (child is Shape shape) shape._area?.QueueResize();
+	}
+
 	/// <summary>Refreshes the natural size (Stretch.None only) and asks GTK to re-measure.</summary>
 	internal void SyncNaturalSize()
 	{

@@ -13,6 +13,8 @@ public partial class FrameworkElement
 		base.OnPropertyChanged(e);
 		TargetChangeTracker.Dispatch(this, e);
 		SyncLayoutToWidget(e);
+		if (e.Property == WidthProperty || e.Property == HeightProperty)
+			Shapes.Shape.RefreshSlotCaps(this);
 		OnAutomationPropertyChanged(e);
 	}
 

@@ -115,4 +115,16 @@ public class ComboBoxGtkSmokeTests : WpfGtkTestBase
 		Assert.Equal("hello", site.Text);
 		Assert.True(changed > 0);
 	});
+
+	[Fact]
+	public void EditableTextBoxSite_inherits_FontSize_and_IsEnabled_from_the_ComboBox() => Run(() =>
+	{
+		var cb = new ComboBox { IsEditable = true, FontSize = 30 };
+		_ = cb.Widget;
+		var site = (System.Windows.Controls.TextBox)typeof(ComboBox).GetProperty("EditableTextBoxSite",
+			System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(cb)!;
+		Assert.Equal(30, site.FontSize);
+		cb.IsEnabled = false;
+		Assert.False(site.IsEnabled);
+	});
 }

@@ -37,7 +37,7 @@ public class WindowAdornerLayerTests : WpfGtkTestBase
 	}
 
 	internal static Gtk.Overlay OverlayOf(WpfWindow win) =>
-		((Gtk.Window)win.Widget).Child as Gtk.Overlay ?? win.ImplicitAdornerLayer.GtkOverlay!;
+		WpfWindow.ContentOverlayOf((Gtk.Window)win.Widget) ?? win.ImplicitAdornerLayer.GtkOverlay!;
 
 	// ── lookup ───────────────────────────────────────────────────────────────
 

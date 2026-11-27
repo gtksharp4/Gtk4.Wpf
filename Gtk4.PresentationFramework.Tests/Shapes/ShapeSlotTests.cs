@@ -62,9 +62,6 @@ public class ShapeSlotTests : WpfGtkTestBase
 			window.Show();
 			GtkState.Require(() => sibling.ActualWidth > 0, "layout", sibling);
 			GtkPump.For(150);
-			// WPF keeps the unclipped desired size (about 400) as ActualWidth and clips to the 100 px column; here the
-			// GTK allocation is the column, so ActualWidth is 100 (known gap) and the pixels are clipped alike.
-			Assert.InRange(line.ActualWidth, 99, 101);
 			Assert.Equal(200, sibling.ActualWidth, 1);
 		}
 		finally { window.Close(); }
@@ -88,6 +85,23 @@ public class ShapeSlotTests : WpfGtkTestBase
 			GtkPump.For(150);
 			Assert.InRange(first.ActualWidth, 99, 101);
 			Assert.InRange(second.ActualWidth, 99, 101);
+		}
+		finally { window.Close(); }
+	});
+
+	[Fact]
+	public void A_line_capped_by_a_100px_panel_grows_when_the_panel_widens() => Run(() =>
+	{
+		var line = new WpfLine { X2 = 400, Y2 = 10, Stroke = Brushes.Black, HorizontalAlignment = HorizontalAlignment.Left };
+		var panel = new StackPanel { Width = 100, HorizontalAlignment = HorizontalAlignment.Left };
+		panel.Children.Add(line);
+		var window = new WpfWindow { Width = 600, Height = 200, Content = panel };
+		try
+		{
+			window.Show();
+			GtkState.Require(() => line.ActualWidth > 0, "layout", line);
+			panel.Width = 500;
+			Assert.True(GtkPump.Until(() => line.ActualWidth >= 399), $"line stayed {line.ActualWidth}");
 		}
 		finally { window.Close(); }
 	});

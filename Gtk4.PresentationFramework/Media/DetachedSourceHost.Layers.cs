@@ -12,17 +12,17 @@ static partial class DetachedSourceHost
 	static bool AnyWindow() => Overlays().Any();
 
 	static IEnumerable<Gtk.Overlay> Overlays() =>
-		Gtk.Window.ListToplevels().Where(w => w.IsMapped).Select(w => w.Child as Gtk.Overlay).OfType<Gtk.Overlay>();
+		Gtk.Window.ListToplevels().Where(w => w.IsMapped).Select(w => Window.ContentOverlayOf(w)).OfType<Gtk.Overlay>();
 
 	// The window that paints the brush when known, else the active one, else the newest mapped window.
 	static Gtk.Fixed? EnsureLayer(Gtk.Widget? painterRoot)
 	{
 		foreach (var dead in _layers.Where(p => p.Value.Parent != p.Key).Select(p => p.Key).ToList())
 			_layers.Remove(dead);
-		var overlay = (painterRoot as Gtk.Window)?.Child as Gtk.Overlay;
+		var overlay = Window.ContentOverlayOf(painterRoot as Gtk.Window);
 		if (overlay == null || !overlay.IsMapped)
 			overlay = Gtk.Window.ListToplevels().Where(w => w.IsMapped && w.IsActive)
-				.Select(w => w.Child as Gtk.Overlay).FirstOrDefault(o => o != null) ?? Overlays().FirstOrDefault();
+				.Select(w => Window.ContentOverlayOf(w)).FirstOrDefault(o => o != null) ?? Overlays().FirstOrDefault();
 		if (overlay == null) return null;
 		if (_layers.TryGetValue(overlay, out var layer) && layer.Parent == overlay) return layer;
 		layer = new Gtk.Fixed { CanTarget = false, CanFocus = false, Focusable = false };

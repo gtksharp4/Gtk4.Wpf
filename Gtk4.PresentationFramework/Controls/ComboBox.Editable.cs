@@ -70,6 +70,7 @@ public partial class ComboBox
 	Gtk.Widget CreateEditableHost()
 	{
 		_editableTextBox = new TextBox { Text = Text, IsReadOnly = IsReadOnly };
+		_editableTextBox.LogicalParent = this;
 		_editableTextBox.TextChanged += OnEntryChanged;
 		var box = new Gtk.Box(Gtk.Orientation.Horizontal, 0);
 		box.Add(_editableTextBox.Widget);
