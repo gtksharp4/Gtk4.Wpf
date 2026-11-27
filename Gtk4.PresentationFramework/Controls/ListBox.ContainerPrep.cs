@@ -11,7 +11,7 @@ public partial class ListBox
 			container.DataContext = item;
 
 		var style = ItemContainerStyleSelector?.SelectStyle(item, container) ?? ItemContainerStyle;
-		if (style == null && container.TryFindResource(typeof(ListBoxItem)) is Style implicitStyle)
+		if (style == null && container.TryFindResource(container.GetType()) is Style implicitStyle)
 			style = implicitStyle;
 		if (style != null && ReferenceEquals(container.ReadLocalValue(StyleProperty), DependencyProperty.UnsetValue))
 			container.Style = style;
