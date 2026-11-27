@@ -36,6 +36,12 @@ public class VisualBrushHostTests : WpfGtkTestBase
 
 	static int VisibleToplevels() => Gtk.Window.ListToplevels().Count(w => w.IsVisible);
 
+	// Closed windows of earlier tests stay listed, and on Xvfb one of them can still report itself active.
+	static IntPtr[] OtherActiveToplevels(WpfWindow win) => Gtk.Window.ListToplevels()
+		.Where(w => w.Handle != win.Widget.Handle && w is Gtk.Window { IsActive: true })
+		.Select(w => w.Handle)
+		.ToArray();
+
 	static VisualBrush Corner(UIElement source) => new VisualBrush(source)
 	{
 		Stretch = Stretch.None, AlignmentX = AlignmentX.Left, AlignmentY = AlignmentY.Top,
@@ -49,7 +55,7 @@ public class VisualBrushHostTests : WpfGtkTestBase
 		{
 			// Without a window manager (Xvfb) a shown window is not always activated, and on some Linux runner runs no
 			// number of requests makes it so. Where it is active it must stay active; everywhere, no other toplevel (the
-			// source's host included) may become active.
+			// source's host included) may become active while the brush paints.
 			bool active = GtkPump.Until(() =>
 			{
 				if (!win.IsActive)
@@ -58,6 +64,7 @@ public class VisualBrushHostTests : WpfGtkTestBase
 			}, 6000);
 			Assert.True(active || OperatingSystem.IsLinux(), "the window never became active");
 			int toplevels = VisibleToplevels();
+			var activeBefore = OtherActiveToplevels(win);
 			var source = new Border { Width = 40, Height = 40, Background = Brushes.Red };
 			var rect = new Rectangle { Fill = Corner(source) };
 			Sample(rect, 10, 10);
@@ -69,8 +76,7 @@ public class VisualBrushHostTests : WpfGtkTestBase
 			Assert.True(p.B > 200 && p.R < 50, p.ToString());
 			if (active)
 				Assert.True(win.IsActive, "the window lost activation");
-			Assert.DoesNotContain(Gtk.Window.ListToplevels(),
-				w => w.Handle != win.Widget.Handle && w is Gtk.Window { IsActive: true });
+			Assert.Empty(OtherActiveToplevels(win).Except(activeBefore));
 			Assert.Equal(toplevels, VisibleToplevels());
 		}
 		finally { win.Close(); }
