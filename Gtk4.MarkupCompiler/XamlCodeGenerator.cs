@@ -923,6 +923,13 @@ namespace Gtk4.MarkupCompiler
 					w.Line($"{parentVar}.{propName} = {tmplVar};");
 					return;
 				}
+				if (childLocal == "ItemsPanelTemplate" && propName == "ItemsPanel")
+				{
+					string tmplVar = $"__ip{counter++}";
+					EmitItemsPanelTemplateInline(w, child, xNs, tmplVar, ref counter);
+					w.Line($"{parentVar}.{propName} = {tmplVar};");
+					return;
+				}
 				if (childLocal == "DataTemplate")
 				{
 					string tmplVar = $"__dt{counter++}";

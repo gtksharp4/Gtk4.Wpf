@@ -107,4 +107,36 @@ public class GeneratorSweep5Tests : Sweep3Base
 		Assert.Equal("LeftDoubleClick", GeneratorSweep4RuntimeTests.Prop(
 			GeneratorSweep4RuntimeTests.Prop(list[2], "Gesture"), "MouseAction").ToString());
 	}
+
+	const string Panel = "<ListBox x:Name=\"L\"><ListBox.ItemsPanel><ItemsPanelTemplate>"
+		+ "<WrapPanel Orientation=\"Horizontal\" Margin=\"10\"/></ItemsPanelTemplate></ListBox.ItemsPanel></ListBox>";
+
+	[Fact]
+	public void ItemsPanel_template_gets_a_panel_factory()
+	{
+		string xaml = Win(Panel);
+		string code = Compile(xaml);
+
+		Has(code, "new System.Windows.Controls.ItemsPanelTemplate()");
+		Has(code, ".Factory = () =>");
+		Has(code, ".ItemsPanel = __ip");
+		Assert.DoesNotContain(Messages(xaml), m => m.StartsWith("Skipped"));
+	}
+
+	[Fact]
+	public void ItemsPanel_factory_builds_a_fresh_panel_per_call()
+	{
+		object root = GeneratorSweep4RuntimeTests.Run("<StackPanel " + Head + " x:Class=\"App.C\">" + Panel
+			+ "</StackPanel>");
+		object list = ((System.Collections.IEnumerable)GeneratorSweep4RuntimeTests.Prop(root, "Children"))
+			.Cast<object>().First();
+		object template = GeneratorSweep4RuntimeTests.Prop(list, "ItemsPanel");
+		object f = template.GetType().GetProperty("Factory")!.GetValue(template)!;
+		object a = ((System.Delegate)f).DynamicInvoke()!;
+		object b = ((System.Delegate)f).DynamicInvoke()!;
+
+		Assert.Equal("WrapPanel", a.GetType().Name);
+		Assert.NotSame(a, b);
+		Assert.Equal("Horizontal", GeneratorSweep4RuntimeTests.Prop(a, "Orientation").ToString());
+	}
 }
