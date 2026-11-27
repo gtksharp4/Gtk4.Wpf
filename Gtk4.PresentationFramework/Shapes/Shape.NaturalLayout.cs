@@ -20,9 +20,49 @@ public abstract partial class Shape
 		area.LayoutManager = layout;
 	}
 
-	internal int NaturalRequest(Gtk.Orientation orientation) => orientation == Gtk.Orientation.Horizontal
-		? ToRequest(ClampRequest(_natural.Width, Width, MinWidth, MaxWidth))
-		: ToRequest(ClampRequest(_natural.Height, Height, MinHeight, MaxHeight));
+	internal int NaturalRequest(Gtk.Orientation orientation)
+	{
+		bool horizontal = orientation == Gtk.Orientation.Horizontal;
+		double natural = horizontal
+			? ClampRequest(_natural.Width, Width, MinWidth, MaxWidth)
+			: ClampRequest(_natural.Height, Height, MinHeight, MaxHeight);
+		return ToRequest(Math.Min(natural, SlotLimit(horizontal)));
+	}
+
+	// WPF clips a child to a fixed slot; GTK lets a child's natural size beat its container's fixed size and squeeze
+	// the siblings. The natural request is therefore capped by a fixed Grid track (or tracks, for a span) or the
+	// explicit size of a parent that sizes its children (not a Border, whose GTK frame adds insets, and not a Canvas,
+	// which does not constrain them), and by this shape's own
+	// Margin. A star or Auto track and an unsized parent do not cap. Read when GTK measures, so a later change shows
+	// on the next measure.
+	double SlotLimit(bool horizontal)
+	{
+		double limit = double.PositiveInfinity;
+		if (Parent is Controls.Grid grid)
+		{
+			int start = horizontal ? Controls.Grid.GetColumn(this) : Controls.Grid.GetRow(this);
+			int span = Math.Max(1, horizontal ? Controls.Grid.GetColumnSpan(this) : Controls.Grid.GetRowSpan(this));
+			int count = horizontal ? grid.ColumnDefinitions.Count : grid.RowDefinitions.Count;
+			double sum = 0;
+			bool fixedTracks = count > 0 && start >= 0 && start < count;
+			for (int i = start; fixedTracks && i < start + span && i < count; i++)
+			{
+				var length = horizontal ? grid.ColumnDefinitions[i].Width : grid.RowDefinitions[i].Height;
+				if (length.IsAbsolute) sum += length.Value;
+				else fixedTracks = false;
+			}
+			if (fixedTracks) limit = sum;
+		}
+		else if (Parent is FrameworkElement parent and not (Controls.Border or Controls.Canvas))
+		{
+			double size = horizontal ? parent.Width : parent.Height;
+			if (!double.IsNaN(size))
+				limit = size;
+		}
+		if (double.IsPositiveInfinity(limit)) return limit;
+		var margin = Margin;
+		return Math.Max(0, limit - (horizontal ? margin.Left + margin.Right : margin.Top + margin.Bottom));
+	}
 
 	static double ClampRequest(double natural, double explicitSize, double min, double max) =>
 		Math.Max(min, Math.Min(double.IsNaN(explicitSize) ? natural : explicitSize, max));

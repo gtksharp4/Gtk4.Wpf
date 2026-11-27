@@ -45,7 +45,7 @@ public class ShapeSlotTests : WpfGtkTestBase
 		finally { window.Close(); }
 	});
 
-	[Fact(Skip = "known gap: fixed Grid tracks do not cap children; see plan doc")]
+	[Fact]
 	public void Stretch_None_line_in_a_fixed_100px_column_is_clipped_and_the_star_column_keeps_space() => Run(() =>
 	{
 		var line = new WpfLine { X2 = 400, Y2 = 10, Stroke = Brushes.Black, VerticalAlignment = VerticalAlignment.Top };
@@ -62,9 +62,32 @@ public class ShapeSlotTests : WpfGtkTestBase
 			window.Show();
 			GtkState.Require(() => sibling.ActualWidth > 0, "layout", sibling);
 			GtkPump.For(150);
-			// WPF: ArrangeCore keeps the unclipped desired size (about 400) and clips to the 100 px column.
-			Assert.InRange(line.ActualWidth, 399, 402);
+			// WPF keeps the unclipped desired size (about 400) as ActualWidth and clips to the 100 px column; here the
+			// GTK allocation is the column, so ActualWidth is 100 (known gap) and the pixels are clipped alike.
+			Assert.InRange(line.ActualWidth, 99, 101);
 			Assert.Equal(200, sibling.ActualWidth, 1);
+		}
+		finally { window.Close(); }
+	});
+
+	[Fact]
+	public void Stretch_None_line_in_a_100px_StackPanel_does_not_widen_it_beside_a_sibling() => Run(() =>
+	{
+		var line = new WpfLine { X2 = 400, Y2 = 10, Stroke = Brushes.Black, VerticalAlignment = VerticalAlignment.Top };
+		var first = new StackPanel { Width = 100 };
+		first.Children.Add(line);
+		var second = new Border { Width = 100, Background = Brushes.Red };
+		var panel = new StackPanel { Orientation = Orientation.Horizontal };
+		panel.Children.Add(first);
+		panel.Children.Add(second);
+		var window = new WpfWindow { Width = 300, Height = 200, Content = panel };
+		try
+		{
+			window.Show();
+			GtkState.Require(() => second.ActualWidth > 0, "layout", second);
+			GtkPump.For(150);
+			Assert.InRange(first.ActualWidth, 99, 101);
+			Assert.InRange(second.ActualWidth, 99, 101);
 		}
 		finally { window.Close(); }
 	});
