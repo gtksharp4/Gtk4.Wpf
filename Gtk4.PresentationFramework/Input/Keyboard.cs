@@ -43,7 +43,11 @@ public static partial class Keyboard
 	{
 		bool changed = !ReferenceEquals(_focusedElement, element);
 		_focusedElement = element;
-		if (changed) RaiseAutomationFocusChanged(element);
+		if (changed)
+		{
+			RaiseAutomationFocusChanged(element);
+			CommandManager.InvalidateRequerySuggested();
+		}
 	}
 
 	/// <summary>Clears the focused element if it matches <paramref name="element"/>.</summary>

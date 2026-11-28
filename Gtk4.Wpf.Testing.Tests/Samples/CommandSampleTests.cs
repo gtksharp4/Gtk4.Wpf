@@ -61,11 +61,8 @@ public class CommandSampleTests : WpfUiWindowTest<HandlingEventOnCommandUsingCod
 		Assert.Equal(1, _presenter.Shown);
 	}
 
-	/// <summary>
-	/// Layer gap, tracked in docs/samples-coverage.md: WPF re-queries commands after the sample's Loaded handler
-	/// adds the binding, so the button is enabled on its own. The layer does not, so this stays skipped.
-	/// </summary>
-	[Fact(Skip = "Layer gap: no CommandManager requery after Loaded adds the CommandBinding.")]
+	/// <summary>WPF re-queries commands after the sample's Loaded handler adds the binding, so the button enables on its own.</summary>
+	[WpfUiFact]
 	public void The_button_is_enabled_without_a_manual_requery()
 	{
 		var button = Button;
