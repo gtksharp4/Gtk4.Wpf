@@ -22,6 +22,12 @@ public abstract partial class UIElement
 	/// </summary>
 	internal bool HasBackingWidget => _widget != null;
 
+	/// <summary>
+	/// True while <paramref name="child"/> is kept out of this element's Loaded tree although it is parented here
+	/// (an unselected tab's content: WPF only has the selected one in the visual tree).
+	/// </summary>
+	internal virtual bool HoldsBackLoaded(UIElement child) => false;
+
 	partial void OnLogicalParentChangedLifecycle(UIElement? oldParent, UIElement? newParent)
 	{
 		oldParent?._lifecycleChildren?.Remove(this);

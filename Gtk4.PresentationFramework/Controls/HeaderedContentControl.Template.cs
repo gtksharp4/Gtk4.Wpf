@@ -56,6 +56,9 @@ public partial class HeaderedContentControl
 	UIElement? _headerElement;
 	object? _headerContent;
 
+	/// <summary>The element presenting a header that is not plain text, or null.</summary>
+	internal UIElement? HeaderElement => _headerElement;
+
 	/// <summary>
 	/// The widget presenting a header that is not plain text (an element, a template result or an inline),
 	/// or null when the header is text.

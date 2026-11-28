@@ -30,5 +30,12 @@ public partial class TabItem
 			owner.SelectedItem = item;
 		else if (ReferenceEquals(owner.SelectedItem, item))
 			owner.SelectedItem = null;
+		foreach (var child in new System.Collections.Generic.List<UIElement>(item.LifecycleChildren))
+			LifecycleBroadcaster.OnHoldBackChanged(item, child);
 	}
+
+	// WPF hosts only the selected tab's content (TabControl's SelectedContent), so an unselected tab's content is
+	// not loaded; its header, in the tab strip, is.
+	internal override bool HoldsBackLoaded(UIElement child) =>
+		OwnerTabControl != null && !IsSelected && !ReferenceEquals(child, HeaderElement);
 }

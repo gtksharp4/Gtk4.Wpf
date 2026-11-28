@@ -99,7 +99,10 @@ internal static class LifecycleBroadcaster
 		}
 		// Children are read after the element's handlers ran, so children they add are reached.
 		foreach (var child in GetChildren(root))
-			BroadcastLoaded(child);
+		{
+			if (!root.HoldsBackLoaded(child))
+				BroadcastLoaded(child);
+		}
 	}
 
 	/// <summary>Raises <see cref="FrameworkElement.Unloaded"/> on every loaded element of the subtree, pre-order.</summary>
@@ -121,17 +124,37 @@ internal static class LifecycleBroadcaster
 		if (newParent != null && element is FrameworkElement fe)
 			fe.TryFireInitialized();
 
-		bool parentLoaded = IsInLoadedTree(newParent);
+		bool parentLoaded = IsLoadedParent(element, newParent);
 		bool elementLoaded = IsSubtreeLoaded(element);
 		if (parentLoaded == elementLoaded)
 			return;
+		ScheduleLoadedState(element, parentLoaded);
+	}
 
+	/// <summary>
+	/// Called when <paramref name="parent"/> stops or starts holding back <paramref name="child"/>
+	/// (<see cref="UIElement.HoldsBackLoaded"/>): brings the child's subtree in line, deferred like an attach.
+	/// </summary>
+	internal static void OnHoldBackChanged(UIElement parent, UIElement child)
+	{
+		if (!ReferenceEquals(child.LogicalParent, parent)) return;
+		bool parentLoaded = IsLoadedParent(child, parent);
+		if (parentLoaded != IsSubtreeLoaded(child))
+			ScheduleLoadedState(child, parentLoaded);
+	}
+
+	static bool IsLoadedParent(UIElement element, UIElement? parent) =>
+		IsInLoadedTree(parent) && !parent!.HoldsBackLoaded(element);
+
+	// The state is re-checked when the work runs, so a change that is undone first raises nothing.
+	static void ScheduleLoadedState(UIElement element, bool loaded)
+	{
 		var dispatcher = Dispatcher.CurrentDispatcher;
-		if (parentLoaded)
+		if (loaded)
 		{
 			dispatcher.BeginInvoke(() =>
 			{
-				if (!IsInLoadedTree(element.LogicalParent))
+				if (!IsLoadedParent(element, element.LogicalParent))
 					return;
 				BroadcastLoaded(element);
 				// The subtree joined a live window: publish its current GTK allocation now.
@@ -142,7 +165,7 @@ internal static class LifecycleBroadcaster
 		{
 			dispatcher.BeginInvoke(() =>
 			{
-				if (!IsInLoadedTree(element.LogicalParent))
+				if (!IsLoadedParent(element, element.LogicalParent))
 					BroadcastUnloaded(element);
 			}, DispatcherPriority.Loaded);
 		}
