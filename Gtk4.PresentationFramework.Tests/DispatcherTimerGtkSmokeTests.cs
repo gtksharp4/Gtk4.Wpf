@@ -49,7 +49,7 @@ public class DispatcherTimerGtkSmokeTests : WpfGtkTestBase
 		bold.Inlines.Add(new System.Windows.Documents.Run { Text = "hello" });
 		tb.Inlines.Add(bold);
 
-		var label = Assert.IsType<Gtk.Label>(tb.Widget);
+		var label = Assert.IsAssignableFrom<Gtk.Label>(tb.Widget);
 		Assert.True(label.UseMarkup);
 	});
 
@@ -57,7 +57,7 @@ public class DispatcherTimerGtkSmokeTests : WpfGtkTestBase
 	public void TextBlock_plain_text_does_not_use_markup() => Run(() =>
 	{
 		var tb = new WpfTextBlock { Text = "plain" };
-		var label = Assert.IsType<Gtk.Label>(tb.Widget);
+		var label = Assert.IsAssignableFrom<Gtk.Label>(tb.Widget);
 		// Plain text: UseMarkup is false, Text matches.
 		Assert.False(label.UseMarkup);
 		Assert.Equal("plain", label.Text);

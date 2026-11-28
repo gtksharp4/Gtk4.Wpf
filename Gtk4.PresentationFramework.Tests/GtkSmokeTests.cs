@@ -18,7 +18,7 @@ public class GtkSmokeTests : WpfGtkTestBase
 	public void TextBlock_Widget_is_GtkLabel() => Run(() =>
 	{
 		var tb = new WpfTextBlock { Text = "hi" };
-		Assert.IsType<Gtk.Label>(tb.Widget);
+		Assert.IsAssignableFrom<Gtk.Label>(tb.Widget);
 	});
 
 	[Fact]
@@ -74,7 +74,7 @@ public class GtkSmokeTests : WpfGtkTestBase
 		Assert.Equal("hi", label.Text);
 		Assert.IsType<Gtk.Window>(gtkWin);
 		Assert.IsAssignableFrom<Gtk.Grid>(gtkGrid);
-		Assert.IsType<Gtk.Label>(label);
+		Assert.IsAssignableFrom<Gtk.Label>(label);
 	});
 
 	[Fact]

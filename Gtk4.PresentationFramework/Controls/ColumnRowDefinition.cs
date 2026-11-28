@@ -7,7 +7,21 @@ namespace System.Windows.Controls;
 public class ColumnDefinition
 {
 	/// <summary>Width of the column. Default is <c>1*</c> (one star).</summary>
-	public GridLength Width { get; set; } = new GridLength(1.0, GridUnitType.Star);
+	public GridLength Width
+	{
+		get => _width;
+		set
+		{
+			if (_width.Equals(value)) return;
+			_width = value;
+			Owner?.OnTrackLengthChanged();
+		}
+	}
+
+	GridLength _width = new GridLength(1.0, GridUnitType.Star);
+
+	// The grid whose children's slot caps read this track; told when the length changes.
+	internal Grid? Owner { get; set; }
 
 	/// <summary>Minimum column width in pixels.</summary>
 	public double MinWidth { get; set; } = 0;
@@ -26,7 +40,21 @@ public class ColumnDefinition
 public class RowDefinition
 {
 	/// <summary>Height of the row. Default is <c>1*</c> (one star).</summary>
-	public GridLength Height { get; set; } = new GridLength(1.0, GridUnitType.Star);
+	public GridLength Height
+	{
+		get => _height;
+		set
+		{
+			if (_height.Equals(value)) return;
+			_height = value;
+			Owner?.OnTrackLengthChanged();
+		}
+	}
+
+	GridLength _height = new GridLength(1.0, GridUnitType.Star);
+
+	// The grid whose children's slot caps read this track; told when the length changes.
+	internal Grid? Owner { get; set; }
 
 	/// <summary>Minimum row height in pixels.</summary>
 	public double MinHeight { get; set; } = 0;

@@ -140,6 +140,9 @@ public partial class Grid : Panel
 		return false;
 	}
 
+	// A track length changed after its children were measured: their slot caps read it, so re-measure them.
+	internal void OnTrackLengthChanged() => RefreshSlotCaps(this);
+
 	// When an attached cell property changes, re-attach the child.
 	static void OnCellPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{

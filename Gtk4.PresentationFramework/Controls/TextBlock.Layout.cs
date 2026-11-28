@@ -161,3 +161,33 @@ public partial class TextBlock
 		ApplyTextWrapping();
 	}
 }
+
+public partial class TextBlock
+{
+	/// <inheritdoc/>
+	internal override void QueueSlotResize() => _label?.QueueResize();
+
+	// A label's minimum is its text, so a long unwrapped text would widen a fixed Grid track and squeeze the
+	// siblings; WPF clips it to the slot instead. The measure is capped at the slot (see CapMeasure) and the text
+	// that does not fit is clipped, not painted over the neighbours. The CSS name keeps the theme's and the font
+	// rules' "label" selector matching the subclass.
+	[Gtk.CssName("label")]
+	sealed class SlotCappedLabel : Gtk.Label
+	{
+		readonly TextBlock _owner;
+
+		internal SlotCappedLabel(TextBlock owner) : base(string.Empty)
+		{
+			_owner = owner;
+			Name = "GtkSlotCappedLabel"; // ElementCssStyle.IsUnnamed treats a Gtk* name as unset
+			Overflow = Gtk.Overflow.Hidden;
+		}
+
+		protected override void OnMeasure(Gtk.Orientation orientation, int forSize, out int minimum, out int natural,
+			out int minimumBaseline, out int naturalBaseline)
+		{
+			base.OnMeasure(orientation, forSize, out minimum, out natural, out minimumBaseline, out naturalBaseline);
+			_owner.CapMeasure(orientation, ref minimum, ref natural);
+		}
+	}
+}

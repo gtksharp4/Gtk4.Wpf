@@ -47,7 +47,7 @@ public class TemplatingGtkSmokeTests : WpfGtkTestBase
 		var child = box.FirstChild;
 		Assert.NotNull(child);
 		// DataTemplate factory returns a TextBlock backed by Gtk.Label.
-		Assert.IsType<Gtk.Label>(child);
+		Assert.IsAssignableFrom<Gtk.Label>(child);
 	});
 
 	[Fact]
