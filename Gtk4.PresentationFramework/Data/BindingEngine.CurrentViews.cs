@@ -13,9 +13,12 @@ internal static partial class BindingEngine
 		// Re-evaluates when the current item of a collection on the path moves (master/detail).
 		void RefreshCurrentViews(object? source)
 		{
-			if (!_watchViews || source == null || string.IsNullOrEmpty(_binding.PathString)) return;
+			bool xpathContext = _binding.XPath != null && source is System.Collections.IEnumerable && source is not string
+				&& source is not System.Xml.XmlNode;
+			if (!_watchViews || source == null || (string.IsNullOrEmpty(_binding.PathString) && !xpathContext)) return;
 			var views = new List<ICollectionView>();
-			TryWalk(source, _binding.PathString, views, out _);
+			if (xpathContext) { var v = CollectionViewSource.GetDefaultView(source); if (v != null) views.Add(v); }
+			if (!string.IsNullOrEmpty(_binding.PathString)) TryWalk(source, _binding.PathString, views, out _);
 			if (SameViews(views)) return;
 			DetachViews();
 			_views = views;

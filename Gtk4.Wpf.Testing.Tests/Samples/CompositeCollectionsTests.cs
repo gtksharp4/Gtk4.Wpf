@@ -13,6 +13,7 @@ public class CompositeCollectionsTests : WpfUiWindowTest<CompositeCollections.Ma
 		Assert.Contains("Zeus", names);
 		Assert.Contains("Jason", names);
 		Assert.Contains("Perseus", names);
-		Assert.Equal(12 + 6, names.Take(18).Count(n => !string.IsNullOrWhiteSpace(n)));
+		// 12 Greek gods (GreekGods.cs) + 6 heroes (the GreekHeroes XML in MainWindow.xaml).
+		Assert.Equal(12 + 6, names.Take(12 + 6).Count(n => !string.IsNullOrWhiteSpace(n)));
 	}
 }

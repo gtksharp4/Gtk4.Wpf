@@ -314,6 +314,7 @@ namespace Gtk4.MarkupCompiler
 				string childConvKey = childConvAttr != null
 					? ParseConverterArg(childConvAttr) : null;
 				string childSf = (string)child.Attribute("StringFormat");
+				string childXPath = (string)child.Attribute("XPath");
 
 				string childBindingInit;
 				if (childPath != null)
@@ -323,7 +324,7 @@ namespace Gtk4.MarkupCompiler
 					childBindingInit = "new System.Windows.Data.Binding()";
 
 				bool hasInit = childMode != null || childEn != null
-					|| childConvKey != null || childSf != null;
+					|| childConvKey != null || childSf != null || childXPath != null;
 				if (hasInit)
 				{
 					childBindingInit += " { ";
@@ -350,6 +351,12 @@ namespace Gtk4.MarkupCompiler
 					{
 						if (comma) childBindingInit += ", ";
 						childBindingInit += "StringFormat = \"" + EscapeString(childSf) + "\"";
+						comma = true;
+					}
+					if (childXPath != null)
+					{
+						if (comma) childBindingInit += ", ";
+						childBindingInit += "XPath = \"" + EscapeString(childXPath) + "\"";
 					}
 					childBindingInit += " }";
 				}

@@ -118,7 +118,7 @@ internal static class PriorityBindingEngine
 			foreach (var b in _pb.Bindings)
 			{
 				var src = ResolveSource(target, b);
-				var value = BindingEngine.ResolvePath(src, b.PathString);
+				var value = BindingEngine.ResolveValue(src, b, target);
 				if (value != null && !ReferenceEquals(value, DependencyProperty.UnsetValue))
 				{
 					BindingEngine.SetTargetConverted(target, _dp, value, _pb.FallbackValue);

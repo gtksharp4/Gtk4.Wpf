@@ -16,19 +16,19 @@ internal static partial class BindingEngine
 		if (source is XmlNode node) return node;
 		if (source is string || source is not IEnumerable) return null;
 		var view = CollectionViewSource.GetDefaultView(source);
-		if (view?.CurrentItem is XmlNode current) return current;
+		if (view != null) return view.CurrentItem as XmlNode;
 		foreach (var item in (IEnumerable)source)
 			return item as XmlNode;
 		return null;
 	}
 
-	static List<XmlNode>? SelectXmlNodes(object? source, string xpath, DependencyObject target)
+	internal static List<XmlNode>? SelectXmlNodes(object? source, string xpath, DependencyObject? target)
 	{
 		var context = ContextNode(source);
 		if (context == null) return null;
 		try
 		{
-			var manager = Binding.GetXmlNamespaceManager(target);
+			var manager = target != null ? Binding.GetXmlNamespaceManager(target) : null;
 			var selected = manager != null ? context.SelectNodes(xpath, manager) : context.SelectNodes(xpath);
 			if (selected == null) return null;
 			var result = new List<XmlNode>(selected.Count);
@@ -37,6 +37,15 @@ internal static partial class BindingEngine
 		}
 		catch (XPathException) { return null; }
 		catch (ArgumentException) { return null; }
+	}
+
+	/// <summary>The value of a binding outside a BindingRecord: the first XPath match as text, else the path value.</summary>
+	internal static object? ResolveValue(object? source, Binding binding, DependencyObject target)
+	{
+		if (binding.XPath == null) return ResolvePath(source, binding.PathString);
+		var nodes = SelectXmlNodes(source, binding.XPath, target);
+		if (nodes == null || nodes.Count == 0) return null;
+		return string.IsNullOrEmpty(binding.PathString) ? nodes[0].InnerText : ResolvePath(nodes[0], binding.PathString);
 	}
 
 	internal sealed partial class BindingRecord

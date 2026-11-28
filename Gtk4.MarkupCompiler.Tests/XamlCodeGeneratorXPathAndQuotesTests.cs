@@ -71,4 +71,13 @@ public class XamlCodeGeneratorXPathAndQuotesTests
 			XPath=""*[@Stock='out'] | *[@Number&gt;=8 or @Number=3]""/></ListBox.ItemsSource></ListBox>");
 		Assert.Contains(@"XPath = ""*[@Stock='out'] | *[@Number>=8 or @Number=3]""", code);
 	}
+
+	[Fact]
+	public void XPath_on_a_MultiBinding_child_is_emitted()
+	{
+		string code = Gen(@"<TextBlock><TextBlock.Text><MultiBinding StringFormat=""{}{0} {1}"">
+			<Binding XPath=""@Number""/><Binding XPath=""Title"" Mode=""OneWay""/></MultiBinding></TextBlock.Text></TextBlock>");
+		Assert.Contains(@"new System.Windows.Data.Binding() { XPath = ""@Number"" }", code);
+		Assert.Contains(@"Mode = System.Windows.Data.BindingMode.OneWay, XPath = ""Title""", code);
+	}
 }

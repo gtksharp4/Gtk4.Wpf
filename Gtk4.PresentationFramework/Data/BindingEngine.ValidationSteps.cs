@@ -78,8 +78,13 @@ internal static partial class BindingEngine
 		{
 			if (_binding.XPath != null)
 			{
-				WriteXPath(source, target, sourceValue);
-				return true;
+				if (!ExceptionValidationApplies) return WriteXPath(source, target, sourceValue);
+				try { return WriteXPath(source, target, sourceValue); }
+				catch (Exception ex) when (!IsCritical(ex))
+				{
+					ReportError(target, ex);
+					return false;
+				}
 			}
 			if (!ExceptionValidationApplies)
 			{

@@ -42,9 +42,11 @@ public class HierarchicalDataTemplate : DataTemplate
 	/// <see cref="ItemsSource"/> binding path. Returns <c>null</c> when
 	/// <see cref="ItemsSource"/> is not set or the path resolves to nothing.
 	/// </summary>
-	internal System.Collections.IEnumerable? ResolveChildren(object? dataItem)
+	internal System.Collections.IEnumerable? ResolveChildren(object? dataItem, DependencyObject? scope = null)
 	{
 		if (ItemsSource == null || dataItem == null) return null;
+		if (ItemsSource.XPath != null && dataItem is System.Xml.XmlNode)
+			return BindingEngine.SelectXmlNodes(dataItem, ItemsSource.XPath, scope);
 		var path = PropertyPath.ResolveOwner(dataItem, ItemsSource.PathString);
 		if (string.IsNullOrEmpty(path)) return dataItem as System.Collections.IEnumerable;
 		var prop = dataItem.GetType().GetProperty(path);

@@ -9,7 +9,7 @@ public class XmlDataSourceTests : WpfUiWindowTest<XmlDataSource.MainWindow>
 	[WpfUiFact]
 	public void The_list_shows_the_filtered_titles_in_document_order()
 	{
-		var titles = App.Invoke(() => ListTexts.Of((System.Windows.Controls.ListBox)((System.Windows.Controls.StackPanel)App.Window.Content).Children[1]));
+		var titles = App.Invoke(() => ListTexts.Of(ListTexts.FindFirst<System.Windows.Controls.ListBox>(App.Window)));
 		Assert.Equal(new[]
 		{
 			"XML in Action",
