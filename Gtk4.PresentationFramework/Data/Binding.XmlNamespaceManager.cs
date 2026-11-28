@@ -5,8 +5,8 @@ namespace System.Windows.Data;
 public partial class Binding
 {
 	/// <summary>
-	/// Identifies the attached <c>XmlNamespaceManager</c> property, which inherits down the tree. Store-only:
-	/// XPath evaluation against XML sources is not implemented, so nothing reads it.
+	/// Identifies the attached <c>XmlNamespaceManager</c> property, which inherits down the tree,
+	/// used by <see cref="Binding.XPath"/> queries.
 	/// </summary>
 	public static readonly DependencyProperty XmlNamespaceManagerProperty = DependencyProperty.RegisterAttached(
 		"XmlNamespaceManager", typeof(XmlNamespaceManager), typeof(Binding),
