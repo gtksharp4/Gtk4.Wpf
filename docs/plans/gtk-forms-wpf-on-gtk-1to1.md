@@ -3215,6 +3215,67 @@ only for a Shape that is the window content; lane H `RenderingPainter` reads `Vi
   The second gate passed: build 0 warnings and 0 errors. WindowsBase 316, MarkupCompiler 836 (+1 skipped),
   ProjectConverter 64, PresentationFramework 6845 (+3 skipped) and Wpf.Testing 72 (+5 skipped), all passed. Samples
   were not re-measured.
+- **CI fixes after Rounds 77-79.**
+  - A `TabControl` loaded every tab's content at startup. WPF loads only the selected tab's content and unloads it on
+    a switch. The Reflection page's forever animation therefore kept the VisualBrush sample's loop busy from launch,
+    and the macOS idle waits failed. A parent can now hold a child back from `Loaded` (`UIElement.HoldsBackLoaded`).
+  - Test waits (`GtkPump.Until`, the driver's `PumpHere`) do not count an iteration of 1 s or more against their
+    timeout, up to 60 s. The hosted macOS runner freezes for tens of seconds when a window is shown.
+  - The macOS script runs both GTK suites even when the first fails.
+- **Round 80 programme (three lanes run as one workflow: an Opus scout, then implement → Opus review → fix per lane).**
+- **Round 80 (lane a) - XML data binding, `StringFormat` (merged).**
+  - **`Binding.XPath`,** evaluated as in WPF's `XmlBindingWorker`:
+    - The context node is the source when it is an `XmlNode`; otherwise it is the current item of the default view
+      of a node collection (a `DataSourceProvider`'s `Data` included).
+    - A collection target gets the node list. Any other target gets the first node: as text, unless the target takes
+      the node.
+    - `Path` applies to the result. No match, or an invalid XPath, gives `FallbackValue`.
+    - TwoWay writes the `InnerText` back. `Binding.XmlNamespaceManager` is honoured.
+    - Triggers, `MultiBinding`, `PriorityBinding` and `HierarchicalDataTemplate.ItemsSource` use XPath too (review
+      R80A-3/4).
+  - **Templates and content:** an implicit `DataTemplate` with a string `DataType` applies to `XmlElement`s of that
+    name. An `XmlNode` shown as content displays its text (R80A-1).
+  - **Generator:** it unquotes `StringFormat`, `FallbackValue` and `TargetNullValue`, and emits `XPath` in both binding
+    forms. The runtime quoted-`StringFormat` stopgap is gone, and `IconsPage.xaml:278` is emitted whole.
+  - **New UI tests:** the XmlDataSource and CompositeCollections official samples.
+  - Gaps:
+    - No XmlDocument change notification, and no `XmlNamespaceMappingCollection` (XmlnsBind).
+    - A templated list item's automation Name is its `ToString`.
+    - Backslash escapes in markup-extension arguments are still not processed.
+- **Round 80 (lane b) - automatic command requery (merged).**
+  - **`InvalidateRequerySuggested`** raises `RequerySuggested` once, asynchronously, at Background priority on the
+    dispatcher thread, and may be called from any thread. Calls are coalesced.
+  - **Requery triggers:** key and mouse-button release, keyboard focus changes and TextBox selection changes. Mouse
+    move does not trigger one, as in WPF.
+  - **TextBox commands:** TextBox now answers Copy, Cut, Paste and SelectAll.
+  - `CommandSampleTests.The_button_is_enabled_without_a_manual_requery` is unskipped.
+  - Gaps:
+    - Paste ignores the clipboard contents (R80B-3, deferred).
+    - The CommandSource timer samples, EditingExaminerDemo and WPFGallery were not run.
+    - A requery pending when a dispatcher shuts down leaves requeries off for the process.
+- **Round 80 (lane c) - NaN-size window clip, slot caps (merged).**
+  - **NaN-size Manual windows:** every axis that `SizeToContent` does not size keeps the window's default size and
+    clips larger content.
+    - The clip host is a `ScrolledWindow` that never scrolls (R80C-2); `ListBox.ScrollIntoView` stops at it.
+    - GeometryDesignerDemo kept a stable 1468x839 window for 20 s, with 0 "layout continuously requested" lines.
+  - **Slot caps:** `TextBlock` and `Image` natural sizes are capped by a fixed Grid track or a sized `Panel` parent,
+    like `Shape`. A `ScrollViewer`'s content is never capped (R80C-1, a blocker).
+    - A Grid track change after show refreshes the caps.
+    - A TextBlock label clips only while capped (R80C-3).
+    - The `TextBlock`/`Image` widgets are now `Gtk.Label`/`Gtk.Picture` subclasses (`SlotCappedLabel`,
+      `SlotCappedPicture`). They need `[CssName]` and a `Gtk…` widget name to keep the per-widget CSS.
+  - Gaps:
+    - A Margin change does not refresh a cap.
+    - A definition's `Owner` is not cleared when it is removed.
+    - A user resize of a clipped NaN window could not be asserted on the Windows GTK backend.
+- **Round 80 totals.** The lanes touched disjoint files and merged with no conflicts. Gate, run on Windows on the
+  merged `main`:
+  - Build: 0 warnings, 0 errors.
+  - Results: WindowsBase 316, MarkupCompiler 845 (+1 skipped), ProjectConverter 64, Integration 1, Wpf.Testing 75
+    (+4 skipped), PresentationFramework 6882 (+3 skipped).
+  - On the first run `MouseDeviceGtkTests.Device_position_matches_event_and_Mouse_position_on_GTK_raised_events`
+    failed once. It passed alone and in a full re-run.
+  - Linux and macOS: through CI only. Samples were not re-measured.
 
 ## Phased roadmap (after Phase 0 proves the spine)
 
@@ -3285,7 +3346,8 @@ is it worth committing to the multi-phase build toward 1:1.
 
 - SizeToContent around a ScrollViewer does not size to its content.
 - Window Min/MaxHeight/Width do not cap an axis SizeToContent sizes.
-- Fixed Grid tracks and explicit parent sizes do not cap a child's natural size (Shape, TextBlock).
+- Fixed Grid tracks and sized parents cap Shape, TextBlock and Image natural sizes (Rounds 79-80), but a Margin
+  change does not refresh the cap.
 - Stretch != None shapes report the slot as ActualWidth/Height.
 - External http(s) links in Frame/NavigationWindow raise NavigationFailed and stay (WPF hosts web content).
 - DrawingBrush rendering is not implemented beyond what exists (DrawingBrush fills).

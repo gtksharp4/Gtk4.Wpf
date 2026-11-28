@@ -282,6 +282,21 @@ all: `ImageDrawing` and the `PreviewCanExecute` attribute on `CommandBinding`.
 
 ## Next rounds
 
+### Round 80 (executed 2026-11-28; samples not re-measured)
+
+Merged into `main`; details are in the plan, "Round 80". The per-app results come from scratch builds made by the
+lanes.
+
+| Lane | App effect observed | Next wall |
+|---|---|---|
+| A XML binding, `StringFormat` | XmlDataSource lists its 4 filtered titles and CompositeCollections its 12 gods and 6 heroes (new UI tests); Grouping shows the item names under Home/Work (scratch build) | XmlDocument change notification; `XmlNamespaceMappingCollection` (XmlnsBind) |
+| B Command requery | `HandlingEventOnCommandUsingCode` enables its button with no manual requery (test unskipped) | The other command samples (CommandSource timers, EditingExaminerDemo, WPFGallery) were not run |
+| C NaN-window clip, slot caps | GeometryDesignerDemo keeps a stable 1468x839 window for 20 s, with 0 "layout continuously requested" lines (scratch build) | A Margin change does not refresh a cap |
+
+Next candidates by value: a full re-measure of the samples (none since `f678058f`; lanes A and C change output in many);
+WPFGallery content and navigation (its `StringFormat` wall is gone); a fixed GridView header with column resize;
+`GroupItem` containers.
+
 ### Rounds 77-79 (executed 2026-11-27; samples not re-measured)
 
 Merged into `main`; details are in the plan, "Rounds 77-79". The per-app results come from scratch builds made by the
