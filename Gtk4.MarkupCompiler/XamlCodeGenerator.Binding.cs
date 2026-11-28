@@ -82,11 +82,11 @@ namespace Gtk4.MarkupCompiler
 				else if (a.StartsWith("RelativeSource=", StringComparison.Ordinal))
 					relativeSourceExpr = ParseRelativeSourceArg(a.Substring("RelativeSource=".Length).Trim());
 				else if (a.StartsWith("StringFormat=", StringComparison.Ordinal))
-					stringFormat = a.Substring("StringFormat=".Length).Trim();
+					stringFormat = BindingStringArg(a.Substring("StringFormat=".Length));
 				else if (a.StartsWith("FallbackValue=", StringComparison.Ordinal))
-					fallbackValue = a.Substring("FallbackValue=".Length).Trim();
+					fallbackValue = BindingStringArg(a.Substring("FallbackValue=".Length));
 				else if (a.StartsWith("TargetNullValue=", StringComparison.Ordinal))
-					targetNullValue = a.Substring("TargetNullValue=".Length).Trim();
+					targetNullValue = BindingStringArg(a.Substring("TargetNullValue=".Length));
 				else if (a.StartsWith("UpdateSourceTrigger=", StringComparison.Ordinal))
 					updateSourceTrigger = a.Substring("UpdateSourceTrigger=".Length).Trim();
 				else if (TryExtraBindingArg(a, extras)) { }
@@ -314,6 +314,7 @@ namespace Gtk4.MarkupCompiler
 				string childConvKey = childConvAttr != null
 					? ParseConverterArg(childConvAttr) : null;
 				string childSf = (string)child.Attribute("StringFormat");
+				string childXPath = (string)child.Attribute("XPath");
 
 				string childBindingInit;
 				if (childPath != null)
@@ -323,7 +324,7 @@ namespace Gtk4.MarkupCompiler
 					childBindingInit = "new System.Windows.Data.Binding()";
 
 				bool hasInit = childMode != null || childEn != null
-					|| childConvKey != null || childSf != null;
+					|| childConvKey != null || childSf != null || childXPath != null;
 				if (hasInit)
 				{
 					childBindingInit += " { ";
@@ -350,6 +351,12 @@ namespace Gtk4.MarkupCompiler
 					{
 						if (comma) childBindingInit += ", ";
 						childBindingInit += "StringFormat = \"" + EscapeString(childSf) + "\"";
+						comma = true;
+					}
+					if (childXPath != null)
+					{
+						if (comma) childBindingInit += ", ";
+						childBindingInit += "XPath = \"" + EscapeString(childXPath) + "\"";
 					}
 					childBindingInit += " }";
 				}

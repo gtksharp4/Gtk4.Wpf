@@ -35,7 +35,7 @@ internal sealed class TriggerBindingSource : BindingEngine.IContextListener, IDi
 	{
 		get
 		{
-			var raw = BindingEngine.ResolvePath(_root, _binding.PathString);
+			var raw = BindingEngine.ResolveValue(_root, _binding, _target);
 			if (_binding.Converter == null) return raw;
 			var culture = BindingEngine.ResolveCulture(_binding.ConverterCulture);
 			var converted = _binding.Converter.Convert(raw, typeof(object), _binding.ConverterParameter, culture);

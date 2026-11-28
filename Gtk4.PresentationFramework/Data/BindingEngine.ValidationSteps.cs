@@ -76,6 +76,16 @@ internal static partial class BindingEngine
 
 		bool WriteSource(DependencyObject target, object source, object? sourceValue)
 		{
+			if (_binding.XPath != null)
+			{
+				if (!ExceptionValidationApplies) return WriteXPath(source, target, sourceValue);
+				try { return WriteXPath(source, target, sourceValue); }
+				catch (Exception ex) when (!IsCritical(ex))
+				{
+					ReportError(target, ex);
+					return false;
+				}
+			}
 			if (!ExceptionValidationApplies)
 			{
 				WriteBackPath(source, _binding.PathString, sourceValue);

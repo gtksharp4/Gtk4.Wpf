@@ -82,6 +82,7 @@ namespace Gtk4.MarkupCompiler
 				case "StringFormat":
 				case "FallbackValue":
 				case "TargetNullValue":
+				case "XPath":
 					return name + " = \"" + EscapeString(value) + "\"";
 				case "Mode":
 					return "Mode = System.Windows.Data.BindingMode." + value.Trim();

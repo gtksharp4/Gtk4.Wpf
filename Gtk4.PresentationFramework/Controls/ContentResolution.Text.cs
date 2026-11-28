@@ -26,6 +26,8 @@ internal static partial class ContentResolution
 	internal static string ToText(object? content, string? stringFormat)
 	{
 		if (content == null) return string.Empty;
+		// WPF shows an XmlNode as its text (default template XPath=".").
+		if (content is System.Xml.XmlNode xml) content = xml.InnerText;
 		if (!string.IsNullOrEmpty(stringFormat))
 		{
 			var fmt = stringFormat!.IndexOf('{') >= 0 ? stringFormat : "{0:" + stringFormat + "}";

@@ -18,6 +18,8 @@ namespace Gtk4.MarkupCompiler
 					return "ConverterParameter = " + BindingValueExpr(value);
 				case "Source":
 					return "Source = " + BindingValueExpr(value);
+				case "XPath":
+					return "XPath = \"" + EscapeString(Unquote(value)) + "\"";
 				case "ConverterCulture":
 					return "ConverterCulture = System.Globalization.CultureInfo.GetCultureInfo(\""
 						+ EscapeString(Unquote(value)) + "\")";
@@ -74,6 +76,13 @@ namespace Gtk4.MarkupCompiler
 			string literal = Unquote(t);
 			if (literal.StartsWith("{}", StringComparison.Ordinal)) literal = literal.Substring(2);
 			return "\"" + EscapeString(literal) + "\"";
+		}
+
+		/// <summary>A string-valued binding argument: XAML quotes removed, then a leading {} escape dropped.</summary>
+		static string BindingStringArg(string raw)
+		{
+			string literal = Unquote(raw);
+			return literal.StartsWith("{}", StringComparison.Ordinal) ? literal.Substring(2) : literal;
 		}
 
 		static string Unquote(string s)

@@ -46,7 +46,7 @@ public partial class TreeView
 	internal static void PopulateHierarchicalChildren(
 		TreeViewItem tvi, object? dataItem, HierarchicalDataTemplate hdt)
 	{
-		var children = hdt.ResolveChildren(dataItem);
+		var children = hdt.ResolveChildren(dataItem, tvi);
 		if (children == null) return;
 
 		var childItems = new System.Collections.Generic.List<object?>();

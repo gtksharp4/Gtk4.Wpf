@@ -42,11 +42,15 @@ internal static partial class BindingEngine
 				// R5: FallbackValue applies when the path is unresolvable:
 				// either source is null (no DataContext, no explicit source), OR
 				// source is non-null but the path itself doesn't resolve.
-				var rawValue = ResolvePath(source, _binding.PathString);
+				bool xpathFailed = false;
+				var rawValue = _binding.XPath != null
+					? ResolveXPath(source, target, out xpathFailed)
+					: ResolvePath(source, _binding.PathString);
 				_lastRaw = rawValue;
 
 				bool pathUnresolvable = rawValue == null
-				                        && (source == null || PathIsUnresolvable(source));
+				                        && (source == null
+				                            || (_binding.XPath != null ? xpathFailed : PathIsUnresolvable(source)));
 
 				if (pathUnresolvable)
 				{
