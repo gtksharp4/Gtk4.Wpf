@@ -76,4 +76,44 @@ public class WindowNanClipGtkTests : WpfGtkTestBase
 		}
 		finally { win.Close(); }
 	});
+
+	// WPF measures the NaN height at the default while SizeToContent=Width follows the content's width.
+	[Fact]
+	public void SizeToContent_Width_with_a_NaN_height_follows_the_width_and_clips_the_height() => Run(() =>
+	{
+		using var gtk = new GtkDispatcherScope();
+		var win = new WpfWindow
+		{
+			SizeToContent = SizeToContent.Width,
+			Content = new Border { Width = 500, Height = 5000 },
+		};
+		try
+		{
+			var (w, h) = Open(win);
+			Assert.InRange(w, 499, 520);
+			Assert.InRange(h, DefaultH - 1, DefaultH + 1);
+		}
+		finally { win.Close(); }
+	});
+
+	[Fact]
+	public void The_window_clip_host_never_scrolls_for_ScrollIntoView_or_wheel_range() => Run(() =>
+	{
+		using var gtk = new GtkDispatcherScope();
+		var list = new ListBox();
+		for (int i = 0; i < 200; i++) list.Items.Add("Item " + i);
+		var win = new WpfWindow { Content = new StackPanel { Children = { list } } };
+		try
+		{
+			Open(win);
+			var host = Assert.IsType<WpfWindow.ClipHost>(((Gtk.Window)win.Widget).Child);
+			list.ScrollIntoView("Item 199");
+			GtkPump.For(300);
+			Assert.Equal(0, host.Vadjustment.Value);
+			host.Vadjustment.Value = 500; // what a wheel or focus scroll would do
+			Assert.Equal(0, host.Vadjustment.Value);
+			Assert.Equal(0, host.Hadjustment.Value);
+		}
+		finally { win.Close(); }
+	});
 }

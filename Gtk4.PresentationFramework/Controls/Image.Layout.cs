@@ -70,7 +70,7 @@ public partial class Image
 		{
 			_owner = owner;
 			Name = "GtkSlotCappedPicture";
-			Overflow = Gtk.Overflow.Hidden;
+			Overflow = Gtk.Overflow.Hidden; // a picture paints within its allocation, so this never cuts ink
 		}
 
 		protected override void OnMeasure(Gtk.Orientation orientation, int forSize, out int minimum, out int natural,

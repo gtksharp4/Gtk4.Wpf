@@ -111,4 +111,68 @@ public class SlotCapGtkTests : WpfGtkTestBase
 		}
 		finally { window.Close(); }
 	});
+
+	[Fact]
+	public void TextBlock_and_Image_in_an_explicitly_sized_ScrollViewer_keep_their_full_extent() => Run(() =>
+	{
+		var text = new TextBlock { Text = Long + Long };
+		var source = BitmapSource.Create(900, 400, 96, 96, PixelFormats.Bgr24, null, new byte[900 * 400 * 3], 900 * 3);
+		var image = new Image { Source = source, Stretch = Stretch.None };
+		var textViewer = new ScrollViewer
+		{
+			Width = 300, Height = 100, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, Content = text,
+		};
+		var imageViewer = new ScrollViewer
+		{
+			Width = 300, Height = 100, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+			VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Content = image,
+		};
+		var panel = new StackPanel { Children = { textViewer, imageViewer } };
+		var window = new WpfWindow { Width = 600, Height = 400, Content = panel };
+		try
+		{
+			window.Show();
+			GtkState.Require(() => text.ActualWidth > 0 && image.ActualWidth > 0, "layout", text);
+			GtkPump.For(150);
+			Assert.True(text.ActualWidth > 400, $"text {text.ActualWidth}");
+			Assert.True(image.ActualWidth > 400, $"image {image.ActualWidth}");
+			Assert.True(image.ActualHeight > 150, $"image {image.ActualHeight}");
+		}
+		finally { window.Close(); }
+	});
+
+	[Fact]
+	public void TextBlock_Padding_does_not_widen_a_fixed_track() => Run(() =>
+	{
+		var text = new TextBlock { Text = Long, Padding = new Thickness(10) };
+		var (grid, sibling) = Layout(text);
+		var window = new WpfWindow { Width = 500, Height = 200, Content = grid };
+		try
+		{
+			window.Show();
+			GtkState.Require(() => sibling.ActualWidth > 0, "layout", sibling);
+			GtkPump.For(150);
+			Check(grid, sibling);
+		}
+		finally { window.Close(); }
+	});
+
+	[Fact]
+	public void TextBlock_label_is_clipped_only_while_capped() => Run(() =>
+	{
+		var capped = new TextBlock { Text = Long };
+		var free = new TextBlock { Text = "Step 1:", FontStyle = FontStyles.Italic };
+		var (grid, sibling) = Layout(capped);
+		var panel = new StackPanel { Children = { grid, free } };
+		var window = new WpfWindow { Width = 500, Height = 200, Content = panel };
+		try
+		{
+			window.Show();
+			GtkState.Require(() => sibling.ActualWidth > 0 && free.ActualWidth > 0, "layout", sibling);
+			GtkPump.For(150);
+			Assert.Equal(Gtk.Overflow.Hidden, capped.Widget.Overflow);
+			Assert.Equal(Gtk.Overflow.Visible, free.Widget.Overflow);
+		}
+		finally { window.Close(); }
+	});
 }

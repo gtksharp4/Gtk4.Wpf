@@ -180,14 +180,27 @@ public partial class TextBlock
 		{
 			_owner = owner;
 			Name = "GtkSlotCappedLabel"; // ElementCssStyle.IsUnnamed treats a Gtk* name as unset
-			Overflow = Gtk.Overflow.Hidden;
 		}
+
+		bool _cappedH, _cappedV;
 
 		protected override void OnMeasure(Gtk.Orientation orientation, int forSize, out int minimum, out int natural,
 			out int minimumBaseline, out int naturalBaseline)
 		{
 			base.OnMeasure(orientation, forSize, out minimum, out natural, out minimumBaseline, out naturalBaseline);
-			_owner.CapMeasure(orientation, ref minimum, ref natural);
+			int margins = orientation == Gtk.Orientation.Horizontal ? MarginStart + MarginEnd : MarginTop + MarginBottom;
+			bool capped = _owner.CapMeasure(orientation, ref minimum, ref natural, margins);
+			if (orientation == Gtk.Orientation.Horizontal) _cappedH = capped;
+			else _cappedV = capped;
+		}
+
+		// GTK clips a widget's own paint to its box when Overflow is Hidden, which would cut italic overhang and
+		// tall glyphs of every label; WPF clips only a text that does not fit its slot.
+		protected override void OnSizeAllocate(int width, int height, int baseline)
+		{
+			base.OnSizeAllocate(width, height, baseline);
+			var overflow = _cappedH || _cappedV || _owner.ClipToBounds ? Gtk.Overflow.Hidden : Gtk.Overflow.Visible;
+			if (Overflow != overflow) Overflow = overflow;
 		}
 	}
 }

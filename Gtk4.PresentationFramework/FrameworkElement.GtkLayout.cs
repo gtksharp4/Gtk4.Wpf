@@ -63,8 +63,8 @@ public abstract partial class FrameworkElement
 {
 	// WPF clips a child to a fixed slot; GTK lets a child's natural size beat its container's fixed size and squeeze
 	// the siblings. The natural request of a Shape, TextBlock or Image is therefore capped by a fixed Grid track (or
-	// tracks, for a span) or the explicit size of a parent that sizes its children (not a Border, whose GTK frame
-	// adds insets, and not a Canvas, which does not constrain them), and by this element's own Margin. A star or Auto
+	// tracks, for a span) or the explicit size of a parent Panel (not a Canvas, which does not
+	// constrain them, and not a ScrollViewer or other content host, whose content may scroll past its size), and by this element's own Margin. A star or Auto
 	// track and an unsized parent do not cap. Read when GTK measures, so a later change shows on the next measure.
 	internal double SlotLimit(bool horizontal)
 	{
@@ -86,7 +86,7 @@ public abstract partial class FrameworkElement
 			}
 			if (fixedTracks) limit = sum;
 		}
-		else if (Parent is FrameworkElement parent and not (Controls.Border or Controls.Canvas))
+		else if (Parent is Controls.Panel parent and not Controls.Canvas)
 		{
 			double size = horizontal ? parent.Width : parent.Height;
 			if (!double.IsNaN(size))
@@ -114,12 +114,15 @@ public abstract partial class FrameworkElement
 	/// Caps a GTK measure of a Label or Picture at the slot: the minimum goes with it (a clipped element can be
 	/// arranged smaller than its content), so the element no longer widens its track or pushes siblings.
 	/// </summary>
-	internal void CapMeasure(Gtk.Orientation orientation, ref int minimum, ref int natural)
+	internal bool CapMeasure(Gtk.Orientation orientation, ref int minimum, ref int natural, int gtkMargins = 0)
 	{
 		double limit = SlotLimit(orientation == Gtk.Orientation.Horizontal);
-		if (double.IsPositiveInfinity(limit)) return;
-		int cap = (int)Math.Max(0, Math.Min(Math.Floor(limit + 1e-6), 100000));
+		if (double.IsPositiveInfinity(limit)) return false;
+		// GTK adds the widget's own margins outside the measure vfunc, so they come off the cap.
+		int cap = (int)Math.Max(0, Math.Min(Math.Floor(limit + 1e-6) - gtkMargins, 100000));
+		bool capped = natural > cap;
 		natural = Math.Min(natural, cap);
 		minimum = Math.Min(minimum, natural);
+		return capped;
 	}
 }
