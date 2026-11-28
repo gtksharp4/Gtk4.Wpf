@@ -82,11 +82,11 @@ namespace Gtk4.MarkupCompiler
 				else if (a.StartsWith("RelativeSource=", StringComparison.Ordinal))
 					relativeSourceExpr = ParseRelativeSourceArg(a.Substring("RelativeSource=".Length).Trim());
 				else if (a.StartsWith("StringFormat=", StringComparison.Ordinal))
-					stringFormat = a.Substring("StringFormat=".Length).Trim();
+					stringFormat = BindingStringArg(a.Substring("StringFormat=".Length));
 				else if (a.StartsWith("FallbackValue=", StringComparison.Ordinal))
-					fallbackValue = a.Substring("FallbackValue=".Length).Trim();
+					fallbackValue = BindingStringArg(a.Substring("FallbackValue=".Length));
 				else if (a.StartsWith("TargetNullValue=", StringComparison.Ordinal))
-					targetNullValue = a.Substring("TargetNullValue=".Length).Trim();
+					targetNullValue = BindingStringArg(a.Substring("TargetNullValue=".Length));
 				else if (a.StartsWith("UpdateSourceTrigger=", StringComparison.Ordinal))
 					updateSourceTrigger = a.Substring("UpdateSourceTrigger=".Length).Trim();
 				else if (TryExtraBindingArg(a, extras)) { }
