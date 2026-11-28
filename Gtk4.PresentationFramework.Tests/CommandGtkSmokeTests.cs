@@ -55,6 +55,7 @@ public class CommandGtkSmokeTests : WpfGtkTestBase
 		Assert.False(gtkBtn.Sensitive);
 
 		cmd.AllowExecute = true;
+		CommandManager.CancelPendingRequeryForTest();
 		CommandManager.InvalidateRequerySuggested();
 
 		Assert.True(gtkBtn.Sensitive);

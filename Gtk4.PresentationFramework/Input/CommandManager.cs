@@ -60,16 +60,16 @@ public static partial class CommandManager
 
 	// WPF's PostProcessInput hook: a key or mouse button release, and a keyboard focus change, suggest a requery.
 	// Mouse moves deliberately do not.
-	static readonly bool _inputHooked = HookInput();
+	// A static constructor runs after every field initializer in every partial file.
+	static CommandManager() => HookInput();
 
-	static bool HookInput()
+	static void HookInput()
 	{
 		EventManager.RegisterClassHandler(typeof(UIElement), UIElement.PreviewKeyUpEvent,
 			new KeyEventHandler(OnInputRequery), true);
 		EventManager.RegisterClassHandler(typeof(UIElement), UIElement.PreviewMouseUpEvent,
 			new MouseButtonEventHandler(OnInputRequery), true);
 		HookTextEditing();
-		return true;
 	}
 
 	static void OnInputRequery(object sender, RoutedEventArgs e) => InvalidateRequerySuggested();
@@ -85,7 +85,11 @@ public static partial class CommandManager
 		var dispatcher = Dispatcher.Host ?? Dispatcher.CurrentDispatcher;
 		var operation = dispatcher.BeginInvoke(RaiseRequerySuggested, DispatcherPriority.Background);
 		lock (_requeueLock)
-			_requeryOperation = operation;
+		{
+			// An inline or already-run raise cleared the flag: do not store a completed operation.
+			if (Volatile.Read(ref _requeryPending) != 0 && _requeryOperation == null)
+				_requeryOperation = operation;
+		}
 	}
 
 	static void RaiseRequerySuggested()
