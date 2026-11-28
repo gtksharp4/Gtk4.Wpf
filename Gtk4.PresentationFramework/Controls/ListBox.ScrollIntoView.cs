@@ -43,7 +43,7 @@ public partial class ListBox
 		var row = ContainerAt(index)?.Widget;
 		if (row == null || !HasBackingWidget) return;
 		Gtk.ScrolledWindow? scroller = null;
-		for (var w = Widget.Parent; w != null && scroller == null; w = w.Parent)
+		for (var w = Widget.Parent; w != null && scroller == null && w is not Window.ClipHost; w = w.Parent)
 			scroller = w as Gtk.ScrolledWindow;
 		if (scroller == null) return;
 		var content = scroller.Child is Gtk.Viewport viewport ? viewport.Child : scroller.Child;

@@ -161,3 +161,46 @@ public partial class TextBlock
 		ApplyTextWrapping();
 	}
 }
+
+public partial class TextBlock
+{
+	/// <inheritdoc/>
+	internal override void QueueSlotResize() => _label?.QueueResize();
+
+	// A label's minimum is its text, so a long unwrapped text would widen a fixed Grid track and squeeze the
+	// siblings; WPF clips it to the slot instead. The measure is capped at the slot (see CapMeasure) and the text
+	// that does not fit is clipped, not painted over the neighbours. The CSS name keeps the theme's and the font
+	// rules' "label" selector matching the subclass.
+	[Gtk.CssName("label")]
+	sealed class SlotCappedLabel : Gtk.Label
+	{
+		readonly TextBlock _owner;
+
+		internal SlotCappedLabel(TextBlock owner) : base(string.Empty)
+		{
+			_owner = owner;
+			Name = "GtkSlotCappedLabel"; // ElementCssStyle.IsUnnamed treats a Gtk* name as unset
+		}
+
+		bool _cappedH, _cappedV;
+
+		protected override void OnMeasure(Gtk.Orientation orientation, int forSize, out int minimum, out int natural,
+			out int minimumBaseline, out int naturalBaseline)
+		{
+			base.OnMeasure(orientation, forSize, out minimum, out natural, out minimumBaseline, out naturalBaseline);
+			int margins = orientation == Gtk.Orientation.Horizontal ? MarginStart + MarginEnd : MarginTop + MarginBottom;
+			bool capped = _owner.CapMeasure(orientation, ref minimum, ref natural, margins);
+			if (orientation == Gtk.Orientation.Horizontal) _cappedH = capped;
+			else _cappedV = capped;
+		}
+
+		// GTK clips a widget's own paint to its box when Overflow is Hidden, which would cut italic overhang and
+		// tall glyphs of every label; WPF clips only a text that does not fit its slot.
+		protected override void OnSizeAllocate(int width, int height, int baseline)
+		{
+			base.OnSizeAllocate(width, height, baseline);
+			var overflow = _cappedH || _cappedV || _owner.ClipToBounds ? Gtk.Overflow.Hidden : Gtk.Overflow.Visible;
+			if (Overflow != overflow) Overflow = overflow;
+		}
+	}
+}

@@ -104,7 +104,7 @@ public partial class Window
 	{
 		if (_contentOverlay == null || ReferenceEquals(win.Child, _clipHost))
 			return;
-		var host = new Gtk.ScrolledWindow
+		var host = new ClipHost
 		{
 			HscrollbarPolicy = clipWidth ? Gtk.PolicyType.External : Gtk.PolicyType.Never,
 			VscrollbarPolicy = clipHeight ? Gtk.PolicyType.External : Gtk.PolicyType.Never,
@@ -117,15 +117,16 @@ public partial class Window
 		_clipHost = host;
 	}
 
-	// WPF never grows a window with an explicit Width/Height to its content (the content is clipped), whereas GTK
-	// raises a window's minimum to its child's. Such an axis is therefore hosted in a scrolled window that does
+	// WPF never grows a Manual window to its content (the content is clipped), whereas GTK raises a window's
+	// minimum to its child's. Every axis SizeToContent does not size (explicit, or NaN and so at the default
+	// size) is hosted in a scrolled window that does
 	// not propagate the minimum, so a window whose content overflows (a height bound to ActualHeight, a fixed-size
-	// child) keeps its size. A NaN axis keeps GTK's growth.
+	// child) keeps its size.
 	void HostManualAxesInClip(Gtk.Window win)
 	{
 		var stc = SizeToContent;
-		bool manualW = stc != SizeToContent.Width && stc != SizeToContent.WidthAndHeight && !double.IsNaN(Width);
-		bool manualH = stc != SizeToContent.Height && stc != SizeToContent.WidthAndHeight && !double.IsNaN(Height);
+		bool manualW = stc != SizeToContent.Width && stc != SizeToContent.WidthAndHeight;
+		bool manualH = stc != SizeToContent.Height && stc != SizeToContent.WidthAndHeight;
 		if (_clipHost != null)
 		{
 			if (manualW) _clipHost.HscrollbarPolicy = Gtk.PolicyType.External;
@@ -137,7 +138,26 @@ public partial class Window
 		HostInClip(win, manualW, manualH);
 	}
 
-	Gtk.ScrolledWindow? _clipHost;
+	ClipHost? _clipHost;
+
+	// Clips a window's content without scrolling it: WPF never scrolls clipped window content, so the adjustments
+	// stay at 0 (wheel, focus and ScrollIntoView walks all move them) and ListBox.ScrollToItem stops here.
+	internal sealed class ClipHost : Gtk.ScrolledWindow
+	{
+		public ClipHost()
+		{
+			Name = "GtkWindowClipHost";
+			KineticScrolling = false;
+			Hadjustment.ValueChanged += Pin;
+			Vadjustment.ValueChanged += Pin;
+		}
+
+		static void Pin(object? sender, EventArgs e)
+		{
+			if (sender is Gtk.Adjustment adjustment && adjustment.Value != 0)
+				adjustment.Value = 0;
+		}
+	}
 
 	// A SizeToContent window grows to the content's WPF desired size, but never past the work area.
 	static double WorkLimit(double max, bool managed, double workArea) =>

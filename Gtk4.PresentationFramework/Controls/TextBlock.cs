@@ -107,7 +107,7 @@ public partial class TextBlock : FrameworkElement
 	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
-		_label = new Gtk.Label(string.Empty);
+		_label = new SlotCappedLabel(this);
 		var host = CreateInlineHost();
 		ApplyLayoutToLabel();
 		ApplyToLabel();

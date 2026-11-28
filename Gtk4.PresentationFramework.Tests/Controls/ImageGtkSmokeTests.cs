@@ -15,7 +15,7 @@ public class ImageGtkSmokeTests : WpfGtkTestBase
 	public void Image_Widget_is_GtkPicture() => Run(() =>
 	{
 		var img = new WpfImage();
-		Assert.IsType<Gtk.Picture>(img.Widget);
+		Assert.IsAssignableFrom<Gtk.Picture>(img.Widget);
 	});
 
 	[Fact]

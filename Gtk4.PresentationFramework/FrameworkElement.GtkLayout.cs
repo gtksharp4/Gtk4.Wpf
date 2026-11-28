@@ -59,3 +59,70 @@ public abstract partial class FrameworkElement
 		_ => Gtk.Align.Fill,
 	};
 }
+public abstract partial class FrameworkElement
+{
+	// WPF clips a child to a fixed slot; GTK lets a child's natural size beat its container's fixed size and squeeze
+	// the siblings. The natural request of a Shape, TextBlock or Image is therefore capped by a fixed Grid track (or
+	// tracks, for a span) or the explicit size of a parent Panel (not a Canvas, which does not
+	// constrain them, and not a ScrollViewer or other content host, whose content may scroll past its size), and by this element's own Margin. A star or Auto
+	// track and an unsized parent do not cap. Read when GTK measures, so a later change shows on the next measure.
+	internal double SlotLimit(bool horizontal)
+	{
+		double limit = double.PositiveInfinity;
+		if (Parent is Controls.Grid grid)
+		{
+			int start = horizontal ? Controls.Grid.GetColumn(this) : Controls.Grid.GetRow(this);
+			int span = Math.Max(1, horizontal ? Controls.Grid.GetColumnSpan(this) : Controls.Grid.GetRowSpan(this));
+			int count = horizontal ? grid.ColumnDefinitions.Count : grid.RowDefinitions.Count;
+			double sum = 0;
+			bool fixedTracks = count > 0 && start >= 0 && start < count;
+			for (int i = start; fixedTracks && i < start + span && i < count; i++)
+			{
+				var length = horizontal ? grid.ColumnDefinitions[i].Width : grid.RowDefinitions[i].Height;
+				if (horizontal) grid.ColumnDefinitions[i].Owner = grid;
+				else grid.RowDefinitions[i].Owner = grid;
+				if (length.IsAbsolute) sum += length.Value;
+				else fixedTracks = false;
+			}
+			if (fixedTracks) limit = sum;
+		}
+		else if (Parent is Controls.Panel parent and not Controls.Canvas)
+		{
+			double size = horizontal ? parent.Width : parent.Height;
+			if (!double.IsNaN(size))
+				limit = size;
+		}
+		if (double.IsPositiveInfinity(limit)) return limit;
+		var margin = Margin;
+		return Math.Max(0, limit - (horizontal ? margin.Left + margin.Right : margin.Top + margin.Bottom));
+	}
+
+	/// <summary>Asks GTK to re-measure an element whose natural request is capped by <see cref="SlotLimit"/>.</summary>
+	internal virtual void QueueSlotResize() { }
+
+	// A parent's explicit size or a Grid track change caps its children's natural request differently; GTK keeps the
+	// cached request, so ask it to re-measure.
+	internal static void RefreshSlotCaps(FrameworkElement parent)
+	{
+		if (parent is Controls.Panel panel)
+			foreach (var child in panel.Children)
+				(child as FrameworkElement)?.QueueSlotResize();
+	}
+
+
+	/// <summary>
+	/// Caps a GTK measure of a Label or Picture at the slot: the minimum goes with it (a clipped element can be
+	/// arranged smaller than its content), so the element no longer widens its track or pushes siblings.
+	/// </summary>
+	internal bool CapMeasure(Gtk.Orientation orientation, ref int minimum, ref int natural, int gtkMargins = 0)
+	{
+		double limit = SlotLimit(orientation == Gtk.Orientation.Horizontal);
+		if (double.IsPositiveInfinity(limit)) return false;
+		// GTK adds the widget's own margins outside the measure vfunc, so they come off the cap.
+		int cap = (int)Math.Max(0, Math.Min(Math.Floor(limit + 1e-6) - gtkMargins, 100000));
+		bool capped = natural > cap;
+		natural = Math.Min(natural, cap);
+		minimum = Math.Min(minimum, natural);
+		return capped;
+	}
+}

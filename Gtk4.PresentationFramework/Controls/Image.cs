@@ -92,7 +92,7 @@ public partial class Image : FrameworkElement
 	/// <inheritdoc/>
 	protected override Gtk.Widget CreateWidget()
 	{
-		_picture = new Gtk.Picture();
+		_picture = new SlotCappedPicture(this);
 		ApplySource(Source);
 		ApplyStretch(Stretch);
 		return _picture;

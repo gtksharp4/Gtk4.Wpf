@@ -53,3 +53,31 @@ public partial class Image
 		return new Size(scaleX, scaleY);
 	}
 }
+
+public partial class Image
+{
+	/// <inheritdoc/>
+	internal override void QueueSlotResize() => _picture?.QueueResize();
+
+	// A picture's natural size is its paintable's, so a wide image would widen a fixed Grid track; WPF clips it to
+	// the slot instead (see FrameworkElement.CapMeasure).
+	[Gtk.CssName("picture")]
+	sealed class SlotCappedPicture : Gtk.Picture
+	{
+		readonly Image _owner;
+
+		internal SlotCappedPicture(Image owner)
+		{
+			_owner = owner;
+			Name = "GtkSlotCappedPicture";
+			Overflow = Gtk.Overflow.Hidden; // a picture paints within its allocation, so this never cuts ink
+		}
+
+		protected override void OnMeasure(Gtk.Orientation orientation, int forSize, out int minimum, out int natural,
+			out int minimumBaseline, out int naturalBaseline)
+		{
+			base.OnMeasure(orientation, forSize, out minimum, out natural, out minimumBaseline, out naturalBaseline);
+			_owner.CapMeasure(orientation, ref minimum, ref natural);
+		}
+	}
+}

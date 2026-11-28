@@ -41,7 +41,7 @@ public class LayoutPanelSmokeTests : WpfGtkTestBase
 		var gtkGrid = (Gtk.Grid)grid.Widget;
 		// Child widget exists inside the Gtk.Grid
 		Assert.NotNull(tb.Widget);
-		Assert.IsType<Gtk.Label>(tb.Widget);
+		Assert.IsAssignableFrom<Gtk.Label>(tb.Widget);
 	});
 
 	[Fact]
@@ -80,7 +80,7 @@ public class LayoutPanelSmokeTests : WpfGtkTestBase
 		canvas.Children.Add(tb);
 
 		// Widget is a Gtk.Label (TextBlock backing) and is inside the Fixed.
-		Assert.IsType<Gtk.Label>(tb.Widget);
+		Assert.IsAssignableFrom<Gtk.Label>(tb.Widget);
 		Assert.IsAssignableFrom<Gtk.Fixed>(canvas.Widget);
 	});
 

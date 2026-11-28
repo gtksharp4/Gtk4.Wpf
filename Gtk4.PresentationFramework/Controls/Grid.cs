@@ -96,6 +96,8 @@ public partial class Grid : Panel
 
 	void AttachChild(UIElement child)
 	{
+		foreach (var c in ColumnDefinitions) c.Owner = this;
+		foreach (var r in RowDefinitions) r.Owner = this;
 		int col = GetColumn(child);
 		int row = GetRow(child);
 		int colSpan = System.Math.Max(1, GetColumnSpan(child));
@@ -138,6 +140,15 @@ public partial class Grid : Panel
 			if (RowDefinitions[i].Height.IsStar) return true;
 		}
 		return false;
+	}
+
+	// A track length changed after its children were measured: their slot caps read it, so re-measure them.
+	internal void OnTrackLengthChanged()
+	{
+		foreach (var child in Children)
+			if (child.HasBackingWidget) ApplyExpandHints(child);
+		RefreshSlotCaps(this);
+		_grid?.QueueResize();
 	}
 
 	// When an attached cell property changes, re-attach the child.

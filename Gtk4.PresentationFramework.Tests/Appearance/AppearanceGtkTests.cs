@@ -26,7 +26,7 @@ public class AppearanceGtkTests : WpfGtkTestBase
 	public void TextBlock_font_css_lands_on_label() => Run(() =>
 	{
 		var tb = new TextBlock { Text = "hi", FontSize = 20, FontWeight = FontWeights.Bold };
-		Assert.IsType<Gtk.Label>(tb.Widget);
+		Assert.IsAssignableFrom<Gtk.Label>(tb.Widget);
 		Assert.Contains("font-size: 20px;", tb.AppearanceCss);
 		Assert.Contains("font-weight: 700;", tb.AppearanceCss);
 	});
