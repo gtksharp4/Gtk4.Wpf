@@ -55,6 +55,12 @@
     <Page Include="$(Samples)Input and Commands\MousePointer\MainWindow.xaml" />
     <Compile Include="$(Samples)Input and Commands\MousePointer\MainWindow.cs" />
 
+    <Page Include="$(Samples)Data Binding\XmlDataSource\MainWindow.xaml" />
+    <Compile Include="$(Samples)Data Binding\XmlDataSource\MainWindow.cs" />
+
+    <Page Include="$(Samples)Data Binding\CompositeCollections\MainWindow.xaml" />
+    <Compile Include="$(Samples)Data Binding\CompositeCollections\MainWindow.cs;$(Samples)Data Binding\CompositeCollections\GreekGod.cs;$(Samples)Data Binding\CompositeCollections\GreekGods.cs" />
+
     <Page Include="$(Samples)Graphics\VisualBrush\App.xaml;$(Samples)Graphics\VisualBrush\SampleViewer.xaml;$(Samples)Graphics\VisualBrush\PaintingWithVisuals.xaml;$(Samples)Graphics\VisualBrush\MagnifyingGlassExample.xaml;$(Samples)Graphics\VisualBrush\ReflectionExample.xaml" />
     <Compile Include="$(Samples)Graphics\VisualBrush\App.cs;$(Samples)Graphics\VisualBrush\SampleViewer.cs;$(Samples)Graphics\VisualBrush\PaintingWithVisuals.cs;$(Samples)Graphics\VisualBrush\MagnifyingGlassExample.cs;$(Samples)Graphics\VisualBrush\ReflectionExample.cs" />
   </ItemGroup>
