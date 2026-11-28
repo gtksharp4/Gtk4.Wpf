@@ -141,6 +141,7 @@ public class CommandTests
 		CommandManager.RequerySuggested += handler;
 		try
 		{
+			CommandManager.CancelPendingRequeryForTest();
 			CommandManager.InvalidateRequerySuggested();
 			Assert.True(fired);
 		}
@@ -336,6 +337,7 @@ public class CommandTests
 		cmd.CanExecuteChanged += (_, _) => fired = true;
 		try
 		{
+			CommandManager.CancelPendingRequeryForTest();
 			CommandManager.InvalidateRequerySuggested();
 			Assert.True(fired);
 		}

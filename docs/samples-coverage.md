@@ -426,9 +426,7 @@ Found by this report:
 
 Still open from earlier reports (re-checked where noted):
 
-- **No command requery after `Loaded`.** `HandlingEventOnCommandUsingCode` adds its button and `CommandBinding` in
-  `Loaded`, and the button stays disabled until another requery. `CommandSampleTests.The_button_is_enabled_without_a_manual_requery`
-  is still skipped (re-checked).
+- **Fixed in Round 80 (lane b):** command requery after `Loaded` (`HandlingEventOnCommandUsingCode`); `CommandManager.InvalidateRequerySuggested` is now asynchronous and coalesced as in WPF.
 - `ScrollBar` is still on `Control`, not `RangeBase` (`Controls/Primitives/ScrollBar.cs:16`, re-checked).
 - Media3D:
   - Painter's-algorithm triangle sort, not a z-buffer.

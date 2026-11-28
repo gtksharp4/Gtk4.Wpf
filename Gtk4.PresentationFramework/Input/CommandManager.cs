@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace System.Windows.Input;
 
@@ -51,16 +53,52 @@ public static partial class CommandManager
 		}
 	}
 
+	// ── Asynchronous, coalesced raise (WPF semantics) ────────────────────────
+
+	static int _requeryPending;
+	static DispatcherOperation? _requeryOperation;
+
+	// WPF's PostProcessInput hook: a key or mouse button release, and a keyboard focus change, suggest a requery.
+	// Mouse moves deliberately do not.
+	// A static constructor runs after every field initializer in every partial file.
+	static CommandManager() => HookInput();
+
+	static void HookInput()
+	{
+		EventManager.RegisterClassHandler(typeof(UIElement), UIElement.PreviewKeyUpEvent,
+			new KeyEventHandler(OnInputRequery), true);
+		EventManager.RegisterClassHandler(typeof(UIElement), UIElement.PreviewMouseUpEvent,
+			new MouseButtonEventHandler(OnInputRequery), true);
+		HookTextEditing();
+	}
+
+	static void OnInputRequery(object sender, RoutedEventArgs e) => InvalidateRequerySuggested();
+
 	/// <summary>
-	/// Explicitly raises <see cref="RequerySuggested"/>, causing every bound
-	/// command source to refresh its enabled state. Dead weak references are
-	/// pruned on each raise.
+	/// Suggests a requery. As in WPF the raise is asynchronous and coalesced: any number of calls before the
+	/// dispatcher drains raise <see cref="RequerySuggested"/> once, at Background priority on the dispatcher
+	/// thread. Safe to call from any thread.
 	/// </summary>
 	public static void InvalidateRequerySuggested()
+	{
+		if (Interlocked.Exchange(ref _requeryPending, 1) != 0) return;
+		var dispatcher = Dispatcher.Host ?? Dispatcher.CurrentDispatcher;
+		var operation = dispatcher.BeginInvoke(RaiseRequerySuggested, DispatcherPriority.Background);
+		lock (_requeueLock)
+		{
+			// An inline or already-run raise cleared the flag: do not store a completed operation.
+			if (Volatile.Read(ref _requeryPending) != 0 && _requeryOperation == null)
+				_requeryOperation = operation;
+		}
+	}
+
+	static void RaiseRequerySuggested()
 	{
 		List<EventHandler> live;
 		lock (_requeueLock)
 		{
+			_requeryOperation = null;
+			Volatile.Write(ref _requeryPending, 0);
 			live = new List<EventHandler>(_requeueHandlers.Count);
 			for (int i = _requeueHandlers.Count - 1; i >= 0; i--)
 			{
@@ -72,6 +110,19 @@ public static partial class CommandManager
 		}
 		foreach (var h in live)
 			h(null, EventArgs.Empty);
+	}
+
+	/// <summary>Cancels a pending requery so it cannot leak into the next test (the state is process-wide).</summary>
+	internal static void CancelPendingRequeryForTest()
+	{
+		DispatcherOperation? operation;
+		lock (_requeueLock)
+		{
+			operation = _requeryOperation;
+			_requeryOperation = null;
+			Volatile.Write(ref _requeryPending, 0);
+		}
+		operation?.Abort();
 	}
 
 	/// <summary>
